@@ -192,9 +192,24 @@ it, and specific enough that failing them is unambiguous.
 
 ## Build status
 
-Nothing built. This file is the plan seed from
+**Milestones 1 and 2 have passed. Nothing below milestone 2 is built.**
+
+| # | State | Evidence |
+| --- | --- | --- |
+| 1 | passed 2026-08-19, 20 of 20 against a rule of 18 of 20 | [the investigation](docs/investigations/0001-mandated-tool-call.md) |
+| 2 | passed 2026-08-19 | [the records](records/README.md), and the `mustur_route` tool they are served by |
+| 2b onwards | not started | |
+
+What exists is one binary. It holds this project's records and its routing in a
+SQLite store that only accepts inserts, exports them to
+[records/](records/README.md) so a reader who does not run it can check them,
+and serves them to a session through one tool call that the clause at the
+bottom of [CLAUDE.md](CLAUDE.md) mandates. There is no web surface, no adapter,
+no session Mustur owns, and no second project.
+
+This file began as the plan seed from
 [agent-workflow-web-platform](https://github.com/DevOfPie/IdeaWarehouse/blob/main/ideas/agent-workflow-web-platform.md),
-lifted here on 2026-08-19 so planning and wireframing can start in this
+lifted here on 2026-08-19 so planning and wireframing could start in this
 repository. The status change in IdeaWarehouse is a verdict and is not this
 file's to claim.
 

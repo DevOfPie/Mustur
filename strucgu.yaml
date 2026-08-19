@@ -44,13 +44,35 @@ modules:
     roles:
       investigations: docs/investigations/
 
+  work-units:
+    version: "0.2.1"
+    adopted: 2026-08-19
+    # Adopted at milestone 2, as the comment above this file's exclusions said
+    # it would be. The unit records are exported from the store rather than
+    # hand-written, which changes nothing a checker can see: the directory, the
+    # index and the template are the roles the module names, and the module
+    # describes shape rather than who typed it.
+    roles:
+      unit_dir: records/work-units/
+      unit_template: records/work-units/_template.md
+      unit_index: records/work-units/index.md
+
 # The harness under the investigations role is apparatus, not records: it
 # carries the disproof's fixture repositories, whose markdown would otherwise
 # be audited as investigation records.
 exclude:
   - docs/investigations/0001-harness/**
 
+  # The flat half of the export. These files carry the PRODUCT's records —
+  # the same decisions, findings and investigations this repository already
+  # keeps as prose, addressable by identifier and pointing back at that prose.
+  # The repository's own roles stay mapped to the files a person edits; a
+  # second decision log declared against a generated file would make every
+  # audit report the same entries twice.
+  - records/*.md
+
 # Not adopted, and why:
 #
-#   work-units      Nothing is built, so there are no work units to record.
-#                   Adopt at milestone 2, when records exist.
+#   Nothing. All four base and optional modules whose roles this tree can fill
+#   are declared above; work-units joined them at milestone 2, when the records
+#   it names came into existence.

@@ -8,8 +8,9 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Nothing is built.** This repository currently holds the plan, its rationale,
-and the surfaces that need designing.
+**Milestones 1 and 2 are done; nothing below them is built.** What exists is one
+binary that holds this project's records and routing and serves them to a
+session through a single mandated tool call. There is no web surface yet.
 
 | | |
 | --- | --- |
@@ -17,6 +18,7 @@ and the surfaces that need designing.
 | Why it is that way | [decisions.md](decisions.md) |
 | How the work is done | [workflow.md](workflow.md) |
 | Surfaces awaiting design | [docs/ui-surfaces.md](docs/ui-surfaces.md) |
+| The records themselves | [records/](records/README.md) |
 | Where it came from | [IdeaWarehouse `agent-workflow-web-platform`](https://github.com/DevOfPie/IdeaWarehouse/blob/main/ideas/agent-workflow-web-platform.md) |
 
 ## The one thing to read first
@@ -27,6 +29,23 @@ they must choose to call — 0 memory operations in 114 turns against a pre-seed
 store. The answer is to mandate the call from a repo-local file that loads
 unconditionally, and **that answer has never been measured**.
 
-Milestone 1 is the test of it, its decision rule is fixed in advance, and a
-failure means this idea is killed rather than shrunk. Nothing else starts until
-it passes.
+Milestone 1 was the test of it. Its decision rule was fixed and committed
+before the runs, and a failure would have killed the idea rather than shrunk
+it. It passed, 20 of 20 against a rule of 18 of 20 —
+[the record](docs/investigations/0001-mandated-tool-call.md). The clause it
+measured is the clause now in [CLAUDE.md](CLAUDE.md), and the tool it named is
+the one this repository now serves.
+
+## Running it
+
+```sh
+make build            # the binary
+make seed             # once: put what already exists into an empty store
+make export           # render the store into records/
+make serve            # the one tool call, on loopback
+make check            # every gate this tree enforces mechanically
+```
+
+The store is not in this repository: a binary file in git is a record nobody can
+review. [records/](records/README.md) is the reviewable half, and
+`mustur verify` is what reports it drifting from the store.
