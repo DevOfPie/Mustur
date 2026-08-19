@@ -17,3 +17,5 @@ Append at the bottom, always.
 ---
 
 <!-- new lines below -->
+- 2026-08-19 (whippy) — queue.md itself will earn findings-queue audit findings (no evidence/review columns); reshaping it into the specified table vs keeping the jot log is a real choice someone should make before milestone 2b
+- 2026-08-19 (whippy) — PR #1's body promises three open design questions in docs/ui-surfaces.md; the file marks two (composer, records) — find or retire the third
