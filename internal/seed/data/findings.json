@@ -1,0 +1,35 @@
+[
+  {
+    "id": "MUS-F-0001",
+    "kind": "finding",
+    "title": "queue.md's own shape will fail the findings-queue checks it declares",
+    "at": "2026-08-19",
+    "body": "queue.md is a jot log with no evidence or review column, and the repository declares the findings-queue module against it. Reshaping it into the specified table and keeping the jot log are both defensible; the choice is owed before the audit at milestone 2b reports it.",
+    "data": [
+      { "key": "Noticed by", "value": "whippy" },
+      { "key": "Source", "value": "[queue.md](../queue.md)" }
+    ]
+  },
+  {
+    "id": "MUS-F-0002",
+    "kind": "finding",
+    "title": "One of the three promised open design questions is missing",
+    "at": "2026-08-19",
+    "body": "Pull request #1's body promises three open design questions in docs/ui-surfaces.md. The file marks two, on the composer and on records. The third is either unwritten or was retired without a note.",
+    "data": [
+      { "key": "Noticed by", "value": "whippy" },
+      { "key": "Source", "value": "[docs/ui-surfaces.md](../docs/ui-surfaces.md)" }
+    ]
+  },
+  {
+    "id": "MUS-F-0003",
+    "kind": "finding",
+    "title": "A paused metering change would decide the adapter's exposure",
+    "at": "2026-08-19",
+    "body": "Anthropic's paused metering change, support article 15036540, would move headless and Agent SDK usage off plan limits and onto separate credits if it un-pauses. Which invocation path the per-machine adapter uses then decides what Mustur costs to run. A candidate limitation row in Plan.md, not yet written there.",
+    "data": [
+      { "key": "Noticed by", "value": "whippy" },
+      { "key": "Status", "value": "unreviewed" }
+    ]
+  }
+]

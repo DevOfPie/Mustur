@@ -1,0 +1,155 @@
+[
+  {
+    "id": "MUS-M-0001",
+    "kind": "milestone",
+    "title": "The delivery bet is tested",
+    "at": "2026-08-19",
+    "body": "Done when: The smallest disproof has run in two throwaway repositories with its decision rule fixed beforehand, and the result is recorded either way. Nothing below starts until it passes.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "1"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0002",
+    "kind": "milestone",
+    "title": "Records and routing, behind one call",
+    "at": "2026-08-19",
+    "body": "Done when: Mustur holds its own records in StrucGu's module roles, addressable by identifier, plus its own routing record, and one repo-scoped tool call returns them. Mustur's own `.claude` carries the mandate.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "2"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0003",
+    "kind": "milestone",
+    "title": "The audit StrucGu never shipped",
+    "at": "2026-08-19",
+    "body": "Done when: Mustur checks its own records against StrucGu's check vocabulary and emits an audit in the specified form, with fixtures proving the checks detect something. Records and audit ship together, because auditing records you own is far cheaper than auditing files you do not.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "2b"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0004",
+    "kind": "milestone",
+    "title": "Intake",
+    "at": "2026-08-19",
+    "body": "Done when: A jot from a phone lands in Mustur's `findings-queue` in seconds, carries a routing hint where one is obvious, and defaults to the idea inbox where it is not.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "2c"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0005",
+    "kind": "milestone",
+    "title": "Decisions cannot be buried",
+    "at": "2026-08-19",
+    "body": "Done when: An agent working Mustur cannot report work complete while an open decision has never been surfaced as a prompt; the decision lands in a queue the owner answers from any device, and the answer is injected back into the session that raised it.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "3"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0006",
+    "kind": "milestone",
+    "title": "Sessions Mustur owns",
+    "at": "2026-08-19",
+    "body": "Done when: The per-machine adapter starts and supervises a long-lived session per project, survives a dropped phone connection, and streams output to a browser tab. One tab, several sessions.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "4"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0007",
+    "kind": "milestone",
+    "title": "Composition",
+    "at": "2026-08-19",
+    "body": "Done when: The owner composes multi-line, spell-checked text from the phone, off the home network, without a terminal, and it reaches the intended session.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "5"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0008",
+    "kind": "milestone",
+    "title": "A second person",
+    "at": "2026-08-19",
+    "body": "Done when: Someone who is not the owner signs in through Access and reads a project's routing and records from their own device, without a clone and without a machine.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "6"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-M-0009",
+    "kind": "milestone",
+    "title": "A second project moves in",
+    "at": "2026-08-19",
+    "body": "Done when: Its own verdict, not assumed here. The first project onboarded proves the transition the record shape was chosen to test.",
+    "data": [
+      {
+        "key": "Plan number",
+        "value": "7"
+      },
+      {
+        "key": "Source",
+        "value": "[Plan.md#milestones](../Plan.md#milestones)"
+      }
+    ]
+  }
+]
