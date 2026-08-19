@@ -1,0 +1,8 @@
+# The store. The database is the record; a binary file in git is a record
+# nobody can review, and records/ is the reviewable half.
+*.db
+*.db-shm
+*.db-wal
+
+# Build output.
+/mustur
