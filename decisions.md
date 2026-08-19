@@ -32,6 +32,13 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Intake is in v1](#intake-is-in-v1) | The gap found by surveying the estate |
 | [Mustur becomes the runner StrucGu did not ship](#mustur-becomes-the-runner-strucgu-did-not-ship) | And what that puts downstream of it |
 | [Estimates here run long](#estimates-here-run-long) | The owner's calibration |
+| [The composer takes the thought first](#the-composer-takes-the-thought-first) | Route second; last-active default keeps one tap |
+| [Records read as a document](#records-read-as-a-document) | In-place identifier expansion; pivot kept for the record |
+| [Home is the session list](#home-is-the-session-list) | With a pinned banner for open decisions |
+| [Sessions are supervised through tmux](#sessions-are-supervised-through-tmux) | Crash-survival free; a terminal can still attach |
+| [Decision detail is generated on demand](#decision-detail-is-generated-on-demand) | One paragraph up front; deeper costs tokens only when asked |
+| [Phone surfaces show only the recent](#phone-surfaces-show-only-the-recent) | ~1 hour, then the archive |
+| [Invisibility is taught once](#invisibility-is-taught-once) | First run and empty state, never permanent chrome |
 
 ---
 
@@ -242,3 +249,66 @@ state what it is anchored on, and it must never be the reason scope is cut. The
 practice that produced the drift — decompose the work, estimate each piece, add
 them up — is the practice to avoid; anchor on what comparable work actually took
 instead.
+
+## 2026-08-19 — decisions taken at the evening design review
+
+All the owner's, taken as prompts against the published wireframes
+(the visual plan's canvas holds the chosen and not-chosen variants) and
+[docs/stack-evidence.md](docs/stack-evidence.md).
+
+### The composer takes the thought first
+
+Text before destination, because that is the order the thought actually
+arrives in. The route row defaults to the last active session, so the fast
+path costs the same one tap as a session-first design would; the idea inbox is
+a route like any session, which folds intake into the composer instead of
+keeping two capture muscles.
+
+Accepted with the choice: the routing step must never misfire silently, and
+the build is larger than session-first would have been. Session-first stays on
+the plan's canvas for the record.
+
+### Records read as a document
+
+A record is a page: identifier chips expand in place — one action from bare
+identifier to meaning, no agent round trip — and cited-by sits at the end.
+Pivot navigation was drawn, considered, and kept for the record; it earns
+reconsideration only if cross-references become dense enough that hopping
+beats reading.
+
+### Home is the session list
+
+Sessions are what the app is opened to check. A pinned banner appears whenever
+a decision is open, which keeps decision latency visible without making the
+queue the front door.
+
+### Sessions are supervised through tmux
+
+The per-machine adapter starts every session inside tmux and supervises it
+there. What that buys, from the prior-art survey in
+[docs/stack-evidence.md](docs/stack-evidence.md): crash-survival and
+scrollback come free, sessions outlive adapter restarts, and a terminal can
+still attach to a session Mustur started. The attach rule is untouched —
+Mustur still never attaches to a session it did not start; the arrow only
+points the other way. Interactive sessions also sit on the safer side of the
+paused metering change recorded in [queue.md](queue.md).
+
+### Decision detail is generated on demand
+
+A decision prompt carries one short context paragraph from the raising agent —
+nearly free, since the material is already in its window. Anything deeper is
+generated only when the owner asks, by injecting the request into the blocked
+session. Tokens are spent on demand rather than speculatively.
+
+### Phone surfaces show only the recent
+
+An answered decision or a filed confirmation stays on its surface for roughly
+an hour, then leaves for the archive. History is never lost, only moved off
+the working surface.
+
+### Invisibility is taught once
+
+That a terminal session is invisible in Mustur is taught on first run and in
+the session list's empty state, and nowhere else. Permanent explanatory chrome
+was drawn, reviewed, and rejected: a note a user needs once is noise every
+time after.

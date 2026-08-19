@@ -64,7 +64,7 @@ useful than a guess that later reads as a commitment.
 | Storage | Undecided between git-backed markdown and SQLite. Decided: records are addressable by identifier from the moment they are written, and routing is authored in exactly one place rather than duplicated per machine. |
 | Record shape | **StrucGu's module roles** — `decision-log`, `findings-queue`, `investigations`, `triage-rule`, `work-units`. Already specified with fixtures and an audit vocabulary, and already declared by four repositories. |
 | Agent interface | MCP over HTTP, registered per repository with `claude mcp add --scope project`, so the trigger is committed to the checkout rather than installed on the account. |
-| Agent transport | A per-machine adapter that starts and supervises long-lived sessions by shelling out to the configured CLI. Vendor neutrality is a designed boundary; only Claude Code is proven. |
+| Agent transport | A per-machine adapter that starts and supervises long-lived sessions **inside tmux**, shelling out to the configured CLI. Sessions survive adapter restarts and stay attachable from a terminal; Mustur still never attaches to a session it did not start. Vendor neutrality is a designed boundary; only Claude Code is proven. |
 | Human interface | Server-rendered HTML. No per-project client state. |
 | Deployment | The VM already running `cloudflared` 2026.8.2. **One new ingress rule on the existing tunnel — never a second tunnel** (cloudflare/cloudflared#59). |
 | Identity | Cloudflare Access at the edge. No client on the phone; free tier is 50 users. |
