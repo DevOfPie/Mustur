@@ -60,8 +60,8 @@ useful than a guess that later reads as a commitment.
 
 | Layer | Choice |
 | --- | --- |
-| Language | Undecided. Constraint: one long-lived process on the VM under systemd, able to supervise child sessions. |
-| Storage | Undecided between git-backed markdown and SQLite. Decided: records are addressable by identifier from the moment they are written, and routing is authored in exactly one place rather than duplicated per machine. |
+| Language | **Go.** One long-lived process on the VM under systemd, supervising child sessions; static binary; official MCP SDK mounts beside the server-rendered routes. |
+| Storage | **SQLite, with a deterministic markdown export** as the audit surface and backup; insert-only enforced by trigger and tool layer; history as an immutable event log. Records are addressable by identifier from the moment they are written, and routing is authored in exactly one place rather than duplicated per machine. |
 | Record shape | **StrucGu's module roles** — `decision-log`, `findings-queue`, `investigations`, `triage-rule`, `work-units`. Already specified with fixtures and an audit vocabulary, and already declared by four repositories. |
 | Agent interface | MCP over HTTP, registered per repository with `claude mcp add --scope project`, so the trigger is committed to the checkout rather than installed on the account. |
 | Agent transport | A per-machine adapter that starts and supervises long-lived sessions **inside tmux**, shelling out to the configured CLI. Sessions survive adapter restarts and stay attachable from a terminal; Mustur still never attaches to a session it did not start. Vendor neutrality is a designed boundary; only Claude Code is proven. |

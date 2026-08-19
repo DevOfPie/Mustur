@@ -39,6 +39,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Decision detail is generated on demand](#decision-detail-is-generated-on-demand) | One paragraph up front; deeper costs tokens only when asked |
 | [Phone surfaces show only the recent](#phone-surfaces-show-only-the-recent) | ~1 hour, then the archive |
 | [Invisibility is taught once](#invisibility-is-taught-once) | First run and empty state, never permanent chrome |
+| [Mustur is written in Go](#mustur-is-written-in-go) | The case survived removing the tooling argument |
+| [The product stores in SQLite, exports to markdown](#the-product-stores-in-sqlite-exports-to-markdown) | Insert-only by trigger; the export is the audit surface |
 
 ---
 
@@ -312,3 +314,37 @@ That a terminal session is invisible in Mustur is taught on first run and in
 the session list's empty state, and nowhere else. Permanent explanatory chrome
 was drawn, reviewed, and rejected: a note a user needs once is noise every
 time after.
+
+### Mustur is written in Go
+
+Taken after the owner asked whether the recommendation survived ignoring what
+happens to be installed. It does, on measurements in
+[docs/stack-evidence.md](docs/stack-evidence.md): an 8.3 MB static binary
+against a 224 MB Node runtime, the official Go MCP SDK mounting as a plain
+`http.Handler` beside the server-rendered routes, and stdlib HTML templating.
+The known cost — no official Claude Agent SDK — was mostly discharged by the
+tmux decision above: a tmux adapter drives the same interactive CLI a human
+would and reads the same on-disk session records, so the SDK's headless loop is
+not on the path. The residual cost, accepted: `creack/pty` is pinned at a
+pseudo-version until it tags again.
+
+### The product stores in SQLite, exports to markdown
+
+The owner's call: everything the product owns lives in one database, because
+that is the cleanest and fastest setup for each new project onboarded. Accepted
+with it, named before building:
+
+1. Agent search is a tool call over FTS5 — better than grep for the access
+   path agents actually have, since records were never reachable by grep from
+   another checkout anyway.
+2. Append-only is enforced by triggers and by the tool layer exposing only
+   insert and read — stronger than git convention.
+3. **The conformance audit runs against a deterministic markdown export**,
+   because StrucGu's checks speak in files, headings and links. The export is
+   also the human-readable backup. This is the one real obligation the choice
+   creates.
+4. History is an immutable event log with a materialized latest, or success
+   criterion 7 has nothing to stand on.
+
+This repository's own contract files stay files; the database governs what the
+product stores.
