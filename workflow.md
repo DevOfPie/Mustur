@@ -102,6 +102,16 @@ entry corrects an earlier one, and the earlier text stays.
 **Stop and ask** for anything the owner would reasonably want to decide — in a
 prompt.
 
+## Dispatch from outside
+
+The global `/work` registry routes `mustur` here. Declared kinds:
+
+```
+milestone  → work the lowest milestone in Plan.md not yet passed, under this file
+```
+
+Any other kind is unknown: report it, carrying the table above.
+
 ## Quick reference
 
 ```
