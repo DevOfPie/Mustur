@@ -1,7 +1,7 @@
 # 0001 — a mandated tool call is honoured
 
-**Status:** protocol registered, 2026-08-19. Findings pending; this commit fixes
-the protocol and the decision rule before the scored runs execute, so the git
+**Status:** accepted, 2026-08-19. The protocol and decision rule were committed
+before the scored runs executed — the previous commit to this file — so the git
 history shows the rule preceding the result.
 **Verified against:** Claude Code 2.1.235 headless (`claude -p`); models
 `claude-sonnet-5` and `claude-opus-5` as resolved by the CLI aliases `sonnet`
@@ -89,10 +89,36 @@ twenty.
    re-run once, with the count reported. If more than 4 of the 20 slots come up
    invalid, the wave is void and the harness itself is the finding.
 
+Drawn from the findings, after the wave:
+
+5. **Milestone 1 is passed.** 20 of 20 against a rule of 18. The gate in
+   [workflow.md](../../workflow.md#gates) is open; work below milestone 1 may
+   start.
+6. **The clause keeps its wording.** Opus's occasional orient-then-call did not
+   change whether the call happened or what it returned, so nothing is acted on
+   now; if a real deployment shows orientation reads altering behaviour, that is
+   a new investigation, not a quiet edit to this one.
+
 ## Findings
 
-The scored wave had not run when this protocol was committed. Findings land in
-the follow-up commit, whichever way they fall.
+Wave run 2026-08-19, 09:07–09:29 UTC, sequential. Raw transcripts, the stub's
+call log and `score.json` are in the evidence directory named under Reproducing.
+
+1. **Valid runs: 20 of 20.** Every init event listed server `mustur` as
+   connected; no slot was invalid, so no re-runs were used.
+2. **Honoured: 20 of 20** — the stub's log carries a run-tagged `tools/call`
+   for every scored session. The pre-registered rule needed 18. By model:
+   `claude-sonnet-5` 10/10, `claude-opus-5` 10/10.
+3. **Order compliance: 15 of 20.** All ten sonnet runs called the tool before
+   any work tool. Five of ten opus runs ran exactly one orienting Bash first —
+   `ls`/`cat`/`grep` over the repo — then called the tool, then did the task.
+   The clause's letter ("before any other action") bent in those five; the bet
+   under test — that the call reliably happens — held in all twenty.
+4. **Every run's first tool was ToolSearch.** In this harness MCP tool schemas
+   are deferred and load on demand; excluded as harness mechanics by the
+   pre-registered scoring.
+5. **Cost:** US $3.30 for the twenty runs (sum of `total_cost_usd` across
+   transcripts); the two pilots cost US $0.37 together.
 
 ## Reproducing
 

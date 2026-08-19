@@ -37,9 +37,19 @@ modules:
     roles:
       findings: queue.md
 
+  investigations:
+    version: "0.2.1"
+    adopted: 2026-08-19
+    roles:
+      investigations: docs/investigations/
+
+# The harness under the investigations role is apparatus, not records: it
+# carries the disproof's fixture repositories, whose markdown would otherwise
+# be audited as investigation records.
+exclude:
+  - docs/investigations/0001-harness/**
+
 # Not adopted, and why:
 #
 #   work-units      Nothing is built, so there are no work units to record.
 #                   Adopt at milestone 2, when records exist.
-#   investigations  Same. The first investigation is milestone 1's disproof;
-#                   adopt when its record is written.
