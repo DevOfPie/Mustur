@@ -28,7 +28,7 @@ for i in 0 1 2 3 4; do
       n=$((n+1))
       id=$(printf "run-%02d" $n)
       if [ "$repo" = "throwaway-a" ]; then task="${TASKS_A[$i]}"; else task="${TASKS_B[$i]}"; fi
-      cd "$EV/repos/$repo"
+      cd "$EV/repos/$repo" || exit 1
       git reset -q --hard seed && git clean -qfd -e .claude/settings.local.json
       echo "[$(date -u +%H:%M:%S)] $id $repo $model :: $task"
       MUSTUR_RUN_ID=$id timeout 420 claude -p "$task" --model "$model" \
