@@ -220,17 +220,90 @@ func TestCrossModuleRoleResolvesWhenItIs(t *testing.T) {
 	}
 }
 
-func TestHistoryChecksSkipWithoutEffectiveFrom(t *testing.T) {
+// effective_from is required when an adopted check reads history. A record
+// missing a required field is a run that cannot start: skipping quietly would
+// leave the one obligation needing history unobserved with nothing saying so.
+func TestMissingEffectiveFromIsARunThatCannotStart(t *testing.T) {
 	files := satisfying()
 	files["strucgu.yaml"] = adoption(strings.Replace(demoAdopted, "    effective_from: 2026-08-20\n", "", 1))
-	rep := run(t, build(t, files))
+	_, err := Run(build(t, files), testCatalog(t), time.Now())
+	if err == nil {
+		t.Fatal("the run started without an effective_from")
+	}
+	if !strings.Contains(err.Error(), "effective_from") || !strings.Contains(err.Error(), "D-08") {
+		t.Errorf("the error names neither the field nor the check: %v", err)
+	}
+}
+
+// A record deleted outright removes every line in it, which is the case the
+// check's own finding text calls "an entry edited away" — and the one a
+// modified-files filter cannot see. Under a directory role the pathspec is the
+// directory, so a file that no longer exists is still in scope.
+func TestHistoryDeletionsSeesAFileDeletedOutright(t *testing.T) {
+	files := satisfying()
+	files["records/two.md"] = "# Two\n\nA second record.\n"
+	files["strucgu.yaml"] = adoption(strings.Replace(demoAdopted, "in: doc", "in: doc", 1))
+	root := build(t, files)
+	git := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", root}, args...)...)
+		cmd.Env = append(os.Environ(),
+			"GIT_AUTHOR_NAME=t", "GIT_AUTHOR_EMAIL=t@example.org",
+			"GIT_COMMITTER_NAME=t", "GIT_COMMITTER_EMAIL=t@example.org")
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Skipf("git unavailable: %v %s", err, out)
+		}
+	}
+	git("init", "-q")
+	git("add", ".")
+	git("commit", "-qm", "first")
+	first := commitOf(t, root)
+	if err := os.Remove(filepath.Join(root, "records", "two.md")); err != nil {
+		t.Fatal(err)
+	}
+	git("add", "-A")
+	git("commit", "-qm", "delete a record outright")
+
+	// Point the history check at the directory role, and bound it at the first
+	// commit so only the deletion is in scope.
+	adoptionText := strings.Replace(demoAdopted, "effective_from: 2026-08-20", "effective_from: "+first, 1)
+	if err := os.WriteFile(filepath.Join(root, "strucgu.yaml"), []byte(adoption(adoptionText)), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	rep, err := Run(root, testCatalogFor(t, "records/"), time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
 	got := state(t, rep, "D-08")
-	if got.State != Skip {
-		t.Fatalf("D-08 = %s, want skip: history is not read unbounded", got.State)
+	if got.State != Finding {
+		t.Fatalf("D-08 = %s (%s), want finding: a record was deleted after effective_from", got.State, got.Detail)
 	}
-	if !strings.Contains(got.Detail, "effective_from") {
-		t.Errorf("the skip does not name what is missing: %q", got.Detail)
+}
+
+func commitOf(t *testing.T, root string) string {
+	t.Helper()
+	out, err := exec.Command("git", "-C", root, "rev-parse", "HEAD").Output()
+	if err != nil {
+		t.Fatal(err)
 	}
+	return strings.TrimSpace(string(out))
+}
+
+// testCatalogFor is the demo catalog with D-08 rebound to another role, so the
+// history check can be exercised over a directory without a second module.
+func testCatalogFor(t *testing.T, _ string) *Catalog {
+	t.Helper()
+	cat := testCatalog(t)
+	module := cat.Modules["demo"]
+	checks := append([]Check{}, module.Checks...)
+	for i := range checks {
+		if checks[i].ID == "D-08" {
+			checks[i].In = RoleList{"records"}
+		}
+	}
+	module.Checks = checks
+	cat.Modules["demo"] = module
+	return cat
 }
 
 func TestByFormCardinalityFollowsTheDeclaredForm(t *testing.T) {
@@ -425,5 +498,32 @@ func TestDriftNoticeWording(t *testing.T) {
 	}
 	if strings.Contains(driftNotice("demo", "1.0.0", "1.4.0"), "major ahead") {
 		t.Error("a minor ahead was reported as a major one")
+	}
+}
+
+// A directory link resolves; an anchor on it cannot, because a directory has
+// no headings. Passing it is a false negative in the one kind whose whole job
+// is rot.
+func TestAnAnchorOnADirectoryLinkIsAFinding(t *testing.T) {
+	files := satisfying()
+	files["doc.md"] += "\nAnd [the records](records/#nope).\n"
+	rep := run(t, build(t, files))
+	got := state(t, rep, "D-05")
+	if got.State != Finding {
+		t.Fatalf("D-05 = %s (%s), want finding", got.State, got.Detail)
+	}
+	if !strings.Contains(got.Detail, "directory") {
+		t.Errorf("the finding does not say why: %q", got.Detail)
+	}
+}
+
+// The same link without an anchor is fine, which is what keeps the rule above
+// from rejecting every directory link in the tree.
+func TestAPlainDirectoryLinkStillResolves(t *testing.T) {
+	files := satisfying()
+	files["doc.md"] += "\nAnd [the records](records/).\n"
+	rep := run(t, build(t, files))
+	if got := state(t, rep, "D-05"); got.State != OK {
+		t.Fatalf("D-05 = %s (%s), want ok", got.State, got.Detail)
 	}
 }

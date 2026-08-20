@@ -80,6 +80,21 @@ func Run(root string, cat *Catalog, now time.Time) (*Report, error) {
 		if notice := driftNotice(id, adopted.Version, module.Version); notice != "" {
 			rep.Notices = append(rep.Notices, notice)
 		}
+		// effective_from is required when any adopted check reads history, and
+		// a record missing a required field is a run that cannot start rather
+		// than a finding: it says nothing about the repository's conformance,
+		// and skipping the check quietly would leave the one obligation that
+		// needs history unobserved with nothing saying so. An earlier draft
+		// skipped; the independent implementation refuses, and the field
+		// reference is on its side.
+		if adopted.EffectiveFrom == "" {
+			for _, check := range module.Checks {
+				if check.Kind == "history_deletions" {
+					return nil, fmt.Errorf("%s adopts %s, whose %s reads history, and declares no effective_from",
+						root, id, check.ID)
+				}
+			}
+		}
 		roles := map[string]target{}
 		for _, role := range module.Roles {
 			tg, err := t.resolve(module, adopted, adoption, role.ID)
@@ -258,15 +273,6 @@ func (t *tree) evaluate(m Module, adopted AdoptedModule, a *Adoption, targets ma
 			why = append(why, fmt.Sprintf("%s: %s", role, reasonFor(targets[role])))
 		}
 		res.Detail = strings.Join(why, "; ")
-		return res
-	}
-
-	if c.Kind == "history_deletions" && adopted.EffectiveFrom == "" {
-		// Running it unbounded produces four-figure findings on a mature
-		// repository, and an audit that reports four thousand findings on day
-		// one is deleted the same day.
-		res.State = Skip
-		res.Detail = "the adoption record declares no effective_from, and history is not read without one"
 		return res
 	}
 
@@ -470,7 +476,15 @@ func (t *tree) linksResolve(read []target) (State, string, []string) {
 						continue
 					}
 					if info.IsDir() {
-						continue // A link to a directory resolves; there is no heading inside one.
+						// The path resolves. An anchor on it cannot: a
+						// directory has no headings, so a link carrying one is
+						// pointing at something that is not there. Passing it
+						// is a false negative in the one kind whose whole job
+						// is rot.
+						if l.anchor != "" {
+							broken = append(broken, fmt.Sprintf("%s -> %s (anchor on a directory)", filepath.Base(f), l.raw))
+						}
+						continue
 					}
 				}
 				if l.anchor == "" {
@@ -546,14 +560,20 @@ func (t *tree) historyDeletions(adopted AdoptedModule, read []target) (State, st
 		return Skip, "the audited root is not a git repository", nil
 	}
 	paths := filesOf(read)
-	args := []string{"-C", t.root, "log", "--format=%h %s", "--diff-filter=M", "--numstat"}
+	// Not --diff-filter=M, and not a pathspec of the files that survive. Under
+	// per-decision-files a record is a file, and deleting one outright removes
+	// every line in it — which is the case the check's own finding text calls
+	// "an entry edited away", and the one a modified-files filter cannot see.
+	// The pathspec is the role's directory where it has one, so a file that no
+	// longer exists is still covered.
+	args := []string{"-C", t.root, "log", "--format=%h %s", "--numstat"}
 	if commit, ok := t.resolves(adopted.EffectiveFrom); ok {
 		args = append(args, commit+"..HEAD")
 	} else {
 		args = append(args, "--since="+adopted.EffectiveFrom)
 	}
 	args = append(args, "--")
-	args = append(args, paths...)
+	args = append(args, historyPaths(t, read, paths)...)
 
 	out, err := exec.Command("git", args...).Output()
 	if err != nil {
@@ -579,6 +599,24 @@ func (t *tree) historyDeletions(adopted AdoptedModule, read []target) (State, st
 		return Finding, fmt.Sprintf("%d commit(s) removed lines: %s", len(commits), strings.Join(commits, "; ")), paths
 	}
 	return OK, "", paths
+}
+
+// historyPaths is what git is asked about. For a directory role that is the
+// directory itself, so a record deleted after effective_from is still in scope;
+// for a file role it is the file.
+func historyPaths(t *tree, read []target, files []string) []string {
+	var out []string
+	for _, tg := range read {
+		if tg.isDir && tg.rawPath != "" {
+			out = append(out, filepath.Join(t.root, filepath.FromSlash(strings.TrimSuffix(tg.rawPath, "/"))))
+			continue
+		}
+		out = append(out, tg.files...)
+	}
+	if len(out) == 0 {
+		return files
+	}
+	return out
 }
 
 func isCount(s string) bool {

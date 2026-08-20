@@ -8,19 +8,28 @@ import (
 	"time"
 )
 
-// catalogPath is a StrucGu checkout beside this repository, if there is one.
-// The unit tests below do not need it — they carry their own catalog — but a
-// run against the real modules is worth having when the checkout is there, and
-// is skipped rather than failed when it is not.
+// catalogPath is the StrucGu checkout these tests read: MUSTUR_STRUCGU if it is
+// set, and a checkout beside this repository otherwise. The command honours the
+// same variable, and a test that ignored it would be unrunnable exactly where
+// the documentation says to point it.
+//
+// The unit tests do not need it — they carry their own catalog — but the
+// conformance harness does, and a skip there is a hole in the evidence rather
+// than an absent nicety. So the skip says loudly what did not run: silence and
+// "did not look" are the same string here too.
 func catalogPath(t *testing.T) string {
 	t.Helper()
-	root, err := filepath.Abs("../..")
-	if err != nil {
-		t.Fatal(err)
+	path := os.Getenv("MUSTUR_STRUCGU")
+	if path == "" {
+		root, err := filepath.Abs("../..")
+		if err != nil {
+			t.Fatal(err)
+		}
+		path = filepath.Join(filepath.Dir(root), "StrucGu")
 	}
-	path := filepath.Join(filepath.Dir(root), "StrucGu")
 	if _, err := os.Stat(filepath.Join(path, "modules")); err != nil {
-		t.Skipf("no StrucGu catalog at %s", path)
+		t.Skipf("NO CONFORMANCE EVIDENCE IN THIS RUN: no StrucGu catalog at %s. "+
+			"Set MUSTUR_STRUCGU or clone DevOfPie/StrucGu beside this repository.", path)
 	}
 	return path
 }
