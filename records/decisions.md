@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-39 record(s), by identifier.
+43 record(s), by identifier.
 
 ## Index
 
@@ -51,6 +51,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0037](#mus-d-0037) | The database is the source, and the seed is history | 2026-08-20 |
 | [MUS-D-0038](#mus-d-0038) | The idea inbox is a routing target inside Mustur | 2026-08-20 |
 | [MUS-D-0039](#mus-d-0039) | A jot is filed without a decision | 2026-08-20 |
+| [MUS-D-0040](#mus-d-0040) | Records read as a document | 2026-08-20 |
+| [MUS-D-0041](#mus-d-0041) | The phone bar has four tabs | 2026-08-20 |
+| [MUS-D-0042](#mus-d-0042) | The routing guess is shown before filing | 2026-08-20 |
+| [MUS-D-0043](#mus-d-0043) | The audit is a page | 2026-08-20 |
 
 ---
 
@@ -620,3 +624,71 @@ The title is derived from the first line, the destination is guessed from the ro
 | --- | --- |
 | Rationale | [decisions.md#a-jot-is-filed-without-a-decision](../decisions.md#a-jot-is-filed-without-a-decision) |
 | Measured | ten filings on loopback, median 0.5 ms, worst 0.9 ms; the page is 4212 bytes |
+
+---
+
+## MUS-D-0040
+
+**Records read as a document**
+
+decision · 2026-08-20
+
+Decides: [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012)
+
+An identifier expands in place, with no round trip and no new tab. The counts are the only navigation. The cost: the citation structure is never the primary object, and a reader tracing why one entry corrects another walks it one expansion at a time.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#records-read-as-a-document](../decisions.md#records-read-as-a-document) |
+| Answered against | [the surfaces plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22) |
+
+---
+
+## MUS-D-0041
+
+**The phone bar has four tabs**
+
+decision · 2026-08-20
+
+Decides: [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012)
+
+Sessions, Decisions, Intake, Records, with Decisions carrying a count when anything is open. Against the recommendation of three: an open decision is work stopped, and a banner on another screen can be scrolled past. The cost is a tab that is empty most days.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-phone-bar-has-four-tabs](../decisions.md#the-phone-bar-has-four-tabs) |
+| Answered against | [the surfaces plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22) |
+
+---
+
+## MUS-D-0042
+
+**The routing guess is shown before filing**
+
+decision · 2026-08-20
+
+Decides: [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012)
+
+A chip carrying the destination, tappable to change. Safe because it is a default already filled in: ignoring it files what the shipped version would have filed.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-routing-guess-is-shown-before-filing](../decisions.md#the-routing-guess-is-shown-before-filing) |
+| Answered against | [the surfaces plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22) |
+
+---
+
+## MUS-D-0043
+
+**The audit is a page**
+
+decision · 2026-08-20
+
+Decides: [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012)
+
+The same run the command emits, rendered read-only. A waiver nobody sees is a check that silently stopped running, and nobody runs make audit on a phone.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-audit-is-a-page](../decisions.md#the-audit-is-a-page) |
+| Answered against | [the surfaces plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22) |

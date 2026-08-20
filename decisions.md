@@ -57,6 +57,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The record roles are mapped at the export](#the-record-roles-are-mapped-at-the-export) | Auditing the records Mustur owns, not the prose beside them |
 | [The store holds more than it did](#the-store-holds-more-than-it-did) | Corrects an enumeration the milestone overtook |
 | [The database is the source, and the seed is history](#the-database-is-the-source-and-the-seed-is-history) | What a write path costs the export's reproducibility |
+| [Records read as a document](#records-read-as-a-document) | An identifier expands in place |
+| [The phone bar has four tabs](#the-phone-bar-has-four-tabs) | Decisions gets one of its own |
+| [The routing guess is shown before filing](#the-routing-guess-is-shown-before-filing) | A default already filled in, not a question |
+| [The audit is a page](#the-audit-is-a-page) | A waiver nobody sees is a check that stopped |
 | [The idea inbox is a routing target inside Mustur](#the-idea-inbox-is-a-routing-target-inside-mustur) | The fallback destination cannot be another repository |
 | [A jot is filed without a decision](#a-jot-is-filed-without-a-decision) | The title is derived and the destination is guessed |
 
@@ -813,3 +817,63 @@ re-measured independently at 0.35 and 0.55. The page is 3,071 bytes empty and
 entry first gave was one reading of a transient page and could not be
 reproduced. None of it is the fifteen-second claim, which is about a phone off
 the home network and cannot be measured until the ingress exists.
+
+## 2026-08-20 — the surfaces plan's four questions, answered
+
+All four are the owner's, answered against
+[the published plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22)
+rather than in prose. Three matched the recommendation; one did not, and that
+one changed three artboards.
+
+### Records read as a document
+
+An identifier expands in place — no round trip to an agent, no new tab. The
+counts down the left are the only navigation.
+
+[docs/ui-surfaces.md](docs/ui-surfaces.md) called this unresolved and said it
+changes the whole surface, which was right: the alternative was a graph, with the
+citation structure as the primary object. Records here do cite each other
+densely enough for that to be tempting — thirty-nine decisions, several of which
+exist only to correct another.
+
+What the document reading costs is exactly that: the citation structure is never
+the primary object, and a reader tracing why one entry corrects another walks it
+one expansion at a time. What it buys is the original complaint, answered
+directly — a human meeting a bare identifier expands it in one action.
+
+### The phone bar has four tabs
+
+Sessions, Decisions, Intake, Records. Decisions carries a count when anything is
+open and nothing when it is not.
+
+Against the recommendation, which was three tabs with the decision queue reached
+from a banner on the session list. The owner's reasoning holds better than mine:
+an open decision is work stopped, and a banner on another screen is a thing that
+can be scrolled past. A fixed place the eye already knows to check is worth more
+than the quarter of a bar it occupies.
+
+The cost is real and stated: a tab that is empty most of the time. What it shows
+on those days is the one question the answer left open.
+
+### The routing guess is shown before filing
+
+As a chip carrying the destination, tappable to change.
+
+This is the closest thing to a contradiction in the intake surface, and it is
+worth naming rather than smoothing over: that surface exists to never ask for a
+decision at capture time, and a control offering a choice is a decision on the
+screen. What makes it safe is that the chip is a default already filled in —
+ignoring it files exactly what the shipped version would have filed, and tapping
+it is available only to somebody who already knows the answer.
+
+The alternative was leaving the guess recorded and invisible, which is what
+shipped. That defers every wrong route to a correction made later, from a
+different surface, by somebody who has to notice it first.
+
+### The audit is a page
+
+The same run the command emits, rendered read-only.
+
+A waiver nobody sees is a check that silently stopped running, and nobody runs
+`make audit` on a phone. The cost is one more surface to keep true around
+something that already works from a terminal.

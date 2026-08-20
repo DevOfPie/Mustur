@@ -64,9 +64,10 @@ Must answer: given a bare identifier on screen, how does a **human** expand it i
 one action, with no round trip to an agent? That is the original complaint and it
 is a reading surface before it is anything else.
 
-**Open question for design:** identifiers are dense and cross-referential — a
-finding cites decisions, a decision cites milestones. Whether that is a graph to
-navigate or a document to read is unresolved and it changes the whole surface.
+**Answered 2026-08-20: a document to read.** An identifier expands in place, and
+the citation structure is never the primary object. Identifiers here are dense
+and cross-referential, so the graph reading was real; what it cost is in
+[decisions.md](../decisions.md#records-read-as-a-document).
 
 ### 4. Decision queue
 
