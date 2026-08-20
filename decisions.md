@@ -48,6 +48,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The SQLite driver is pure Go](#the-sqlite-driver-is-pure-go) | cgo would end the static binary |
 | [What the mandate keeps from the fixture, and what it does not](#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not) | Three differences from what milestone 1 scored |
 | [Four of StrucGu's five roles are implemented, and the repository adopts five modules](#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules) | Corrects an entry the build overtook |
+| [A milestone is read by agents that did not build it](#a-milestone-is-read-by-agents-that-did-not-build-it) | Three lenses, spawned fresh, changing nothing |
 
 ---
 
@@ -513,3 +514,49 @@ stay, with a pointer" and "never edit an entry". A pointer added to the earlier
 entry would be an edit of it. The pointer therefore lives in the later entry,
 which is the only reading under which both rules hold. That ambiguity in the
 contract is queued rather than settled here.
+
+## 2026-08-20 — how a finished milestone is checked
+
+### A milestone is read by agents that did not build it
+
+Owner-set, after milestone 2 was built and reviewed by nobody but the agent that
+built it. Mechanical gates ran and passed; they check that links resolve and
+that a cache rebuilds. They check nothing about whether the design is right.
+
+The process is [LinkCtrl's](https://github.com/DevOfPie/LinkCtrl/blob/main/docs/build-notes/phase-loop.md),
+which spawns one reviewer per milestone and states the reason plainly: everyone
+already in the loop is looking at the milestone being built, and the defect that
+keeps costing that project a reopening is the other kind — a change that makes
+an already-shipped claim false, which nobody was looking at.
+
+Three differences from the original, all deliberate:
+
+1. **Three reviewers, not one.** LinkCtrl's milestones are increments and its
+   reviewer reads one diff. Milestones here are whole subsystems, and the three
+   asks — this milestone's done-when, the shipped claims, this file's own gates
+   — compete for attention inside one context. Split across three, none can be
+   traded against another.
+2. **A contract lens, which LinkCtrl has no need of.** Most of what this
+   repository can get wrong is prose: a capability in the present tense that
+   does not exist, a number nothing measured, a decision written out as an
+   argument instead of raised as a prompt. Those are gates in
+   [workflow.md](workflow.md) and no code reviewer reads them.
+3. **Findings are dispositioned in the pull request**, in public, as fixed,
+   deferred or disputed. LinkCtrl disposes of them at acceptance, which it has a
+   separate actor for; this repository does not, so the disposition has to be
+   visible instead.
+
+What is taken unchanged, because both are the whole point: the reviewer is given
+the milestone, the branch and the contract and **not** the builder's report — a
+reviewer handed the report reviews the report — and a reviewer that found
+nothing says so in those words, because silence and *did not look* are the same
+string.
+
+This entry sits below the corrections it produced, because entries are appended
+and never reordered. Its first run is
+[the one above](#2026-08-20--corrections-found-by-review): fifteen findings
+fixed, four deferred, one reopening taken to the owner, and one conflict in
+[workflow.md](workflow.md) reported rather than settled.
+
+The cost, accepted: three agents per milestone, and a milestone cannot be
+accepted while they are running.

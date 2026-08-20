@@ -28,7 +28,72 @@ before any estimate  → say what it is based on; estimates here run long
 before touching a
   file outside this
   repository         → DON'T. Onboarding is a milestone with its own verdict.
+before a milestone
+  is accepted        → the reviewers below have read it, and every finding is
+                       dispositioned in the open
 ```
+
+## After a milestone
+
+**A milestone is not done until agents that did not build it have read it.**
+Lifted from [LinkCtrl's phase loop](https://github.com/DevOfPie/LinkCtrl/blob/main/docs/build-notes/phase-loop.md),
+which spawns one reviewer per milestone for a failure the builder structurally
+cannot see. Owner-set 2026-08-20.
+
+```
+built, gates green  → spawn the reviewers, synchronously. Acceptance waits.
+reviewers report    → post the findings to the pull request, before any fix
+fixes committed     → a second comment saying what changed and what did not
+```
+
+### Who is spawned
+
+Three, fresh, in parallel, each independent of the others. One reviewer would
+weigh the three lenses against each other inside one context; three cannot.
+
+| Reviewer | Asks |
+| --- | --- |
+| **Done-when** | Does the tree satisfy every clause of this milestone's row in [Plan.md](Plan.md#milestones), read against the code rather than against anybody's account of it |
+| **Shipped claims** | Does anything in this diff make an already-true claim false — in Plan.md, README.md, CLAUDE.md, an entry in [decisions.md](decisions.md), [strucgu.yaml](strucgu.yaml), or a past investigation's recorded result |
+| **Contract** | Do the gates in this file hold over the diff: present tense, links, one topic per commit, other repositories untouched, no unmeasured number, decisions.md appended and never edited, and every decision raised as a prompt rather than as prose |
+
+The second is the one that earns the step. Both the builder and whoever accepts
+the work are looking at the milestone being built; the defect neither is looking
+at is the change that quietly falsifies something already shipped.
+
+### What they are given
+
+The milestone number, the branch, and this file. **Nothing else** — a reviewer
+handed the builder's report reviews the report.
+
+### What they return
+
+```
+always  → data, with file:line evidence for every finding
+never   → preamble, restatement of the task, closing summary
+nothing found → say so in those words
+```
+
+Silence and *did not look* are the same string, so a reviewer that found nothing
+says it.
+
+**A reviewer changes nothing.** No code, no tests, no records, no queue line. It
+reports; whoever is running the milestone acts.
+
+### What a finding is
+
+A finding is not a rejection. Each one is dispositioned in the open, in the pull
+request, as one of:
+
+| Disposition | Means |
+| --- | --- |
+| Fixed | In this milestone, in a commit that names the finding |
+| Deferred | A line in [queue.md](queue.md), with the reason it is not being fixed now |
+| Disputed | Argued down in the pull request, with the evidence that refutes it |
+
+A finding that falsifies a **shipped** milestone's claim is not any of those. It
+is a reopening, reopening is scheduling, and scheduling is the owner's — so it
+reaches them as a prompt.
 
 ## Triggers
 
