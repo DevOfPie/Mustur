@@ -1,0 +1,113 @@
+# A catalog written for this package's tests, not a real module. It exists so
+# every kind in the check vocabulary has one check exercising it against a tree
+# built in the test, with no dependency on a StrucGu checkout being present.
+schema: strucgu/module@1
+id: demo
+version: 0.1.0
+title: Demo
+summary: One check per kind.
+base: true
+requires: []
+
+roles:
+  - id: doc
+    cardinality: file
+    of: A single document.
+  - id: records
+    cardinality: dir
+    exclude: ['_*']
+    of: A directory of records.
+  - id: by_form_role
+    cardinality: by_form
+    cardinality_by_form:
+      one-file: file
+      many-files: dir
+    of: A role whose shape follows the adoption record's form.
+
+obligations:
+  - id: demo-obligation
+    title: Everything
+    purpose: Exercising the vocabulary.
+    required: true
+    roles: [doc]
+
+checks:
+  - id: D-01
+    obligation: demo-obligation
+    nature: behaviour
+    kind: path_exists
+    in: doc
+    finding: The document is not there.
+
+  - id: D-02
+    obligation: demo-obligation
+    nature: behaviour
+    kind: heading_present
+    in: doc
+    patterns:
+      - 'risk'
+    finding: No risks heading.
+
+  - id: D-03
+    obligation: demo-obligation
+    nature: declaration
+    kind: pattern_present
+    in: doc
+    patterns:
+      - 'append[ -]only'
+    finding: The document does not say it is append-only.
+
+  - id: D-04
+    obligation: demo-obligation
+    nature: behaviour
+    kind: pattern_absent
+    in: records
+    patterns:
+      - 'TODO|TBD'
+    finding: A record still carries placeholder text.
+
+  - id: D-05
+    obligation: demo-obligation
+    nature: behaviour
+    kind: links_resolve
+    in: [doc, records]
+    finding: A relative link or anchor does not resolve.
+
+  - id: D-06
+    obligation: demo-obligation
+    nature: behaviour
+    kind: role_referenced
+    in: records
+    to: doc
+    finding: The records do not link to the document.
+
+  - id: D-07
+    obligation: demo-obligation
+    nature: behaviour
+    kind: role_referenced
+    in: doc
+    to: extra_doc
+    finding: The document does not link to the extra document.
+
+  - id: D-08
+    obligation: demo-obligation
+    nature: behaviour
+    kind: history_deletions
+    in: doc
+    requires_effective_from: true
+    finding: Commits removed lines.
+
+  - id: D-09
+    obligation: demo-obligation
+    nature: behaviour
+    kind: path_exists
+    in: by_form_role
+    finding: The by-form role is not there.
+
+judgment:
+  - id: demo.needs-a-person
+    obligation: demo-obligation
+    question: Is any of this any good?
+    read: [doc]
+    evidence: Quote it.
+    do_not_report: Taste.
