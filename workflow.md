@@ -128,6 +128,30 @@ Reporting mid-run costs nothing: say what landed, then start the next milestone
 in the same turn. Ending a turn on a summary when no row above has fired is the
 failure this table exists to name.
 
+## Pull requests are stacked
+
+**One topic per pull request, each based on the one before it.**
+
+```
+main ← stack/1-… ← stack/2-… ← stack/3-…
+```
+
+Each branch is cut from its predecessor and its pull request targets that
+predecessor, not `main`. A finding fixed in the base then reaches every branch
+above it by a rebase, instead of being found and fixed again in each — which is
+the whole reason, and the reason a stack is worth the bookkeeping only when the
+pieces genuinely build on each other.
+
+| Rule | |
+| --- | --- |
+| Merge bottom-up | A branch cannot merge before the one it is based on |
+| Re-target on merge | When a base merges, the pull request above it points at a branch that no longer exists. GitHub re-points it at the base's base; check that it did |
+| Rebase, never merge back down | `git rebase --onto` keeps the stack linear. A merge commit from the base into a branch above it makes the next rebase unreadable |
+| One topic still means one topic | A stack is not permission to make each piece bigger |
+
+A milestone that does not decompose is one pull request, and saying so is not a
+failure to stack.
+
 ## Triggers
 
 ### A decision needs the owner

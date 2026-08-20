@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task.
 
-6 record(s), by identifier.
+7 record(s), by identifier.
 
 ---
 
@@ -97,3 +97,18 @@ make check needs Go once milestone 2 lands, and the Makefile cannot pin a toolch
 | --- | --- |
 | Noticed by | whippy |
 | Status | resolved 2026-08-20: the proposal was applied |
+
+---
+
+## MUS-F-0007
+
+**There is no way to add a record except by editing the bootstrap**
+
+finding · 2026-08-20
+
+Every decision taken since milestone 2 has reached the store by being added to the seed and re-exported from a scratch database. The seed refuses a store that already holds records, so the live store cannot take them at all: a bootstrap is being used as an import, which is exactly what it was built to refuse.
+
+| Field | Value |
+| --- | --- |
+| Noticed by | whippy |
+| Status | unreviewed |

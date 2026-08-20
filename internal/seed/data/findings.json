@@ -106,5 +106,22 @@
         "value": "resolved 2026-08-20: the proposal was applied"
       }
     ]
+  },
+  {
+    "id": "MUS-F-0007",
+    "kind": "finding",
+    "at": "2026-08-20",
+    "title": "There is no way to add a record except by editing the bootstrap",
+    "body": "Every decision taken since milestone 2 has reached the store by being added to the seed and re-exported from a scratch database. The seed refuses a store that already holds records, so the live store cannot take them at all: a bootstrap is being used as an import, which is exactly what it was built to refuse.",
+    "data": [
+      {
+        "key": "Noticed by",
+        "value": "whippy"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
   }
 ]

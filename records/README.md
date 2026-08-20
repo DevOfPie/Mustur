@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 30 | [decisions.md](decisions.md) |
-| finding | 6 | [findings.md](findings.md) |
+| decision | 31 | [decisions.md](decisions.md) |
+| finding | 7 | [findings.md](findings.md) |
 | investigation | 1 | [investigations.md](investigations.md) |
 | repository, machine, project | 3 | [routing.md](routing.md) |
 | work-unit | 6 | [work-units/index.md](work-units/index.md) |
@@ -64,12 +64,14 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0028](decisions.md#mus-d-0028) | decision | Four of StrucGu's five roles are implemented, and the repository adopts five modules |
 | [MUS-D-0029](decisions.md#mus-d-0029) | decision | A milestone is read by agents that did not build it |
 | [MUS-D-0030](decisions.md#mus-d-0030) | decision | Stopping takes a reason from a table |
+| [MUS-D-0031](decisions.md#mus-d-0031) | decision | Pull requests are stacked |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
 | [MUS-F-0004](findings.md#mus-f-0004) | finding | The export and this repository's contract files hold the same records twice |
 | [MUS-F-0005](findings.md#mus-f-0005) | finding | A seeded record's summary can drift from the prose it links to |
 | [MUS-F-0006](findings.md#mus-f-0006) | finding | The Go toolchain CI uses is whatever the runner image carries |
+| [MUS-F-0007](findings.md#mus-f-0007) | finding | There is no way to add a record except by editing the bootstrap |
 | [MUS-I-0001](investigations.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |

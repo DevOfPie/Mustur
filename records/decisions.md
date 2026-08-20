@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: a later entry corrects an earlier one and the earlier text stays.
 
-30 record(s), by identifier.
+31 record(s), by identifier.
 
 ---
 
@@ -431,3 +431,19 @@ A milestone accepted is one iteration. The default is to start the next one in t
 | --- | --- |
 | Rationale | [decisions.md#stopping-takes-a-reason-from-a-table](../decisions.md#stopping-takes-a-reason-from-a-table) |
 | Lifted from | LinkCtrl's phase loop, plus two rows of this repository's own |
+
+---
+
+## MUS-D-0031
+
+**Pull requests are stacked**
+
+decision · 2026-08-20
+
+Costs: [MUS-D-0029](#mus-d-0029)
+
+Each branch is cut from the one before it and its pull request targets that predecessor rather than main, so a finding fixed in the base reaches everything above it by a rebase instead of being fixed once per branch. A milestone that does not decompose ships as one pull request.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#pull-requests-are-stacked](../decisions.md#pull-requests-are-stacked) |

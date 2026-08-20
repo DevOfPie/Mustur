@@ -28,3 +28,4 @@ Append at the bottom, always.
 - 2026-08-20 (whippy) — no automated check detects records/ drifting from the store, because the committed gate runs `mustur verify` without a store and CI has none to compare against; needs a design, not a line
 - 2026-08-20 (whippy) — ci/proposed/README.md says a new check needs the owner: No, and reaches the next push; milestone 2's checks needed a workflow change the token cannot push, so that claim is falsified and the file is where the fix belongs
 - 2026-08-20 (whippy) — should Mustur hold a triage rule as a record at all? Four of StrucGu's five roles are record kinds and triage-rule describes a document; nobody has asked for the fifth
+- 2026-08-20 (whippy) — the store has no way to add a record after the seed, so every decision since milestone 2 has gone in by editing the seed and re-exporting from a scratch database; the live store cannot take them at all, and the seed refusing a non-empty store is what makes that true

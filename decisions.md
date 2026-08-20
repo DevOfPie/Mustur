@@ -50,6 +50,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Four of StrucGu's five roles are implemented, and the repository adopts five modules](#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules) | Corrects an entry the build overtook |
 | [A milestone is read by agents that did not build it](#a-milestone-is-read-by-agents-that-did-not-build-it) | Three lenses, spawned fresh, changing nothing |
 | [Stopping takes a reason from a table](#stopping-takes-a-reason-from-a-table) | The default after a milestone is the next milestone |
+| [Pull requests are stacked](#pull-requests-are-stacked) | A fix in the base reaches everything above it |
 
 ---
 
@@ -585,3 +586,19 @@ scheduling and scheduling is the owner's. Red CI stops it, because the next
 milestone would otherwise be built on a build nobody has looked at — LinkCtrl
 learned that one from nine days of red CI that every local gate reported green
 through.
+
+### Pull requests are stacked
+
+Owner-set 2026-08-20. Each branch is cut from the one before it and its pull
+request targets that predecessor rather than `main`.
+
+The reason is the cost of the review step this repository just adopted. Three
+reviewers per milestone produce findings against a base; if the pieces above it
+are independent branches, the same finding is found and fixed once per branch.
+Stacked, a fix in the base reaches everything above it by a rebase.
+
+What it costs: a stack merges bottom-up, so a base held up holds up everything
+above it, and every branch above a merged base has to be re-pointed and rebased.
+That bookkeeping is only worth paying when the pieces genuinely build on each
+other — a milestone that does not decompose ships as one pull request, and
+saying so is the right answer rather than a failure to stack.

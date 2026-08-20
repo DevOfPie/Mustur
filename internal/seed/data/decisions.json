@@ -408,5 +408,24 @@
         "value": "LinkCtrl's phase loop, plus two rows of this repository's own"
       }
     ]
+  },
+  {
+    "id": "MUS-D-0031",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "Pull requests are stacked",
+    "body": "Each branch is cut from the one before it and its pull request targets that predecessor rather than main, so a finding fixed in the base reaches everything above it by a rebase instead of being fixed once per branch. A milestone that does not decompose ships as one pull request.",
+    "refs": [
+      {
+        "key": "Costs",
+        "value": "MUS-D-0029"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#pull-requests-are-stacked](../decisions.md#pull-requests-are-stacked)"
+      }
+    ]
   }
 ]
