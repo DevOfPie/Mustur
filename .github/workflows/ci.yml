@@ -7,8 +7,12 @@
 # That split is the whole point of the file, and ci/proposed/README.md is where
 # it is argued.
 #
-# Shaped after LinkCtrl's ci.yml, cut to what exists here: no Go, no services,
-# no image. Those jobs arrive as new proposals when milestone 2 brings code.
+# Shaped after LinkCtrl's ci.yml. Milestone 2 brought Go, so `make check` now
+# runs `go build`, `go vet` and `go test` alongside the contract checks, and
+# this proposal adds the one thing the Makefile cannot: a pinned toolchain on
+# the runner. The version comes from go.mod rather than a literal here, so
+# raising it is a change to the module and not to a file the owner has to
+# re-apply.
 
 name: CI
 
@@ -34,8 +38,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
       # Links and anchors resolve, table rows match their headers, the adoption
-      # record is checkable, shell scripts pass shellcheck. Adding a check means
-      # editing the Makefile, not this file.
+      # record is checkable, shell scripts pass shellcheck, the Go tree builds
+      # and its tests pass, and the committed export cites only identifiers it
+      # defines. Adding a check means editing the Makefile, not this file.
       - name: Contract checks
         run: make check
