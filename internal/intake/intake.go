@@ -216,18 +216,29 @@ func File(ctx context.Context, s *store.Store, project, text, actor string, now 
 	if trimmed == "" {
 		return record.Record{}, Destination{}, fmt.Errorf("nothing to file")
 	}
+	if existing, err := recentlyFiled(ctx, s, trimmed, actor, now); err != nil {
+		return record.Record{}, Destination{}, err
+	} else if existing != nil {
+		// A retry of the same POST, which is what a phone on a flaky
+		// connection actually sends. Post-redirect-get protects a reload after
+		// the redirect and nothing at all before it, so the same jot arrived
+		// three times and became three records.
+		//
+		// The cost is that two genuinely identical jots inside the window
+		// collapse into one. For a capture box that is the right side to err
+		// on: a duplicate the owner has to notice and delete is worse than a
+		// second copy of a thought they already had.
+		to := Destination{Name: fieldOr(*existing, "Routed to", "nowhere"), Why: fieldOr(*existing, "Routing", "")}
+		return *existing, to, nil
+	}
+
 	routing, err := routingRecords(ctx, s)
 	if err != nil {
 		return record.Record{}, Destination{}, err
 	}
 	to := Route(trimmed, routing)
 
-	id, err := s.NextID(ctx, project, ident.Finding)
-	if err != nil {
-		return record.Record{}, Destination{}, err
-	}
 	r := record.Record{
-		ID:    id,
 		Kind:  "finding",
 		Title: Title(trimmed),
 		At:    now.Format("2006-01-02"),
@@ -243,10 +254,36 @@ func File(ctx context.Context, s *store.Store, project, text, actor string, now 
 	if to.ID != "" {
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}
 	}
-	if err := s.Append(ctx, r, "create", actor); err != nil {
+	written, err := s.Create(ctx, r, project, ident.Finding, actor)
+	if err != nil {
 		return record.Record{}, Destination{}, err
 	}
-	return r, to, nil
+	return written, to, nil
+}
+
+// Window is how long a repeat of the same text from the same filer is treated
+// as a retry rather than a second jot.
+const Window = time.Minute
+
+func recentlyFiled(ctx context.Context, s *store.Store, text, actor string, now time.Time) (*record.Record, error) {
+	recent, err := s.Since(ctx, "finding", now.Add(-Window))
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range recent {
+		if r.Body == text && fieldOr(r, "Filed by", "") == actor {
+			match := r
+			return &match, nil
+		}
+	}
+	return nil, nil
+}
+
+func fieldOr(r record.Record, key, fallback string) string {
+	if v, ok := r.Get(key); ok {
+		return v
+	}
+	return fallback
 }
 
 func routedTo(d Destination) string {

@@ -46,7 +46,11 @@ func (in *Intake) Handler() http.Handler {
 	return mux
 }
 
+// MaxJot is the largest body the capture path accepts.
+const MaxJot = 64 << 10
+
 type page struct {
+	Jot     string // What was typed, when it has to come back.
 	Filed   string
 	Routed  string
 	Why     string
@@ -86,6 +90,10 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
+	// A capture box on the public side of an ingress is the obvious place to
+	// post a gigabyte at. The limit is generous for a jot and finite, which is
+	// the whole requirement.
+	r.Body = http.MaxBytesReader(w, r.Body, MaxJot)
 	if err := r.ParseForm(); err != nil {
 		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project})
 		return
@@ -93,10 +101,12 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	text := r.PostFormValue("jot")
 	rec, to, err := intake.File(r.Context(), in.Store, in.Project, text, in.actor(r), in.now())
 	if err != nil {
-		// Rendered rather than redirected: what was typed is still in the
-		// request, and losing it because the store complained would be the one
-		// failure this surface cannot have.
-		render(w, page{Error: err.Error(), Project: in.Project})
+		// Rendered rather than redirected, and carrying the text back with it.
+		// The comment here used to say that losing what was typed is the one
+		// failure this surface cannot have, above code that dropped it: the
+		// page had no field for it and the textarea came back empty. On a
+		// phone that is a thumb-typed paragraph gone.
+		render(w, page{Error: err.Error(), Project: in.Project, Jot: text})
 		return
 	}
 	q := fmt.Sprintf("/intake?filed=%s&routed=%s&why=%s",
@@ -179,7 +189,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
 <form method="post" action="/intake">
-  <textarea name="jot" autofocus placeholder="A line. Nothing to decide."></textarea>
+  <textarea name="jot" autofocus placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
   <button type="submit">File it</button>
 </form>
 {{if .Recent}}<ul>

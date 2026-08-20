@@ -184,3 +184,93 @@ func get(t *testing.T, url string) string {
 	}
 	return string(body)
 }
+
+// A retry of the POST is what a phone on a flaky connection actually sends.
+// Post-redirect-get protects a reload after the 303 and nothing before it, so
+// three identical posts became three records.
+func TestARetriedPostDoesNotFileTwice(t *testing.T) {
+	srv, s := serve(t)
+	for i := 0; i < 3; i++ {
+		res, err := http.PostForm(srv.URL+"/intake", url.Values{"jot": {"the same thought, sent three times"}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+	}
+	findings, err := s.List(context.Background(), "finding")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(findings) != 1 {
+		t.Fatalf("%d records for one jot sent three times", len(findings))
+	}
+}
+
+// Two different jots inside the window are two jots. The dedup is on the text,
+// not on the minute.
+func TestDifferentJotsInTheWindowAreBothFiled(t *testing.T) {
+	srv, s := serve(t)
+	for _, jot := range []string{"first thought", "second thought"} {
+		res, err := http.PostForm(srv.URL+"/intake", url.Values{"jot": {jot}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+	}
+	findings, err := s.List(context.Background(), "finding")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(findings) != 2 {
+		t.Fatalf("%d records for two different jots", len(findings))
+	}
+}
+
+// What was typed comes back on the error path. Losing it is the one failure
+// this surface cannot have, and the comment saying so used to sit above code
+// that dropped it — the page had no field for the text at all.
+func TestTheBoxComesBackHoldingWhatWasTyped(t *testing.T) {
+	var b strings.Builder
+	const typed = "a long thumb-typed paragraph that must not vanish"
+	if err := tmpl.Execute(&b, page{Error: "the store said no", Jot: typed, Project: "MUS"}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(b.String(), typed) {
+		t.Fatalf("the textarea came back empty:\n%s", b.String())
+	}
+	if !strings.Contains(b.String(), "the store said no") {
+		t.Error("the page does not say why it was refused")
+	}
+}
+
+func TestAnEmptyJotSaysSo(t *testing.T) {
+	srv, _ := serve(t)
+	res, err := http.PostForm(srv.URL+"/intake", url.Values{"jot": {"  \n  "}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), "Not filed") {
+		t.Errorf("the page does not say it was refused:\n%s", body)
+	}
+}
+
+func TestAnOversizedJotIsRefusedRatherThanStored(t *testing.T) {
+	srv, s := serve(t)
+	res, err := http.PostForm(srv.URL+"/intake", url.Values{"jot": {strings.Repeat("x", MaxJot+1024)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	findings, err := s.List(context.Background(), "finding")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(findings) != 0 {
+		t.Fatalf("an oversized jot was stored: %d record(s)", len(findings))
+	}
+}

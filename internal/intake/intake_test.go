@@ -11,13 +11,38 @@ import (
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
+// routing is the registry as the store actually holds it, not a convenient
+// subset of it. An earlier version of this fixture modelled the second
+// "Mustur"-titled record as a decision, which the router filters out — so the
+// one record that makes the real registry ambiguous was the one record the
+// test left out, and the suite was green while no jot naming this repository
+// could route to it.
 func routing() []record.Record {
 	return []record.Record{
 		{ID: "MUS-R-0001", Kind: "repository", Title: "DevOfPie/Mustur", At: "2026-08-20"},
 		{ID: "MUS-H-0001", Kind: "machine", Title: "whippy-vm", At: "2026-08-20"},
+		{ID: "MUS-P-0001", Kind: "project", Title: "Mustur", At: "2026-08-20",
+			Data: []record.Field{{Key: "Repositories", Value: "MUS-R-0001"}, {Key: "Machines", Value: "MUS-H-0001"}}},
 		{ID: "MUS-P-0002", Kind: "project", Title: "Idea inbox", At: "2026-08-20",
 			Data: []record.Field{{Key: DefaultField, Value: DefaultValue}}},
 		{ID: "MUS-D-0001", Kind: "decision", Title: "Mustur", At: "2026-08-20"},
+	}
+}
+
+// The jot a reader would expect to work, against the registry as it is: the
+// project and the repository inside it both answer to "Mustur", and the
+// narrower one wins. Without this the only reachable destination in the whole
+// registry was the machine.
+func TestNamingThisRepositoryRoutesToIt(t *testing.T) {
+	for _, jot := range []string{
+		"Mustur should log slow queries",
+		"DevOfPie/Mustur should log slow queries",
+		"the mustur audit should report waivers",
+	} {
+		got := Route(jot, routing())
+		if got.ID != "MUS-R-0001" {
+			t.Errorf("%q routed to %s (%s)", jot, got.ID, got.Why)
+		}
 	}
 }
 
