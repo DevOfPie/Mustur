@@ -20,6 +20,12 @@ func (r *Report) Text(w io.Writer) error {
 	var b strings.Builder
 	fmt.Fprintf(&b, "audit of %s\n", r.Root)
 	fmt.Fprintf(&b, "against %s\n\n", r.Catalog)
+	for _, n := range r.Notices {
+		fmt.Fprintf(&b, "notice: %s\n", n)
+	}
+	if len(r.Notices) > 0 {
+		b.WriteString("\n")
+	}
 	for _, mod := range r.modules() {
 		fmt.Fprintf(&b, "== %s ==\n", mod)
 		for _, res := range r.of(mod) {
@@ -46,6 +52,16 @@ func (r *Report) Markdown(w io.Writer) error {
 	b.WriteString("| | |\n| --- | --- |\n")
 	fmt.Fprintf(&b, "| Audited | `%s` |\n", r.Root)
 	fmt.Fprintf(&b, "| Against | `%s` |\n", r.Catalog)
+	if len(r.Notices) > 0 {
+		// Drift is about the catalog, not the tree, so it is not a finding and
+		// does not appear in the counts. It still has to be seen: pull-only
+		// propagation means this line is the only thing that will ever tell an
+		// adopter a module moved.
+		b.WriteString("\n## Notices\n\n")
+		for _, n := range r.Notices {
+			fmt.Fprintf(&b, "- %s\n", n)
+		}
+	}
 	b.WriteString("\n## Summary\n\n| State | Count | Means |\n| --- | --- | --- |\n")
 	for _, s := range States {
 		fmt.Fprintf(&b, "| `%s` | %d | %s |\n", s, r.Counts[s], meanings[s])

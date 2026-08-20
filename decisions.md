@@ -51,6 +51,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A milestone is read by agents that did not build it](#a-milestone-is-read-by-agents-that-did-not-build-it) | Three lenses, spawned fresh, changing nothing |
 | [Stopping takes a reason from a table](#stopping-takes-a-reason-from-a-table) | The default after a milestone is the next milestone |
 | [Pull requests are stacked](#pull-requests-are-stacked) | A fix in the base reaches everything above it |
+| [The audit is not a gate until someone asks](#the-audit-is-not-a-gate-until-someone-asks) | How a gate dies |
 
 ---
 
@@ -602,3 +603,23 @@ above it, and every branch above a merged base has to be re-pointed and rebased.
 That bookkeeping is only worth paying when the pieces genuinely build on each
 other — a milestone that does not decompose ships as one pull request, and
 saying so is the right answer rather than a failure to stack.
+
+## 2026-08-20 — decisions taken while building milestone 2b
+
+### The audit is not a gate until someone asks
+
+Exit zero whenever the audit ran, non-zero only when it could not. Findings are
+output, and `--gate` is how a consumer asks for them to be failure.
+
+StrucGu's argument, adopted whole: a check that fails on day one in a repository
+with required status checks is made non-required within the hour, and then
+nobody looks at it again. A dead gate is worse than no gate because it looks
+like coverage.
+
+This repository's first run has four findings — three are `queue.md`'s shape,
+already recorded as a finding, and one is a commit that removed lines from this
+file. Gating on day one would have meant either fixing those under time pressure
+or turning the audit off, and both are worse than reading them.
+
+Where the audit *runs* is a separate question, and it is the owner's rather
+than this entry's. A later entry records it.

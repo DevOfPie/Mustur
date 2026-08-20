@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: a later entry corrects an earlier one and the earlier text stays.
 
-31 record(s), by identifier.
+32 record(s), by identifier.
 
 ---
 
@@ -447,3 +447,19 @@ Each branch is cut from the one before it and its pull request targets that pred
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#pull-requests-are-stacked](../decisions.md#pull-requests-are-stacked) |
+
+---
+
+## MUS-D-0032
+
+**The audit is not a gate until someone asks**
+
+decision · 2026-08-20
+
+Costs: [MUS-F-0001](findings.md#mus-f-0001)
+
+Exit status is zero whenever the audit ran; findings are output. StrucGu's argument, adopted: a check that fails on day one in a repository with required status checks is made non-required within the hour, and a dead gate is worse than no gate because it looks like coverage.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-audit-is-not-a-gate-until-someone-asks](../decisions.md#the-audit-is-not-a-gate-until-someone-asks) |

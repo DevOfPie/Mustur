@@ -95,3 +95,25 @@ func TestFindingsAreCountedButAreNotTheExitStatus(t *testing.T) {
 		t.Errorf("summary does not name findings: %s", rep.Summary())
 	}
 }
+
+// Drift is not a finding and not a count, so nothing else in the report would
+// carry it. Pull-only propagation makes this line the only thing that will ever
+// tell an adopter a module moved.
+func TestNoticesReachBothForms(t *testing.T) {
+	files := satisfying()
+	files["strucgu.yaml"] = adoption(strings.Replace(demoAdopted, `version: "0.1.0"`, `version: "0.0.1"`, 1))
+	rep := run(t, build(t, files))
+	var text, markdown strings.Builder
+	if err := rep.Text(&text); err != nil {
+		t.Fatal(err)
+	}
+	if err := rep.Markdown(&markdown); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(text.String(), "notice:") {
+		t.Error("the text form drops version drift")
+	}
+	if !strings.Contains(markdown.String(), "## Notices") {
+		t.Error("the markdown form drops version drift")
+	}
+}

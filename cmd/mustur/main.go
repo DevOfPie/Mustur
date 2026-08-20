@@ -44,8 +44,7 @@ checkout beside the audited tree. --format markdown renders the record form.
 --gate exits non-zero on findings, and is off by default, deliberately.
 `
 
-// version is the binary's own version. Milestone 2's shape, nothing served to
-// a session yet.
+// version is the binary's own version.
 const version = "0.1.0"
 
 func main() {
@@ -92,9 +91,13 @@ func run(argv []string) error {
 
 // defaultCatalog is where the modules are read from. StrucGu is a separate
 // repository and nothing vendors it here: a pinned copy of somebody else's
-// specification goes stale silently, and the adoption record already names
-// exact versions, so the audit refuses to run against a catalog that does not
-// hold the version adopted rather than guessing.
+// specification goes stale silently.
+//
+// A catalog holding a version other than the one pinned is not refused — the
+// checker evaluates the module as it reads it, and the mismatch comes back as
+// a notice pointing at that module's changelog. An earlier draft of this
+// comment said the opposite, describing a refusal that two commits earlier had
+// been removed for being the wrong reading of the rule.
 func defaultCatalog(root string) string {
 	if p := os.Getenv("MUSTUR_STRUCGU"); p != "" {
 		return p

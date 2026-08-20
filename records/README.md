@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 31 | [decisions.md](decisions.md) |
+| decision | 32 | [decisions.md](decisions.md) |
 | finding | 7 | [findings.md](findings.md) |
 | investigation | 1 | [investigations.md](investigations.md) |
 | repository, machine, project | 3 | [routing.md](routing.md) |
@@ -65,6 +65,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0029](decisions.md#mus-d-0029) | decision | A milestone is read by agents that did not build it |
 | [MUS-D-0030](decisions.md#mus-d-0030) | decision | Stopping takes a reason from a table |
 | [MUS-D-0031](decisions.md#mus-d-0031) | decision | Pull requests are stacked |
+| [MUS-D-0032](decisions.md#mus-d-0032) | decision | The audit is not a gate until someone asks |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

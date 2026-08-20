@@ -427,5 +427,24 @@
         "value": "[decisions.md#pull-requests-are-stacked](../decisions.md#pull-requests-are-stacked)"
       }
     ]
+  },
+  {
+    "id": "MUS-D-0032",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "The audit is not a gate until someone asks",
+    "body": "Exit status is zero whenever the audit ran; findings are output. StrucGu's argument, adopted: a check that fails on day one in a repository with required status checks is made non-required within the hour, and a dead gate is worse than no gate because it looks like coverage.",
+    "refs": [
+      {
+        "key": "Costs",
+        "value": "MUS-F-0001"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-audit-is-not-a-gate-until-someone-asks](../decisions.md#the-audit-is-not-a-gate-until-someone-asks)"
+      }
+    ]
   }
 ]
