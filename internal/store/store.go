@@ -213,8 +213,21 @@ func (s *Store) Rebuild(ctx context.Context) error {
 // scheme that filled gaps would make an identifier written in a report today
 // point at a different record next year.
 func (s *Store) NextID(ctx context.Context, project string, role ident.Role) (string, error) {
+	return nextID(ctx, s.db, project, role)
+}
+
+// querier is what both a database and a transaction can do. Allocation and
+// insertion have to be able to run inside one transaction, and outside one for
+// a plain read.
+type querier interface {
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+
+func nextID(ctx context.Context, q querier, project string, role ident.Role) (string, error) {
 	prefix := fmt.Sprintf("%s-%s-", project, role)
-	rows, err := s.db.QueryContext(ctx,
+	rows, err := q.QueryContext(ctx,
 		`SELECT DISTINCT record_id FROM record_event WHERE record_id LIKE ? ORDER BY record_id`, prefix+"%")
 	if err != nil {
 		return "", fmt.Errorf("find the highest %s serial: %w", prefix, err)
@@ -238,4 +251,51 @@ func (s *Store) NextID(ctx context.Context, project string, role ident.Role) (st
 		return "", err
 	}
 	return ident.ID{Project: project, Role: role, Serial: highest + 1}.String(), nil
+}
+
+// Create allocates an identifier and writes the record under it, in one
+// transaction.
+//
+// Not two calls. Allocating and inserting separately lets two writers read the
+// same highest serial and both claim it: one insert wins, the other is refused
+// or — worse, before this — silently overwrote the first in the materialized
+// latest while both callers were told their record was filed. Demonstrated with
+// twelve concurrent filings, two of which were issued the same identifier and
+// one of which then existed nowhere a reader would look.
+//
+// The transaction is what makes the read and the write one act. Nothing else
+// here can restore a jot that was accepted and lost.
+func (s *Store) Create(ctx context.Context, r record.Record, project string, role ident.Role, actor string) (record.Record, error) {
+	if actor == "" {
+		return record.Record{}, fmt.Errorf("no actor")
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return record.Record{}, err
+	}
+	defer tx.Rollback()
+
+	id, err := nextID(ctx, tx, project, role)
+	if err != nil {
+		return record.Record{}, err
+	}
+	r.ID = id
+	if err := r.Validate(); err != nil {
+		return record.Record{}, err
+	}
+	payload, err := r.MarshalPayload()
+	if err != nil {
+		return record.Record{}, fmt.Errorf("record %s: %w", r.ID, err)
+	}
+	_, err = tx.ExecContext(ctx,
+		`INSERT INTO record_event (record_id, kind, op, at, actor, payload, written_at)
+		 VALUES (?, ?, 'create', ?, ?, ?, ?)`,
+		r.ID, r.Kind, r.At, actor, string(payload), s.now().UTC().Format(time.RFC3339))
+	if err != nil {
+		return record.Record{}, fmt.Errorf("create %s: %w", r.ID, err)
+	}
+	if err := tx.Commit(); err != nil {
+		return record.Record{}, err
+	}
+	return r, nil
 }

@@ -178,9 +178,14 @@ func cmdWrite(args []string, op string) error {
 			return fmt.Errorf("%q is not a record kind: %s", positional, strings.Join(kindNames(), ", "))
 		}
 		r.Kind = positional
-		if r.ID, err = s.NextID(ctx, *project, role); err != nil {
+		// Allocation and insertion in one act. Two calls let two writers claim
+		// the same serial, and the loser's record was told it was filed.
+		written, err := s.Create(ctx, r, *project, role, *actor)
+		if err != nil {
 			return err
 		}
+		fmt.Println(written.ID)
+		return nil
 	case "amend":
 		existing, err := s.Get(ctx, positional)
 		if err != nil {
