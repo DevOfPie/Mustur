@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task.
 
-3 record(s), by identifier.
+6 record(s), by identifier.
 
 ---
 
@@ -50,3 +50,50 @@ Anthropic's paused metering change, support article 15036540, would move headles
 | --- | --- |
 | Noticed by | whippy |
 | Status | unreviewed |
+
+---
+
+## MUS-F-0004
+
+**The export and this repository's contract files hold the same records twice**
+
+finding · 2026-08-19
+
+records/ now carries the same decisions and findings as decisions.md and queue.md, one addressable and one prose. Milestone 2b should decide whether this repository's own StrucGu roles move to the export or stay on the files a person edits.
+
+| Field | Value |
+| --- | --- |
+| Noticed by | whippy |
+| Status | unreviewed |
+
+---
+
+## MUS-F-0005
+
+**A seeded record's summary can drift from the prose it links to**
+
+finding · 2026-08-19
+
+Each seeded record carries one line summarising a rationale that lives in a contract file. Nothing compares the two, so an edit to the prose leaves the summary standing. A check is cheap and nobody has asked for one.
+
+| Field | Value |
+| --- | --- |
+| Noticed by | whippy |
+| Status | unreviewed |
+
+---
+
+## MUS-F-0006
+
+**The Go toolchain CI uses is whatever the runner image carries**
+
+finding · 2026-08-19
+
+Discharged by: [MUS-W-0004](work-units/MUS-W-0004.md#mus-w-0004)
+
+make check needs Go once milestone 2 lands, and the Makefile cannot pin a toolchain. ci/proposed/ci.yml is what pins it; until the owner applies that proposal the version is the image's.
+
+| Field | Value |
+| --- | --- |
+| Noticed by | whippy |
+| Status | resolved 2026-08-20: the proposal was applied |

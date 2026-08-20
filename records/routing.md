@@ -19,7 +19,7 @@ Mustur's own checkout. The only repository in this registry: a routing row for a
 | Field | Value |
 | --- | --- |
 | Remote | https://github.com/DevOfPie/Mustur |
-| Checkout | /home/whippy/repos/DevOfPie/Mustur |
+| Checkout on MUS-H-0001 | ~/repos/DevOfPie/Mustur |
 | Machine | MUS-H-0001 |
 | Contract | workflow.md |
 | Dispatch kinds | milestone |

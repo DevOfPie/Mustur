@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: a later entry corrects an earlier one and the earlier text stays.
 
-27 record(s), by identifier.
+28 record(s), by identifier.
 
 ---
 
@@ -374,12 +374,28 @@ modernc.org/sqlite rather than the cgo binding, because the static single binary
 
 ## MUS-D-0027
 
-**The mandate is the wording the disproof measured**
+**What the mandate keeps from the fixture, and what it does not**
 
 decision · 2026-08-19
 
-The tool keeps the name and arguments the milestone 1 stub carried, and the clause in the context file is the fixture's wording, extended only by what to do when the tool is absent.
+The tool keeps the name and arguments the milestone 1 stub carried, and the clause in the context file is the fixture's wording. Three things differ and the entry names all three: two optional arguments, a sentence for when the tool is absent, and the transport — the fixture was stdio, where the tool is always there.
 
 | Field | Value |
 | --- | --- |
-| Rationale | [decisions.md#the-mandate-is-the-wording-the-disproof-measured](../decisions.md#the-mandate-is-the-wording-the-disproof-measured) |
+| Rationale | [decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not](../decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not) |
+
+---
+
+## MUS-D-0028
+
+**Four of StrucGu's five roles are implemented, and the repository adopts five modules**
+
+decision · 2026-08-20
+
+Corrects: [MUS-D-0009](#mus-d-0009)
+
+Corrects MUS-D-0009. The product implements four module roles as record kinds; triage-rule describes a document rather than records and has none. The repository itself adopts five modules, work-units among them since milestone 2.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules](../decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules) |

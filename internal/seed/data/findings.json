@@ -6,8 +6,14 @@
     "at": "2026-08-19",
     "body": "queue.md is a jot log with no evidence or review column, and the repository declares the findings-queue module against it. Reshaping it into the specified table and keeping the jot log are both defensible; the choice is owed before the audit at milestone 2b reports it.",
     "data": [
-      { "key": "Noticed by", "value": "whippy" },
-      { "key": "Source", "value": "[queue.md](../queue.md)" }
+      {
+        "key": "Noticed by",
+        "value": "whippy"
+      },
+      {
+        "key": "Source",
+        "value": "[queue.md](../queue.md)"
+      }
     ]
   },
   {
@@ -17,8 +23,14 @@
     "at": "2026-08-19",
     "body": "Pull request #1's body promises three open design questions in docs/ui-surfaces.md. The file marks two, on the composer and on records. The third is either unwritten or was retired without a note.",
     "data": [
-      { "key": "Noticed by", "value": "whippy" },
-      { "key": "Source", "value": "[docs/ui-surfaces.md](../docs/ui-surfaces.md)" }
+      {
+        "key": "Noticed by",
+        "value": "whippy"
+      },
+      {
+        "key": "Source",
+        "value": "[docs/ui-surfaces.md](../docs/ui-surfaces.md)"
+      }
     ]
   },
   {
@@ -28,8 +40,71 @@
     "at": "2026-08-19",
     "body": "Anthropic's paused metering change, support article 15036540, would move headless and Agent SDK usage off plan limits and onto separate credits if it un-pauses. Which invocation path the per-machine adapter uses then decides what Mustur costs to run. A candidate limitation row in Plan.md, not yet written there.",
     "data": [
-      { "key": "Noticed by", "value": "whippy" },
-      { "key": "Status", "value": "unreviewed" }
+      {
+        "key": "Noticed by",
+        "value": "whippy"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0004",
+    "kind": "finding",
+    "at": "2026-08-19",
+    "title": "The export and this repository's contract files hold the same records twice",
+    "body": "records/ now carries the same decisions and findings as decisions.md and queue.md, one addressable and one prose. Milestone 2b should decide whether this repository's own StrucGu roles move to the export or stay on the files a person edits.",
+    "data": [
+      {
+        "key": "Noticed by",
+        "value": "whippy"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0005",
+    "kind": "finding",
+    "at": "2026-08-19",
+    "title": "A seeded record's summary can drift from the prose it links to",
+    "body": "Each seeded record carries one line summarising a rationale that lives in a contract file. Nothing compares the two, so an edit to the prose leaves the summary standing. A check is cheap and nobody has asked for one.",
+    "data": [
+      {
+        "key": "Noticed by",
+        "value": "whippy"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0006",
+    "kind": "finding",
+    "at": "2026-08-19",
+    "title": "The Go toolchain CI uses is whatever the runner image carries",
+    "body": "make check needs Go once milestone 2 lands, and the Makefile cannot pin a toolchain. ci/proposed/ci.yml is what pins it; until the owner applies that proposal the version is the image's.",
+    "refs": [
+      {
+        "key": "Discharged by",
+        "value": "MUS-W-0004"
+      }
+    ],
+    "data": [
+      {
+        "key": "Noticed by",
+        "value": "whippy"
+      },
+      {
+        "key": "Status",
+        "value": "resolved 2026-08-20: the proposal was applied"
+      }
     ]
   }
 ]

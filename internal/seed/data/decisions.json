@@ -340,13 +340,32 @@
   {
     "id": "MUS-D-0027",
     "kind": "decision",
-    "title": "The mandate is the wording the disproof measured",
+    "title": "What the mandate keeps from the fixture, and what it does not",
     "at": "2026-08-19",
-    "body": "The tool keeps the name and arguments the milestone 1 stub carried, and the clause in the context file is the fixture's wording, extended only by what to do when the tool is absent.",
+    "body": "The tool keeps the name and arguments the milestone 1 stub carried, and the clause in the context file is the fixture's wording. Three things differ and the entry names all three: two optional arguments, a sentence for when the tool is absent, and the transport — the fixture was stdio, where the tool is always there.",
     "data": [
       {
         "key": "Rationale",
-        "value": "[decisions.md#the-mandate-is-the-wording-the-disproof-measured](../decisions.md#the-mandate-is-the-wording-the-disproof-measured)"
+        "value": "[decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not](../decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0028",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "Four of StrucGu's five roles are implemented, and the repository adopts five modules",
+    "body": "Corrects MUS-D-0009. The product implements four module roles as record kinds; triage-rule describes a document rather than records and has none. The repository itself adopts five modules, work-units among them since milestone 2.",
+    "refs": [
+      {
+        "key": "Corrects",
+        "value": "MUS-D-0009"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules](../decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules)"
       }
     ]
   }
