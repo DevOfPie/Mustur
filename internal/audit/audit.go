@@ -99,7 +99,9 @@ func Run(root string, cat *Catalog, now time.Time) (*Report, error) {
 			rep.add(t.evaluate(module, adopted, adoption, targets, lookup(byModule, id), check, now))
 		}
 		for _, j := range module.Judgment {
-			rep.add(judgmentResult(module, targets, j))
+			res := judgmentResult(module, targets, j)
+			res.Paths = t.relative(res.Paths)
+			rep.add(res)
 		}
 	}
 	return rep, nil
@@ -214,6 +216,38 @@ func (t *tree) evaluate(m Module, adopted AdoptedModule, a *Adoption, targets ma
 			read = append(read, tg)
 		}
 	}
+	if len(read) == 0 && c.Kind == "path_exists" {
+		// path_exists is the check that observes absence, so absence is its
+		// finding rather than its excuse. The rule it must not break is the
+		// next one down: when it fails, every *other* check bound only to that
+		// role skips, because reporting five findings for one missing file
+		// tells a reader the repository is five times more broken than it is.
+		//
+		// An unmapped role is still a skip even here. Absence of a declaration
+		// is not evidence of anything, and the specification says so in as many
+		// words.
+		mapped := false
+		var why []string
+		for _, role := range c.In {
+			tg := targets[role]
+			if tg.mapped {
+				mapped = true
+			}
+			why = append(why, fmt.Sprintf("%s: %s", role, reasonFor(tg)))
+		}
+		if mapped {
+			res.State, res.Detail = Finding, strings.Join(why, "; ")
+			if dev, ok := a.deviation(c.ID, nil, now); ok {
+				res.State = Waived
+				res.Detail = fmt.Sprintf("%s — accepted %s by %s, review by %s: %s",
+					res.Detail, dev.Accepted, dev.By, dev.ReviewBy, oneLine(dev.Reason))
+			}
+			return res
+		}
+		res.State, res.Detail = Skip, strings.Join(why, "; ")
+		return res
+	}
+
 	if len(read) == 0 {
 		// A check bound to more than one role skips only when none resolved:
 		// having read two of three, reporting skip would claim it could not
@@ -249,14 +283,21 @@ func (t *tree) evaluate(m Module, adopted AdoptedModule, a *Adoption, targets ma
 	return res
 }
 
+// relative renders paths against the audited root, deduplicated. Two roles
+// mapped to the same file — which is ordinary under a single-log decision
+// record — would otherwise list it twice and read as two files.
 func (t *tree) relative(paths []string) []string {
+	seen := map[string]bool{}
 	out := make([]string, 0, len(paths))
 	for _, p := range paths {
-		if rel, err := filepath.Rel(t.root, p); err == nil {
-			out = append(out, filepath.ToSlash(rel))
-			continue
+		rel := p
+		if r, err := filepath.Rel(t.root, p); err == nil {
+			rel = filepath.ToSlash(r)
 		}
-		out = append(out, p)
+		if !seen[rel] {
+			seen[rel] = true
+			out = append(out, rel)
+		}
 	}
 	sort.Strings(out)
 	return out

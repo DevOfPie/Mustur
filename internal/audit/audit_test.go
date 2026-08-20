@@ -322,12 +322,45 @@ func TestUntrackedPathsAreNotReadInARepository(t *testing.T) {
 		}
 	}
 	rep := run(t, root)
+	// path_exists is the check that observes it, so for that check an
+	// untracked file is a finding.
 	got := state(t, rep, "D-01")
-	if got.State != Skip {
-		t.Fatalf("D-01 = %s, want skip: doc.md exists but is untracked", got.State)
+	if got.State != Finding {
+		t.Fatalf("D-01 = %s, want finding: doc.md exists but is untracked", got.State)
 	}
 	if !strings.Contains(got.Detail, "not tracked") {
-		t.Errorf("the skip does not say why: %q", got.Detail)
+		t.Errorf("the finding does not say why: %q", got.Detail)
+	}
+	// Every other check bound only to that role skips. Reporting three
+	// findings for one file nobody who clones can see tells a reader the
+	// repository is three times more broken than it is.
+	for _, id := range []string{"D-02", "D-03"} {
+		if s := state(t, rep, id).State; s != Skip {
+			t.Errorf("%s = %s, want skip alongside a failed path_exists", id, s)
+		}
+	}
+}
+
+// The rule the one above must not break, stated on its own: an unmapped role is
+// a skip even for path_exists. Absence of a declaration is not evidence of
+// anything.
+func TestUnmappedRoleSkipsPathExistsToo(t *testing.T) {
+	files := satisfying()
+	files["strucgu.yaml"] = adoption(strings.Replace(demoAdopted, "doc: doc.md", "doc: ~", 1))
+	rep := run(t, build(t, files))
+	if got := state(t, rep, "D-01"); got.State != Skip {
+		t.Fatalf("D-01 = %s, want skip: the role is unmapped, not missing", got.State)
+	}
+}
+
+// A rotted reference-style link is still a rotted link. A checker reading only
+// the inline form passes it.
+func TestReferenceStyleLinksAreResolved(t *testing.T) {
+	files := satisfying()
+	files["records/one.md"] = "# One\n\nSee [the doc](../doc.md) and [the archive][old].\n\n[old]: archive/gone.md\n"
+	rep := run(t, build(t, files))
+	if got := state(t, rep, "D-05"); got.State != Finding {
+		t.Fatalf("D-05 = %s (%s), want finding: the reference definition points at nothing", got.State, got.Detail)
 	}
 }
 

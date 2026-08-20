@@ -13,6 +13,13 @@ var (
 	headingLine = regexp.MustCompile(`(?m)^ {0,3}#{1,6} +(.*?)\s*$`)
 	linkTarget  = regexp.MustCompile(`\]\(([^)]*)\)`)
 	fenceLine   = regexp.MustCompile("^ {0,3}(```|~~~)")
+
+	// Reference-style links: `[text][label]` pointing at a `[label]: target`
+	// definition elsewhere in the file. A checker that reads only the inline
+	// form passes a rotted link written this way, which is a boundary StrucGu
+	// pins with a fixture of its own.
+	referenceUse        = regexp.MustCompile(`\[[^\]]*\]\[([^\]]+)\]`)
+	referenceDefinition = regexp.MustCompile(`(?m)^ {0,3}\[([^\]]+)\]:\s*(\S+)`)
 )
 
 // stripCode removes fenced blocks and inline spans.
@@ -110,11 +117,27 @@ type link struct {
 }
 
 // links returns every relative link and image target, external schemes and
-// code excluded.
+// code excluded. Both markdown forms count: the inline one, and a reference
+// label resolved against its definition.
 func links(text string) []link {
+	body := stripCode(text)
+	var raws []string
+	for _, m := range linkTarget.FindAllStringSubmatch(body, -1) {
+		raws = append(raws, m[1])
+	}
+	definitions := map[string]string{}
+	for _, m := range referenceDefinition.FindAllStringSubmatch(body, -1) {
+		definitions[strings.ToLower(strings.TrimSpace(m[1]))] = m[2]
+	}
+	for _, m := range referenceUse.FindAllStringSubmatch(body, -1) {
+		if target, ok := definitions[strings.ToLower(strings.TrimSpace(m[1]))]; ok {
+			raws = append(raws, target)
+		}
+	}
+
 	var out []link
-	for _, m := range linkTarget.FindAllStringSubmatch(stripCode(text), -1) {
-		raw := strings.TrimSpace(m[1])
+	for _, candidate := range raws {
+		raw := strings.TrimSpace(candidate)
 		if raw == "" {
 			continue
 		}
