@@ -12,7 +12,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | decision | 39 | [decisions.md](decisions.md) |
 | finding | 18 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 11 | [work-units/index.md](work-units/index.md) |
+| work-unit | 12 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -39,6 +39,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0009](work-units/MUS-W-0009.md#mus-w-0009) | work-unit | Conformance, against the catalog's own fixtures |
 | [MUS-W-0010](work-units/MUS-W-0010.md#mus-w-0010) | work-unit | The intake surface |
 | [MUS-W-0011](work-units/MUS-W-0011.md#mus-w-0011) | work-unit | A write path into the store |
+| [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012) | work-unit | A visual plan for all seven surfaces |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |

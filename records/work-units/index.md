@@ -34,3 +34,4 @@ is a copy that will drift.
 | [MUS-W-0009](MUS-W-0009.md) | Conformance, against the catalog's own fixtures | 2026-08-20 |
 | [MUS-W-0010](MUS-W-0010.md) | The intake surface | 2026-08-20 |
 | [MUS-W-0011](MUS-W-0011.md) | A write path into the store | 2026-08-20 |
+| [MUS-W-0012](MUS-W-0012.md) | A visual plan for all seven surfaces | 2026-08-20 |

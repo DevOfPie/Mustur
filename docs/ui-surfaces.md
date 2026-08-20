@@ -14,6 +14,12 @@ blank page.
 published visual plan, never as ASCII in a document or a prompt. This file is the
 brief; the design is the answer to it.
 
+**The plan for all seven is
+[plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
+published 2026-08-20. Eight artboards — intake as built and as proposed, plus
+the six unbuilt surfaces — the shell they share, and four open questions. No
+further surface is built before it is answered.
+
 ## The constraints every surface inherits
 
 | Constraint | Where it comes from |
