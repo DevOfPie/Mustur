@@ -25,6 +25,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/seed"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
+	"github.com/DevOfPie/Mustur/internal/web"
 )
 
 const usage = `mustur — records and routing for one project
@@ -386,6 +387,7 @@ func cmdServe(args []string) error {
 	// nothing but this machine can reach it and stops being sound the day the
 	// ingress rule exists.
 	addr := fs.String("addr", "127.0.0.1:7777", "address to listen on; loopback only until identity is in front of it")
+	project := fs.String("project", "MUS", "identifier prefix for records this server writes")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -403,6 +405,8 @@ func cmdServe(args []string) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
+	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor()}
+	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
 	})
@@ -411,7 +415,8 @@ func cmdServe(args []string) error {
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s on http://%s/mcp\n", version, n, *db, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n",
+		version, n, *db, *addr, *addr)
 	return srv.ListenAndServe()
 }
 

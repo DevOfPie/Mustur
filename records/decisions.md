@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-37 record(s), by identifier.
+39 record(s), by identifier.
 
 ## Index
 
@@ -49,6 +49,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0035](#mus-d-0035) | The store holds more than it did | 2026-08-20 |
 | [MUS-D-0036](#mus-d-0036) | Nothing vendors StrucGu | 2026-08-20 |
 | [MUS-D-0037](#mus-d-0037) | The database is the source, and the seed is history | 2026-08-20 |
+| [MUS-D-0038](#mus-d-0038) | The idea inbox is a routing target inside Mustur | 2026-08-20 |
+| [MUS-D-0039](#mus-d-0039) | A jot is filed without a decision | 2026-08-20 |
 
 ---
 
@@ -587,3 +589,34 @@ mustur add writes to the store; records/ is regenerated from it and committed. T
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#the-database-is-the-source-and-the-seed-is-history](../decisions.md#the-database-is-the-source-and-the-seed-is-history) |
+
+---
+
+## MUS-D-0038
+
+**The idea inbox is a routing target inside Mustur**
+
+decision · 2026-08-20
+
+Routes to: [MUS-P-0002](routing.md#mus-p-0002)
+
+The owner's call. A jot with no obvious destination goes to MUS-P-0002, a routing record here, rather than into IdeaWarehouse's inbox: no file in another project is touched before onboarding, and a default path that wrote to one would break that rule on every ordinary capture.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-idea-inbox-is-a-routing-target-inside-mustur](../decisions.md#the-idea-inbox-is-a-routing-target-inside-mustur) |
+
+---
+
+## MUS-D-0039
+
+**A jot is filed without a decision**
+
+decision · 2026-08-20
+
+The title is derived from the first line, the destination is guessed from the routing records the store holds, and the guess is recorded as a guess with what it saw. Two matches is an ambiguity reported in full rather than a choice made silently; a project and the repository inside it is not an ambiguity, and the narrower one wins.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-jot-is-filed-without-a-decision](../decisions.md#a-jot-is-filed-without-a-decision) |
+| Measured | ten filings on loopback, median 0.5 ms, worst 0.9 ms; the page is 4212 bytes |

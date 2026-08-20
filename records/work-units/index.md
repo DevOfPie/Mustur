@@ -32,3 +32,5 @@ is a copy that will drift.
 | [MUS-W-0007](MUS-W-0007.md) | StrucGu's check vocabulary, implemented | 2026-08-20 |
 | [MUS-W-0008](MUS-W-0008.md) | The audit, emitted in the form the specification asks for | 2026-08-20 |
 | [MUS-W-0009](MUS-W-0009.md) | Conformance, against the catalog's own fixtures | 2026-08-20 |
+| [MUS-W-0010](MUS-W-0010.md) | The intake surface | 2026-08-20 |
+| [MUS-W-0011](MUS-W-0011.md) | A write path into the store | 2026-08-20 |

@@ -4,7 +4,7 @@
 
 Where work goes and which machine holds it.
 
-3 record(s), by identifier.
+4 record(s), by identifier.
 
 ---
 
@@ -54,3 +54,20 @@ The project this store belongs to. Its identifier prefix is MUS, and every recor
 | Prefix | MUS |
 | Repositories | MUS-R-0001 |
 | Machines | MUS-H-0001 |
+
+---
+
+## MUS-P-0002
+
+**Idea inbox**
+
+project · 2026-08-20
+
+Held by: [MUS-P-0001](#mus-p-0001)
+
+Where a jot goes when no destination is obvious. A routing target inside Mustur, not a write into IdeaWarehouse: no file in another project is touched before that project is deliberately onboarded, and a capture surface that edited one would break that on its first use.
+
+| Field | Value |
+| --- | --- |
+| Intake | default |
+| Aliases | inbox, ideas |

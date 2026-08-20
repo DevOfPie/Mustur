@@ -299,3 +299,40 @@ func (s *Store) Create(ctx context.Context, r record.Record, project string, rol
 	}
 	return r, nil
 }
+
+// Since returns the records created since a moment, newest first.
+//
+// It reads the log's own written_at rather than the records' dates. A record
+// carries the date its content was true, which is not the same as when it was
+// written and is only accurate to the day — so a surface asking "what did I
+// file in the last hour" cannot be answered from it. The log has the answer;
+// this is the only place that distinction is worth making, and making it
+// anywhere else would put a wall clock into the record.
+func (s *Store) Since(ctx context.Context, kind string, since time.Time) ([]record.Record, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT l.payload
+		FROM record_latest l
+		JOIN (SELECT record_id, min(written_at) AS first_written
+		      FROM record_event WHERE op = 'create' GROUP BY record_id) e
+		  ON e.record_id = l.record_id
+		WHERE (? = '' OR l.kind = ?) AND e.first_written >= ?
+		ORDER BY e.first_written DESC`,
+		kind, kind, since.UTC().Format(time.RFC3339))
+	if err != nil {
+		return nil, fmt.Errorf("list %q since %s: %w", kind, since, err)
+	}
+	defer rows.Close()
+	var out []record.Record
+	for rows.Next() {
+		var payload string
+		if err := rows.Scan(&payload); err != nil {
+			return nil, err
+		}
+		r, err := record.UnmarshalPayload([]byte(payload))
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}

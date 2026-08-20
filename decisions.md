@@ -57,6 +57,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The record roles are mapped at the export](#the-record-roles-are-mapped-at-the-export) | Auditing the records Mustur owns, not the prose beside them |
 | [The store holds more than it did](#the-store-holds-more-than-it-did) | Corrects an enumeration the milestone overtook |
 | [The database is the source, and the seed is history](#the-database-is-the-source-and-the-seed-is-history) | What a write path costs the export's reproducibility |
+| [The idea inbox is a routing target inside Mustur](#the-idea-inbox-is-a-routing-target-inside-mustur) | The fallback destination cannot be another repository |
+| [A jot is filed without a decision](#a-jot-is-filed-without-a-decision) | The title is derived and the destination is guessed |
 
 ---
 
@@ -755,3 +757,54 @@ remember is the whole reason for choosing SQLite.
 The bootstrap is not deleted, and it is not maintained either. It says what the
 store held on the day it was imported. `mustur seed` still refuses a store that
 already holds records, so the two cannot silently diverge into a second source.
+
+### The idea inbox is a routing target inside Mustur
+
+The owner's, asked and answered while building intake. A jot with no obvious
+destination goes to `MUS-P-0002`, a routing record here, and not to
+IdeaWarehouse's `inbox.md`.
+
+The alternative reads better in the milestone's own wording — "defaults to the
+idea inbox" — and is forbidden. No file in any other project is touched before
+that project is deliberately onboarded, and a capture surface whose *default*
+path writes into another repository would break that rule on its first use,
+every time, for the case that is meant to be ordinary rather than exceptional.
+
+So the inbox is a record. Which record is the fallback is a field on it,
+`Intake: default`, rather than a constant in the code — the registry is data,
+and a fallback compiled in is one a reader cannot see and the owner cannot
+move.
+
+### A jot is filed without a decision
+
+Naming a thing requires understanding it, and at capture time you do not. So
+nothing about filing asks for a choice:
+
+- **The title is derived** from the first line or sentence, truncated with an
+  ellipsis that says it was truncated. A record still needs a claim a listing
+  can show; asking for one at capture is asking for the decision.
+- **The destination is guessed**, from the routing records the store already
+  holds, matched on word boundaries so a name inside a longer word does not
+  route a jot about something else.
+- **The guess is recorded as a guess.** Every filed record carries where it
+  went and why, in its own words: "the jot names DevOfPie/Mustur", or "no
+  destination is obvious", or the ambiguous case in full.
+
+That last one is the shape worth arguing for. Two matched destinations is not
+an obvious hint, it is an ambiguous one, and picking between them would be
+exactly the decision this surface refuses to ask for — so it falls back and
+*says which two it saw*. An ambiguity reported as "nothing obvious" would hide
+the one case where the routing registry needs an alias.
+
+A project lists its repositories, so a jot naming "Mustur" matches both. That
+is not an ambiguity: it is the same place at two scales, and the narrower one
+wins. A container is recognised by naming the other's identifier in its own
+fields rather than by a rule about kinds — the registry is data, and code that
+knew projects contain repositories would be a second place to keep that true.
+
+The surface itself carries no stylesheet, no script, no font and no image.
+Everything a phone off the home network has to fetch is another thing between a
+thought and it being filed. Measured on loopback, ten filings: median 0.5 ms,
+worst 0.9 ms, and the page itself 4,212 bytes. That is not the fifteen-second
+claim — that one is about a phone off the home network and cannot be measured
+until the ingress exists.

@@ -9,10 +9,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 37 | [decisions.md](decisions.md) |
+| decision | 39 | [decisions.md](decisions.md) |
 | finding | 13 | [findings.md](findings.md) |
-| repository, machine, project | 3 | [routing.md](routing.md) |
-| work-unit | 9 | [work-units/index.md](work-units/index.md) |
+| repository, machine, project | 4 | [routing.md](routing.md) |
+| work-unit | 11 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -37,6 +37,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0007](work-units/MUS-W-0007.md#mus-w-0007) | work-unit | StrucGu's check vocabulary, implemented |
 | [MUS-W-0008](work-units/MUS-W-0008.md#mus-w-0008) | work-unit | The audit, emitted in the form the specification asks for |
 | [MUS-W-0009](work-units/MUS-W-0009.md#mus-w-0009) | work-unit | Conformance, against the catalog's own fixtures |
+| [MUS-W-0010](work-units/MUS-W-0010.md#mus-w-0010) | work-unit | The intake surface |
+| [MUS-W-0011](work-units/MUS-W-0011.md#mus-w-0011) | work-unit | A write path into the store |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -74,6 +76,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0035](decisions.md#mus-d-0035) | decision | The store holds more than it did |
 | [MUS-D-0036](decisions.md#mus-d-0036) | decision | Nothing vendors StrucGu |
 | [MUS-D-0037](decisions.md#mus-d-0037) | decision | The database is the source, and the seed is history |
+| [MUS-D-0038](decisions.md#mus-d-0038) | decision | The idea inbox is a routing target inside Mustur |
+| [MUS-D-0039](decisions.md#mus-d-0039) | decision | A jot is filed without a decision |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -91,3 +95,4 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |
+| [MUS-P-0002](routing.md#mus-p-0002) | project | Idea inbox |
