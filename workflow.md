@@ -95,6 +95,39 @@ A finding that falsifies a **shipped** milestone's claim is not any of those. It
 is a reopening, reopening is scheduling, and scheduling is the owner's — so it
 reaches them as a prompt.
 
+## Repeat, or stop
+
+A milestone accepted is one iteration, not the end of the work. The default
+after acceptance is to start the next milestone, in the same turn. **Stopping
+takes a row from this table.**
+
+| Stop when | Because |
+| --- | --- |
+| A prompt is unanswered **and nothing outstanding is independent of it** | Ask, never assume. A blocked question is not a blocked repository: do everything that does not turn on the answer first, and this fires only when nothing is left that does not. The question stays owed either way |
+| The dispatch named a milestone, and that milestone is accepted | `/work mustur milestone` bounds nothing; `/work mustur 2b milestone` bounds the run at that one |
+| No milestone in [Plan.md](Plan.md#milestones) is unpassed | Nothing to start |
+| The same cause failed a gate twice | Retrying is not progress |
+| The same finding survived two rounds of fixes | Same |
+| A review returned a **reopening** | It falsifies a milestone already shipped, which is scheduling, which is the owner's |
+| CI is red on the branch | The next milestone does not get built on top of a build nobody has looked at |
+| The owner said stop | |
+
+**That table is exhaustive.** Anything not in it is not a reason, and the ones
+below have each ended a run somewhere and are named rather than left to
+judgement.
+
+| Not a reason | Do this instead |
+| --- | --- |
+| Context is long, or about to be compacted | Carry on. Context is summarised and the run continues; wrapping up early throws away a working run to avoid a problem that handles itself |
+| A milestone landed and was accepted | That is one iteration ending. Start the next in the same turn |
+| The next milestone is large, or slow | Start it. Size is not risk, and a long job is not a risky one |
+| It looks like a clean place to hand off | The pull request is the handoff and it is already written |
+| The work so far deserves reading | It gets a review, which is [the step above](#after-a-milestone). Somebody reading it does not need the run paused |
+
+Reporting mid-run costs nothing: say what landed, then start the next milestone
+in the same turn. Ending a turn on a summary when no row above has fired is the
+failure this table exists to name.
+
 ## Triggers
 
 ### A decision needs the owner

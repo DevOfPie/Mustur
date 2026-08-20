@@ -49,6 +49,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [What the mandate keeps from the fixture, and what it does not](#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not) | Three differences from what milestone 1 scored |
 | [Four of StrucGu's five roles are implemented, and the repository adopts five modules](#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules) | Corrects an entry the build overtook |
 | [A milestone is read by agents that did not build it](#a-milestone-is-read-by-agents-that-did-not-build-it) | Three lenses, spawned fresh, changing nothing |
+| [Stopping takes a reason from a table](#stopping-takes-a-reason-from-a-table) | The default after a milestone is the next milestone |
 
 ---
 
@@ -560,3 +561,27 @@ fixed, four deferred, one reopening taken to the owner, and one conflict in
 
 The cost, accepted: three agents per milestone, and a milestone cannot be
 accepted while they are running.
+
+### Stopping takes a reason from a table
+
+Owner-set 2026-08-20, lifted from
+[LinkCtrl's phase loop](https://github.com/DevOfPie/LinkCtrl/blob/main/docs/build-notes/phase-loop.md).
+
+The failure it prevents is specific and this repository has already committed
+it once: a milestone lands, the work reports what it did, and the turn ends —
+not because anything blocked it but because finishing something feels like a
+place to stop. LinkCtrl names every excuse that has ended one of its runs and
+rules each one out, because "it looked like a clean boundary" is
+indistinguishable from the next iteration.
+
+So the stop conditions are a closed table, and the not-reasons are written down
+beside them. The one worth stating twice: context running long is not a reason.
+Context is summarised and the run continues, so wrapping up early trades a
+working run for a problem that handles itself.
+
+Two rows are this repository's rather than LinkCtrl's. A review returning a
+**reopening** stops the run, because a falsified claim on a shipped milestone is
+scheduling and scheduling is the owner's. Red CI stops it, because the next
+milestone would otherwise be built on a build nobody has looked at — LinkCtrl
+learned that one from nine days of red CI that every local gate reported green
+through.

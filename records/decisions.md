@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: a later entry corrects an earlier one and the earlier text stays.
 
-29 record(s), by identifier.
+30 record(s), by identifier.
 
 ---
 
@@ -416,3 +416,18 @@ Owner-set. Three reviewers spawned fresh per milestone — this milestone's done
 | --- | --- |
 | Rationale | [decisions.md#a-milestone-is-read-by-agents-that-did-not-build-it](../decisions.md#a-milestone-is-read-by-agents-that-did-not-build-it) |
 | Lifted from | LinkCtrl's phase loop, with three deliberate differences |
+
+---
+
+## MUS-D-0030
+
+**Stopping takes a reason from a table**
+
+decision · 2026-08-20
+
+A milestone accepted is one iteration. The default is to start the next one in the same turn, and stopping requires a row from a closed table — with the excuses that are not reasons written down beside it, context running long chief among them.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#stopping-takes-a-reason-from-a-table](../decisions.md#stopping-takes-a-reason-from-a-table) |
+| Lifted from | LinkCtrl's phase loop, plus two rows of this repository's own |
