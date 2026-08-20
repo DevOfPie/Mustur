@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: a later entry corrects an earlier one and the earlier text stays.
 
-28 record(s), by identifier.
+29 record(s), by identifier.
 
 ---
 
@@ -399,3 +399,20 @@ Corrects MUS-D-0009. The product implements four module roles as record kinds; t
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules](../decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules) |
+
+---
+
+## MUS-D-0029
+
+**A milestone is read by agents that did not build it**
+
+decision · 2026-08-20
+
+Governs: [MUS-M-0002](milestones.md#mus-m-0002)
+
+Owner-set. Three reviewers spawned fresh per milestone — this milestone's done-when, the shipped claims, and workflow.md's own gates — each given the milestone, the branch and the contract and never the builder's report. They change nothing; findings are dispositioned in the pull request.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-milestone-is-read-by-agents-that-did-not-build-it](../decisions.md#a-milestone-is-read-by-agents-that-did-not-build-it) |
+| Lifted from | LinkCtrl's phase loop, with three deliberate differences |

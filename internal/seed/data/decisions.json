@@ -368,5 +368,28 @@
         "value": "[decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules](../decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules)"
       }
     ]
+  },
+  {
+    "id": "MUS-D-0029",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "A milestone is read by agents that did not build it",
+    "body": "Owner-set. Three reviewers spawned fresh per milestone — this milestone's done-when, the shipped claims, and workflow.md's own gates — each given the milestone, the branch and the contract and never the builder's report. They change nothing; findings are dispositioned in the pull request.",
+    "refs": [
+      {
+        "key": "Governs",
+        "value": "MUS-M-0002"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#a-milestone-is-read-by-agents-that-did-not-build-it](../decisions.md#a-milestone-is-read-by-agents-that-did-not-build-it)"
+      },
+      {
+        "key": "Lifted from",
+        "value": "LinkCtrl's phase loop, with three deliberate differences"
+      }
+    ]
   }
 ]
