@@ -203,3 +203,39 @@ func (s *Store) Rebuild(ctx context.Context) error {
 	}
 	return tx.Commit()
 }
+
+// NextID allocates the next identifier for a project and role: one past the
+// highest serial the log has ever carried, not one past the count.
+//
+// The distinction matters and is the reason this reads the event log rather
+// than the materialized latest. Serials are never reused. A record that was
+// created and later corrected still occupies its number, and a numbering
+// scheme that filled gaps would make an identifier written in a report today
+// point at a different record next year.
+func (s *Store) NextID(ctx context.Context, project string, role ident.Role) (string, error) {
+	prefix := fmt.Sprintf("%s-%s-", project, role)
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT DISTINCT record_id FROM record_event WHERE record_id LIKE ? ORDER BY record_id`, prefix+"%")
+	if err != nil {
+		return "", fmt.Errorf("find the highest %s serial: %w", prefix, err)
+	}
+	defer rows.Close()
+	highest := 0
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return "", err
+		}
+		parsed, err := ident.Parse(id)
+		if err != nil {
+			continue // Not ours to interpret; NextID only counts what it understands.
+		}
+		if parsed.Serial > highest {
+			highest = parsed.Serial
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return "", err
+	}
+	return ident.ID{Project: project, Role: role, Serial: highest + 1}.String(), nil
+}

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-36 record(s), by identifier.
+37 record(s), by identifier.
 
 ## Index
 
@@ -48,6 +48,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0034](#mus-d-0034) | The record roles are mapped at the export | 2026-08-20 |
 | [MUS-D-0035](#mus-d-0035) | The store holds more than it did | 2026-08-20 |
 | [MUS-D-0036](#mus-d-0036) | Nothing vendors StrucGu | 2026-08-20 |
+| [MUS-D-0037](#mus-d-0037) | The database is the source, and the seed is history | 2026-08-20 |
 
 ---
 
@@ -570,3 +571,19 @@ The audit reads its modules from a StrucGu checkout and refuses to guess. A pinn
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#nothing-vendors-strucgu](../decisions.md#nothing-vendors-strucgu) |
+
+---
+
+## MUS-D-0037
+
+**The database is the source, and the seed is history**
+
+decision · 2026-08-20
+
+Corrects: [MUS-F-0007](findings.md#mus-f-0007)
+
+mustur add writes to the store; records/ is regenerated from it and committed. The bootstrap stays for the record of what was imported, and stops being the thing the export is derived from.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-database-is-the-source-and-the-seed-is-history](../decisions.md#the-database-is-the-source-and-the-seed-is-history) |

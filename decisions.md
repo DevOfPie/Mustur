@@ -56,6 +56,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The audit runs in CI, against a real catalog](#the-audit-runs-in-ci-against-a-real-catalog) | Evidence that ran once on one machine is not evidence |
 | [The record roles are mapped at the export](#the-record-roles-are-mapped-at-the-export) | Auditing the records Mustur owns, not the prose beside them |
 | [The store holds more than it did](#the-store-holds-more-than-it-did) | Corrects an enumeration the milestone overtook |
+| [The database is the source, and the seed is history](#the-database-is-the-source-and-the-seed-is-history) | What a write path costs the export's reproducibility |
 
 ---
 
@@ -721,3 +722,36 @@ decided — that a record summarises the prose it points at rather than copying 
 — still holds, and this milestone did not change it. The lesson is narrower: a
 count in an append-only file is a claim with an expiry date on it, and the
 export's own index is the place a reader should look instead.
+
+## 2026-08-20 — decisions taken while building milestone 2c
+
+### The database is the source, and the seed is history
+
+The owner's call, from three offered shapes. `mustur add` writes to the store;
+[records/](records/README.md) is regenerated from the store and committed; the
+bootstrap in `internal/seed/data/` stays as the record of what was imported and
+stops being the thing the export is derived from.
+
+Until now the export was reproducible from git alone, because it was rendered
+from the seed and the seed is a file. That was never a property anyone chose —
+it was a side effect of there being no way to write a record, which
+`MUS-F-0007` recorded as the defect it is. Intake cannot exist without a write
+path, so the milestone forced the question.
+
+What it costs is the guarantee CI could give. Nothing in an unattended run can
+regenerate the export and compare it, because the database is not in the
+repository and will not be — a binary file in git is a record nobody can review.
+What remains is `mustur verify --db`, which reports the tree differing from the
+store, and the diff in the pull request, which is what a reader who does not run
+the binary actually reads. Both were already the argument for committing the
+export in the first place.
+
+What it buys is that the insert-only triggers mean something. Under the
+alternative — the JSON staying authoritative and the database a cache of it —
+anyone could edit a record by editing a file, and the database refusing `UPDATE`
+would be decoration. A guarantee enforced at the only layer nobody has to
+remember is the whole reason for choosing SQLite.
+
+The bootstrap is not deleted, and it is not maintained either. It says what the
+store held on the day it was imported. `mustur seed` still refuses a store that
+already holds records, so the two cannot silently diverge into a second source.
