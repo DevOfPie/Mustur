@@ -7,7 +7,7 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check verify-records \
-        build serve seed export workflow-proposals help
+        build serve seed export audit workflow-proposals help
 
 check: check-links check-adoption shellcheck go-check verify-records ## Every commit gate this tree can enforce mechanically
 
@@ -30,6 +30,9 @@ go-check: ## The Go tree builds, vets clean, and its tests pass
 
 verify-records: ## The committed export cites only identifiers it defines
 	@go run ./cmd/mustur verify --records records
+
+audit: ## Check this tree against the StrucGu modules it adopts
+	@go run ./cmd/mustur audit
 
 build: ## The binary, in this directory
 	@go build -o mustur ./cmd/mustur && echo "  ok    ./mustur"

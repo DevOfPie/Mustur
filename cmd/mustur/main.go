@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/audit"
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/mcpsrv"
 	"github.com/DevOfPie/Mustur/internal/seed"
@@ -32,10 +33,15 @@ const usage = `mustur — records and routing for one project
   mustur list     [--db PATH] [--kind KIND]   every record, by identifier
   mustur get ID   [--db PATH]                 one record in full (either order)
   mustur rebuild  [--db PATH]                 re-derive the materialized latest from the log
+  mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
 The store defaults to $MUSTUR_DB, then to $XDG_DATA_HOME/mustur/mustur.db,
 then to ~/.local/share/mustur/mustur.db.
+
+The audit's module catalog defaults to $MUSTUR_STRUCGU, then to a StrucGu
+checkout beside the audited tree. --format markdown renders the record form.
+--gate exits non-zero on findings, and is off by default, deliberately.
 `
 
 // version is the binary's own version. Milestone 2's shape, nothing served to
@@ -70,6 +76,8 @@ func run(argv []string) error {
 		return cmdGet(args)
 	case "rebuild":
 		return cmdRebuild(args)
+	case "audit":
+		return cmdAudit(args)
 	case "version", "--version", "-version":
 		fmt.Println(version)
 		return nil
@@ -80,6 +88,64 @@ func run(argv []string) error {
 		fmt.Print(usage)
 		return fmt.Errorf("unknown command %q", cmd)
 	}
+}
+
+// defaultCatalog is where the modules are read from. StrucGu is a separate
+// repository and nothing vendors it here: a pinned copy of somebody else's
+// specification goes stale silently, and the adoption record already names
+// exact versions, so the audit refuses to run against a catalog that does not
+// hold the version adopted rather than guessing.
+func defaultCatalog(root string) string {
+	if p := os.Getenv("MUSTUR_STRUCGU"); p != "" {
+		return p
+	}
+	abs, err := filepath.Abs(root)
+	if err != nil {
+		return "../StrucGu"
+	}
+	return filepath.Join(filepath.Dir(abs), "StrucGu")
+}
+
+func cmdAudit(args []string) error {
+	fs := flag.NewFlagSet("audit", flag.ContinueOnError)
+	root := fs.String("root", ".", "the tree to audit; it holds the adoption record")
+	catalog := fs.String("catalog", "", "a StrucGu checkout holding the modules")
+	format := fs.String("format", "text", "text or markdown")
+	gate := fs.Bool("gate", false, "exit non-zero when there are findings")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *catalog == "" {
+		*catalog = defaultCatalog(*root)
+	}
+	cat, err := audit.LoadCatalog(*catalog)
+	if err != nil {
+		return fmt.Errorf("%w\nPoint --catalog at a StrucGu checkout, or set MUSTUR_STRUCGU", err)
+	}
+	report, err := audit.Run(*root, cat, time.Now())
+	if err != nil {
+		return err
+	}
+	switch *format {
+	case "text":
+		err = report.Text(os.Stdout)
+	case "markdown":
+		err = report.Markdown(os.Stdout)
+	default:
+		return fmt.Errorf("format %q is not text or markdown", *format)
+	}
+	if err != nil {
+		return err
+	}
+	// Exit zero when the audit ran, non-zero only when it could not. Findings
+	// are output, not failure: a check that fails on day one in a repository
+	// with required status checks is made non-required within the hour, and a
+	// dead gate is worse than no gate because it looks like coverage. A
+	// consumer who wants to gate asks for it.
+	if *gate && report.Findings() > 0 {
+		return fmt.Errorf("%d finding(s), and --gate was asked for", report.Findings())
+	}
+	return nil
 }
 
 // defaultDB is where the store lives when nothing says otherwise. It is not in

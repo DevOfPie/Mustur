@@ -51,8 +51,16 @@ make build            # the binary
 make seed             # once: put what already exists into an empty store
 make export           # render the store into records/
 make serve            # the one tool call, on loopback
+make audit            # this tree against the StrucGu modules it adopts
 make check            # every gate this tree enforces mechanically
 ```
+
+`make audit` needs a [StrucGu](https://github.com/DevOfPie/StrucGu) checkout
+beside this one, or `MUSTUR_STRUCGU` pointing at one; nothing here vendors a
+copy of somebody else's specification. It is not part of `make check`, and its
+exit status is zero whenever the audit ran — findings are output, and gating on
+them is `--gate`, which you ask for after your first clean run rather than
+before.
 
 The store is not in this repository: a binary file in git is a record nobody can
 review. [records/](records/README.md) is the reviewable half, and
