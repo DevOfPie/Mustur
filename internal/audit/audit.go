@@ -42,6 +42,7 @@ type Report struct {
 	Root    string
 	Catalog string
 	Results []Result
+	Notices []string // Version drift. Not findings: they are about the catalog, not the tree.
 	Counts  map[State]int
 }
 
@@ -76,9 +77,8 @@ func Run(root string, cat *Catalog, now time.Time) (*Report, error) {
 		if !ok {
 			return nil, fmt.Errorf("%s adopts module %q, which the catalog at %s does not hold", root, id, cat.Root)
 		}
-		if module.Version != adopted.Version {
-			return nil, fmt.Errorf("%s pins %s at %s; the catalog holds %s. Audit the version you adopted",
-				root, id, adopted.Version, module.Version)
+		if notice := driftNotice(id, adopted.Version, module.Version); notice != "" {
+			rep.Notices = append(rep.Notices, notice)
 		}
 		roles := map[string]target{}
 		for _, role := range module.Roles {
@@ -145,6 +145,43 @@ func reasonFor(tg target) string {
 // evaluate runs one check and returns its single state. A check reports one
 // state for a role even when the role covers many files: finding if any file
 // fails, ok only if every file passes.
+// driftNotice is the whole of StrucGu's push surface: a checker that reads a
+// module newer than the pin prints one line pointing at that module's
+// changelog. There is no bot, no pull request and no notification, and
+// propagation is pull-only.
+//
+// It is emphatically not a refusal. A checker evaluates the module as it reads
+// it — nothing in a module lets it evaluate a version other than the one on
+// disk — so the pin records what the adopter agreed to and reports drift
+// rather than constraining what runs. An earlier draft of this package refused
+// to run on a mismatch, which would have made every fixture in the catalog
+// unauditable and, worse, hidden the drift it was trying to flag.
+func driftNotice(id, pinned, read string) string {
+	if pinned == read {
+		return ""
+	}
+	notice := fmt.Sprintf("%s: the catalog holds %s and this repository pins %s — see modules/%s/CHANGELOG.md",
+		id, read, pinned, id)
+	if majorOf(read) > majorOf(pinned) {
+		// A new check never ships in a minor version, so only a major bump can
+		// have added one since the adopter agreed.
+		notice += ". That is a major ahead, so checks may have been added since the adoption"
+	}
+	return notice
+}
+
+func majorOf(version string) int {
+	major, _, _ := strings.Cut(version, ".")
+	n := 0
+	for _, r := range major {
+		if r < '0' || r > '9' {
+			return -1
+		}
+		n = n*10 + int(r-'0')
+	}
+	return n
+}
+
 // roleFinder resolves a role that may belong to another adopted module.
 type roleFinder func(role string) (target, bool)
 

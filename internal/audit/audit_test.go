@@ -292,7 +292,6 @@ func TestARunThatCannotStartIsAnErrorRatherThanAFinding(t *testing.T) {
 		{"floating version", adoption("  demo:\n    version: \"0.1\"\n    adopted: 2026-08-20\n    roles:\n      doc: doc.md\n"), "exact"},
 		{"unknown module", adoption("  nosuch:\n    version: \"0.1.0\"\n    adopted: 2026-08-20\n    roles: {}\n"), "does not hold"},
 		{"wrong schema", "schema: strucgu/adoption@2\nmodules: {}\n", "strucgu/adoption@1"},
-		{"version the catalog does not hold", adoption("  demo:\n    version: \"9.9.9\"\n    adopted: 2026-08-20\n    roles:\n      doc: doc.md\n"), "Audit the version you adopted"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -344,5 +343,54 @@ func TestAllFiveStatesAreCounted(t *testing.T) {
 	}
 	if rep.Counts[OK] == 0 || rep.Counts[Skip] == 0 || rep.Counts[NeedsJudgment] == 0 {
 		t.Errorf("counts look folded: %v", rep.Counts)
+	}
+}
+
+// A pin behind the module on disk is drift to report, not a run to refuse. The
+// checker evaluates the module as it reads it, and the notice pointing at the
+// changelog is the entire push surface the specification allows.
+func TestVersionDriftIsANoticeAndNotARefusal(t *testing.T) {
+	files := satisfying()
+	files["strucgu.yaml"] = adoption(strings.Replace(demoAdopted, `version: "0.1.0"`, `version: "0.0.1"`, 1))
+	rep := run(t, build(t, files))
+	if len(rep.Notices) != 1 {
+		t.Fatalf("notices = %v, want one about demo", rep.Notices)
+	}
+	if !strings.Contains(rep.Notices[0], "CHANGELOG.md") {
+		t.Errorf("the notice does not point at the changelog: %q", rep.Notices[0])
+	}
+	if got := state(t, rep, "D-01"); got.State != OK {
+		t.Errorf("D-01 = %s: the audit did not run against a drifted pin", got.State)
+	}
+}
+
+func TestDriftNoticeWording(t *testing.T) {
+	cases := []struct {
+		pinned, read string
+		want         string
+	}{
+		{"0.3.0", "0.3.0", ""},
+		{"0.1.0", "0.3.0", "CHANGELOG.md"},
+		// A new check never ships in a minor version, so only a major bump can
+		// have added one since the adopter agreed — and the notice has to say
+		// so, because that is the case where the pin no longer describes what
+		// ran.
+		{"1.2.0", "2.0.0", "major ahead"},
+		{"2.0.0", "1.9.9", "CHANGELOG.md"},
+	}
+	for _, c := range cases {
+		got := driftNotice("demo", c.pinned, c.read)
+		if c.want == "" {
+			if got != "" {
+				t.Errorf("pinned %s, read %s: got %q, want silence", c.pinned, c.read, got)
+			}
+			continue
+		}
+		if !strings.Contains(got, c.want) {
+			t.Errorf("pinned %s, read %s: %q does not say %q", c.pinned, c.read, got, c.want)
+		}
+	}
+	if strings.Contains(driftNotice("demo", "1.0.0", "1.4.0"), "major ahead") {
+		t.Error("a minor ahead was reported as a major one")
 	}
 }
