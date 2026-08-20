@@ -78,20 +78,66 @@ func TestPipesInCellsAreEscaped(t *testing.T) {
 	}
 }
 
-func TestWritePrunesWhatItDidNotWrite(t *testing.T) {
+func TestWritePrunesItsOwnStaleFiles(t *testing.T) {
 	dir := t.TempDir()
 	stale := filepath.Join(dir, "stale.md")
-	if err := os.WriteFile(stale, []byte("a record that moved"), 0o644); err != nil {
+	if err := os.WriteFile(stale, []byte("# Stale\n\n"+generatedNotice+"\n\nA record that moved.\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if err := Write(dir, sample()); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(stale); !os.IsNotExist(err) {
-		t.Errorf("stale file survived the export: %v", err)
+		t.Errorf("stale export file survived the export: %v", err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "decisions.md")); err != nil {
 		t.Errorf("decisions.md was not written: %v", err)
+	}
+}
+
+// The whole of this test is one mistyped flag: `mustur export --out .` from the
+// repository root. Rendering markdown must not be able to delete a source tree,
+// so a directory holding anything the export did not generate is refused before
+// a single file is written.
+func TestWriteRefusesADirectoryItDoesNotOwn(t *testing.T) {
+	dir := t.TempDir()
+	foreign := filepath.Join(dir, "IMPORTANT.txt")
+	if err := os.WriteFile(foreign, []byte("not ours"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	err := Write(dir, sample())
+	if err == nil {
+		t.Fatal("the export took over a directory holding a file it did not generate")
+	}
+	if !strings.Contains(err.Error(), "IMPORTANT.txt") {
+		t.Errorf("the refusal did not name the file it tripped on: %v", err)
+	}
+	if _, statErr := os.Stat(foreign); statErr != nil {
+		t.Errorf("the foreign file was touched: %v", statErr)
+	}
+	if _, statErr := os.Stat(filepath.Join(dir, "decisions.md")); !os.IsNotExist(statErr) {
+		t.Errorf("the export wrote before refusing: %v", statErr)
+	}
+}
+
+// A file that appears under an existing export after the fact is left where it
+// is and reported. Deleting it would be the same defect in a smaller blast
+// radius.
+func TestPruneLeavesAndReportsAStray(t *testing.T) {
+	dir := t.TempDir()
+	if err := Write(dir, sample()); err != nil {
+		t.Fatal(err)
+	}
+	stray := filepath.Join(dir, "work-units", "notes.txt")
+	if err := os.WriteFile(stray, []byte("someone put this here"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	err := Write(dir, sample())
+	if err == nil || !strings.Contains(err.Error(), "notes.txt") {
+		t.Fatalf("a stray file was not reported: %v", err)
+	}
+	if _, statErr := os.Stat(stray); statErr != nil {
+		t.Errorf("the stray was deleted: %v", statErr)
 	}
 }
 
