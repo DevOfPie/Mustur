@@ -52,6 +52,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Stopping takes a reason from a table](#stopping-takes-a-reason-from-a-table) | The default after a milestone is the next milestone |
 | [Pull requests are stacked](#pull-requests-are-stacked) | A fix in the base reaches everything above it |
 | [The audit is not a gate until someone asks](#the-audit-is-not-a-gate-until-someone-asks) | How a gate dies |
+| [Nothing vendors StrucGu](#nothing-vendors-strucgu) | A pinned copy of a specification goes stale silently |
+| [The audit runs in CI, against a real catalog](#the-audit-runs-in-ci-against-a-real-catalog) | Evidence that ran once on one machine is not evidence |
+| [The record roles are mapped at the export](#the-record-roles-are-mapped-at-the-export) | Auditing the records Mustur owns, not the prose beside them |
+| [The store holds more than it did](#the-store-holds-more-than-it-did) | Corrects an enumeration the milestone overtook |
 
 ---
 
@@ -623,3 +627,97 @@ or turning the audit off, and both are worse than reading them.
 
 Where the audit *runs* is a separate question, and it is the owner's rather
 than this entry's. A later entry records it.
+
+### Nothing vendors StrucGu
+
+The audit reads its modules from a StrucGu checkout — beside this repository, or
+wherever `MUSTUR_STRUCGU` points — and refuses to run when it cannot find one.
+
+Copying the modules in here would make the audit work everywhere with no second
+checkout, and that is the whole argument for it. Against it: the adoption record
+pins exact versions, StrucGu's propagation is deliberately pull-only, and a
+vendored copy drifts with nothing to notice — a conformance harness run against
+a stale copy proves conformance to nothing at all.
+
+The version pin is read the way the specification says rather than the way it
+first looks. A checker evaluates the module as it reads it; the pin records what
+the adopter agreed to and reports drift as a notice pointing at that module's
+changelog. What a checker refuses is a *floating* pin, because a new check never
+ships in a minor version and accepting a range would let upstream publish
+findings into every adopting repository at will.
+
+Where the catalog comes from in an unattended run is a separate question, and
+[the owner answered it](#the-audit-runs-in-ci-against-a-real-catalog).
+
+## 2026-08-20 — decisions the review sent to the owner
+
+Milestone 2b's review found two questions that had been settled in prose
+instead of asked. Both went back as prompts and both are the owner's answers.
+
+### The audit runs in CI, against a real catalog
+
+The workflow checks out [StrucGu](https://github.com/DevOfPie/StrucGu) beside
+this repository at a pinned ref, and the tests read `MUSTUR_STRUCGU` the way the
+command already did.
+
+Before this, the conformance harness found its catalog only as a sibling
+directory and skipped otherwise — so `go test ./...` printed `ok` in CI with all
+344 assertions unrun, and a green build was indistinguishable from a covered
+one. The evidence this milestone rests on had run once, on one machine.
+
+Vendoring a copy of the modules was the alternative and was rejected for the
+reason [the entry above](#nothing-vendors-strucgu) gives: a pinned copy of
+somebody else's specification goes stale silently, and a harness run against a
+stale copy proves conformance to nothing. The cost accepted instead is a
+workflow change the owner has to apply, and a CI run that depends on a second
+repository being reachable.
+
+The skip stays, for a machine without the catalog, but it now says what did not
+run rather than passing quietly. Silence and *did not look* are the same string.
+
+### The record roles are mapped at the export
+
+`decision_log`, `findings` and `investigations` now point at
+[records/](records/README.md) rather than at `decisions.md`, `queue.md` and
+`docs/investigations/`. `triage_doc` stays at [workflow.md](workflow.md), which
+is a rule rather than a record and which no export produces.
+
+[Plan.md](Plan.md#scope) promises a conformance audit over the records Mustur
+owns. Mapped at the prose, the audit read this repository's contract files —
+a different claim, and one milestone 2b was not for. The exclusion that kept the
+export out of its own audit was written during milestone 2 to stop entries being
+reported twice; with the roles moved, it would instead leave every role with
+nothing to read.
+
+Three consequences, all of them real:
+
+1. **The export has to satisfy checks written for hand-authored files.** It now
+   carries an index of decisions, an evidence and a reviewed column on findings,
+   and investigations as a directory of records with a template — because those
+   are the shapes the modules describe. Where a record has nothing behind a
+   column the cell is empty rather than filled, which is the outcome to want: a
+   cell filled to satisfy a check says the opposite of what is true and is the
+   same length.
+2. **The queue and the record had to be reconciled.** `queue.md` is the loose
+   intake and `records/findings.md` is the record; six lines that had never
+   become records now have identifiers, and this file's triage section says
+   which is which.
+3. **`DL-03` reports every regeneration.** The decision log is now generated,
+   so a rewrite removes lines every time and the check cannot tell that from an
+   erasure. It is [accepted as a deviation](strucgu.yaml) with a reason and an
+   expiry rather than ignored: the property `DL-03` protects is enforced
+   upstream and more strongly, by a database that refuses `UPDATE` and `DELETE`.
+
+### The store holds more than it did
+
+Corrects [The store holds records, the contract files keep their prose](#the-store-holds-records-the-contract-files-keep-their-prose),
+which enumerates twenty-seven decisions, nine milestones, six findings and one
+investigation. That was true when written and is not now: the store holds
+thirteen findings, and the decisions have kept accruing. The earlier entry
+cannot be edited, so this is the pointer.
+
+The enumeration is the part that went stale, not the reasoning. What that entry
+decided — that a record summarises the prose it points at rather than copying it
+— still holds, and this milestone did not change it. The lesson is narrower: a
+count in an append-only file is a claim with an expiry date on it, and the
+export's own index is the place a reader should look instead.

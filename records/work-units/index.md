@@ -19,7 +19,7 @@ is a copy that will drift.
   written afterwards is a description of what happened.
 - **Nothing is deleted.** A unit that was abandoned says so and stays.
 
-## The units
+## The records
 
 | Unit | Title | Date |
 | --- | --- | --- |
@@ -29,3 +29,6 @@ is a copy that will drift.
 | [MUS-W-0004](MUS-W-0004.md) | A deterministic markdown export | 2026-08-19 |
 | [MUS-W-0005](MUS-W-0005.md) | One repository-scoped tool call that returns records and routing | 2026-08-19 |
 | [MUS-W-0006](MUS-W-0006.md) | The mandate, in Mustur's own repository-local configuration | 2026-08-19 |
+| [MUS-W-0007](MUS-W-0007.md) | StrucGu's check vocabulary, implemented | 2026-08-20 |
+| [MUS-W-0008](MUS-W-0008.md) | The audit, emitted in the form the specification asks for | 2026-08-20 |
+| [MUS-W-0009](MUS-W-0009.md) | Conformance, against the catalog's own fixtures | 2026-08-20 |

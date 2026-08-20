@@ -6,14 +6,32 @@
     "at": "2026-08-19",
     "body": "Every record Mustur holds needs a permanent name before the first insert, because the store is append-only and records cite each other by name.",
     "refs": [
-      { "key": "Discharges", "value": "MUS-M-0002" },
-      { "key": "Decided by", "value": "MUS-D-0022" }
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0002"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0022"
+      }
     ],
     "data": [
-      { "key": "Depends on", "value": "Nothing." },
-      { "key": "Discharges", "value": "Part of MUS-M-0002: records addressable by identifier." },
-      { "key": "Done means", "value": "An identifier parses into project, role and serial, or is rejected with a message naming the canonical form.\nA role letter that disagrees with the record's kind is an error at validation, not at render time.\nTwo records sort the same way in every listing Mustur produces, asserted by a test over the sort.\nA serial of zero and a serial past four digits are both rejected." },
-      { "key": "Risks", "value": "The four-digit serial is a ceiling. Widening it later would resort every identifier written before it, so the field is fixed rather than grown; ten thousand records of one role in one project is the point at which this unit was wrong.\nThe three-letter project prefix is assigned by hand. Two projects choosing the same prefix collide silently until they are in the same store, which is the day of the first onboarding." }
+      {
+        "key": "Depends on",
+        "value": "Nothing."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0002: records addressable by identifier."
+      },
+      {
+        "key": "Done means",
+        "value": "An identifier parses into project, role and serial, or is rejected with a message naming the canonical form.\nA role letter that disagrees with the record's kind is an error at validation, not at render time.\nTwo records sort the same way in every listing Mustur produces, asserted by a test over the sort.\nA serial of zero and a serial past four digits are both rejected."
+      },
+      {
+        "key": "Risks",
+        "value": "The four-digit serial is a ceiling. Widening it later would resort every identifier written before it, so the field is fixed rather than grown; ten thousand records of one role in one project is the point at which this unit was wrong.\nThe three-letter project prefix is assigned by hand. Two projects choosing the same prefix collide silently until they are in the same store, which is the day of the first onboarding."
+      }
     ]
   },
   {
@@ -23,14 +41,32 @@
     "at": "2026-08-19",
     "body": "The event log is the record. Everything else Mustur shows is derived from it and can be rebuilt from it.",
     "refs": [
-      { "key": "Discharges", "value": "MUS-M-0002" },
-      { "key": "Decided by", "value": "MUS-D-0021, MUS-D-0025, MUS-D-0026" }
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0002"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0021, MUS-D-0025, MUS-D-0026"
+      }
     ],
     "data": [
-      { "key": "Depends on", "value": "MUS-W-0001." },
-      { "key": "Discharges", "value": "Part of MUS-M-0002: Mustur holds its own records." },
-      { "key": "Done means", "value": "An update or a delete against the event log is refused by the database itself, asserted by a test that issues both through a plain connection rather than through the store's own API.\nCreating an identifier that already exists is an error, and amending one that does not exist is an error.\nRebuilding the materialized latest from the log reproduces it exactly, asserted by a test that corrupts the cache and rebuilds it.\nEvery read returns the newest event for an identifier and no earlier one." },
-      { "key": "Risks", "value": "The materialized latest is not protected, deliberately: a guard that stopped a person would stop the trigger that maintains it. Its authority rests on being re-derivable, so a rebuild that is wrong is a silent wrong answer rather than an error. The rebuild is therefore tested against a deliberately corrupted cache and not only against an empty one.\nThe store takes one connection. A second writer would interleave sequence numbers, and nothing outside this process enforces that." }
+      {
+        "key": "Depends on",
+        "value": "MUS-W-0001."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0002: Mustur holds its own records."
+      },
+      {
+        "key": "Done means",
+        "value": "An update or a delete against the event log is refused by the database itself, asserted by a test that issues both through a plain connection rather than through the store's own API.\nCreating an identifier that already exists is an error, and amending one that does not exist is an error.\nRebuilding the materialized latest from the log reproduces it exactly, asserted by a test that corrupts the cache and rebuilds it.\nEvery read returns the newest event for an identifier and no earlier one."
+      },
+      {
+        "key": "Risks",
+        "value": "The materialized latest is not protected, deliberately: a guard that stopped a person would stop the trigger that maintains it. Its authority rests on being re-derivable, so a rebuild that is wrong is a silent wrong answer rather than an error. The rebuild is therefore tested against a deliberately corrupted cache and not only against an empty one.\nThe store takes one connection. A second writer would interleave sequence numbers, and nothing outside this process enforces that."
+      }
     ]
   },
   {
@@ -40,14 +76,32 @@
     "at": "2026-08-19",
     "body": "Records that exist as prose in this repository's contract files become addressable without being copied out of them.",
     "refs": [
-      { "key": "Discharges", "value": "MUS-M-0002" },
-      { "key": "Decided by", "value": "MUS-D-0023" }
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0002"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0023"
+      }
     ],
     "data": [
-      { "key": "Depends on", "value": "MUS-W-0002." },
-      { "key": "Discharges", "value": "Part of MUS-M-0002: the one call returns something a reader can check." },
-      { "key": "Done means", "value": "Seeding an empty store inserts every seed record and reports how many.\nSeeding a store that already holds records refuses, naming what it found, rather than duplicating or amending.\nEvery seeded decision, milestone and investigation carries a link to the prose it summarises, and every one of those links resolves under the repository's own link check.\nNo seeded record restates prose that lives in a contract file; the pointer is the record's link, not a copy." },
-      { "key": "Risks", "value": "A summary and its source can disagree once the source is edited, and nothing detects that. The summary is deliberately one line, so the surface where they can disagree is as small as it can be while still being useful in a listing.\nThe seed is a bootstrap, not a source of truth. Once records are written through Mustur the seed no longer reproduces the store, and re-running it against a live store is refused for that reason." }
+      {
+        "key": "Depends on",
+        "value": "MUS-W-0002."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0002: the one call returns something a reader can check."
+      },
+      {
+        "key": "Done means",
+        "value": "Seeding an empty store inserts every seed record and reports how many.\nSeeding a store that already holds records refuses, naming what it found, rather than duplicating or amending.\nEvery seeded decision, milestone and investigation carries a link to the prose it summarises, and every one of those links resolves under the repository's own link check.\nNo seeded record restates prose that lives in a contract file; the pointer is the record's link, not a copy."
+      },
+      {
+        "key": "Risks",
+        "value": "A summary and its source can disagree once the source is edited, and nothing detects that. The summary is deliberately one line, so the surface where they can disagree is as small as it can be while still being useful in a listing.\nThe seed is a bootstrap, not a source of truth. Once records are written through Mustur the seed no longer reproduces the store, and re-running it against a live store is refused for that reason."
+      }
     ]
   },
   {
@@ -57,14 +111,32 @@
     "at": "2026-08-19",
     "body": "The audit surface and the backup. StrucGu's checks speak in files, headings and links, and a database answers none of them.",
     "refs": [
-      { "key": "Discharges", "value": "MUS-M-0002, MUS-M-0003" },
-      { "key": "Decided by", "value": "MUS-D-0021, MUS-D-0024" }
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0002, MUS-M-0003"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0021, MUS-D-0024"
+      }
     ],
     "data": [
-      { "key": "Depends on", "value": "MUS-W-0002." },
-      { "key": "Discharges", "value": "Part of MUS-M-0002, and the obligation MUS-D-0021 created: the audit at MUS-M-0003 runs against files." },
-      { "key": "Done means", "value": "Exporting the same store twice produces byte-identical trees, asserted by a test that renders twice and compares.\nNo output carries the time of the run or any other value that changes without a record changing.\nEvery record is reachable from the export's index by a link that resolves, asserted by the repository's own link check over the committed tree.\nA file left behind by an earlier export is removed by a later one.\nThe exported work-unit tree carries an index and a template, so the work-units module has the roles it names." },
-      { "key": "Risks", "value": "The export is committed, so every insert produces a diff. That is the cost bought deliberately: a diff is how a reader who does not run the binary checks what happened.\nHand-editing the export is undetectable by the export itself. Verification is a separate command, and if it is not run the tree can drift from the store without anything saying so." }
+      {
+        "key": "Depends on",
+        "value": "MUS-W-0002."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0002, and the obligation MUS-D-0021 created: the audit at MUS-M-0003 runs against files."
+      },
+      {
+        "key": "Done means",
+        "value": "Exporting the same store twice produces byte-identical trees, asserted by a test that renders twice and compares.\nNo output carries the time of the run or any other value that changes without a record changing.\nEvery record is reachable from the export's index by a link that resolves, asserted by the repository's own link check over the committed tree.\nA file left behind by an earlier export is removed by a later one.\nThe exported work-unit tree carries an index and a template, so the work-units module has the roles it names."
+      },
+      {
+        "key": "Risks",
+        "value": "The export is committed, so every insert produces a diff. That is the cost bought deliberately: a diff is how a reader who does not run the binary checks what happened.\nHand-editing the export is undetectable by the export itself. Verification is a separate command, and if it is not run the tree can drift from the store without anything saying so."
+      }
     ]
   },
   {
@@ -74,14 +146,32 @@
     "at": "2026-08-19",
     "body": "The call the mandate names. It is a superset of the stub the disproof measured, so the clause that was measured is the clause that ships.",
     "refs": [
-      { "key": "Discharges", "value": "MUS-M-0002" },
-      { "key": "Decided by", "value": "MUS-D-0002, MUS-D-0027" }
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0002"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0002, MUS-D-0027"
+      }
     ],
     "data": [
-      { "key": "Depends on", "value": "MUS-W-0002, MUS-W-0003." },
-      { "key": "Discharges", "value": "Part of MUS-M-0002: one repository-scoped tool call returns the records and the routing." },
-      { "key": "Done means", "value": "A call with no identifier returns the repository's routing and an index of every record, grouped by kind.\nA call naming an identifier returns that record in full, and an identifier the store does not hold returns a message saying so rather than an empty result.\nThe tool's name and its two original arguments are the ones the disproof measured, so the mandate clause is unchanged from the fixture that was scored.\nThe server binds to the loopback interface only.\nThe returned text is produced by the same renderer the export uses, so a record reads the same in a session as it does in the tree." },
-      { "key": "Risks", "value": "The server is unauthenticated. That is sound only while it is bound to loopback on a single-tenant machine, and it stops being sound the moment the ingress rule at MUS-M-0006 exists. Nothing in this unit enforces the ordering.\nA session whose server never loaded sees no tool at all rather than a failure, which the disproof already had to design around. The mandate says what to do in that case; nothing can make the absent tool report itself." }
+      {
+        "key": "Depends on",
+        "value": "MUS-W-0002, MUS-W-0003."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0002: one repository-scoped tool call returns the records and the routing."
+      },
+      {
+        "key": "Done means",
+        "value": "A call with no identifier returns the repository's routing and an index of every record, grouped by kind.\nA call naming an identifier returns that record in full, and an identifier the store does not hold returns a message saying so rather than an empty result.\nThe tool's name and its two original arguments are the ones the disproof measured, so the mandate clause is unchanged from the fixture that was scored.\nThe server binds to the loopback interface only.\nThe returned text is produced by the same renderer the export uses, so a record reads the same in a session as it does in the tree."
+      },
+      {
+        "key": "Risks",
+        "value": "The server is unauthenticated. That is sound only while it is bound to loopback on a single-tenant machine, and it stops being sound the moment the ingress rule at MUS-M-0006 exists. Nothing in this unit enforces the ordering.\nA session whose server never loaded sees no tool at all rather than a failure, which the disproof already had to design around. The mandate says what to do in that case; nothing can make the absent tool report itself."
+      }
     ]
   },
   {
@@ -91,14 +181,133 @@
     "at": "2026-08-19",
     "body": "Mustur is its own first project, so the injection kit is exercised here before it is offered to anything else.",
     "refs": [
-      { "key": "Discharges", "value": "MUS-M-0002" },
-      { "key": "Decided by", "value": "MUS-D-0002, MUS-D-0008, MUS-D-0027" }
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0002"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0002, MUS-D-0008, MUS-D-0027"
+      }
     ],
     "data": [
-      { "key": "Depends on", "value": "MUS-W-0005." },
-      { "key": "Discharges", "value": "Part of MUS-M-0002: Mustur's own repository-local configuration carries the mandate." },
-      { "key": "Done means", "value": "The server is registered in a committed, repository-scoped file rather than on any account.\nThe mandate clause in the repository's context file is the wording the disproof scored, extended only by what to do when the tool is absent.\nThe clause names the tool and the server, and never appears in a task prompt.\nA session that finds no tool says so and continues, rather than stopping or pretending the call was made." },
-      { "key": "Risks", "value": "A mandate in this repository's context file fires in every session here, including sessions where the server is not running. Wording it to degrade weakens exactly the pressure the disproof measured, and the trade is taken knowingly: an absent tool reported is worth more than a session that cannot start.\nThe clause is prose in a file a person edits. Nothing checks that it still says what was measured." }
+      {
+        "key": "Depends on",
+        "value": "MUS-W-0005."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0002: Mustur's own repository-local configuration carries the mandate."
+      },
+      {
+        "key": "Done means",
+        "value": "The server is registered in a committed, repository-scoped file rather than on any account.\nThe mandate clause in the repository's context file is the wording the disproof scored, extended only by what to do when the tool is absent.\nThe clause names the tool and the server, and never appears in a task prompt.\nA session that finds no tool says so and continues, rather than stopping or pretending the call was made."
+      },
+      {
+        "key": "Risks",
+        "value": "A mandate in this repository's context file fires in every session here, including sessions where the server is not running. Wording it to degrade weakens exactly the pressure the disproof measured, and the trade is taken knowingly: an absent tool reported is worth more than a session that cannot start.\nThe clause is prose in a file a person edits. Nothing checks that it still says what was measured."
+      }
+    ]
+  },
+  {
+    "id": "MUS-W-0007",
+    "kind": "work-unit",
+    "at": "2026-08-20",
+    "title": "StrucGu's check vocabulary, implemented",
+    "body": "The seven kinds and the five states, read from a module catalog and an adoption record.",
+    "refs": [
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0003"
+      }
+    ],
+    "data": [
+      {
+        "key": "Depends on",
+        "value": "MUS-M-0002's records, which are what it audits."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0003: checking Mustur's own records against StrucGu's check vocabulary."
+      },
+      {
+        "key": "Done means",
+        "value": "All seven kinds are implemented and all five states distinguished, asserted by a test per kind with a tree that satisfies it and a mutation that trips it.\\nA role whose module is not adopted makes a check bound to it skip rather than fail.\\nAn adoption record missing a field a check requires is a run that cannot start, not a finding.\\nThe audited tree is not written to.\\nAn independent implementation of the same specification returns the same verdicts over this repository."
+      },
+      {
+        "key": "Risks",
+        "value": "The specification has no reference implementation, deliberately, so every reading could be the other one. Four are named in comments; the ones nobody noticed are the residual risk.\\nA review comparing this against the independent implementation on eighteen trees the fixtures do not cover found four defects the fixtures had not. That is the measure of how much of the space fixtures pin, and of how much they do not."
+      }
+    ]
+  },
+  {
+    "id": "MUS-W-0008",
+    "kind": "work-unit",
+    "at": "2026-08-20",
+    "title": "The audit, emitted in the form the specification asks for",
+    "body": "Two renderings of one run, and a command that produces them.",
+    "refs": [
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0003"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0032"
+      }
+    ],
+    "data": [
+      {
+        "key": "Depends on",
+        "value": "MUS-W-0007."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0003: emitting an audit in the specified form."
+      },
+      {
+        "key": "Done means",
+        "value": "Every one of the five states is named with its count, including counts of zero.\\nA judgment line is emitted per entry on every run, and says what it could not read when a role does not resolve.\\nThe markdown form's every row carries the delimiters its own header declares.\\nThe exit status is zero whenever the audit ran; gating requires asking for it.\\nVersion drift is reported as a notice and changes no count."
+      },
+      {
+        "key": "Risks",
+        "value": "An audit run is not itself a record, so it is not addressable by identifier the way everything else here is. A gap this milestone leaves open.\\nNo gate fails on findings, by design. An audit nobody runs reports nothing, and what stands against that is that CI now runs it."
+      }
+    ]
+  },
+  {
+    "id": "MUS-W-0009",
+    "kind": "work-unit",
+    "at": "2026-08-20",
+    "title": "Conformance, against the catalog's own fixtures",
+    "body": "StrucGu ships a tree per check and an expected.yaml saying what a correct checker produces on each. Running against those is the only evidence available that this is a conforming implementation rather than merely a working one.",
+    "refs": [
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0003"
+      },
+      {
+        "key": "Decided by",
+        "value": "MUS-D-0033"
+      }
+    ],
+    "data": [
+      {
+        "key": "Depends on",
+        "value": "MUS-W-0007."
+      },
+      {
+        "key": "Discharges",
+        "value": "Part of MUS-M-0003: fixtures proving the checks detect something."
+      },
+      {
+        "key": "Done means",
+        "value": "Every fixture tree in the catalog runs and every state in its expected.yaml is compared, with the number of trees and comparisons reported rather than assumed.\\nA fixture directory no expectation names is reported, because a tree nothing asserts about is an unpinned boundary.\\nThe one fixture that cannot carry a nested repository is copied elsewhere and its setup run, rather than skipped.\\nThe harness runs in CI against a checkout of the catalog, and where no catalog is present it says loudly that it did not run."
+      },
+      {
+        "key": "Risks",
+        "value": "Conformance is measured against the catalog at the ref CI pins. A module released after that is not covered, and only the drift notice would say so.\\nThe fixtures pin what the specification chose to pin. A review found four real divergences in the space they do not cover, which is where two correct-looking checkers still disagree."
+      }
     ]
   }
 ]

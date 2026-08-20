@@ -123,5 +123,107 @@
         "value": "unreviewed"
       }
     ]
+  },
+  {
+    "id": "MUS-F-0008",
+    "kind": "finding",
+    "at": "2026-08-20",
+    "title": "A commit removed lines from the decision log",
+    "body": "An entry written earlier in the same milestone was rewritten in place rather than corrected by a later one. The branch was unmerged at the time, so nothing shipped had been edited, and the merged history carries the deletion anyway.",
+    "data": [
+      {
+        "key": "Evidence",
+        "value": "DL-03 against commit 9e3940e, on the audit's first run"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0009",
+    "kind": "finding",
+    "at": "2026-08-20",
+    "title": "Two standing rules disagree about where a superseding pointer goes",
+    "body": "workflow.md says superseded decisions stay with a pointer, and that an entry is never edited. A pointer added to the superseded entry would be an edit of it, so only the later entry can carry one. The contract should say which.",
+    "data": [
+      {
+        "key": "Evidence",
+        "value": "workflow.md's standing rules, read against each other"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0010",
+    "kind": "finding",
+    "at": "2026-08-20",
+    "title": "Nothing checks that the mandate still says what milestone 1 scored",
+    "body": "The clause in CLAUDE.md is prose a person edits, and no test, script or gate compares it to the fixture the disproof ran. A string comparison would be a few lines.",
+    "data": [
+      {
+        "key": "Evidence",
+        "value": "no gate matches the clause's opening words"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0011",
+    "kind": "finding",
+    "at": "2026-08-20",
+    "title": "No gate detects the export drifting from the store",
+    "body": "The committed check runs mustur verify without a store, and CI has none to compare against. A hand edit to records/ is caught only by someone running verify with a store.",
+    "data": [
+      {
+        "key": "Evidence",
+        "value": "the verify-records target passes no store"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0012",
+    "kind": "finding",
+    "at": "2026-08-20",
+    "title": "ci/proposed/README.md says a new check needs no owner",
+    "body": "Milestone 2's Go checks needed a workflow change the agent's token cannot push, and milestone 2b's catalog checkout needs another. That row has now been falsified twice.",
+    "data": [
+      {
+        "key": "Evidence",
+        "value": "commit 40af879, applied by the owner"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
+  },
+  {
+    "id": "MUS-F-0013",
+    "kind": "finding",
+    "at": "2026-08-20",
+    "title": "Four of StrucGu's five roles are record kinds, and nobody has asked for the fifth",
+    "body": "triage-rule describes a document rather than a set of records. Whether Mustur should hold a triage rule as a record at all is unasked.",
+    "data": [
+      {
+        "key": "Evidence",
+        "value": "the record kinds in internal/ident, against StrucGu's module list"
+      },
+      {
+        "key": "Status",
+        "value": "unreviewed"
+      }
+    ]
   }
 ]

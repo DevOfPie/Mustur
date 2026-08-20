@@ -8,10 +8,20 @@
 #     triage-rule, which describes a document rather than a set of records.
 #     An earlier entry in decisions.md said all five; it is corrected there,
 #     not edited.
-#   - Mustur the REPOSITORY adopts the five modules below, because those are
-#     the roles files here actually play. work-units joined at milestone 2,
-#     when the records it names came into existence. Declaring a role against
-#     a directory that does not exist would be a claim no reader could check.
+#   - Mustur the REPOSITORY adopts the five modules below, and since milestone
+#     2b every record role is mapped at the EXPORT rather than at the prose
+#     files a person edits. The owner's call: Plan.md's scope row promises a
+#     conformance audit over the records Mustur owns, and those records live in
+#     records/. Mapping the roles at decisions.md and queue.md audited this
+#     repository's contract prose instead, which is a different claim.
+#
+#     What that costs, and it is real: the export has to satisfy checks written
+#     for hand-authored files. Where it cannot honestly — an evidence column
+#     with nothing behind it — the cell is empty and the check reports, which
+#     is the outcome to want.
+#
+#     triage_doc stays at workflow.md. It is a rule, not a record, and no
+#     export produces it.
 #
 # Hand-edited. No tool writes this file.
 
@@ -31,20 +41,20 @@ modules:
     # This repository's first substantive commit. Nothing precedes it.
     effective_from: 2026-08-19
     roles:
-      decision_log: decisions.md
-      decision_index: decisions.md
+      decision_log: records/decisions.md
+      decision_index: records/decisions.md
 
   findings-queue:
     version: "0.3.0"
     adopted: 2026-08-19
     roles:
-      findings: queue.md
+      findings: records/findings.md
 
   investigations:
     version: "0.2.1"
     adopted: 2026-08-19
     roles:
-      investigations: docs/investigations/
+      investigations: records/investigations/
 
   work-units:
     version: "0.2.1"
@@ -65,22 +75,18 @@ modules:
 exclude:
   - docs/investigations/0001-harness/**
 
-  # The flat half of the export. These files carry the PRODUCT's records —
-  # the same decisions, findings and investigations this repository already
-  # keeps as prose, addressable by identifier and pointing back at that prose.
-  # A second decision log declared against a generated file would make every
-  # audit report the same entries twice. The work-unit tree above is the one
-  # role that IS mapped into generated files, because nothing else in this
-  # tree plays it.
+  # records/ is no longer excluded. Until milestone 2b it was, so that a second
+  # decision log declared against generated files would not make every audit
+  # report the same entries twice — but the roles pointed at the prose then. Now
+  # they point here, and excluding the files a role is mapped at would leave the
+  # role with nothing to read.
   #
-  # Listed one by one rather than as `records/*.md`. A checker matching that
-  # glob with fnmatch lets `*` cross a slash, which also excluded
-  # records/work-units/ and made the work-units records invisible to the very
-  # audit milestone 2b exists to run. Found by review, 2026-08-20.
+  # The exclusion that was here listed six paths one by one rather than writing
+  # `records/*.md`, because a checker matching that glob with fnmatch lets `*`
+  # cross a slash — which also excluded records/work-units/ and made a whole
+  # role invisible to the audit. That bug is gone with the exclusion; the lesson
+  # is not. Where a glob's meaning would decide something, list paths.
   - records/README.md
-  - records/decisions.md
-  - records/findings.md
-  - records/investigations.md
   - records/milestones.md
   - records/routing.md
 
@@ -89,3 +95,21 @@ exclude:
 #   Nothing. All five modules whose roles this tree can fill are declared
 #   above; work-units joined them at milestone 2, when the records it names
 #   came into existence.
+
+# Accepted findings. Echoed every run, never suppressed, and each one expires.
+deviations:
+  - check: DL-03
+    title: The decision log is generated, so regenerating it removes lines
+    accepted: 2026-08-20
+    by: KillerOfPie
+    reason: >
+      DL-03 exists to catch an entry edited away. Since milestone 2b the
+      decision log role is the export, which is rewritten whole on every run, so
+      the check reports every regeneration and cannot distinguish one from an
+      erasure. The property it protects is enforced upstream and more strongly:
+      the store refuses UPDATE and DELETE at the database, and the export is
+      derived from it. What is worth watching is the store's log, not the file
+      it renders.
+    scope: records/decisions.md
+    review_by: 2027-02-20
+    upstream: ~

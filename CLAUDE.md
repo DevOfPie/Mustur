@@ -3,11 +3,12 @@
 Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
-**Milestone 2 is built and not yet accepted.** The `mustur` binary can hold this
-repository's records and routing and serve them over MCP — on a fresh clone it
-holds nothing until `make seed` and serves nothing until `make serve`; what is
-unconditionally here is [records/](records/README.md). Nothing below milestone 2
-is built; do not describe any of it in the present tense.
+**Milestones 1 and 2 have passed; milestone 2b is built and not yet accepted.**
+The `mustur` binary can hold this repository's records and routing, serve them
+over MCP, and audit them — on a fresh clone it holds nothing until `make seed`,
+serves nothing until `make serve`, and audits nothing without a StrucGu
+checkout; what is unconditionally here is [records/](records/README.md). Nothing
+below milestone 2b is built; do not describe any of it in the present tense.
 
 Three rules bind every session in this repository:
 

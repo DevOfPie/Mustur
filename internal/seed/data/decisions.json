@@ -446,5 +446,81 @@
         "value": "[decisions.md#the-audit-is-not-a-gate-until-someone-asks](../decisions.md#the-audit-is-not-a-gate-until-someone-asks)"
       }
     ]
+  },
+  {
+    "id": "MUS-D-0033",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "The audit runs in CI, against a real catalog",
+    "body": "The owner's call. CI checks out StrucGu at a pinned ref and the tests read MUSTUR_STRUCGU, so the conformance assertions run on every push rather than once on one machine. Vendoring a copy was the alternative and was rejected: a stale copy proves conformance to nothing.",
+    "refs": [
+      {
+        "key": "Corrects",
+        "value": "MUS-D-0032"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-audit-runs-in-ci-against-a-real-catalog](../decisions.md#the-audit-runs-in-ci-against-a-real-catalog)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0034",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "The record roles are mapped at the export",
+    "body": "The owner's call. decision_log, findings and investigations point at records/ rather than at the prose files, so the audit reads the records Mustur owns, as the scope row promises. triage_doc stays at workflow.md, which is a rule and not a record.",
+    "refs": [
+      {
+        "key": "Costs",
+        "value": "MUS-F-0008"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-record-roles-are-mapped-at-the-export](../decisions.md#the-record-roles-are-mapped-at-the-export)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0035",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "The store holds more than it did",
+    "body": "Corrects MUS-D-0023's enumeration, which is stale rather than wrong in its reasoning. A count written into an append-only file is a claim with an expiry date; the export's own index is where a reader should look.",
+    "refs": [
+      {
+        "key": "Corrects",
+        "value": "MUS-D-0023"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-store-holds-more-than-it-did](../decisions.md#the-store-holds-more-than-it-did)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0036",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "Nothing vendors StrucGu",
+    "body": "The audit reads its modules from a StrucGu checkout and refuses to guess. A pinned copy of somebody else's specification goes stale silently, and a conformance harness run against a stale copy proves conformance to nothing. Recorded after the entry that refines it, because identifiers are assigned in the order records are written and never reordered.",
+    "refs": [
+      {
+        "key": "Refined by",
+        "value": "MUS-D-0033"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#nothing-vendors-strucgu](../decisions.md#nothing-vendors-strucgu)"
+      }
+    ]
   }
 ]

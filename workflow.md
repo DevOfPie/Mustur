@@ -180,6 +180,11 @@ in scope     → work it now
 out of scope → append one line to queue.md, continue what you were on
 ```
 
+[queue.md](queue.md) is the intake — a line, loosely, from anyone. The record is
+[records/findings.md](records/findings.md), which the store produces and which
+this file is the rule for: what belongs in the queue is what this document says
+belongs in it.
+
 ### A claim is about to be written
 
 ```

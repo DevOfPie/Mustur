@@ -8,10 +8,11 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Milestone 1 has passed; milestone 2 is built and awaiting acceptance, and
-nothing below it is built.** What exists is one binary that can hold this
-project's records and routing and serve them to a session through a single
-mandated tool call. There is no web surface yet.
+**Milestones 1 and 2 have passed; milestone 2b is built and awaiting
+acceptance, and nothing below it is built.** What exists is one binary that can
+hold this project's records and routing, serve them to a session through a
+single mandated tool call, and audit its own records against the conventions
+this repository declares. There is no web surface yet.
 
 | | |
 | --- | --- |
@@ -57,10 +58,10 @@ make check            # every gate this tree enforces mechanically
 
 `make audit` needs a [StrucGu](https://github.com/DevOfPie/StrucGu) checkout
 beside this one, or `MUSTUR_STRUCGU` pointing at one; nothing here vendors a
-copy of somebody else's specification. It is not part of `make check`, and its
-exit status is zero whenever the audit ran — findings are output, and gating on
-them is `--gate`, which you ask for after your first clean run rather than
-before.
+copy of somebody else's specification, and CI checks one out rather than
+carrying one. Its exit status is zero whenever the audit ran — findings are
+output, and gating on them is `--gate`, which you ask for after your first clean
+run rather than before.
 
 The store is not in this repository: a binary file in git is a record nobody can
 review. [records/](records/README.md) is the reviewable half, and

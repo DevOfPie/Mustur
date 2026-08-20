@@ -6,13 +6,32 @@
     "at": "2026-08-19",
     "body": "The smallest disproof of the delivery bet every module depends on: whether a clause in a repository-local context file is enough to make an agent call a tool it was never told about in its prompt. The protocol and the decision rule were committed before the scored runs executed. Accepted at 20 of 20 against a rule of 18 of 20.",
     "refs": [
-      { "key": "Discharges", "value": "MUS-M-0001" }
+      {
+        "key": "Discharges",
+        "value": "MUS-M-0001"
+      }
     ],
     "data": [
-      { "key": "Status", "value": "accepted" },
-      { "key": "Decision rule", "value": "fixed before the runs: 18 of 20" },
-      { "key": "Result", "value": "20 of 20" },
-      { "key": "Record", "value": "[docs/investigations/0001-mandated-tool-call.md](../docs/investigations/0001-mandated-tool-call.md)" }
+      {
+        "key": "Status",
+        "value": "accepted"
+      },
+      {
+        "key": "Decision rule",
+        "value": "fixed before the runs: 18 of 20"
+      },
+      {
+        "key": "Result",
+        "value": "20 of 20"
+      },
+      {
+        "key": "How to reproduce",
+        "value": "Re-run the harness in [docs/investigations/0001-harness/](../../docs/investigations/0001-harness/) at the commit that carries it: the runner, the scorer and the stub server are all there, and the stub's own log is the evidence rather than any transcript."
+      },
+      {
+        "key": "Record",
+        "value": "[docs/investigations/0001-mandated-tool-call.md](../../docs/investigations/0001-mandated-tool-call.md)"
+      }
     ]
   }
 ]
