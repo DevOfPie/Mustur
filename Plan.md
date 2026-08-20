@@ -152,7 +152,7 @@ Accepted before building, each with its consequence.
 | The composer is the largest and least certain estimate | Five to eight days is for something usable daily, not finished. It is simultaneously the piece most likely to be abandoned and the piece without which the rest is a registry with a web page. |
 | Delivery depends on how one vendor's client loads repo-local files | An upstream change to context-file or project-scoped MCP behaviour breaks injection, and nothing inside Mustur can compensate. |
 | Repo scoping is available but not enforced | A personal skill at `~/.claude/skills/` still fires in every repository. Mustur can hold the registry; it cannot stop someone installing a global skill that overrides it. |
-| Mustur is its own first project | Requirements surface on a project with no production code and no build, which is unlike every project meant to follow. The transition milestone exists because of this, and cannot fully compensate for it. |
+| Mustur is its own first project | Requirements surfaced on a project that had no production code and no build until its second milestone, and that still has no users but one. That is unlike every project meant to follow. The transition milestone exists because of this, and cannot fully compensate for it. |
 | Records served by tool call are not measured against records in the repository | If retrieval degrades, the packaging win is bought with task success and nothing here would detect the trade. |
 | Plan usage is not readable programmatically | Any usage module estimates rather than measures and can never gate. Its only advantage over the built-in estimate is aggregating across machines. |
 | Cloudflare holds identity and the edge | An outage there takes the whole surface down, and there is no local fallback path by design. |
@@ -192,9 +192,29 @@ it, and specific enough that failing them is unambiguous.
 
 ## Build status
 
-Nothing built. This file is the plan seed from
+**Milestone 1 has passed. Milestone 2 is built and not yet accepted. Nothing
+below milestone 2 is built.**
+
+| # | State | Evidence |
+| --- | --- | --- |
+| 1 | passed 2026-08-19, 20 of 20 against a rule of 18 of 20 | [the investigation](docs/investigations/0001-mandated-tool-call.md) |
+| 2 | built 2026-08-19; reviewed 2026-08-20, findings dispositioned in its pull request; awaiting acceptance | [the records](records/README.md), and the `mustur_route` tool they are served by |
+| 2b onwards | not started | |
+
+*Passed* is a verdict acceptance makes, and this file does not make it early —
+the same reason its own note below says the status change in IdeaWarehouse was
+never this file's to claim.
+
+What exists is one binary. It holds this project's records and its routing in a
+SQLite store that only accepts inserts, exports them to
+[records/](records/README.md) so a reader who does not run it can check them,
+and serves them to a session through one tool call that the clause at the
+bottom of [CLAUDE.md](CLAUDE.md) mandates. There is no web surface, no adapter,
+no session Mustur owns, and no second project.
+
+This file began as the plan seed from
 [agent-workflow-web-platform](https://github.com/DevOfPie/IdeaWarehouse/blob/main/ideas/agent-workflow-web-platform.md),
-lifted here on 2026-08-19 so planning and wireframing can start in this
+lifted here on 2026-08-19 so planning and wireframing could start in this
 repository. The status change in IdeaWarehouse is a verdict and is not this
 file's to claim.
 

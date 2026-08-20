@@ -14,7 +14,9 @@ not pick.
 [StrucGu](https://github.com/DevOfPie/StrucGu) and be replaced by references.
 Keep them liftable.
 
-**Nothing is built.** Every rule below is executable by hand today.
+**Every rule below is executable by hand today.** That was free while nothing
+was built; since milestone 2 it is a constraint, and `make check` is where it is
+kept — every gate runs offline against the working tree.
 
 ---
 

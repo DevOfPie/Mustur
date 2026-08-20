@@ -1,0 +1,69 @@
+[
+  {
+    "id": "MUS-R-0001",
+    "kind": "repository",
+    "title": "DevOfPie/Mustur",
+    "at": "2026-08-19",
+    "body": "Mustur's own checkout. The only repository in this registry: a routing row for a repository that has not been onboarded would be a claim about a tree nothing here verifies, and onboarding is a milestone with its own verdict.",
+    "data": [
+      {
+        "key": "Remote",
+        "value": "https://github.com/DevOfPie/Mustur"
+      },
+      {
+        "key": "Checkout on MUS-H-0001",
+        "value": "~/repos/DevOfPie/Mustur"
+      },
+      {
+        "key": "Machine",
+        "value": "MUS-H-0001"
+      },
+      {
+        "key": "Contract",
+        "value": "workflow.md"
+      },
+      {
+        "key": "Dispatch kinds",
+        "value": "milestone"
+      }
+    ]
+  },
+  {
+    "id": "MUS-H-0001",
+    "kind": "machine",
+    "title": "whippy-vm",
+    "at": "2026-08-19",
+    "body": "The machine holding the checkout and, later, the adapter that supervises sessions. Reached over the home network; not itself a Mustur session host yet.",
+    "data": [
+      {
+        "key": "Role",
+        "value": "checkout host"
+      },
+      {
+        "key": "Repositories",
+        "value": "MUS-R-0001"
+      }
+    ]
+  },
+  {
+    "id": "MUS-P-0001",
+    "kind": "project",
+    "title": "Mustur",
+    "at": "2026-08-19",
+    "body": "The project this store belongs to. Its identifier prefix is MUS, and every record here carries it.",
+    "data": [
+      {
+        "key": "Prefix",
+        "value": "MUS"
+      },
+      {
+        "key": "Repositories",
+        "value": "MUS-R-0001"
+      },
+      {
+        "key": "Machines",
+        "value": "MUS-H-0001"
+      }
+    ]
+  }
+]

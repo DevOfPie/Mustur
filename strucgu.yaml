@@ -3,13 +3,15 @@
 # Two different things are easy to confuse in this repository, so both are
 # stated:
 #
-#   - Mustur the PRODUCT implements all five module roles as its record shape.
-#     That is a Plan.md scope decision, recorded in decisions.md.
-#   - Mustur the REPOSITORY adopts the three base modules below, because those
-#     are the roles files here actually play today. Nothing is built, so
-#     work-units and investigations have nothing to point at and are not
-#     adopted. Declaring a role against a directory that does not exist would
-#     be a claim no reader could check.
+#   - Mustur the PRODUCT implements four module roles as record kinds:
+#     decision-log, findings-queue, investigations and work-units. Not
+#     triage-rule, which describes a document rather than a set of records.
+#     An earlier entry in decisions.md said all five; it is corrected there,
+#     not edited.
+#   - Mustur the REPOSITORY adopts the five modules below, because those are
+#     the roles files here actually play. work-units joined at milestone 2,
+#     when the records it names came into existence. Declaring a role against
+#     a directory that does not exist would be a claim no reader could check.
 #
 # Hand-edited. No tool writes this file.
 
@@ -44,13 +46,46 @@ modules:
     roles:
       investigations: docs/investigations/
 
+  work-units:
+    version: "0.2.1"
+    adopted: 2026-08-19
+    # Adopted at milestone 2, as the comment above this file's exclusions said
+    # it would be. The unit records are exported from the store rather than
+    # hand-written, which changes nothing a checker can see: the directory, the
+    # index and the template are the roles the module names, and the module
+    # describes shape rather than who typed it.
+    roles:
+      unit_dir: records/work-units/
+      unit_template: records/work-units/_template.md
+      unit_index: records/work-units/index.md
+
 # The harness under the investigations role is apparatus, not records: it
 # carries the disproof's fixture repositories, whose markdown would otherwise
 # be audited as investigation records.
 exclude:
   - docs/investigations/0001-harness/**
 
+  # The flat half of the export. These files carry the PRODUCT's records —
+  # the same decisions, findings and investigations this repository already
+  # keeps as prose, addressable by identifier and pointing back at that prose.
+  # A second decision log declared against a generated file would make every
+  # audit report the same entries twice. The work-unit tree above is the one
+  # role that IS mapped into generated files, because nothing else in this
+  # tree plays it.
+  #
+  # Listed one by one rather than as `records/*.md`. A checker matching that
+  # glob with fnmatch lets `*` cross a slash, which also excluded
+  # records/work-units/ and made the work-units records invisible to the very
+  # audit milestone 2b exists to run. Found by review, 2026-08-20.
+  - records/README.md
+  - records/decisions.md
+  - records/findings.md
+  - records/investigations.md
+  - records/milestones.md
+  - records/routing.md
+
 # Not adopted, and why:
 #
-#   work-units      Nothing is built, so there are no work units to record.
-#                   Adopt at milestone 2, when records exist.
+#   Nothing. All five modules whose roles this tree can fill are declared
+#   above; work-units joined them at milestone 2, when the records it names
+#   came into existence.

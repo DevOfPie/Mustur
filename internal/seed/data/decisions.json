@@ -1,0 +1,372 @@
+[
+  {
+    "id": "MUS-D-0001",
+    "kind": "decision",
+    "title": "Why this is not a local file",
+    "at": "2026-08-19",
+    "body": "The two requirements nothing local can serve.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#why-this-is-not-a-local-file](../decisions.md#why-this-is-not-a-local-file)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0002",
+    "kind": "decision",
+    "title": "Inject, never offer",
+    "at": "2026-08-19",
+    "body": "The measurement that constrains every module.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#inject-never-offer](../decisions.md#inject-never-offer)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0003",
+    "kind": "decision",
+    "title": "Link-out is conditional",
+    "at": "2026-08-19",
+    "body": "New tab, and it must earn its place.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#link-out-is-conditional](../decisions.md#link-out-is-conditional)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0004",
+    "kind": "decision",
+    "title": "The store is reached by tooling, not symlinks",
+    "at": "2026-08-19",
+    "body": "Why the symlinked-skills experiment was dropped.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-store-is-reached-by-tooling-not-symlinks](../decisions.md#the-store-is-reached-by-tooling-not-symlinks)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0005",
+    "kind": "decision",
+    "title": "Decisions are enforced, block then route",
+    "at": "2026-08-19",
+    "body": "The requirement that came from an agent's failure.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#decisions-are-enforced-block-then-route](../decisions.md#decisions-are-enforced-block-then-route)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0006",
+    "kind": "decision",
+    "title": "The composer is built, not linked",
+    "at": "2026-08-19",
+    "body": "The order-of-magnitude decision.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-composer-is-built-not-linked](../decisions.md#the-composer-is-built-not-linked)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0007",
+    "kind": "decision",
+    "title": "Mustur owns the sessions it talks to",
+    "at": "2026-08-19",
+    "body": "And never attaches to one it did not start.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#mustur-owns-the-sessions-it-talks-to](../decisions.md#mustur-owns-the-sessions-it-talks-to)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0008",
+    "kind": "decision",
+    "title": "Mustur is its own first project",
+    "at": "2026-08-19",
+    "body": "And touches no other until onboarding.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#mustur-is-its-own-first-project](../decisions.md#mustur-is-its-own-first-project)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0009",
+    "kind": "decision",
+    "title": "Records take StrucGu's module roles",
+    "at": "2026-08-19",
+    "body": "And why LinkCtrl's shape differs.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#records-take-strucgus-module-roles](../decisions.md#records-take-strucgus-module-roles)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0010",
+    "kind": "decision",
+    "title": "Intake is in v1",
+    "at": "2026-08-19",
+    "body": "The gap found by surveying the estate.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#intake-is-in-v1](../decisions.md#intake-is-in-v1)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0011",
+    "kind": "decision",
+    "title": "Mustur becomes the runner StrucGu did not ship",
+    "at": "2026-08-19",
+    "body": "And what that puts downstream of it.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#mustur-becomes-the-runner-strucgu-did-not-ship](../decisions.md#mustur-becomes-the-runner-strucgu-did-not-ship)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0012",
+    "kind": "decision",
+    "title": "Estimates here run long",
+    "at": "2026-08-19",
+    "body": "The owner's calibration.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#estimates-here-run-long](../decisions.md#estimates-here-run-long)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0013",
+    "kind": "decision",
+    "title": "The composer takes the thought first",
+    "at": "2026-08-19",
+    "body": "Route second; last-active default keeps one tap.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-composer-takes-the-thought-first](../decisions.md#the-composer-takes-the-thought-first)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0014",
+    "kind": "decision",
+    "title": "Records read as a document",
+    "at": "2026-08-19",
+    "body": "In-place identifier expansion; pivot kept for the record.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#records-read-as-a-document](../decisions.md#records-read-as-a-document)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0015",
+    "kind": "decision",
+    "title": "Home is the session list",
+    "at": "2026-08-19",
+    "body": "With a pinned banner for open decisions.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#home-is-the-session-list](../decisions.md#home-is-the-session-list)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0016",
+    "kind": "decision",
+    "title": "Sessions are supervised through tmux",
+    "at": "2026-08-19",
+    "body": "Crash-survival free; a terminal can still attach.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#sessions-are-supervised-through-tmux](../decisions.md#sessions-are-supervised-through-tmux)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0017",
+    "kind": "decision",
+    "title": "Decision detail is generated on demand",
+    "at": "2026-08-19",
+    "body": "One paragraph up front; deeper costs tokens only when asked.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#decision-detail-is-generated-on-demand](../decisions.md#decision-detail-is-generated-on-demand)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0018",
+    "kind": "decision",
+    "title": "Phone surfaces show only the recent",
+    "at": "2026-08-19",
+    "body": "~1 hour, then the archive.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#phone-surfaces-show-only-the-recent](../decisions.md#phone-surfaces-show-only-the-recent)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0019",
+    "kind": "decision",
+    "title": "Invisibility is taught once",
+    "at": "2026-08-19",
+    "body": "First run and empty state, never permanent chrome.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#invisibility-is-taught-once](../decisions.md#invisibility-is-taught-once)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0020",
+    "kind": "decision",
+    "title": "Mustur is written in Go",
+    "at": "2026-08-19",
+    "body": "The case survived removing the tooling argument.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#mustur-is-written-in-go](../decisions.md#mustur-is-written-in-go)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0021",
+    "kind": "decision",
+    "title": "The product stores in SQLite, exports to markdown",
+    "at": "2026-08-19",
+    "body": "Insert-only by trigger; the export is the audit surface.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-product-stores-in-sqlite-exports-to-markdown](../decisions.md#the-product-stores-in-sqlite-exports-to-markdown)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0022",
+    "kind": "decision",
+    "title": "Identifiers are project, role, serial",
+    "at": "2026-08-19",
+    "body": "Records are named MUS-D-0001: a three-letter project prefix, a role letter, a four-digit serial. Permanent, sortable, and unique once a second project onboards.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#identifiers-are-project-role-serial](../decisions.md#identifiers-are-project-role-serial)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0023",
+    "kind": "decision",
+    "title": "The store holds records, the contract files keep their prose",
+    "at": "2026-08-19",
+    "body": "Every decision, milestone, finding and investigation that already existed is addressable in the store; the long rationale stays in the file that holds it, cited by link rather than copied.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-store-holds-records-the-contract-files-keep-their-prose](../decisions.md#the-store-holds-records-the-contract-files-keep-their-prose)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0024",
+    "kind": "decision",
+    "title": "The export is committed under records",
+    "at": "2026-08-19",
+    "body": "The markdown export lives at records/ and is committed, so record history is in git and reviewable in a diff by someone who does not run the binary.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-export-is-committed-under-records](../decisions.md#the-export-is-committed-under-records)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0025",
+    "kind": "decision",
+    "title": "One record shape, not a table per kind",
+    "at": "2026-08-19",
+    "body": "Every module role and every routing row uses the same record shape, so a new kind costs no second insert path, export path or audit path.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#one-record-shape-not-a-table-per-kind](../decisions.md#one-record-shape-not-a-table-per-kind)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0026",
+    "kind": "decision",
+    "title": "The SQLite driver is pure Go",
+    "at": "2026-08-19",
+    "body": "modernc.org/sqlite rather than the cgo binding, because the static single binary was already decided and cgo would end it.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#the-sqlite-driver-is-pure-go](../decisions.md#the-sqlite-driver-is-pure-go)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0027",
+    "kind": "decision",
+    "title": "What the mandate keeps from the fixture, and what it does not",
+    "at": "2026-08-19",
+    "body": "The tool keeps the name and arguments the milestone 1 stub carried, and the clause in the context file is the fixture's wording. Three things differ and the entry names all three: two optional arguments, a sentence for when the tool is absent, and the transport — the fixture was stdio, where the tool is always there.",
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not](../decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not)"
+      }
+    ]
+  },
+  {
+    "id": "MUS-D-0028",
+    "kind": "decision",
+    "at": "2026-08-20",
+    "title": "Four of StrucGu's five roles are implemented, and the repository adopts five modules",
+    "body": "Corrects MUS-D-0009. The product implements four module roles as record kinds; triage-rule describes a document rather than records and has none. The repository itself adopts five modules, work-units among them since milestone 2.",
+    "refs": [
+      {
+        "key": "Corrects",
+        "value": "MUS-D-0009"
+      }
+    ],
+    "data": [
+      {
+        "key": "Rationale",
+        "value": "[decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules](../decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules)"
+      }
+    ]
+  }
+]
