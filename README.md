@@ -8,9 +8,10 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Milestones 1 and 2 are done; nothing below them is built.** What exists is one
-binary that holds this project's records and routing and serves them to a
-session through a single mandated tool call. There is no web surface yet.
+**Milestone 1 has passed; milestone 2 is built and awaiting acceptance, and
+nothing below it is built.** What exists is one binary that can hold this
+project's records and routing and serve them to a session through a single
+mandated tool call. There is no web surface yet.
 
 | | |
 | --- | --- |
@@ -32,9 +33,16 @@ unconditionally, and **that answer has never been measured**.
 Milestone 1 was the test of it. Its decision rule was fixed and committed
 before the runs, and a failure would have killed the idea rather than shrunk
 it. It passed, 20 of 20 against a rule of 18 of 20 —
-[the record](docs/investigations/0001-mandated-tool-call.md). The clause it
-measured is the clause now in [CLAUDE.md](CLAUDE.md), and the tool it named is
-the one this repository now serves.
+[the record](docs/investigations/0001-mandated-tool-call.md).
+
+What ships is a descendant of what was measured, not the same thing. The clause
+in [CLAUDE.md](CLAUDE.md) is the fixture's wording plus a paragraph for when the
+tool is absent, and the fixture ran over stdio — where the client launches the
+server, so the tool is always there — while this repository registers HTTP on
+loopback, where it is absent unless somebody has run `make serve`. All three
+differences are named in
+[decisions.md](decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not).
+Re-scoring the clause on the transport that ships has not been done.
 
 ## Running it
 

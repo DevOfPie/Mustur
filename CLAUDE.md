@@ -3,16 +3,21 @@
 Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
-**Milestone 2 is built.** `mustur` holds this repository's records and routing
-and serves them over MCP. Nothing below milestone 2 is built; do not describe
-any of it in the present tense.
+**Milestone 2 is built and not yet accepted.** The `mustur` binary can hold this
+repository's records and routing and serve them over MCP — on a fresh clone it
+holds nothing until `make seed` and serves nothing until `make serve`; what is
+unconditionally here is [records/](records/README.md). Nothing below milestone 2
+is built; do not describe any of it in the present tense.
 
 Three rules bind every session in this repository:
 
 - **Milestone 1 has run and passed**, 20 of 20 against a rule of 18 of 20 fixed
   beforehand ([the record](docs/investigations/0001-mandated-tool-call.md)). It
-  gated everything below it, and the mandate it measured is the one at the
-  bottom of this file.
+  gated everything below it. The mandate at the bottom of this file is a
+  descendant of the one it measured, not the same clause: it adds a paragraph,
+  and it runs over a different transport. Both differences, and the third, are
+  named in
+  [decisions.md](decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not).
 - **No file in any other project is touched.** Not read for restructuring, not
   edited, not migrated. Onboarding another project is a milestone with its own
   verdict.
