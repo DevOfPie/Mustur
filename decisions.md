@@ -802,9 +802,14 @@ wins. A container is recognised by naming the other's identifier in its own
 fields rather than by a rule about kinds — the registry is data, and code that
 knew projects contain repositories would be a second place to keep that true.
 
-The surface itself carries no stylesheet, no script, no font and no image.
-Everything a phone off the home network has to fetch is another thing between a
-thought and it being filed. Measured on loopback, ten filings: median 0.5 ms,
-worst 0.9 ms, and the page itself 4,212 bytes. That is not the fifteen-second
-claim — that one is about a phone off the home network and cannot be measured
-until the ingress exists.
+The surface fetches nothing: no external stylesheet, no script, no font, no
+image. Its styles are a handful of inline rules, which an earlier version of
+this entry called "no stylesheet" and a review corrected — the property that
+matters is that a phone makes one request, not that the page is unstyled.
+
+Measured on loopback, ten filings: median 0.5 ms, worst 0.9 ms; a review
+re-measured independently at 0.35 and 0.55. The page is 3,071 bytes empty and
+4,112 after ten filings, because the recency list grows; the single figure this
+entry first gave was one reading of a transient page and could not be
+reproduced. None of it is the fifteen-second claim, which is about a phone off
+the home network and cannot be measured until the ingress exists.

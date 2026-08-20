@@ -1,8 +1,14 @@
 # Surfaces awaiting design
 
-**Nothing here is designed.** This file lists the surfaces v1 needs, what each
-one must do, and the constraint that governs it, so that wireframing has a target
-list rather than a blank page.
+**One of these is designed and it should not have been, not this way.** Surface
+5, intake, shipped at milestone 2c as a Go template — the layout decided in code
+and shown to the owner afterwards, which is what the rule three paragraphs down
+exists to prevent. Recorded rather than tidied away: the owner's answer was to
+publish a plan for every remaining surface before any more of them are built.
+
+The rest of this file lists the surfaces v1 needs, what each one must do, and the
+constraint that governs it, so that wireframing has a target list rather than a
+blank page.
 
 **Wireframes do not live in this file.** Layout options go to the owner as a
 published visual plan, never as ASCII in a document or a prompt. This file is the
@@ -68,6 +74,10 @@ Must show what is blocked on each decision, so the owner can tell a question tha
 holds up a milestone from one that holds up a sentence.
 
 ### 5. Intake
+
+**Built at milestone 2c, on loopback, without a visual plan.** What exists is one
+textarea, one button and a list of what was filed in the last hour. It is the
+baseline a plan should argue with rather than a design anyone chose.
 
 One box. Append a line and leave. Under fifteen seconds, and it must never
 require a decision to file — naming a thing requires understanding it, and at

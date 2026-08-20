@@ -66,7 +66,7 @@ useful than a guess that later reads as a commitment.
 | Agent interface | MCP over HTTP, registered per repository with `claude mcp add --scope project`, so the trigger is committed to the checkout rather than installed on the account. |
 | Agent transport | A per-machine adapter that starts and supervises long-lived sessions **inside tmux**, shelling out to the configured CLI. Sessions survive adapter restarts and stay attachable from a terminal; Mustur still never attaches to a session it did not start. Vendor neutrality is a designed boundary; only Claude Code is proven. |
 | Human interface | Server-rendered HTML. No per-project client state. |
-| Deployment | The VM already running `cloudflared` 2026.8.2. **One new ingress rule on the existing tunnel — never a second tunnel** (cloudflare/cloudflared#59). |
+| Deployment | The VM already running `cloudflared` 2026.8.2. **One new ingress rule on the existing tunnel — never a second tunnel** (cloudflare/cloudflared#59). That tunnel is token-managed, so its rules live in Cloudflare rather than on disk, and it is LinkCtrl's — both read on 2026-08-20 and written up in [docs/ingress.md](docs/ingress.md). |
 | Identity | Cloudflare Access at the edge. No client on the phone; free tier is 50 users. |
 
 ## Scope
@@ -192,14 +192,17 @@ it, and specific enough that failing them is unambiguous.
 
 ## Build status
 
-**Milestone 1 has passed. Milestone 2 is built and not yet accepted. Nothing
-below milestone 2 is built.**
+**Milestones 1 and 2 have passed. Milestone 2b is built and reviewed; 2c is
+built on loopback and cannot be shown from a phone until an ingress exists.
+Neither 2b nor 2c is accepted. Nothing below 2c is built.**
 
 | # | State | Evidence |
 | --- | --- | --- |
 | 1 | passed 2026-08-19, 20 of 20 against a rule of 18 of 20 | [the investigation](docs/investigations/0001-mandated-tool-call.md) |
-| 2 | built 2026-08-19; reviewed 2026-08-20, findings dispositioned in its pull request; awaiting acceptance | [the records](records/README.md), and the `mustur_route` tool they are served by |
-| 2b onwards | not started | |
+| 2 | passed 2026-08-20, reviewed by three agents that did not build it and every finding dispositioned | [the records](records/README.md), and the `mustur_route` tool they are served by |
+| 2b | built and reviewed 2026-08-20; awaiting acceptance | `make audit` over this repository, and 344 expected states across 37 of StrucGu's fixture trees |
+| 2c | built on loopback 2026-08-20 and reviewed. **Not met from a phone**: the ingress and an Access policy are the owner's to apply, and `mustur serve` is not yet a service. [docs/ingress.md](docs/ingress.md) | ten filings on loopback, median 0.5 ms; `MUS-F-0014` and `MUS-F-0015` for what is missing |
+| 3 onwards | not started | |
 
 *Passed* is a verdict acceptance makes, and this file does not make it early —
 the same reason its own note below says the status change in IdeaWarehouse was
@@ -208,9 +211,11 @@ never this file's to claim.
 What exists is one binary. It holds this project's records and its routing in a
 SQLite store that only accepts inserts, exports them to
 [records/](records/README.md) so a reader who does not run it can check them,
-and serves them to a session through one tool call that the clause at the
-bottom of [CLAUDE.md](CLAUDE.md) mandates. There is no web surface, no adapter,
-no session Mustur owns, and no second project.
+serves them to a session through one tool call that the clause at the bottom of
+[CLAUDE.md](CLAUDE.md) mandates, audits this repository against the StrucGu
+modules it declares, and takes a jot into its own findings queue through one
+box on loopback. There is no surface reachable from a phone, no adapter, no
+session Mustur owns, and no second project.
 
 This file began as the plan seed from
 [agent-workflow-web-platform](https://github.com/DevOfPie/IdeaWarehouse/blob/main/ideas/agent-workflow-web-platform.md),

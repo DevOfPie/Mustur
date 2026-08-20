@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-13 record(s), by identifier.
+18 record(s), by identifier.
 
 ## The queue
 
@@ -23,6 +23,11 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0011](#mus-f-0011) | No gate detects the export drifting from the store | the verify-records target passes no store | unreviewed |
 | [MUS-F-0012](#mus-f-0012) | ci/proposed/README.md says a new check needs no owner | commit 40af879, applied by the owner | unreviewed |
 | [MUS-F-0013](#mus-f-0013) | Four of StrucGu's five roles are record kinds, and nobody has asked for the fifth | the record kinds in internal/ident, against StrucGu's module list | unreviewed |
+| [MUS-F-0014](#mus-f-0014) | mustur serve is not a service, so a public hostname would 502 | no unit for mustur on this machine; the tunnel beside it runs as linkctrl-tunnel.service | unreviewed |
+| [MUS-F-0015](#mus-f-0015) | Nothing off the home network can reach the intake box yet | cloudflared runs with TUNNEL_TOKEN and no local config.yml, read 2026-08-20 | unreviewed |
+| [MUS-F-0016](#mus-f-0016) | A decision entry described routing behaviour that had not been built | two independent reviewers reproduced it against copies of the live store | fixed 2026-08-20 |
+| [MUS-F-0017](#mus-f-0017) | Two filings at once could be issued the same identifier | reproduced by a reviewer with twelve concurrent POSTs; the regression test fails against the two-call version | fixed 2026-08-20 |
+| [MUS-F-0018](#mus-f-0018) | A jot reaches the store, not the file the findings role is mapped at | strucgu.yaml maps findings at records/findings.md; the POST path never exports | unreviewed |
 
 ---
 
@@ -219,4 +224,87 @@ triage-rule describes a document rather than a set of records. Whether Mustur sh
 | Field | Value |
 | --- | --- |
 | Evidence | the record kinds in internal/ident, against StrucGu's module list |
+| Status | unreviewed |
+
+---
+
+## MUS-F-0014
+
+**mustur serve is not a service, so a public hostname would 502**
+
+finding · 2026-08-20
+
+Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
+
+The intake surface runs in a terminal. It does not start at boot and does not restart if it dies, so an ingress rule pointing at port 7777 would fail whenever nobody had started it by hand. A systemd unit is the obvious answer and no milestone has asked for one.
+
+| Field | Value |
+| --- | --- |
+| Evidence | no unit for mustur on this machine; the tunnel beside it runs as linkctrl-tunnel.service |
+| Status | unreviewed |
+
+---
+
+## MUS-F-0015
+
+**Nothing off the home network can reach the intake box yet**
+
+finding · 2026-08-20
+
+Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
+
+Milestone 2c's done-when says a jot from a phone. The surface is loopback-only, the tunnel is token-managed so its ingress rules live in Cloudflare rather than on disk, and no credential here can change them. docs/ingress.md is the runbook; applying it is the owner's.
+
+| Field | Value |
+| --- | --- |
+| Evidence | cloudflared runs with TUNNEL_TOKEN and no local config.yml, read 2026-08-20 |
+| Status | unreviewed |
+
+---
+
+## MUS-F-0016
+
+**A decision entry described routing behaviour that had not been built**
+
+finding · 2026-08-20
+
+Concerns: [MUS-D-0039](decisions.md#mus-d-0039)
+
+MUS-D-0039 stated a containment rule in the present tense while the code had no such branch, so every jot naming this repository fell back to the inbox as ambiguous. The rule exists now. The record stands as written because entries are never edited, and this is what happened in between: an edit that would have added the code ran in a shell that killed itself, and the next command's success was read as its tests passing.
+
+| Field | Value |
+| --- | --- |
+| Evidence | two independent reviewers reproduced it against copies of the live store |
+| Status | fixed 2026-08-20 |
+
+---
+
+## MUS-F-0017
+
+**Two filings at once could be issued the same identifier**
+
+finding · 2026-08-20
+
+Concerns: [MUS-W-0011](work-units/MUS-W-0011.md#mus-w-0011)
+
+Allocating an identifier and writing under it were separate statements, so twelve concurrent filings issued one identifier twice and lost a jot that its filer had been told was filed. Both now happen in one transaction.
+
+| Field | Value |
+| --- | --- |
+| Evidence | reproduced by a reviewer with twelve concurrent POSTs; the regression test fails against the two-call version |
+| Status | fixed 2026-08-20 |
+
+---
+
+## MUS-F-0018
+
+**A jot reaches the store, not the file the findings role is mapped at**
+
+finding · 2026-08-20
+
+Intake writes to the database. records/findings.md only changes when someone runs make export and commits it, and nothing in the filing path exports. A jot filed from a phone is in the store and not yet in the audited role.
+
+| Field | Value |
+| --- | --- |
+| Evidence | strucgu.yaml maps findings at records/findings.md; the POST path never exports |
 | Status | unreviewed |

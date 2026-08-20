@@ -8,11 +8,13 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Milestones 1 and 2 have passed; milestone 2b is built and awaiting
-acceptance, and nothing below it is built.** What exists is one binary that can
-hold this project's records and routing, serve them to a session through a
-single mandated tool call, and audit its own records against the conventions
-this repository declares. There is no web surface yet.
+**Milestones 1 and 2 have passed; 2b and 2c are built, reviewed and awaiting
+acceptance, and nothing below them is built.** What exists is one binary that
+can hold this project's records and routing, serve them to a session through a
+single mandated tool call, audit its own records against the conventions this
+repository declares, and take a jot into its own findings queue through one box.
+That box is on loopback: nothing reaches it from a phone until the ingress in
+[docs/ingress.md](docs/ingress.md) exists, which is the owner's to apply.
 
 | | |
 | --- | --- |

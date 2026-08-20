@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
 | decision | 39 | [decisions.md](decisions.md) |
-| finding | 13 | [findings.md](findings.md) |
+| finding | 18 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 11 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
@@ -91,6 +91,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0011](findings.md#mus-f-0011) | finding | No gate detects the export drifting from the store |
 | [MUS-F-0012](findings.md#mus-f-0012) | finding | ci/proposed/README.md says a new check needs no owner |
 | [MUS-F-0013](findings.md#mus-f-0013) | finding | Four of StrucGu's five roles are record kinds, and nobody has asked for the fifth |
+| [MUS-F-0014](findings.md#mus-f-0014) | finding | mustur serve is not a service, so a public hostname would 502 |
+| [MUS-F-0015](findings.md#mus-f-0015) | finding | Nothing off the home network can reach the intake box yet |
+| [MUS-F-0016](findings.md#mus-f-0016) | finding | A decision entry described routing behaviour that had not been built |
+| [MUS-F-0017](findings.md#mus-f-0017) | finding | Two filings at once could be issued the same identifier |
+| [MUS-F-0018](findings.md#mus-f-0018) | finding | A jot reaches the store, not the file the findings role is mapped at |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
