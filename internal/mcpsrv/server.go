@@ -109,7 +109,8 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 			b.WriteString("Mustur holds no routing yet.\n")
 		}
 		for _, r := range routing {
-			b.WriteString(export.One(r))
+			// Under `## Routing`, not beside it.
+			b.WriteString(export.OneUnder(r, 3))
 			b.WriteString("\n")
 		}
 	}

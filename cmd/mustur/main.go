@@ -30,7 +30,7 @@ const usage = `mustur — records and routing for one project
   mustur verify   [--db PATH] [--records DIR] check the exported tree against itself, and against the store
   mustur serve    [--db PATH] [--addr HOST]   serve the one tool call over MCP
   mustur list     [--db PATH] [--kind KIND]   every record, by identifier
-  mustur get ID   [--db PATH]                 one record in full
+  mustur get ID   [--db PATH]                 one record in full (either order)
   mustur rebuild  [--db PATH]                 re-derive the materialized latest from the log
   mustur version
 
@@ -271,18 +271,35 @@ func cmdList(args []string) error {
 func cmdGet(args []string) error {
 	fs := flag.NewFlagSet("get", flag.ContinueOnError)
 	db := dbFlag(fs)
+	// Go's flag package stops at the first non-flag argument, so `get ID --db P`
+	// parses the identifier and then leaves the flag unread. Parsing twice makes
+	// both orders mean the same thing, which is what anyone typing it expects.
+	// It cannot mistake a flag's value for the identifier, because the first
+	// parse is the one that consumes flag values.
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if fs.NArg() != 1 {
-		return fmt.Errorf("get needs one identifier")
+	id := ""
+	switch {
+	case fs.NArg() == 1:
+		id = fs.Arg(0)
+	case fs.NArg() > 1:
+		id = fs.Arg(0)
+		if err := fs.Parse(fs.Args()[1:]); err != nil {
+			return err
+		}
+		if fs.NArg() != 0 {
+			return fmt.Errorf("get needs exactly one identifier")
+		}
+	default:
+		return fmt.Errorf("get needs exactly one identifier")
 	}
 	s, ctx, err := openStore(*db)
 	if err != nil {
 		return err
 	}
 	defer s.Close()
-	r, err := s.Get(ctx, fs.Arg(0))
+	r, err := s.Get(ctx, id)
 	if err != nil {
 		return err
 	}
