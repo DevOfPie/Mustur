@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-73 record(s), by identifier.
+76 record(s), by identifier.
 
 ## Index
 
@@ -85,6 +85,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0071](#mus-d-0071) | The unit cannot have a private /tmp | 2026-08-21 |
 | [MUS-D-0072](#mus-d-0072) | v1 has eight surfaces, and the eighth was found by trying to build it | 2026-08-21 |
 | [MUS-D-0073](#mus-d-0073) | The standing instruction is what stopped 4b starting | 2026-08-21 |
+| [MUS-D-0074](#mus-d-0074) | Sub-agents are their own milestone, and it starts by finding out whether it is possible | 2026-08-21 |
+| [MUS-D-0075](#mus-d-0075) | The session composer is always writable | 2026-08-21 |
+| [MUS-D-0076](#mus-d-0076) | A session's exit is an event, not a record | 2026-08-21 |
 
 ---
 
@@ -1210,3 +1213,52 @@ The owner's answer after intake was that a plan is published for every remaining
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#the-standing-instruction-is-what-stopped-4b-starting](../decisions.md#the-standing-instruction-is-what-stopped-4b-starting) |
+
+---
+
+## MUS-D-0074
+
+**Sub-agents are their own milestone, and it starts by finding out whether it is possible**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0017](questions.md#mus-q-0017)
+
+Every option for showing sub-agents was really an option for finding out about them, because Mustur reads one pane and sub-agents are the CLI's internal business. The owner split them out of 4b into 4c. What makes that the right shape rather than a deferral is the verdict it permits: 4c's first unit establishes whether the CLI will let the adapter place a sub-agent where it can be read separately, and if it will not, the verdict is that it cannot be done. Parsing the pane would have produced a list that was sometimes wrong, and a wrong status reads as a fact once it is on a screen — the same failure the owner declined on MUS-Q-0005.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#sub-agents-are-their-own-milestone-and-it-starts-by-finding-out-whether-it-is-possible](../decisions.md#sub-agents-are-their-own-milestone-and-it-starts-by-finding-out-whether-it-is-possible) |
+
+---
+
+## MUS-D-0075
+
+**The session composer is always writable**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0018](questions.md#mus-q-0018)
+
+Read and write share one connection. The alternative was read-only until armed per session, so a tab left open in a pocket could not type; the owner chose always writable, keeping the embedded composer's one tap from watching a session to answering it. The cost is that the WebSocket origin check and the Access policy's scope are the only things between a stranger and an agent's input, with no second layer behind them. The origin check is therefore the control rather than a hardening detail, and confirming the Access policy admits nobody wider is urgent rather than tidy.
+
+| Field | Value |
+| --- | --- |
+| Not taken | Read-only by default with an explicit unlock, and arming by device |
+| Rationale | [decisions.md#the-session-composer-is-always-writable](../decisions.md#the-session-composer-is-always-writable) |
+
+---
+
+## MUS-D-0076
+
+**A session's exit is an event, not a record**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0019](questions.md#mus-q-0019)
+
+Supervision reports an exit on the surface and in the service log, and writes nothing into records/. It follows the line already drawn around session output: not addressable, not exported, not a record. A finding for every non-zero exit fills the findings queue with noise the first time something is flaky, and a records tree nobody reads is worse than one that is missing something.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-sessions-exit-is-an-event-not-a-record](../decisions.md#a-sessions-exit-is-an-event-not-a-record) |

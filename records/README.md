@@ -8,9 +8,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 
 | Kind | Records | Where |
 | --- | --- | --- |
-| milestone | 9 | [milestones.md](milestones.md) |
-| question | 16 | [questions.md](questions.md) |
-| decision | 73 | [decisions.md](decisions.md) |
+| milestone | 10 | [milestones.md](milestones.md) |
+| question | 19 | [questions.md](questions.md) |
+| decision | 76 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 16 | [work-units/index.md](work-units/index.md) |
@@ -29,6 +29,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-M-0007](milestones.md#mus-m-0007) | milestone | Composition |
 | [MUS-M-0008](milestones.md#mus-m-0008) | milestone | A second person |
 | [MUS-M-0009](milestones.md#mus-m-0009) | milestone | A second project moves in |
+| [MUS-M-0010](milestones.md#mus-m-0010) | milestone | Sub-agents are visible |
 | [MUS-W-0001](work-units/MUS-W-0001.md#mus-w-0001) | work-unit | An identifier scheme records can be addressed by |
 | [MUS-W-0002](work-units/MUS-W-0002.md#mus-w-0002) | work-unit | An insert-only store with a materialized latest |
 | [MUS-W-0003](work-units/MUS-W-0003.md#mus-w-0003) | work-unit | A seed that puts what already exists into the store |
@@ -61,6 +62,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0014](questions.md#mus-q-0014) | question | How does an answered decision reach the session that raised it? |
 | [MUS-Q-0015](questions.md#mus-q-0015) | question | I narrowed milestone 4a's done-when without asking. Which clauses does 4a actually owe? |
 | [MUS-Q-0016](questions.md#mus-q-0016) | question | Milestone 4b needs a surface neither docs/ui-surfaces.md nor the published plan has |
+| [MUS-Q-0017](questions.md#mus-q-0017) | question | How should sub-agents become visible on the session surface? |
+| [MUS-Q-0018](questions.md#mus-q-0018) | question | Should typing into a session be armed separately from watching it? |
+| [MUS-Q-0019](questions.md#mus-q-0019) | question | Where does a session's exit get recorded? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -134,6 +138,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0071](decisions.md#mus-d-0071) | decision | The unit cannot have a private /tmp |
 | [MUS-D-0072](decisions.md#mus-d-0072) | decision | v1 has eight surfaces, and the eighth was found by trying to build it |
 | [MUS-D-0073](decisions.md#mus-d-0073) | decision | The standing instruction is what stopped 4b starting |
+| [MUS-D-0074](decisions.md#mus-d-0074) | decision | Sub-agents are their own milestone, and it starts by finding out whether it is possible |
+| [MUS-D-0075](decisions.md#mus-d-0075) | decision | The session composer is always writable |
+| [MUS-D-0076](decisions.md#mus-d-0076) | decision | A session's exit is an event, not a record |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

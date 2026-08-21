@@ -93,6 +93,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The unit cannot have a private /tmp](#the-unit-cannot-have-a-private-tmp) | tmux's socket lives in /tmp, so the feature shipped inert |
 | [v1 has eight surfaces, and the eighth was found by trying to build it](#v1-has-eight-surfaces-and-the-eighth-was-found-by-trying-to-build-it) | The session list is not a session's output |
 | [The standing instruction is what stopped 4b starting](#the-standing-instruction-is-what-stopped-4b-starting) | Deleted by one commit, restored by a review, earned it at once |
+| [Sub-agents are their own milestone, and it starts by finding out whether it is possible](#sub-agents-are-their-own-milestone-and-it-starts-by-finding-out-whether-it-is-possible) | A verdict of "cannot be done" is a real outcome |
+| [The session composer is always writable](#the-session-composer-is-always-writable) | And what that puts on the origin check |
+| [A session's exit is an event, not a record](#a-sessions-exit-is-an-event-not-a-record) | The line already drawn around session output |
 
 ---
 
@@ -1437,3 +1440,54 @@ It earned its restoration immediately. It is the rule that stopped milestone 4b
 being written from a brief the way intake and the decision queue both were —
 the third time would have been the one where the pattern stopped being an
 accident.
+
+## 2026-08-21 — the session surface's last three questions
+
+### Sub-agents are their own milestone, and it starts by finding out whether it is possible
+
+Mustur shells out to a CLI and reads one pane. A session that spawns three
+reviewers is three agents writing into that pane, unlabelled and interleaved
+with the parent — so every option for *showing* sub-agents was really an option
+for *finding out about them*, and none of the three was cheap.
+
+The owner's answer on `MUS-Q-0017`: ship 4b without them, and make sub-agents
+milestone 4c.
+
+What makes that the right shape rather than a deferral is the verdict it
+permits. 4c's first unit is establishing whether the CLI will let the adapter
+place a sub-agent where it can be read separately. **If it will not, the
+milestone's verdict is that this cannot be done** — which is a real outcome, and
+one the alternative could not reach. Parsing the pane for markers would have
+produced a sub-agent list that was sometimes wrong, and a wrong status reads as
+a fact once it is on a screen. That is the same failure as inferring
+waiting-for-input, which the owner declined on `MUS-Q-0005`.
+
+### The session composer is always writable
+
+Read and write share one connection. The alternative offered was read-only until
+armed per session, so that a tab left open in a pocket could not type.
+
+The owner's answer on `MUS-Q-0018`: always writable, as drawn. The embedded
+composer keeps its one tap from watching a session to answering it, which is the
+whole argument for embedding it.
+
+**What that costs, stated rather than left implicit.** The WebSocket origin
+check and the Access policy's scope are now the *only* things between a stranger
+and an agent's input; there is no second layer behind them. Two consequences
+follow, and both are heavier than they were an hour ago:
+
+- The origin check is not a hardening detail. It is the control, and it is
+  tested first in 4b's verification.
+- Confirming the Access policy admits the owner and nobody wider is now
+  urgent rather than tidy. It has been outstanding since the ingress went up.
+
+### A session's exit is an event, not a record
+
+Supervision notices an exit and reports it on the surface and in the service
+log. Nothing goes into `records/`.
+
+The owner's answer on `MUS-Q-0019`, and it follows the line already drawn around
+session output: not addressable, not exported, not a record. An exit is the same
+kind of thing. The alternative — a finding for every non-zero exit — fills the
+findings queue with noise the first time something is flaky, and a records tree
+nobody reads is worse than one that is missing something.

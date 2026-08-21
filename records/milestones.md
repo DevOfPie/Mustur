@@ -4,7 +4,7 @@
 
 What the project has promised to do, and what counts as done.
 
-9 record(s), by identifier.
+10 record(s), by identifier.
 
 ---
 
@@ -141,4 +141,23 @@ Done when: Its own verdict, not assumed here. The first project onboarded proves
 | Field | Value |
 | --- | --- |
 | Plan number | 7 |
+| Source | [Plan.md#milestones](../Plan.md#milestones) |
+
+---
+
+## MUS-M-0010
+
+**Sub-agents are visible**
+
+milestone · 2026-08-21
+
+Split from: [MUS-M-0006](#mus-m-0006)
+
+Raised by: [MUS-Q-0017](questions.md#mus-q-0017)
+
+Done when: A session that spawns sub-agents shows them as their own rows — which are running, for how long, and one readable without losing the parent. It starts by establishing whether that is possible at all: Mustur shells out to a CLI and reads one pane, so the first unit finds out whether the CLI will let the adapter place sub-agents where they can be read separately. If it will not, the milestone's verdict is that it cannot be done rather than a heuristic that guesses.
+
+| Field | Value |
+| --- | --- |
+| Plan number | 4c |
 | Source | [Plan.md#milestones](../Plan.md#milestones) |

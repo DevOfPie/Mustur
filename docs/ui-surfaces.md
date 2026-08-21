@@ -174,10 +174,24 @@ server-rendered. The stack table names this as the exception and keeps the rule
 for everything else; a second surface wanting script is a new decision, not a
 precedent.
 
+**Sub-agents are part of it.** A session that spawns three reviewers is one pane
+with three agents writing into it. They must appear as their own rows, running,
+and one must be readable without losing the parent — which needs Mustur to know a
+sub-agent started, and today it does not.
+
+**The connection is the first one that carries keystrokes in**, not only records
+out. A flaw here is not a wrong page; it is somebody else typing into an agent
+with a checkout and a shell. The WebSocket refuses any origin but its own —
+browsers exempt WebSockets from the same-origin policy and send cookies with the
+handshake, so Access authenticates the person and does nothing about a socket
+opened by a page they happened to visit.
+
 Its plan is
-[plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58) —
-four artboards, the transport, the wire format, and four open questions.
-Milestone 4b builds it from that drawing, not from this brief.
+[plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58).
+Milestone 4b builds it from that drawing, not from this brief. The owner has
+settled the composer, the scrollback cap, what idle means and what supervision
+does; what remains open is how sub-agents are found, whether typing is armed
+separately from watching, and where a session's exit is recorded.
 
 ## Not surfaces
 
