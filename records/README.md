@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
 | decision | 44 | [decisions.md](decisions.md) |
-| finding | 21 | [findings.md](findings.md) |
+| finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 12 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
@@ -105,6 +105,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0019](findings.md#mus-f-0019) | finding | The destination row cannot preselect the guess without a client script |
 | [MUS-F-0020](findings.md#mus-f-0020) | finding | A shallow clone made the history check pass for the wrong reason |
 | [MUS-F-0021](findings.md#mus-f-0021) | finding | The public hostname has no Access application in front of it |
+| [MUS-F-0022](findings.md#mus-f-0022) | finding | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |

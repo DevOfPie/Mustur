@@ -192,8 +192,8 @@ it, and specific enough that failing them is unambiguous.
 
 ## Build status
 
-**Milestones 1 and 2 have passed. Milestone 2b is built and reviewed; 2c is
-built on loopback and cannot be shown from a phone until an ingress exists.
+**Milestones 1 and 2 have passed. 2b and 2c are built and reviewed; 2c is now
+reachable and gated, and waits only on the owner filing a jot from a phone.
 Neither 2b nor 2c is accepted. Nothing below 2c is built.**
 
 | # | State | Evidence |
@@ -201,7 +201,7 @@ Neither 2b nor 2c is accepted. Nothing below 2c is built.**
 | 1 | passed 2026-08-19, 20 of 20 against a rule of 18 of 20 | [the investigation](docs/investigations/0001-mandated-tool-call.md) |
 | 2 | passed 2026-08-20, reviewed by three agents that did not build it and every finding dispositioned | [the records](records/README.md), and the `mustur_route` tool they are served by |
 | 2b | built and reviewed 2026-08-20; awaiting acceptance | `make audit` over this repository, and 344 expected states across 37 of StrucGu's fixture trees |
-| 2c | built on loopback 2026-08-20 and reviewed. **Not met from a phone**: the ingress and an Access policy are the owner's to apply, and `mustur serve` is not yet a service. [docs/ingress.md](docs/ingress.md) | ten filings on loopback, median 0.5 ms; `MUS-F-0014` and `MUS-F-0015` for what is missing |
+| 2c | built and reviewed 2026-08-20. Reachable and gated 2026-08-21: `mustur.devofpie.com` behind Cloudflare Access, answered by a service that starts at boot. **The one sentence still unproven is the milestone's own** — a jot from a phone — which only the owner can test, because only the owner can get through Access | `MUS-F-0022`, filed through the running service in 20 ms and carried into `records/findings.md` by it; [docs/ingress.md](docs/ingress.md) |
 | 3 onwards | not started | |
 
 *Passed* is a verdict acceptance makes, and this file does not make it early —

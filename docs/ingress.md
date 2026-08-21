@@ -4,14 +4,13 @@ Milestone 2c's surface is built and bound to loopback. The last step —
 making it reachable off the home network — is not a file in this repository and
 cannot be. This is what it takes, what is true today, and who has to do it.
 
-**Read on 2026-08-21: the hostname exists and is not protected.**
-`https://mustur.devofpie.com/` is routed to `127.0.0.1:7777` and answers
-unauthenticated requests directly — no Access login, no challenge headers, a
-plain 502 from the origin path because nothing is listening yet. That 502 is
-the only thing standing between the intake box and the open internet, and it
-stops being true the moment the service starts.
+**Live and gated, 2026-08-21.** `https://mustur.devofpie.com/` is routed to
+`127.0.0.1:7777`, Cloudflare Access sits in front of it, and the service that
+answers it starts at boot. What remains unproven is the milestone's own
+sentence — a jot filed *from a phone* — which only the owner can test, because
+only the owner can get through Access.
 
-## What is true, read on 2026-08-20
+## What is true, read on 2026-08-21
 
 | | |
 | --- | --- |
@@ -20,8 +19,8 @@ stops being true the moment the service starts.
 | How it is configured | A `TUNNEL_TOKEN` in `/etc/cloudflared/env`. **Remotely managed** |
 | Local ingress file | None. There is no `/etc/cloudflared/config.yml` on this machine |
 | Public hostname | `mustur.devofpie.com` → `http://127.0.0.1:7777`, added by the owner 2026-08-21 |
-| Access in front of it | **No.** An unauthenticated `GET /` returns the origin's 502 rather than a login redirect |
-| Anything listening on 7777 | No. `deploy/mustur.service` exists and is deliberately not enabled |
+| Access in front of it | **Yes**, added by the owner 2026-08-21 |
+| Anything listening on 7777 | `mustur.service`, a systemd user unit, enabled and active |
 
 That last row is the one that decides the shape of everything below. A
 token-managed tunnel takes its ingress rules from Cloudflare, not from disk, so
@@ -41,37 +40,30 @@ cause, which is the cost that decision accepted.
 Two of the three steps below are done. The one that is not is the one that has
 to come first, and the order is not a preference.
 
-### 1. An Access application — not yet done, and blocking
+### 1. An Access application — done
 
 The intake surface reads the filer's identity from
 `Cf-Access-Authenticated-User-Email`, a header Cloudflare Access sets at the
-edge. `cloudflared` passes client headers through to the origin. With no Access
-application in front, anyone who reaches the hostname can send that header
-themselves and file a jot under any address they like — and can file jots at all.
+edge, and `cloudflared` passes client headers through. Access is what makes that
+header trustworthy, which is why it had to exist before anything listened.
 
-In the Zero Trust dashboard (`one.dash.cloudflare.com`):
+Confirmed against four requests, not one:
 
-| Step | |
+| Request | Answer |
 | --- | --- |
-| 1 | **Access → Applications → Add an application → Self-hosted** |
-| 2 | Name it `Mustur`. Session duration is a preference; 24 hours is reasonable for a phone |
-| 3 | **Public hostname**: subdomain `mustur`, domain `devofpie.com`, path empty |
-| 4 | **Add policy** — name `Owner`, action **Allow**, one include rule: *Emails* → `dev@killerofpie.com`. No other rule, and no `Everyone` |
-| 5 | Save. Leave every other default alone: no bypass policy, no service-token policy, and nothing on the `Everyone` selector |
+| `GET /` | 302 to `killerofpie.cloudflareaccess.com`, `auth_status: NONE` |
+| `GET /intake` | 302, same |
+| `POST /intake` | 302, same — the write path is gated, not only the read |
+| `GET /intake` carrying a forged `Cf-Access-Authenticated-User-Email` | 302, same. A header cannot buy a session |
 
-Then confirm it took, from anywhere:
+To re-check it at any time:
 
 ```sh
-curl -sS -o /dev/null -w '%{http_code} %{redirect_url}\n' https://mustur.devofpie.com/
+curl -sS -o /dev/null -w '%{http_code}\n' https://mustur.devofpie.com/
 ```
 
-A **302 to a `cloudflareaccess.com` login** is the answer you want. A **502**
-means the request still reached the origin and Access is not in front.
-
-One thing worth setting while you are there: Access can strip inbound copies of
-its own headers, but do not rely on that alone. The surface will trust that
-header only because Access is the only thing that can set it, which is exactly
-why the order matters.
+**302** is the answer you want. **200 or 502 means Access is no longer in
+front**, and the service should be stopped until it is.
 
 ### 2. The hostname — done
 
@@ -79,30 +71,41 @@ why the order matters.
 `7777` is `mustur serve`'s default, and `serve` refuses any address that is not
 loopback, so the tunnel is the only way in by construction.
 
-### 3. Something listening — ready, not started
+### 3. Something listening — done
 
 `deploy/mustur.service` is a systemd **user** unit: it runs as the account that
-owns the store, needs no root, restarts on failure, and starts at boot once
-lingering is on.
+owns the store, needs no root, restarts on failure, and starts at boot on the
+lingering this account already had.
 
 ```sh
-make install-service            # installs it, does not enable it
-loginctl enable-linger "$USER"  # so it survives a logout and starts at boot
+make install-service            # build the binary and install the unit
 systemctl --user enable --now mustur
 ```
 
-**Do not run that last line before step 1 is confirmed.** Enabling the service
-is what publishes the box; everything before it is inert.
+Verified enabled and active, serving 91 records; it survives `systemctl restart`
+and comes back from `kill -9` within seconds. Confined to two writable paths —
+the store and the export tree — with `ProtectSystem=strict` and `ProtectHome`
+read-only.
+
+If Access is ever removed from the hostname, stop this first:
+
+```sh
+systemctl --user disable --now mustur
+```
 
 ## What is still not demonstrable
 
-`mustur serve` was not a service, which is why the hostname 502s;
-`deploy/mustur.service` closes that (`MUS-F-0014`) and is waiting on step 1.
+One sentence, and it is the milestone's own: *a jot from a phone lands in
+Mustur's findings-queue in seconds*. Only the owner can test it, because only
+the owner can get through Access.
 
-Until Access exists and the service is enabled, the milestone's own wording — *a
-jot from a phone lands in Mustur's findings-queue in seconds* — is demonstrable
-on loopback and not from a phone. What has been measured is on loopback: ten
-filings, median 0.5 ms, worst 0.9 ms; independently re-measured at median
-0.35 ms, worst 0.55 ms. The page is 3,071 bytes empty and grows with the recency
-list. The fifteen-second claim is about a network that is not connected yet, and
-this file exists so that nobody records it as met before it is.
+Everything under it is proven. A jot filed through the running service on
+loopback took **20 ms** end to end, was routed by the guess to
+`DevOfPie/Mustur`, and appeared in `records/findings.md` — the file the
+`findings` role is mapped at — without anybody running `make export`. That is
+`MUS-F-0022`, filed by the surface rather than by the command line, which is
+what makes it the proof rather than a note about one.
+
+What the phone adds to that path is Access and the network. Neither is measured
+here, and the fifteen-second claim stays unclaimed until somebody holding a
+phone off the home network files one and says what it took.
