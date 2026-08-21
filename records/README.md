@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| question | 2 | [questions.md](questions.md) |
-| decision | 48 | [decisions.md](decisions.md) |
+| question | 7 | [questions.md](questions.md) |
+| decision | 54 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 14 | [work-units/index.md](work-units/index.md) |
@@ -45,6 +45,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0014](work-units/MUS-W-0014.md#mus-w-0014) | work-unit | The decision queue |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
+| [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
+| [MUS-Q-0004](questions.md#mus-q-0004) | question | While the reopening is with the owner, fix milestone 2c's other findings or hold? |
+| [MUS-Q-0005](questions.md#mus-q-0005) | question | Should the gate block on an unanswered question, or only on an unsurfaced one? |
+| [MUS-Q-0006](questions.md#mus-q-0006) | question | The decision queue is reached from a banner on the intake box. MUS-D-0041 rejected exactly that. |
+| [MUS-Q-0007](questions.md#mus-q-0007) | question | Should an agent be able to answer or withdraw its own question? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -93,6 +98,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0046](decisions.md#mus-d-0046) | decision | Injection belongs to the milestone that owns sessions |
 | [MUS-D-0047](decisions.md#mus-d-0047) | decision | A question is its own kind, and only some become decisions |
 | [MUS-D-0048](decisions.md#mus-d-0048) | decision | The gate turns on being asked, not on being answered |
+| [MUS-D-0049](decisions.md#mus-d-0049) | decision | Milestone 2's falsified record is corrected inside 2c, not reopened |
+| [MUS-D-0050](decisions.md#mus-d-0050) | decision | The question gate reads the exported tree, not the store |
+| [MUS-D-0051](decisions.md#mus-d-0051) | decision | An answer is required when the work depends on it |
+| [MUS-D-0052](decisions.md#mus-d-0052) | decision | A question may be withdrawn by its raiser, never answered by them |
+| [MUS-D-0053](decisions.md#mus-d-0053) | decision | The decision queue's banner is interim, and MUS-D-0041 still stands |
+| [MUS-D-0054](decisions.md#mus-d-0054) | decision | The tool call derives its kind list rather than restating it |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-2 record(s), by identifier.
+7 record(s), by identifier.
 
 ---
 
@@ -45,3 +45,103 @@ A decision that has been taken is MUS-D. A question still waiting on the owner i
 | Surfaced | 2026-08-21 04:20 |
 | Answer | Own kind Q, appending a decision when the answer earns one. The owner's first instinct was a status field on D records; they took the argument against it. |
 | Answered | 2026-08-21 04:26 |
+
+---
+
+## MUS-Q-0003
+
+**The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it?**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
+
+MUS-W-0005 discharges milestone 2, passed and merged. It says the unauthenticated server stops being sound the moment the ingress rule at MUS-M-0006 exists; the ingress arrived at 2c, and /mcp shares a mux with the intake box, so milestone 2's tool call is publicly routed. Access covers it, so the posture is sound and the shipped record is what is false. workflow.md says a finding falsifying a shipped milestone is a reopening, and reopening is scheduling, which is the owner's.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 2c's acceptance |
+| Surfaced | 2026-08-21 03:40 |
+| Answer | Correct the record inside 2c. Milestone 2 stays passed. |
+| Answered | 2026-08-21 03:44 |
+
+---
+
+## MUS-Q-0004
+
+**While the reopening is with the owner, fix milestone 2c's other findings or hold?**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
+
+Around twenty findings besides the reopening, including a real defect: the seed shipped no default routing record, so a fresh clone routed an unroutable jot to nowhere. An instruction about sequencing rather than a decision about the project.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the 2c review's fixes are made in this run |
+| Surfaced | 2026-08-21 03:40 |
+| Answer | Fix everything independent now. |
+| Answered | 2026-08-21 03:44 |
+
+---
+
+## MUS-Q-0005
+
+**Should the gate block on an unanswered question, or only on an unsurfaced one?**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0005](milestones.md#mus-m-0005)
+
+Built as: make check fails while an open question was never surfaced, and passes on one that was surfaced and is still waiting. The reasoning was that an owner who is away must not stop the work, and a gate waiting on answers would teach whoever hit it to stop asking. This was decided by the builder and recorded as MUS-D-0048 without being put to the owner, which is the failure this milestone is named after.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | the semantics every future session is bound by |
+| Surfaced | 2026-08-21 05:05 |
+| Answer | Surfaced is enough, as long as the work it is doing does not depend on the question's answer. Where it does, the answer is required: mark the question needed and the gate will not pass on surfacing alone. |
+| Answered | 2026-08-21 05:12 |
+
+---
+
+## MUS-Q-0006
+
+**The decision queue is reached from a banner on the intake box. MUS-D-0041 rejected exactly that.**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0005](milestones.md#mus-m-0005)
+
+MUS-D-0041 rejected three tabs with the decision queue reached from a banner, reasoning that a banner on another screen can be scrolled past and a fixed place the eye already knows to check is worth more. No tab bar exists until milestone 4, so the banner may be additive rather than a substitution — but the built surface currently gives as its rationale the argument the owner overruled.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the queue's placement is accepted |
+| Surfaced | 2026-08-21 05:05 |
+| Answer | Fine as an interim, and fix the rationale. The banner stands until the tab bar exists at milestone 4; the code stops citing the argument MUS-D-0041 overruled. |
+| Answered | 2026-08-21 05:12 |
+
+---
+
+## MUS-Q-0007
+
+**Should an agent be able to answer or withdraw its own question?**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0005](milestones.md#mus-m-0005)
+
+mustur answer and --withdraw take any actor, so the agent that raised a question can close it and the gate stops seeing it. The record says who closed it and when, and that is currently the whole deterrent. A review found this and it is not in MUS-W-0013's stated risks.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the gate can be walked around in one command |
+| Surfaced | 2026-08-21 05:05 |
+| Answer | Refuse self-answer, allow self-withdraw. The raiser may close a question overtaken by events; it may never supply the answer. |
+| Answered | 2026-08-21 05:12 |

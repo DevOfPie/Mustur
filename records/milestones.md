@@ -74,12 +74,13 @@ Done when: A jot from a phone lands in Mustur's `findings-queue` in seconds, car
 
 milestone · 2026-08-19
 
-Done when: An agent working Mustur cannot report work complete while an open decision has never been surfaced as a prompt; the decision lands in a queue the owner answers from any device, and the answer is injected back into the session that raised it.
+Done when: An agent working Mustur cannot report work complete while an open decision has never been surfaced as a prompt, and the decision lands in a queue the owner answers from any device. The answer reaching the session that raised it moved to milestone 4 (MUS-M-0006), which is where the machinery that can reach a session arrives; the owner decided that split on a prompt, MUS-Q-0001.
 
 | Field | Value |
 | --- | --- |
 | Plan number | 3 |
 | Source | [Plan.md#milestones](../Plan.md#milestones) |
+| Split | The injection clause moved to MUS-M-0006 on 2026-08-21, by MUS-D-0046 |
 
 ---
 
@@ -89,12 +90,13 @@ Done when: An agent working Mustur cannot report work complete while an open dec
 
 milestone · 2026-08-19
 
-Done when: The per-machine adapter starts and supervises a long-lived session per project, survives a dropped phone connection, and streams output to a browser tab. One tab, several sessions.
+Done when: The per-machine adapter starts and supervises a long-lived session per project, survives a dropped phone connection, and streams output to a browser tab. One tab, several sessions. An answered decision is delivered back into the session that raised it, which is the clause milestone 3 could not honour without this.
 
 | Field | Value |
 | --- | --- |
 | Plan number | 4 |
 | Source | [Plan.md#milestones](../Plan.md#milestones) |
+| Gained | The injection clause from MUS-M-0005 on 2026-08-21, by MUS-D-0046 |
 
 ---
 

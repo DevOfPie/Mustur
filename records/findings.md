@@ -254,11 +254,11 @@ The intake surface ran in a terminal: no start at boot, no restart if it died, s
 
 **Nothing off the home network can reach the intake box yet**
 
-finding · 2026-08-21
+finding · 2026-08-20
 
 Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
 
-Milestone 2c's done-when says a jot from a phone. The surface is loopback-only, the tunnel is token-managed so its ingress rules live in Cloudflare rather than on disk, and no credential here can change them. docs/ingress.md is the runbook; applying it is the owner's.
+As filed, 2026-08-20: milestone 2c's done-when says a jot from a phone, and the surface was loopback-only. The tunnel is token-managed, so its ingress rules live in Cloudflare rather than on disk and no credential here could change them; docs/ingress.md was the runbook and applying it was the owner's. They did, on 2026-08-21. The surface is no longer loopback-only — it is published at mustur.devofpie.com behind Cloudflare Access — and this finding's title states what was true when it was raised, not what is true now.
 
 | Field | Value |
 | --- | --- |

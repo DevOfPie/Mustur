@@ -68,6 +68,11 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Injection belongs to the milestone that owns sessions](#injection-belongs-to-the-milestone-that-owns-sessions) | Milestone 3 could not honour a clause needing milestone 4 |
 | [A question is its own kind, and only some become decisions](#a-question-is-its-own-kind-and-only-some-become-decisions) | Why not a status field on an append-only record |
 | [The gate turns on being asked, not on being answered](#the-gate-turns-on-being-asked-not-on-being-answered) | An absent owner must not stop the work |
+| [The gate reads the tree, not the store](#the-gate-reads-the-tree-not-the-store) | A gate that could only skip on every machine but one |
+| [An answer is required when the work depends on it](#an-answer-is-required-when-the-work-depends-on-it) | The owner's qualification; corrects the row above |
+| [A question may be withdrawn by its raiser, never answered by them](#a-question-may-be-withdrawn-by-its-raiser-never-answered-by-them) | The enforcement was one command from being walked around |
+| [The decision queue's banner is interim, and MUS-D-0041 still stands](#the-decision-queues-banner-is-interim-and-mus-d-0041-still-stands) | The claim was corrected, not the code |
+| [The tool call has to know every kind, and now cannot forget one](#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one) | A hand-written list made "every record" false |
 
 ---
 
@@ -1027,3 +1032,90 @@ A missing store **skips and says so**. It must never pass: "there was no store
 to read" and "no question was buried" are different facts, and reporting the
 second when the first is true is the substitution `DL-03` already made once in
 this repository, in CI, on a shallow clone.
+
+## 2026-08-21 — what the milestone 3 review changed
+
+### The gate reads the tree, not the store
+
+`make check`'s question gate read the SQLite store. That was wrong in a way
+worse than not having the gate at all.
+
+[workflow.md](workflow.md) requires every gate to run offline against the
+working tree. The store is machine-local, so on a clone and in CI the check
+could only skip — while [CLAUDE.md](CLAUDE.md) told every session, without
+qualification, that work could not be reported complete around an open question.
+A rule stated absolutely and enforced on one machine is worse than one stated
+conditionally, because nobody knows to check.
+
+It was also unsound where it did run. The gate could not tell *no store* from
+*no buried question*: `openStore` creates a store that is not there, so a gate
+pointed at a fresh path exited 0. The Makefile's file test was the only thing
+that could have caught that, and it probed `${MUSTUR_DB:-$HOME/…}` while the
+binary resolved `MUSTUR_DB` → `$XDG_DATA_HOME/mustur/…` → `$HOME/…`. With
+`XDG_DATA_HOME` set, the guard found the real store, the binary made an empty
+one, and the gate printed **ok**. Two reviewers reproduced it independently. A
+zero-byte file at the path did the same.
+
+The entry above claiming a missing store "skips and says so; it must never pass"
+stays as written and is corrected here: it was true of the branch that never
+ran, and the skip it describes exited 0, which at the level that decides whether
+`make check` is green is not distinguishable from passing.
+
+Against `records/questions.md` none of it arises. There is nothing to skip — an
+absent or empty file is the tree saying there are no questions, which is a fact
+rather than a gap — and CI, a clone and the reviewer all read the same file.
+
+### An answer is required when the work depends on it
+
+The rule was built as: surfacing is enough, and an unanswered question never
+blocks. The owner ratified it with a qualification that changes the design —
+being asked is enough **"as long as the work it is doing doesn't depend on the
+question's answer"**.
+
+So a question can be marked `--needed`, and the gate will not pass on surfacing
+alone for those. Reporting work complete that turned on an answer nobody gave is
+the same lie as never having asked; the remedy is the one
+[workflow.md](workflow.md) already gives, which is to do everything independent
+of the answer first and leave the dependent part unreported.
+
+This corrects the entry above, which recorded the unqualified rule as settled.
+It was also a decision the builder took and wrote down without asking — inside
+the milestone whose entire subject is not doing that. It has since been put as a
+prompt and is recorded as `MUS-Q-0005`.
+
+### A question may be withdrawn by its raiser, never answered by them
+
+`mustur answer` took any actor, so the agent that raised a question could close
+it and the gate would stop seeing it: the whole enforcement walked around in one
+command. The owner's answer, `MUS-Q-0007`: refuse self-answer, allow
+self-withdraw. Withdrawing your own question is honest — it is overtaken, or no
+longer worth asking, and the record goes on saying it was asked. Supplying your
+own answer is not.
+
+The raiser is recorded on the question at `ask` time for this reason.
+
+### The decision queue's banner is interim, and MUS-D-0041 still stands
+
+[MUS-D-0041](#the-phone-bar-has-four-tabs) rejected a decision queue reached
+from a banner, because a banner on another screen can be scrolled past and a
+fixed place the eye already knows to check is worth more. Milestone 3 shipped a
+banner on the intake box and gave as its reason the argument that decision
+overruled.
+
+The owner's answer, `MUS-Q-0006`: fine as an interim, fix the rationale. The tab
+bar arrives with the session list at milestone 4 and the banner moves then. What
+is corrected is the claim, not the code: the comment no longer argues for a
+banner, it says the banner is what exists until the thing MUS-D-0041 chose does.
+
+### The tool call has to know every kind, and now cannot forget one
+
+Adding the `question` role letter silently broke a claim milestone 2 shipped:
+`mustur_route` describes its own reply as "an index of every record", and the
+kind list it iterated was written out by hand, so questions were absent from
+every default index. The mandated call — the one thing every session makes
+before anything else, and the obvious place to learn that a question is open —
+was the single surface that could not see them.
+
+The list is now derived from `ident.Roles`. The one place that cannot be, the
+JSON schema on a struct tag, is asserted against `ident.KindNames` by a test, so
+the next role letter cannot repeat this quietly.

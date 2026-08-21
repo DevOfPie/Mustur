@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-48 record(s), by identifier.
+54 record(s), by identifier.
 
 ## Index
 
@@ -60,6 +60,12 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0046](#mus-d-0046) | Injection belongs to the milestone that owns sessions | 2026-08-21 |
 | [MUS-D-0047](#mus-d-0047) | A question is its own kind, and only some become decisions | 2026-08-21 |
 | [MUS-D-0048](#mus-d-0048) | The gate turns on being asked, not on being answered | 2026-08-21 |
+| [MUS-D-0049](#mus-d-0049) | Milestone 2's falsified record is corrected inside 2c, not reopened | 2026-08-21 |
+| [MUS-D-0050](#mus-d-0050) | The question gate reads the exported tree, not the store | 2026-08-21 |
+| [MUS-D-0051](#mus-d-0051) | An answer is required when the work depends on it | 2026-08-21 |
+| [MUS-D-0052](#mus-d-0052) | A question may be withdrawn by its raiser, never answered by them | 2026-08-21 |
+| [MUS-D-0053](#mus-d-0053) | The decision queue's banner is interim, and MUS-D-0041 still stands | 2026-08-21 |
+| [MUS-D-0054](#mus-d-0054) | The tool call derives its kind list rather than restating it | 2026-08-21 |
 
 ---
 
@@ -733,7 +739,7 @@ Two smaller corrections ride with it. The remark in decisions.md, under the 2026
 | Field | Value |
 | --- | --- |
 | Supersedes | MUS-D-0044's not-enabled clause, and the remark in decisions.md that the fifteen-second claim cannot be measured until the ingress exists |
-| Prose | decisions.md, under 'The unit is enabled, and the entry saying it is not stays put' |
+| Rationale | [decisions.md#the-unit-is-enabled-and-the-entry-saying-it-is-not-stays-put](../decisions.md#the-unit-is-enabled-and-the-entry-saying-it-is-not-stays-put) |
 
 ---
 
@@ -749,8 +755,8 @@ Milestone 3's done-when required machinery milestone 4 owns: an answer cannot re
 
 | Field | Value |
 | --- | --- |
-| Prose | decisions.md, under 'Injection belongs to the milestone that owns sessions' |
 | Not taken | Pulling the adapter into milestone 3, and answering through the next mustur_route call |
+| Rationale | [decisions.md#injection-belongs-to-the-milestone-that-owns-sessions](../decisions.md#injection-belongs-to-the-milestone-that-owns-sessions) |
 
 ---
 
@@ -766,8 +772,8 @@ Open questions are MUS-Q, exported to records/questions.md, carrying open, surfa
 
 | Field | Value |
 | --- | --- |
-| Prose | decisions.md, under 'A question is its own kind, and only some become decisions' |
 | Costs | A role letter, and the export and adoption surface a new kind brings |
+| Rationale | [decisions.md#a-question-is-its-own-kind-and-only-some-become-decisions](../decisions.md#a-question-is-its-own-kind-and-only-some-become-decisions) |
 
 ---
 
@@ -781,4 +787,108 @@ make check fails while an open question has never been surfaced as a prompt, and
 
 | Field | Value |
 | --- | --- |
-| Prose | decisions.md, under 'The gate turns on being asked, not on being answered' |
+| Corrected by | MUS-D-0050 on the store, and MUS-D-0051 on the unqualified rule |
+| Rationale | [decisions.md#the-gate-turns-on-being-asked-not-on-being-answered](../decisions.md#the-gate-turns-on-being-asked-not-on-being-answered) |
+
+---
+
+## MUS-D-0049
+
+**Milestone 2's falsified record is corrected inside 2c, not reopened**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0003](questions.md#mus-q-0003)
+
+Corrects: [MUS-W-0005](work-units/MUS-W-0005.md#mus-w-0005)
+
+The milestone 2c review found that MUS-W-0005, which discharges milestone 2, named MUS-M-0006 as the point the unauthenticated server stops being sound. The ingress arrived at 2c instead, and /mcp shares a mux with the intake box, so milestone 2's tool call is publicly routed — soundly, because Access covers it, but the shipped record said otherwise. workflow.md calls a finding that falsifies a shipped milestone a reopening, and reopening is scheduling, which is the owner's. It went to them as a prompt. Their answer was to correct the record inside milestone 2c and leave milestone 2 passed, which is what MUS-W-0005's amendment does.
+
+| Field | Value |
+| --- | --- |
+| Not taken | Reopening milestone 2 as its own unit, and queueing it while accepting 2c |
+| Rationale | Recorded here rather than in decisions.md prose; the milestone 2c review comment on pull request 19 carries the finding it answers |
+
+---
+
+## MUS-D-0050
+
+**The question gate reads the exported tree, not the store**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0048](#mus-d-0048)
+
+workflow.md requires every make check gate to run offline against the working tree. The store is machine-local, so a store-backed gate could only skip on a clone and in CI, while CLAUDE.md stated the rule unconditionally. It was also unsound where it did run: openStore creates a store that is not there, so the gate could not tell 'no store' from 'no buried question', and the Makefile guard meant to cover that probed a path the binary did not read — with XDG_DATA_HOME set it found the real store while the binary made an empty one and the gate printed ok. Reading records/questions.md removes all of it: an absent or empty file is the tree saying there are none.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 3 review, reproduced by two reviewers independently |
+| Rationale | [decisions.md#the-gate-reads-the-tree-not-the-store](../decisions.md#the-gate-reads-the-tree-not-the-store) |
+
+---
+
+## MUS-D-0051
+
+**An answer is required when the work depends on it**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0005](questions.md#mus-q-0005)
+
+Corrects: [MUS-D-0048](#mus-d-0048)
+
+The owner ratified the asked-not-answered rule with a qualification that changes it: being asked is enough as long as the work in hand does not depend on the answer. A question raised with --needed is not passed by surfacing alone, because reporting complete on work that turned on an answer nobody gave is the same lie as never having asked. The remedy is the one workflow.md already gives: do everything independent of the answer first, and do not report the part that is not.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#an-answer-is-required-when-the-work-depends-on-it](../decisions.md#an-answer-is-required-when-the-work-depends-on-it) |
+
+---
+
+## MUS-D-0052
+
+**A question may be withdrawn by its raiser, never answered by them**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0007](questions.md#mus-q-0007)
+
+mustur answer took any actor, so the agent that raised a question could close it and the gate would stop seeing it — the enforcement walked around in one command. Withdrawing your own question is honest: it is overtaken, or no longer worth asking, and the record goes on saying it was asked. Supplying your own answer is not. The raiser is recorded on the question at ask time so the refusal has something to check.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-question-may-be-withdrawn-by-its-raiser-never-answered-by-them](../decisions.md#a-question-may-be-withdrawn-by-its-raiser-never-answered-by-them) |
+
+---
+
+## MUS-D-0053
+
+**The decision queue's banner is interim, and MUS-D-0041 still stands**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0006](questions.md#mus-q-0006)
+
+MUS-D-0041 rejected a decision queue reached from a banner, because a banner on another screen can be scrolled past and a fixed place the eye already knows to check is worth more. Milestone 3 shipped a banner on the intake box and gave as its reason the argument that decision overruled. The owner's answer: fine as an interim, fix the rationale. The tab bar arrives with the session list at milestone 4 and the banner moves then. What was corrected is the claim, not the code.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-decision-queues-banner-is-interim-and-mus-d-0041-still-stands](../decisions.md#the-decision-queues-banner-is-interim-and-mus-d-0041-still-stands) |
+
+---
+
+## MUS-D-0054
+
+**The tool call derives its kind list rather than restating it**
+
+decision · 2026-08-21
+
+Corrects: [MUS-W-0005](work-units/MUS-W-0005.md#mus-w-0005)
+
+Adding the question role letter silently falsified a claim milestone 2 shipped: mustur_route describes its reply as an index of every record, and iterated a hand-written kind list, so questions were absent from every default index. The mandated call — the first thing every session makes, and the obvious place to learn a question is open — was the one surface that could not see them. The list is derived from ident.Roles now. The JSON schema on a struct tag cannot be, so a test asserts it against ident.KindNames.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 3 review, measured on the wire rather than inferred |
+| Rationale | [decisions.md#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one](../decisions.md#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one) |
