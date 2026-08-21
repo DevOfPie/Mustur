@@ -28,9 +28,14 @@ shellcheck: ## Tracked shell scripts pass shellcheck
 go-check: ## The Go tree builds, vets clean, and its tests pass
 	@go build ./... && go vet ./... && go test ./... && echo "  ok    go build, vet and test"
 
+# The status below is the test's, not grep's. Piping straight into grep made a
+# failing conformance run print FAIL and still exit 0 — a target that reports a
+# failure and passes anyway is the shape this whole check exists to catch.
 conformance: ## How many of StrucGu's fixture states this checker matched, out loud
-	@go test ./internal/audit/ -run TestConformsToTheCatalogFixtures -v 2>&1 \
-	  | grep -E "fixture trees|SKIP|FAIL" || true
+	@out=$$(go test ./internal/audit/ -run TestConformsToTheCatalogFixtures -v 2>&1); \
+	  status=$$?; \
+	  echo "$$out" | grep -E "fixture trees|SKIP|FAIL" || true; \
+	  exit $$status
 
 verify-records: ## The committed export cites only identifiers it defines
 	@go run ./cmd/mustur verify --records records
