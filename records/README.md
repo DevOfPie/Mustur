@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 44 | [decisions.md](decisions.md) |
+| decision | 45 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 12 | [work-units/index.md](work-units/index.md) |
@@ -84,6 +84,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0042](decisions.md#mus-d-0042) | decision | The routing guess is shown before filing |
 | [MUS-D-0043](decisions.md#mus-d-0043) | decision | The audit is a page |
 | [MUS-D-0044](decisions.md#mus-d-0044) | decision | Mustur runs as a systemd user unit |
+| [MUS-D-0045](decisions.md#mus-d-0045) | decision | The unit is enabled, and MUS-D-0044 stands uncorrected in place |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

@@ -64,6 +64,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Mustur runs as a systemd user unit](#mustur-runs-as-a-systemd-user-unit) | And is not enabled until Access is in front |
 | [The idea inbox is a routing target inside Mustur](#the-idea-inbox-is-a-routing-target-inside-mustur) | The fallback destination cannot be another repository |
 | [A jot is filed without a decision](#a-jot-is-filed-without-a-decision) | The title is derived and the destination is guessed |
+| [The unit is enabled, and the entry saying it is not stays put](#the-unit-is-enabled-and-the-entry-saying-it-is-not-stays-put) | A later entry corrects an earlier one; neither is edited |
 
 ---
 
@@ -905,3 +906,46 @@ it.
 
 The unit is confined to what it needs: `ProtectSystem=strict`, `ProtectHome` set
 to read-only, and exactly two writable paths — the store and the export tree.
+
+## 2026-08-21 — corrections the milestone 2c review forced
+
+### The unit is enabled, and the entry saying it is not stays put
+
+The entry above says the unit is installed and deliberately not enabled, because
+enabling it is what publishes the intake box and Access is not in front of the
+hostname yet. It was true when it was written and false by the end of the same
+branch: the owner added the Access application, the gate went up before anything
+listened, and the unit was enabled. Entries are never edited, so it stays as
+written and this is the later entry that corrects it. `MUS-D-0045` is the record.
+
+**The ordering it argued for was right and is not being abandoned.** What
+changed is that it is now stated as a rule about any host rather than as a note
+about this one, in `deploy/mustur.service` and in
+[docs/ingress.md](docs/ingress.md): never enable the unit on a host whose
+hostname is not already behind Access. A note about a state passes out of date
+the moment the state does; a rule does not.
+
+**`Restart=on-failure` was wrong.** systemd counts a `SIGTERM` as a clean exit,
+so a TERMed process was left dead with no restart scheduled. That is not
+hypothetical — a reviewer's `pkill -f "mustur serve"`, aimed at its own throwaway
+instance, matched this unit's `ExecStart` and took the production service down,
+and nothing brought it back or noticed. It is `Restart=always` now, confirmed by
+sending the main process a TERM and watching it return with `NRestarts=1`.
+
+The reason nothing noticed is the more useful half. The check
+[docs/ingress.md](docs/ingress.md) offers is a `curl` against the public
+hostname, and **Cloudflare Access answers 302 whether or not the origin is up** —
+it is a gate check, not a health check. The file also had 502 backwards: 502
+means Access is in front and the origin is down, not that Access is gone. Both
+readings are stated there now, and nothing yet watches the origin.
+
+**The fifteen-second claim is still unclaimed, for a different reason.** The
+entry above says it cannot be measured until the ingress exists. The ingress
+exists. It is unclaimed now because only the owner can get through Access to file
+from a phone, which is the one clause of milestone 2c that this repository cannot
+close on its own.
+
+What did get measured, with its method, is the loopback leg: ten filings by
+`curl` against a `--export` server, `%{time_total}` each, median 1.71 ms and
+worst 2.10 ms. That replaces a bare **20 ms** which named no instrument and was
+cited to a record whose Evidence field is empty.

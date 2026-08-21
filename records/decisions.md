@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-44 record(s), by identifier.
+45 record(s), by identifier.
 
 ## Index
 
@@ -56,6 +56,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0042](#mus-d-0042) | The routing guess is shown before filing | 2026-08-20 |
 | [MUS-D-0043](#mus-d-0043) | The audit is a page | 2026-08-20 |
 | [MUS-D-0044](#mus-d-0044) | Mustur runs as a systemd user unit | 2026-08-21 |
+| [MUS-D-0045](#mus-d-0045) | The unit is enabled, and MUS-D-0044 stands uncorrected in place | 2026-08-21 |
 
 ---
 
@@ -709,3 +710,24 @@ The owner's call. A user unit running as the account that owns the store: no roo
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#mustur-runs-as-a-systemd-user-unit](../decisions.md#mustur-runs-as-a-systemd-user-unit) |
+
+---
+
+## MUS-D-0045
+
+**The unit is enabled, and MUS-D-0044 stands uncorrected in place**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0044](#mus-d-0044)
+
+MUS-D-0044 says the unit is installed and deliberately not enabled, because enabling it is what publishes the box and Access is not in front of the hostname yet. That was true when it was written and false by the end of the same branch: the owner added the Access application, the gate went up before anything listened, and the unit was enabled. The entry stays as written, because entries are never edited, and this is the later entry that corrects it.
+
+The ordering it describes was not wrong and is not abandoned. It is restated as a rule about any host rather than a note about this one, in deploy/mustur.service and in docs/ingress.md: never enable the unit on a host whose hostname is not already behind Access.
+
+Two smaller corrections ride with it. The remark in decisions.md, under the 2026-08-20 heading for decisions taken while building milestone 2c, that the fifteen-second claim cannot be measured until the ingress exists is superseded — the ingress exists, and the claim is now unclaimed for a different reason, which is that only the owner can get through Access to file from a phone. And the unit shipped Restart=on-failure, which systemd does not apply to a SIGTERM; the service was left dead by one and nothing noticed, because Access answers 302 whether or not the origin is up. It is Restart=always now.
+
+| Field | Value |
+| --- | --- |
+| Supersedes | MUS-D-0044's not-enabled clause, and the remark in decisions.md that the fifteen-second claim cannot be measured until the ingress exists |
+| Prose | decisions.md, under 'The unit is enabled, and the entry saying it is not stays put' |
