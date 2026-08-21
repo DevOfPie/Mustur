@@ -85,6 +85,12 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A project name may not address a window or a pane](#a-project-name-may-not-address-a-window-or-a-pane) | tmux reads : and . as target separators |
 | [An undelivered answer is still an answer](#an-undelivered-answer-is-still-an-answer) | Delivery never fails the answer |
 | [There is no `session attach`](#there-is-no-session-attach) | A verb there would suggest the arrow points both ways |
+| [Ownership is provenance, not a name](#ownership-is-provenance-not-a-name) | A review adopted Mustur's own sessions with one tmux command |
+| [The word was "supervises" and the thing was not built](#the-word-was-supervises-and-the-thing-was-not-built) | Asserted in three places, implemented in none |
+| [An answer that reached the server is the owner's](#an-answer-that-reached-the-server-is-the-owners) | A dropped connection was losing the answer entirely |
+| [The session that raised a question and the session an answer can reach are different things](#the-session-that-raised-a-question-and-the-session-an-answer-can-reach-are-different-things) | A field redefined under records already written |
+| [There is no `session send`](#there-is-no-session-send) | It made "the only caller is the answer path" false |
+| [The unit cannot have a private /tmp](#the-unit-cannot-have-a-private-tmp) | tmux's socket lives in /tmp, so the feature shipped inert |
 
 ---
 
@@ -1316,3 +1322,84 @@ A person wanting to watch a session Mustur started runs `tmux attach -t
 mustur/<project>`, which works and always did. There is no verb for it here,
 because a verb here would suggest the arrow points both ways. It does not:
 Mustur starts sessions and never attaches to one it did not start.
+
+## 2026-08-21 — what the milestone 4a review changed
+
+### Ownership is provenance, not a name
+
+The adapter filtered on the `mustur/` name prefix, and
+[the entry above](#mustur-can-type-into-a-session-it-started) called that
+"enforced rather than documented". A review broke it in one command: `tmux
+new-session -s mustur/anything` by hand, and Mustur listed it, typed into it and
+killed it. A name is something anyone can write.
+
+`Start` now sets a tmux user option on the session it creates, and `List`
+returns only sessions carrying it. Everything else goes through that filter. The
+prefix stays for legibility — a person running `tmux ls` can see which sessions
+are Mustur's — and is no longer what the rule rests on.
+
+Verified the way the review broke it: a hand-made `mustur/zzfake` is invisible to
+`list` and refused by `stop`, while a session Mustur started in the same tmux
+server is listed. `tmux ls` shows both; Mustur shows one.
+
+### The word was "supervises" and the thing was not built
+
+Three places said the adapter supervises sessions. Nothing did: no restart, no
+health check, no output capture, no notification when a session dies. The word
+is removed from every claim about what exists.
+
+What `Start` gained instead is narrower and true: it checks the session is still
+there before reporting success. tmux reports success whether or not the command
+survived, so an agent CLI crashing on startup used to read as a started session.
+One check was not enough — tmux does not reap synchronously, and an immediate
+exit was still listed for a moment — so it watches for a short window. That
+catches a command that dies at once, which is the common failure. **It is not
+supervision, and a CLI that crashes a second later is still reported as
+started.**
+
+Supervision moved to 4b on MUS-Q-0015, with surviving a dropped connection,
+because supervision without anything watching the output is a restart loop.
+
+### An answer that reached the server is the owner's
+
+The web answer path used the request's context for both the delivery and the
+write. A review reproduced what that costs: a client that disconnects while tmux
+is being shelled out to cancels the write as well, and the answer is lost
+entirely — the question still open, no answer, no reason. **A phone on a flaky
+link is the scenario this milestone names.**
+
+The write is detached from the request now, and the delivery carries its own
+timeout so an unresponsive tmux cannot hold the answer unwritten. This is what
+MUS-D-0065 meant and did not achieve.
+
+### The session that raised a question and the session an answer can reach are different things
+
+Milestone 4a redefined the `Session` field to mean the project, so delivery could
+target it. Seven records already carried a Claude Code session id under that
+name, and the redefinition made every one of them wrong — silently, because a
+Claude session id passes the project-name check and was handed to tmux as a
+project rather than refused.
+
+`Session` keeps its original meaning and its original records. `Session project`
+is the new field delivery targets, set by `mustur ask --in`. Redefining a field
+under records already written is a rewrite of the past disguised as a comment
+change.
+
+### There is no `session send`
+
+An operator verb taking arbitrary text made "the only caller is the answer path"
+false in the same commit that claimed it. It is removed. Typing into an agent's
+input is a capability the answer path needs and nothing else does, and a person
+who genuinely wants to has `tmux send-keys` — as themselves, rather than as
+Mustur.
+
+### The unit cannot have a private /tmp
+
+`PrivateTmp=yes` gives the service its own `/tmp`, and tmux's socket is
+`/tmp/tmux-$UID`. Under that flag the service cannot reach the owner's tmux
+server at all, so every answer filed from the phone would have recorded "not
+delivered" while the code looked correct — the milestone's headline capability
+inert exactly where it ships.
+
+`PrivateTmp=no`. A hardening flag that silently removes the feature is worse
+than the hardening is worth, and the rest of the confinement stays.

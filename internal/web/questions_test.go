@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"net/http/httptest"
 
@@ -368,6 +369,88 @@ func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
 		if strings.Contains(body, `href="`+unbuilt+`"`) {
 			t.Errorf("a tab points at %s, which is not built", unbuilt)
 		}
+	}
+}
+
+// slowSender blocks in Send until its context is done, which is what an
+// unresponsive tmux looks like from here.
+type slowSender struct{ called chan struct{} }
+
+func (s *slowSender) Alive(context.Context, string) (bool, error) { return true, nil }
+
+func (s *slowSender) Send(ctx context.Context, _, _ string) error {
+	close(s.called)
+	<-ctx.Done()
+	return ctx.Err()
+}
+
+// The answer is the owner's the moment it reaches the server. A phone that
+// drops the connection while tmux is being shelled out to must not unmake it —
+// a review reproduced exactly that, and the question came back still open with
+// no answer and no reason.
+func TestAnAnswerSurvivesTheClientDisconnecting(t *testing.T) {
+	rec := openQuestion("MUS-Q-0001", "Where does the audit run?")
+	rec.Data = append(rec.Data, record.Field{Key: question.FieldProject, Value: "Mustur"})
+
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if err := s.Append(ctx, rec, "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	slow := &slowSender{called: make(chan struct{})}
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", Sessions: slow, DeliverTimeout: 300 * time.Millisecond}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	reqCtx, cancel := context.WithCancel(context.Background())
+	req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, srv.URL+"/questions",
+		strings.NewReader(url.Values{"id": {"MUS-Q-0001"}, "answer": {"CI, with a real catalog"}}.Encode()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if res, err := srv.Client().Do(req); err == nil {
+			res.Body.Close()
+		}
+	}()
+
+	<-slow.called // The handler is inside the delivery.
+	cancel()      // The phone goes away.
+	<-done
+
+	// The delivery is bounded by its own timeout, so give the handler room to
+	// finish writing after the request context died.
+	deadline := time.Now().Add(5 * time.Second)
+	var got record.Record
+	for time.Now().Before(deadline) {
+		got, err = s.Get(ctx, "MUS-Q-0001")
+		if err == nil && !question.IsOpen(got) {
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	if question.IsOpen(got) {
+		t.Fatal("the answer was lost when the client disconnected")
+	}
+	if ans, _ := got.Get(question.FieldAnswer); ans != "CI, with a real catalog" {
+		t.Errorf("answer = %q", ans)
+	}
+	if d, _ := got.Get(question.FieldDelivered); !strings.Contains(d, "not delivered") {
+		t.Errorf("delivery outcome = %q, want a not-delivered reason", d)
 	}
 }
 

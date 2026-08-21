@@ -36,10 +36,22 @@ const (
 	FieldAnswer = "Answer"
 	// FieldAnswered is when they said it.
 	FieldAnswered = "Answered"
-	// FieldSession names the Mustur-owned session that raised the question —
-	// the project, which is what a tmux session is keyed by. An answer is typed
-	// back into it if it is still alive.
+	// FieldSession identifies the session that raised the question, in whatever
+	// form that session has an identity. It is opaque here and always was: the
+	// seven questions written before milestone 4a carry a Claude Code session
+	// id, which is what they meant.
+	//
+	// An earlier version of milestone 4a redefined this field to mean the
+	// project, so that delivery could target it. That silently changed the
+	// meaning of records already written — and worse, a Claude session id
+	// passes the project-name check, so it was accepted and handed to tmux
+	// rather than refused. FieldProject exists instead.
 	FieldSession = "Session"
+	// FieldProject names the Mustur-owned session to deliver an answer into.
+	// Separate from FieldSession because the thing that raised a question and
+	// the thing an answer can be typed into are not the same thing, and were
+	// never the same thing.
+	FieldProject = "Session project"
 	// FieldDelivered records what happened when the answer was carried back:
 	// that it reached the session, or why it did not. A silent failure here
 	// would leave an agent blocked on an answer that exists, which is the
@@ -169,10 +181,18 @@ func Needed(r record.Record) bool {
 	}
 }
 
-// SessionOf names the Mustur-owned session that raised the question, empty if
-// the record does not say or does not name one.
+// SessionOf identifies the session that raised the question, in whatever form
+// that session has an identity. Not a delivery target: see ProjectOf.
 func SessionOf(r record.Record) string {
 	v, _ := r.Get(FieldSession)
+	return strings.TrimSpace(v)
+}
+
+// ProjectOf names the Mustur-owned session an answer is delivered into, empty
+// if the question does not name one — which is most of them, and is why an
+// undelivered answer has to be an ordinary outcome rather than a failure.
+func ProjectOf(r record.Record) string {
+	v, _ := r.Get(FieldProject)
 	return strings.TrimSpace(v)
 }
 

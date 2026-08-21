@@ -43,9 +43,15 @@ Environment=MUSTUR_DB=%h/.local/share/mustur/mustur.db
 # Records written through the surface are the owner's, not "unknown".
 Environment=MUSTUR_ACTOR=whippy
 
-# It reads a catalog and writes a store and one export tree; nothing else.
+# It reads a catalog, writes a store and one export tree, and talks to tmux.
 NoNewPrivileges=yes
-PrivateTmp=yes
+# NOT PrivateTmp. tmux's socket is /tmp/tmux-$UID, so a private /tmp cannot
+# reach the owner's tmux server at all — and a review caught that leaving the
+# answer path inert exactly where it ships: every answer filed from the phone
+# would have recorded "not delivered" while the code looked correct. Carrying an
+# answer back into a session is what this unit is for, and a hardening flag that
+# silently removes the feature is worse than the hardening is worth.
+PrivateTmp=no
 ProtectSystem=strict
 ProtectHome=read-only
 ReadWritePaths=%h/.local/share/mustur %h/repos/DevOfPie/Mustur/records

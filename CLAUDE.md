@@ -13,9 +13,12 @@ at `mustur.devofpie.com` behind Cloudflare Access; that is a deployment, not
 something a clone inherits. What is unconditionally here is
 [records/](records/README.md). It also
 holds open questions and refuses to let work be reported complete around one.
-On this machine it also starts and supervises agent sessions inside tmux, and
-types an answered decision back into the session that raised it. Nothing below
-milestone 4a is built; do not describe any of it in the present tense.
+It also starts agent sessions inside tmux, reports which are running, stops one,
+and types an answered decision back into the session that raised it — where the
+question named one with `--in`, which is the only way delivery has a target.
+**It does not supervise them:** no restart, no health check, no output capture.
+Nothing below milestone 4a is built; do not describe any of it in the present
+tense.
 
 **A session left running in a terminal is invisible to Mustur and will not
 become visible.** Mustur starts sessions and never attaches to one it did not.
@@ -39,10 +42,15 @@ Three rules bind every session in this repository:
   This one is enforced rather than trusted. Raise it with
 
   ```
-  mustur ask --title "…" --blocks "…" \
+  mustur ask --title "…" --blocks "…" [--in <project>] \
     --option "Label :: one line on what it costs :: the paragraph behind it" \
     --option "…"
   ```
+
+  `--in` names the Mustur-owned session the answer should be typed back into.
+  Without it an answer is recorded and delivered nowhere, which is the right
+  outcome for a question raised outside a session Mustur started — and the
+  common one, since most are.
 
   then put it in a prompt and `mustur surfaced <ID>`. **Give it options.** You
   have just finished weighing the alternatives — that is why you are blocked —

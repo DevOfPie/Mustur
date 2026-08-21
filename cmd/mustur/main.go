@@ -47,7 +47,7 @@ const usage = `mustur — records and routing for one project
   mustur answer   ID --answer A               record what the owner said, or --withdraw
   mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones
   mustur session  start P --dir D --cmd C     start a session Mustur owns, inside tmux
-                  list | send P --text T | stop P
+                  list | stop P               there is no send: see cmd/mustur/sessions.go
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 

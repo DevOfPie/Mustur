@@ -47,7 +47,8 @@ func cmdAsk(args []string) error {
 	needed := fs.Bool("needed", false, "the work in hand cannot proceed without the answer; the gate will not pass on surfacing alone")
 	var options values
 	fs.Var(&options, "option", "an answer the owner can pick: \"Label :: one line :: the paragraph behind it\", repeatable")
-	session := fs.String("session", "", "the session raising it, so an answer can be routed back")
+	sessionID := fs.String("session", "", "identifies the session raising it, in whatever form that session has an identity")
+	inProject := fs.String("in", "", "the Mustur-owned session to type the answer into, if this was raised from one")
 	at := fs.String("at", "", "the date (default today)")
 	project := fs.String("project", "MUS", "identifier prefix")
 	actor := fs.String("actor", defaultActor(), "who is asking")
@@ -89,8 +90,11 @@ func cmdAsk(args []string) error {
 	// Recorded so `answer` can refuse the raiser. Without it the gate is one
 	// command away from being walked around by whoever it is enforcing against.
 	r.Data = append(r.Data, record.Field{Key: question.FieldAskedBy, Value: *actor})
-	if strings.TrimSpace(*session) != "" {
-		r.Data = append(r.Data, record.Field{Key: question.FieldSession, Value: *session})
+	if strings.TrimSpace(*sessionID) != "" {
+		r.Data = append(r.Data, record.Field{Key: question.FieldSession, Value: *sessionID})
+	}
+	if strings.TrimSpace(*inProject) != "" {
+		r.Data = append(r.Data, record.Field{Key: question.FieldProject, Value: *inProject})
 	}
 
 	role, ok := ident.RoleFor(question.Kind)
@@ -164,9 +168,11 @@ func cmdAnswer(args []string) error {
 				r.ID, asker, *actor)
 		}
 		question.Answer(r, *answer, *at)
+		dctx, cancel := context.WithTimeout(context.Background(), session.DeliverTimeout)
+		defer cancel()
 		question.Set(r, question.FieldDelivered,
-			session.Deliver(context.Background(), &session.Adapter{},
-				question.SessionOf(*r), r.ID, *answer))
+			session.Deliver(dctx, &session.Adapter{},
+				question.ProjectOf(*r), r.ID, *answer))
 		return nil
 	})
 }

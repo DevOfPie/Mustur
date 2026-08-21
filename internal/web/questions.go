@@ -63,6 +63,16 @@ type Questions struct {
 	// means answers are recorded and not delivered, which is what milestone 3
 	// shipped and what a Mustur running somewhere without tmux still does.
 	Sessions session.Sender
+
+	// DeliverTimeout bounds one delivery. Zero means session.DeliverTimeout.
+	DeliverTimeout time.Duration
+}
+
+func (q *Questions) deliverTimeout() time.Duration {
+	if q.DeliverTimeout > 0 {
+		return q.DeliverTimeout
+	}
+	return session.DeliverTimeout
 }
 
 // Routes registers the queue on an existing mux.
@@ -186,7 +196,13 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := r.Context()
+	// Detached from the request. A review reproduced the alternative: with the
+	// request's own context, a phone that dropped the connection while tmux was
+	// being shelled out to cancelled the write as well, and the answer was lost
+	// entirely — still `open`, no Answer, no reason. An answer that reached the
+	// server is the owner's, and a link that died afterwards must not unmake it.
+	// The timeout is the delivery's, not the answer's; see below.
+	ctx := context.WithoutCancel(r.Context())
 	rec, err := q.Store.Get(ctx, id)
 	if err != nil {
 		q.redirect(w, r, "", err.Error())
@@ -211,9 +227,15 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		// Carried back before the record is written, so what happened to the
 		// delivery is part of the same event rather than a second one that
 		// could fail on its own.
+		//
+		// Bounded, because an unresponsive tmux would otherwise hold the answer
+		// unwritten for as long as it liked. On timeout the delivery is what
+		// fails; the answer is written with the reason.
 		if q.Sessions != nil {
+			dctx, cancel := context.WithTimeout(ctx, q.deliverTimeout())
 			question.Set(&rec, question.FieldDelivered,
-				session.Deliver(ctx, q.Sessions, question.SessionOf(rec), rec.ID, text))
+				session.Deliver(dctx, q.Sessions, question.ProjectOf(rec), rec.ID, text))
+			cancel()
 		}
 	}
 	if err := q.Store.Append(ctx, rec, "amend", q.actor(r)); err != nil {

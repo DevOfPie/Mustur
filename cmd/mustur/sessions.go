@@ -6,20 +6,26 @@ package main
 // one it did not start, and a person wanting to look at one Mustur *did* start
 // uses `tmux attach -t mustur/<project>` — the arrow points one way, and adding
 // a verb here that looked symmetrical would suggest otherwise.
+//
+// There is no `session send` either, and that absence is load-bearing. Typing
+// into an agent's input is a capability the answer path needs and nothing else
+// does; an operator verb taking arbitrary text made "the only caller is the
+// answer path" false in the same commit that claimed it. A person who genuinely
+// wants to type into a session has `tmux send-keys`, and does so as themselves
+// rather than as Mustur.
 
 import (
 	"context"
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/DevOfPie/Mustur/internal/session"
 )
 
 func cmdSession(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("session needs a verb: start, list, send, stop")
+		return fmt.Errorf("session needs a verb: start, list, stop")
 	}
 	verb, rest := args[0], args[1:]
 	a := &session.Adapter{}
@@ -60,22 +66,6 @@ func cmdSession(args []string) error {
 		}
 		return nil
 
-	case "send":
-		fs := flag.NewFlagSet("session send", flag.ContinueOnError)
-		text := fs.String("text", "", "what to type into the session")
-		project, err := parseWithPositional(fs, rest, "session send needs a project")
-		if err != nil {
-			return err
-		}
-		if strings.TrimSpace(*text) == "" {
-			return fmt.Errorf("session send needs --text")
-		}
-		if err := a.Send(ctx, project, *text); err != nil {
-			return err
-		}
-		fmt.Printf("sent to %s%s\n", session.Prefix, project)
-		return nil
-
 	case "stop":
 		fs := flag.NewFlagSet("session stop", flag.ContinueOnError)
 		project, err := parseWithPositional(fs, rest, "session stop needs a project")
@@ -89,6 +79,6 @@ func cmdSession(args []string) error {
 		return nil
 
 	default:
-		return fmt.Errorf("session has no verb %q: start, list, send, stop", verb)
+		return fmt.Errorf("session has no verb %q: start, list, stop", verb)
 	}
 }

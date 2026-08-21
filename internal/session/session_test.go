@@ -14,12 +14,23 @@ type fake struct {
 	calls  [][]string
 	out    map[string]string
 	errFor map[string]error
+	// started is what list-sessions reports once new-session has run, so the
+	// check Start makes after creating a session has something to find. A fake
+	// where the session appears unconditionally could not tell the difference
+	// between a command that survived and one that exited immediately.
+	started string
+	// vanished makes new-session succeed and the session not exist, which is
+	// exactly what an agent CLI crashing on startup looks like.
+	vanished bool
 }
 
 func (f *fake) Run(_ context.Context, name string, args ...string) (string, error) {
 	call := append([]string{name}, args...)
 	f.calls = append(f.calls, call)
 	key := strings.Join(args, " ")
+	if strings.HasPrefix(key, "list-sessions") && f.started != "" && f.ran("new-session") && !f.vanished {
+		return f.started, nil
+	}
 	for prefix, err := range f.errFor {
 		if strings.HasPrefix(key, prefix) {
 			return f.out[prefix], err
@@ -46,13 +57,33 @@ func listing(lines ...string) map[string]string {
 	return map[string]string{"list-sessions": strings.Join(lines, "\n")}
 }
 
+// owned and unowned build the four-column line tmux returns. The last column
+// is the user option Start sets, and it is the whole of "Mustur started this":
+// unowned is what a session somebody created by hand looks like, whatever it
+// is called.
+func owned(name string, windows int, attached bool) string {
+	return line(name, windows, attached, "1")
+}
+
+func unowned(name string, windows int, attached bool) string {
+	return line(name, windows, attached, "")
+}
+
+func line(name string, windows int, attached bool, mark string) string {
+	a := "0"
+	if attached {
+		a = "1"
+	}
+	return fmt.Sprintf("%s\t%d\t%s\t%s", name, windows, a, mark)
+}
+
 // The rule the whole package turns on: a session Mustur did not start is not
 // visible here, and no method will act on one.
 func TestASessionMusturDidNotStartIsInvisible(t *testing.T) {
 	f := &fake{out: listing(
-		"mustur/Mustur\t1\t0",
-		"work\t2\t1",
-		"scratch\t1\t0",
+		owned("mustur/Mustur", 1, false),
+		unowned("mustur/looks-like-ours", 1, false),
+		unowned("work", 2, true),
 	)}
 	a := &Adapter{Run: f}
 
@@ -69,7 +100,7 @@ func TestASessionMusturDidNotStartIsInvisible(t *testing.T) {
 }
 
 func TestListParsesWhatTmuxReports(t *testing.T) {
-	f := &fake{out: listing("mustur/LinkCtrl\t3\t1")}
+	f := &fake{out: listing(owned("mustur/LinkCtrl", 3, true))}
 	a := &Adapter{Run: f}
 
 	got, err := a.List(context.Background())
@@ -115,7 +146,7 @@ func TestARealListFailureIsAnError(t *testing.T) {
 }
 
 func TestStartRefusesASecondSessionForAProject(t *testing.T) {
-	f := &fake{out: listing("mustur/Mustur\t1\t0")}
+	f := &fake{out: listing(owned("mustur/Mustur", 1, false))}
 	a := &Adapter{Run: f}
 
 	_, err := a.Start(context.Background(), "Mustur", "/tmp", "claude")
@@ -128,14 +159,59 @@ func TestStartRefusesASecondSessionForAProject(t *testing.T) {
 }
 
 func TestStartPassesTheDirectoryAndCommand(t *testing.T) {
-	f := &fake{}
-	a := &Adapter{Run: f}
+	f := &fake{started: owned("mustur/Mustur", 1, false)}
+	a := &Adapter{Run: f, Stat: func(string) error { return nil }}
 
-	if _, err := a.Start(context.Background(), "Mustur", "/home/whippy/repos/DevOfPie/Mustur", "claude"); err != nil {
+	if _, err := a.Start(context.Background(), "Mustur", "/some/checkout", "claude"); err != nil {
 		t.Fatal(err)
 	}
-	if !f.ran("new-session -d -s mustur/Mustur -c /home/whippy/repos/DevOfPie/Mustur claude") {
+	if !f.ran("new-session -d -s mustur/Mustur -c /some/checkout claude") {
 		t.Errorf("unexpected argv: %v", f.calls)
+	}
+}
+
+// The session is marked as Mustur's before anything can see it. Until that
+// runs it is not ours by the only test that counts.
+func TestStartMarksTheSessionAsMusturs(t *testing.T) {
+	f := &fake{started: owned("mustur/Mustur", 1, false)}
+	a := &Adapter{Run: f, Stat: func(string) error { return nil }}
+
+	if _, err := a.Start(context.Background(), "Mustur", "/some/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if !f.ran("set-option -t mustur/Mustur " + OwnedOption + " 1") {
+		t.Errorf("the session was not marked: %v", f.calls)
+	}
+}
+
+// tmux new-session succeeds whether or not the command survives it, so a CLI
+// that crashes on startup was reported as a started session and then was not
+// one.
+func TestStartReportsACommandThatExitedImmediately(t *testing.T) {
+	f := &fake{started: owned("mustur/Mustur", 1, false), vanished: true}
+	a := &Adapter{Run: f, Stat: func(string) error { return nil }}
+
+	_, err := a.Start(context.Background(), "Mustur", "/some/checkout", "true")
+	if err == nil {
+		t.Fatal("a session that does not exist was reported as started")
+	}
+	if !strings.Contains(err.Error(), "exited immediately") {
+		t.Errorf("error does not say what happened: %v", err)
+	}
+}
+
+// tmux falls back to $HOME for a directory that is not there, so a session
+// reported as running in a checkout would be running somewhere else.
+func TestStartRefusesADirectoryThatIsNotThere(t *testing.T) {
+	f := &fake{started: owned("mustur/Mustur", 1, false)}
+	a := &Adapter{Run: f, Stat: func(string) error { return fmt.Errorf("no such directory") }}
+
+	_, err := a.Start(context.Background(), "Mustur", "/gone", "claude")
+	if err == nil {
+		t.Fatal("started a session in a directory that does not exist")
+	}
+	if f.ran("new-session") {
+		t.Errorf("tmux was called anyway: %v", f.calls)
 	}
 }
 
@@ -162,7 +238,7 @@ func TestAProjectNameCannotAddressAWindowOrPane(t *testing.T) {
 // The text goes literally, so a body tmux would otherwise read as a key name
 // arrives as characters. Enter is separate, or it would be typed as a word.
 func TestSendTypesLiterallyThenPressesEnter(t *testing.T) {
-	f := &fake{out: listing("mustur/Mustur\t1\t0")}
+	f := &fake{out: listing(owned("mustur/Mustur", 1, false))}
 	a := &Adapter{Run: f}
 
 	if err := a.Send(context.Background(), "Mustur", "Use Enter and C-c literally"); err != nil {
@@ -178,7 +254,7 @@ func TestSendTypesLiterallyThenPressesEnter(t *testing.T) {
 }
 
 func TestSendRefusesASessionMusturDidNotStart(t *testing.T) {
-	f := &fake{out: listing("work\t1\t1")}
+	f := &fake{out: listing(unowned("work", 1, true))}
 	a := &Adapter{Run: f}
 
 	err := a.Send(context.Background(), "work", "hello")
@@ -191,7 +267,7 @@ func TestSendRefusesASessionMusturDidNotStart(t *testing.T) {
 }
 
 func TestStopRefusesASessionMusturDidNotStart(t *testing.T) {
-	f := &fake{out: listing("work\t1\t1")}
+	f := &fake{out: listing(unowned("work", 1, true))}
 	a := &Adapter{Run: f}
 
 	if err := a.Stop(context.Background(), "work"); err == nil {

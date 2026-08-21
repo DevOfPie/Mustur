@@ -1,5 +1,14 @@
 // Package session is the per-machine adapter: it starts long-lived agent
-// sessions inside tmux, supervises them there, and can type into one.
+// sessions inside tmux, reports which are running, can type into one, and can
+// stop one.
+//
+// **It does not supervise them.** There is no restart, no health check, no
+// output capture and no notification when a session dies — a review found the
+// word "supervises" asserted in three places and implemented in none. What
+// exists is Start, List, Alive, Send and Stop. Start verifies the session is
+// there afterwards, which is the one thing it does beyond asking tmux nicely,
+// and it exists because tmux reports success whether or not the command
+// survived: an agent CLI crashing on startup used to read as a started session.
 //
 // Two decisions shape the whole package.
 //
@@ -11,25 +20,43 @@
 // every session and everything Mustur knew about them.
 //
 // **Mustur starts sessions and never attaches to one it did not start**
-// (MUS-D-0006). Every session this package can see carries a name prefix it
-// wrote itself, and anything without that prefix is invisible here — including
-// the tmux session a person left running an hour ago. That is the week-one
-// surprise the decision names, and it is enforced rather than documented:
-// List filters by prefix, and Send refuses a target that does not carry it.
+// (MUS-D-0007). Enforcement is by provenance, not by name: Start sets a tmux
+// user option on the session it creates, and List returns only sessions
+// carrying it. Send and Stop go through the same filter.
+//
+// The first version of this package filtered on the `mustur/` name prefix
+// alone, which a review broke in one command — `tmux new-session -s
+// mustur/anything` by hand, and Mustur listed it, typed into it and killed it.
+// A name is something anyone can write; the option is something only a session
+// this package started has. The prefix is kept for legibility, so a person
+// running `tmux ls` can see which sessions are Mustur's, and it is no longer
+// what the rule rests on.
 package session
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 )
 
-// Prefix marks every tmux session Mustur started. It is how "never attach to a
-// session it did not start" is enforced: a session without it is not ours, and
-// no method here will act on one.
+// Prefix names every tmux session Mustur started, so a person running `tmux ls`
+// can tell which are Mustur's. It is legibility, not enforcement — anyone can
+// name a session this.
 const Prefix = "mustur/"
+
+// OwnedOption is the tmux user option Start sets on a session it creates, and
+// the only thing "Mustur started this" rests on. A session that does not carry
+// it is not ours however it is named.
+const OwnedOption = "@mustur_started"
+
+// DeliverTimeout bounds a delivery. Without one, an unresponsive tmux holds an
+// answer unwritten for as long as it likes, and the answer is the part that
+// must not wait.
+const DeliverTimeout = 10 * time.Second
 
 // Session is one agent session, as tmux reports it.
 type Session struct {
@@ -52,10 +79,13 @@ type Runner interface {
 	Run(ctx context.Context, name string, args ...string) (string, error)
 }
 
-// Adapter supervises sessions on this machine.
+// Adapter starts and inspects sessions on this machine.
 type Adapter struct {
 	// Run shells out. Nil means the real tmux on this machine.
 	Run Runner
+	// Stat checks a directory exists. Nil means the real filesystem; injected
+	// so the check itself is testable.
+	Stat func(dir string) error
 }
 
 type execRunner struct{}
@@ -72,9 +102,14 @@ func (a *Adapter) runner() Runner {
 	return execRunner{}
 }
 
-// safeProject is what a project name may contain in a tmux session name. tmux
-// treats `:` and `.` as target separators, so a name carrying either would
-// address a window or a pane instead of a session.
+// safeProject is what a project name may contain in a tmux session name.
+//
+// The guard is right and the first reason given for it was wrong. tmux does not
+// create a session whose name carries `:` or `.` — measured on 3.6, it
+// substitutes `_`, so `new-session -s 'a:0'` yields `a_0`. The danger is on the
+// other side: `send-keys -t 'a:0'` reads that as window 0 of session `a` and
+// delivers there. So a name tmux quietly rewrote at creation would be a name
+// that addresses something else at send time, and the two would not match.
 var safeProject = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 // NameFor builds the tmux session name for a project.
@@ -105,19 +140,74 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 		return Session{}, fmt.Errorf("%s already has a session; one per project", project)
 	}
 	args := []string{"new-session", "-d", "-s", name}
-	if strings.TrimSpace(dir) != "" {
-		args = append(args, "-c", dir)
+	if d := strings.TrimSpace(dir); d != "" {
+		// tmux falls back to $HOME for a directory that is not there, so a
+		// session reported as running in a checkout would be running in the
+		// home directory. Refused here rather than discovered later.
+		if a.Stat != nil {
+			if err := a.Stat(d); err != nil {
+				return Session{}, fmt.Errorf("%s is not a directory this session can start in: %w", d, err)
+			}
+		} else if info, err := os.Stat(d); err != nil || !info.IsDir() {
+			return Session{}, fmt.Errorf("%s is not a directory this session can start in", d)
+		}
+		args = append(args, "-c", d)
 	}
 	args = append(args, cmd)
 	if out, err := a.runner().Run(ctx, "tmux", args...); err != nil {
 		return Session{}, fmt.Errorf("tmux new-session: %w: %s", err, strings.TrimSpace(out))
 	}
+
+	// Marked before anything else can see it. Until this runs the session is
+	// not ours by the only test that counts.
+	if out, err := a.runner().Run(ctx, "tmux", "set-option", "-t", name, OwnedOption, "1"); err != nil {
+		return Session{}, fmt.Errorf("tmux set-option %s: %w: %s", OwnedOption, err, strings.TrimSpace(out))
+	}
+
+	// tmux new-session succeeds whether or not the command survives it, so a
+	// CLI that exits immediately — crashing on startup is the case that
+	// matters — was reported as a started session and then silently was not
+	// one.
+	//
+	// Asking once is not enough: tmux does not reap the session synchronously,
+	// so an immediate exit was still listed for a moment and the check passed.
+	// This watches for the short window instead. It catches a command that dies
+	// at once, which is the common failure; it is not supervision, and a CLI
+	// that crashes a second later is still reported as started.
+	if err := a.settle(ctx, project, name, cmd); err != nil {
+		return Session{}, err
+	}
 	return Session{Name: name, Project: project}, nil
+}
+
+// SettleFor is how long Start watches a new session before believing in it.
+var SettleFor = 400 * time.Millisecond
+
+func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
+	deadline := time.Now().Add(SettleFor)
+	for {
+		live, err := a.Alive(ctx, project)
+		if err != nil {
+			return err
+		}
+		if !live {
+			return fmt.Errorf("%s exited immediately; no session is running. The command was: %s", name, cmd)
+		}
+		if !time.Now().Before(deadline) {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(50 * time.Millisecond):
+		}
+	}
 }
 
 // List returns every session Mustur started on this machine, and nothing else.
 func (a *Adapter) List(ctx context.Context) ([]Session, error) {
-	out, err := a.runner().Run(ctx, "tmux", "list-sessions", "-F", "#{session_name}\t#{session_windows}\t#{session_attached}")
+	out, err := a.runner().Run(ctx, "tmux", "list-sessions", "-F",
+		"#{session_name}\t#{session_windows}\t#{session_attached}\t#{"+OwnedOption+"}")
 	if err != nil {
 		// No server running is not an error: it is the honest answer that no
 		// session exists. Distinguished by the message tmux gives, because an
@@ -134,16 +224,17 @@ func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 		}
 		parts := strings.Split(line, "\t")
 		name := parts[0]
+		// Provenance, not the name. A session called mustur/anything that this
+		// package did not start carries no option and is somebody else's.
+		if len(parts) < 4 || strings.TrimSpace(parts[3]) == "" {
+			continue
+		}
 		if !strings.HasPrefix(name, Prefix) {
-			continue // Somebody else's. Not ours to see.
+			continue // Marked but misnamed: not something Start could produce.
 		}
 		s := Session{Name: name, Project: strings.TrimPrefix(name, Prefix)}
-		if len(parts) > 1 {
-			fmt.Sscanf(parts[1], "%d", &s.Windows)
-		}
-		if len(parts) > 2 {
-			s.Attached = strings.TrimSpace(parts[2]) == "1"
-		}
+		fmt.Sscanf(parts[1], "%d", &s.Windows)
+		s.Attached = strings.TrimSpace(parts[2]) == "1"
 		sessions = append(sessions, s)
 	}
 	return sessions, nil

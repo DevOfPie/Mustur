@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-14 record(s), by identifier.
+15 record(s), by identifier.
 
 ---
 
@@ -308,3 +308,27 @@ The session is a CLI running interactively inside tmux. An answer arrives at the
 | Surfaced | 2026-08-21 10:08 |
 | Answer | tmux send-keys into the pane. Mustur can type into a session, and that capability is named rather than discovered later. |
 | Answered | 2026-08-21 10:08 |
+
+---
+
+## MUS-Q-0015
+
+**I narrowed milestone 4a's done-when without asking. Which clauses does 4a actually owe?**
+
+question · 2026-08-21
+
+4a's row says the adapter 'starts and supervises' a session and 'survives a dropped phone connection'. Neither is met. There is no supervision — no restart, no health check, no output capture — and nothing connects from a phone until 4b, so that clause cannot be shown here. I rewrote the row to narrow both, which is the scope contract being edited by the thing it measures; workflow.md says a conflict there is a bug to report, not to pick. The row is restored and this is the report.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 4a can be accepted at all |
+| Needed to proceed | yes |
+| Option | Move both clauses to 4b :: Recommended · 4a is honest about what it is :: 4a becomes start, list, stop, and the answer carried back — all built and tested. Supervision and surviving a dropped connection go to 4b, where a phone connects and where a dead session is something a watcher would notice. 4a is then acceptable today. |
+| Option | 4a owes real supervision, build it now :: Restart, health check, and a record when a session dies :: The word stays and the code catches up. Larger, and supervision without anything watching the output is mostly a restart loop. |
+| Option | Keep the clauses, accept 4a as partial :: Nothing moves, and 4a stays unaccepted until 4b :: Honest about the plan and leaves a built, working piece sitting unaccepted for a milestone. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 10:35 |
+| Answer | Move both clauses to 4b. 4a is start, list, stop and the answer carried back; supervision and surviving a dropped connection belong where a phone connects and a dead session is noticed. |
+| Answered | 2026-08-21 10:40 |
+| Delivered | not delivered: the question names no session |

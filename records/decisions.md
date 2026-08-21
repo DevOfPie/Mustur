@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-65 record(s), by identifier.
+71 record(s), by identifier.
 
 ## Index
 
@@ -77,6 +77,12 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0063](#mus-d-0063) | Mustur can type into a session it started | 2026-08-21 |
 | [MUS-D-0064](#mus-d-0064) | A project name may not address a window or a pane | 2026-08-21 |
 | [MUS-D-0065](#mus-d-0065) | An undelivered answer is still an answer | 2026-08-21 |
+| [MUS-D-0066](#mus-d-0066) | Ownership is provenance, not a name | 2026-08-21 |
+| [MUS-D-0067](#mus-d-0067) | The word was supervises and the thing was not built | 2026-08-21 |
+| [MUS-D-0068](#mus-d-0068) | An answer that reached the server is the owner's | 2026-08-21 |
+| [MUS-D-0069](#mus-d-0069) | The session that raised a question and the session an answer can reach are different things | 2026-08-21 |
+| [MUS-D-0070](#mus-d-0070) | There is no session send | 2026-08-21 |
+| [MUS-D-0071](#mus-d-0071) | The unit cannot have a private /tmp | 2026-08-21 |
 
 ---
 
@@ -1076,3 +1082,98 @@ If the session has gone, or tmux is not there, or the pane died mid-write, the a
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#an-undelivered-answer-is-still-an-answer](../decisions.md#an-undelivered-answer-is-still-an-answer) |
+
+---
+
+## MUS-D-0066
+
+**Ownership is provenance, not a name**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0063](#mus-d-0063)
+
+The adapter filtered on the mustur/ name prefix and called that enforcement. A review broke it in one command: tmux new-session -s mustur/anything by hand, and Mustur listed it, typed into it and killed it. Start now sets a tmux user option on the session it creates and List returns only sessions carrying it; everything else goes through that filter. The prefix stays for legibility and is no longer what the rule rests on.
+
+| Field | Value |
+| --- | --- |
+| Confirmed | A hand-made mustur/zzfake was invisible to list and refused by stop, while a session Mustur started in the same tmux server was listed. tmux ls showed both |
+| Rationale | [decisions.md#ownership-is-provenance-not-a-name](../decisions.md#ownership-is-provenance-not-a-name) |
+
+---
+
+## MUS-D-0067
+
+**The word was supervises and the thing was not built**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0015](questions.md#mus-q-0015)
+
+Three places said the adapter supervises sessions and nothing did: no restart, no health check, no output capture, no notification when a session dies. The word is removed from every claim about what exists. Start instead checks the session is still there before reporting success, because tmux reports success whether or not the command survived — and it watches for a short window rather than asking once, since tmux does not reap synchronously and an immediate exit was still listed for a moment. That catches a command dying at once and is not supervision. Supervision moved to 4b with surviving a dropped connection, on the owner's answer.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-word-was-supervises-and-the-thing-was-not-built](../decisions.md#the-word-was-supervises-and-the-thing-was-not-built) |
+
+---
+
+## MUS-D-0068
+
+**An answer that reached the server is the owner's**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0065](#mus-d-0065)
+
+The web answer path used the request's context for both the delivery and the write, so a client disconnecting while tmux was being shelled out to cancelled the write too and the answer was lost entirely — question still open, no answer, no reason. A phone on a flaky link is the scenario this milestone names. The write is detached from the request now, and the delivery carries its own timeout so an unresponsive tmux cannot hold the answer unwritten. This is what MUS-D-0065 meant and did not achieve.
+
+| Field | Value |
+| --- | --- |
+| Confirmed | A test blocks in delivery, cancels the request, and asserts the answer is stored with a not-delivered reason |
+| Rationale | [decisions.md#an-answer-that-reached-the-server-is-the-owners](../decisions.md#an-answer-that-reached-the-server-is-the-owners) |
+
+---
+
+## MUS-D-0069
+
+**The session that raised a question and the session an answer can reach are different things**
+
+decision · 2026-08-21
+
+Milestone 4a redefined the Session field to mean the project so delivery could target it. Seven records already carried a Claude Code session id under that name, and the redefinition made every one wrong — silently, because a Claude session id passes the project-name check and was handed to tmux rather than refused. Session keeps its original meaning and records; Session project is the new field delivery targets, set by mustur ask --in. Redefining a field under records already written is a rewrite of the past disguised as a comment change.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-session-that-raised-a-question-and-the-session-an-answer-can-reach-are-different-things](../decisions.md#the-session-that-raised-a-question-and-the-session-an-answer-can-reach-are-different-things) |
+
+---
+
+## MUS-D-0070
+
+**There is no session send**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0063](#mus-d-0063)
+
+An operator verb taking arbitrary text made 'the only caller is the answer path' false in the same commit that claimed it. It is removed. Typing into an agent's input is a capability the answer path needs and nothing else does, and a person who genuinely wants to has tmux send-keys — as themselves rather than as Mustur.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#there-is-no-session-send](../decisions.md#there-is-no-session-send) |
+
+---
+
+## MUS-D-0071
+
+**The unit cannot have a private /tmp**
+
+decision · 2026-08-21
+
+PrivateTmp=yes gives the service its own /tmp, and tmux's socket is /tmp/tmux-$UID. Under that flag the service cannot reach the owner's tmux server at all, so every answer filed from the phone would have recorded not delivered while the code looked correct — the headline capability inert exactly where it ships. PrivateTmp=no; a hardening flag that silently removes the feature is worse than the hardening is worth, and the rest of the confinement stays.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 4a review, from the unit file rather than from the running service |
+| Rationale | [decisions.md#the-unit-cannot-have-a-private-tmp](../decisions.md#the-unit-cannot-have-a-private-tmp) |
