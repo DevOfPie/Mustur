@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-57 record(s), by identifier.
+61 record(s), by identifier.
 
 ## Index
 
@@ -69,6 +69,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0055](#mus-d-0055) | An answer is a choice between options, not a text box | 2026-08-21 |
 | [MUS-D-0056](#mus-d-0056) | The queue was rebuilt because the plan was routed around, not because it was wrong | 2026-08-21 |
 | [MUS-D-0057](#mus-d-0057) | The tab bar carries only the surfaces that exist | 2026-08-21 |
+| [MUS-D-0058](#mus-d-0058) | The tab bar is MUS-D-0041's, built two tabs at a time | 2026-08-21 |
+| [MUS-D-0059](#mus-d-0059) | The stack table gains a named exception rather than losing its rule | 2026-08-21 |
+| [MUS-D-0060](#mus-d-0060) | Milestone 4 is two milestones | 2026-08-21 |
+| [MUS-D-0061](#mus-d-0061) | Three timestamps were typed rather than read | 2026-08-21 |
 
 ---
 
@@ -942,3 +946,68 @@ The artboard has four tabs: Sessions, Decisions, Intake, Records. Two of those s
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#the-tab-bar-carries-only-the-surfaces-that-exist](../decisions.md#the-tab-bar-carries-only-the-surfaces-that-exist) |
+
+---
+
+## MUS-D-0058
+
+**The tab bar is MUS-D-0041's, built two tabs at a time**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0012](questions.md#mus-q-0012)
+
+Corrects: [MUS-D-0057](#mus-d-0057)
+
+MUS-D-0057 is right about the code and wrong about its authority: it attributed four tabs to the drawing. Four tabs is MUS-D-0041, the owner's, taken against a recommendation of three — so reducing the bar to two overrode an owner decision and was written down instead of asked. Put to the owner on MUS-Q-0012, whose answer was two now, growing to four. MUS-D-0041 stands unchanged. This also corrects MUS-D-0053's claim that the tab bar arrives at milestone 4: a bar exists at milestone 3 on the queue, while the banner it also describes has not moved and still stands, because intake has no bar of its own.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-tab-bar-is-mus-d-0041s-built-two-tabs-at-a-time](../decisions.md#the-tab-bar-is-mus-d-0041s-built-two-tabs-at-a-time) |
+
+---
+
+## MUS-D-0059
+
+**The stack table gains a named exception rather than losing its rule**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0011](questions.md#mus-q-0011)
+
+Plan.md's stack table said the human interface is server-rendered HTML with no per-project client state, and that row is on main. MUS-Q-0008's WebSocket answer reverses it for one surface, prospectively, which makes it a falsified claim of a shipped milestone and therefore a reopening. The owner's answer on MUS-Q-0011: correct the row forward, no reopening. It now reads server-rendered by default with a client layer only where a surface streams, naming the exception rather than dropping the rule. Milestone 2 stays passed, and MUS-F-0019's reasoning survives because intake does not stream.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-stack-table-gains-a-named-exception-rather-than-losing-its-rule](../decisions.md#the-stack-table-gains-a-named-exception-rather-than-losing-its-rule) |
+
+---
+
+## MUS-D-0060
+
+**Milestone 4 is two milestones**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0009](questions.md#mus-q-0009)
+
+4a is the per-machine adapter, tmux supervision, and the answer delivered back into the session that raised it — the clause milestone 3 handed over. 4b is streaming a session to a browser tab, which is where the stack table's client-layer exception is spent. The answer landed two commits before this entry and changed nothing: Plan.md and the milestone records went on describing one undivided milestone, which is the same Plan-versus-records drift MUS-Q-0001 was raised about.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#milestone-4-is-two-milestones](../decisions.md#milestone-4-is-two-milestones) |
+
+---
+
+## MUS-D-0061
+
+**Three timestamps were typed rather than read**
+
+decision · 2026-08-21
+
+MUS-Q-0008, 0009 and 0010 recorded Surfaced 05:40 and Answered 05:46. The export that would have contained them ran at 09:25 and did not. Those times were passed to --at because the flag accepts them, not because anything was measured. That is the no-unmeasured-number gate applied to a clock, and worse than an unmeasured number because a timestamp reads as a reading by construction. The dates are right and the minutes were invented. Recorded rather than quietly adjusted, because a corrected fabrication and a real measurement look identical afterwards.
+
+| Field | Value |
+| --- | --- |
+| Found by | The queue rebuild's contract review, from commit times the export could not have produced |
+| Rationale | [decisions.md#three-timestamps-were-typed-rather-than-read](../decisions.md#three-timestamps-were-typed-rather-than-read) |

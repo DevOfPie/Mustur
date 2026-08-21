@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| question | 10 | [questions.md](questions.md) |
-| decision | 57 | [decisions.md](decisions.md) |
+| question | 12 | [questions.md](questions.md) |
+| decision | 61 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 15 | [work-units/index.md](work-units/index.md) |
@@ -54,6 +54,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0008](questions.md#mus-q-0008) | question | Streaming a session to a browser tab needs script or polling. Which, against the no-script rule? |
 | [MUS-Q-0009](questions.md#mus-q-0009) | question | Does milestone 4 ship whole, or split adapter-and-injection from browser streaming? |
 | [MUS-Q-0010](questions.md#mus-q-0010) | question | Is the decision queue redesigned from the published plan, or does the plan get amended to match? |
+| [MUS-Q-0011](questions.md#mus-q-0011) | question | Your WebSocket answer reverses a stack-table row on main. Reopen milestone 2, or correct it forward? |
+| [MUS-Q-0012](questions.md#mus-q-0012) | question | I shipped a two-tab bar, overriding your four-tab decision without asking. Which stands? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -111,6 +113,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0055](decisions.md#mus-d-0055) | decision | An answer is a choice between options, not a text box |
 | [MUS-D-0056](decisions.md#mus-d-0056) | decision | The queue was rebuilt because the plan was routed around, not because it was wrong |
 | [MUS-D-0057](decisions.md#mus-d-0057) | decision | The tab bar carries only the surfaces that exist |
+| [MUS-D-0058](decisions.md#mus-d-0058) | decision | The tab bar is MUS-D-0041's, built two tabs at a time |
+| [MUS-D-0059](decisions.md#mus-d-0059) | decision | The stack table gains a named exception rather than losing its rule |
+| [MUS-D-0060](decisions.md#mus-d-0060) | decision | Milestone 4 is two milestones |
+| [MUS-D-0061](decisions.md#mus-d-0061) | decision | Three timestamps were typed rather than read |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

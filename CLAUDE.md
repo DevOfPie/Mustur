@@ -31,8 +31,19 @@ Three rules bind every session in this repository:
   a report or a pull request body. A pull request out of draft says work needs
   review; it never asks a decision.
 
-  This one is enforced rather than trusted. Raise it with `mustur ask --title
-  "..." --blocks "..."`, put it in a prompt, then `mustur surfaced <ID>`.
+  This one is enforced rather than trusted. Raise it with
+
+  ```
+  mustur ask --title "…" --blocks "…" \
+    --option "Label :: one line on what it costs :: the paragraph behind it" \
+    --option "…"
+  ```
+
+  then put it in a prompt and `mustur surfaced <ID>`. **Give it options.** You
+  have just finished weighing the alternatives — that is why you are blocked —
+  and a bare question makes the owner reconstruct them. Prefix one option's line
+  with `Recommended` if you have a view. Omit them only when the question
+  genuinely has no shortlist.
   `make check` reads `records/` and fails while any open question has never been
   surfaced, so work cannot be reported complete around one.
 

@@ -316,6 +316,46 @@ func TestFreeTextOverridesAChosenOption(t *testing.T) {
 	}
 }
 
+// The surface marks the recommended option. The first build computed the flag
+// and never rendered it, so an option read as recommended only because the
+// asker happened to type the word.
+func TestTheRecommendedOptionIsMarkedBySurfaceNotByText(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended · runs on every push :: detail",
+		"Vendor a pinned copy :: a stale copy proves nothing :: detail"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, `class="rec"`) {
+		t.Error("the recommended option carries no mark of its own")
+	}
+	if n := strings.Count(body, `class="rec"`); n != 1 {
+		t.Errorf("%d options marked recommended, want 1", n)
+	}
+}
+
+// An option with no detail has no disclosure, so hiding the radio inside one
+// made it unpickable without a blind tap. Selection is the row now.
+func TestABareOptionIsPickableWithoutExpandingAnything(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Ship it?",
+		"Yes", "No"))
+	body := getFrom(t, srv, "/questions")
+
+	if strings.Contains(body, "<details") {
+		t.Error("a question whose options carry no detail renders a disclosure")
+	}
+	for _, want := range []string{`value="Yes"`, `value="No"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("no radio for %s", want)
+		}
+	}
+	// The radio must not be inside a details element for any option.
+	if i := strings.Index(body, "<details"); i >= 0 {
+		if j := strings.Index(body[i:], `type="radio"`); j >= 0 {
+			t.Error("a radio is nested inside a disclosure")
+		}
+	}
+}
+
 // A tab that goes nowhere is an unbuilt capability described as existing.
 func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
 	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))

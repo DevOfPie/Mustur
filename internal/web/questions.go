@@ -14,15 +14,23 @@ package web
 //   - **Answers are options**, not a text box. A well-put decision arrives as a
 //     short list with what each one costs; a box made the owner reconstruct the
 //     options the asker already had. One may be marked recommended.
-//   - **Each option expands in place** — one line up front, the paragraph
-//     behind it only when asked. That is MUS-D-0043's rule about what detail
-//     costs, applied to a surface rather than to a session.
-//   - **One question per screen**, not a list. The queue is short by
-//     construction and the screen is a phone.
-//   - **Answering is one tap, above the bar rather than inside it.**
+//   - **Each option's detail expands in place** — one line up front, the
+//     paragraph behind it only when asked. That is MUS-D-0017's rule about what
+//     detail costs, applied to a surface rather than to a session. (An earlier
+//     version of this comment cited MUS-D-0043, which is "The audit is a page"
+//     and says nothing about detail. The citation was wrong and is corrected
+//     here rather than quietly dropped, because a `.go` comment is the one
+//     place check-links cannot see a wrong identifier.)
+//   - **Selection is the row.** Choosing an option is one tap; the disclosure
+//     is a separate control beneath it, so an option with no detail is still
+//     pickable and still looks pickable.
 //
 // The expansion is a <details> element, so it costs no script — the constraint
 // every surface inherits survives the redesign intact.
+//
+// Where this departs from the drawing, and why, is listed in
+// docs/ui-surfaces.md under surface 4. The list is longer than the first
+// version of that file admitted.
 
 import (
 	"context"
@@ -228,7 +236,9 @@ func (q *Questions) redirect(w http.ResponseWriter, r *http.Request, answered, p
 	http.Redirect(w, r, u, http.StatusSeeOther)
 }
 
-// OpenCount is how many questions are waiting, for the count the tab carries.
+// OpenCount is how many questions are waiting, for the banner the intake box
+// carries. The tab's own count comes from queuePage.OpenN, which the queue
+// already has in hand.
 func OpenCount(ctx context.Context, s *store.Store) int {
 	records, err := s.List(ctx, "")
 	if err != nil {
@@ -237,10 +247,13 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 	return len(question.Open(records))
 }
 
-// The tab bar. The drawing has four — Sessions, Decisions, Intake, Records —
-// and two of those surfaces do not exist. A tab that goes nowhere would be an
-// unbuilt capability described as existing, which is a gate in workflow.md, so
-// only the built ones are rendered. The bar grows as they arrive.
+// The tab bar. MUS-D-0041 is owner-set: the phone bar has four tabs, decided
+// against a recommendation of three, and it still stands. Two of those four
+// surfaces do not exist yet, and a tab that goes nowhere would be an unbuilt
+// capability described as existing, which is a gate in workflow.md — so the bar
+// renders the built ones and grows as the rest arrive. Owner-confirmed as the
+// interim on MUS-Q-0012, which also corrected MUS-D-0053's claim that no bar
+// exists before milestone 4.
 //
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
@@ -276,17 +289,23 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   /* One line up front, the paragraph behind it only when asked for. <details>
      does that with no script, which keeps the constraint every surface
      inherits. */
+  /* Selection is the whole row, so choosing is one tap. An earlier build hid
+     the radio inside the disclosure, which made an option with no detail
+     unpickable without a blind tap on a row that showed no sign of opening. */
   .opt { border: 1px solid var(--edge); border-radius: .5rem; padding: .1rem .7rem;
          margin-bottom: .6rem; }
-  .opt[open] { border-color: var(--accent); }
-  .opt > summary { list-style: none; cursor: pointer; padding: .6rem 0;
-                   display: flex; gap: .6rem; align-items: flex-start; }
-  .opt > summary::-webkit-details-marker { display: none; }
+  .opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .pick { display: flex; gap: .6rem; align-items: flex-start; padding: .7rem 0;
+          cursor: pointer; }
   .opt .lbl { flex: 1; min-width: 0; }
   .opt .line { display: block; opacity: .7; font-size: .85em; }
-  .opt .more { flex: 0 0 auto; opacity: .5; font-size: .85em; }
-  .opt p { margin: 0 0 .7rem; font-size: .92em; }
-  .choose { display: flex; gap: .5rem; align-items: center; padding: .1rem 0 .6rem; }
+  .rec { font-size: .72em; text-transform: uppercase; letter-spacing: .04em;
+         border: 1px solid var(--accent); border-radius: 999px;
+         padding: .05rem .45rem; vertical-align: .1em; white-space: nowrap; }
+  .opt details { border-top: 1px solid var(--edge); }
+  .opt details > summary { cursor: pointer; padding: .5rem 0; opacity: .6;
+                           font-size: .85em; }
+  .opt details p { margin: 0 0 .7rem; font-size: .92em; }
   input[type=text] { width: 100%; font: inherit; padding: .6rem;
              border: 1px solid var(--edge); border-radius: .5rem;
              background: transparent; color: inherit; box-sizing: border-box; }
@@ -325,17 +344,14 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <small class="asked">Asked {{$q.Asked}}</small>
   {{if $q.Body}}<p class="ctx">{{$q.Body}}</p>{{end}}
   {{range $q.Options}}
-  <details class="opt">
-    <summary>
-      <span class="lbl"><strong>{{.Label}}</strong>
+  <div class="opt">
+    <label class="pick">
+      <input type="radio" name="option" value="{{.Label}}">
+      <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec">recommended</span>{{end}}
         {{if .Line}}<span class="line">{{.Line}}</span>{{end}}</span>
-      {{if .Detail}}<span class="more">more</span>{{end}}
-    </summary>
-    {{if .Detail}}<p>{{.Detail}}</p>{{end}}
-    <div class="choose">
-      <label><input type="radio" name="option" value="{{.Label}}"> Choose this</label>
-    </div>
-  </details>
+    </label>
+    {{if .Detail}}<details><summary>more</summary><p>{{.Detail}}</p></details>{{end}}
+  </div>
   {{end}}
   <input type="text" name="answer" autocomplete="off"
          placeholder="{{if $q.Options}}Or say something else{{else}}Your answer{{end}}">

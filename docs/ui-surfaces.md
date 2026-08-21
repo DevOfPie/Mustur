@@ -11,6 +11,14 @@ the record alone was not the safeguard. The owner's answer on MUS-Q-0010 was to
 rebuild the queue from its artboard, which is done. Intake is unchanged and
 still stands as built.
 
+**The standing instruction, which an earlier draft of this file deleted and a
+review caught:** the owner's answer after intake was to publish a plan for every
+remaining surface **before any more of them are built**. That plan exists and is
+linked below. It governs milestones 4 onwards, it was not superseded by the
+queue being rebuilt, and it is restated here because removing it was the
+"nothing is deleted" rule being broken on the one line that constrains what gets
+built next.
+
 The rest of this file lists the surfaces v1 needs, what each one must do, and the
 constraint that governs it, so that wireframing has a target list rather than a
 blank page.
@@ -86,11 +94,23 @@ expands in place, one line up front and the paragraph behind it only when asked;
 and answering is one tap above the bar. The expansion is a `<details>` element,
 so none of it costs script.
 
-Two things differ from the drawing, both because the drawing is of a finished
-v1. The tab bar carries only the surfaces that exist — a tab pointing at
-Sessions or Records would be an unbuilt capability described as existing. And
-the banner on intake stays until that bar is real, which MUS-Q-0006 confirms as
-interim.
+**Six things differ from the drawing.** An earlier version of this paragraph
+said two, and a review counted the rest — so they are listed rather than
+summarised.
+
+| Difference | Why |
+| --- | --- |
+| The tab bar carries two tabs, not four | Sessions and Records are not built, and a tab pointing at one would be an unbuilt capability described as existing. MUS-D-0041's four still stands; MUS-Q-0012 confirms this as its interim |
+| The banner on intake stays | It is the only route back from intake, which has no bar of its own yet. MUS-Q-0006 |
+| Every open question is on one page, not one per screen | The queue is short by construction. The drawing is a single-question screen and this is a list with a rule between entries; the earlier claim to be "one question per screen" was simply false of the code beneath it |
+| Options carry a radio | The drawing makes the card itself the selection. A radio is what a form can express without script, and the whole row is the control |
+| There is a free-text box under the options | The drawing has none. The owner wanting to say something the list does not contain is the case a list of options is worst at, and it must not be the case the surface refuses |
+| The project pill is not rendered | One project exists. A pill that always reads the same is chrome |
+
+The Answer button is also in flow rather than in a bordered footer, so it
+scrolls with the question rather than staying pinned. That is a difference the
+drawing would probably lose an argument about on a short queue, and it is named
+here rather than defended.
 
 Where a blocked agent's decision arrives and where the owner answers it.
 

@@ -40,6 +40,8 @@ const usage = `mustur — records and routing for one project
   mustur add KIND --title T [...]             write one record into the store
   mustur amend ID --title T [...]             correct one, without losing what it said
   mustur ask      --title T [--blocks W]      raise a question the owner has to answer
+                  [--option "L :: line :: detail"]  an answer they can pick, repeatable
+                  [--needed]                  the work cannot proceed without the answer
   mustur surfaced ID                          record that it reached a prompt
   mustur answer   ID --answer A               record what the owner said, or --withdraw
   mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones

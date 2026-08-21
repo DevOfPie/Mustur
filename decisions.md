@@ -76,6 +76,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [An answer is a choice between options, not a text box](#an-answer-is-a-choice-between-options-not-a-text-box) | A box makes the owner rebuild the list the asker had |
 | [The queue was rebuilt because the plan was routed around, not because it was wrong](#the-queue-was-rebuilt-because-the-plan-was-routed-around-not-because-it-was-wrong) | Recording a failure did not stop it repeating |
 | [The tab bar carries only the surfaces that exist](#the-tab-bar-carries-only-the-surfaces-that-exist) | A tab to nowhere is an unbuilt capability, described |
+| [The tab bar is MUS-D-0041's, built two tabs at a time](#the-tab-bar-is-mus-d-0041s-built-two-tabs-at-a-time) | Corrects the row above, which overrode the owner by prose |
+| [The stack table gains a named exception rather than losing its rule](#the-stack-table-gains-a-named-exception-rather-than-losing-its-rule) | A reopening, dispositioned forward by the owner |
+| [Milestone 4 is two milestones](#milestone-4-is-two-milestones) | 4a the adapter and injection, 4b the browser tab |
+| [Three timestamps were typed rather than read](#three-timestamps-were-typed-rather-than-read) | The unmeasured-number gate, applied to a clock |
 
 ---
 
@@ -1173,3 +1177,66 @@ renders the two that exist and grows as the others arrive.
 The count is spelled out rather than shown as a badge, which is the drawing's
 own note: a badge holding one character reads as an unexplained dot at this
 size.
+
+## 2026-08-21 — what the queue rebuild's review changed
+
+### The tab bar is MUS-D-0041's, built two tabs at a time
+
+The entry above, "The tab bar carries only the surfaces that exist", is correct
+about the code and wrong about its own authority. It attributed four tabs to the
+drawing. Four tabs is **MUS-D-0041**, which is the owner's, taken *against* a
+recommendation of three — so reducing the bar to two overrode an owner decision,
+and it was written down instead of asked.
+
+Put to the owner on MUS-Q-0012. Their answer: **two now, growing to four.**
+MUS-D-0041 stands unchanged; the bar renders the surfaces that exist and gains
+tabs as the rest arrive. This entry is the correction the earlier one should
+have been.
+
+It also corrects [MUS-D-0053](#the-decision-queues-banner-is-interim-and-mus-d-0041-still-stands),
+which says "the tab bar arrives with the session list at milestone 4 and the
+banner moves then". A bar exists at milestone 3, on the queue. The banner has
+not moved and still stands, because intake has no bar of its own — so the half
+of that sentence about the banner holds and the half about milestone 4 does not.
+Both entries stay as written; this one is where they are corrected.
+
+### The stack table gains a named exception rather than losing its rule
+
+`Plan.md`'s stack table said the human interface is server-rendered HTML with no
+per-project client state. That row is on `main`. MUS-Q-0008's answer — WebSocket
+for the session surface — reverses it for one surface, prospectively.
+
+It went to the owner as a reopening, because a falsified claim of a shipped
+milestone is scheduling and scheduling is theirs. Their answer on MUS-Q-0011:
+**correct the row forward, no reopening.** The row now reads server-rendered by
+default with a client layer only where a surface streams, and names the
+exception rather than dropping the rule. Milestone 2 stays passed.
+
+[MUS-F-0019](records/findings.md) cites the old row as its evidence for shipping
+intake's destination row differently from its approved artboard. That reasoning
+survives: intake does not stream, so the default still governs it.
+
+### Milestone 4 is two milestones
+
+MUS-Q-0009's answer split it: **4a** is the adapter, tmux supervision and the
+answer delivered back into the session that raised it; **4b** is streaming a
+session to a browser tab. 4a is unblocked and carries the clause milestone 3
+handed over. 4b is where the client-layer exception above is spent.
+
+Recorded here because the answer landed two commits ago and changed nothing —
+`Plan.md` and the milestone records went on describing one undivided milestone,
+which is the same Plan-versus-records drift MUS-Q-0001 was raised about and
+MUS-D-0046 was supposed to have taught.
+
+### Three timestamps were typed rather than read
+
+MUS-Q-0008, 0009 and 0010 recorded `Surfaced 05:40` and `Answered 05:46`. The
+export that would have contained them ran at 09:25 and did not. Those times were
+passed to `--at` because the flag accepts them, not because anything was
+measured.
+
+That is the no-unmeasured-number gate applied to a clock, and it is worse than
+an unmeasured number because a timestamp reads as a reading by construction. The
+dates are right and the minutes were invented. Recorded rather than quietly
+adjusted, because a corrected fabrication and a real measurement look identical
+afterwards.

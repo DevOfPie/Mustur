@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-10 record(s), by identifier.
+12 record(s), by identifier.
 
 ---
 
@@ -213,3 +213,50 @@ The queue shipped at milestone 3 written from docs/ui-surfaces.md's brief rather
 | Surfaced | 2026-08-21 05:40 |
 | Answer | Redesign it from the plan's artboard. The built queue met its brief, but a plan agents route around is not a plan. |
 | Answered | 2026-08-21 05:46 |
+
+---
+
+## MUS-Q-0011
+
+**Your WebSocket answer reverses a stack-table row on main. Reopen milestone 2, or correct it forward?**
+
+question · 2026-08-21
+
+Plan.md's stack table says the human interface is server-rendered HTML with no per-project client state. That row is on main. MUS-Q-0008's answer accepts a client layer for the session surface, which reverses it prospectively. MUS-F-0019, also merged, cites that row as the evidence for shipping intake's destination row differently from its approved artboard. workflow.md makes a falsified shipped claim a reopening, and reopening is scheduling, which is yours.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | nothing today; every built surface is still script-free |
+| Option | Correct the row forward, no reopening :: Recommended · the row gains the exception and MUS-F-0019 keeps its reasoning :: The stack row is amended to say server-rendered by default, with a client layer where a surface streams. MUS-F-0019's evidence still holds for intake, which is not a streaming surface. Cheapest, and honest as long as the exception is named rather than the rule quietly dropped. |
+| Option | Reopen milestone 2 as scheduling :: The row is a stack choice a milestone shipped on :: Milestone 2 goes back to unpassed and the stack table is revisited as its own unit. Heavier, and it treats a decision about milestone 4's surface as invalidating work that does not use it. |
+| Option | Defer until 4b actually builds it :: Nothing is false until a client layer ships :: The row stands, and is corrected when the first script lands rather than on the strength of an intention. Risks the correction never being made, which is how the loopback claims went stale. |
+| Asked by | whippy |
+| Session | session_01CxpnCTwvS5Sdt1pqTpuEpG |
+| Surfaced | 2026-08-21 09:57 |
+| Answer | Correct the row forward, no reopening. Server-rendered by default, with a client layer where a surface streams; the exception is named rather than the rule quietly dropped. |
+| Answered | 2026-08-21 09:57 |
+
+---
+
+## MUS-Q-0012
+
+**I shipped a two-tab bar, overriding your four-tab decision without asking. Which stands?**
+
+question · 2026-08-21
+
+MUS-D-0041 is owner-set: the phone bar has four tabs, decided against a recommendation of three. The rebuilt queue renders two, because Sessions and Records do not exist and a tab pointing at nothing would describe an unbuilt capability. I recorded that as MUS-D-0057 without asking you, which overrides an owner decision by prose — the failure the previous commit said it was cleaning up. Five places in the tree also still say the bar arrives at milestone 4.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | accepting the queue rebuild |
+| Needed to proceed | yes |
+| Option | Two now, growing to four :: Recommended · MUS-D-0041 stands and this is its interim :: The bar renders built surfaces only and gains tabs as they arrive. MUS-D-0057 is rewritten to correct MUS-D-0041 and MUS-D-0053 by name rather than contradict them silently, and the five stale claims are fixed. |
+| Option | No bar until all four exist :: MUS-D-0041 as written, and the banner keeps its job :: The queue goes back to the banner-only route until Sessions and Records are built. Closest to the letter of your decision, and it removes navigation that works today. |
+| Option | Two tabs, and amend MUS-D-0041 :: The four-tab decision becomes a two-plus-growth decision :: Records the bar as it is built rather than as an interim. Only right if you have actually changed your mind about the four. |
+| Asked by | whippy |
+| Session | session_01CxpnCTwvS5Sdt1pqTpuEpG |
+| Surfaced | 2026-08-21 09:57 |
+| Answer | Two now, growing to four. MUS-D-0041 stands and this is its interim; MUS-D-0057 is rewritten to correct MUS-D-0041 and MUS-D-0053 by name. |
+| Answered | 2026-08-21 09:57 |
