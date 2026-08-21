@@ -69,7 +69,7 @@ and the origin is down** — Access answers before the origin is consulted, so
 this check says nothing about whether anything is listening. It is a gate check,
 not a health check, and nothing here watches the origin.
 
-### The part these four requests do not establish
+#### What these four requests do not establish
 
 They show that an unauthenticated request is turned away. They say nothing about
 **who the policy lets in**, and that is a separate requirement:
@@ -77,8 +77,10 @@ They show that an unauthenticated request is turned away. They say nothing about
 > **A policy allowing the owner's identity**, and nothing wider. Milestone 6 is
 > where a second person is added deliberately, with its own verdict.
 
-The free tier covers 50 users, and [Plan.md](../Plan.md#stack) puts identity at
-the edge for this reason — so a policy accidentally scoped to a whole domain
+Cloudflare's free Zero Trust tier was recorded as covering 50 users when this
+file first said so on 2026-08-20; nobody has re-checked it against Cloudflare's
+pricing since, so treat it as an assertion. [Plan.md](../Plan.md#stack) puts
+identity at the edge for this reason — so a policy accidentally scoped to a whole domain
 would still answer 302 to every check above and still be wrong. The policy lives
 in Cloudflare's dashboard, no credential on this machine can read it, and
 nothing in this repository can verify it. **It is the owner's to confirm**, and
@@ -143,8 +145,14 @@ it. The older loopback figures it also replaces were median 0.5 ms, worst 0.9 ms
 over ten filings, independently re-measured at median 0.35 ms, worst 0.55 ms,
 against a store roughly a third smaller than today's.
 
-The page is 3,071 bytes empty and grows with the recency list — 4,112 bytes
-after ten filings — which is why a single timing of it means little.
+The page grows with the recency list, which is why a single timing of it means
+little. The size after ten filings is recorded twice in this repository and the
+two disagree — 4,112 bytes in `decisions.md`, 4,212 in the record exported from
+the store — and neither is reproducible now, because the list only holds the
+last hour and the page has since gained a banner. Both are left standing rather
+than one being quietly picked. What is measurable today: the intake page served
+by the running service, with an empty recency list, is **2,245 bytes**, read
+2026-08-21 with `curl … | wc -c`.
 
 What the phone adds to that path is Access and the network. Neither is measured
 here, and the fifteen-second claim stays unclaimed until somebody holding a

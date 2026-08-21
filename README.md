@@ -8,11 +8,14 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Milestones 1 and 2 have passed; 2b and 2c are built, reviewed and awaiting
+**Milestones 1 and 2 have passed; 2b, 2c and 3 are built, reviewed and awaiting
 acceptance, and nothing below them is built.** What exists is one binary that
 can hold this project's records and routing, serve them to a session through a
 single mandated tool call, audit its own records against the conventions this
-repository declares, and take a jot into its own findings queue through one box.
+repository declares, take a jot into its own findings queue through one box, and
+hold the questions it owes the owner — refusing to let work be reported complete
+while one has never been surfaced as a prompt, and serving a queue they are
+answered from.
 That box is published at `mustur.devofpie.com`, behind Cloudflare Access and
 answered by a service that starts at boot; [docs/ingress.md](docs/ingress.md) is
 what it took. The one sentence still unproven is 2c's own — a jot filed *from a

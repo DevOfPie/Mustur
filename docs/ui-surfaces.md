@@ -1,9 +1,12 @@
 # Surfaces awaiting design
 
-**One of these is designed and it should not have been, not this way.** Surface
-5, intake, shipped at milestone 2c as a Go template — the layout decided in code
-and shown to the owner afterwards, which is what the rule three paragraphs down
-exists to prevent. Recorded rather than tidied away: the owner's answer was to
+**Two of these are built, and both by the route this file exists to prevent.**
+Surface 5, intake, shipped at milestone 2c as a Go template — the layout decided
+in code and shown to the owner afterwards. Surface 4, the decision queue,
+shipped at milestone 3 the same way: written from the brief below rather than
+from the published plan's artboard for it. Recorded rather than tidied away,
+because the first one was recorded and the second happened anyway, which says
+the record alone is not the safeguard. The owner's answer after intake was to
 publish a plan for every remaining surface before any more of them are built.
 
 The rest of this file lists the surfaces v1 needs, what each one must do, and the
@@ -17,8 +20,9 @@ brief; the design is the answer to it.
 **The plan for all seven is
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
 published 2026-08-20. Eight artboards — intake as built and as proposed, plus
-the six unbuilt surfaces — the shell they share, and four open questions. No
-further surface is built before it is answered.
+the six then-unbuilt surfaces — the shell they share, and four open questions,
+which were answered 2026-08-20. Five of those six are still unbuilt; the
+decision queue is not, and was not built from its artboard.
 
 ## The constraints every surface inherits
 
@@ -71,6 +75,13 @@ and cross-referential, so the graph reading was real; what it cost is in
 
 ### 4. Decision queue
 
+**Built at milestone 3, from this brief rather than from the plan's artboard.**
+What exists is a list of open questions, each with the paragraph it was raised
+with, what it blocks, and an answer box that posts from the list itself; plus a
+banner on intake, which MUS-Q-0006 confirms as interim until the tab bar at
+milestone 4. Like intake, it is the baseline a design should argue with rather
+than a design anyone chose.
+
 Where a blocked agent's decision arrives and where the owner answers it.
 
 The interaction that must not fail: **an open decision is visible without
@@ -82,7 +93,8 @@ holds up a milestone from one that holds up a sentence.
 
 ### 5. Intake
 
-**Built at milestone 2c, on loopback, without a visual plan.** What exists is one
+**Built at milestone 2c, without a visual plan**, and published at
+`mustur.devofpie.com` behind Cloudflare Access at 2c's end. What exists is one
 textarea, one button and a list of what was filed in the last hour. It is the
 baseline a plan should argue with rather than a design anyone chose.
 

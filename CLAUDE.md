@@ -3,15 +3,17 @@
 Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
-**Milestones 1 and 2 have passed; 2b and 2c are built and not yet accepted.**
+**Milestones 1 and 2 have passed; 2b, 2c and 3 are built and not yet accepted.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
 nothing without a StrucGu checkout. On this machine the intake box is published
 at `mustur.devofpie.com` behind Cloudflare Access; that is a deployment, not
 something a clone inherits. What is unconditionally here is
-[records/](records/README.md). Nothing
-below milestone 2c is built; do not describe any of it in the present tense.
+[records/](records/README.md). It also
+holds open questions and refuses to let work be reported complete around one.
+Nothing below milestone 3 is built; do not describe any of it in the present
+tense.
 
 Three rules bind every session in this repository:
 
@@ -31,10 +33,18 @@ Three rules bind every session in this repository:
 
   This one is enforced rather than trusted. Raise it with `mustur ask --title
   "..." --blocks "..."`, put it in a prompt, then `mustur surfaced <ID>`.
-  `make check` fails while any open question has never been surfaced, so work
-  cannot be reported complete around one. **An answer is not required to
-  proceed** — the owner may be away, and stopping for an absent owner is the
-  cost this refuses to pay. Being asked is what the gate wants.
+  `make check` reads `records/` and fails while any open question has never been
+  surfaced, so work cannot be reported complete around one.
+
+  **Being asked is usually enough** — the owner may be away, and stopping for an
+  absent owner is a cost this refuses to pay. The exception is a question the
+  work in hand cannot proceed without: raise those with `--needed` and the gate
+  will not pass on surfacing alone, because reporting complete on work that
+  turned on an answer nobody gave is the same lie as never having asked. Do
+  everything independent of the answer first, which is what
+  [workflow.md](workflow.md) asks for anyway.
+
+  You may **withdraw** your own question. You may not **answer** it.
 
 ## Mustur
 

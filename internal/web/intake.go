@@ -80,9 +80,13 @@ type page struct {
 	Cutoff       string
 	Project      string
 
-	// OpenQuestions is why the banner exists. A decision queue nobody opens is
-	// the failure milestone 3 is named after, so the count travels to the
-	// surface the owner did open rather than waiting to be visited.
+	// OpenQuestions drives the banner, which is **interim**. MUS-D-0041 chose a
+	// fixed place the eye already knows to check over a banner on another
+	// screen, on the grounds that a banner can be scrolled past — and that is
+	// still the decision. The tab bar it names arrives with the session list at
+	// milestone 4; until then this is the only other surface there is, and a
+	// queue reachable from nowhere would be worse than one reachable from here.
+	// It moves when home exists. Owner-confirmed as interim, MUS-Q-0006.
 	OpenQuestions int
 }
 
@@ -253,7 +257,8 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
            background: transparent; color: inherit; width: 100%; }
   .said { margin: .9rem 0; padding: .6rem .8rem; border-left: 3px solid var(--edge); }
   /* Pinned above the box, not below it. A blocked agent is work stopped, and
-     the owner should see that before they start typing something else. */
+     the owner should see that before they start typing something else. This is
+     the interim placement; MUS-D-0041's fixed place arrives with milestone 4. */
   .waiting { margin: 0 0 .75rem; padding: .55rem .8rem; border: 1px solid var(--edge);
              border-radius: .5rem; font-size: .95em; }
   .waiting a { color: inherit; }

@@ -192,9 +192,9 @@ it, and specific enough that failing them is unambiguous.
 
 ## Build status
 
-**Milestones 1 and 2 have passed. 2b and 2c are built and reviewed; 2c is now
-reachable and gated, and waits only on the owner filing a jot from a phone.
-Neither 2b nor 2c is accepted. Nothing below 2c is built.**
+**Milestones 1 and 2 have passed. 2b, 2c and 3 are built and reviewed; 2c is now
+reachable and gated, and waits only on the owner filing a jot from a phone. None
+of 2b, 2c or 3 is accepted. Nothing below 3 is built.**
 
 | # | State | Evidence |
 | --- | --- | --- |
@@ -202,7 +202,8 @@ Neither 2b nor 2c is accepted. Nothing below 2c is built.**
 | 2 | passed 2026-08-20, reviewed by three agents that did not build it and every finding dispositioned | [the records](records/README.md), and the `mustur_route` tool they are served by |
 | 2b | built and reviewed 2026-08-20; awaiting acceptance | `make audit` over this repository, and 344 expected states across 37 of StrucGu's fixture trees |
 | 2c | built and reviewed 2026-08-20. Reachable and gated 2026-08-21: `mustur.devofpie.com` behind Cloudflare Access, answered by a service that starts at boot. **The one sentence still unproven is the milestone's own** — a jot from a phone — which only the owner can test, because only the owner can get through Access | `MUS-F-0022`, filed through the running service and carried into `records/findings.md` by it; ten filings on loopback at a median of 1.71 ms, worst 2.10 ms, method in [docs/ingress.md](docs/ingress.md) |
-| 3 onwards | not started | |
+| 3 | built and reviewed 2026-08-21, split by the owner so that injection moves to milestone 4. An open question blocks `make check` when it was never surfaced, or when it is marked as one the work depends on; the queue is answerable from a phone | `records/questions.md`, `make questions` over it, and the seven questions this repository has raised — including the three that blocked this milestone's own build |
+| 4 onwards | not started | |
 
 *Passed* is a verdict acceptance makes, and this file does not make it early —
 the same reason its own note below says the status change in IdeaWarehouse was
@@ -215,8 +216,10 @@ serves them to a session through one tool call that the clause at the bottom of
 [CLAUDE.md](CLAUDE.md) mandates, audits this repository against the StrucGu
 modules it declares, and takes a jot into its own findings queue through one
 box, which a tunnel and a Cloudflare Access application now publish at
-`mustur.devofpie.com`. There is no adapter, no session Mustur owns, and no
-second project.
+`mustur.devofpie.com`. It also holds the questions it owes the owner, refuses to
+let work be reported complete around an unsurfaced one, and serves a queue those
+are answered from. There is no adapter, no session Mustur owns, and no second
+project.
 
 This file began as the plan seed from
 [agent-workflow-web-platform](https://github.com/DevOfPie/IdeaWarehouse/blob/main/ideas/agent-workflow-web-platform.md),
