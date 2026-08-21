@@ -28,6 +28,7 @@ func cmdAsk(args []string) error {
 	title := fs.String("title", "", "the question, in one line")
 	body := fs.String("body", "", "one short paragraph of context, from the window you already have")
 	blocks := fs.String("blocks", "", "what is stopped until this is answered, in words")
+	needed := fs.Bool("needed", false, "the work in hand cannot proceed without the answer; the gate will not pass on surfacing alone")
 	session := fs.String("session", "", "the session raising it, so an answer can be routed back")
 	at := fs.String("at", "", "the date (default today)")
 	project := fs.String("project", "MUS", "identifier prefix")
@@ -61,6 +62,12 @@ func cmdAsk(args []string) error {
 	if strings.TrimSpace(*blocks) != "" {
 		r.Data = append(r.Data, record.Field{Key: question.FieldBlocks, Value: *blocks})
 	}
+	if *needed {
+		r.Data = append(r.Data, record.Field{Key: question.FieldNeeded, Value: question.Yes})
+	}
+	// Recorded so `answer` can refuse the raiser. Without it the gate is one
+	// command away from being walked around by whoever it is enforcing against.
+	r.Data = append(r.Data, record.Field{Key: question.FieldAskedBy, Value: *actor})
 	if strings.TrimSpace(*session) != "" {
 		r.Data = append(r.Data, record.Field{Key: question.FieldSession, Value: *session})
 	}
@@ -121,10 +128,21 @@ func cmdAnswer(args []string) error {
 			return fmt.Errorf("%s is a %s, not a question", r.ID, r.Kind)
 		}
 		if *withdraw {
+			// Withdrawing your own question is honest: it is overtaken, or no
+			// longer worth asking, and the record keeps saying it was asked.
 			question.Withdraw(r, *at)
-		} else {
-			question.Answer(r, *answer, *at)
+			return nil
 		}
+		// Answering your own is not. The owner's rule: the raiser may withdraw,
+		// never answer, so the gate cannot be closed by the thing it is
+		// enforcing against.
+		if asker := question.AskedBy(*r); asker != "" && asker == *actor {
+			return fmt.Errorf("%s was asked by %s, and %s cannot answer it.\n"+
+				"An answer comes from the owner, through /questions or from someone else's hand.\n"+
+				"If it is overtaken rather than answered, close it with --withdraw.",
+				r.ID, asker, *actor)
+		}
+		question.Answer(r, *answer, *at)
 		return nil
 	})
 }
@@ -134,8 +152,24 @@ func cmdQuestions(args []string) error {
 	db := dbFlag(fs)
 	all := fs.Bool("all", false, "include answered and withdrawn questions")
 	gate := fs.Bool("gate", false, "exit non-zero if any open question was never surfaced")
+	// The gate's source of truth is the exported tree, not the store. workflow.md
+	// requires every gate to run offline against the working tree, and the store
+	// is machine-local: reading it meant the check could only skip on a clone and
+	// in CI, while CLAUDE.md told every session the gate was binding.
+	records := fs.String("records", "", "read questions from this exported tree instead of the store")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+
+	if *records != "" {
+		qs, err := question.FromTree(*records)
+		if err != nil {
+			return err
+		}
+		if *gate {
+			return question.Gate(qs)
+		}
+		return listQuestions(qs, *all)
 	}
 
 	s, ctx, err := openStore(*db)
@@ -144,27 +178,31 @@ func cmdQuestions(args []string) error {
 	}
 	defer s.Close()
 
-	records, err := s.List(ctx, "")
+	stored, err := s.List(ctx, "")
 	if err != nil {
 		return err
 	}
 
 	if *gate {
-		return question.Gate(records)
+		return question.Gate(stored)
 	}
+	return listQuestions(stored, *all)
+}
+
+func listQuestions(records []record.Record, all bool) error {
 
 	var shown []record.Record
 	for _, r := range records {
 		if r.Kind != question.Kind {
 			continue
 		}
-		if !*all && !question.IsOpen(r) {
+		if !all && !question.IsOpen(r) {
 			continue
 		}
 		shown = append(shown, r)
 	}
 	if len(shown) == 0 {
-		if *all {
+		if all {
 			fmt.Println("no questions")
 		} else {
 			fmt.Println("no open questions")

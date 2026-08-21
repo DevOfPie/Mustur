@@ -68,6 +68,61 @@ func TestGateBlocksOnlyBuriedQuestions(t *testing.T) {
 	}
 }
 
+// The owner's qualification when they ratified the rule: surfacing is enough
+// "as long as the work it is doing doesn't depend on the question's answer".
+// So a question marked as needed is not waited out by being asked politely.
+func TestNeededQuestionsBlockEvenAfterSurfacing(t *testing.T) {
+	cases := []struct {
+		name    string
+		rec     record.Record
+		blocked bool
+	}{
+		{"needed, surfaced, unanswered", q("MUS-Q-0001", FieldSurfaced, "2026-08-21", FieldNeeded, Yes), true},
+		{"not needed, surfaced, unanswered", q("MUS-Q-0002", FieldSurfaced, "2026-08-21"), false},
+		{"needed and answered", q("MUS-Q-0003", FieldSurfaced, "2026-08-21", FieldNeeded, Yes, FieldStatus, StatusAnswered), false},
+		{"needed and withdrawn", q("MUS-Q-0004", FieldSurfaced, "2026-08-21", FieldNeeded, Yes, FieldStatus, StatusWithdrawn), false},
+		{"needed spelled no", q("MUS-Q-0005", FieldSurfaced, "2026-08-21", FieldNeeded, "no"), false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			err := Gate([]record.Record{c.rec})
+			if c.blocked && err == nil {
+				t.Fatal("gate passed a question the work depends on")
+			}
+			if !c.blocked && err != nil {
+				t.Fatalf("gate blocked on %v", err)
+			}
+		})
+	}
+}
+
+// The two reasons a question blocks are different, and the message says which,
+// because the remedy is different too.
+func TestGateDistinguishesUnsurfacedFromUnanswered(t *testing.T) {
+	err := Gate([]record.Record{
+		q("MUS-Q-0001"),
+		q("MUS-Q-0002", FieldSurfaced, "2026-08-21", FieldNeeded, Yes),
+	})
+	if err == nil {
+		t.Fatal("no error")
+	}
+	msg := err.Error()
+	for _, want := range []string{"never surfaced as a prompt", "the work depends on the answer", "mustur surfaced"} {
+		if !strings.Contains(msg, want) {
+			t.Errorf("message does not carry %q:\n%s", want, msg)
+		}
+	}
+}
+
+func TestAskedByIsReadBack(t *testing.T) {
+	if got := AskedBy(q("MUS-Q-0001", FieldAskedBy, " whippy ")); got != "whippy" {
+		t.Errorf("AskedBy = %q", got)
+	}
+	if got := AskedBy(q("MUS-Q-0002")); got != "" {
+		t.Errorf("AskedBy on a record without the field = %q", got)
+	}
+}
+
 func TestGateIgnoresOtherKinds(t *testing.T) {
 	f := record.Record{ID: "MUS-F-0001", Kind: "finding", Title: "a finding", At: "2026-08-21"}
 	if err := Gate([]record.Record{f}); err != nil {

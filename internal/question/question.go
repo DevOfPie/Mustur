@@ -43,7 +43,18 @@ const (
 	// identifier form is a ref; this is for a reader on a phone deciding
 	// whether a question holds up a milestone or a sentence.
 	FieldBlocks = "Blocks"
+	// FieldNeeded marks a question the work in hand cannot proceed without.
+	// Surfacing is enough for everything else; for these the answer itself is
+	// required, because reporting work complete that depended on an answer
+	// nobody gave is the same lie as never having asked.
+	FieldNeeded = "Needed to proceed"
+	// FieldAskedBy is who raised it. The raiser may withdraw a question but may
+	// not answer one, so the gate cannot be walked around in a single command.
+	FieldAskedBy = "Asked by"
 )
+
+// Yes is the affirmative value for the boolean-ish fields above.
+const Yes = "yes"
 
 // The values FieldStatus takes.
 const (
@@ -90,12 +101,35 @@ func Open(records []record.Record) []record.Record {
 	return out
 }
 
-// Buried returns the open questions that were never surfaced as a prompt.
-// These are the ones that block reporting work complete.
+// Needed reports whether the work in hand depends on this question's answer.
+func Needed(r record.Record) bool {
+	v, _ := r.Get(FieldNeeded)
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "", "no", "false":
+		return false
+	default:
+		return true
+	}
+}
+
+// AskedBy is who raised the question, empty if the record does not say.
+func AskedBy(r record.Record) string {
+	v, _ := r.Get(FieldAskedBy)
+	return strings.TrimSpace(v)
+}
+
+// Buried returns the open questions that block reporting work complete.
+//
+// Two ways to qualify. One was never surfaced as a prompt, so nobody was asked.
+// The other was surfaced and is marked as one the work in hand cannot proceed
+// without — the owner's qualification when they ratified the rule: being asked
+// is enough "as long as the work it is doing doesn't depend on the question's
+// answer". Reporting complete on work that turned on an answer nobody gave is
+// the same lie as never having asked.
 func Buried(records []record.Record) []record.Record {
 	var out []record.Record
 	for _, r := range Open(records) {
-		if !Surfaced(r) {
+		if !Surfaced(r) || Needed(r) {
 			out = append(out, r)
 		}
 	}
@@ -111,19 +145,35 @@ func Gate(records []record.Record) error {
 		return nil
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "%d open question(s) never surfaced as a prompt:\n", len(buried))
+	fmt.Fprintf(&b, "%d open question(s) block reporting this work complete:\n", len(buried))
+	var anyUnsurfaced, anyNeeded bool
 	for _, r := range buried {
+		why := "never surfaced as a prompt"
+		if Surfaced(r) {
+			why = "the work depends on the answer, and there is none yet"
+			anyNeeded = true
+		} else {
+			anyUnsurfaced = true
+		}
 		fmt.Fprintf(&b, "  %s  %s\n", r.ID, r.Title)
+		fmt.Fprintf(&b, "         %s\n", why)
 		if blocks, ok := r.Get(FieldBlocks); ok && strings.TrimSpace(blocks) != "" {
 			fmt.Fprintf(&b, "         blocks: %s\n", strings.TrimSpace(blocks))
 		}
 	}
-	b.WriteString("\nPut each one in a prompt, then record that it was surfaced:\n")
-	b.WriteString("  mustur surfaced <ID>\n\n")
-	b.WriteString("Writing the question into prose, a report or a pull request body is not\n")
-	b.WriteString("surfacing it. An answer is not required to proceed; the owner may be away.\n")
-	b.WriteString("Being asked is.")
-	return fmt.Errorf("%s", b.String())
+	if anyUnsurfaced {
+		b.WriteString("\nPut each unsurfaced one in a prompt, then record that it was surfaced:\n")
+		b.WriteString("  mustur surfaced <ID>\n\n")
+		b.WriteString("Writing the question into prose, a report or a pull request body is not\n")
+		b.WriteString("surfacing it. Being asked is what this wants.\n")
+	}
+	if anyNeeded {
+		b.WriteString("\nThe ones marked as needed cannot be waited out. Either the owner answers\n")
+		b.WriteString("them, or the work that depends on them is not what gets reported complete:\n")
+		b.WriteString("do everything independent of the answer first, which is what the contract\n")
+		b.WriteString("asks for anyway.\n")
+	}
+	return fmt.Errorf("%s", strings.TrimRight(b.String(), "\n"))
 }
 
 // MarkSurfaced records that the question reached a prompt. It says nothing

@@ -37,17 +37,14 @@ conformance: ## How many of StrucGu's fixture states this checker matched, out l
 	  echo "$$out" | grep -E "fixture trees|SKIP|FAIL" || true; \
 	  exit $$status
 
-# A missing store SKIPS and says so. It must never pass: "there was no store to
-# read" and "no question was buried" are different facts, and reporting the
-# second when the first is true is the substitution DL-03 already made once here.
+# Reads records/, not the store. The store is machine-local, so a store-backed
+# gate could only skip on a clone and in CI — and it could not tell "no store"
+# from "no buried question", which is the substitution DL-03 already made once
+# here. Against the tree there is nothing to skip: an absent or empty
+# questions.md is the tree saying there are none, which is a fact and not a gap.
 questions: ## No open question was left unsurfaced as a prompt
-	@db="$${MUSTUR_DB:-$$HOME/.local/share/mustur/mustur.db}"; \
-	  if [ ! -f "$$db" ]; then \
-	    echo "  skip  no store at $$db — the buried-question gate did not run"; \
-	  else \
-	    go run ./cmd/mustur questions --gate \
-	      && echo "  ok    no open question was left unsurfaced"; \
-	  fi
+	@go run ./cmd/mustur questions --gate --records records \
+	  && echo "  ok    no open question in records/ was left unsurfaced"
 
 verify-records: ## The committed export cites only identifiers it defines
 	@go run ./cmd/mustur verify --records records
