@@ -19,11 +19,16 @@ from the agent — it arrives as a file here, at a path that is not
 
 | Change | Where | Needs the owner |
 | --- | --- | --- |
-| A new check, or a changed one | A make target reached by `make check` | No |
+| A new check, or a changed one | A make target reached by `make check` | Sometimes — see below |
 | What a check actually does | `scripts/*.sh` | No |
 | Triggers, `permissions:`, `concurrency:`, action pins, `runs-on` | `.github/workflows/` | **Yes** |
 
-Adding a check reaches the next push; changing what CI *is* takes a proposal.
+Adding a check reaches the next push **only when the runner can already run
+it**. Twice now it could not: milestone 2 needed a Go toolchain and milestone 2b
+needed a second checkout, and both are `.github/workflows/` changes this token
+cannot push. The row above said "No" and was falsified in the first code
+milestone. What holds is the weaker version — what a check *does* is a make
+target and needs nobody; what a check *needs from the runner* is a proposal.
 
 ## Applying a proposal
 

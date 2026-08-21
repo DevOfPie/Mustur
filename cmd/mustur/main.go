@@ -8,6 +8,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -16,11 +17,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/audit"
 	"github.com/DevOfPie/Mustur/internal/export"
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/mcpsrv"
+	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/seed"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
+	"github.com/DevOfPie/Mustur/internal/web"
 )
 
 const usage = `mustur — records and routing for one project
@@ -32,14 +37,20 @@ const usage = `mustur — records and routing for one project
   mustur list     [--db PATH] [--kind KIND]   every record, by identifier
   mustur get ID   [--db PATH]                 one record in full (either order)
   mustur rebuild  [--db PATH]                 re-derive the materialized latest from the log
+  mustur add KIND --title T [...]             write one record into the store
+  mustur amend ID --title T [...]             correct one, without losing what it said
+  mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
 The store defaults to $MUSTUR_DB, then to $XDG_DATA_HOME/mustur/mustur.db,
 then to ~/.local/share/mustur/mustur.db.
+
+The audit's module catalog defaults to $MUSTUR_STRUCGU, then to a StrucGu
+checkout beside the audited tree. --format markdown renders the record form.
+--gate exits non-zero on findings, and is off by default, deliberately.
 `
 
-// version is the binary's own version. Milestone 2's shape, nothing served to
-// a session yet.
+// version is the binary's own version.
 const version = "0.1.0"
 
 func main() {
@@ -70,6 +81,12 @@ func run(argv []string) error {
 		return cmdGet(args)
 	case "rebuild":
 		return cmdRebuild(args)
+	case "add":
+		return cmdWrite(args, "create")
+	case "amend":
+		return cmdWrite(args, "amend")
+	case "audit":
+		return cmdAudit(args)
 	case "version", "--version", "-version":
 		fmt.Println(version)
 		return nil
@@ -80,6 +97,174 @@ func run(argv []string) error {
 		fmt.Print(usage)
 		return fmt.Errorf("unknown command %q", cmd)
 	}
+}
+
+// defaultCatalog is where the modules are read from. StrucGu is a separate
+// repository and nothing vendors it here: a pinned copy of somebody else's
+// specification goes stale silently.
+//
+// A catalog holding a version other than the one pinned is not refused — the
+// checker evaluates the module as it reads it, and the mismatch comes back as
+// a notice pointing at that module's changelog. An earlier draft of this
+// comment said the opposite, describing a refusal that two commits earlier had
+// been removed for being the wrong reading of the rule.
+func defaultCatalog(root string) string {
+	if p := os.Getenv("MUSTUR_STRUCGU"); p != "" {
+		return p
+	}
+	abs, err := filepath.Abs(root)
+	if err != nil {
+		return "../StrucGu"
+	}
+	return filepath.Join(filepath.Dir(abs), "StrucGu")
+}
+
+// fields collects repeated k=v flags in the order they were given. Order is
+// the author's and the export renders it, so a flag package that sorted them
+// would decide how a record reads.
+type fields []record.Field
+
+func (f *fields) String() string { return fmt.Sprint(*f) }
+
+func (f *fields) Set(v string) error {
+	key, value, ok := strings.Cut(v, "=")
+	if !ok || strings.TrimSpace(key) == "" {
+		return fmt.Errorf("%q is not key=value", v)
+	}
+	*f = append(*f, record.Field{Key: key, Value: value})
+	return nil
+}
+
+// cmdWrite is `add` and `amend`. One function, because the difference between
+// them is one word passed to the store — and the store is what refuses a create
+// over an existing identifier or an amendment of one that is not there. A
+// second code path would be a second place for that rule to be wrong.
+func cmdWrite(args []string, op string) error {
+	fs := flag.NewFlagSet(op, flag.ContinueOnError)
+	db := dbFlag(fs)
+	title := fs.String("title", "", "the record's claim, in one line")
+	body := fs.String("body", "", "the prose")
+	at := fs.String("at", "", "the date the record's content was true (default today)")
+	project := fs.String("project", "MUS", "identifier prefix, for a store holding more than one project")
+	actor := fs.String("actor", defaultActor(), "who is writing this")
+	var data, refs fields
+	fs.Var(&data, "data", "a k=value field, repeatable and rendered in order")
+	fs.Var(&refs, "ref", "a k=IDENTIFIER citation, repeatable")
+	complaint := "add needs one kind: " + strings.Join(kindNames(), ", ")
+	if op == "amend" {
+		complaint = "amend needs one identifier"
+	}
+	positional, err := parseWithPositional(fs, args, complaint)
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(*title) == "" {
+		return fmt.Errorf("%s needs a --title: a record with no claim is a row, not a record", op)
+	}
+	if *at == "" {
+		*at = time.Now().Format("2006-01-02")
+	}
+
+	s, ctx, err := openStore(*db)
+	if err != nil {
+		return err
+	}
+	defer s.Close()
+
+	r := record.Record{Title: *title, Body: *body, At: *at, Data: data, Refs: refs}
+	switch op {
+	case "create":
+		role, ok := ident.RoleFor(positional)
+		if !ok {
+			return fmt.Errorf("%q is not a record kind: %s", positional, strings.Join(kindNames(), ", "))
+		}
+		r.Kind = positional
+		// Allocation and insertion in one act. Two calls let two writers claim
+		// the same serial, and the loser's record was told it was filed.
+		written, err := s.Create(ctx, r, *project, role, *actor)
+		if err != nil {
+			return err
+		}
+		fmt.Println(written.ID)
+		return nil
+	case "amend":
+		existing, err := s.Get(ctx, positional)
+		if err != nil {
+			return err
+		}
+		r.ID, r.Kind = existing.ID, existing.Kind
+		// An amendment states the record afresh. Carrying the old fields
+		// forward silently would make `amend --title` quietly keep data the
+		// writer never saw, and the log holds the earlier version anyway.
+	}
+	if err := s.Append(ctx, r, op, *actor); err != nil {
+		return err
+	}
+	fmt.Println(r.ID)
+	return nil
+}
+
+func kindNames() []string {
+	var out []string
+	for _, role := range ident.Roles {
+		out = append(out, role.Name())
+	}
+	return out
+}
+
+// defaultActor names who wrote a record. The log distinguishes what the
+// bootstrap imported from what has been written since, so an unattributed
+// record would erase the one thing that distinction is for.
+func defaultActor() string {
+	if who := os.Getenv("MUSTUR_ACTOR"); who != "" {
+		return who
+	}
+	if who := os.Getenv("USER"); who != "" {
+		return who
+	}
+	return "unknown"
+}
+
+func cmdAudit(args []string) error {
+	fs := flag.NewFlagSet("audit", flag.ContinueOnError)
+	root := fs.String("root", ".", "the tree to audit; it holds the adoption record")
+	catalog := fs.String("catalog", "", "a StrucGu checkout holding the modules")
+	format := fs.String("format", "text", "text or markdown")
+	gate := fs.Bool("gate", false, "exit non-zero when there are findings")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *catalog == "" {
+		*catalog = defaultCatalog(*root)
+	}
+	cat, err := audit.LoadCatalog(*catalog)
+	if err != nil {
+		return fmt.Errorf("%w\nPoint --catalog at a StrucGu checkout, or set MUSTUR_STRUCGU", err)
+	}
+	report, err := audit.Run(*root, cat, time.Now())
+	if err != nil {
+		return err
+	}
+	switch *format {
+	case "text":
+		err = report.Text(os.Stdout)
+	case "markdown":
+		err = report.Markdown(os.Stdout)
+	default:
+		return fmt.Errorf("format %q is not text or markdown", *format)
+	}
+	if err != nil {
+		return err
+	}
+	// Exit zero when the audit ran, non-zero only when it could not. Findings
+	// are output, not failure: a check that fails on day one in a repository
+	// with required status checks is made non-required within the hour, and a
+	// dead gate is worse than no gate because it looks like coverage. A
+	// consumer who wants to gate asks for it.
+	if *gate && report.Findings() > 0 {
+		return fmt.Errorf("%d finding(s), and --gate was asked for", report.Findings())
+	}
+	return nil
 }
 
 // defaultDB is where the store lives when nothing says otherwise. It is not in
@@ -202,6 +387,10 @@ func cmdServe(args []string) error {
 	// nothing but this machine can reach it and stops being sound the day the
 	// ingress rule exists.
 	addr := fs.String("addr", "127.0.0.1:7777", "address to listen on; loopback only until identity is in front of it")
+	project := fs.String("project", "MUS", "identifier prefix for records this server writes")
+	// Without this the surface writes the store and nothing else, and the file
+	// the findings role is mapped at falls behind every jot filed from a phone.
+	exportTo := fs.String("export", "", "render the store into this directory after each filing; empty means do not")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -219,6 +408,8 @@ func cmdServe(args []string) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
+	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
+	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
 	})
@@ -227,7 +418,8 @@ func cmdServe(args []string) error {
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s on http://%s/mcp\n", version, n, *db, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n",
+		version, n, *db, *addr, *addr)
 	return srv.ListenAndServe()
 }
 
@@ -271,28 +463,9 @@ func cmdList(args []string) error {
 func cmdGet(args []string) error {
 	fs := flag.NewFlagSet("get", flag.ContinueOnError)
 	db := dbFlag(fs)
-	// Go's flag package stops at the first non-flag argument, so `get ID --db P`
-	// parses the identifier and then leaves the flag unread. Parsing twice makes
-	// both orders mean the same thing, which is what anyone typing it expects.
-	// It cannot mistake a flag's value for the identifier, because the first
-	// parse is the one that consumes flag values.
-	if err := fs.Parse(args); err != nil {
+	id, err := parseWithPositional(fs, args, "get needs exactly one identifier")
+	if err != nil {
 		return err
-	}
-	id := ""
-	switch {
-	case fs.NArg() == 1:
-		id = fs.Arg(0)
-	case fs.NArg() > 1:
-		id = fs.Arg(0)
-		if err := fs.Parse(fs.Args()[1:]); err != nil {
-			return err
-		}
-		if fs.NArg() != 0 {
-			return fmt.Errorf("get needs exactly one identifier")
-		}
-	default:
-		return fmt.Errorf("get needs exactly one identifier")
 	}
 	s, ctx, err := openStore(*db)
 	if err != nil {
@@ -305,6 +478,35 @@ func cmdGet(args []string) error {
 	}
 	fmt.Print(export.One(r))
 	return nil
+}
+
+// parseWithPositional parses flags around a single positional argument, in
+// either order.
+//
+// Go's flag package stops at the first non-flag argument, so `get ID --db P`
+// reads the identifier and then leaves the flag unread — silently, which is
+// the part that makes it a bug rather than an inconvenience. Parsing a second
+// time over what the first parse left behind makes both orders mean the same
+// thing. It cannot mistake a flag's value for the positional, because the
+// first parse is the one that consumes flag values.
+func parseWithPositional(fs *flag.FlagSet, args []string, complaint string) (string, error) {
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
+	switch {
+	case fs.NArg() == 1:
+		return fs.Arg(0), nil
+	case fs.NArg() > 1:
+		positional := fs.Arg(0)
+		if err := fs.Parse(fs.Args()[1:]); err != nil {
+			return "", err
+		}
+		if fs.NArg() != 0 {
+			return "", errors.New(complaint)
+		}
+		return positional, nil
+	}
+	return "", errors.New(complaint)
 }
 
 func cmdRebuild(args []string) error {

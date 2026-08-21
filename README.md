@@ -8,10 +8,13 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Milestone 1 has passed; milestone 2 is built and awaiting acceptance, and
-nothing below it is built.** What exists is one binary that can hold this
-project's records and routing and serve them to a session through a single
-mandated tool call. There is no web surface yet.
+**Milestones 1 and 2 have passed; 2b and 2c are built, reviewed and awaiting
+acceptance, and nothing below them is built.** What exists is one binary that
+can hold this project's records and routing, serve them to a session through a
+single mandated tool call, audit its own records against the conventions this
+repository declares, and take a jot into its own findings queue through one box.
+That box is on loopback: nothing reaches it from a phone until the ingress in
+[docs/ingress.md](docs/ingress.md) exists, which is the owner's to apply.
 
 | | |
 | --- | --- |
@@ -48,12 +51,26 @@ Re-scoring the clause on the transport that ships has not been done.
 
 ```sh
 make build            # the binary
-make seed             # once: put what already exists into an empty store
-make export           # render the store into records/
+make seed             # once, on an empty store: what already existed
+make export           # render the store into records/, and commit the diff
 make serve            # the one tool call, on loopback
+make audit            # this tree against the StrucGu modules it adopts
 make check            # every gate this tree enforces mechanically
 ```
 
-The store is not in this repository: a binary file in git is a record nobody can
-review. [records/](records/README.md) is the reviewable half, and
-`mustur verify` is what reports it drifting from the store.
+`make audit` needs a [StrucGu](https://github.com/DevOfPie/StrucGu) checkout
+beside this one, or `MUSTUR_STRUCGU` pointing at one; nothing here vendors a
+copy of somebody else's specification, and CI checks one out rather than
+carrying one. Its exit status is zero whenever the audit ran — findings are
+output, and gating on them is `--gate`, which you ask for after your first clean
+run rather than before.
+
+Records are written with `mustur add`, which allocates the next identifier and
+appends to the store. **The store is the source and it is not in this
+repository** — a binary file in git is a record nobody can review — so
+[records/](records/README.md) is the reviewable half, regenerated with
+`make export` and committed alongside whatever changed it.
+
+That means no unattended run can regenerate the export to check it. What
+catches drift is `mustur verify --db <store>`, and the export's diff in the pull
+request, which is what a reader who does not run the binary reads anyway.

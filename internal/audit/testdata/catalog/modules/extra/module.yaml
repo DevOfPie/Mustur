@@ -1,0 +1,31 @@
+# A second module, adopted by some fixtures and not others, so that a check
+# naming a role across the boundary can be seen to skip rather than fail.
+schema: strucgu/module@1
+id: extra
+version: 0.1.0
+title: Extra
+summary: One role, so a cross-module reference has something to resolve to.
+base: false
+requires: []
+
+roles:
+  - id: extra_doc
+    cardinality: file
+    of: A document another module's check may point at.
+
+obligations:
+  - id: extra-obligation
+    title: Exists
+    purpose: Somewhere for a cross-module role to live.
+    required: true
+    roles: [extra_doc]
+
+checks:
+  - id: X-01
+    obligation: extra-obligation
+    nature: behaviour
+    kind: path_exists
+    in: extra_doc
+    finding: The extra document is not there.
+
+judgment: []

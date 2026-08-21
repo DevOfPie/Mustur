@@ -1,12 +1,24 @@
 # Surfaces awaiting design
 
-**Nothing here is designed.** This file lists the surfaces v1 needs, what each
-one must do, and the constraint that governs it, so that wireframing has a target
-list rather than a blank page.
+**One of these is designed and it should not have been, not this way.** Surface
+5, intake, shipped at milestone 2c as a Go template — the layout decided in code
+and shown to the owner afterwards, which is what the rule three paragraphs down
+exists to prevent. Recorded rather than tidied away: the owner's answer was to
+publish a plan for every remaining surface before any more of them are built.
+
+The rest of this file lists the surfaces v1 needs, what each one must do, and the
+constraint that governs it, so that wireframing has a target list rather than a
+blank page.
 
 **Wireframes do not live in this file.** Layout options go to the owner as a
 published visual plan, never as ASCII in a document or a prompt. This file is the
 brief; the design is the answer to it.
+
+**The plan for all seven is
+[plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
+published 2026-08-20. Eight artboards — intake as built and as proposed, plus
+the six unbuilt surfaces — the shell they share, and four open questions. No
+further surface is built before it is answered.
 
 ## The constraints every surface inherits
 
@@ -52,9 +64,10 @@ Must answer: given a bare identifier on screen, how does a **human** expand it i
 one action, with no round trip to an agent? That is the original complaint and it
 is a reading surface before it is anything else.
 
-**Open question for design:** identifiers are dense and cross-referential — a
-finding cites decisions, a decision cites milestones. Whether that is a graph to
-navigate or a document to read is unresolved and it changes the whole surface.
+**Answered 2026-08-20: a document to read.** An identifier expands in place, and
+the citation structure is never the primary object. Identifiers here are dense
+and cross-referential, so the graph reading was real; what it cost is in
+[decisions.md](../decisions.md#records-read-as-a-document).
 
 ### 4. Decision queue
 
@@ -68,6 +81,10 @@ Must show what is blocked on each decision, so the owner can tell a question tha
 holds up a milestone from one that holds up a sentence.
 
 ### 5. Intake
+
+**Built at milestone 2c, on loopback, without a visual plan.** What exists is one
+textarea, one button and a list of what was filed in the last hour. It is the
+baseline a plan should argue with rather than a design anyone chose.
 
 One box. Append a line and leave. Under fifteen seconds, and it must never
 require a decision to file — naming a thing requires understanding it, and at

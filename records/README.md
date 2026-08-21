@@ -9,11 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 29 | [decisions.md](decisions.md) |
-| finding | 6 | [findings.md](findings.md) |
-| investigation | 1 | [investigations.md](investigations.md) |
-| repository, machine, project | 3 | [routing.md](routing.md) |
-| work-unit | 6 | [work-units/index.md](work-units/index.md) |
+| decision | 43 | [decisions.md](decisions.md) |
+| finding | 19 | [findings.md](findings.md) |
+| repository, machine, project | 4 | [routing.md](routing.md) |
+| work-unit | 12 | [work-units/index.md](work-units/index.md) |
+| investigation | 1 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
 
@@ -34,6 +34,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0004](work-units/MUS-W-0004.md#mus-w-0004) | work-unit | A deterministic markdown export |
 | [MUS-W-0005](work-units/MUS-W-0005.md#mus-w-0005) | work-unit | One repository-scoped tool call that returns records and routing |
 | [MUS-W-0006](work-units/MUS-W-0006.md#mus-w-0006) | work-unit | The mandate, in Mustur's own repository-local configuration |
+| [MUS-W-0007](work-units/MUS-W-0007.md#mus-w-0007) | work-unit | StrucGu's check vocabulary, implemented |
+| [MUS-W-0008](work-units/MUS-W-0008.md#mus-w-0008) | work-unit | The audit, emitted in the form the specification asks for |
+| [MUS-W-0009](work-units/MUS-W-0009.md#mus-w-0009) | work-unit | Conformance, against the catalog's own fixtures |
+| [MUS-W-0010](work-units/MUS-W-0010.md#mus-w-0010) | work-unit | The intake surface |
+| [MUS-W-0011](work-units/MUS-W-0011.md#mus-w-0011) | work-unit | A write path into the store |
+| [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012) | work-unit | A visual plan for all seven surfaces |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -63,13 +69,41 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0027](decisions.md#mus-d-0027) | decision | What the mandate keeps from the fixture, and what it does not |
 | [MUS-D-0028](decisions.md#mus-d-0028) | decision | Four of StrucGu's five roles are implemented, and the repository adopts five modules |
 | [MUS-D-0029](decisions.md#mus-d-0029) | decision | A milestone is read by agents that did not build it |
+| [MUS-D-0030](decisions.md#mus-d-0030) | decision | Stopping takes a reason from a table |
+| [MUS-D-0031](decisions.md#mus-d-0031) | decision | Pull requests are stacked |
+| [MUS-D-0032](decisions.md#mus-d-0032) | decision | The audit is not a gate until someone asks |
+| [MUS-D-0033](decisions.md#mus-d-0033) | decision | The audit runs in CI, against a real catalog |
+| [MUS-D-0034](decisions.md#mus-d-0034) | decision | The record roles are mapped at the export |
+| [MUS-D-0035](decisions.md#mus-d-0035) | decision | The store holds more than it did |
+| [MUS-D-0036](decisions.md#mus-d-0036) | decision | Nothing vendors StrucGu |
+| [MUS-D-0037](decisions.md#mus-d-0037) | decision | The database is the source, and the seed is history |
+| [MUS-D-0038](decisions.md#mus-d-0038) | decision | The idea inbox is a routing target inside Mustur |
+| [MUS-D-0039](decisions.md#mus-d-0039) | decision | A jot is filed without a decision |
+| [MUS-D-0040](decisions.md#mus-d-0040) | decision | Records read as a document |
+| [MUS-D-0041](decisions.md#mus-d-0041) | decision | The phone bar has four tabs |
+| [MUS-D-0042](decisions.md#mus-d-0042) | decision | The routing guess is shown before filing |
+| [MUS-D-0043](decisions.md#mus-d-0043) | decision | The audit is a page |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
 | [MUS-F-0004](findings.md#mus-f-0004) | finding | The export and this repository's contract files hold the same records twice |
 | [MUS-F-0005](findings.md#mus-f-0005) | finding | A seeded record's summary can drift from the prose it links to |
 | [MUS-F-0006](findings.md#mus-f-0006) | finding | The Go toolchain CI uses is whatever the runner image carries |
-| [MUS-I-0001](investigations.md#mus-i-0001) | investigation | A mandated tool call is honoured |
+| [MUS-F-0007](findings.md#mus-f-0007) | finding | There is no way to add a record except by editing the bootstrap |
+| [MUS-F-0008](findings.md#mus-f-0008) | finding | A commit removed lines from the decision log |
+| [MUS-F-0009](findings.md#mus-f-0009) | finding | Two standing rules disagree about where a superseding pointer goes |
+| [MUS-F-0010](findings.md#mus-f-0010) | finding | Nothing checks that the mandate still says what milestone 1 scored |
+| [MUS-F-0011](findings.md#mus-f-0011) | finding | No gate detects the export drifting from the store |
+| [MUS-F-0012](findings.md#mus-f-0012) | finding | ci/proposed/README.md says a new check needs no owner |
+| [MUS-F-0013](findings.md#mus-f-0013) | finding | Four of StrucGu's five roles are record kinds, and nobody has asked for the fifth |
+| [MUS-F-0014](findings.md#mus-f-0014) | finding | mustur serve is not a service, so a public hostname would 502 |
+| [MUS-F-0015](findings.md#mus-f-0015) | finding | Nothing off the home network can reach the intake box yet |
+| [MUS-F-0016](findings.md#mus-f-0016) | finding | A decision entry described routing behaviour that had not been built |
+| [MUS-F-0017](findings.md#mus-f-0017) | finding | Two filings at once could be issued the same identifier |
+| [MUS-F-0018](findings.md#mus-f-0018) | finding | A jot reaches the store, not the file the findings role is mapped at |
+| [MUS-F-0019](findings.md#mus-f-0019) | finding | The destination row cannot preselect the guess without a client script |
+| [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |
+| [MUS-P-0002](routing.md#mus-p-0002) | project | Idea inbox |

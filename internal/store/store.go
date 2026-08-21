@@ -203,3 +203,136 @@ func (s *Store) Rebuild(ctx context.Context) error {
 	}
 	return tx.Commit()
 }
+
+// NextID allocates the next identifier for a project and role: one past the
+// highest serial the log has ever carried, not one past the count.
+//
+// The distinction matters and is the reason this reads the event log rather
+// than the materialized latest. Serials are never reused. A record that was
+// created and later corrected still occupies its number, and a numbering
+// scheme that filled gaps would make an identifier written in a report today
+// point at a different record next year.
+func (s *Store) NextID(ctx context.Context, project string, role ident.Role) (string, error) {
+	return nextID(ctx, s.db, project, role)
+}
+
+// querier is what both a database and a transaction can do. Allocation and
+// insertion have to be able to run inside one transaction, and outside one for
+// a plain read.
+type querier interface {
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+
+func nextID(ctx context.Context, q querier, project string, role ident.Role) (string, error) {
+	prefix := fmt.Sprintf("%s-%s-", project, role)
+	rows, err := q.QueryContext(ctx,
+		`SELECT DISTINCT record_id FROM record_event WHERE record_id LIKE ? ORDER BY record_id`, prefix+"%")
+	if err != nil {
+		return "", fmt.Errorf("find the highest %s serial: %w", prefix, err)
+	}
+	defer rows.Close()
+	highest := 0
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return "", err
+		}
+		parsed, err := ident.Parse(id)
+		if err != nil {
+			continue // Not ours to interpret; NextID only counts what it understands.
+		}
+		if parsed.Serial > highest {
+			highest = parsed.Serial
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return "", err
+	}
+	return ident.ID{Project: project, Role: role, Serial: highest + 1}.String(), nil
+}
+
+// Create allocates an identifier and writes the record under it, in one
+// transaction.
+//
+// Not two calls. Allocating and inserting separately lets two writers read the
+// same highest serial and both claim it: one insert wins, the other is refused
+// or — worse, before this — silently overwrote the first in the materialized
+// latest while both callers were told their record was filed. Demonstrated with
+// twelve concurrent filings, two of which were issued the same identifier and
+// one of which then existed nowhere a reader would look.
+//
+// The transaction is what makes the read and the write one act. Nothing else
+// here can restore a jot that was accepted and lost.
+func (s *Store) Create(ctx context.Context, r record.Record, project string, role ident.Role, actor string) (record.Record, error) {
+	if actor == "" {
+		return record.Record{}, fmt.Errorf("no actor")
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return record.Record{}, err
+	}
+	defer tx.Rollback()
+
+	id, err := nextID(ctx, tx, project, role)
+	if err != nil {
+		return record.Record{}, err
+	}
+	r.ID = id
+	if err := r.Validate(); err != nil {
+		return record.Record{}, err
+	}
+	payload, err := r.MarshalPayload()
+	if err != nil {
+		return record.Record{}, fmt.Errorf("record %s: %w", r.ID, err)
+	}
+	_, err = tx.ExecContext(ctx,
+		`INSERT INTO record_event (record_id, kind, op, at, actor, payload, written_at)
+		 VALUES (?, ?, 'create', ?, ?, ?, ?)`,
+		r.ID, r.Kind, r.At, actor, string(payload), s.now().UTC().Format(time.RFC3339))
+	if err != nil {
+		return record.Record{}, fmt.Errorf("create %s: %w", r.ID, err)
+	}
+	if err := tx.Commit(); err != nil {
+		return record.Record{}, err
+	}
+	return r, nil
+}
+
+// Since returns the records created since a moment, newest first.
+//
+// It reads the log's own written_at rather than the records' dates. A record
+// carries the date its content was true, which is not the same as when it was
+// written and is only accurate to the day — so a surface asking "what did I
+// file in the last hour" cannot be answered from it. The log has the answer;
+// this is the only place that distinction is worth making, and making it
+// anywhere else would put a wall clock into the record.
+func (s *Store) Since(ctx context.Context, kind string, since time.Time) ([]record.Record, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT l.payload
+		FROM record_latest l
+		JOIN (SELECT record_id, min(written_at) AS first_written
+		      FROM record_event WHERE op = 'create' GROUP BY record_id) e
+		  ON e.record_id = l.record_id
+		WHERE (? = '' OR l.kind = ?) AND e.first_written >= ?
+		ORDER BY e.first_written DESC`,
+		kind, kind, since.UTC().Format(time.RFC3339))
+	if err != nil {
+		return nil, fmt.Errorf("list %q since %s: %w", kind, since, err)
+	}
+	defer rows.Close()
+	var out []record.Record
+	for rows.Next() {
+		var payload string
+		if err := rows.Scan(&payload); err != nil {
+			return nil, err
+		}
+		r, err := record.UnmarshalPayload([]byte(payload))
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}

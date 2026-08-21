@@ -49,6 +49,20 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [What the mandate keeps from the fixture, and what it does not](#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not) | Three differences from what milestone 1 scored |
 | [Four of StrucGu's five roles are implemented, and the repository adopts five modules](#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules) | Corrects an entry the build overtook |
 | [A milestone is read by agents that did not build it](#a-milestone-is-read-by-agents-that-did-not-build-it) | Three lenses, spawned fresh, changing nothing |
+| [Stopping takes a reason from a table](#stopping-takes-a-reason-from-a-table) | The default after a milestone is the next milestone |
+| [Pull requests are stacked](#pull-requests-are-stacked) | A fix in the base reaches everything above it |
+| [The audit is not a gate until someone asks](#the-audit-is-not-a-gate-until-someone-asks) | How a gate dies |
+| [Nothing vendors StrucGu](#nothing-vendors-strucgu) | A pinned copy of a specification goes stale silently |
+| [The audit runs in CI, against a real catalog](#the-audit-runs-in-ci-against-a-real-catalog) | Evidence that ran once on one machine is not evidence |
+| [The record roles are mapped at the export](#the-record-roles-are-mapped-at-the-export) | Auditing the records Mustur owns, not the prose beside them |
+| [The store holds more than it did](#the-store-holds-more-than-it-did) | Corrects an enumeration the milestone overtook |
+| [The database is the source, and the seed is history](#the-database-is-the-source-and-the-seed-is-history) | What a write path costs the export's reproducibility |
+| [Records read as a document](#records-read-as-a-document) | An identifier expands in place |
+| [The phone bar has four tabs](#the-phone-bar-has-four-tabs) | Decisions gets one of its own |
+| [The routing guess is shown before filing](#the-routing-guess-is-shown-before-filing) | A default already filled in, not a question |
+| [The audit is a page](#the-audit-is-a-page) | A waiver nobody sees is a check that stopped |
+| [The idea inbox is a routing target inside Mustur](#the-idea-inbox-is-a-routing-target-inside-mustur) | The fallback destination cannot be another repository |
+| [A jot is filed without a decision](#a-jot-is-filed-without-a-decision) | The title is derived and the destination is guessed |
 
 ---
 
@@ -560,3 +574,306 @@ fixed, four deferred, one reopening taken to the owner, and one conflict in
 
 The cost, accepted: three agents per milestone, and a milestone cannot be
 accepted while they are running.
+
+### Stopping takes a reason from a table
+
+Owner-set 2026-08-20, lifted from
+[LinkCtrl's phase loop](https://github.com/DevOfPie/LinkCtrl/blob/main/docs/build-notes/phase-loop.md).
+
+The failure it prevents is specific and this repository has already committed
+it once: a milestone lands, the work reports what it did, and the turn ends —
+not because anything blocked it but because finishing something feels like a
+place to stop. LinkCtrl names every excuse that has ended one of its runs and
+rules each one out, because "it looked like a clean boundary" is
+indistinguishable from the next iteration.
+
+So the stop conditions are a closed table, and the not-reasons are written down
+beside them. The one worth stating twice: context running long is not a reason.
+Context is summarised and the run continues, so wrapping up early trades a
+working run for a problem that handles itself.
+
+Two rows are this repository's rather than LinkCtrl's. A review returning a
+**reopening** stops the run, because a falsified claim on a shipped milestone is
+scheduling and scheduling is the owner's. Red CI stops it, because the next
+milestone would otherwise be built on a build nobody has looked at — LinkCtrl
+learned that one from nine days of red CI that every local gate reported green
+through.
+
+### Pull requests are stacked
+
+Owner-set 2026-08-20. Each branch is cut from the one before it and its pull
+request targets that predecessor rather than `main`.
+
+The reason is the cost of the review step this repository just adopted. Three
+reviewers per milestone produce findings against a base; if the pieces above it
+are independent branches, the same finding is found and fixed once per branch.
+Stacked, a fix in the base reaches everything above it by a rebase.
+
+What it costs: a stack merges bottom-up, so a base held up holds up everything
+above it, and every branch above a merged base has to be re-pointed and rebased.
+That bookkeeping is only worth paying when the pieces genuinely build on each
+other — a milestone that does not decompose ships as one pull request, and
+saying so is the right answer rather than a failure to stack.
+
+## 2026-08-20 — decisions taken while building milestone 2b
+
+### The audit is not a gate until someone asks
+
+Exit zero whenever the audit ran, non-zero only when it could not. Findings are
+output, and `--gate` is how a consumer asks for them to be failure.
+
+StrucGu's argument, adopted whole: a check that fails on day one in a repository
+with required status checks is made non-required within the hour, and then
+nobody looks at it again. A dead gate is worse than no gate because it looks
+like coverage.
+
+This repository's first run has four findings — three are `queue.md`'s shape,
+already recorded as a finding, and one is a commit that removed lines from this
+file. Gating on day one would have meant either fixing those under time pressure
+or turning the audit off, and both are worse than reading them.
+
+Where the audit *runs* is a separate question, and it is the owner's rather
+than this entry's. A later entry records it.
+
+### Nothing vendors StrucGu
+
+The audit reads its modules from a StrucGu checkout — beside this repository, or
+wherever `MUSTUR_STRUCGU` points — and refuses to run when it cannot find one.
+
+Copying the modules in here would make the audit work everywhere with no second
+checkout, and that is the whole argument for it. Against it: the adoption record
+pins exact versions, StrucGu's propagation is deliberately pull-only, and a
+vendored copy drifts with nothing to notice — a conformance harness run against
+a stale copy proves conformance to nothing at all.
+
+The version pin is read the way the specification says rather than the way it
+first looks. A checker evaluates the module as it reads it; the pin records what
+the adopter agreed to and reports drift as a notice pointing at that module's
+changelog. What a checker refuses is a *floating* pin, because a new check never
+ships in a minor version and accepting a range would let upstream publish
+findings into every adopting repository at will.
+
+Where the catalog comes from in an unattended run is a separate question, and
+[the owner answered it](#the-audit-runs-in-ci-against-a-real-catalog).
+
+## 2026-08-20 — decisions the review sent to the owner
+
+Milestone 2b's review found two questions that had been settled in prose
+instead of asked. Both went back as prompts and both are the owner's answers.
+
+### The audit runs in CI, against a real catalog
+
+The workflow checks out [StrucGu](https://github.com/DevOfPie/StrucGu) beside
+this repository at a pinned ref, and the tests read `MUSTUR_STRUCGU` the way the
+command already did.
+
+Before this, the conformance harness found its catalog only as a sibling
+directory and skipped otherwise — so `go test ./...` printed `ok` in CI with all
+344 assertions unrun, and a green build was indistinguishable from a covered
+one. The evidence this milestone rests on had run once, on one machine.
+
+Vendoring a copy of the modules was the alternative and was rejected for the
+reason [the entry above](#nothing-vendors-strucgu) gives: a pinned copy of
+somebody else's specification goes stale silently, and a harness run against a
+stale copy proves conformance to nothing. The cost accepted instead is a
+workflow change the owner has to apply, and a CI run that depends on a second
+repository being reachable.
+
+The skip stays, for a machine without the catalog, but it now says what did not
+run rather than passing quietly. Silence and *did not look* are the same string.
+
+### The record roles are mapped at the export
+
+`decision_log`, `findings` and `investigations` now point at
+[records/](records/README.md) rather than at `decisions.md`, `queue.md` and
+`docs/investigations/`. `triage_doc` stays at [workflow.md](workflow.md), which
+is a rule rather than a record and which no export produces.
+
+[Plan.md](Plan.md#scope) promises a conformance audit over the records Mustur
+owns. Mapped at the prose, the audit read this repository's contract files —
+a different claim, and one milestone 2b was not for. The exclusion that kept the
+export out of its own audit was written during milestone 2 to stop entries being
+reported twice; with the roles moved, it would instead leave every role with
+nothing to read.
+
+Three consequences, all of them real:
+
+1. **The export has to satisfy checks written for hand-authored files.** It now
+   carries an index of decisions, an evidence and a reviewed column on findings,
+   and investigations as a directory of records with a template — because those
+   are the shapes the modules describe. Where a record has nothing behind a
+   column the cell is empty rather than filled, which is the outcome to want: a
+   cell filled to satisfy a check says the opposite of what is true and is the
+   same length.
+2. **The queue and the record had to be reconciled.** `queue.md` is the loose
+   intake and `records/findings.md` is the record; six lines that had never
+   become records now have identifiers, and this file's triage section says
+   which is which.
+3. **`DL-03` reports every regeneration.** The decision log is now generated,
+   so a rewrite removes lines every time and the check cannot tell that from an
+   erasure. It is [accepted as a deviation](strucgu.yaml) with a reason and an
+   expiry rather than ignored: the property `DL-03` protects is enforced
+   upstream and more strongly, by a database that refuses `UPDATE` and `DELETE`.
+
+### The store holds more than it did
+
+Corrects [The store holds records, the contract files keep their prose](#the-store-holds-records-the-contract-files-keep-their-prose),
+which enumerates twenty-seven decisions, nine milestones, six findings and one
+investigation. That was true when written and is not now: the store holds
+thirteen findings, and the decisions have kept accruing. The earlier entry
+cannot be edited, so this is the pointer.
+
+The enumeration is the part that went stale, not the reasoning. What that entry
+decided — that a record summarises the prose it points at rather than copying it
+— still holds, and this milestone did not change it. The lesson is narrower: a
+count in an append-only file is a claim with an expiry date on it, and the
+export's own index is the place a reader should look instead.
+
+## 2026-08-20 — decisions taken while building milestone 2c
+
+### The database is the source, and the seed is history
+
+The owner's call, from three offered shapes. `mustur add` writes to the store;
+[records/](records/README.md) is regenerated from the store and committed; the
+bootstrap in `internal/seed/data/` stays as the record of what was imported and
+stops being the thing the export is derived from.
+
+Until now the export was reproducible from git alone, because it was rendered
+from the seed and the seed is a file. That was never a property anyone chose —
+it was a side effect of there being no way to write a record, which
+`MUS-F-0007` recorded as the defect it is. Intake cannot exist without a write
+path, so the milestone forced the question.
+
+What it costs is the guarantee CI could give. Nothing in an unattended run can
+regenerate the export and compare it, because the database is not in the
+repository and will not be — a binary file in git is a record nobody can review.
+What remains is `mustur verify --db`, which reports the tree differing from the
+store, and the diff in the pull request, which is what a reader who does not run
+the binary actually reads. Both were already the argument for committing the
+export in the first place.
+
+What it buys is that the insert-only triggers mean something. Under the
+alternative — the JSON staying authoritative and the database a cache of it —
+anyone could edit a record by editing a file, and the database refusing `UPDATE`
+would be decoration. A guarantee enforced at the only layer nobody has to
+remember is the whole reason for choosing SQLite.
+
+The bootstrap is not deleted, and it is not maintained either. It says what the
+store held on the day it was imported. `mustur seed` still refuses a store that
+already holds records, so the two cannot silently diverge into a second source.
+
+### The idea inbox is a routing target inside Mustur
+
+The owner's, asked and answered while building intake. A jot with no obvious
+destination goes to `MUS-P-0002`, a routing record here, and not to
+IdeaWarehouse's `inbox.md`.
+
+The alternative reads better in the milestone's own wording — "defaults to the
+idea inbox" — and is forbidden. No file in any other project is touched before
+that project is deliberately onboarded, and a capture surface whose *default*
+path writes into another repository would break that rule on its first use,
+every time, for the case that is meant to be ordinary rather than exceptional.
+
+So the inbox is a record. Which record is the fallback is a field on it,
+`Intake: default`, rather than a constant in the code — the registry is data,
+and a fallback compiled in is one a reader cannot see and the owner cannot
+move.
+
+### A jot is filed without a decision
+
+Naming a thing requires understanding it, and at capture time you do not. So
+nothing about filing asks for a choice:
+
+- **The title is derived** from the first line or sentence, truncated with an
+  ellipsis that says it was truncated. A record still needs a claim a listing
+  can show; asking for one at capture is asking for the decision.
+- **The destination is guessed**, from the routing records the store already
+  holds, matched on word boundaries so a name inside a longer word does not
+  route a jot about something else.
+- **The guess is recorded as a guess.** Every filed record carries where it
+  went and why, in its own words: "the jot names DevOfPie/Mustur", or "no
+  destination is obvious", or the ambiguous case in full.
+
+That last one is the shape worth arguing for. Two matched destinations is not
+an obvious hint, it is an ambiguous one, and picking between them would be
+exactly the decision this surface refuses to ask for — so it falls back and
+*says which two it saw*. An ambiguity reported as "nothing obvious" would hide
+the one case where the routing registry needs an alias.
+
+A project lists its repositories, so a jot naming "Mustur" matches both. That
+is not an ambiguity: it is the same place at two scales, and the narrower one
+wins. A container is recognised by naming the other's identifier in its own
+fields rather than by a rule about kinds — the registry is data, and code that
+knew projects contain repositories would be a second place to keep that true.
+
+The surface fetches nothing: no external stylesheet, no script, no font, no
+image. Its styles are a handful of inline rules, which an earlier version of
+this entry called "no stylesheet" and a review corrected — the property that
+matters is that a phone makes one request, not that the page is unstyled.
+
+Measured on loopback, ten filings: median 0.5 ms, worst 0.9 ms; a review
+re-measured independently at 0.35 and 0.55. The page is 3,071 bytes empty and
+4,112 after ten filings, because the recency list grows; the single figure this
+entry first gave was one reading of a transient page and could not be
+reproduced. None of it is the fifteen-second claim, which is about a phone off
+the home network and cannot be measured until the ingress exists.
+
+## 2026-08-20 — the surfaces plan's four questions, answered
+
+All four are the owner's, answered against
+[the published plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22)
+rather than in prose. Three matched the recommendation; one did not, and that
+one changed three artboards.
+
+### Records read as a document
+
+An identifier expands in place — no round trip to an agent, no new tab. The
+counts down the left are the only navigation.
+
+[docs/ui-surfaces.md](docs/ui-surfaces.md) called this unresolved and said it
+changes the whole surface, which was right: the alternative was a graph, with the
+citation structure as the primary object. Records here do cite each other
+densely enough for that to be tempting — thirty-nine decisions, several of which
+exist only to correct another.
+
+What the document reading costs is exactly that: the citation structure is never
+the primary object, and a reader tracing why one entry corrects another walks it
+one expansion at a time. What it buys is the original complaint, answered
+directly — a human meeting a bare identifier expands it in one action.
+
+### The phone bar has four tabs
+
+Sessions, Decisions, Intake, Records. Decisions carries a count when anything is
+open and nothing when it is not.
+
+Against the recommendation, which was three tabs with the decision queue reached
+from a banner on the session list. The owner's reasoning holds better than mine:
+an open decision is work stopped, and a banner on another screen is a thing that
+can be scrolled past. A fixed place the eye already knows to check is worth more
+than the quarter of a bar it occupies.
+
+The cost is real and stated: a tab that is empty most of the time. What it shows
+on those days is the one question the answer left open.
+
+### The routing guess is shown before filing
+
+As a chip carrying the destination, tappable to change.
+
+This is the closest thing to a contradiction in the intake surface, and it is
+worth naming rather than smoothing over: that surface exists to never ask for a
+decision at capture time, and a control offering a choice is a decision on the
+screen. What makes it safe is that the chip is a default already filled in —
+ignoring it files exactly what the shipped version would have filed, and tapping
+it is available only to somebody who already knows the answer.
+
+The alternative was leaving the guess recorded and invisible, which is what
+shipped. That defers every wrong route to a correction made later, from a
+different surface, by somebody who has to notice it first.
+
+### The audit is a page
+
+The same run the command emits, rendered read-only.
+
+A waiver nobody sees is a check that silently stopped running, and nobody runs
+`make audit` on a phone. The cost is one more surface to keep true around
+something that already works from a terminal.
