@@ -51,6 +51,20 @@ var roleNames = map[Role]string{
 // Name is the record kind a role letter stands for.
 func (r Role) Name() string { return roleNames[r] }
 
+// KindNames lists every record kind, in the order records are presented.
+//
+// Anything enumerating the kinds calls this rather than writing the list out.
+// A hardcoded copy is how the MCP tool call came to omit `question` the day a
+// role letter was added: the index it returned was still described as "every
+// record" and silently was not.
+func KindNames() []string {
+	out := make([]string, 0, len(Roles))
+	for _, role := range Roles {
+		out = append(out, role.Name())
+	}
+	return out
+}
+
 // RoleFor maps a kind name back to its letter. The second result is false for
 // a name no role carries.
 func RoleFor(name string) (Role, bool) {
