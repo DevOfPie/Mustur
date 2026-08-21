@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -272,5 +273,97 @@ func TestAnOversizedJotIsRefusedRatherThanStored(t *testing.T) {
 	}
 	if len(findings) != 0 {
 		t.Fatalf("an oversized jot was stored: %d record(s)", len(findings))
+	}
+}
+
+// A jot filed from a phone reached the store and nothing else. The findings
+// role is mapped at the exported file, so until the surface exported, "lands in
+// Mustur's findings-queue" was true of the database and not of the thing the
+// audit reads.
+func TestFilingExportsWhenAskedTo(t *testing.T) {
+	srv, s := serve(t)
+	dir := t.TempDir()
+	in := &Intake{Store: s, Project: "MUS", Actor: "pie", ExportTo: dir}
+	exporting := httptest.NewServer(in.Handler())
+	defer exporting.Close()
+
+	if _, err := http.PostForm(exporting.URL+"/intake", url.Values{"jot": {"a jot that must reach the file"}}); err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filepath.Join(dir, "findings.md"))
+	if err != nil {
+		t.Fatalf("the findings role's file was not written: %v", err)
+	}
+	if !strings.Contains(string(body), "a jot that must reach the file") {
+		t.Errorf("the export does not carry the jot:\n%s", body)
+	}
+	_ = srv
+}
+
+// Without a directory the surface writes the store and nothing else, which is
+// the right default for a server that is not sitting on a checkout.
+func TestFilingExportsNothingByDefault(t *testing.T) {
+	srv, _ := serve(t)
+	res, err := http.PostForm(srv.URL+"/intake", url.Values{"jot": {"no export configured"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("status %d", res.StatusCode)
+	}
+}
+
+func TestTheBoxOffersTheDestinations(t *testing.T) {
+	srv, _ := serve(t)
+	body := get(t, srv.URL+"/intake")
+	for _, want := range []string{"Route it for me", "DevOfPie/Mustur", "Idea inbox", `name="to"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the box does not offer %q:\n%s", want, body)
+		}
+	}
+}
+
+func TestPickingADestinationOverridesTheGuess(t *testing.T) {
+	srv, s := serve(t)
+	// The text names the repository; the form says the inbox.
+	res, err := http.PostForm(srv.URL+"/intake",
+		url.Values{"jot": {"mustur should log slow queries"}, "to": {"MUS-P-0002"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	findings, err := s.List(context.Background(), "finding")
+	if err != nil || len(findings) != 1 {
+		t.Fatalf("findings %d: %v", len(findings), err)
+	}
+	if to, _ := findings[0].Get("Routed to"); !strings.Contains(to, "MUS-P-0002") {
+		t.Errorf("routed to %q despite an explicit choice", to)
+	}
+}
+
+// An explicit destination that is not in the registry is refused, and the box
+// comes back holding what was typed.
+func TestAnUnknownDestinationComesBackWithTheText(t *testing.T) {
+	srv, s := serve(t)
+	res, err := http.PostForm(srv.URL+"/intake",
+		url.Values{"jot": {"a thought worth keeping"}, "to": {"MUS-R-9999"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), "a thought worth keeping") {
+		t.Errorf("what was typed did not come back:\n%s", body)
+	}
+	findings, err := s.List(context.Background(), "finding")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(findings) != 0 {
+		t.Errorf("%d record(s) written for a refused destination", len(findings))
 	}
 }

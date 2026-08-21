@@ -153,8 +153,12 @@ func TestFileWritesAFindingCarryingItsRouting(t *testing.T) {
 		}
 	}
 
-	r, to, err := File(ctx, s, "MUS", "the mustur composer eats drafts on a dropped connection", "pie",
-		time.Date(2026, 8, 20, 0, 0, 0, 0, time.UTC))
+	r, to, err := File(ctx, s, Request{
+		Project: "MUS",
+		Text:    "the mustur composer eats drafts on a dropped connection",
+		Actor:   "pie",
+		Now:     time.Date(2026, 8, 20, 0, 0, 0, 0, time.UTC),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,7 +198,68 @@ func TestFilingNothingIsRefused(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer s.Close()
-	if _, _, err := File(ctx, s, "MUS", "   \n  ", "pie", time.Now()); err == nil {
+	if _, _, err := File(ctx, s, Request{Project: "MUS", Text: "   \n  ", Actor: "pie", Now: time.Now()}); err == nil {
 		t.Fatal("an empty jot was filed")
+	}
+}
+
+// A destination the filer picked is never overruled by the guess. The point of
+// offering the choice is that somebody knows something the text does not say.
+func TestAnExplicitDestinationBeatsTheGuess(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	for _, r := range routing() {
+		if r.Kind == "decision" {
+			continue
+		}
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// The text names the repository; the filer says the machine.
+	rec, to, err := File(ctx, s, Request{
+		Project: "MUS", Text: "mustur needs more disk", Actor: "pie",
+		To: "MUS-H-0001", Now: time.Now(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if to.ID != "MUS-H-0001" {
+		t.Fatalf("routed to %s (%s)", to.ID, to.Why)
+	}
+	if why, _ := rec.Get("Routing"); why != "chosen by the filer" {
+		t.Errorf("the record does not say the destination was chosen: %q", why)
+	}
+}
+
+// An identifier that is not a destination is refused rather than quietly
+// falling back to the guess: the filer said something, and filing it somewhere
+// else while reporting success is the failure worth avoiding.
+func TestAnUnknownDestinationIsRefused(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	for _, r := range routing() {
+		if r.Kind == "decision" {
+			continue
+		}
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_, _, err = File(ctx, s, Request{Project: "MUS", Text: "anything", Actor: "pie", To: "MUS-R-9999", Now: time.Now()})
+	if err == nil {
+		t.Fatal("an unknown destination was accepted")
+	}
+	n, _ := s.Count(ctx)
+	if n != len(routing())-1 {
+		t.Errorf("a record was written for a refused destination: %d", n)
 	}
 }

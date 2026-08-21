@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
@@ -27,6 +28,18 @@ type Intake struct {
 	Project string
 	Actor   string
 	Now     func() time.Time
+
+	// ExportTo is the tree the store is rendered into after a jot is filed.
+	// Empty means no export, which is the safe default for a server that is
+	// not sitting on a checkout.
+	//
+	// It exists because a jot filed from a phone reached the store and nothing
+	// else. The findings role is mapped at the exported file, so until this
+	// ran, "lands in Mustur's findings-queue" was true of the database and not
+	// of the thing the audit reads. Whoever files from a phone cannot run
+	// `make export`, which is what makes this the surface's problem rather
+	// than the operator's.
+	ExportTo string
 }
 
 // Handler routes the two methods the surface needs. GET renders the box, POST
@@ -49,15 +62,23 @@ func (in *Intake) Handler() http.Handler {
 // MaxJot is the largest body the capture path accepts.
 const MaxJot = 64 << 10
 
+type destination struct {
+	ID   string
+	Name string
+	Kind string
+}
+
 type page struct {
-	Jot     string // What was typed, when it has to come back.
-	Filed   string
-	Routed  string
-	Why     string
-	Error   string
-	Recent  []recentJot
-	Cutoff  string
-	Project string
+	Jot          string // What was typed, when it has to come back.
+	Warn         string
+	Destinations []destination
+	Filed        string
+	Routed       string
+	Why          string
+	Error        string
+	Recent       []recentJot
+	Cutoff       string
+	Project      string
 }
 
 type recentJot struct {
@@ -78,8 +99,14 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		Filed:   r.URL.Query().Get("filed"),
 		Routed:  r.URL.Query().Get("routed"),
 		Why:     r.URL.Query().Get("why"),
+		Warn:    r.URL.Query().Get("warn"),
 		Project: in.Project,
 		Cutoff:  "the last hour",
+	}
+	if choices, err := in.destinations(r.Context()); err != nil {
+		p.Error = err.Error()
+	} else {
+		p.Destinations = choices
 	}
 	recent, err := in.recent(r.Context())
 	if err != nil {
@@ -99,7 +126,13 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	text := r.PostFormValue("jot")
-	rec, to, err := intake.File(r.Context(), in.Store, in.Project, text, in.actor(r), in.now())
+	rec, to, err := intake.File(r.Context(), in.Store, intake.Request{
+		Project: in.Project,
+		Text:    text,
+		Actor:   in.actor(r),
+		To:      r.PostFormValue("to"),
+		Now:     in.now(),
+	})
 	if err != nil {
 		// Rendered rather than redirected, and carrying the text back with it.
 		// The comment here used to say that losing what was typed is the one
@@ -109,8 +142,16 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		render(w, page{Error: err.Error(), Project: in.Project, Jot: text})
 		return
 	}
-	q := fmt.Sprintf("/intake?filed=%s&routed=%s&why=%s",
-		template.URLQueryEscaper(rec.ID), template.URLQueryEscaper(to.Name), template.URLQueryEscaper(to.Why))
+	// The record is already in the store, so an export that fails has not lost
+	// the jot — but saying nothing would leave the exported tree quietly behind
+	// the store, which is the drift this repository has no gate for.
+	exported := ""
+	if err := in.export(r.Context()); err != nil {
+		exported = err.Error()
+	}
+	q := fmt.Sprintf("/intake?filed=%s&routed=%s&why=%s&warn=%s",
+		template.URLQueryEscaper(rec.ID), template.URLQueryEscaper(to.Name),
+		template.URLQueryEscaper(to.Why), template.URLQueryEscaper(exported))
 	http.Redirect(w, r, q, http.StatusSeeOther)
 }
 
@@ -122,6 +163,36 @@ func (in *Intake) actor(r *http.Request) string {
 		return who
 	}
 	return in.Actor
+}
+
+// destinations are the routing records a filer may pick instead of leaving it
+// to the guess.
+func (in *Intake) destinations(ctx context.Context) ([]destination, error) {
+	routing, err := intake.Destinations(ctx, in.Store)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]destination, 0, len(routing))
+	for _, r := range routing {
+		out = append(out, destination{ID: r.ID, Name: r.Title, Kind: r.Kind})
+	}
+	return out, nil
+}
+
+// export renders the store into the configured tree. A no-op when none is
+// configured.
+func (in *Intake) export(ctx context.Context) error {
+	if in.ExportTo == "" {
+		return nil
+	}
+	records, err := in.Store.List(ctx, "")
+	if err != nil {
+		return fmt.Errorf("the jot is filed; reading the store to export it failed: %w", err)
+	}
+	if err := export.Write(in.ExportTo, records); err != nil {
+		return fmt.Errorf("the jot is filed; exporting it to %s failed: %w", in.ExportTo, err)
+	}
+	return nil
 }
 
 func (in *Intake) recent(ctx context.Context) ([]recentJot, error) {
@@ -181,6 +252,13 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   li { padding: .5rem 0; border-top: 1px solid var(--edge); }
   li .to { opacity: .7; font-size: .85em; display: block; }
   .none { opacity: .6; font-size: .9em; margin-top: 1.5rem; }
+  /* One line that scrolls, never a block that wraps. Each choice sizes to its
+     own text: a clipped repository name is a wrong destination picked by
+     accident. */
+  .dests { display: flex; gap: .4rem; margin-top: .6rem; overflow-x: auto;
+           white-space: nowrap; padding-bottom: .25rem; }
+  .dests label { flex: 0 0 auto; border: 1px solid var(--edge);
+                 border-radius: 999px; padding: .35rem .7rem; font-size: .9em; }
 </style>
 </head>
 <body>
@@ -188,8 +266,13 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
 {{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
+{{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
 <form method="post" action="/intake">
   <textarea name="jot" autofocus placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
+  {{if .Destinations}}<div class="dests">
+    <label><input type="radio" name="to" value="" checked> Route it for me</label>
+    {{range .Destinations}}<label><input type="radio" name="to" value="{{.ID}}"> {{.Name}}</label>{{end}}
+  </div>{{end}}
   <button type="submit">File it</button>
 </form>
 {{if .Recent}}<ul>

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-18 record(s), by identifier.
+19 record(s), by identifier.
 
 ## The queue
 
@@ -28,6 +28,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0016](#mus-f-0016) | A decision entry described routing behaviour that had not been built | two independent reviewers reproduced it against copies of the live store | fixed 2026-08-20 |
 | [MUS-F-0017](#mus-f-0017) | Two filings at once could be issued the same identifier | reproduced by a reviewer with twelve concurrent POSTs; the regression test fails against the two-call version | fixed 2026-08-20 |
 | [MUS-F-0018](#mus-f-0018) | A jot reaches the store, not the file the findings role is mapped at | strucgu.yaml maps findings at records/findings.md; the POST path never exports | unreviewed |
+| [MUS-F-0019](#mus-f-0019) | The destination row cannot preselect the guess without a client script | Plan.md's stack table: server-rendered HTML, no per-project client state | unreviewed |
 
 ---
 
@@ -307,4 +308,19 @@ Intake writes to the database. records/findings.md only changes when someone run
 | Field | Value |
 | --- | --- |
 | Evidence | strucgu.yaml maps findings at records/findings.md; the POST path never exports |
+| Status | unreviewed |
+
+---
+
+## MUS-F-0019
+
+**The destination row cannot preselect the guess without a client script**
+
+finding · 2026-08-21
+
+The approved artboard shows the routing guess already selected among the destination chips, which requires the page to re-guess as the text is typed. The surface is server-rendered with no client framework, so what ships is a row whose first option is Route it for me, selected, with the guess applied on submit. The ordinary case is identical — ignore the row and the guess files it — but the affordance differs from the drawing, and the constraint wins over the artboard.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Plan.md's stack table: server-rendered HTML, no per-project client state |
 | Status | unreviewed |

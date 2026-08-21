@@ -388,6 +388,9 @@ func cmdServe(args []string) error {
 	// ingress rule exists.
 	addr := fs.String("addr", "127.0.0.1:7777", "address to listen on; loopback only until identity is in front of it")
 	project := fs.String("project", "MUS", "identifier prefix for records this server writes")
+	// Without this the surface writes the store and nothing else, and the file
+	// the findings role is mapped at falls behind every jot filed from a phone.
+	exportTo := fs.String("export", "", "render the store into this directory after each filing; empty means do not")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -405,7 +408,7 @@ func cmdServe(args []string) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
-	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor()}
+	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)

@@ -207,11 +207,27 @@ func Title(text string) string {
 	return strings.TrimSpace(flat[:cut]) + "…"
 }
 
+// Request is one filing. A struct rather than a parameter list because the
+// caller is a form, and a form grows fields.
+type Request struct {
+	Project string
+	Text    string
+	Actor   string
+	// To is a routing record's identifier when the filer chose one, and empty
+	// when they left it to Mustur. An explicit choice is never overruled by the
+	// guess: the point of offering it is that somebody knows something the text
+	// does not say.
+	To  string
+	Now time.Time
+}
+
 // File writes a jot into the store as a finding and returns the record.
 //
-// It takes the clock rather than reading it, so a caller can be tested and so
-// the record's date is the caller's decision rather than this package's.
-func File(ctx context.Context, s *store.Store, project, text, actor string, now time.Time) (record.Record, Destination, error) {
+// It takes the clock from the request rather than reading it, so a caller can
+// be tested and so the record's date is the caller's decision rather than this
+// package's.
+func File(ctx context.Context, s *store.Store, req Request) (record.Record, Destination, error) {
+	project, text, actor, now := req.Project, req.Text, req.Actor, req.Now
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
 		return record.Record{}, Destination{}, fmt.Errorf("nothing to file")
@@ -236,7 +252,13 @@ func File(ctx context.Context, s *store.Store, project, text, actor string, now 
 	if err != nil {
 		return record.Record{}, Destination{}, err
 	}
-	to := Route(trimmed, routing)
+	to, err := chosen(routing, req.To)
+	if err != nil {
+		return record.Record{}, Destination{}, err
+	}
+	if to.ID == "" {
+		to = Route(trimmed, routing)
+	}
 
 	r := record.Record{
 		Kind:  "finding",
@@ -284,6 +306,28 @@ func fieldOr(r record.Record, key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// chosen resolves an explicitly picked destination. An identifier that is not a
+// routing record is an error rather than a silent fallback to the guess: the
+// filer said something, and quietly ignoring it would file the jot somewhere
+// they did not choose while telling them it was filed.
+func chosen(routing []record.Record, id string) (Destination, error) {
+	if strings.TrimSpace(id) == "" {
+		return Destination{}, nil
+	}
+	for _, r := range routing {
+		if r.ID == id {
+			return Destination{ID: r.ID, Name: r.Title, Why: "chosen by the filer"}, nil
+		}
+	}
+	return Destination{}, fmt.Errorf("%s is not a destination this registry holds", id)
+}
+
+// Destinations returns the routing records a filer may choose between, sorted
+// the way every listing here sorts.
+func Destinations(ctx context.Context, s *store.Store) ([]record.Record, error) {
+	return routingRecords(ctx, s)
 }
 
 func routedTo(d Destination) string {
