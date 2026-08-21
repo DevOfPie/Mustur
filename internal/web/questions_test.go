@@ -357,6 +357,30 @@ func TestABareOptionIsPickableWithoutExpandingAnything(t *testing.T) {
 	}
 }
 
+// The queue has to be reachable from intake when the queue is empty. Before
+// this, the only route was the banner — which renders when something is open —
+// so the queue could be reached from intake exactly when it had nothing to say.
+func TestTheQueueIsReachableFromIntakeWhenNothingIsOpen(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+
+	in := &Intake{Store: s, Project: "MUS", Actor: "pie"}
+	srv := httptest.NewServer(in.Handler())
+	defer srv.Close()
+
+	body := getFrom(t, srv, "/intake")
+	if strings.Contains(body, "waiting on you") {
+		t.Fatal("the banner rendered with no open questions; this test proves nothing")
+	}
+	if !strings.Contains(body, `href="/questions"`) {
+		t.Error("no route from intake to the decision queue")
+	}
+}
+
 // A tab that goes nowhere is an unbuilt capability described as existing.
 func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
 	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))

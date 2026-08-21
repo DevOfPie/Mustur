@@ -96,6 +96,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Sub-agents are their own milestone, and it starts by finding out whether it is possible](#sub-agents-are-their-own-milestone-and-it-starts-by-finding-out-whether-it-is-possible) | A verdict of "cannot be done" is a real outcome |
 | [The session composer is always writable](#the-session-composer-is-always-writable) | And what that puts on the origin check |
 | [A session's exit is an event, not a record](#a-sessions-exit-is-an-event-not-a-record) | The line already drawn around session output |
+| [A surface reachable only when it has something to say is not reachable](#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable) | The owner found it by loading the site |
 
 ---
 
@@ -1491,3 +1492,25 @@ session output: not addressable, not exported, not a record. An exit is the same
 kind of thing. The alternative — a finding for every non-zero exit — fills the
 findings queue with noise the first time something is flaky, and a records tree
 nobody reads is worse than one that is missing something.
+
+## 2026-08-21 — the bar reaches intake
+
+### A surface reachable only when it has something to say is not reachable
+
+The decision queue's only route from intake was the banner, which renders when
+something is open. With every question answered the banner was absent, so
+loading `mustur.devofpie.com` gave the intake box and no way to reach anything
+else — the queue was reachable from intake exactly when it had something to say,
+and invisible when it did not.
+
+The owner found it by loading the site. It had been recorded as a queue line
+during the milestone 4a review and not acted on, which is worth noting: a defect
+written down is not a defect fixed, and this is the second time on this stack
+that a record was mistaken for a safeguard.
+
+The fix is [MUS-D-0041](#the-phone-bar-has-four-tabs) applied where it had not
+been yet. The bar carries the surfaces that are built and grows as the rest
+arrive, exactly as it does on the queue. The banner stays beside it rather than
+being replaced: the bar is the fixed place the eye knows to check, and the
+banner is what makes an open decision impossible to miss on whichever surface
+was opened. That is the pair MUS-D-0041 argued for, not an alternative to it.
