@@ -135,7 +135,7 @@ Each milestone should be independently completable and leave the project working
 | 2b | The audit StrucGu never shipped | Mustur checks its own records against StrucGu's check vocabulary and emits an audit in the specified form, with fixtures proving the checks detect something. Records and audit ship together, because auditing records you own is far cheaper than auditing files you do not. |
 | 2c | Intake | A jot from a phone lands in Mustur's `findings-queue` in seconds, carries a routing hint where one is obvious, and defaults to the idea inbox where it is not. |
 | 3 | Decisions cannot be buried | An agent working Mustur cannot report work complete while an open decision has never been surfaced as a prompt, and the decision lands in a queue the owner answers from any device. The answer reaching the session that raised it moved to milestone 4, which is where the machinery that can reach a session arrives; the owner decided that split on a prompt, and [decisions.md](decisions.md#injection-belongs-to-the-milestone-that-owns-sessions) records why. |
-| 4a | Sessions Mustur owns | The per-machine adapter starts and supervises a long-lived session per project inside tmux, and survives a dropped phone connection. An answered decision is delivered back into the session that raised it, which is the clause milestone 3 could not honour without this. |
+| 4a | Sessions Mustur owns | The per-machine adapter starts and supervises a long-lived session per project inside tmux. A session outlives the process that started it and any client watching it — the half of "survives a dropped phone connection" that can be shown without a phone; the other half arrives with 4b, which is where a phone connects. An answered decision is delivered back into the session that raised it, which is the clause milestone 3 could not honour without this. |
 | 4b | A session in a browser tab | Output streams to a browser tab over a WebSocket. One tab, several sessions. This is the surface the stack table's client-layer exception is for, and it is the only place in v1 where server-rendered HTML is not enough. |
 | 5 | Composition | The owner composes multi-line, spell-checked text from the phone, off the home network, without a terminal, and it reaches the intended session. |
 | 6 | A second person | Someone who is not the owner signs in through Access and reads a project's routing and records from their own device, without a clone and without a machine. |
@@ -195,7 +195,8 @@ it, and specific enough that failing them is unambiguous.
 
 **Milestones 1 and 2 have passed. 2b, 2c and 3 are built and reviewed; 2c is now
 reachable and gated, and waits only on the owner filing a jot from a phone. None
-of 2b, 2c or 3 is accepted. Nothing below 3 is built.**
+of 2b, 2c or 3 is accepted. 4a is built and not yet reviewed. Nothing below 4a
+is built.**
 
 | # | State | Evidence |
 | --- | --- | --- |
@@ -204,7 +205,8 @@ of 2b, 2c or 3 is accepted. Nothing below 3 is built.**
 | 2b | built and reviewed 2026-08-20; awaiting acceptance | `make audit` over this repository, and 344 expected states across 37 of StrucGu's fixture trees |
 | 2c | built and reviewed 2026-08-20. Reachable and gated 2026-08-21: `mustur.devofpie.com` behind Cloudflare Access, answered by a service that starts at boot. **The one sentence still unproven is the milestone's own** — a jot from a phone — which only the owner can test, because only the owner can get through Access | `MUS-F-0022`, filed through the running service and carried into `records/findings.md` by it; ten filings on loopback at a median of 1.71 ms, worst 2.10 ms, method in [docs/ingress.md](docs/ingress.md) |
 | 3 | built and reviewed 2026-08-21, split by the owner so that injection moves to milestone 4. An open question blocks `make check` when it was never surfaced, or when it is marked as one the work depends on; the queue is answerable from a phone | `records/questions.md`, `make questions` over it, and the questions this repository has raised — including the four carrying `Blocks: MUS-M-0005`, which stopped this milestone's own build until they were surfaced. The count is in [records/README.md](records/README.md) rather than restated here, because restating it is how it went stale twice |
-| 4a onwards | not started | |
+| 4a | built 2026-08-21, not yet reviewed. The adapter starts a session per project inside tmux, lists only what Mustur started, types into one, and carries an answered decision back into the session that raised it | `mustur session start/list/send/stop` against real tmux: a session Mustur did not start stayed invisible to `list` and was refused by `send`; an answer typed itself into the raising session; an answer whose session had gone was still recorded, with the reason |
+| 4b onwards | not started | |
 
 *Passed* is a verdict acceptance makes, and this file does not make it early —
 the same reason its own note below says the status change in IdeaWarehouse was

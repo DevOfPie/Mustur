@@ -9,7 +9,7 @@ see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
 **Milestones 1 and 2 have passed; 2b, 2c and 3 are built, reviewed and awaiting
-acceptance, and nothing below them is built.** What exists is one binary that
+acceptance; 4a is built and not yet reviewed; nothing below it is built.** What exists is one binary that
 can hold this project's records and routing, serve them to a session through a
 single mandated tool call, audit its own records against the conventions this
 repository declares, take a jot into its own findings queue through one box, and

@@ -11,6 +11,7 @@ package main
 // record first and write it back whole.
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -20,6 +21,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/question"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/session"
 )
 
 // values is a repeatable flag whose argument is the whole value. `fields`
@@ -162,6 +164,9 @@ func cmdAnswer(args []string) error {
 				r.ID, asker, *actor)
 		}
 		question.Answer(r, *answer, *at)
+		question.Set(r, question.FieldDelivered,
+			session.Deliver(context.Background(), &session.Adapter{},
+				question.SessionOf(*r), r.ID, *answer))
 		return nil
 	})
 }

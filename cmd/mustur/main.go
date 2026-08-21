@@ -22,6 +22,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/mcpsrv"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/seed"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
@@ -45,6 +46,8 @@ const usage = `mustur — records and routing for one project
   mustur surfaced ID                          record that it reached a prompt
   mustur answer   ID --answer A               record what the owner said, or --withdraw
   mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones
+  mustur session  start P --dir D --cmd C     start a session Mustur owns, inside tmux
+                  list | send P --text T | stop P
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
@@ -99,6 +102,8 @@ func run(argv []string) error {
 		return cmdAnswer(args)
 	case "questions":
 		return cmdQuestions(args)
+	case "session":
+		return cmdSession(args)
 	case "audit":
 		return cmdAudit(args)
 	case "version", "--version", "-version":
@@ -423,7 +428,12 @@ func cmdServe(args []string) error {
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
 	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
-	questions := &web.Questions{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
+	questions := &web.Questions{
+		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
+		// An answer typed from a phone is carried into the session that raised
+		// it, if that session is still alive and Mustur started it.
+		Sessions: &session.Adapter{},
+	}
 	// Registered on the outer mux, ahead of the intake box's catch-all, so the
 	// queue is reachable at a hostname whose "/" belongs to intake.
 	questions.Routes(mux)

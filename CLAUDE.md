@@ -3,7 +3,8 @@
 Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
-**Milestones 1 and 2 have passed; 2b, 2c and 3 are built and not yet accepted.**
+**Milestones 1 and 2 have passed; 2b, 2c, 3 and 4a are built and not yet
+accepted.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
@@ -12,8 +13,12 @@ at `mustur.devofpie.com` behind Cloudflare Access; that is a deployment, not
 something a clone inherits. What is unconditionally here is
 [records/](records/README.md). It also
 holds open questions and refuses to let work be reported complete around one.
-Nothing below milestone 3 is built; do not describe any of it in the present
-tense.
+On this machine it also starts and supervises agent sessions inside tmux, and
+types an answered decision back into the session that raised it. Nothing below
+milestone 4a is built; do not describe any of it in the present tense.
+
+**A session left running in a terminal is invisible to Mustur and will not
+become visible.** Mustur starts sessions and never attaches to one it did not.
 
 Three rules bind every session in this repository:
 

@@ -80,6 +80,11 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The stack table gains a named exception rather than losing its rule](#the-stack-table-gains-a-named-exception-rather-than-losing-its-rule) | A reopening, dispositioned forward by the owner |
 | [Milestone 4 is two milestones](#milestone-4-is-two-milestones) | 4a the adapter and injection, 4b the browser tab |
 | [Three timestamps were typed rather than read](#three-timestamps-were-typed-rather-than-read) | The unmeasured-number gate, applied to a clock |
+| [tmux is the source of truth for what is running](#tmux-is-the-source-of-truth-for-what-is-running) | No mirror, and no reconstruction when the server dies |
+| [Mustur can type into a session it started](#mustur-can-type-into-a-session-it-started) | The capability named, and the three limits on it |
+| [A project name may not address a window or a pane](#a-project-name-may-not-address-a-window-or-a-pane) | tmux reads : and . as target separators |
+| [An undelivered answer is still an answer](#an-undelivered-answer-is-still-an-answer) | Delivery never fails the answer |
+| [There is no `session attach`](#there-is-no-session-attach) | A verb there would suggest the arrow points both ways |
 
 ---
 
@@ -1240,3 +1245,74 @@ an unmeasured number because a timestamp reads as a reading by construction. The
 dates are right and the minutes were invented. Recorded rather than quietly
 adjusted, because a corrected fabrication and a real measurement look identical
 afterwards.
+
+## 2026-08-21 — decisions taken while building milestone 4a
+
+### tmux is the source of truth for what is running
+
+tmux already knows which sessions exist, which are alive and what they last
+printed, and it knows it a second before any mirror would. So nothing in the
+adapter keeps a table of sessions: listing is a live query, and the store holds
+only what outlives a session — which project it was for, and any question it
+raised.
+
+The owner's call on MUS-Q-0013, against mirroring into the store and against a
+third store built for live state. Mirroring means two sources that can disagree,
+and an insert-only log gaining a row every time a session changes state is a lot
+of events for a fact that is true for one second.
+
+**The cost, accepted rather than discovered:** when the tmux server dies, every
+session dies with it and Mustur knows nothing about what was running. There is
+no reconstruction, because there was never a second copy. What survives is what
+was already a record.
+
+### Mustur can type into a session it started
+
+An answered decision reaches the session that raised it by `tmux send-keys` —
+the adapter types it in, and at the far end it is indistinguishable from the
+owner having typed it. The owner's call on MUS-Q-0014, against landing the
+answer in a file for the next mandated call to pick up, which they had already
+declined once because it delivers to the next session rather than the blocked
+one.
+
+**This is a capability worth naming plainly rather than discovering later:
+Mustur can put words into an agent's input.** Three things follow, and all three
+are enforced rather than documented:
+
+- It only ever types into a session it started. `Send` refuses anything without
+  the `mustur/` prefix, which is the same rule as never attaching.
+- The text says what it is: *"The owner answered MUS-Q-0001: …"*. An agent that
+  could not tell an answer from a fresh instruction would treat every answer as
+  a new task, and nothing should read Mustur as the author of a decision it only
+  carried.
+- The only caller is the answer path.
+
+The text is sent with `-l`, literally, so an answer containing something tmux
+would otherwise read as a key name arrives as characters. `Enter` is a separate
+call, or it would be typed as a word.
+
+### A project name may not address a window or a pane
+
+tmux reads `:` and `.` as target separators, so a project called `Mustur:0`
+would address a window rather than a session — and `send-keys -t` would deliver
+somewhere nobody chose. Project names are letters, digits, dash and underscore,
+refused at the boundary rather than escaped.
+
+### An undelivered answer is still an answer
+
+Delivery never fails the answer. If the session has gone, or tmux is not there,
+or the pane died mid-write, the answer is recorded anyway and the record says
+what happened to the delivery.
+
+The alternative — refusing to record an answer that could not be carried —
+would lose the one thing that was not recoverable, in order to keep the record
+tidy about the one thing that was. And a silent failure would leave an agent
+blocked on an answer that exists, which is the failure this whole milestone is
+named after, one layer along.
+
+### There is no `session attach`
+
+A person wanting to watch a session Mustur started runs `tmux attach -t
+mustur/<project>`, which works and always did. There is no verb for it here,
+because a verb here would suggest the arrow points both ways. It does not:
+Mustur starts sessions and never attaches to one it did not start.

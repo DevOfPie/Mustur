@@ -36,9 +36,15 @@ const (
 	FieldAnswer = "Answer"
 	// FieldAnswered is when they said it.
 	FieldAnswered = "Answered"
-	// FieldSession identifies the session that raised the question, so an
-	// answer can be routed back to it once anything can route to a session.
+	// FieldSession names the Mustur-owned session that raised the question —
+	// the project, which is what a tmux session is keyed by. An answer is typed
+	// back into it if it is still alive.
 	FieldSession = "Session"
+	// FieldDelivered records what happened when the answer was carried back:
+	// that it reached the session, or why it did not. A silent failure here
+	// would leave an agent blocked on an answer that exists, which is the
+	// failure this whole milestone is about, one layer along.
+	FieldDelivered = "Delivered"
 	// FieldBlocks says what is stopped until this is answered, in words. The
 	// identifier form is a ref; this is for a reader on a phone deciding
 	// whether a question holds up a milestone or a sentence.
@@ -161,6 +167,13 @@ func Needed(r record.Record) bool {
 	default:
 		return true
 	}
+}
+
+// SessionOf names the Mustur-owned session that raised the question, empty if
+// the record does not say or does not name one.
+func SessionOf(r record.Record) string {
+	v, _ := r.Get(FieldSession)
+	return strings.TrimSpace(v)
 }
 
 // AskedBy is who raised the question, empty if the record does not say.

@@ -42,6 +42,7 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/question"
+	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -57,6 +58,11 @@ type Questions struct {
 	// run `make export`, and an answer that reached the store and not the file
 	// the records role is mapped at has only half arrived.
 	ExportTo string
+
+	// Sessions carries an answer back into the session that raised it. Nil
+	// means answers are recorded and not delivered, which is what milestone 3
+	// shipped and what a Mustur running somewhere without tmux still does.
+	Sessions session.Sender
 }
 
 // Routes registers the queue on an existing mux.
@@ -202,6 +208,13 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		question.Withdraw(&rec, at)
 	} else {
 		question.Answer(&rec, text, at)
+		// Carried back before the record is written, so what happened to the
+		// delivery is part of the same event rather than a second one that
+		// could fail on its own.
+		if q.Sessions != nil {
+			question.Set(&rec, question.FieldDelivered,
+				session.Deliver(ctx, q.Sessions, question.SessionOf(rec), rec.ID, text))
+		}
 	}
 	if err := q.Store.Append(ctx, rec, "amend", q.actor(r)); err != nil {
 		q.redirect(w, r, "", err.Error())

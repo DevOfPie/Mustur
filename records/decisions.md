@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-61 record(s), by identifier.
+65 record(s), by identifier.
 
 ## Index
 
@@ -73,6 +73,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0059](#mus-d-0059) | The stack table gains a named exception rather than losing its rule | 2026-08-21 |
 | [MUS-D-0060](#mus-d-0060) | Milestone 4 is two milestones | 2026-08-21 |
 | [MUS-D-0061](#mus-d-0061) | Three timestamps were typed rather than read | 2026-08-21 |
+| [MUS-D-0062](#mus-d-0062) | tmux is the source of truth for what is running | 2026-08-21 |
+| [MUS-D-0063](#mus-d-0063) | Mustur can type into a session it started | 2026-08-21 |
+| [MUS-D-0064](#mus-d-0064) | A project name may not address a window or a pane | 2026-08-21 |
+| [MUS-D-0065](#mus-d-0065) | An undelivered answer is still an answer | 2026-08-21 |
 
 ---
 
@@ -1011,3 +1015,64 @@ MUS-Q-0008, 0009 and 0010 recorded Surfaced 05:40 and Answered 05:46. The export
 | --- | --- |
 | Found by | The queue rebuild's contract review, from commit times the export could not have produced |
 | Rationale | [decisions.md#three-timestamps-were-typed-rather-than-read](../decisions.md#three-timestamps-were-typed-rather-than-read) |
+
+---
+
+## MUS-D-0062
+
+**tmux is the source of truth for what is running**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0013](questions.md#mus-q-0013)
+
+The adapter keeps no table of sessions: listing is a live query against tmux, and the store holds only what outlives a session. Against mirroring into the store, which means two sources that can disagree and an insert-only log gaining a row every time a fact that is true for one second changes; and against a third store, which is against the plan's premise of one binary and one database. The cost, accepted rather than discovered: when the tmux server dies, every session dies with it and there is no second copy to reconstruct from.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#tmux-is-the-source-of-truth-for-what-is-running](../decisions.md#tmux-is-the-source-of-truth-for-what-is-running) |
+
+---
+
+## MUS-D-0063
+
+**Mustur can type into a session it started**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0014](questions.md#mus-q-0014)
+
+An answered decision reaches the session that raised it by tmux send-keys. At the far end it is indistinguishable from the owner having typed it, which is why the capability is named plainly rather than discovered later: Mustur can put words into an agent's input. Three limits, enforced rather than documented — it only types into a session carrying the mustur/ prefix, the text says which question it answers and that the owner answered it, and the only caller is the answer path. Sent with -l so an answer containing a tmux key name arrives as characters; Enter is a separate call or it would be typed as a word.
+
+| Field | Value |
+| --- | --- |
+| Not taken | Landing the answer in a file for the next mandated call, which the owner had already declined because it delivers to the next session rather than the blocked one |
+| Rationale | [decisions.md#mustur-can-type-into-a-session-it-started](../decisions.md#mustur-can-type-into-a-session-it-started) |
+
+---
+
+## MUS-D-0064
+
+**A project name may not address a window or a pane**
+
+decision · 2026-08-21
+
+tmux reads : and . as target separators, so a project called Mustur:0 would address a window rather than a session and send-keys -t would deliver somewhere nobody chose. Project names are letters, digits, dash and underscore, refused at the boundary rather than escaped.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-project-name-may-not-address-a-window-or-a-pane](../decisions.md#a-project-name-may-not-address-a-window-or-a-pane) |
+
+---
+
+## MUS-D-0065
+
+**An undelivered answer is still an answer**
+
+decision · 2026-08-21
+
+If the session has gone, or tmux is not there, or the pane died mid-write, the answer is recorded anyway and the record says what happened to the delivery. Refusing to record an answer that could not be carried would lose the one thing that was not recoverable in order to keep the record tidy about the one thing that was. A silent failure would leave an agent blocked on an answer that exists, which is this milestone's own failure one layer along.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#an-undelivered-answer-is-still-an-answer](../decisions.md#an-undelivered-answer-is-still-an-answer) |

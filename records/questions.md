@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-12 record(s), by identifier.
+14 record(s), by identifier.
 
 ---
 
@@ -260,3 +260,51 @@ MUS-D-0041 is owner-set: the phone bar has four tabs, decided against a recommen
 | Surfaced | 2026-08-21 09:57 |
 | Answer | Two now, growing to four. MUS-D-0041 stands and this is its interim; MUS-D-0057 is rewritten to correct MUS-D-0041 and MUS-D-0053 by name. |
 | Answered | 2026-08-21 09:57 |
+
+---
+
+## MUS-Q-0013
+
+**Where does a running session's state live: tmux, or mirrored into the store?**
+
+question · 2026-08-21
+
+tmux already knows which sessions exist, which are alive, and what they last printed. The store is insert-only and exports to markdown, which is right for records that are read later and wrong for state that changes every second. Mirroring means two sources that can disagree; not mirroring means a session list that cannot be answered without shelling to tmux, and nothing durable if tmux dies.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4a, all of it |
+| Needed to proceed | yes |
+| Option | tmux is the source of truth :: Recommended · one place, no drift :: The adapter shells to tmux for what is running. The store holds only what outlives a session — which project it was for, and any question it raised. A session list is a live query, not a table. Nothing to reconcile, and nothing survives a tmux server restart except what was already a record. |
+| Option | Mirror sessions into the store :: Durable, queryable, and two things to keep in step :: Every session becomes a record, so the list is answerable without tmux and history survives. The insert-only store gains a row per state change, which is what an event log is for — but a session that changes state every second is a lot of events, and a mirror that drifts is worse than no mirror. |
+| Option | A third store, outside SQLite :: Right shape, one more thing to run :: Live state in something built for it. Correct in the abstract and against the plan's whole premise, which is one binary and one database. |
+| Asked by | whippy |
+| Session | session_01CxpnCTwvS5Sdt1pqTpuEpG |
+| Surfaced | 2026-08-21 10:08 |
+| Answer | tmux is the source of truth. The store holds only what outlives a session; a session list is a live query. |
+| Answered | 2026-08-21 10:08 |
+
+---
+
+## MUS-Q-0014
+
+**How does an answered decision reach the session that raised it?**
+
+question · 2026-08-21
+
+The session is a CLI running interactively inside tmux. An answer arrives at the queue from a phone, and has to reach that session while it is mid-work. Inject-never-offer says an agent will not call something it has to choose to call, which is why the tool call is mandated at session start — but this has to arrive later than that.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4a's last clause, the one milestone 3 handed over |
+| Needed to proceed | yes |
+| Option | tmux send-keys into the pane :: Recommended · it arrives, and it needs nothing from the agent :: The adapter types the answer into the session as if the owner had. Direct, works with any CLI, and needs no cooperation from the thing receiving it. It also means Mustur can type into a session, which is a capability worth naming plainly rather than discovering later. |
+| Option | A file the session reads on its next mandated call :: Cooperative, and it waits :: The answer lands where mustur_route will find it. Nothing types into anything, but the answer arrives only when the agent next calls — which may be the next session, not the blocked one, and that is the option the owner already declined once. |
+| Option | Both: type it, and record it for the next call :: Belt and braces :: Costs the send-keys capability anyway, so it buys robustness rather than avoiding the question. |
+| Asked by | whippy |
+| Session | session_01CxpnCTwvS5Sdt1pqTpuEpG |
+| Surfaced | 2026-08-21 10:08 |
+| Answer | tmux send-keys into the pane. Mustur can type into a session, and that capability is named rather than discovered later. |
+| Answered | 2026-08-21 10:08 |

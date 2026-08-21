@@ -38,3 +38,4 @@ is a copy that will drift.
 | [MUS-W-0013](MUS-W-0013.md) | The question lifecycle, and the gate that cannot be reported around | 2026-08-21 |
 | [MUS-W-0014](MUS-W-0014.md) | The decision queue | 2026-08-21 |
 | [MUS-W-0015](MUS-W-0015.md) | The decision queue, rebuilt from its artboard | 2026-08-21 |
+| [MUS-W-0016](MUS-W-0016.md) | The per-machine adapter, and the answer carried back | 2026-08-21 |
