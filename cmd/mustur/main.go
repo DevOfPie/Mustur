@@ -421,6 +421,10 @@ func cmdServe(args []string) error {
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
 	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
+	questions := &web.Questions{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
+	// Registered on the outer mux, ahead of the intake box's catch-all, so the
+	// queue is reachable at a hostname whose "/" belongs to intake.
+	questions.Routes(mux)
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
@@ -430,8 +434,8 @@ func cmdServe(args []string) error {
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n",
-		version, n, *db, *addr, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
+		version, n, *db, *addr, *addr, *addr)
 	return srv.ListenAndServe()
 }
 

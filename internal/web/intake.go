@@ -79,6 +79,11 @@ type page struct {
 	Recent       []recentJot
 	Cutoff       string
 	Project      string
+
+	// OpenQuestions is why the banner exists. A decision queue nobody opens is
+	// the failure milestone 3 is named after, so the count travels to the
+	// surface the owner did open rather than waiting to be visited.
+	OpenQuestions int
 }
 
 type recentJot struct {
@@ -113,6 +118,7 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		p.Error = err.Error()
 	}
 	p.Recent = recent
+	p.OpenQuestions = OpenCount(r.Context(), in.Store)
 	render(w, p)
 }
 
@@ -246,6 +252,11 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
            border: 1px solid var(--edge); border-radius: .5rem;
            background: transparent; color: inherit; width: 100%; }
   .said { margin: .9rem 0; padding: .6rem .8rem; border-left: 3px solid var(--edge); }
+  /* Pinned above the box, not below it. A blocked agent is work stopped, and
+     the owner should see that before they start typing something else. */
+  .waiting { margin: 0 0 .75rem; padding: .55rem .8rem; border: 1px solid var(--edge);
+             border-radius: .5rem; font-size: .95em; }
+  .waiting a { color: inherit; }
   .said code { font-size: .95em; }
   .why { opacity: .7; font-size: .9em; }
   ul { list-style: none; padding: 0; margin: 1.5rem 0 0; }
@@ -263,6 +274,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 </head>
 <body>
 <h1>Mustur — {{.Project}}</h1>
+{{if .OpenQuestions}}<p class="waiting"><a href="/questions">{{.OpenQuestions}} decision{{if ne .OpenQuestions 1}}s{{end}} waiting on you</a></p>{{end}}
 {{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
 {{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
