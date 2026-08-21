@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-43 record(s), by identifier.
+44 record(s), by identifier.
 
 ## Index
 
@@ -55,6 +55,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0041](#mus-d-0041) | The phone bar has four tabs | 2026-08-20 |
 | [MUS-D-0042](#mus-d-0042) | The routing guess is shown before filing | 2026-08-20 |
 | [MUS-D-0043](#mus-d-0043) | The audit is a page | 2026-08-20 |
+| [MUS-D-0044](#mus-d-0044) | Mustur runs as a systemd user unit | 2026-08-21 |
 
 ---
 
@@ -692,3 +693,19 @@ The same run the command emits, rendered read-only. A waiver nobody sees is a ch
 | --- | --- |
 | Rationale | [decisions.md#the-audit-is-a-page](../decisions.md#the-audit-is-a-page) |
 | Answered against | [the surfaces plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22) |
+
+---
+
+## MUS-D-0044
+
+**Mustur runs as a systemd user unit**
+
+decision · 2026-08-21
+
+Addresses: [MUS-F-0014](findings.md#mus-f-0014)
+
+The owner's call. A user unit running as the account that owns the store: no root, restarts on failure, starts at boot on the existing lingering. Installed and deliberately not enabled, because enabling it is what publishes the box and Access is not in front of the hostname yet.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#mustur-runs-as-a-systemd-user-unit](../decisions.md#mustur-runs-as-a-systemd-user-unit) |

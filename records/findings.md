@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-19 record(s), by identifier.
+21 record(s), by identifier.
 
 ## The queue
 
@@ -29,6 +29,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0017](#mus-f-0017) | Two filings at once could be issued the same identifier | reproduced by a reviewer with twelve concurrent POSTs; the regression test fails against the two-call version | fixed 2026-08-20 |
 | [MUS-F-0018](#mus-f-0018) | A jot reaches the store, not the file the findings role is mapped at | strucgu.yaml maps findings at records/findings.md; the POST path never exports | unreviewed |
 | [MUS-F-0019](#mus-f-0019) | The destination row cannot preselect the guess without a client script | Plan.md's stack table: server-rendered HTML, no per-project client state | unreviewed |
+| [MUS-F-0020](#mus-f-0020) | A shallow clone made the history check pass for the wrong reason | CI run 32437277197 reported 28 ok, 0 waived where a full clone reports 27 ok, 1 waived | fixed 2026-08-21 |
+| [MUS-F-0021](#mus-f-0021) | The public hostname has no Access application in front of it | GET / returns 502 with no location or cf-access headers, read 2026-08-21 | open, blocking the service being enabled |
 
 ---
 
@@ -324,3 +326,35 @@ The approved artboard shows the routing guess already selected among the destina
 | --- | --- |
 | Evidence | Plan.md's stack table: server-rendered HTML, no per-project client state |
 | Status | unreviewed |
+
+---
+
+## MUS-F-0020
+
+**A shallow clone made the history check pass for the wrong reason**
+
+finding · 2026-08-21
+
+DL-03 reported ok in CI while reporting waived here. The cause is that actions/checkout clones at depth 1, so git had no history to read and the check found no deletions — turning "I did not look" into "I looked and it was fine", which is the substitution the five states exist to prevent. The check now detects a shallow clone and skips, saying so.
+
+| Field | Value |
+| --- | --- |
+| Evidence | CI run 32437277197 reported 28 ok, 0 waived where a full clone reports 27 ok, 1 waived |
+| Status | fixed 2026-08-21 |
+
+---
+
+## MUS-F-0021
+
+**The public hostname has no Access application in front of it**
+
+finding · 2026-08-21
+
+Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
+
+mustur.devofpie.com answers unauthenticated requests directly: no login redirect, no challenge headers, a plain 502 from the origin. The intake surface reads the filer's identity from a header Access sets at the edge and cloudflared passes client headers through, so with no Access in front anyone reaching the hostname could file a jot and claim to be anyone. Nothing is exposed only because nothing is listening; the service unit is installed and not enabled for that reason.
+
+| Field | Value |
+| --- | --- |
+| Evidence | GET / returns 502 with no location or cf-access headers, read 2026-08-21 |
+| Status | open, blocking the service being enabled |

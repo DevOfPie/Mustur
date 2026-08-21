@@ -1,0 +1,48 @@
+# A systemd *user* unit: it runs as the account that owns the store, needs no
+# root, and starts at boot once lingering is enabled for that account.
+#
+# Install and enable:
+#
+#   install -Dm644 deploy/mustur.service ~/.config/systemd/user/mustur.service
+#   loginctl enable-linger "$USER"          # so it starts without a login
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now mustur
+#
+# **Do not enable this before Cloudflare Access is in front of the hostname.**
+# The tunnel already routes mustur.devofpie.com to 127.0.0.1:7777, so starting
+# this puts the intake box on the public internet. The surface reads the filer's
+# identity from a header Access sets at the edge, and cloudflared passes client
+# headers through — with no Access application in front, anyone reaching the
+# hostname can file a jot and claim to be anyone. docs/ingress.md carries the
+# order and the reason.
+
+[Unit]
+Description=Mustur — records, routing and intake
+Documentation=https://github.com/DevOfPie/Mustur
+# Not a hard dependency on the tunnel: the two are separately owned, the tunnel
+# is a system unit and this is a user one, and a Mustur that cannot be reached
+# is still a Mustur worth having running.
+After=network-online.target
+
+[Service]
+Type=simple
+# Loopback only. The tunnel is what publishes it, and `serve` refuses any
+# address that is not loopback for that reason.
+ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records
+Restart=on-failure
+RestartSec=5s
+
+# The store is the record and lives outside the checkout.
+Environment=MUSTUR_DB=%h/.local/share/mustur/mustur.db
+# Records written through the surface are the owner's, not "unknown".
+Environment=MUSTUR_ACTOR=whippy
+
+# It reads a catalog and writes a store and one export tree; nothing else.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/share/mustur %h/repos/DevOfPie/Mustur/records
+
+[Install]
+WantedBy=default.target

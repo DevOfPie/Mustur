@@ -61,6 +61,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The phone bar has four tabs](#the-phone-bar-has-four-tabs) | Decisions gets one of its own |
 | [The routing guess is shown before filing](#the-routing-guess-is-shown-before-filing) | A default already filled in, not a question |
 | [The audit is a page](#the-audit-is-a-page) | A waiver nobody sees is a check that stopped |
+| [Mustur runs as a systemd user unit](#mustur-runs-as-a-systemd-user-unit) | And is not enabled until Access is in front |
 | [The idea inbox is a routing target inside Mustur](#the-idea-inbox-is-a-routing-target-inside-mustur) | The fallback destination cannot be another repository |
 | [A jot is filed without a decision](#a-jot-is-filed-without-a-decision) | The title is derived and the destination is guessed |
 
@@ -877,3 +878,30 @@ The same run the command emits, rendered read-only.
 A waiver nobody sees is a check that silently stopped running, and nobody runs
 `make audit` on a phone. The cost is one more surface to keep true around
 something that already works from a terminal.
+
+## 2026-08-21 — decisions taken while wiring the ingress
+
+### Mustur runs as a systemd user unit
+
+The owner's call, from three shapes. `deploy/mustur.service` runs as the account
+that owns the store, needs no root, restarts on failure, and starts at boot
+because that account already has lingering enabled. It is the same shape the
+Remote Control service on this machine already uses.
+
+The alternative considered was a system unit with `DynamicUser`, like the
+tunnel beside it. Stronger isolation, and it would have meant moving the store
+out of a home directory first — a change to where the record lives, made for the
+convenience of a service file, which is the wrong order.
+
+**The unit is installed and deliberately not enabled.** The tunnel already
+routes `mustur.devofpie.com` to `127.0.0.1:7777`, so enabling the service is the
+act that publishes the intake box. The surface reads the filer's identity from a
+header Cloudflare Access sets at the edge, and `cloudflared` passes client
+headers through — so until an Access application exists, anyone reaching that
+hostname could file a jot and claim to be anyone. Starting first and securing
+after would mean a window where that is true, and the window is the whole risk.
+[docs/ingress.md](docs/ingress.md) carries the order and the check that confirms
+it.
+
+The unit is confined to what it needs: `ProtectSystem=strict`, `ProtectHome` set
+to read-only, and exactly two writable paths — the store and the export tree.

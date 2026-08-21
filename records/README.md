@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 43 | [decisions.md](decisions.md) |
-| finding | 19 | [findings.md](findings.md) |
+| decision | 44 | [decisions.md](decisions.md) |
+| finding | 21 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 12 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
@@ -83,6 +83,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0041](decisions.md#mus-d-0041) | decision | The phone bar has four tabs |
 | [MUS-D-0042](decisions.md#mus-d-0042) | decision | The routing guess is shown before filing |
 | [MUS-D-0043](decisions.md#mus-d-0043) | decision | The audit is a page |
+| [MUS-D-0044](decisions.md#mus-d-0044) | decision | Mustur runs as a systemd user unit |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -102,6 +103,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0017](findings.md#mus-f-0017) | finding | Two filings at once could be issued the same identifier |
 | [MUS-F-0018](findings.md#mus-f-0018) | finding | A jot reaches the store, not the file the findings role is mapped at |
 | [MUS-F-0019](findings.md#mus-f-0019) | finding | The destination row cannot preselect the guess without a client script |
+| [MUS-F-0020](findings.md#mus-f-0020) | finding | A shallow clone made the history check pass for the wrong reason |
+| [MUS-F-0021](findings.md#mus-f-0021) | finding | The public hostname has no Access application in front of it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |

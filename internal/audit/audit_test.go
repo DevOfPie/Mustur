@@ -527,3 +527,43 @@ func TestAPlainDirectoryLinkStillResolves(t *testing.T) {
 		t.Fatalf("D-05 = %s (%s), want ok", got.State, got.Detail)
 	}
 }
+
+// A shallow clone has no history to read. Reporting ok would turn "I did not
+// look" into "I looked and it was fine", which is the substitution the five
+// states exist to prevent — and it is what happened in CI, where the checkout
+// is depth 1 and this check passed for that reason rather than on merit.
+func TestHistoryChecksSkipInAShallowClone(t *testing.T) {
+	files := satisfying()
+	root := build(t, files)
+	git := func(dir string, args ...string) bool {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", dir}, args...)...)
+		cmd.Env = append(os.Environ(),
+			"GIT_AUTHOR_NAME=t", "GIT_AUTHOR_EMAIL=t@example.org",
+			"GIT_COMMITTER_NAME=t", "GIT_COMMITTER_EMAIL=t@example.org")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Skipf("git unavailable: %v %s", err, out)
+		}
+		return true
+	}
+	git(root, "init", "-q")
+	git(root, "add", ".")
+	git(root, "commit", "-qm", "first")
+	git(root, "commit", "-qm", "second", "--allow-empty")
+
+	shallow := filepath.Join(t.TempDir(), "shallow")
+	git(".", "clone", "-q", "--depth", "1", "file://"+root, shallow)
+
+	rep, err := Run(shallow, testCatalog(t), time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := state(t, rep, "D-08")
+	if got.State != Skip {
+		t.Fatalf("D-08 = %s in a shallow clone, want skip", got.State)
+	}
+	if !strings.Contains(got.Detail, "shallow") {
+		t.Errorf("the skip does not say why: %q", got.Detail)
+	}
+}
