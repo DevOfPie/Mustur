@@ -3,9 +3,11 @@ package mcpsrv
 import (
 	"context"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
@@ -101,5 +103,40 @@ func TestRepositoryIsRequired(t *testing.T) {
 	s, ctx := serverWith(t, fixtures()...)
 	if _, err := s.answer(ctx, Args{}); err == nil {
 		t.Fatal("a call with no repository was answered")
+	}
+}
+
+// The kind list in Args.Kind's jsonschema tag is a compile-time string, so it
+// cannot be built from ident.KindNames the way the runtime list now is. This is
+// what stops the two drifting: the tag omitted `question` for exactly as long
+// as it took one role letter to be added, while the tool went on describing its
+// own reply as "an index of every record".
+// The index describes itself as "an index of every record". It stopped being
+// that the day `question` was added and this list was written out by hand.
+func TestIndexCarriesEveryKindIncludingQuestions(t *testing.T) {
+	recs := append(fixtures(), record.Record{
+		ID: "MUS-Q-0001", Kind: "question", Title: "Own the session, or attach?", At: "2026-08-21",
+		Data: []record.Field{{Key: "Status", Value: "open"}},
+	})
+	s, ctx := serverWith(t, recs...)
+	got, err := s.answer(ctx, Args{Repository: "Mustur", Task: "milestone 3"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "MUS-Q-0001") {
+		t.Errorf("the index omits questions:\n%s", got)
+	}
+}
+
+func TestSchemaListsEveryKind(t *testing.T) {
+	field, ok := reflect.TypeOf(Args{}).FieldByName("Kind")
+	if !ok {
+		t.Fatal("Args has no Kind field")
+	}
+	tag := field.Tag.Get("jsonschema")
+	for _, kind := range ident.KindNames() {
+		if !strings.Contains(tag, kind) {
+			t.Errorf("the kind schema does not mention %q:\n%s", kind, tag)
+		}
 	}
 }

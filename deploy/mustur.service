@@ -1,0 +1,60 @@
+# A systemd *user* unit: it runs as the account that owns the store, needs no
+# root, and starts at boot once lingering is enabled for that account.
+#
+# Install and enable:
+#
+#   install -Dm644 deploy/mustur.service ~/.config/systemd/user/mustur.service
+#   loginctl enable-linger "$USER"          # so it starts without a login
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now mustur
+#
+# **Never enable this on a host whose hostname is not already behind Cloudflare
+# Access.** The tunnel routes mustur.devofpie.com to 127.0.0.1:7777, so starting
+# this publishes the intake box. The surface reads the filer's identity from a
+# header Access sets at the edge, and cloudflared passes client headers through
+# — with no Access application in front, anyone reaching the hostname can file a
+# jot and claim to be anyone. On mustur.devofpie.com that gate went up first and
+# the unit is enabled; the rule is stated for the next host, not as a note about
+# this one. docs/ingress.md carries the order and the reason.
+
+[Unit]
+Description=Mustur — records, routing and intake
+Documentation=https://github.com/DevOfPie/Mustur
+# Not a hard dependency on the tunnel: the two are separately owned, the tunnel
+# is a system unit and this is a user one, and a Mustur that cannot be reached
+# is still a Mustur worth having running.
+After=network-online.target
+
+[Service]
+Type=simple
+# Loopback only. The tunnel is what publishes it, and `serve` refuses any
+# address that is not loopback for that reason.
+ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records
+# Not on-failure: systemd counts a SIGTERM as a clean exit, so on-failure left a
+# TERMed process dead with no restart scheduled and nothing watching. Access
+# answers 302 whether or not the origin is up, so the hostname check in
+# docs/ingress.md cannot tell a live box from a dead one. `systemctl --user
+# stop` still stops it — always restarts on exit, not against a deliberate stop.
+Restart=always
+RestartSec=5s
+
+# The store is the record and lives outside the checkout.
+Environment=MUSTUR_DB=%h/.local/share/mustur/mustur.db
+# Records written through the surface are the owner's, not "unknown".
+Environment=MUSTUR_ACTOR=whippy
+
+# It reads a catalog, writes a store and one export tree, and talks to tmux.
+NoNewPrivileges=yes
+# NOT PrivateTmp. tmux's socket is /tmp/tmux-$UID, so a private /tmp cannot
+# reach the owner's tmux server at all — and a review caught that leaving the
+# answer path inert exactly where it ships: every answer filed from the phone
+# would have recorded "not delivered" while the code looked correct. Carrying an
+# answer back into a session is what this unit is for, and a hardening flag that
+# silently removes the feature is worse than the hardening is worth.
+PrivateTmp=no
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/share/mustur %h/repos/DevOfPie/Mustur/records
+
+[Install]
+WantedBy=default.target

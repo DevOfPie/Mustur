@@ -22,6 +22,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/mcpsrv"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/seed"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
@@ -39,6 +40,14 @@ const usage = `mustur — records and routing for one project
   mustur rebuild  [--db PATH]                 re-derive the materialized latest from the log
   mustur add KIND --title T [...]             write one record into the store
   mustur amend ID --title T [...]             correct one, without losing what it said
+  mustur ask      --title T [--blocks W]      raise a question the owner has to answer
+                  [--option "L :: line :: detail"]  an answer they can pick, repeatable
+                  [--needed]                  the work cannot proceed without the answer
+  mustur surfaced ID                          record that it reached a prompt
+  mustur answer   ID --answer A               record what the owner said, or --withdraw
+  mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones
+  mustur session  start P --dir D --cmd C     start a session Mustur owns, inside tmux
+                  list | stop P               there is no send: see cmd/mustur/sessions.go
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
@@ -85,6 +94,16 @@ func run(argv []string) error {
 		return cmdWrite(args, "create")
 	case "amend":
 		return cmdWrite(args, "amend")
+	case "ask":
+		return cmdAsk(args)
+	case "surfaced":
+		return cmdSurfaced(args)
+	case "answer":
+		return cmdAnswer(args)
+	case "questions":
+		return cmdQuestions(args)
+	case "session":
+		return cmdSession(args)
 	case "audit":
 		return cmdAudit(args)
 	case "version", "--version", "-version":
@@ -383,9 +402,9 @@ func cmdVerify(args []string) error {
 func cmdServe(args []string) error {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	db := dbFlag(fs)
-	// Loopback only. The server is unauthenticated, which is sound while
-	// nothing but this machine can reach it and stops being sound the day the
-	// ingress rule exists.
+	// Loopback only. The server is unauthenticated, so whatever publishes it
+	// carries the identity: on mustur.devofpie.com that is Cloudflare Access,
+	// and it covers /mcp as well as the intake box, both being on this mux.
 	addr := fs.String("addr", "127.0.0.1:7777", "address to listen on; loopback only until identity is in front of it")
 	project := fs.String("project", "MUS", "identifier prefix for records this server writes")
 	// Without this the surface writes the store and nothing else, and the file
@@ -409,6 +428,15 @@ func cmdServe(args []string) error {
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
 	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
+	questions := &web.Questions{
+		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
+		// An answer typed from a phone is carried into the session that raised
+		// it, if that session is still alive and Mustur started it.
+		Sessions: &session.Adapter{},
+	}
+	// Registered on the outer mux, ahead of the intake box's catch-all, so the
+	// queue is reachable at a hostname whose "/" belongs to intake.
+	questions.Routes(mux)
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
@@ -418,8 +446,8 @@ func cmdServe(args []string) error {
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n",
-		version, n, *db, *addr, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
+		version, n, *db, *addr, *addr, *addr)
 	return srv.ListenAndServe()
 }
 

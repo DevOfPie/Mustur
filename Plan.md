@@ -65,7 +65,7 @@ useful than a guess that later reads as a commitment.
 | Record shape | **StrucGu's module roles.** Four are record kinds — `decision-log`, `findings-queue`, `investigations`, `work-units`. `triage-rule` describes a document rather than a set of records and is not one; that correction is [in the log](decisions.md#four-of-strucgus-five-roles-are-implemented-and-the-repository-adopts-five-modules). Already specified with fixtures and an audit vocabulary, and already declared by four repositories. |
 | Agent interface | MCP over HTTP, registered per repository with `claude mcp add --scope project`, so the trigger is committed to the checkout rather than installed on the account. |
 | Agent transport | A per-machine adapter that starts and supervises long-lived sessions **inside tmux**, shelling out to the configured CLI. Sessions survive adapter restarts and stay attachable from a terminal; Mustur still never attaches to a session it did not start. Vendor neutrality is a designed boundary; only Claude Code is proven. |
-| Human interface | Server-rendered HTML. No per-project client state. |
+| Human interface | **Server-rendered HTML by default, with a client layer only where a surface streams.** No per-project client state. Every surface built so far — intake, the decision queue — carries no script, stylesheet, font or image, and that stays the rule. The exception is the session view at milestone 4b, which streams a live session over a WebSocket and cannot be server-rendered; the owner took that on [MUS-Q-0008](records/questions.md#mus-q-0008) and corrected this row forward rather than reopening milestone 2, on [MUS-Q-0011](records/questions.md#mus-q-0011). The exception is named so the rule is not quietly dropped. |
 | Deployment | The VM already running `cloudflared` 2026.8.2. **One new ingress rule on the existing tunnel — never a second tunnel** (cloudflare/cloudflared#59). That tunnel is token-managed, so its rules live in Cloudflare rather than on disk, and it is LinkCtrl's — both read on 2026-08-20 and written up in [docs/ingress.md](docs/ingress.md). |
 | Identity | Cloudflare Access at the edge. No client on the phone; free tier is 50 users. |
 
@@ -134,8 +134,9 @@ Each milestone should be independently completable and leave the project working
 | 2 | Records and routing, behind one call | Mustur holds its own records in StrucGu's module roles, addressable by identifier, plus its own routing record, and one repo-scoped tool call returns them. Mustur's own `.claude` carries the mandate. |
 | 2b | The audit StrucGu never shipped | Mustur checks its own records against StrucGu's check vocabulary and emits an audit in the specified form, with fixtures proving the checks detect something. Records and audit ship together, because auditing records you own is far cheaper than auditing files you do not. |
 | 2c | Intake | A jot from a phone lands in Mustur's `findings-queue` in seconds, carries a routing hint where one is obvious, and defaults to the idea inbox where it is not. |
-| 3 | Decisions cannot be buried | An agent working Mustur cannot report work complete while an open decision has never been surfaced as a prompt; the decision lands in a queue the owner answers from any device, and the answer is injected back into the session that raised it. |
-| 4 | Sessions Mustur owns | The per-machine adapter starts and supervises a long-lived session per project, survives a dropped phone connection, and streams output to a browser tab. One tab, several sessions. |
+| 3 | Decisions cannot be buried | An agent working Mustur cannot report work complete while an open decision has never been surfaced as a prompt, and the decision lands in a queue the owner answers from any device. The answer reaching the session that raised it moved to milestone 4, which is where the machinery that can reach a session arrives; the owner decided that split on a prompt, and [decisions.md](decisions.md#injection-belongs-to-the-milestone-that-owns-sessions) records why. |
+| 4a | Sessions Mustur owns | The per-machine adapter starts a long-lived session per project inside tmux, reports which are running, stops one, and refuses to touch any session it did not start. An answered decision is delivered back into the session that raised it, which is the clause milestone 3 could not honour without this. Supervision and surviving a dropped connection moved to 4b on [MUS-Q-0015](records/questions.md#mus-q-0015), because an earlier version of this row narrowed both without asking — the scope contract being edited by the thing it measures. |
+| 4b | A session in a browser tab | Output streams to a browser tab over a WebSocket, and **survives a dropped phone connection**. One tab, several sessions. The adapter **supervises** what it started: a session that dies is noticed and said so, rather than discovered. Both clauses moved here from 4a on [MUS-Q-0015](records/questions.md#mus-q-0015) — a dropped connection needs something connected, and supervision without anything watching the output is a restart loop. This is the surface the stack table's client-layer exception is for, and the only place in v1 where server-rendered HTML is not enough. |
 | 5 | Composition | The owner composes multi-line, spell-checked text from the phone, off the home network, without a terminal, and it reaches the intended session. |
 | 6 | A second person | Someone who is not the owner signs in through Access and reads a project's routing and records from their own device, without a clone and without a machine. |
 | 7 | A second project moves in | Its own verdict, not assumed here. The first project onboarded proves the transition the record shape was chosen to test. |
@@ -192,17 +193,20 @@ it, and specific enough that failing them is unambiguous.
 
 ## Build status
 
-**Milestones 1 and 2 have passed. Milestone 2b is built and reviewed; 2c is
-built on loopback and cannot be shown from a phone until an ingress exists.
-Neither 2b nor 2c is accepted. Nothing below 2c is built.**
+**Milestones 1 and 2 have passed. 2b, 2c and 3 are built and reviewed; 2c is now
+reachable and gated, and waits only on the owner filing a jot from a phone. None
+of 2b, 2c or 3 is accepted. 4a is built and not yet reviewed. Nothing below 4a
+is built.**
 
 | # | State | Evidence |
 | --- | --- | --- |
 | 1 | passed 2026-08-19, 20 of 20 against a rule of 18 of 20 | [the investigation](docs/investigations/0001-mandated-tool-call.md) |
 | 2 | passed 2026-08-20, reviewed by three agents that did not build it and every finding dispositioned | [the records](records/README.md), and the `mustur_route` tool they are served by |
 | 2b | built and reviewed 2026-08-20; awaiting acceptance | `make audit` over this repository, and 344 expected states across 37 of StrucGu's fixture trees |
-| 2c | built on loopback 2026-08-20 and reviewed. **Not met from a phone**: the ingress and an Access policy are the owner's to apply, and `mustur serve` is not yet a service. [docs/ingress.md](docs/ingress.md) | ten filings on loopback, median 0.5 ms; `MUS-F-0014` and `MUS-F-0015` for what is missing |
-| 3 onwards | not started | |
+| 2c | built and reviewed 2026-08-20. Reachable and gated 2026-08-21: `mustur.devofpie.com` behind Cloudflare Access, answered by a service that starts at boot. **The one sentence still unproven is the milestone's own** — a jot from a phone — which only the owner can test, because only the owner can get through Access | `MUS-F-0022`, filed through the running service and carried into `records/findings.md` by it; ten filings on loopback at a median of 1.71 ms, worst 2.10 ms, method in [docs/ingress.md](docs/ingress.md) |
+| 3 | built and reviewed 2026-08-21, split by the owner so that injection moves to milestone 4. An open question blocks `make check` when it was never surfaced, or when it is marked as one the work depends on; the queue is answerable from a phone | `records/questions.md`, `make questions` over it, and the questions this repository has raised — including the four carrying `Blocks: MUS-M-0005`, which stopped this milestone's own build until they were surfaced. The count is in [records/README.md](records/README.md) rather than restated here, because restating it is how it went stale twice |
+| 4a | built and reviewed 2026-08-21, awaiting acceptance. The adapter starts a session per project inside tmux, lists and stops only sessions it started, and carries an answered decision back into the one that raised it | Against real tmux: a session named `mustur/zzfake` created by hand was invisible to `list` and refused by `stop`, while a session Mustur started in the same server was listed; a command exiting immediately is reported as such rather than as started; a missing `--dir` is refused rather than silently becoming `$HOME`; an answer reached a live session's input and an answer whose session had gone was recorded with the reason. Method in [records/work-units/MUS-W-0016.md](records/work-units/MUS-W-0016.md) |
+| 4b onwards | not started | |
 
 *Passed* is a verdict acceptance makes, and this file does not make it early —
 the same reason its own note below says the status change in IdeaWarehouse was
@@ -214,8 +218,11 @@ SQLite store that only accepts inserts, exports them to
 serves them to a session through one tool call that the clause at the bottom of
 [CLAUDE.md](CLAUDE.md) mandates, audits this repository against the StrucGu
 modules it declares, and takes a jot into its own findings queue through one
-box on loopback. There is no surface reachable from a phone, no adapter, no
-session Mustur owns, and no second project.
+box, which a tunnel and a Cloudflare Access application now publish at
+`mustur.devofpie.com`. It also holds the questions it owes the owner, refuses to
+let work be reported complete around an unsurfaced one, and serves a queue those
+are answered from. There is no adapter, no session Mustur owns, and no second
+project.
 
 This file began as the plan seed from
 [agent-workflow-web-platform](https://github.com/DevOfPie/IdeaWarehouse/blob/main/ideas/agent-workflow-web-platform.md),

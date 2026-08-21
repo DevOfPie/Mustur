@@ -9,10 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 43 | [decisions.md](decisions.md) |
-| finding | 19 | [findings.md](findings.md) |
+| question | 16 | [questions.md](questions.md) |
+| decision | 73 | [decisions.md](decisions.md) |
+| finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 12 | [work-units/index.md](work-units/index.md) |
+| work-unit | 16 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -40,6 +41,26 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0010](work-units/MUS-W-0010.md#mus-w-0010) | work-unit | The intake surface |
 | [MUS-W-0011](work-units/MUS-W-0011.md#mus-w-0011) | work-unit | A write path into the store |
 | [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012) | work-unit | A visual plan for all seven surfaces |
+| [MUS-W-0013](work-units/MUS-W-0013.md#mus-w-0013) | work-unit | The question lifecycle, and the gate that cannot be reported around |
+| [MUS-W-0014](work-units/MUS-W-0014.md#mus-w-0014) | work-unit | The decision queue |
+| [MUS-W-0015](work-units/MUS-W-0015.md#mus-w-0015) | work-unit | The decision queue, rebuilt from its artboard |
+| [MUS-W-0016](work-units/MUS-W-0016.md#mus-w-0016) | work-unit | The per-machine adapter, and the answer carried back |
+| [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
+| [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
+| [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
+| [MUS-Q-0004](questions.md#mus-q-0004) | question | While the reopening is with the owner, fix milestone 2c's other findings or hold? |
+| [MUS-Q-0005](questions.md#mus-q-0005) | question | Should the gate block on an unanswered question, or only on an unsurfaced one? |
+| [MUS-Q-0006](questions.md#mus-q-0006) | question | The decision queue is reached from a banner on the intake box. MUS-D-0041 rejected exactly that. |
+| [MUS-Q-0007](questions.md#mus-q-0007) | question | Should an agent be able to answer or withdraw its own question? |
+| [MUS-Q-0008](questions.md#mus-q-0008) | question | Streaming a session to a browser tab needs script or polling. Which, against the no-script rule? |
+| [MUS-Q-0009](questions.md#mus-q-0009) | question | Does milestone 4 ship whole, or split adapter-and-injection from browser streaming? |
+| [MUS-Q-0010](questions.md#mus-q-0010) | question | Is the decision queue redesigned from the published plan, or does the plan get amended to match? |
+| [MUS-Q-0011](questions.md#mus-q-0011) | question | Your WebSocket answer reverses a stack-table row on main. Reopen milestone 2, or correct it forward? |
+| [MUS-Q-0012](questions.md#mus-q-0012) | question | I shipped a two-tab bar, overriding your four-tab decision without asking. Which stands? |
+| [MUS-Q-0013](questions.md#mus-q-0013) | question | Where does a running session's state live: tmux, or mirrored into the store? |
+| [MUS-Q-0014](questions.md#mus-q-0014) | question | How does an answered decision reach the session that raised it? |
+| [MUS-Q-0015](questions.md#mus-q-0015) | question | I narrowed milestone 4a's done-when without asking. Which clauses does 4a actually owe? |
+| [MUS-Q-0016](questions.md#mus-q-0016) | question | Milestone 4b needs a surface neither docs/ui-surfaces.md nor the published plan has |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -83,6 +104,36 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0041](decisions.md#mus-d-0041) | decision | The phone bar has four tabs |
 | [MUS-D-0042](decisions.md#mus-d-0042) | decision | The routing guess is shown before filing |
 | [MUS-D-0043](decisions.md#mus-d-0043) | decision | The audit is a page |
+| [MUS-D-0044](decisions.md#mus-d-0044) | decision | Mustur runs as a systemd user unit |
+| [MUS-D-0045](decisions.md#mus-d-0045) | decision | The unit is enabled, and MUS-D-0044 stands uncorrected in place |
+| [MUS-D-0046](decisions.md#mus-d-0046) | decision | Injection belongs to the milestone that owns sessions |
+| [MUS-D-0047](decisions.md#mus-d-0047) | decision | A question is its own kind, and only some become decisions |
+| [MUS-D-0048](decisions.md#mus-d-0048) | decision | The gate turns on being asked, not on being answered |
+| [MUS-D-0049](decisions.md#mus-d-0049) | decision | Milestone 2's falsified record is corrected inside 2c, not reopened |
+| [MUS-D-0050](decisions.md#mus-d-0050) | decision | The question gate reads the exported tree, not the store |
+| [MUS-D-0051](decisions.md#mus-d-0051) | decision | An answer is required when the work depends on it |
+| [MUS-D-0052](decisions.md#mus-d-0052) | decision | A question may be withdrawn by its raiser, never answered by them |
+| [MUS-D-0053](decisions.md#mus-d-0053) | decision | The decision queue's banner is interim, and MUS-D-0041 still stands |
+| [MUS-D-0054](decisions.md#mus-d-0054) | decision | The tool call derives its kind list rather than restating it |
+| [MUS-D-0055](decisions.md#mus-d-0055) | decision | An answer is a choice between options, not a text box |
+| [MUS-D-0056](decisions.md#mus-d-0056) | decision | The queue was rebuilt because the plan was routed around, not because it was wrong |
+| [MUS-D-0057](decisions.md#mus-d-0057) | decision | The tab bar carries only the surfaces that exist |
+| [MUS-D-0058](decisions.md#mus-d-0058) | decision | The tab bar is MUS-D-0041's, built two tabs at a time |
+| [MUS-D-0059](decisions.md#mus-d-0059) | decision | The stack table gains a named exception rather than losing its rule |
+| [MUS-D-0060](decisions.md#mus-d-0060) | decision | Milestone 4 is two milestones |
+| [MUS-D-0061](decisions.md#mus-d-0061) | decision | Three timestamps were typed rather than read |
+| [MUS-D-0062](decisions.md#mus-d-0062) | decision | tmux is the source of truth for what is running |
+| [MUS-D-0063](decisions.md#mus-d-0063) | decision | Mustur can type into a session it started |
+| [MUS-D-0064](decisions.md#mus-d-0064) | decision | A project name may not address a window or a pane |
+| [MUS-D-0065](decisions.md#mus-d-0065) | decision | An undelivered answer is still an answer |
+| [MUS-D-0066](decisions.md#mus-d-0066) | decision | Ownership is provenance, not a name |
+| [MUS-D-0067](decisions.md#mus-d-0067) | decision | The word was supervises and the thing was not built |
+| [MUS-D-0068](decisions.md#mus-d-0068) | decision | An answer that reached the server is the owner's |
+| [MUS-D-0069](decisions.md#mus-d-0069) | decision | The session that raised a question and the session an answer can reach are different things |
+| [MUS-D-0070](decisions.md#mus-d-0070) | decision | There is no session send |
+| [MUS-D-0071](decisions.md#mus-d-0071) | decision | The unit cannot have a private /tmp |
+| [MUS-D-0072](decisions.md#mus-d-0072) | decision | v1 has eight surfaces, and the eighth was found by trying to build it |
+| [MUS-D-0073](decisions.md#mus-d-0073) | decision | The standing instruction is what stopped 4b starting |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -102,6 +153,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0017](findings.md#mus-f-0017) | finding | Two filings at once could be issued the same identifier |
 | [MUS-F-0018](findings.md#mus-f-0018) | finding | A jot reaches the store, not the file the findings role is mapped at |
 | [MUS-F-0019](findings.md#mus-f-0019) | finding | The destination row cannot preselect the guess without a client script |
+| [MUS-F-0020](findings.md#mus-f-0020) | finding | A shallow clone made the history check pass for the wrong reason |
+| [MUS-F-0021](findings.md#mus-f-0021) | finding | The public hostname has no Access application in front of it |
+| [MUS-F-0022](findings.md#mus-f-0022) | finding | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |

@@ -65,5 +65,28 @@
         "value": "MUS-H-0001"
       }
     ]
+  },
+  {
+    "id": "MUS-P-0002",
+    "kind": "project",
+    "title": "Idea inbox",
+    "at": "2026-08-20",
+    "refs": [
+      {
+        "key": "Held by",
+        "value": "MUS-P-0001"
+      }
+    ],
+    "body": "Where a jot goes when no destination is obvious. A routing target inside Mustur, not a write into IdeaWarehouse: no file in another project is touched before that project is deliberately onboarded, and a capture surface that edited one would break that on its first use.",
+    "data": [
+      {
+        "key": "Intake",
+        "value": "default"
+      },
+      {
+        "key": "Aliases",
+        "value": "inbox, ideas"
+      }
+    ]
   }
 ]

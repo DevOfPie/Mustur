@@ -89,6 +89,11 @@ exclude:
   - records/README.md
   - records/milestones.md
   - records/routing.md
+  # No StrucGu module describes an open-question queue, so questions.md fills no
+  # role and is listed here rather than left to be read as an oversight. It is
+  # gated all the same: `make questions` reads this file, which is why the check
+  # is in the Makefile and not in the audit.
+  - records/questions.md
 
 # Not adopted, and why:
 #

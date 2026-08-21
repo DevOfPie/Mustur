@@ -30,7 +30,10 @@ type Args struct {
 	Repository string `json:"repository" jsonschema:"repository name as understood from the checkout"`
 	Task       string `json:"task,omitempty" jsonschema:"one line on what this session is about"`
 	ID         string `json:"id,omitempty" jsonschema:"return one record by identifier, for example MUS-D-0001"`
-	Kind       string `json:"kind,omitempty" jsonschema:"limit the index to one kind: milestone, work-unit, decision, finding, investigation, repository, machine, project"`
+	// The kind list here is a struct tag and cannot be built at run time, so
+	// TestSchemaListsEveryKind asserts it against ident.KindNames rather than
+	// leaving it to go stale the next time a role letter is added.
+	Kind string `json:"kind,omitempty" jsonschema:"limit the index to one kind: milestone, work-unit, question, decision, finding, investigation, repository, machine, project"`
 }
 
 // Server answers tool calls out of a store.
@@ -115,7 +118,7 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 		}
 	}
 
-	kinds := []string{"milestone", "work-unit", "decision", "finding", "investigation", "repository", "machine", "project"}
+	kinds := ident.KindNames()
 	if args.Kind != "" {
 		if _, ok := ident.RoleFor(args.Kind); !ok {
 			return fmt.Sprintf("Mustur has no record kind %q. The kinds are: %s.\n", args.Kind, strings.Join(kinds, ", ")), nil

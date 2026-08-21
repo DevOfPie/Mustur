@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -47,6 +48,33 @@ func TestSeedCitesOnlyWhatItSeeds(t *testing.T) {
 				t.Errorf("%s cites %s, which the seed does not hold", r.ID, cited)
 			}
 		}
+	}
+}
+
+// Milestone 2c's done-when ends "defaults to the idea inbox where it is not",
+// and the fallback is a record rather than a constant, so the clause holds only
+// if the seed ships one. Every other test of the default supplies it as a
+// fixture, which is how the suite stayed green while a fresh clone routed an
+// unroutable jot to nowhere.
+func TestSeedDeclaresAnIntakeDefault(t *testing.T) {
+	records, err := Records()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var defaults []string
+	for _, r := range records {
+		if v, ok := r.Get(intake.DefaultField); ok && strings.EqualFold(strings.TrimSpace(v), intake.DefaultValue) {
+			defaults = append(defaults, r.ID)
+		}
+	}
+	if len(defaults) != 1 {
+		t.Fatalf("the seed declares %d intake defaults (%v); it must declare exactly one", len(defaults), defaults)
+	}
+
+	// The record existing is not the clause. Routing has to reach it.
+	got := intake.Route("some entirely unrelated thought about gardening", records)
+	if got.ID != defaults[0] {
+		t.Errorf("an unroutable jot went to %q (%s), not to the declared default %s", got.Name, got.ID, defaults[0])
 	}
 }
 

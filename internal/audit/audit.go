@@ -559,6 +559,14 @@ func (t *tree) historyDeletions(adopted AdoptedModule, read []target) (State, st
 	if !t.isRepo {
 		return Skip, "the audited root is not a git repository", nil
 	}
+	// A shallow clone has no history to read, and reporting ok would turn "I
+	// did not look" into "I looked and it was fine" — the one substitution the
+	// five states exist to prevent. Found in CI, where actions/checkout clones
+	// at depth 1 and this check passed for that reason rather than on merit.
+	if shallow, err := exec.Command("git", "-C", t.root, "rev-parse", "--is-shallow-repository").Output(); err == nil &&
+		strings.TrimSpace(string(shallow)) == "true" {
+		return Skip, "the repository is a shallow clone, so no history is readable here", nil
+	}
 	paths := filesOf(read)
 	// Not --diff-filter=M, and not a pathspec of the files that survive. Under
 	// per-decision-files a record is a file, and deleting one outright removes

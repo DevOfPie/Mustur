@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-19 record(s), by identifier.
+22 record(s), by identifier.
 
 ## The queue
 
@@ -23,12 +23,15 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0011](#mus-f-0011) | No gate detects the export drifting from the store | the verify-records target passes no store | unreviewed |
 | [MUS-F-0012](#mus-f-0012) | ci/proposed/README.md says a new check needs no owner | commit 40af879, applied by the owner | unreviewed |
 | [MUS-F-0013](#mus-f-0013) | Four of StrucGu's five roles are record kinds, and nobody has asked for the fifth | the record kinds in internal/ident, against StrucGu's module list | unreviewed |
-| [MUS-F-0014](#mus-f-0014) | mustur serve is not a service, so a public hostname would 502 | no unit for mustur on this machine; the tunnel beside it runs as linkctrl-tunnel.service | unreviewed |
-| [MUS-F-0015](#mus-f-0015) | Nothing off the home network can reach the intake box yet | cloudflared runs with TUNNEL_TOKEN and no local config.yml, read 2026-08-20 | unreviewed |
+| [MUS-F-0014](#mus-f-0014) | mustur serve is not a service, so a public hostname would 502 | no unit for mustur on this machine; the tunnel beside it runs as linkctrl-tunnel.service | resolved 2026-08-21 |
+| [MUS-F-0015](#mus-f-0015) | Nothing off the home network can reach the intake box yet | cloudflared runs with TUNNEL_TOKEN and no local config.yml, read 2026-08-20 | resolved 2026-08-21 |
 | [MUS-F-0016](#mus-f-0016) | A decision entry described routing behaviour that had not been built | two independent reviewers reproduced it against copies of the live store | fixed 2026-08-20 |
 | [MUS-F-0017](#mus-f-0017) | Two filings at once could be issued the same identifier | reproduced by a reviewer with twelve concurrent POSTs; the regression test fails against the two-call version | fixed 2026-08-20 |
-| [MUS-F-0018](#mus-f-0018) | A jot reaches the store, not the file the findings role is mapped at | strucgu.yaml maps findings at records/findings.md; the POST path never exports | unreviewed |
+| [MUS-F-0018](#mus-f-0018) | A jot reaches the store, not the file the findings role is mapped at | strucgu.yaml maps findings at records/findings.md; the POST path never exports | resolved 2026-08-21 |
 | [MUS-F-0019](#mus-f-0019) | The destination row cannot preselect the guess without a client script | Plan.md's stack table: server-rendered HTML, no per-project client state | unreviewed |
+| [MUS-F-0020](#mus-f-0020) | A shallow clone made the history check pass for the wrong reason | CI run 32437277197 reported 28 ok, 0 waived where a full clone reports 27 ok, 1 waived | fixed 2026-08-21 |
+| [MUS-F-0021](#mus-f-0021) | The public hostname has no Access application in front of it | GET / returned 502 with no location or cf-access headers, read 2026-08-21 | resolved 2026-08-21 |
+| [MUS-F-0022](#mus-f-0022) | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |  | unreviewed |
 
 ---
 
@@ -233,16 +236,17 @@ triage-rule describes a document rather than a set of records. Whether Mustur sh
 
 **mustur serve is not a service, so a public hostname would 502**
 
-finding · 2026-08-20
+finding · 2026-08-21
 
 Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
 
-The intake surface runs in a terminal. It does not start at boot and does not restart if it dies, so an ingress rule pointing at port 7777 would fail whenever nobody had started it by hand. A systemd unit is the obvious answer and no milestone has asked for one.
+The intake surface ran in a terminal: no start at boot, no restart if it died, so an ingress rule pointing at port 7777 failed whenever nobody had started it by hand. deploy/mustur.service is a systemd user unit and closes it.
 
 | Field | Value |
 | --- | --- |
 | Evidence | no unit for mustur on this machine; the tunnel beside it runs as linkctrl-tunnel.service |
-| Status | unreviewed |
+| Status | resolved 2026-08-21 |
+| How it was confirmed | enabled and active, survives a restart, and comes back from kill -9 within seconds; confined to two writable paths |
 
 ---
 
@@ -254,12 +258,13 @@ finding · 2026-08-20
 
 Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
 
-Milestone 2c's done-when says a jot from a phone. The surface is loopback-only, the tunnel is token-managed so its ingress rules live in Cloudflare rather than on disk, and no credential here can change them. docs/ingress.md is the runbook; applying it is the owner's.
+As filed, 2026-08-20: milestone 2c's done-when says a jot from a phone, and the surface was loopback-only. The tunnel is token-managed, so its ingress rules live in Cloudflare rather than on disk and no credential here could change them; docs/ingress.md was the runbook and applying it was the owner's. They did, on 2026-08-21. The surface is no longer loopback-only — it is published at mustur.devofpie.com behind Cloudflare Access — and this finding's title states what was true when it was raised, not what is true now.
 
 | Field | Value |
 | --- | --- |
 | Evidence | cloudflared runs with TUNNEL_TOKEN and no local config.yml, read 2026-08-20 |
-| Status | unreviewed |
+| Status | resolved 2026-08-21 |
+| How it was resolved | The owner added the Access application and the hostname route; mustur.service answers 127.0.0.1:7777 and mustur.devofpie.com returns 302 to the Access login. The runbook it pointed at is docs/ingress.md, which now records what it took |
 
 ---
 
@@ -301,14 +306,15 @@ Allocating an identifier and writing under it were separate statements, so twelv
 
 **A jot reaches the store, not the file the findings role is mapped at**
 
-finding · 2026-08-20
+finding · 2026-08-21
 
 Intake writes to the database. records/findings.md only changes when someone runs make export and commits it, and nothing in the filing path exports. A jot filed from a phone is in the store and not yet in the audited role.
 
 | Field | Value |
 | --- | --- |
 | Evidence | strucgu.yaml maps findings at records/findings.md; the POST path never exports |
-| Status | unreviewed |
+| Status | resolved 2026-08-21 |
+| How it was resolved | serve grew an --export flag that renders the store after each filing, and deploy/mustur.service passes it. MUS-F-0022 was filed through the running surface and appeared in records/findings.md with nobody running make export |
 
 ---
 
@@ -324,3 +330,56 @@ The approved artboard shows the routing guess already selected among the destina
 | --- | --- |
 | Evidence | Plan.md's stack table: server-rendered HTML, no per-project client state |
 | Status | unreviewed |
+
+---
+
+## MUS-F-0020
+
+**A shallow clone made the history check pass for the wrong reason**
+
+finding · 2026-08-21
+
+DL-03 reported ok in CI while reporting waived here. The cause is that actions/checkout clones at depth 1, so git had no history to read and the check found no deletions — turning "I did not look" into "I looked and it was fine", which is the substitution the five states exist to prevent. The check now detects a shallow clone and skips, saying so.
+
+| Field | Value |
+| --- | --- |
+| Evidence | CI run 32437277197 reported 28 ok, 0 waived where a full clone reports 27 ok, 1 waived |
+| Status | fixed 2026-08-21 |
+
+---
+
+## MUS-F-0021
+
+**The public hostname has no Access application in front of it**
+
+finding · 2026-08-21
+
+Blocks: [MUS-M-0004](milestones.md#mus-m-0004)
+
+mustur.devofpie.com answered unauthenticated requests directly: no login redirect, no challenge headers, a plain 502 from the origin. The intake surface reads the filer's identity from a header Access sets at the edge and cloudflared passes client headers through, so with no Access in front anyone reaching the hostname could file a jot and claim to be anyone. The service unit was installed and left disabled until this was closed.
+
+| Field | Value |
+| --- | --- |
+| Evidence | GET / returned 502 with no location or cf-access headers, read 2026-08-21 |
+| Status | resolved 2026-08-21 |
+| How it was confirmed | GET /, GET /intake, POST /intake and a request carrying a forged Cf-Access-Authenticated-User-Email all return 302 to killerofpie.cloudflareaccess.com with auth_status NONE |
+
+---
+
+## MUS-F-0022
+
+**mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the…**
+
+finding · 2026-08-21
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the running service rather than the command line
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | the jot names DevOfPie/Mustur |
+| Filed by | whippy |

@@ -1,10 +1,23 @@
 # Surfaces awaiting design
 
-**One of these is designed and it should not have been, not this way.** Surface
-5, intake, shipped at milestone 2c as a Go template — the layout decided in code
-and shown to the owner afterwards, which is what the rule three paragraphs down
-exists to prevent. Recorded rather than tidied away: the owner's answer was to
-publish a plan for every remaining surface before any more of them are built.
+**Two of these are built. Both were first written the way this file exists to
+prevent, and one has been put back.** Surface 5, intake, shipped at milestone 2c
+as a Go template — the layout decided in code and shown to the owner afterwards.
+Surface 4, the decision queue, shipped at milestone 3 the same way, from the
+brief below rather than from the published plan's artboard for it.
+
+That the second happened after the first was recorded is the part worth keeping:
+the record alone was not the safeguard. The owner's answer on MUS-Q-0010 was to
+rebuild the queue from its artboard, which is done. Intake is unchanged and
+still stands as built.
+
+**The standing instruction, which an earlier draft of this file deleted and a
+review caught:** the owner's answer after intake was to publish a plan for every
+remaining surface **before any more of them are built**. That plan exists and is
+linked below. It governs milestones 4 onwards, it was not superseded by the
+queue being rebuilt, and it is restated here because removing it was the
+"nothing is deleted" rule being broken on the one line that constrains what gets
+built next.
 
 The rest of this file lists the surfaces v1 needs, what each one must do, and the
 constraint that governs it, so that wireframing has a target list rather than a
@@ -14,11 +27,19 @@ blank page.
 published visual plan, never as ASCII in a document or a prompt. This file is the
 brief; the design is the answer to it.
 
-**The plan for all seven is
+**There are eight.** This file listed seven until milestone 4b needed the one it
+had never named — a running session's *output*, which is not the session list.
+Surface 8 below is that gap, found by trying to build against nothing, and it
+has [a plan of its
+own](https://plan.agent-native.com/plans/plan-6009f123020a4f58) because the
+seven-surface plan does not draw it.
+
+**The plan for the original seven is
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
 published 2026-08-20. Eight artboards — intake as built and as proposed, plus
-the six unbuilt surfaces — the shell they share, and four open questions. No
-further surface is built before it is answered.
+the six then-unbuilt surfaces — the shell they share, and four open questions,
+which were answered 2026-08-20. Five of those six are still unbuilt; the
+decision queue is built, and is built from its artboard.
 
 ## The constraints every surface inherits
 
@@ -71,6 +92,33 @@ and cross-referential, so the graph reading was real; what it cost is in
 
 ### 4. Decision queue
 
+**Built at milestone 3 from this brief, then rebuilt from the plan's artboard**
+after the owner's answer on MUS-Q-0010. What the drawing settled and the brief
+had not: what is blocked comes first, above the question; answers are options
+carrying what each one costs, one of them recommended, rather than a text box
+that made the owner reconstruct the list the asker already had; each option
+expands in place, one line up front and the paragraph behind it only when asked;
+and answering is one tap above the bar. The expansion is a `<details>` element,
+so none of it costs script.
+
+**Six things differ from the drawing.** An earlier version of this paragraph
+said two, and a review counted the rest — so they are listed rather than
+summarised.
+
+| Difference | Why |
+| --- | --- |
+| The tab bar carries two tabs, not four | Sessions and Records are not built, and a tab pointing at one would be an unbuilt capability described as existing. MUS-D-0041's four still stands; MUS-Q-0012 confirms this as its interim |
+| The banner on intake stays | It is the only route back from intake, which has no bar of its own yet. MUS-Q-0006 |
+| Every open question is on one page, not one per screen | The queue is short by construction. The drawing is a single-question screen and this is a list with a rule between entries; the earlier claim to be "one question per screen" was simply false of the code beneath it |
+| Options carry a radio | The drawing makes the card itself the selection. A radio is what a form can express without script, and the whole row is the control |
+| There is a free-text box under the options | The drawing has none. The owner wanting to say something the list does not contain is the case a list of options is worst at, and it must not be the case the surface refuses |
+| The project pill is not rendered | One project exists. A pill that always reads the same is chrome |
+
+The Answer button is also in flow rather than in a bordered footer, so it
+scrolls with the question rather than staying pinned. That is a difference the
+drawing would probably lose an argument about on a short queue, and it is named
+here rather than defended.
+
 Where a blocked agent's decision arrives and where the owner answers it.
 
 The interaction that must not fail: **an open decision is visible without
@@ -82,7 +130,8 @@ holds up a milestone from one that holds up a sentence.
 
 ### 5. Intake
 
-**Built at milestone 2c, on loopback, without a visual plan.** What exists is one
+**Built at milestone 2c, without a visual plan**, and published at
+`mustur.devofpie.com` behind Cloudflare Access at 2c's end. What exists is one
 textarea, one button and a list of what was filed in the last hour. It is the
 baseline a plan should argue with rather than a design anyone chose.
 
@@ -108,6 +157,27 @@ The conformance run over Mustur's own records, in the form StrucGu specifies.
 Must be reproducible by someone who does not trust it, and must show which checks
 are waived and why — a waiver that is invisible is a check that silently stopped
 running.
+
+### 8. Session output
+
+A running session's output, streamed to a browser tab. **Not the session list:**
+that says which sessions exist, this is what one of them is saying.
+
+Must answer, from a phone, off the home network: is this session running, and
+what has it just said? A dropped connection must reconnect and replay what was
+missed without the owner wondering whether walking into a lift killed the work.
+A session that has **ended** must not look like one that is merely quiet — that
+confusion is most of what this surface exists to prevent.
+
+**The one surface in v1 that carries a client layer.** A live terminal cannot be
+server-rendered. The stack table names this as the exception and keeps the rule
+for everything else; a second surface wanting script is a new decision, not a
+precedent.
+
+Its plan is
+[plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58) —
+four artboards, the transport, the wire format, and four open questions.
+Milestone 4b builds it from that drawing, not from this brief.
 
 ## Not surfaces
 

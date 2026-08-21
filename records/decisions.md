@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-43 record(s), by identifier.
+73 record(s), by identifier.
 
 ## Index
 
@@ -55,6 +55,36 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0041](#mus-d-0041) | The phone bar has four tabs | 2026-08-20 |
 | [MUS-D-0042](#mus-d-0042) | The routing guess is shown before filing | 2026-08-20 |
 | [MUS-D-0043](#mus-d-0043) | The audit is a page | 2026-08-20 |
+| [MUS-D-0044](#mus-d-0044) | Mustur runs as a systemd user unit | 2026-08-21 |
+| [MUS-D-0045](#mus-d-0045) | The unit is enabled, and MUS-D-0044 stands uncorrected in place | 2026-08-21 |
+| [MUS-D-0046](#mus-d-0046) | Injection belongs to the milestone that owns sessions | 2026-08-21 |
+| [MUS-D-0047](#mus-d-0047) | A question is its own kind, and only some become decisions | 2026-08-21 |
+| [MUS-D-0048](#mus-d-0048) | The gate turns on being asked, not on being answered | 2026-08-21 |
+| [MUS-D-0049](#mus-d-0049) | Milestone 2's falsified record is corrected inside 2c, not reopened | 2026-08-21 |
+| [MUS-D-0050](#mus-d-0050) | The question gate reads the exported tree, not the store | 2026-08-21 |
+| [MUS-D-0051](#mus-d-0051) | An answer is required when the work depends on it | 2026-08-21 |
+| [MUS-D-0052](#mus-d-0052) | A question may be withdrawn by its raiser, never answered by them | 2026-08-21 |
+| [MUS-D-0053](#mus-d-0053) | The decision queue's banner is interim, and MUS-D-0041 still stands | 2026-08-21 |
+| [MUS-D-0054](#mus-d-0054) | The tool call derives its kind list rather than restating it | 2026-08-21 |
+| [MUS-D-0055](#mus-d-0055) | An answer is a choice between options, not a text box | 2026-08-21 |
+| [MUS-D-0056](#mus-d-0056) | The queue was rebuilt because the plan was routed around, not because it was wrong | 2026-08-21 |
+| [MUS-D-0057](#mus-d-0057) | The tab bar carries only the surfaces that exist | 2026-08-21 |
+| [MUS-D-0058](#mus-d-0058) | The tab bar is MUS-D-0041's, built two tabs at a time | 2026-08-21 |
+| [MUS-D-0059](#mus-d-0059) | The stack table gains a named exception rather than losing its rule | 2026-08-21 |
+| [MUS-D-0060](#mus-d-0060) | Milestone 4 is two milestones | 2026-08-21 |
+| [MUS-D-0061](#mus-d-0061) | Three timestamps were typed rather than read | 2026-08-21 |
+| [MUS-D-0062](#mus-d-0062) | tmux is the source of truth for what is running | 2026-08-21 |
+| [MUS-D-0063](#mus-d-0063) | Mustur can type into a session it started | 2026-08-21 |
+| [MUS-D-0064](#mus-d-0064) | A project name may not address a window or a pane | 2026-08-21 |
+| [MUS-D-0065](#mus-d-0065) | An undelivered answer is still an answer | 2026-08-21 |
+| [MUS-D-0066](#mus-d-0066) | Ownership is provenance, not a name | 2026-08-21 |
+| [MUS-D-0067](#mus-d-0067) | The word was supervises and the thing was not built | 2026-08-21 |
+| [MUS-D-0068](#mus-d-0068) | An answer that reached the server is the owner's | 2026-08-21 |
+| [MUS-D-0069](#mus-d-0069) | The session that raised a question and the session an answer can reach are different things | 2026-08-21 |
+| [MUS-D-0070](#mus-d-0070) | There is no session send | 2026-08-21 |
+| [MUS-D-0071](#mus-d-0071) | The unit cannot have a private /tmp | 2026-08-21 |
+| [MUS-D-0072](#mus-d-0072) | v1 has eight surfaces, and the eighth was found by trying to build it | 2026-08-21 |
+| [MUS-D-0073](#mus-d-0073) | The standing instruction is what stopped 4b starting | 2026-08-21 |
 
 ---
 
@@ -692,3 +722,491 @@ The same run the command emits, rendered read-only. A waiver nobody sees is a ch
 | --- | --- |
 | Rationale | [decisions.md#the-audit-is-a-page](../decisions.md#the-audit-is-a-page) |
 | Answered against | [the surfaces plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22) |
+
+---
+
+## MUS-D-0044
+
+**Mustur runs as a systemd user unit**
+
+decision · 2026-08-21
+
+Addresses: [MUS-F-0014](findings.md#mus-f-0014)
+
+The owner's call. A user unit running as the account that owns the store: no root, restarts on failure, starts at boot on the existing lingering. Installed and deliberately not enabled, because enabling it is what publishes the box and Access is not in front of the hostname yet.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#mustur-runs-as-a-systemd-user-unit](../decisions.md#mustur-runs-as-a-systemd-user-unit) |
+
+---
+
+## MUS-D-0045
+
+**The unit is enabled, and MUS-D-0044 stands uncorrected in place**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0044](#mus-d-0044)
+
+MUS-D-0044 says the unit is installed and deliberately not enabled, because enabling it is what publishes the box and Access is not in front of the hostname yet. That was true when it was written and false by the end of the same branch: the owner added the Access application, the gate went up before anything listened, and the unit was enabled. The entry stays as written, because entries are never edited, and this is the later entry that corrects it.
+
+The ordering it describes was not wrong and is not abandoned. It is restated as a rule about any host rather than a note about this one, in deploy/mustur.service and in docs/ingress.md: never enable the unit on a host whose hostname is not already behind Access.
+
+Two smaller corrections ride with it. The remark in decisions.md, under the 2026-08-20 heading for decisions taken while building milestone 2c, that the fifteen-second claim cannot be measured until the ingress exists is superseded — the ingress exists, and the claim is now unclaimed for a different reason, which is that only the owner can get through Access to file from a phone. And the unit shipped Restart=on-failure, which systemd does not apply to a SIGTERM; the service was left dead by one and nothing noticed, because Access answers 302 whether or not the origin is up. It is Restart=always now.
+
+| Field | Value |
+| --- | --- |
+| Supersedes | MUS-D-0044's not-enabled clause, and the remark in decisions.md that the fifteen-second claim cannot be measured until the ingress exists |
+| Rationale | [decisions.md#the-unit-is-enabled-and-the-entry-saying-it-is-not-stays-put](../decisions.md#the-unit-is-enabled-and-the-entry-saying-it-is-not-stays-put) |
+
+---
+
+## MUS-D-0046
+
+**Injection belongs to the milestone that owns sessions**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0001](questions.md#mus-q-0001)
+
+Milestone 3's done-when required machinery milestone 4 owns: an answer cannot reach a session Mustur did not start, and nothing starts sessions until the adapter does. The owner split it on a prompt. Milestone 3 is the block and the queue; delivering an answer back into the raising session is milestone 4's, beside the adapter that makes it possible. Until then an answer sits in the store and on the queue page, which blocks nothing, because the gate turns on the question having been asked rather than answered.
+
+| Field | Value |
+| --- | --- |
+| Not taken | Pulling the adapter into milestone 3, and answering through the next mustur_route call |
+| Rationale | [decisions.md#injection-belongs-to-the-milestone-that-owns-sessions](../decisions.md#injection-belongs-to-the-milestone-that-owns-sessions) |
+
+---
+
+## MUS-D-0047
+
+**A question is its own kind, and only some become decisions**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0002](questions.md#mus-q-0002)
+
+Open questions are MUS-Q, exported to records/questions.md, carrying open, surfaced and answered. Not a status field on decision records, for three reasons the owner accepted: some answers are instructions rather than decisions, some questions never resolve at all, and decisions.md is append-only so a status flipping open to answered is an edit to the one kind that forbids edits. When an answer is a real decision a decision entry is appended citing the question; when it was only an instruction, nothing is.
+
+| Field | Value |
+| --- | --- |
+| Costs | A role letter, and the export and adoption surface a new kind brings |
+| Rationale | [decisions.md#a-question-is-its-own-kind-and-only-some-become-decisions](../decisions.md#a-question-is-its-own-kind-and-only-some-become-decisions) |
+
+---
+
+## MUS-D-0048
+
+**The gate turns on being asked, not on being answered**
+
+decision · 2026-08-21
+
+make check fails while an open question has never been surfaced as a prompt, and passes on one that was surfaced and is still waiting. An owner who is away must not stop the work, and a gate that waited for answers would teach whoever hit it to stop asking. A missing store skips and says so rather than passing, because 'there was no store to read' and 'no question was buried' are different facts.
+
+| Field | Value |
+| --- | --- |
+| Corrected by | MUS-D-0050 on the store, and MUS-D-0051 on the unqualified rule |
+| Rationale | [decisions.md#the-gate-turns-on-being-asked-not-on-being-answered](../decisions.md#the-gate-turns-on-being-asked-not-on-being-answered) |
+
+---
+
+## MUS-D-0049
+
+**Milestone 2's falsified record is corrected inside 2c, not reopened**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0003](questions.md#mus-q-0003)
+
+Corrects: [MUS-W-0005](work-units/MUS-W-0005.md#mus-w-0005)
+
+The milestone 2c review found that MUS-W-0005, which discharges milestone 2, named MUS-M-0006 as the point the unauthenticated server stops being sound. The ingress arrived at 2c instead, and /mcp shares a mux with the intake box, so milestone 2's tool call is publicly routed — soundly, because Access covers it, but the shipped record said otherwise. workflow.md calls a finding that falsifies a shipped milestone a reopening, and reopening is scheduling, which is the owner's. It went to them as a prompt. Their answer was to correct the record inside milestone 2c and leave milestone 2 passed, which is what MUS-W-0005's amendment does.
+
+| Field | Value |
+| --- | --- |
+| Not taken | Reopening milestone 2 as its own unit, and queueing it while accepting 2c |
+| Rationale | Recorded here rather than in decisions.md prose; the milestone 2c review comment on pull request 19 carries the finding it answers |
+
+---
+
+## MUS-D-0050
+
+**The question gate reads the exported tree, not the store**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0048](#mus-d-0048)
+
+workflow.md requires every make check gate to run offline against the working tree. The store is machine-local, so a store-backed gate could only skip on a clone and in CI, while CLAUDE.md stated the rule unconditionally. It was also unsound where it did run: openStore creates a store that is not there, so the gate could not tell 'no store' from 'no buried question', and the Makefile guard meant to cover that probed a path the binary did not read — with XDG_DATA_HOME set it found the real store while the binary made an empty one and the gate printed ok. Reading records/questions.md removes all of it: an absent or empty file is the tree saying there are none.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 3 review, reproduced by two reviewers independently |
+| Rationale | [decisions.md#the-gate-reads-the-tree-not-the-store](../decisions.md#the-gate-reads-the-tree-not-the-store) |
+
+---
+
+## MUS-D-0051
+
+**An answer is required when the work depends on it**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0005](questions.md#mus-q-0005)
+
+Corrects: [MUS-D-0048](#mus-d-0048)
+
+The owner ratified the asked-not-answered rule with a qualification that changes it: being asked is enough as long as the work in hand does not depend on the answer. A question raised with --needed is not passed by surfacing alone, because reporting complete on work that turned on an answer nobody gave is the same lie as never having asked. The remedy is the one workflow.md already gives: do everything independent of the answer first, and do not report the part that is not.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#an-answer-is-required-when-the-work-depends-on-it](../decisions.md#an-answer-is-required-when-the-work-depends-on-it) |
+
+---
+
+## MUS-D-0052
+
+**A question may be withdrawn by its raiser, never answered by them**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0007](questions.md#mus-q-0007)
+
+mustur answer took any actor, so the agent that raised a question could close it and the gate would stop seeing it — the enforcement walked around in one command. Withdrawing your own question is honest: it is overtaken, or no longer worth asking, and the record goes on saying it was asked. Supplying your own answer is not. The raiser is recorded on the question at ask time so the refusal has something to check.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-question-may-be-withdrawn-by-its-raiser-never-answered-by-them](../decisions.md#a-question-may-be-withdrawn-by-its-raiser-never-answered-by-them) |
+
+---
+
+## MUS-D-0053
+
+**The decision queue's banner is interim, and MUS-D-0041 still stands**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0006](questions.md#mus-q-0006)
+
+MUS-D-0041 rejected a decision queue reached from a banner, because a banner on another screen can be scrolled past and a fixed place the eye already knows to check is worth more. Milestone 3 shipped a banner on the intake box and gave as its reason the argument that decision overruled. The owner's answer: fine as an interim, fix the rationale. The tab bar arrives with the session list at milestone 4 and the banner moves then. What was corrected is the claim, not the code.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-decision-queues-banner-is-interim-and-mus-d-0041-still-stands](../decisions.md#the-decision-queues-banner-is-interim-and-mus-d-0041-still-stands) |
+
+---
+
+## MUS-D-0054
+
+**The tool call derives its kind list rather than restating it**
+
+decision · 2026-08-21
+
+Corrects: [MUS-W-0005](work-units/MUS-W-0005.md#mus-w-0005)
+
+Adding the question role letter silently falsified a claim milestone 2 shipped: mustur_route describes its reply as an index of every record, and iterated a hand-written kind list, so questions were absent from every default index. The mandated call — the first thing every session makes, and the obvious place to learn a question is open — was the one surface that could not see them. The list is derived from ident.Roles now. The JSON schema on a struct tag cannot be, so a test asserts it against ident.KindNames.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 3 review, measured on the wire rather than inferred |
+| Rationale | [decisions.md#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one](../decisions.md#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one) |
+
+---
+
+## MUS-D-0055
+
+**An answer is a choice between options, not a text box**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0010](questions.md#mus-q-0010)
+
+The decision queue offers a short list of options, each with one line saying what it costs and one of them marked recommended, with the paragraph behind each shown only when asked for. A text box made the owner reconstruct the options the asker already had — an agent blocked on a decision has just finished weighing the alternatives, which is why it is blocked, and discarding them at the surface means the work is done twice. Free text stays beneath the options and beats a chosen one when both are sent, because the owner wanting to say something the list does not contain is the case a list is worst at.
+
+| Field | Value |
+| --- | --- |
+| Stored as | Repeated Option fields, 'Label :: one line :: the paragraph'. The separator is not a pipe, which would break the table the export renders these into |
+| Rationale | [decisions.md#an-answer-is-a-choice-between-options-not-a-text-box](../decisions.md#an-answer-is-a-choice-between-options-not-a-text-box) |
+
+---
+
+## MUS-D-0056
+
+**The queue was rebuilt because the plan was routed around, not because it was wrong**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0010](questions.md#mus-q-0010)
+
+The surface met its brief. It was rebuilt because it was written from the brief when a published plan with an artboard for it already existed — the same route intake took, and the thing publishing the plan was meant to stop. docs/ui-surfaces.md said in its own first paragraph that intake had been built this way and should not have been, and the next surface was built the same way regardless. The record was not the safeguard.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-queue-was-rebuilt-because-the-plan-was-routed-around-not-because-it-was-wrong](../decisions.md#the-queue-was-rebuilt-because-the-plan-was-routed-around-not-because-it-was-wrong) |
+
+---
+
+## MUS-D-0057
+
+**The tab bar carries only the surfaces that exist**
+
+decision · 2026-08-21
+
+The artboard has four tabs: Sessions, Decisions, Intake, Records. Two of those surfaces are not built, and a tab pointing at one would be an unbuilt capability described as existing, which workflow.md gates against. The bar renders the two that exist and grows as the others arrive. The count is spelled out rather than shown as a badge, which is the drawing's own note: a badge holding one character reads as an unexplained dot at this size.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-tab-bar-carries-only-the-surfaces-that-exist](../decisions.md#the-tab-bar-carries-only-the-surfaces-that-exist) |
+
+---
+
+## MUS-D-0058
+
+**The tab bar is MUS-D-0041's, built two tabs at a time**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0012](questions.md#mus-q-0012)
+
+Corrects: [MUS-D-0057](#mus-d-0057)
+
+MUS-D-0057 is right about the code and wrong about its authority: it attributed four tabs to the drawing. Four tabs is MUS-D-0041, the owner's, taken against a recommendation of three — so reducing the bar to two overrode an owner decision and was written down instead of asked. Put to the owner on MUS-Q-0012, whose answer was two now, growing to four. MUS-D-0041 stands unchanged. This also corrects MUS-D-0053's claim that the tab bar arrives at milestone 4: a bar exists at milestone 3 on the queue, while the banner it also describes has not moved and still stands, because intake has no bar of its own.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-tab-bar-is-mus-d-0041s-built-two-tabs-at-a-time](../decisions.md#the-tab-bar-is-mus-d-0041s-built-two-tabs-at-a-time) |
+
+---
+
+## MUS-D-0059
+
+**The stack table gains a named exception rather than losing its rule**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0011](questions.md#mus-q-0011)
+
+Plan.md's stack table said the human interface is server-rendered HTML with no per-project client state, and that row is on main. MUS-Q-0008's WebSocket answer reverses it for one surface, prospectively, which makes it a falsified claim of a shipped milestone and therefore a reopening. The owner's answer on MUS-Q-0011: correct the row forward, no reopening. It now reads server-rendered by default with a client layer only where a surface streams, naming the exception rather than dropping the rule. Milestone 2 stays passed, and MUS-F-0019's reasoning survives because intake does not stream.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-stack-table-gains-a-named-exception-rather-than-losing-its-rule](../decisions.md#the-stack-table-gains-a-named-exception-rather-than-losing-its-rule) |
+
+---
+
+## MUS-D-0060
+
+**Milestone 4 is two milestones**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0009](questions.md#mus-q-0009)
+
+4a is the per-machine adapter, tmux supervision, and the answer delivered back into the session that raised it — the clause milestone 3 handed over. 4b is streaming a session to a browser tab, which is where the stack table's client-layer exception is spent. The answer landed two commits before this entry and changed nothing: Plan.md and the milestone records went on describing one undivided milestone, which is the same Plan-versus-records drift MUS-Q-0001 was raised about.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#milestone-4-is-two-milestones](../decisions.md#milestone-4-is-two-milestones) |
+
+---
+
+## MUS-D-0061
+
+**Three timestamps were typed rather than read**
+
+decision · 2026-08-21
+
+MUS-Q-0008, 0009 and 0010 recorded Surfaced 05:40 and Answered 05:46. The export that would have contained them ran at 09:25 and did not. Those times were passed to --at because the flag accepts them, not because anything was measured. That is the no-unmeasured-number gate applied to a clock, and worse than an unmeasured number because a timestamp reads as a reading by construction. The dates are right and the minutes were invented. Recorded rather than quietly adjusted, because a corrected fabrication and a real measurement look identical afterwards.
+
+| Field | Value |
+| --- | --- |
+| Found by | The queue rebuild's contract review, from commit times the export could not have produced |
+| Rationale | [decisions.md#three-timestamps-were-typed-rather-than-read](../decisions.md#three-timestamps-were-typed-rather-than-read) |
+
+---
+
+## MUS-D-0062
+
+**tmux is the source of truth for what is running**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0013](questions.md#mus-q-0013)
+
+The adapter keeps no table of sessions: listing is a live query against tmux, and the store holds only what outlives a session. Against mirroring into the store, which means two sources that can disagree and an insert-only log gaining a row every time a fact that is true for one second changes; and against a third store, which is against the plan's premise of one binary and one database. The cost, accepted rather than discovered: when the tmux server dies, every session dies with it and there is no second copy to reconstruct from.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#tmux-is-the-source-of-truth-for-what-is-running](../decisions.md#tmux-is-the-source-of-truth-for-what-is-running) |
+
+---
+
+## MUS-D-0063
+
+**Mustur can type into a session it started**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0014](questions.md#mus-q-0014)
+
+An answered decision reaches the session that raised it by tmux send-keys. At the far end it is indistinguishable from the owner having typed it, which is why the capability is named plainly rather than discovered later: Mustur can put words into an agent's input. Three limits, enforced rather than documented — it only types into a session carrying the mustur/ prefix, the text says which question it answers and that the owner answered it, and the only caller is the answer path. Sent with -l so an answer containing a tmux key name arrives as characters; Enter is a separate call or it would be typed as a word.
+
+| Field | Value |
+| --- | --- |
+| Not taken | Landing the answer in a file for the next mandated call, which the owner had already declined because it delivers to the next session rather than the blocked one |
+| Rationale | [decisions.md#mustur-can-type-into-a-session-it-started](../decisions.md#mustur-can-type-into-a-session-it-started) |
+
+---
+
+## MUS-D-0064
+
+**A project name may not address a window or a pane**
+
+decision · 2026-08-21
+
+tmux reads : and . as target separators, so a project called Mustur:0 would address a window rather than a session and send-keys -t would deliver somewhere nobody chose. Project names are letters, digits, dash and underscore, refused at the boundary rather than escaped.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-project-name-may-not-address-a-window-or-a-pane](../decisions.md#a-project-name-may-not-address-a-window-or-a-pane) |
+
+---
+
+## MUS-D-0065
+
+**An undelivered answer is still an answer**
+
+decision · 2026-08-21
+
+If the session has gone, or tmux is not there, or the pane died mid-write, the answer is recorded anyway and the record says what happened to the delivery. Refusing to record an answer that could not be carried would lose the one thing that was not recoverable in order to keep the record tidy about the one thing that was. A silent failure would leave an agent blocked on an answer that exists, which is this milestone's own failure one layer along.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#an-undelivered-answer-is-still-an-answer](../decisions.md#an-undelivered-answer-is-still-an-answer) |
+
+---
+
+## MUS-D-0066
+
+**Ownership is provenance, not a name**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0063](#mus-d-0063)
+
+The adapter filtered on the mustur/ name prefix and called that enforcement. A review broke it in one command: tmux new-session -s mustur/anything by hand, and Mustur listed it, typed into it and killed it. Start now sets a tmux user option on the session it creates and List returns only sessions carrying it; everything else goes through that filter. The prefix stays for legibility and is no longer what the rule rests on.
+
+| Field | Value |
+| --- | --- |
+| Confirmed | A hand-made mustur/zzfake was invisible to list and refused by stop, while a session Mustur started in the same tmux server was listed. tmux ls showed both |
+| Rationale | [decisions.md#ownership-is-provenance-not-a-name](../decisions.md#ownership-is-provenance-not-a-name) |
+
+---
+
+## MUS-D-0067
+
+**The word was supervises and the thing was not built**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0015](questions.md#mus-q-0015)
+
+Three places said the adapter supervises sessions and nothing did: no restart, no health check, no output capture, no notification when a session dies. The word is removed from every claim about what exists. Start instead checks the session is still there before reporting success, because tmux reports success whether or not the command survived — and it watches for a short window rather than asking once, since tmux does not reap synchronously and an immediate exit was still listed for a moment. That catches a command dying at once and is not supervision. Supervision moved to 4b with surviving a dropped connection, on the owner's answer.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-word-was-supervises-and-the-thing-was-not-built](../decisions.md#the-word-was-supervises-and-the-thing-was-not-built) |
+
+---
+
+## MUS-D-0068
+
+**An answer that reached the server is the owner's**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0065](#mus-d-0065)
+
+The web answer path used the request's context for both the delivery and the write, so a client disconnecting while tmux was being shelled out to cancelled the write too and the answer was lost entirely — question still open, no answer, no reason. A phone on a flaky link is the scenario this milestone names. The write is detached from the request now, and the delivery carries its own timeout so an unresponsive tmux cannot hold the answer unwritten. This is what MUS-D-0065 meant and did not achieve.
+
+| Field | Value |
+| --- | --- |
+| Confirmed | A test blocks in delivery, cancels the request, and asserts the answer is stored with a not-delivered reason |
+| Rationale | [decisions.md#an-answer-that-reached-the-server-is-the-owners](../decisions.md#an-answer-that-reached-the-server-is-the-owners) |
+
+---
+
+## MUS-D-0069
+
+**The session that raised a question and the session an answer can reach are different things**
+
+decision · 2026-08-21
+
+Milestone 4a redefined the Session field to mean the project so delivery could target it. Seven records already carried a Claude Code session id under that name, and the redefinition made every one wrong — silently, because a Claude session id passes the project-name check and was handed to tmux rather than refused. Session keeps its original meaning and records; Session project is the new field delivery targets, set by mustur ask --in. Redefining a field under records already written is a rewrite of the past disguised as a comment change.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-session-that-raised-a-question-and-the-session-an-answer-can-reach-are-different-things](../decisions.md#the-session-that-raised-a-question-and-the-session-an-answer-can-reach-are-different-things) |
+
+---
+
+## MUS-D-0070
+
+**There is no session send**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0063](#mus-d-0063)
+
+An operator verb taking arbitrary text made 'the only caller is the answer path' false in the same commit that claimed it. It is removed. Typing into an agent's input is a capability the answer path needs and nothing else does, and a person who genuinely wants to has tmux send-keys — as themselves rather than as Mustur.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#there-is-no-session-send](../decisions.md#there-is-no-session-send) |
+
+---
+
+## MUS-D-0071
+
+**The unit cannot have a private /tmp**
+
+decision · 2026-08-21
+
+PrivateTmp=yes gives the service its own /tmp, and tmux's socket is /tmp/tmux-$UID. Under that flag the service cannot reach the owner's tmux server at all, so every answer filed from the phone would have recorded not delivered while the code looked correct — the headline capability inert exactly where it ships. PrivateTmp=no; a hardening flag that silently removes the feature is worse than the hardening is worth, and the rest of the confinement stays.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 4a review, from the unit file rather than from the running service |
+| Rationale | [decisions.md#the-unit-cannot-have-a-private-tmp](../decisions.md#the-unit-cannot-have-a-private-tmp) |
+
+---
+
+## MUS-D-0072
+
+**v1 has eight surfaces, and the eighth was found by trying to build it**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0016](questions.md#mus-q-0016)
+
+docs/ui-surfaces.md listed seven surfaces and the published plan draws those seven. Milestone 4b streams a running session's output to a browser tab, and none of the seven is that: the session list says which sessions exist, this says what one of them is saying. The owner's answer was to draw it before building it, in a plan of its own. The gap was invisible from inside the plan and only appeared when a milestone tried to build against the surface and found nothing — the list was enumerated from the phone bar's tabs, and a session's output is not a tab.
+
+| Field | Value |
+| --- | --- |
+| Plan | https://plan.agent-native.com/plans/plan-6009f123020a4f58 |
+| Rationale | [decisions.md#v1-has-eight-surfaces-and-the-eighth-was-found-by-trying-to-build-it](../decisions.md#v1-has-eight-surfaces-and-the-eighth-was-found-by-trying-to-build-it) |
+
+---
+
+## MUS-D-0073
+
+**The standing instruction is what stopped 4b starting**
+
+decision · 2026-08-21
+
+The owner's answer after intake was that a plan is published for every remaining surface before any more are built. An earlier commit on this stack deleted that sentence while rewriting docs/ui-surfaces.md, and a review caught it and put it back. It earned its restoration immediately: it is the rule that stopped milestone 4b being written from a brief the way intake and the decision queue both were.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-standing-instruction-is-what-stopped-4b-starting](../decisions.md#the-standing-instruction-is-what-stopped-4b-starting) |
