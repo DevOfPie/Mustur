@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-16 record(s), by identifier.
+19 record(s), by identifier.
 
 ---
 
@@ -355,4 +355,73 @@ question · 2026-08-21
 | Surfaced | 2026-08-21 10:52 |
 | Answer | Add an artboard for it, then build. Extend the published plan with a session-output surface and a brief, put it to me, and build 4b from the drawing. |
 | Answered | 2026-08-21 10:55 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0017
+
+**How should sub-agents become visible on the session surface?**
+
+question · 2026-08-21
+
+A session that spawns three reviewers is one pane with three agents writing into it, unlabelled and interleaved with the parent. Mustur does not know a sub-agent exists: it shells out to a CLI and reads a pane. Every option is really an option for finding out.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4b's scope |
+| Option | One tmux window per sub-agent :: Structural and exact :: list-windows enumerates them and pipe-pane reads each independently, so status is real rather than inferred. Needs the CLI to let Mustur place a sub-agent into a window, which it does not do today. |
+| Option | Parse the parent pane for markers :: Works with any CLI :: A heuristic over prose that will be wrong sometimes, and a wrong sub-agent status reads as a fact. |
+| Option | Ship 4b without them, own milestone :: Honest about what is known :: The session surface lands with parent output only, and sub-agents get a milestone that starts by establishing whether the CLI can cooperate at all. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 23:14 |
+| Answer | Ship 4b without them, and make sub-agents their own milestone. It starts by establishing whether the CLI can cooperate at all. |
+| Answered | 2026-08-21 23:14 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0018
+
+**Should typing into a session be armed separately from watching it?**
+
+question · 2026-08-21
+
+The surface carries an agent's output out and the owner's keystrokes in. Read and write share one connection unless deliberately separated. The owner named the connection's security a first-order concern.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | the session surface's input path |
+| Option | Read-only by default, unlock to type :: A second line of defence :: A tab left open in a pocket, or a socket opened by something unintended, cannot type. Costs one tap when a reply is wanted. |
+| Option | Always writable, as drawn :: One tap from watching to answering :: Relies entirely on Access and the WebSocket origin check being right, with nothing behind them. |
+| Option | Armed on desktop, read-only on the phone :: Splits the risk by device :: Removes the ability to answer from the one device this project exists for. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 23:14 |
+| Answer | Always writable, as drawn. The embedded composer keeps its one tap; Access and the origin check are the defence. |
+| Answered | 2026-08-21 23:14 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0019
+
+**Where does a session's exit get recorded?**
+
+question · 2026-08-21
+
+Supervision notices an exit and records it. The store is insert-only and exports to markdown, and session output is explicitly not a record: not addressable, not exported.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what supervision writes |
+| Option | The surface and the service log :: Nothing in records/ :: An exit is an event, not something a reader cites. Keeps the store for what belongs in it. |
+| Option | A finding when a session exits non-zero :: Crashes are arguably worth keeping :: Also a way to fill findings.md with noise the first time something is flaky. |
+| Option | A finding for every exit :: Complete history :: The fastest route to a records tree nobody reads. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 23:14 |
+| Answer | The surface and the service log, nothing in records/. An exit is an event, not a record anyone cites. |
+| Answered | 2026-08-21 23:14 |
 | Delivered | not delivered: the question names no session |
