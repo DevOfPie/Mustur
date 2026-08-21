@@ -65,6 +65,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The idea inbox is a routing target inside Mustur](#the-idea-inbox-is-a-routing-target-inside-mustur) | The fallback destination cannot be another repository |
 | [A jot is filed without a decision](#a-jot-is-filed-without-a-decision) | The title is derived and the destination is guessed |
 | [The unit is enabled, and the entry saying it is not stays put](#the-unit-is-enabled-and-the-entry-saying-it-is-not-stays-put) | A later entry corrects an earlier one; neither is edited |
+| [Injection belongs to the milestone that owns sessions](#injection-belongs-to-the-milestone-that-owns-sessions) | Milestone 3 could not honour a clause needing milestone 4 |
+| [A question is its own kind, and only some become decisions](#a-question-is-its-own-kind-and-only-some-become-decisions) | Why not a status field on an append-only record |
+| [The gate turns on being asked, not on being answered](#the-gate-turns-on-being-asked-not-on-being-answered) | An absent owner must not stop the work |
 
 ---
 
@@ -949,3 +952,78 @@ What did get measured, with its method, is the loopback leg: ten filings by
 `curl` against a `--export` server, `%{time_total}` each, median 1.71 ms and
 worst 2.10 ms. That replaces a bare **20 ms** which named no instrument and was
 cited to a record whose Evidence field is empty.
+
+## 2026-08-21 — decisions taken while building milestone 3
+
+### Injection belongs to the milestone that owns sessions
+
+Milestone 3's done-when ended "and the answer is injected back into the session
+that raised it". Nothing in milestone 3 can do that. [The decision that sessions
+are supervised through tmux](#sessions-are-supervised-through-tmux) fixes that
+Mustur never attaches to a session it did not start — the arrow only points the
+other way — and the adapter that starts sessions arrives at milestone 4.
+
+So the clause required milestone 4's machinery to sit inside milestone 3. That
+is a conflict between [Plan.md](Plan.md)'s milestone ordering and this file, and
+[workflow.md](workflow.md) says a conflict between them is a bug to report
+rather than a thing to pick. It went to the owner as a prompt.
+
+**Their answer: split it.** Milestone 3 is the block and the queue. Delivering
+an answer back into the raising session moves to milestone 4, beside the
+adapter that makes it possible. Both rows in Plan.md now say so.
+
+What this costs is worth naming: until milestone 4, an answer sits in the store
+and on the queue page, and the agent that asked has to be told by whoever is
+running it. The gate does not depend on the answer arriving — it turns on the
+question having been *asked* — so nothing is blocked by the gap. What is lost is
+the round trip, not the enforcement.
+
+The alternative the owner did not take was pulling the adapter into milestone 3,
+which honours the sentence as written and takes the core of milestone 4 with it.
+A third option, answering through the next `mustur_route` call, was offered and
+not taken; it would have kept the round trip without an adapter, at the price of
+the answer waiting for the next session rather than reaching the blocked one.
+
+### A question is its own kind, and only some become decisions
+
+An open question needed somewhere to live. The owner's first instinct was a
+status field on decision records — questions become decisions, so let the record
+start open and close answered.
+
+Argued against, and the owner took the argument. Three things break it. Some
+answers are instructions rather than decisions: two of the four prompts raised
+during the milestone 2c review were about what to do next, and neither is a
+durable statement about why the project is the way it is. Some questions never
+resolve at all — withdrawn, overtaken, or never answered because the owner was
+away — and a decision record that never becomes a decision is a contradiction.
+And this file is append-only, by [workflow.md](workflow.md)'s standing rules: a status flipping from
+open to answered is an edit to the one kind that forbids edits. Findings are
+amended freely, so the pattern exists everywhere except the one place this
+would have put it.
+
+So `MUS-Q-…`, exported to `records/questions.md`, carrying open, surfaced and
+answered. When an answer is a real decision, a decision entry is appended citing
+the question. When it was only an instruction, nothing is, and the question
+still says what was asked and what came back.
+
+The cost is a role letter and the export, verify and adoption surface that comes
+with it. There is [a queue line](queue.md) asking whether Mustur should be
+adding record kinds at all, and this is the second one to arrive without that
+question being settled.
+
+### The gate turns on being asked, not on being answered
+
+`make check` fails while an open question has never been surfaced as a prompt.
+It does not fail on a question that was surfaced and is still waiting.
+
+The distinction is the whole design. An owner who is asleep, or on a plane, must
+not stop the work — and a gate that waited for answers would teach whoever hit
+it to stop asking. What is being enforced is that the question reached the
+surface where questions get seen, which is the failure the milestone is named
+after: three open decisions written into a pull request body, with options and
+consequences, that the owner correctly called useless.
+
+A missing store **skips and says so**. It must never pass: "there was no store
+to read" and "no question was buried" are different facts, and reporting the
+second when the first is true is the substitution `DL-03` already made once in
+this repository, in CI, on a shallow clone.

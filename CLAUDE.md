@@ -29,6 +29,13 @@ Three rules bind every session in this repository:
   a report or a pull request body. A pull request out of draft says work needs
   review; it never asks a decision.
 
+  This one is enforced rather than trusted. Raise it with `mustur ask --title
+  "..." --blocks "..."`, put it in a prompt, then `mustur surfaced <ID>`.
+  `make check` fails while any open question has never been surfaced, so work
+  cannot be reported complete around one. **An answer is not required to
+  proceed** — the owner may be away, and stopping for an absent owner is the
+  cost this refuses to pay. Being asked is what the gate wants.
+
 ## Mustur
 
 This repository is registered with Mustur, which holds its routing and its

@@ -9,10 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| decision | 45 | [decisions.md](decisions.md) |
+| question | 2 | [questions.md](questions.md) |
+| decision | 48 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 12 | [work-units/index.md](work-units/index.md) |
+| work-unit | 14 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -40,6 +41,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0010](work-units/MUS-W-0010.md#mus-w-0010) | work-unit | The intake surface |
 | [MUS-W-0011](work-units/MUS-W-0011.md#mus-w-0011) | work-unit | A write path into the store |
 | [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012) | work-unit | A visual plan for all seven surfaces |
+| [MUS-W-0013](work-units/MUS-W-0013.md#mus-w-0013) | work-unit | The question lifecycle, and the gate that cannot be reported around |
+| [MUS-W-0014](work-units/MUS-W-0014.md#mus-w-0014) | work-unit | The decision queue |
+| [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
+| [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -85,6 +90,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0043](decisions.md#mus-d-0043) | decision | The audit is a page |
 | [MUS-D-0044](decisions.md#mus-d-0044) | decision | Mustur runs as a systemd user unit |
 | [MUS-D-0045](decisions.md#mus-d-0045) | decision | The unit is enabled, and MUS-D-0044 stands uncorrected in place |
+| [MUS-D-0046](decisions.md#mus-d-0046) | decision | Injection belongs to the milestone that owns sessions |
+| [MUS-D-0047](decisions.md#mus-d-0047) | decision | A question is its own kind, and only some become decisions |
+| [MUS-D-0048](decisions.md#mus-d-0048) | decision | The gate turns on being asked, not on being answered |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

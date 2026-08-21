@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-45 record(s), by identifier.
+48 record(s), by identifier.
 
 ## Index
 
@@ -57,6 +57,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0043](#mus-d-0043) | The audit is a page | 2026-08-20 |
 | [MUS-D-0044](#mus-d-0044) | Mustur runs as a systemd user unit | 2026-08-21 |
 | [MUS-D-0045](#mus-d-0045) | The unit is enabled, and MUS-D-0044 stands uncorrected in place | 2026-08-21 |
+| [MUS-D-0046](#mus-d-0046) | Injection belongs to the milestone that owns sessions | 2026-08-21 |
+| [MUS-D-0047](#mus-d-0047) | A question is its own kind, and only some become decisions | 2026-08-21 |
+| [MUS-D-0048](#mus-d-0048) | The gate turns on being asked, not on being answered | 2026-08-21 |
 
 ---
 
@@ -731,3 +734,51 @@ Two smaller corrections ride with it. The remark in decisions.md, under the 2026
 | --- | --- |
 | Supersedes | MUS-D-0044's not-enabled clause, and the remark in decisions.md that the fifteen-second claim cannot be measured until the ingress exists |
 | Prose | decisions.md, under 'The unit is enabled, and the entry saying it is not stays put' |
+
+---
+
+## MUS-D-0046
+
+**Injection belongs to the milestone that owns sessions**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0001](questions.md#mus-q-0001)
+
+Milestone 3's done-when required machinery milestone 4 owns: an answer cannot reach a session Mustur did not start, and nothing starts sessions until the adapter does. The owner split it on a prompt. Milestone 3 is the block and the queue; delivering an answer back into the raising session is milestone 4's, beside the adapter that makes it possible. Until then an answer sits in the store and on the queue page, which blocks nothing, because the gate turns on the question having been asked rather than answered.
+
+| Field | Value |
+| --- | --- |
+| Prose | decisions.md, under 'Injection belongs to the milestone that owns sessions' |
+| Not taken | Pulling the adapter into milestone 3, and answering through the next mustur_route call |
+
+---
+
+## MUS-D-0047
+
+**A question is its own kind, and only some become decisions**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0002](questions.md#mus-q-0002)
+
+Open questions are MUS-Q, exported to records/questions.md, carrying open, surfaced and answered. Not a status field on decision records, for three reasons the owner accepted: some answers are instructions rather than decisions, some questions never resolve at all, and decisions.md is append-only so a status flipping open to answered is an edit to the one kind that forbids edits. When an answer is a real decision a decision entry is appended citing the question; when it was only an instruction, nothing is.
+
+| Field | Value |
+| --- | --- |
+| Prose | decisions.md, under 'A question is its own kind, and only some become decisions' |
+| Costs | A role letter, and the export and adoption surface a new kind brings |
+
+---
+
+## MUS-D-0048
+
+**The gate turns on being asked, not on being answered**
+
+decision · 2026-08-21
+
+make check fails while an open question has never been surfaced as a prompt, and passes on one that was surfaced and is still waiting. An owner who is away must not stop the work, and a gate that waited for answers would teach whoever hit it to stop asking. A missing store skips and says so rather than passing, because 'there was no store to read' and 'no question was buried' are different facts.
+
+| Field | Value |
+| --- | --- |
+| Prose | decisions.md, under 'The gate turns on being asked, not on being answered' |
