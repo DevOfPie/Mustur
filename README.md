@@ -13,8 +13,10 @@ acceptance, and nothing below them is built.** What exists is one binary that
 can hold this project's records and routing, serve them to a session through a
 single mandated tool call, audit its own records against the conventions this
 repository declares, and take a jot into its own findings queue through one box.
-That box is on loopback: nothing reaches it from a phone until the ingress in
-[docs/ingress.md](docs/ingress.md) exists, which is the owner's to apply.
+That box is published at `mustur.devofpie.com`, behind Cloudflare Access and
+answered by a service that starts at boot; [docs/ingress.md](docs/ingress.md) is
+what it took. The one sentence still unproven is 2c's own — a jot filed *from a
+phone* — because only the owner can get through Access.
 
 | | |
 | --- | --- |

@@ -7,8 +7,10 @@ work is done, and [decisions.md](decisions.md) for why.
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
-nothing without a StrucGu checkout; the intake box is on loopback and reaches no
-phone. What is unconditionally here is [records/](records/README.md). Nothing
+nothing without a StrucGu checkout. On this machine the intake box is published
+at `mustur.devofpie.com` behind Cloudflare Access; that is a deployment, not
+something a clone inherits. What is unconditionally here is
+[records/](records/README.md). Nothing
 below milestone 2c is built; do not describe any of it in the present tense.
 
 Three rules bind every session in this repository:

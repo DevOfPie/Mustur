@@ -383,9 +383,9 @@ func cmdVerify(args []string) error {
 func cmdServe(args []string) error {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	db := dbFlag(fs)
-	// Loopback only. The server is unauthenticated, which is sound while
-	// nothing but this machine can reach it and stops being sound the day the
-	// ingress rule exists.
+	// Loopback only. The server is unauthenticated, so whatever publishes it
+	// carries the identity: on mustur.devofpie.com that is Cloudflare Access,
+	// and it covers /mcp as well as the intake box, both being on this mux.
 	addr := fs.String("addr", "127.0.0.1:7777", "address to listen on; loopback only until identity is in front of it")
 	project := fs.String("project", "MUS", "identifier prefix for records this server writes")
 	// Without this the surface writes the store and nothing else, and the file

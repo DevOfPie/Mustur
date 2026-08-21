@@ -201,7 +201,7 @@ Neither 2b nor 2c is accepted. Nothing below 2c is built.**
 | 1 | passed 2026-08-19, 20 of 20 against a rule of 18 of 20 | [the investigation](docs/investigations/0001-mandated-tool-call.md) |
 | 2 | passed 2026-08-20, reviewed by three agents that did not build it and every finding dispositioned | [the records](records/README.md), and the `mustur_route` tool they are served by |
 | 2b | built and reviewed 2026-08-20; awaiting acceptance | `make audit` over this repository, and 344 expected states across 37 of StrucGu's fixture trees |
-| 2c | built and reviewed 2026-08-20. Reachable and gated 2026-08-21: `mustur.devofpie.com` behind Cloudflare Access, answered by a service that starts at boot. **The one sentence still unproven is the milestone's own** — a jot from a phone — which only the owner can test, because only the owner can get through Access | `MUS-F-0022`, filed through the running service in 20 ms and carried into `records/findings.md` by it; [docs/ingress.md](docs/ingress.md) |
+| 2c | built and reviewed 2026-08-20. Reachable and gated 2026-08-21: `mustur.devofpie.com` behind Cloudflare Access, answered by a service that starts at boot. **The one sentence still unproven is the milestone's own** — a jot from a phone — which only the owner can test, because only the owner can get through Access | `MUS-F-0022`, filed through the running service and carried into `records/findings.md` by it; ten filings on loopback at a median of 1.71 ms, worst 2.10 ms, method in [docs/ingress.md](docs/ingress.md) |
 | 3 onwards | not started | |
 
 *Passed* is a verdict acceptance makes, and this file does not make it early —
@@ -214,8 +214,9 @@ SQLite store that only accepts inserts, exports them to
 serves them to a session through one tool call that the clause at the bottom of
 [CLAUDE.md](CLAUDE.md) mandates, audits this repository against the StrucGu
 modules it declares, and takes a jot into its own findings queue through one
-box on loopback. There is no surface reachable from a phone, no adapter, no
-session Mustur owns, and no second project.
+box, which a tunnel and a Cloudflare Access application now publish at
+`mustur.devofpie.com`. There is no adapter, no session Mustur owns, and no
+second project.
 
 This file began as the plan seed from
 [agent-workflow-web-platform](https://github.com/DevOfPie/IdeaWarehouse/blob/main/ideas/agent-workflow-web-platform.md),
