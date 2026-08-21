@@ -7,9 +7,9 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check verify-records conformance \
-        build serve seed export audit install install-service workflow-proposals help
+        questions build serve seed export audit install install-service workflow-proposals help
 
-check: check-links check-adoption shellcheck go-check verify-records conformance ## Every commit gate this tree can enforce mechanically
+check: check-links check-adoption shellcheck go-check verify-records conformance questions ## Every commit gate this tree can enforce mechanically
 
 check-links: ## Tracked markdown: links and anchors resolve, table rows match their headers
 	@scripts/check-links.sh
@@ -36,6 +36,18 @@ conformance: ## How many of StrucGu's fixture states this checker matched, out l
 	  status=$$?; \
 	  echo "$$out" | grep -E "fixture trees|SKIP|FAIL" || true; \
 	  exit $$status
+
+# A missing store SKIPS and says so. It must never pass: "there was no store to
+# read" and "no question was buried" are different facts, and reporting the
+# second when the first is true is the substitution DL-03 already made once here.
+questions: ## No open question was left unsurfaced as a prompt
+	@db="$${MUSTUR_DB:-$$HOME/.local/share/mustur/mustur.db}"; \
+	  if [ ! -f "$$db" ]; then \
+	    echo "  skip  no store at $$db — the buried-question gate did not run"; \
+	  else \
+	    go run ./cmd/mustur questions --gate \
+	      && echo "  ok    no open question was left unsurfaced"; \
+	  fi
 
 verify-records: ## The committed export cites only identifiers it defines
 	@go run ./cmd/mustur verify --records records

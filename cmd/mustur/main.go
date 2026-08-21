@@ -39,6 +39,10 @@ const usage = `mustur — records and routing for one project
   mustur rebuild  [--db PATH]                 re-derive the materialized latest from the log
   mustur add KIND --title T [...]             write one record into the store
   mustur amend ID --title T [...]             correct one, without losing what it said
+  mustur ask      --title T [--blocks W]      raise a question the owner has to answer
+  mustur surfaced ID                          record that it reached a prompt
+  mustur answer   ID --answer A               record what the owner said, or --withdraw
+  mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
@@ -85,6 +89,14 @@ func run(argv []string) error {
 		return cmdWrite(args, "create")
 	case "amend":
 		return cmdWrite(args, "amend")
+	case "ask":
+		return cmdAsk(args)
+	case "surfaced":
+		return cmdSurfaced(args)
+	case "answer":
+		return cmdAnswer(args)
+	case "questions":
+		return cmdQuestions(args)
 	case "audit":
 		return cmdAudit(args)
 	case "version", "--version", "-version":

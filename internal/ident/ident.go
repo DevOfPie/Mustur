@@ -23,6 +23,7 @@ type Role string
 
 const (
 	Decision      Role = "D"
+	Question      Role = "Q" // Open, and the owner's. A decision is what some of them become.
 	Finding       Role = "F"
 	Investigation Role = "I"
 	WorkUnit      Role = "W"
@@ -33,10 +34,11 @@ const (
 )
 
 // Roles lists every role letter in the order records are presented.
-var Roles = []Role{Milestone, WorkUnit, Decision, Finding, Investigation, Repository, Machine, Project}
+var Roles = []Role{Milestone, WorkUnit, Question, Decision, Finding, Investigation, Repository, Machine, Project}
 
 var roleNames = map[Role]string{
 	Decision:      "decision",
+	Question:      "question",
 	Finding:       "finding",
 	Investigation: "investigation",
 	WorkUnit:      "work-unit",
