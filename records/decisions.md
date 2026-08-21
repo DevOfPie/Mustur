@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-54 record(s), by identifier.
+57 record(s), by identifier.
 
 ## Index
 
@@ -66,6 +66,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0052](#mus-d-0052) | A question may be withdrawn by its raiser, never answered by them | 2026-08-21 |
 | [MUS-D-0053](#mus-d-0053) | The decision queue's banner is interim, and MUS-D-0041 still stands | 2026-08-21 |
 | [MUS-D-0054](#mus-d-0054) | The tool call derives its kind list rather than restating it | 2026-08-21 |
+| [MUS-D-0055](#mus-d-0055) | An answer is a choice between options, not a text box | 2026-08-21 |
+| [MUS-D-0056](#mus-d-0056) | The queue was rebuilt because the plan was routed around, not because it was wrong | 2026-08-21 |
+| [MUS-D-0057](#mus-d-0057) | The tab bar carries only the surfaces that exist | 2026-08-21 |
 
 ---
 
@@ -892,3 +895,50 @@ Adding the question role letter silently falsified a claim milestone 2 shipped: 
 | --- | --- |
 | Found by | The milestone 3 review, measured on the wire rather than inferred |
 | Rationale | [decisions.md#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one](../decisions.md#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one) |
+
+---
+
+## MUS-D-0055
+
+**An answer is a choice between options, not a text box**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0010](questions.md#mus-q-0010)
+
+The decision queue offers a short list of options, each with one line saying what it costs and one of them marked recommended, with the paragraph behind each shown only when asked for. A text box made the owner reconstruct the options the asker already had — an agent blocked on a decision has just finished weighing the alternatives, which is why it is blocked, and discarding them at the surface means the work is done twice. Free text stays beneath the options and beats a chosen one when both are sent, because the owner wanting to say something the list does not contain is the case a list is worst at.
+
+| Field | Value |
+| --- | --- |
+| Stored as | Repeated Option fields, 'Label :: one line :: the paragraph'. The separator is not a pipe, which would break the table the export renders these into |
+| Rationale | [decisions.md#an-answer-is-a-choice-between-options-not-a-text-box](../decisions.md#an-answer-is-a-choice-between-options-not-a-text-box) |
+
+---
+
+## MUS-D-0056
+
+**The queue was rebuilt because the plan was routed around, not because it was wrong**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0010](questions.md#mus-q-0010)
+
+The surface met its brief. It was rebuilt because it was written from the brief when a published plan with an artboard for it already existed — the same route intake took, and the thing publishing the plan was meant to stop. docs/ui-surfaces.md said in its own first paragraph that intake had been built this way and should not have been, and the next surface was built the same way regardless. The record was not the safeguard.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-queue-was-rebuilt-because-the-plan-was-routed-around-not-because-it-was-wrong](../decisions.md#the-queue-was-rebuilt-because-the-plan-was-routed-around-not-because-it-was-wrong) |
+
+---
+
+## MUS-D-0057
+
+**The tab bar carries only the surfaces that exist**
+
+decision · 2026-08-21
+
+The artboard has four tabs: Sessions, Decisions, Intake, Records. Two of those surfaces are not built, and a tab pointing at one would be an unbuilt capability described as existing, which workflow.md gates against. The bar renders the two that exist and grows as the others arrive. The count is spelled out rather than shown as a badge, which is the drawing's own note: a badge holding one character reads as an unexplained dot at this size.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-tab-bar-carries-only-the-surfaces-that-exist](../decisions.md#the-tab-bar-carries-only-the-surfaces-that-exist) |

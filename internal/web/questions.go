@@ -1,15 +1,28 @@
 package web
 
-// The decision queue. Where a blocked agent's question arrives and where the
-// owner answers it, from whatever device is to hand.
+// The decision queue, built from its artboard in
+// https://plan.agent-native.com/plans/plan-4827b50a72674a22 rather than from
+// the brief in docs/ui-surfaces.md. The first version was written from the
+// brief, which is the route intake took and the thing publishing the plan was
+// meant to stop; the owner's answer on MUS-Q-0010 was to rebuild it from the
+// drawing.
 //
-// The interaction that must not fail, from docs/ui-surfaces.md: **an open
-// question is visible without hunting for it**, and answering it is one action.
-// An agent is blocked until it is answered, so latency here is work stopped —
-// which is why the answer box is on the list rather than behind a tap into a
-// detail page, and why what each question blocks is shown next to it. The owner
-// has to be able to tell a question holding up a milestone from one holding up
-// a sentence without opening either.
+// What the drawing settles, and the brief did not:
+//
+//   - **What is blocked comes first**, above the question, because that is what
+//     tells a milestone-stopping question from a sentence-stopping one.
+//   - **Answers are options**, not a text box. A well-put decision arrives as a
+//     short list with what each one costs; a box made the owner reconstruct the
+//     options the asker already had. One may be marked recommended.
+//   - **Each option expands in place** — one line up front, the paragraph
+//     behind it only when asked. That is MUS-D-0043's rule about what detail
+//     costs, applied to a surface rather than to a session.
+//   - **One question per screen**, not a list. The queue is short by
+//     construction and the screen is a phone.
+//   - **Answering is one tap, above the bar rather than inside it.**
+//
+// The expansion is a <details> element, so it costs no script — the constraint
+// every surface inherits survives the redesign intact.
 
 import (
 	"context"
@@ -61,18 +74,28 @@ func (q *Questions) actor(r *http.Request) string {
 	return q.Actor
 }
 
+type queuedOption struct {
+	Label       string
+	Line        string
+	Detail      string
+	Recommended bool
+}
+
 type queued struct {
 	ID       string
 	Title    string
 	Body     string
 	Blocks   string
-	Raised   string
+	Asked    string
+	Needed   bool
 	Surfaced bool
+	Options  []queuedOption
 }
 
 type queuePage struct {
 	Project  string
 	Open     []queued
+	OpenN    int
 	Answered string
 	Error    string
 }
@@ -88,11 +111,18 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 			ID:       r.ID,
 			Title:    r.Title,
 			Body:     strings.TrimSpace(r.Body),
-			Raised:   r.At,
+			Asked:    r.At,
+			Needed:   question.Needed(r),
 			Surfaced: question.Surfaced(r),
 		}
 		if b, ok := r.Get(question.FieldBlocks); ok {
 			item.Blocks = strings.TrimSpace(b)
+		}
+		for _, o := range question.Options(r) {
+			item.Options = append(item.Options, queuedOption{
+				Label: o.Label, Line: o.Line, Detail: o.Detail,
+				Recommended: o.IsRecommended(),
+			})
 		}
 		out = append(out, item)
 	}
@@ -108,6 +138,7 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 	page := queuePage{
 		Project:  q.Project,
 		Open:     openQs,
+		OpenN:    len(openQs),
 		Answered: r.URL.Query().Get("answered"),
 		Error:    r.URL.Query().Get("error"),
 	}
@@ -125,14 +156,19 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := strings.TrimSpace(r.PostFormValue("id"))
-	text := strings.TrimSpace(r.PostFormValue("answer"))
 	withdraw := r.PostFormValue("withdraw") != ""
+	// A chosen option answers the question; free text answers one that offered
+	// none, and overrides a choice when the owner wants to say something else.
+	text := strings.TrimSpace(r.PostFormValue("answer"))
+	if text == "" {
+		text = strings.TrimSpace(r.PostFormValue("option"))
+	}
 	if id == "" {
 		q.redirect(w, r, "", "no question named")
 		return
 	}
 	if text == "" && !withdraw {
-		q.redirect(w, r, "", "an empty answer is not an answer")
+		q.redirect(w, r, "", "pick an option or write an answer")
 		return
 	}
 
@@ -192,9 +228,7 @@ func (q *Questions) redirect(w http.ResponseWriter, r *http.Request, answered, p
 	http.Redirect(w, r, u, http.StatusSeeOther)
 }
 
-// OpenCount is how many questions are waiting, for the banner the intake box
-// carries. A queue nobody is looking at is the failure this milestone names, so
-// the count travels to whatever surface the owner did open.
+// OpenCount is how many questions are waiting, for the count the tab carries.
 func OpenCount(ctx context.Context, s *store.Store) int {
 	records, err := s.List(ctx, "")
 	if err != nil {
@@ -203,9 +237,14 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 	return len(question.Open(records))
 }
 
-// Same rules as the intake box: no stylesheet, no script, no font, no image.
-// Everything a phone off the home network has to fetch is another thing between
-// the owner and an answer, and an unanswered question is an agent stopped.
+// The tab bar. The drawing has four — Sessions, Decisions, Intake, Records —
+// and two of those surfaces do not exist. A tab that goes nowhere would be an
+// unbuilt capability described as existing, which is a gate in workflow.md, so
+// only the built ones are rendered. The bar grows as they arrive.
+//
+// The count is spelled out rather than shown as a badge: a badge holding one
+// character reads as an unexplained dot at this size. That is the drawing's own
+// note, and it applies to the two-tab version exactly as much.
 var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <html lang="en">
 <head>
@@ -213,56 +252,108 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mustur — decisions</title>
 <style>
-  :root { color-scheme: light dark; --edge: #8884; }
-  body { font: 17px/1.5 system-ui, sans-serif; margin: 0; padding: 1rem;
-         max-width: 40rem; margin-inline: auto; }
-  h1 { font-size: 1rem; font-weight: 600; margin: 0 0 .75rem; opacity: .7; }
-  .said { margin: .9rem 0; padding: .6rem .8rem; border-left: 3px solid var(--edge); }
-  .q { border-top: 1px solid var(--edge); padding: 1rem 0; }
-  .q h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 .35rem; }
-  .ctx { opacity: .75; font-size: .92em; margin: 0 0 .5rem; }
-  /* What it blocks sits above the answer box, not below it: the owner decides
-     how much care a question deserves before they start typing, not after. */
-  .blocks { font-size: .85em; opacity: .8; margin: 0 0 .5rem; }
-  .id { font-size: .8em; opacity: .55; }
+  :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8;
+          --accent-soft: #6a8fd820; }
+  body { font: 17px/1.5 system-ui, sans-serif; margin: 0;
+         max-width: 40rem; margin-inline: auto;
+         display: flex; flex-direction: column; min-height: 100vh; }
+  header { padding: .75rem 1rem; border-bottom: 1.4px solid var(--edge);
+           display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
+  header strong { font-size: 1rem; }
+  header .n { margin-left: auto; opacity: .65; font-size: .85em; }
+  main { flex: 1; padding: 1rem; }
+  .said { margin: 0 0 .9rem; padding: .6rem .8rem; border-left: 3px solid var(--edge); }
+  /* What is blocked comes first, above the question. It is what separates a
+     milestone-stopping question from a sentence-stopping one. */
+  .pills { display: flex; gap: .4rem; overflow-x: auto; white-space: nowrap;
+           margin-bottom: .6rem; }
+  .pill { flex: 0 0 auto; border: 1px solid var(--edge); border-radius: 999px;
+          padding: .2rem .6rem; font-size: .8em; }
+  .pill.accent { border-color: var(--accent); background: var(--accent-soft); }
+  h2 { margin: 0 0 .25rem; font-size: 1.15rem; }
+  .asked { display: block; opacity: .6; font-size: .82em; margin-bottom: .8rem; }
+  .ctx { margin: 0 0 1rem; opacity: .85; font-size: .95em; }
+  /* One line up front, the paragraph behind it only when asked for. <details>
+     does that with no script, which keeps the constraint every surface
+     inherits. */
+  .opt { border: 1px solid var(--edge); border-radius: .5rem; padding: .1rem .7rem;
+         margin-bottom: .6rem; }
+  .opt[open] { border-color: var(--accent); }
+  .opt > summary { list-style: none; cursor: pointer; padding: .6rem 0;
+                   display: flex; gap: .6rem; align-items: flex-start; }
+  .opt > summary::-webkit-details-marker { display: none; }
+  .opt .lbl { flex: 1; min-width: 0; }
+  .opt .line { display: block; opacity: .7; font-size: .85em; }
+  .opt .more { flex: 0 0 auto; opacity: .5; font-size: .85em; }
+  .opt p { margin: 0 0 .7rem; font-size: .92em; }
+  .choose { display: flex; gap: .5rem; align-items: center; padding: .1rem 0 .6rem; }
   input[type=text] { width: 100%; font: inherit; padding: .6rem;
              border: 1px solid var(--edge); border-radius: .5rem;
              background: transparent; color: inherit; box-sizing: border-box; }
-  button { font: inherit; padding: .6rem 1.2rem; margin-top: .5rem;
-           border: 1px solid var(--edge); border-radius: .5rem;
-           background: transparent; color: inherit; }
-  button.wide { width: 100%; }
-  .drop { opacity: .6; font-size: .85em; margin-top: .4rem; }
-  .none { opacity: .6; margin-top: 1.5rem; }
-  .unsurfaced { font-size: .8em; opacity: .7; }
-  nav { margin-top: 2rem; font-size: .9em; opacity: .7; }
+  button { font: inherit; padding: .65rem 1.2rem; border: 1px solid var(--edge);
+           border-radius: .5rem; background: transparent; color: inherit; }
+  /* Answering is one tap, above the bar rather than inside it. */
+  button.primary { width: 100%; margin-top: .8rem; border-color: var(--accent);
+                   background: var(--accent-soft); }
+  .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem; }
+  .id { opacity: .5; font-size: .78em; }
+  .drop button { font-size: .85em; padding: .35rem .8rem; margin-left: auto; }
+  .none { opacity: .6; padding: 2rem 0; text-align: center; }
+  hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
+  nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap; }
+  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
+          text-decoration: none; color: inherit; opacity: .6; }
+  nav a.here { opacity: 1; font-weight: 600; }
 </style>
 </head>
 <body>
-<h1>Mustur — {{.Project}} — decisions</h1>
+<header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span></header>
+<main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
 {{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.</p>{{end}}
 {{if .Open}}
-{{range .Open}}
-<div class="q">
-  <h2>{{.Title}}</h2>
-  {{if .Body}}<p class="ctx">{{.Body}}</p>{{end}}
-  {{if .Blocks}}<p class="blocks">Blocks: {{.Blocks}}</p>{{end}}
-  <form method="post" action="/questions">
-    <input type="hidden" name="id" value="{{.ID}}">
-    <input type="text" name="answer" placeholder="Your answer" autocomplete="off">
-    <button class="wide" type="submit">Answer</button>
-    <div class="drop">
-      <span class="id">{{.ID}} · raised {{.Raised}}{{if not .Surfaced}} · <span class="unsurfaced">never surfaced as a prompt</span>{{end}}</span>
-      <button type="submit" name="withdraw" value="1">Withdraw</button>
+{{range $i, $q := .Open}}
+{{if $i}}<hr>{{end}}
+<form method="post" action="/questions">
+  <input type="hidden" name="id" value="{{$q.ID}}">
+  <div class="pills">
+    {{if $q.Blocks}}<span class="pill accent">blocks {{$q.Blocks}}</span>{{end}}
+    {{if $q.Needed}}<span class="pill">answer needed to proceed</span>{{end}}
+    {{if not $q.Surfaced}}<span class="pill">never surfaced</span>{{end}}
+  </div>
+  <h2>{{$q.Title}}</h2>
+  <small class="asked">Asked {{$q.Asked}}</small>
+  {{if $q.Body}}<p class="ctx">{{$q.Body}}</p>{{end}}
+  {{range $q.Options}}
+  <details class="opt">
+    <summary>
+      <span class="lbl"><strong>{{.Label}}</strong>
+        {{if .Line}}<span class="line">{{.Line}}</span>{{end}}</span>
+      {{if .Detail}}<span class="more">more</span>{{end}}
+    </summary>
+    {{if .Detail}}<p>{{.Detail}}</p>{{end}}
+    <div class="choose">
+      <label><input type="radio" name="option" value="{{.Label}}"> Choose this</label>
     </div>
-  </form>
-</div>
+  </details>
+  {{end}}
+  <input type="text" name="answer" autocomplete="off"
+         placeholder="{{if $q.Options}}Or say something else{{else}}Your answer{{end}}">
+  <button class="primary" type="submit">Answer</button>
+  <div class="drop">
+    <span class="id">{{$q.ID}}</span>
+    <button type="submit" name="withdraw" value="1">Withdraw</button>
+  </div>
+</form>
 {{end}}
 {{else}}
 <p class="none">Nothing waiting on you.</p>
 {{end}}
-<nav><a href="/intake">Intake</a></nav>
+</main>
+<nav>
+  <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
+  <a href="/intake">Intake</a>
+</nav>
 </body>
 </html>
 `))

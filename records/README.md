@@ -9,11 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| question | 7 | [questions.md](questions.md) |
-| decision | 54 | [decisions.md](decisions.md) |
+| question | 10 | [questions.md](questions.md) |
+| decision | 57 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 14 | [work-units/index.md](work-units/index.md) |
+| work-unit | 15 | [work-units/index.md](work-units/index.md) |
 | investigation | 1 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -43,6 +43,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0012](work-units/MUS-W-0012.md#mus-w-0012) | work-unit | A visual plan for all seven surfaces |
 | [MUS-W-0013](work-units/MUS-W-0013.md#mus-w-0013) | work-unit | The question lifecycle, and the gate that cannot be reported around |
 | [MUS-W-0014](work-units/MUS-W-0014.md#mus-w-0014) | work-unit | The decision queue |
+| [MUS-W-0015](work-units/MUS-W-0015.md#mus-w-0015) | work-unit | The decision queue, rebuilt from its artboard |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -50,6 +51,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0005](questions.md#mus-q-0005) | question | Should the gate block on an unanswered question, or only on an unsurfaced one? |
 | [MUS-Q-0006](questions.md#mus-q-0006) | question | The decision queue is reached from a banner on the intake box. MUS-D-0041 rejected exactly that. |
 | [MUS-Q-0007](questions.md#mus-q-0007) | question | Should an agent be able to answer or withdraw its own question? |
+| [MUS-Q-0008](questions.md#mus-q-0008) | question | Streaming a session to a browser tab needs script or polling. Which, against the no-script rule? |
+| [MUS-Q-0009](questions.md#mus-q-0009) | question | Does milestone 4 ship whole, or split adapter-and-injection from browser streaming? |
+| [MUS-Q-0010](questions.md#mus-q-0010) | question | Is the decision queue redesigned from the published plan, or does the plan get amended to match? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -104,6 +108,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0052](decisions.md#mus-d-0052) | decision | A question may be withdrawn by its raiser, never answered by them |
 | [MUS-D-0053](decisions.md#mus-d-0053) | decision | The decision queue's banner is interim, and MUS-D-0041 still stands |
 | [MUS-D-0054](decisions.md#mus-d-0054) | decision | The tool call derives its kind list rather than restating it |
+| [MUS-D-0055](decisions.md#mus-d-0055) | decision | An answer is a choice between options, not a text box |
+| [MUS-D-0056](decisions.md#mus-d-0056) | decision | The queue was rebuilt because the plan was routed around, not because it was wrong |
+| [MUS-D-0057](decisions.md#mus-d-0057) | decision | The tab bar carries only the surfaces that exist |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

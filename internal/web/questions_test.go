@@ -214,6 +214,123 @@ func TestTheAnswererIsWhoAccessSays(t *testing.T) {
 	}
 }
 
+func withOptions(id, title string, opts ...string) record.Record {
+	r := openQuestion(id, title)
+	for _, o := range opts {
+		r.Data = append(r.Data, record.Field{Key: question.FieldOption, Value: o})
+	}
+	return r
+}
+
+// The artboard's central idea: answers are options with what each one costs,
+// not a text box that makes the owner reconstruct the list the asker had.
+func TestOptionsRenderWithTheirLineAndDetail(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended · conformance runs on every push :: The catalog is fetched per run.",
+		"Vendor a pinned copy :: Runs offline · a stale copy proves nothing :: A pinned specification goes stale silently."))
+	body := getFrom(t, srv, "/questions")
+
+	for _, want := range []string{
+		"Check StrucGu out in CI",
+		"Recommended · conformance runs on every push",
+		"The catalog is fetched per run.",
+		"Vendor a pinned copy",
+		"A pinned specification goes stale silently.",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the queue does not show %q", want)
+		}
+	}
+	// Expansion in place, and no script anywhere on the page.
+	if !strings.Contains(body, "<details") {
+		t.Error("options do not expand in place")
+	}
+	if strings.Contains(body, "<script") {
+		t.Error("the page carries script")
+	}
+}
+
+// What is blocked comes first, above the question. That is what separates a
+// milestone-stopping question from a sentence-stopping one.
+func TestWhatIsBlockedComesBeforeTheQuestion(t *testing.T) {
+	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
+	body := getFrom(t, srv, "/questions")
+
+	blocks := strings.Index(body, "blocks milestone 3")
+	title := strings.Index(body, "Where does the audit run?")
+	if blocks < 0 || title < 0 {
+		t.Fatalf("missing blocks=%d title=%d", blocks, title)
+	}
+	if blocks > title {
+		t.Error("what is blocked is rendered after the question")
+	}
+}
+
+func TestChoosingAnOptionAnswersTheQuestion(t *testing.T) {
+	srv, s := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
+		"id":     {"MUS-Q-0001"},
+		"option": {"Check StrucGu out in CI"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	got, err := s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if question.Status(got) != question.StatusAnswered {
+		t.Fatalf("status = %q", question.Status(got))
+	}
+	if ans, _ := got.Get(question.FieldAnswer); ans != "Check StrucGu out in CI" {
+		t.Errorf("answer = %q, want the chosen option", ans)
+	}
+}
+
+// Free text beats a chosen option: the owner wanting to say something the list
+// does not contain is the case a list of options is worst at.
+func TestFreeTextOverridesAChosenOption(t *testing.T) {
+	srv, s := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
+		"id":     {"MUS-Q-0001"},
+		"option": {"Check StrucGu out in CI"},
+		"answer": {"Neither. Ask me again after milestone 4."},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	got, err := s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ans, _ := got.Get(question.FieldAnswer); ans != "Neither. Ask me again after milestone 4." {
+		t.Errorf("answer = %q, want the typed text", ans)
+	}
+}
+
+// A tab that goes nowhere is an unbuilt capability described as existing.
+func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
+	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, `href="/intake"`) {
+		t.Error("no tab for the intake surface, which exists")
+	}
+	for _, unbuilt := range []string{"/sessions", "/records"} {
+		if strings.Contains(body, `href="`+unbuilt+`"`) {
+			t.Errorf("a tab points at %s, which is not built", unbuilt)
+		}
+	}
+}
+
 func TestAnEmptyQueueSaysSo(t *testing.T) {
 	srv, _ := serveQuestions(t)
 	if body := getFrom(t, srv, "/questions"); !strings.Contains(body, "Nothing waiting on you") {

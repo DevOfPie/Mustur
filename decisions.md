@@ -73,6 +73,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A question may be withdrawn by its raiser, never answered by them](#a-question-may-be-withdrawn-by-its-raiser-never-answered-by-them) | The enforcement was one command from being walked around |
 | [The decision queue's banner is interim, and MUS-D-0041 still stands](#the-decision-queues-banner-is-interim-and-mus-d-0041-still-stands) | The claim was corrected, not the code |
 | [The tool call has to know every kind, and now cannot forget one](#the-tool-call-has-to-know-every-kind-and-now-cannot-forget-one) | A hand-written list made "every record" false |
+| [An answer is a choice between options, not a text box](#an-answer-is-a-choice-between-options-not-a-text-box) | A box makes the owner rebuild the list the asker had |
+| [The queue was rebuilt because the plan was routed around, not because it was wrong](#the-queue-was-rebuilt-because-the-plan-was-routed-around-not-because-it-was-wrong) | Recording a failure did not stop it repeating |
+| [The tab bar carries only the surfaces that exist](#the-tab-bar-carries-only-the-surfaces-that-exist) | A tab to nowhere is an unbuilt capability, described |
 
 ---
 
@@ -1119,3 +1122,54 @@ was the single surface that could not see them.
 The list is now derived from `ident.Roles`. The one place that cannot be, the
 JSON schema on a struct tag, is asserted against `ident.KindNames` by a test, so
 the next role letter cannot repeat this quietly.
+
+## 2026-08-21 — the decision queue is rebuilt from its artboard
+
+### An answer is a choice between options, not a text box
+
+The queue shipped at milestone 3 offered a text field. Its artboard in
+[the published plan](https://plan.agent-native.com/plans/plan-4827b50a72674a22)
+offers a short list of options, each with one line saying what it costs, one of
+them marked recommended, and the paragraph behind each shown only when asked
+for.
+
+The drawing is right and the reason is worth stating plainly: **a text box makes
+the owner reconstruct the options the asker already had.** An agent blocked on a
+decision has just finished weighing the alternatives — that is why it is
+blocked — and throwing them away at the surface means the owner does the work
+twice. It is also the shape every decision in this repository has actually
+arrived in, so the queue now matches the thing it is a queue for.
+
+Free text stays, beneath the options, and beats a chosen one when both are sent.
+The case a list of options is worst at is the owner wanting to say something the
+list does not contain, and that must never be the case the surface refuses.
+
+Options are stored as repeated fields on the question, `Label :: one line ::
+the paragraph`. The separator is not a pipe, because a pipe would break the
+table the export renders these into.
+
+### The queue was rebuilt because the plan was routed around, not because it was wrong
+
+The surface met its brief. It was rebuilt because it was written *from* the
+brief, when a published plan with an artboard for it already existed — the same
+route intake took, and the thing publishing the plan was meant to stop.
+
+The owner's answer on MUS-Q-0010: "Redesign it from the plan's artboard. The
+built queue met its brief, but a plan agents route around is not a plan."
+
+Recorded because the sequence repeated after being written down once already.
+[docs/ui-surfaces.md](docs/ui-surfaces.md) said, in its own first paragraph,
+that intake had been built this way and should not have been — and the next
+surface was built the same way regardless. **The record was not the safeguard.**
+What would be is nobody having built the fifth, sixth and seventh surfaces yet.
+
+### The tab bar carries only the surfaces that exist
+
+The drawing has four tabs: Sessions, Decisions, Intake, Records. Two of those
+surfaces are not built, and a tab pointing at one would be an unbuilt capability
+described as existing, which [workflow.md](workflow.md) gates against. The bar
+renders the two that exist and grows as the others arrive.
+
+The count is spelled out rather than shown as a badge, which is the drawing's
+own note: a badge holding one character reads as an unexplained dot at this
+size.

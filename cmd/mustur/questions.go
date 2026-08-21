@@ -22,6 +22,20 @@ import (
 	"github.com/DevOfPie/Mustur/internal/record"
 )
 
+// values is a repeatable flag whose argument is the whole value. `fields`
+// demands key=value, which an option's prose would have to escape around.
+type values []string
+
+func (v *values) String() string { return strings.Join(*v, ", ") }
+
+func (v *values) Set(s string) error {
+	if strings.TrimSpace(s) == "" {
+		return fmt.Errorf("an empty option is not an answer anyone can pick")
+	}
+	*v = append(*v, s)
+	return nil
+}
+
 func cmdAsk(args []string) error {
 	fs := flag.NewFlagSet("ask", flag.ContinueOnError)
 	db := dbFlag(fs)
@@ -29,6 +43,8 @@ func cmdAsk(args []string) error {
 	body := fs.String("body", "", "one short paragraph of context, from the window you already have")
 	blocks := fs.String("blocks", "", "what is stopped until this is answered, in words")
 	needed := fs.Bool("needed", false, "the work in hand cannot proceed without the answer; the gate will not pass on surfacing alone")
+	var options values
+	fs.Var(&options, "option", "an answer the owner can pick: \"Label :: one line :: the paragraph behind it\", repeatable")
 	session := fs.String("session", "", "the session raising it, so an answer can be routed back")
 	at := fs.String("at", "", "the date (default today)")
 	project := fs.String("project", "MUS", "identifier prefix")
@@ -64,6 +80,9 @@ func cmdAsk(args []string) error {
 	}
 	if *needed {
 		r.Data = append(r.Data, record.Field{Key: question.FieldNeeded, Value: question.Yes})
+	}
+	for _, o := range options {
+		r.Data = append(r.Data, record.Field{Key: question.FieldOption, Value: o})
 	}
 	// Recorded so `answer` can refuse the raiser. Without it the gate is one
 	// command away from being walked around by whoever it is enforcing against.

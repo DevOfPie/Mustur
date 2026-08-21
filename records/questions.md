@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-7 record(s), by identifier.
+10 record(s), by identifier.
 
 ---
 
@@ -145,3 +145,71 @@ mustur answer and --withdraw take any actor, so the agent that raised a question
 | Surfaced | 2026-08-21 05:05 |
 | Answer | Refuse self-answer, allow self-withdraw. The raiser may close a question overtaken by events; it may never supply the answer. |
 | Answered | 2026-08-21 05:12 |
+
+---
+
+## MUS-Q-0008
+
+**Streaming a session to a browser tab needs script or polling. Which, against the no-script rule?**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0006](milestones.md#mus-m-0006)
+
+Every surface so far is server-rendered with no script, no stylesheet, no font and no image — that is what makes intake cheap enough for a phone off the home network. Streaming a live session's output cannot be done that way: it needs EventSource or WebSocket, which means script on the page, or a meta-refresh, which is script-free and coarse. The survey in docs/stack-evidence.md found nobody in the category server-renders at all. This is the first place the SSR principle meets something it cannot do, and which way it bends is not mine to choose.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4's session surface, and the principle every surface inherits |
+| Needed to proceed | yes |
+| Asked by | whippy |
+| Session | session_01CxpnCTwvS5Sdt1pqTpuEpG |
+| Surfaced | 2026-08-21 05:40 |
+| Answer | WebSocket, and accept a client layer. The session surface is where server-rendered HTML stops being enough, and a full-duplex connection is what the composer will want later anyway. |
+| Answered | 2026-08-21 05:46 |
+
+---
+
+## MUS-Q-0009
+
+**Does milestone 4 ship whole, or split adapter-and-injection from browser streaming?**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0006](milestones.md#mus-m-0006)
+
+Milestone 4 now carries four things: a per-machine adapter that starts and supervises a long-lived session per project, survival of a dropped phone connection, streaming output to a browser tab, and delivering an answered decision back into the session that raised it — the clause milestone 3 handed over. The first and last are the ones the rest of Mustur is waiting on; streaming is the largest and the one blocked by the question above. Splitting would let the adapter and injection land while the transport is still open.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | how milestone 4 is decomposed, and therefore what gets built first |
+| Needed to proceed | yes |
+| Asked by | whippy |
+| Session | session_01CxpnCTwvS5Sdt1pqTpuEpG |
+| Surfaced | 2026-08-21 05:40 |
+| Answer | Split. 4a is the adapter, tmux supervision and the answer delivered back into the raising session; 4b is streaming to a browser tab. 4a is unblocked and carries the clause milestone 3 handed over. |
+| Answered | 2026-08-21 05:46 |
+
+---
+
+## MUS-Q-0010
+
+**Is the decision queue redesigned from the published plan, or does the plan get amended to match?**
+
+question · 2026-08-21
+
+Blocks: [MUS-M-0005](milestones.md#mus-m-0005)
+
+The queue shipped at milestone 3 written from docs/ui-surfaces.md's brief rather than from its artboard in plan-4827b50a72674a22 — the same route intake took, and the thing publishing the plan was meant to stop. It works and you have accepted its banner as interim. What has not been decided is whether the built surface gets replaced by the planned one, or the plan gets amended to record what was built. Not blocking: everything else can proceed either way.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | nothing; the queue works as built |
+| Asked by | whippy |
+| Session | session_01CxpnCTwvS5Sdt1pqTpuEpG |
+| Surfaced | 2026-08-21 05:40 |
+| Answer | Redesign it from the plan's artboard. The built queue met its brief, but a plan agents route around is not a plan. |
+| Answered | 2026-08-21 05:46 |

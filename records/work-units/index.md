@@ -37,3 +37,4 @@ is a copy that will drift.
 | [MUS-W-0012](MUS-W-0012.md) | A visual plan for all seven surfaces | 2026-08-20 |
 | [MUS-W-0013](MUS-W-0013.md) | The question lifecycle, and the gate that cannot be reported around | 2026-08-21 |
 | [MUS-W-0014](MUS-W-0014.md) | The decision queue | 2026-08-21 |
+| [MUS-W-0015](MUS-W-0015.md) | The decision queue, rebuilt from its artboard | 2026-08-21 |

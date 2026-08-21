@@ -1,13 +1,15 @@
 # Surfaces awaiting design
 
-**Two of these are built, and both by the route this file exists to prevent.**
-Surface 5, intake, shipped at milestone 2c as a Go template — the layout decided
-in code and shown to the owner afterwards. Surface 4, the decision queue,
-shipped at milestone 3 the same way: written from the brief below rather than
-from the published plan's artboard for it. Recorded rather than tidied away,
-because the first one was recorded and the second happened anyway, which says
-the record alone is not the safeguard. The owner's answer after intake was to
-publish a plan for every remaining surface before any more of them are built.
+**Two of these are built. Both were first written the way this file exists to
+prevent, and one has been put back.** Surface 5, intake, shipped at milestone 2c
+as a Go template — the layout decided in code and shown to the owner afterwards.
+Surface 4, the decision queue, shipped at milestone 3 the same way, from the
+brief below rather than from the published plan's artboard for it.
+
+That the second happened after the first was recorded is the part worth keeping:
+the record alone was not the safeguard. The owner's answer on MUS-Q-0010 was to
+rebuild the queue from its artboard, which is done. Intake is unchanged and
+still stands as built.
 
 The rest of this file lists the surfaces v1 needs, what each one must do, and the
 constraint that governs it, so that wireframing has a target list rather than a
@@ -22,7 +24,7 @@ brief; the design is the answer to it.
 published 2026-08-20. Eight artboards — intake as built and as proposed, plus
 the six then-unbuilt surfaces — the shell they share, and four open questions,
 which were answered 2026-08-20. Five of those six are still unbuilt; the
-decision queue is not, and was not built from its artboard.
+decision queue is built, and is built from its artboard.
 
 ## The constraints every surface inherits
 
@@ -75,12 +77,20 @@ and cross-referential, so the graph reading was real; what it cost is in
 
 ### 4. Decision queue
 
-**Built at milestone 3, from this brief rather than from the plan's artboard.**
-What exists is a list of open questions, each with the paragraph it was raised
-with, what it blocks, and an answer box that posts from the list itself; plus a
-banner on intake, which MUS-Q-0006 confirms as interim until the tab bar at
-milestone 4. Like intake, it is the baseline a design should argue with rather
-than a design anyone chose.
+**Built at milestone 3 from this brief, then rebuilt from the plan's artboard**
+after the owner's answer on MUS-Q-0010. What the drawing settled and the brief
+had not: what is blocked comes first, above the question; answers are options
+carrying what each one costs, one of them recommended, rather than a text box
+that made the owner reconstruct the list the asker already had; each option
+expands in place, one line up front and the paragraph behind it only when asked;
+and answering is one tap above the bar. The expansion is a `<details>` element,
+so none of it costs script.
+
+Two things differ from the drawing, both because the drawing is of a finished
+v1. The tab bar carries only the surfaces that exist — a tab pointing at
+Sessions or Records would be an unbuilt capability described as existing. And
+the banner on intake stays until that bar is real, which MUS-Q-0006 confirms as
+interim.
 
 Where a blocked agent's decision arrives and where the owner answers it.
 

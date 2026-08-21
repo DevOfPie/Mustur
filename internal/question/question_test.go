@@ -123,6 +123,39 @@ func TestAskedByIsReadBack(t *testing.T) {
 	}
 }
 
+func TestOptionsKeepTheirOrderAndParts(t *testing.T) {
+	r := q("MUS-Q-0001",
+		FieldOption, "Check StrucGu out in CI"+OptionSep+"Recommended · runs on every push"+OptionSep+"The catalog is fetched per run.",
+		FieldOption, "Vendor a pinned copy"+OptionSep+"Runs offline · a stale copy proves nothing",
+		FieldOption, "Leave it out",
+	)
+	got := Options(r)
+	if len(got) != 3 {
+		t.Fatalf("parsed %d options, want 3", len(got))
+	}
+	if got[0].Label != "Check StrucGu out in CI" || got[0].Detail != "The catalog is fetched per run." {
+		t.Errorf("first option = %+v", got[0])
+	}
+	if !got[0].IsRecommended() {
+		t.Error("the recommended option does not report itself as one")
+	}
+	if got[1].Detail != "" {
+		t.Errorf("an option with two parts gained a detail: %q", got[1].Detail)
+	}
+	if got[2].Label != "Leave it out" || got[2].Line != "" {
+		t.Errorf("a bare label did not survive: %+v", got[2])
+	}
+	if got[1].IsRecommended() {
+		t.Error("a non-recommended option reports itself as recommended")
+	}
+}
+
+func TestAQuestionWithoutOptionsHasNone(t *testing.T) {
+	if got := Options(q("MUS-Q-0001", FieldBlocks, "milestone 3")); len(got) != 0 {
+		t.Errorf("parsed %d options from a question with none", len(got))
+	}
+}
+
 func TestGateIgnoresOtherKinds(t *testing.T) {
 	f := record.Record{ID: "MUS-F-0001", Kind: "finding", Title: "a finding", At: "2026-08-21"}
 	if err := Gate([]record.Record{f}); err != nil {

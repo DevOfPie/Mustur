@@ -56,6 +56,57 @@ const (
 // Yes is the affirmative value for the boolean-ish fields above.
 const Yes = "yes"
 
+// FieldOption is repeated once per answer the owner can pick. A question with
+// options is answered by choosing one; a question without them is answered by
+// typing. Options exist because that is how a well-put decision arrives — a
+// short list with what each costs — and a queue that only offered a text box
+// made the owner reconstruct the options the asker already had.
+const FieldOption = "Option"
+
+// OptionSep separates an option's three parts: the label, the one line under
+// it, and the paragraph behind that. Not a pipe, which would break the table
+// the export renders these into.
+const OptionSep = " :: "
+
+// Recommended marks the option the asker would take. It is a prefix on the
+// one-line part, so it survives a reader who knows nothing about this format.
+const Recommended = "Recommended"
+
+// An Option is one answer the owner can pick.
+type Option struct {
+	Label  string // What the answer is, in a few words.
+	Line   string // What it costs or buys, in one line.
+	Detail string // The paragraph behind it, shown only when asked for.
+}
+
+// IsRecommended reports whether this is the option the asker would take.
+func (o Option) IsRecommended() bool {
+	return strings.HasPrefix(strings.TrimSpace(o.Line), Recommended)
+}
+
+// Options returns the answers offered, in the order they were given. A question
+// with none is answered in prose.
+func Options(r record.Record) []Option {
+	var out []Option
+	for _, f := range r.Data {
+		if f.Key != FieldOption {
+			continue
+		}
+		parts := strings.SplitN(f.Value, OptionSep, 3)
+		o := Option{Label: strings.TrimSpace(parts[0])}
+		if len(parts) > 1 {
+			o.Line = strings.TrimSpace(parts[1])
+		}
+		if len(parts) > 2 {
+			o.Detail = strings.TrimSpace(parts[2])
+		}
+		if o.Label != "" {
+			out = append(out, o)
+		}
+	}
+	return out
+}
+
 // The values FieldStatus takes.
 const (
 	StatusOpen      = "open"
