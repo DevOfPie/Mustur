@@ -1,18 +1,21 @@
 # The checks every change has to pass.
 #
-# `make check` is the local equivalent and the entire content: every step here
+# `make check` is the local equivalent and most of the content: every step here
 # is a make target, so what a step *does* lives in the Makefile, writable by
 # whoever builds this repository; what a step *is* — the triggers, the
-# permissions block, the pins — lives here, and changing it needs the owner.
-# That split is the whole point of the file, and ci/proposed/README.md is where
-# it is argued.
+# permissions block, the pins, and what the runner is given to work with —
+# lives here, and changing it needs the owner. That split is the whole point of
+# the file, and ci/proposed/README.md is where it is argued.
 #
-# Shaped after LinkCtrl's ci.yml. Milestone 2 brought Go, so `make check` now
-# runs `go build`, `go vet` and `go test` alongside the contract checks, and
-# this proposal adds the one thing the Makefile cannot: a pinned toolchain on
-# the runner. The version comes from go.mod rather than a literal here, so
-# raising it is a change to the module and not to a file the owner has to
-# re-apply.
+# Shaped after LinkCtrl's ci.yml. Milestone 2 brought Go, so `make check` runs
+# `go build`, `go vet` and `go test` alongside the contract checks, and the
+# toolchain is pinned from go.mod rather than a literal here.
+#
+# Milestone 2b brought the audit, and with it the second checkout below. The
+# conformance harness reads StrucGu's own fixture trees and their expected
+# states; without the catalog it skips, and a skipped conformance run is
+# indistinguishable from a passing one. Nothing vendors a copy of that
+# specification — a pinned copy goes stale silently — so CI checks it out.
 
 name: CI
 
@@ -38,13 +41,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The module catalog the audit and the conformance harness read. Pinned
+      # to a ref rather than tracking a branch: this repository's adoption
+      # record names exact module versions, and a catalog that moves underneath
+      # a pinned adoption is the drift the notice exists to report — not
+      # something CI should absorb silently.
+      - uses: actions/checkout@v4
+        with:
+          repository: DevOfPie/StrucGu
+          ref: main
+          path: .strucgu
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
       # Links and anchors resolve, table rows match their headers, the adoption
       # record is checkable, shell scripts pass shellcheck, the Go tree builds
-      # and its tests pass, and the committed export cites only identifiers it
-      # defines. Adding a check means editing the Makefile, not this file.
+      # and its tests pass — including the conformance harness, which needs
+      # MUSTUR_STRUCGU to find the catalog checked out above — and the committed
+      # export cites only identifiers it defines.
       - name: Contract checks
+        env:
+          MUSTUR_STRUCGU: ${{ github.workspace }}/.strucgu
         run: make check
+      # The audit itself. Not a gate: findings are output, and its exit status
+      # is zero whenever the run happened. It is here so that a finding is
+      # visible in the log of every build rather than only to whoever remembers
+      # to run it.
+      - name: Conformance audit
+        env:
+          MUSTUR_STRUCGU: ${{ github.workspace }}/.strucgu
+        run: make audit
