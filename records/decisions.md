@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-76 record(s), by identifier.
+77 record(s), by identifier.
 
 ## Index
 
@@ -88,6 +88,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0074](#mus-d-0074) | Sub-agents are their own milestone, and it starts by finding out whether it is possible | 2026-08-21 |
 | [MUS-D-0075](#mus-d-0075) | The session composer is always writable | 2026-08-21 |
 | [MUS-D-0076](#mus-d-0076) | A session's exit is an event, not a record | 2026-08-21 |
+| [MUS-D-0077](#mus-d-0077) | A surface reachable only when it has something to say is not reachable | 2026-08-21 |
 
 ---
 
@@ -1262,3 +1263,19 @@ Supervision reports an exit on the surface and in the service log, and writes no
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#a-sessions-exit-is-an-event-not-a-record](../decisions.md#a-sessions-exit-is-an-event-not-a-record) |
+
+---
+
+## MUS-D-0077
+
+**A surface reachable only when it has something to say is not reachable**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0053](#mus-d-0053)
+
+The decision queue's only route from intake was the banner, which renders when something is open. With every question answered the banner was absent, so loading the site gave the intake box and no way to reach anything else. The owner found it by loading the site; it had been recorded as a queue line during the milestone 4a review and not acted on, which is the second time on this stack that a record was mistaken for a safeguard. The fix is MUS-D-0041 applied where it had not been yet: the bar carries the surfaces that are built and grows as the rest arrive. The banner stays beside it rather than being replaced, which is the pair MUS-D-0041 argued for.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable](../decisions.md#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable) |

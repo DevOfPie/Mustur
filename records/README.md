@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 10 | [milestones.md](milestones.md) |
 | question | 19 | [questions.md](questions.md) |
-| decision | 76 | [decisions.md](decisions.md) |
+| decision | 77 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 16 | [work-units/index.md](work-units/index.md) |
@@ -141,6 +141,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0074](decisions.md#mus-d-0074) | decision | Sub-agents are their own milestone, and it starts by finding out whether it is possible |
 | [MUS-D-0075](decisions.md#mus-d-0075) | decision | The session composer is always writable |
 | [MUS-D-0076](decisions.md#mus-d-0076) | decision | A session's exit is an event, not a record |
+| [MUS-D-0077](decisions.md#mus-d-0077) | decision | A surface reachable only when it has something to say is not reachable |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

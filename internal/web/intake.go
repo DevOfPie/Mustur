@@ -85,10 +85,17 @@ type page struct {
 	// screen, on the grounds that a banner can be scrolled past — and that is
 	// still the decision.
 	//
-	// That bar now exists on the queue, carrying the surfaces that are built,
-	// and it grows as the rest arrive. It is not here yet: intake has no bar of
-	// its own, so this banner is still the only route from intake to the queue.
-	// Owner-confirmed as the interim on MUS-Q-0006 and again on MUS-Q-0012.
+	// The bar is on both surfaces now, carrying the ones that are built and
+	// growing as the rest arrive. The banner stays beside it because they do
+	// different jobs: the bar is the fixed place the eye knows to check, and the
+	// banner is what makes an open decision impossible to miss on the surface
+	// the owner happened to open. Owner-confirmed as interim on MUS-Q-0006 and
+	// MUS-Q-0012.
+	//
+	// Until the bar reached here, the banner was the *only* route from intake to
+	// the queue — which meant the queue was reachable from intake exactly when
+	// it had something to say, and unreachable when it did not. The owner found
+	// that by loading the site and seeing only the intake box.
 	OpenQuestions int
 }
 
@@ -278,6 +285,15 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
            white-space: nowrap; padding-bottom: .25rem; }
   .dests label { flex: 0 0 auto; border: 1px solid var(--edge);
                  border-radius: 999px; padding: .35rem .7rem; font-size: .9em; }
+  /* The bar MUS-D-0041 chose, carrying the surfaces that exist. Without it the
+     only route from here to the queue was the banner, which renders when
+     something is open — so the queue was reachable from intake exactly when it
+     had nothing to say. The owner found that by loading the site. */
+  nav { display: flex; border-top: 1px solid var(--edge); margin-top: 2rem;
+        white-space: nowrap; }
+  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
+          text-decoration: none; color: inherit; opacity: .6; }
+  nav a.here { opacity: 1; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -298,6 +314,10 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{if .Recent}}<ul>
 {{range .Recent}}<li><code>{{.ID}}</code> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
+<nav>
+  <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
+  <a href="/intake" class="here">Intake</a>
+</nav>
 </body>
 </html>
 `))

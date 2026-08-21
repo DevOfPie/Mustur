@@ -108,7 +108,7 @@ summarised.
 | Difference | Why |
 | --- | --- |
 | The tab bar carries two tabs, not four | Sessions and Records are not built, and a tab pointing at one would be an unbuilt capability described as existing. MUS-D-0041's four still stands; MUS-Q-0012 confirms this as its interim |
-| The banner on intake stays | It is the only route back from intake, which has no bar of its own yet. MUS-Q-0006 |
+| The banner on intake stays, beside the bar | They do different jobs: the bar is the fixed place the eye knows to check, the banner makes an open decision impossible to miss on whichever surface was opened. MUS-Q-0006 |
 | Every open question is on one page, not one per screen | The queue is short by construction. The drawing is a single-question screen and this is a list with a rule between entries; the earlier claim to be "one question per screen" was simply false of the code beneath it |
 | Options carry a radio | The drawing makes the card itself the selection. A radio is what a form can express without script, and the whole row is the control |
 | There is a free-text box under the options | The drawing has none. The owner wanting to say something the list does not contain is the case a list of options is worst at, and it must not be the case the surface refuses |
