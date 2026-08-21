@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 9 | [milestones.md](milestones.md) |
-| question | 15 | [questions.md](questions.md) |
-| decision | 71 | [decisions.md](decisions.md) |
+| question | 16 | [questions.md](questions.md) |
+| decision | 73 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 16 | [work-units/index.md](work-units/index.md) |
@@ -60,6 +60,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0013](questions.md#mus-q-0013) | question | Where does a running session's state live: tmux, or mirrored into the store? |
 | [MUS-Q-0014](questions.md#mus-q-0014) | question | How does an answered decision reach the session that raised it? |
 | [MUS-Q-0015](questions.md#mus-q-0015) | question | I narrowed milestone 4a's done-when without asking. Which clauses does 4a actually owe? |
+| [MUS-Q-0016](questions.md#mus-q-0016) | question | Milestone 4b needs a surface neither docs/ui-surfaces.md nor the published plan has |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -131,6 +132,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0069](decisions.md#mus-d-0069) | decision | The session that raised a question and the session an answer can reach are different things |
 | [MUS-D-0070](decisions.md#mus-d-0070) | decision | There is no session send |
 | [MUS-D-0071](decisions.md#mus-d-0071) | decision | The unit cannot have a private /tmp |
+| [MUS-D-0072](decisions.md#mus-d-0072) | decision | v1 has eight surfaces, and the eighth was found by trying to build it |
+| [MUS-D-0073](decisions.md#mus-d-0073) | decision | The standing instruction is what stopped 4b starting |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-15 record(s), by identifier.
+16 record(s), by identifier.
 
 ---
 
@@ -331,4 +331,28 @@ question · 2026-08-21
 | Surfaced | 2026-08-21 10:35 |
 | Answer | Move both clauses to 4b. 4a is start, list, stop and the answer carried back; supervision and surviving a dropped connection belong where a phone connects and a dead session is noticed. |
 | Answered | 2026-08-21 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0016
+
+**Milestone 4b needs a surface neither docs/ui-surfaces.md nor the published plan has**
+
+question · 2026-08-21
+
+4b streams a session's output to a browser tab. docs/ui-surfaces.md lists seven surfaces and the published plan draws eight artboards for them — intake as built and proposed, the session LIST, composer, decisions, records, routing, audit. None of them is a session's output. Your standing instruction is that a plan is published for every remaining surface before any more are built, so 4b cannot start against nothing. This is Plan.md and docs/ui-surfaces.md disagreeing about how many surfaces v1 has, which workflow.md says is a bug to report rather than pick.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4b, all of it |
+| Needed to proceed | yes |
+| Option | Add an artboard for it, then build :: Recommended · the instruction says plan first, and this is the surface it was written about :: I extend plan-4827b50a72674a22 with a session-output artboard and a brief in docs/ui-surfaces.md, put it to you, and build 4b from the drawing. Slowest to first code, and it is the route MUS-Q-0010 established after the queue was built the other way. |
+| Option | Treat it as a detail view of the session list :: Cheapest · the list artboard exists and a session opens from it :: No new artboard; the stream is whatever opening a row shows. Under-specified for the one surface in v1 that needs a client layer, and it is how intake and the queue both went wrong. |
+| Option | Build 4b's transport now, surface later :: The WebSocket, supervision and reconnection without a designed view :: A minimal page proves the transport and the real surface waits for its own plan. Honest about sequencing, and it means shipping a page nobody designed, which is the thing the instruction forbids. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 10:52 |
+| Answer | Add an artboard for it, then build. Extend the published plan with a session-output surface and a brief, put it to me, and build 4b from the drawing. |
+| Answered | 2026-08-21 10:55 |
 | Delivered | not delivered: the question names no session |

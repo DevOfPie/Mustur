@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-71 record(s), by identifier.
+73 record(s), by identifier.
 
 ## Index
 
@@ -83,6 +83,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0069](#mus-d-0069) | The session that raised a question and the session an answer can reach are different things | 2026-08-21 |
 | [MUS-D-0070](#mus-d-0070) | There is no session send | 2026-08-21 |
 | [MUS-D-0071](#mus-d-0071) | The unit cannot have a private /tmp | 2026-08-21 |
+| [MUS-D-0072](#mus-d-0072) | v1 has eight surfaces, and the eighth was found by trying to build it | 2026-08-21 |
+| [MUS-D-0073](#mus-d-0073) | The standing instruction is what stopped 4b starting | 2026-08-21 |
 
 ---
 
@@ -1177,3 +1179,34 @@ PrivateTmp=yes gives the service its own /tmp, and tmux's socket is /tmp/tmux-$U
 | --- | --- |
 | Found by | The milestone 4a review, from the unit file rather than from the running service |
 | Rationale | [decisions.md#the-unit-cannot-have-a-private-tmp](../decisions.md#the-unit-cannot-have-a-private-tmp) |
+
+---
+
+## MUS-D-0072
+
+**v1 has eight surfaces, and the eighth was found by trying to build it**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0016](questions.md#mus-q-0016)
+
+docs/ui-surfaces.md listed seven surfaces and the published plan draws those seven. Milestone 4b streams a running session's output to a browser tab, and none of the seven is that: the session list says which sessions exist, this says what one of them is saying. The owner's answer was to draw it before building it, in a plan of its own. The gap was invisible from inside the plan and only appeared when a milestone tried to build against the surface and found nothing — the list was enumerated from the phone bar's tabs, and a session's output is not a tab.
+
+| Field | Value |
+| --- | --- |
+| Plan | https://plan.agent-native.com/plans/plan-6009f123020a4f58 |
+| Rationale | [decisions.md#v1-has-eight-surfaces-and-the-eighth-was-found-by-trying-to-build-it](../decisions.md#v1-has-eight-surfaces-and-the-eighth-was-found-by-trying-to-build-it) |
+
+---
+
+## MUS-D-0073
+
+**The standing instruction is what stopped 4b starting**
+
+decision · 2026-08-21
+
+The owner's answer after intake was that a plan is published for every remaining surface before any more are built. An earlier commit on this stack deleted that sentence while rewriting docs/ui-surfaces.md, and a review caught it and put it back. It earned its restoration immediately: it is the rule that stopped milestone 4b being written from a brief the way intake and the decision queue both were.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-standing-instruction-is-what-stopped-4b-starting](../decisions.md#the-standing-instruction-is-what-stopped-4b-starting) |

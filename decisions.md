@@ -91,6 +91,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The session that raised a question and the session an answer can reach are different things](#the-session-that-raised-a-question-and-the-session-an-answer-can-reach-are-different-things) | A field redefined under records already written |
 | [There is no `session send`](#there-is-no-session-send) | It made "the only caller is the answer path" false |
 | [The unit cannot have a private /tmp](#the-unit-cannot-have-a-private-tmp) | tmux's socket lives in /tmp, so the feature shipped inert |
+| [v1 has eight surfaces, and the eighth was found by trying to build it](#v1-has-eight-surfaces-and-the-eighth-was-found-by-trying-to-build-it) | The session list is not a session's output |
+| [The standing instruction is what stopped 4b starting](#the-standing-instruction-is-what-stopped-4b-starting) | Deleted by one commit, restored by a review, earned it at once |
 
 ---
 
@@ -1403,3 +1405,35 @@ inert exactly where it ships.
 
 `PrivateTmp=no`. A hardening flag that silently removes the feature is worse
 than the hardening is worth, and the rest of the confinement stays.
+
+## 2026-08-21 — the eighth surface
+
+### v1 has eight surfaces, and the eighth was found by trying to build it
+
+[docs/ui-surfaces.md](docs/ui-surfaces.md) listed seven and the published plan
+draws artboards for those seven. Milestone 4b streams a running session's output
+to a browser tab, and none of the seven is that — the session **list** says
+which sessions exist; this says what one of them is saying. Two different
+screens with two different jobs, and only one of them had ever been named.
+
+That is [Plan.md](Plan.md) and `docs/ui-surfaces.md` disagreeing about how many
+surfaces v1 has, which [workflow.md](workflow.md) makes a bug to report rather
+than pick. It went to the owner on `MUS-Q-0016`, and their answer was to draw it
+before building it: [plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58).
+
+The gap was invisible from inside the plan. It only appeared when a milestone
+tried to build against the surface and found nothing there, which is worth
+noticing about how the surfaces were enumerated in the first place: the list was
+written from the phone bar's tabs, and a session's output is not a tab.
+
+### The standing instruction is what stopped 4b starting
+
+The owner's answer after intake was that a plan is published for every remaining
+surface before any more are built. An earlier commit on this stack deleted that
+sentence from `docs/ui-surfaces.md` while rewriting the file, and a review caught
+it and put it back.
+
+It earned its restoration immediately. It is the rule that stopped milestone 4b
+being written from a brief the way intake and the decision queue both were —
+the third time would have been the one where the pattern stopped being an
+accident.

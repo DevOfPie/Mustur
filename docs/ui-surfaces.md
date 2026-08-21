@@ -27,7 +27,14 @@ blank page.
 published visual plan, never as ASCII in a document or a prompt. This file is the
 brief; the design is the answer to it.
 
-**The plan for all seven is
+**There are eight.** This file listed seven until milestone 4b needed the one it
+had never named — a running session's *output*, which is not the session list.
+Surface 8 below is that gap, found by trying to build against nothing, and it
+has [a plan of its
+own](https://plan.agent-native.com/plans/plan-6009f123020a4f58) because the
+seven-surface plan does not draw it.
+
+**The plan for the original seven is
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
 published 2026-08-20. Eight artboards — intake as built and as proposed, plus
 the six then-unbuilt surfaces — the shell they share, and four open questions,
@@ -150,6 +157,27 @@ The conformance run over Mustur's own records, in the form StrucGu specifies.
 Must be reproducible by someone who does not trust it, and must show which checks
 are waived and why — a waiver that is invisible is a check that silently stopped
 running.
+
+### 8. Session output
+
+A running session's output, streamed to a browser tab. **Not the session list:**
+that says which sessions exist, this is what one of them is saying.
+
+Must answer, from a phone, off the home network: is this session running, and
+what has it just said? A dropped connection must reconnect and replay what was
+missed without the owner wondering whether walking into a lift killed the work.
+A session that has **ended** must not look like one that is merely quiet — that
+confusion is most of what this surface exists to prevent.
+
+**The one surface in v1 that carries a client layer.** A live terminal cannot be
+server-rendered. The stack table names this as the exception and keeps the rule
+for everything else; a second surface wanting script is a new decision, not a
+precedent.
+
+Its plan is
+[plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58) —
+four artboards, the transport, the wire format, and four open questions.
+Milestone 4b builds it from that drawing, not from this brief.
 
 ## Not surfaces
 
