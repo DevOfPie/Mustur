@@ -9,6 +9,9 @@ cd "$HERE" || exit 1
 R="$HERE"/record.sh
 N=$1
 rm -f hooks.log
+# The prompt below is deliberately single-quoted: it is text handed to an agent,
+# not shell. The backticks are part of what the agent reads.
+# shellcheck disable=SC2016
 timeout 400 claude -p \
   'Launch three general-purpose subagents via the Task tool in one go. Give them the descriptions "Task ONE", "Task TWO" and "Task THREE" respectively, and have them run `echo ONE`, `echo TWO` and `echo THREE` respectively. Wait for all three, then reply with the three outputs. Do nothing else.' \
   --model sonnet \

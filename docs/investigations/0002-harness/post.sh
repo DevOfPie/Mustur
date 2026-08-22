@@ -3,6 +3,9 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 cd "$HERE" || exit 1
 R=$HERE/record.sh
 rm -f hooks.log
+# The prompt below is deliberately single-quoted: it is text handed to an agent,
+# not shell. The backticks are part of what the agent reads.
+# shellcheck disable=SC2016
 timeout 300 claude -p \
   'Launch one general-purpose subagent via the Task tool to run `echo POSTHOOK` and report its output. Then reply with just that output.' \
   --model sonnet \

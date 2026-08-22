@@ -17,8 +17,11 @@ check-links: ## Tracked markdown: links and anchors resolve, table rows match th
 check-adoption: ## strucgu.yaml parses, pins are exact, every mapped role path is tracked
 	@scripts/check-adoption.sh
 
-shellcheck: ## Tracked shell scripts pass shellcheck
-	@files=$$(git ls-files '*.sh'); \
+# Tracked *and* newly added: `git ls-files` alone lists neither, so a gate run
+# before `git add` passed over four new scripts and CI failed on all four. The
+# gate has to see what the commit will contain, not what the last one did.
+shellcheck: ## Shell scripts in the commit pass shellcheck
+	@files=$$(git ls-files -c -o --exclude-standard '*.sh'); \
 	if [ -z "$$files" ]; then \
 	  echo "  ok    no shell scripts"; \
 	else \
