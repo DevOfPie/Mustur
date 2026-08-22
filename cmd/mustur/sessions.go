@@ -18,7 +18,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"time"
 
 	"github.com/DevOfPie/Mustur/internal/session"
 )
@@ -28,7 +30,7 @@ func cmdSession(args []string) error {
 		return fmt.Errorf("session needs a verb: start, list, stop")
 	}
 	verb, rest := args[0], args[1:]
-	a := &session.Adapter{}
+	a := &session.Adapter{HookDir: session.DefaultHookDir()}
 	ctx := context.Background()
 
 	switch verb {
@@ -45,6 +47,28 @@ func cmdSession(args []string) error {
 			return err
 		}
 		fmt.Printf("%s started\n  attach with  tmux attach -t %s\n", s.Name, s.Name)
+		return nil
+
+	case "subagent-event":
+		// The hook the CLI calls, once per sub-agent lifecycle event and once
+		// per tool call in the session. It is not an operator verb: nobody runs
+		// this by hand, and it takes no text — it reads one JSON payload on
+		// stdin and appends what is worth keeping.
+		//
+		// It always succeeds. A hook that fails is a hook interfering with the
+		// agent it was watching, and a sub-agent row is not worth that.
+		fs := flag.NewFlagSet("session subagent-event", flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		dir := fs.String("dir", "", "where sub-agent events are logged")
+		project := fs.String("project", "", "the session the event belongs to")
+		if err := fs.Parse(rest); err != nil || *dir == "" || *project == "" {
+			return nil
+		}
+		payload, err := io.ReadAll(io.LimitReader(os.Stdin, 1<<20))
+		if err != nil {
+			return nil
+		}
+		session.RecordHookEvent(*dir, *project, payload, time.Now())
 		return nil
 
 	case "list":

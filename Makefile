@@ -17,8 +17,11 @@ check-links: ## Tracked markdown: links and anchors resolve, table rows match th
 check-adoption: ## strucgu.yaml parses, pins are exact, every mapped role path is tracked
 	@scripts/check-adoption.sh
 
-shellcheck: ## Tracked shell scripts pass shellcheck
-	@files=$$(git ls-files '*.sh'); \
+# Tracked *and* newly added: `git ls-files` alone lists neither, so a gate run
+# before `git add` passed over four new scripts and CI failed on all four. The
+# gate has to see what the commit will contain, not what the last one did.
+shellcheck: ## Shell scripts in the commit pass shellcheck
+	@files=$$(git ls-files -c -o --exclude-standard '*.sh'); \
 	if [ -z "$$files" ]; then \
 	  echo "  ok    no shell scripts"; \
 	else \
@@ -46,8 +49,9 @@ questions: ## No open question was left unsurfaced as a prompt
 	@go run ./cmd/mustur questions --gate --records records \
 	  && echo "  ok    no open question in records/ was left unsurfaced"
 
-# go.mod said a directly imported package was `// indirect` for a whole
-# milestone, and nothing noticed. The file that documents the dependency surface
+# go.mod said a directly imported package was `// indirect` for one commit, and
+# nothing noticed. An earlier version of this comment said "a whole milestone",
+# which was longer than the truth. The file that documents the dependency surface
 # is the one place a wrong claim about it should not survive.
 tidy-check: ## go.mod and go.sum are what the imports actually need
 	@go mod tidy -diff >/dev/null 2>&1 \

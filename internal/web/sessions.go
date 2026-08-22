@@ -48,6 +48,14 @@ const MaxInput = 8 << 10
 // InputEvery is the fastest a viewer may send. Typing is a person's pace.
 const InputEvery = 250 * time.Millisecond
 
+// AgentsEvery is how often a connected viewer's sub-agent rows are refreshed.
+//
+// Two seconds because the thing it renders is a tool call, and an agent's tool
+// calls are seconds apart rather than milliseconds; a faster tick would stat a
+// file more often to show the same row. A slower one would let a sub-agent
+// finish and be replaced between ticks.
+const AgentsEvery = 2 * time.Second
+
 // IdleTimeout closes a socket nobody is using. A tab left open on a phone in a
 // drawer should not hold a writable channel into an agent for a week.
 const IdleTimeout = 30 * time.Minute
@@ -60,6 +68,10 @@ type Sessions struct {
 	// tab renders without one.
 	Store *store.Store
 	Actor string
+	// HookDir is where the adapter's sub-agent hook logs its events. Empty
+	// means the surface shows no sub-agent rows, which is also what a session
+	// started without the hook shows.
+	HookDir string
 	Now     func() time.Time
 }
 
@@ -116,8 +128,84 @@ type sessionRow struct {
 type sessionPage struct {
 	Project       string
 	Rows          []sessionRow
+	Subagents     []subagentRow
+	Running       int
 	OpenQuestions int
 	Missing       bool
+}
+
+// A subagentRow is one sub-agent as the page says it, with every value already
+// decided here rather than in the template.
+type subagentRow struct {
+	Title string `json:"title"` // what it was asked to do; empty when that could not be told
+	Type  string `json:"type"`
+	State string `json:"state"` // the tool in flight, "working", or "finished"
+	Done  bool   `json:"done"`
+	// For is the age as the first paint renders it. The socket sends the two
+	// stamps instead and lets the client count, so a running sub-agent's age
+	// moves every second without the server pushing a frame to say so — and so
+	// the poll can skip entirely while the log is unchanged.
+	For     string `json:"-"`
+	Started int64  `json:"started"`
+	Ended   int64  `json:"ended,omitempty"`
+	Said    string `json:"said,omitempty"`
+}
+
+// subagents reads what the hook recorded for this session.
+//
+// The rows are server-rendered like everything else on this surface bar the
+// output stream: a sub-agent starting is not a keystroke-latency event, and the
+// page is already reloaded to see one. Nothing here reaches the socket.
+func (s *Sessions) subagents(project string) ([]subagentRow, int) {
+	if s.HookDir == "" || project == "" {
+		return nil, 0
+	}
+	live, err := session.Subagents(s.HookDir, project)
+	if err != nil || len(live) == 0 {
+		return nil, 0
+	}
+	now := s.now()
+	rows := make([]subagentRow, 0, len(live))
+	running := 0
+	for _, a := range live {
+		r := subagentRow{
+			Title: a.Task, Type: a.Type, For: since(a.For(now)), Said: a.Said,
+			Started: a.Started.Unix(),
+		}
+		if a.Running() {
+			running++
+			// The tool it is in, or "working" between calls. Both halves are
+			// real: the adapter hooks the end of a tool call as well as the
+			// start, so a row leaves a tool when the sub-agent does. The first
+			// version hooked only the start, and this comment described
+			// behaviour the code did not have — a review caught the claim, not
+			// the code.
+			r.State = a.Doing
+			if r.State == "" {
+				r.State = "working"
+			}
+		} else {
+			r.Done, r.State, r.Ended = true, "finished", a.Ended.Unix()
+		}
+		rows = append(rows, r)
+	}
+	return rows, running
+}
+
+// since renders an age for the first paint, coarse because a sub-agent's precise
+// second is not a thing anyone acts on. It matches the client's age() rather
+// than the client's quiet counter, which stops at whole hours — a review caught
+// this comment claiming the quiet counter's format, which would put two
+// different ages for the same sub-agent on the same page after an hour.
+func since(d time.Duration) string {
+	switch {
+	case d < time.Minute:
+		return fmt.Sprintf("%ds", int(d.Seconds()))
+	case d < time.Hour:
+		return fmt.Sprintf("%dm", int(d.Minutes()))
+	default:
+		return fmt.Sprintf("%dh %dm", int(d.Hours()), int(d.Minutes())%60)
+	}
 }
 
 func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, bool) {
@@ -152,7 +240,11 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	project := r.PathValue("project")
 	rows, found := s.rows(r.Context(), project)
-	s.render(w, r, sessionPage{Project: project, Rows: rows, Missing: !found})
+	agents, running := s.subagents(project)
+	s.render(w, r, sessionPage{
+		Project: project, Rows: rows, Missing: !found,
+		Subagents: agents, Running: running,
+	})
 }
 
 func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage) {
@@ -174,6 +266,12 @@ type frame struct {
 	Lost  int64  `json:"lostBytes,omitempty"`
 	At    string `json:"at,omitempty"`
 	Error string `json:"error,omitempty"`
+	// Sub-agent rows, pushed rather than waited for (MUS-Q-0029). The owner
+	// chose this over a reload, against the builder's recommendation, and it is
+	// the one place the client layer models something other than the terminal.
+	Agents  []subagentRow `json:"agents,omitempty"`
+	Running int           `json:"running,omitempty"`
+	None    bool          `json:"none,omitempty"`
 }
 
 func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
@@ -245,6 +343,14 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Sub-agent rows go down the same socket, on a ticker rather than in the
+	// output path: a hook writes to a file this server does not own, so there
+	// is nothing to be notified by. The file's size and modification time are
+	// checked first, so a quiet session costs one stat per tick and no parse.
+	agents := time.NewTicker(AgentsEvery)
+	defer agents.Stop()
+	var lastAgents, lastStamp string
+
 	// Reset on activity. The timer used to be created once and never touched,
 	// which made it a cap on the connection's age rather than on its idleness:
 	// after thirty minutes a tab watching a working session was told the
@@ -265,6 +371,30 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			// and reconnects if anyone is still looking.
 			_ = c.Close(websocket.StatusNormalClosure, "idle")
 			return
+		case <-agents.C:
+			if stamp := session.SubagentStamp(s.HookDir, project); stamp == lastStamp {
+				continue
+			} else {
+				lastStamp = stamp
+			}
+			rows, running := s.subagents(project)
+			// Compared on what would be sent, so a tick that changes nothing
+			// sends nothing — including the ages, which move on their own and
+			// are exactly what the viewer is watching.
+			b, err := json.Marshal(rows)
+			if err != nil {
+				continue
+			}
+			if string(b) == lastAgents {
+				continue
+			}
+			lastAgents = string(b)
+			// An empty list still goes, once: a session whose rows were cleared
+			// has to be able to say so, and omitempty would have sent a frame
+			// the client could not tell from a frame about nothing.
+			if err := send(frame{T: "agents", Agents: rows, Running: running, None: len(rows) == 0}); err != nil {
+				return
+			}
 		case u, ok := <-sub.C:
 			if !ok {
 				return
@@ -376,6 +506,23 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .rail a.here { opacity: 1; border-color: var(--accent);
                  background: var(--accent-soft); }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
+  /* Sub-agents sit above the session's own output, because they are Mustur
+     talking about the session rather than the session talking. Same tint as
+     every other strip for the same reason. */
+  .agents { padding: .6rem 1rem; background: #8881;
+            border-bottom: 1.4px solid var(--edge); font-size: .85em; }
+  .agents > .count { opacity: .6; font-size: .9em; }
+  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .3rem 0;
+           white-space: nowrap; }
+  .agent .what { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .agent .what.untitled { opacity: .55; font-style: italic; }
+  .agent .pill { border: 1px solid var(--edge); border-radius: 999px;
+                 padding: .05rem .5rem; font-size: .78em; }
+  .agent .pill.done { border-color: var(--accent); background: var(--accent-soft); }
+  .agent .age { opacity: .6; font-size: .82em; }
+  .said { margin: 0 0 .4rem .2rem; padding-left: .6rem;
+          border-left: 1.4px solid var(--edge); white-space: pre-wrap;
+          word-break: break-word; opacity: .85; font-size: .92em; }
   nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap;
         margin-top: auto; }
   nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
@@ -395,6 +542,13 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <small>A session left running in a terminal is not here and will not appear.</small></p>
 {{else}}
 <div class="strip"><span class="grow" id="scrollback">connecting</span></div>
+<div class="agents"{{if not .Subagents}} hidden{{end}}>
+  {{if .Subagents}}<div class="count">{{len .Subagents}} sub-agent{{if ne (len .Subagents) 1}}s{{end}}{{if .Running}} · {{.Running}} running{{end}}</div>
+  {{range .Subagents}}<div class="agent">
+    {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
+    <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span>
+  </div>{{if .Said}}<p class="said">{{.Said}}</p>{{end}}{{end}}{{end}}
+</div>
 <pre id="out"></pre>
 <div id="foot">quiet 0s</div>
 <form id="say"><input type="text" id="text" placeholder="Reply to this session" autocomplete="off"><button type="submit">Send</button></form>

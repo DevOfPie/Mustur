@@ -8,9 +8,8 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Milestones 1 and 2 have passed; 2b, 2c, 3 and 4a are built, reviewed and
-awaiting acceptance; 4b is built and not yet reviewed; nothing below it is
-built.** What exists is one binary
+**Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built, reviewed
+and awaiting acceptance; nothing below 4c is built.** What exists is one binary
 that can hold this project's records and routing, serve them to a session
 through a single mandated tool call, audit its own records against the
 conventions this repository declares, take a jot into its own findings queue

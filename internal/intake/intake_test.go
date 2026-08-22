@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/seed"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -24,7 +25,10 @@ func routing() []record.Record {
 		{ID: "MUS-P-0001", Kind: "project", Title: "Mustur", At: "2026-08-20",
 			Data: []record.Field{{Key: "Repositories", Value: "MUS-R-0001"}, {Key: "Machines", Value: "MUS-H-0001"}}},
 		{ID: "MUS-P-0002", Kind: "project", Title: "Idea inbox", At: "2026-08-20",
-			Data: []record.Field{{Key: DefaultField, Value: DefaultValue}}},
+			Data: []record.Field{
+				{Key: DefaultField, Value: DefaultValue},
+				{Key: PrefixField, Value: "IDW"},
+			}},
 		{ID: "MUS-D-0001", Kind: "decision", Title: "Mustur", At: "2026-08-20"},
 	}
 }
@@ -261,5 +265,115 @@ func TestAnUnknownDestinationIsRefused(t *testing.T) {
 	n, _ := s.Count(ctx)
 	if n != len(routing())-1 {
 		t.Errorf("a record was written for a refused destination: %d", n)
+	}
+}
+
+// Where a jot routes decides what it is called.
+//
+// The owner filed a jot that routed correctly to the idea inbox and still read
+// as mis-routed, because it was called MUS-F-0025 — indistinguishable at a
+// glance from a record about Mustur itself. The prefix now comes from the
+// destination (MUS-Q-0030), and the idea inbox's is IDW (MUS-Q-0031).
+func TestAJotToTheIdeaInboxIsFiledUnderItsOwnPrefix(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	for _, r := range routing() {
+		if r.Kind == "decision" {
+			continue
+		}
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	r, to, err := File(ctx, s, Request{
+		Project: "MUS",
+		Text:    "a thought with no obvious home",
+		Actor:   "pie",
+		Now:     time.Date(2026, 8, 22, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if to.ID != "MUS-P-0002" {
+		t.Fatalf("routed to %s, want the idea inbox", to.ID)
+	}
+	if r.ID != "IDW-F-0001" {
+		t.Errorf("filed as %s; a jot in the idea inbox is not a Mustur record and should not be called one", r.ID)
+	}
+
+	// And one that does name Mustur still is one, from the same store, so the
+	// two serials are seen not to share a counter.
+	r2, to2, err := File(ctx, s, Request{
+		Project: "MUS",
+		Text:    "DevOfPie/Mustur intake needs a press state on the file button",
+		Actor:   "pie",
+		Now:     time.Date(2026, 8, 22, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if to2.ID != "MUS-R-0001" {
+		t.Fatalf("routed to %s, want DevOfPie/Mustur", to2.ID)
+	}
+	if r2.ID != "MUS-F-0001" {
+		t.Errorf("filed as %s, want MUS-F-0001 — the prefixes number separately", r2.ID)
+	}
+}
+
+// A routing record whose prefix is malformed files under the store's prefix
+// rather than under something the identifier scheme cannot parse. Wrong in a
+// way somebody can see beats wrong in a way that breaks parsing.
+func TestAMalformedPrefixIsIgnoredRatherThanUsed(t *testing.T) {
+	for _, bad := range []string{"IDWX", "id", "I2W", "", "   ", "ID-"} {
+		r := record.Record{
+			ID: "MUS-P-0009", Kind: "project", Title: "Somewhere", At: "2026-08-22",
+			Data: []record.Field{
+				{Key: DefaultField, Value: DefaultValue},
+				{Key: PrefixField, Value: bad},
+			},
+		}
+		if got := Route("nothing obvious here", []record.Record{r}).Prefix; got != "" {
+			t.Errorf("prefix %q accepted from %q", got, bad)
+		}
+	}
+	good := record.Record{
+		ID: "MUS-P-0009", Kind: "project", Title: "Somewhere", At: "2026-08-22",
+		Data: []record.Field{
+			{Key: DefaultField, Value: DefaultValue},
+			{Key: PrefixField, Value: " idw "},
+		},
+	}
+	if got := Route("nothing obvious here", []record.Record{good}).Prefix; got != "IDW" {
+		t.Errorf("prefix %q, want IDW trimmed and upper-cased", got)
+	}
+}
+
+// The seed is what a fresh clone gets, and a prefix that exists only in this
+// machine's store is a prefix the next clone does not have. The idea inbox
+// having no Prefix once already shipped as a defect of exactly this shape.
+func TestTheSeededIdeaInboxCarriesItsPrefix(t *testing.T) {
+	records, err := seed.Records()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var inbox *record.Record
+	for i, r := range records {
+		if r.ID == "MUS-P-0002" {
+			inbox = &records[i]
+		}
+	}
+	if inbox == nil {
+		t.Fatal("the seed has no idea inbox, so a fresh clone routes nothing to it")
+	}
+	if got, _ := inbox.Get(PrefixField); got != "IDW" {
+		t.Errorf("the seeded idea inbox's prefix is %q, want IDW", got)
+	}
+	if got := Route("nothing obvious", records).Prefix; got != "IDW" {
+		t.Errorf("routing against the seed gives prefix %q, want IDW", got)
 	}
 }

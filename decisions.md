@@ -1649,3 +1649,222 @@ reader is started by a viewer, so **a session nobody has looked at is not being
 watched**. An exit is noticed when a tab is open on it, or not at all. Watching
 every owned session would mean polling tmux continuously for sessions nobody is
 reading, and that trade has not been made.
+
+## 2026-08-22 — sub-agents can be seen, and how
+
+### The investigation was registered before it was run
+
+Milestone 4c began with a question rather than a build:
+[can Mustur see a sub-agent at all](docs/investigations/0002-sub-agent-visibility.md).
+The routes to try, the three properties an answer had to carry — enumerable,
+separable, terminal — and the rule for reaching *cannot be done* were committed
+in one commit, and the finding in the next. The history is the evidence that the
+rule was not written to fit the result, which is the same discipline
+[milestone 1's disproof](docs/investigations/0001-mandated-tool-call.md) rested
+on.
+
+The rule was worth having for one reason in particular. A session's sub-agents
+are already on disk, in a `subagents/` directory holding a transcript and a
+metadata file for each — enumerable, separable and readable, and it would have
+worked today. It is undocumented, so it is written up as a finding and not used.
+Without a rule fixed beforehand, that directory is exactly what a builder in a
+hurry adopts.
+
+### The route is lifecycle hooks, and the pane is untouched
+
+`SubagentStart` and `SubagentStop` are documented hooks carrying `agent_id` and
+`agent_type`, with the final message and the per-agent transcript path on stop. A
+tool-use hook carries `agent_id` when the call happens inside a sub-agent and
+omits it in the main conversation, so a sub-agent's activity is attributed by an
+identifier the CLI supplies rather than by reading its prose — which is what
+[route D was ruled out for](docs/investigations/0002-sub-agent-visibility.md),
+and what the owner declined an inferred status for on `MUS-Q-0005`.
+
+The important property is what it does *not* change. Everything milestones 4a
+and 4b built stands: the session is still a tmux pane, still typed into with
+`send-keys`, still read with `pipe-pane`, still attachable from a terminal.
+
+The alternative would have cost exactly that. `--output-format stream-json` with
+`--forward-subagent-text` carries all three properties and is fully documented,
+and a session held open on `--input-format stream-json` accepts further messages,
+so it is a real session rather than a one-shot. It requires `-p`, and `-p` is not
+a terminal. Adopting it would replace the pane with a JSON harness — a different
+product, not a way of showing sub-agents in this one. It is recorded rather than
+adopted, so it is findable if the pane is ever given up for other reasons.
+
+### The hook is passed per session, and persists nowhere — MUS-Q-0024
+
+A hook is executable configuration running inside the agent's own session, so
+where it is installed was the owner's decision and not the builder's.
+
+Mustur starts the session, so it passes the hook as a `--settings` JSON string on
+the command line it already builds. Nothing is written to `~/.claude` and nothing
+into the checkout the session runs in. The cost, accepted: a session started by
+hand carries no hook and shows no sub-agents. Mustur reports on what Mustur
+started, which is the same line the
+[ownership option](decisions.md#2026-08-21--the-session-surfaces-last-three-questions)
+already draws.
+
+### A row shows what is documented — MUS-Q-0025
+
+What a sub-agent was asked to do, how long it has been running, what it is doing
+now, and its output once it finishes. Full prose while it is still running would
+mean deriving the per-agent transcript path, and the owner declined to make that
+exception. Reading a sub-agent mid-flight means opening the parent pane, which is
+still there.
+
+## 2026-08-22 — what the milestone 4c review changed
+
+Three reviewers, none given the pull request or any report. They agreed on
+something the builder had not noticed: **this milestone's own documents claimed
+things its tree did not support.** The investigation named captured files that
+were not committed, the code cited a decision that did not exist, and the plan
+recorded a review that had not happened.
+
+### The gate that failed again, and what it cost this time
+
+Five decisions were taken in prose. Two of the five were not small.
+
+**Pairing a task to a sub-agent by order is an inference**, and it went in
+without being asked — in a package whose own header says rows are *"attributed
+by an identifier the CLI supplies, never by reading the pane and guessing"*. A
+reviewer reproduced the failure: an `Agent` call that never produced a sub-agent
+left its description in the queue for the next one, rendering a row that read
+**"DENIED call, never ran"**. The owner bounded it on
+[MUS-Q-0026](records/questions.md#mus-q-0026) rather than dropping labels, and
+was told plainly that a bound narrows the failure without closing it.
+
+The number that bound it is the part worth keeping. "A few seconds" was the
+instinct, and measuring the captures says a few seconds is wrong: the nine
+launch-to-start pairs run from 1.563s to **5.985s**, because three sub-agents
+launched together are spawned in sequence and the last waits for the first two.
+A two-second window would have stripped the label off rows that were right —
+the same failure through the other door. Thirty seconds, and a test that fails
+if anyone shrinks it below the slowest pair actually observed.
+
+**Rejecting the structured-output route** was a product judgement argued down in
+prose. Both routes cleared the investigation's rule; choosing hooks over a JSON
+harness is what keeps a Mustur session a terminal you can attach to. Ratified on
+[MUS-Q-0027](records/questions.md#mus-q-0027), and it should have been asked
+before it was built on.
+
+### Three defects the fake runner could never have shown
+
+**Rows outlived their session.** The log was keyed on the project and nothing
+cleared it, so stopping a session and starting another showed the old one's
+rows — one still pilled *running*, ageing forever, for a process dead before the
+page existed. That is the condition the investigation's own rule named as
+disqualifying, arriving in the implementation of the route that passed it.
+`Start` now forgets them.
+
+**A row claimed to be in a tool it had left.** Only the start of a tool call was
+hooked, so `Doing` was the last tool forever, while a comment on the surface
+claimed a sub-agent between calls "is thinking, and says so". The comment
+described behaviour the code did not have; `PostToolUse` is the other half, and
+it costs a second short-lived process per tool call.
+
+Verifying that hook before relying on it caught a third defect that had not
+shipped: the parent's own `PostToolUse` for its `Agent` call carries no
+`agent_id` either, so without checking the event name it landed as a second
+launch — every task description queued twice.
+
+### The records were the fiction, not the prose
+
+`records/` is generated from the store and says so in its own header. The 4c
+questions were written **into the export by hand**, so the file said 23 records
+over a file holding 25, the identifier index stopped at `MUS-Q-0023`, the
+decisions had no `MUS-D` at all, and investigation 0002 existed on disk with no
+`MUS-I`. `make check` was green throughout, because every gate reads the export
+and the export was internally consistent.
+
+Fixed the only way that is not another fiction: through `mustur ask`, `surfaced`
+and `answer`, which is when the store refused to let the asker answer their own
+question — the gate built on
+[MUS-Q-0007](records/questions.md#mus-q-0007) — *refuse self-answer, allow
+self-withdraw* — doing exactly its job to the person who built it. The answers are recorded as the owner's because they are.
+
+### A third invented citation, in the third place the verifier cannot look
+
+`subagents.go` cited `MUS-D-0087` when the tree ended at `MUS-D-0086`. All three
+of this session's invented citations have been in Go comments, and `mustur
+verify` reads `records/`. The pattern is now specific enough to name: **prose in
+`.go` files is the one place identifiers are asserted and never checked.**
+Whatever fixes it is not another careful author.
+
+### Evidence a reader can reach
+
+The investigation claimed runs "reproduced by the commands quoted below" and
+quoted no commands, over captures that were not in the tree — the same complaint
+`queue.md` already carries against 4a. [0002-harness/](docs/investigations/0002-harness/)
+is the correction, following what 0001 did: the recorder, the runners, the
+scorer, and the captured output. `score.py` re-derives the pairing result and
+`count.py` the coverage, both from committed files, with no CLI and no network.
+
+4c also had no work unit, so the plan cited the investigation as its method — a
+document written two hours before the build and containing none of it.
+[MUS-W-0018](records/work-units/MUS-W-0018.md) is the method.
+
+### Live rows, against the recommendation
+
+The rows were server-rendered like the rest of the surface, so a sub-agent's age
+and current tool froze until reload, on the page that already holds a socket.
+The owner chose to push them down it
+([MUS-Q-0029](records/questions.md#mus-q-0029)) against the recommendation to
+leave them static.
+
+Kept as small as that can be: the server polls the hook's log on a two-second
+ticker, skips the parse entirely when the file's size and modification time have
+not moved, and sends a frame only when the rows differ. Ages are not sent —
+each row carries its stamps and the client counts, so a running sub-agent's
+clock moves without a frame per second to move it. Tested against real tmux
+with a real handshake, because this is the one thing the client layer now models
+that is not the terminal.
+
+## 2026-08-22 — a record's prefix says which project it belongs to
+
+The owner filed three jots from a phone to prove milestone 2c, and one of them
+routed correctly to the idea inbox while reading as though it had not. It was
+called `MUS-F-0025`, which is indistinguishable at a glance from a record about
+Mustur itself.
+
+Nothing was mis-routed. The point stands anyway, and it is the owner's: **the
+MUS tag should mean the Mustur project, not the store that happens to hold the
+record.** A prefix that is the same for everything is a prefix that cannot be
+scanned, and every jot to the idea inbox had to be opened to find out where it
+had gone.
+
+The identifier scheme already anticipated this — three upper-case letters,
+chosen "so a second project onboarded later cannot collide with this one". What
+was wrong is that intake stamped the serving project's prefix at creation, some
+lines before it knew where the jot was going.
+
+### What changed
+
+A routing record names its own prefix in a field, the way it already names
+itself the intake default. The idea inbox's is **IDW**, for IdeaWarehouse, which
+is where these go once that project is onboarded at milestone 7 — so the prefix
+names the destination and a record keeps its identifier when it finally arrives,
+rather than being renamed into it.
+
+A routing record whose prefix is not three upper-case letters is ignored and the
+store's used instead. Wrong in a way somebody can see beats an identifier the
+scheme cannot parse.
+
+### Narrow on purpose
+
+Only the one routing target that exists carries a prefix. Generalising it to
+every target is milestone 7's work, where a second project's cases are real
+rather than imagined, and doing it now would front-run those decisions with one
+example to test against. The owner chose the narrow cut on
+[MUS-Q-0030](records/questions.md#mus-q-0030).
+
+### `MUS-F-0025` keeps its name
+
+The `ident` package's rule is that identifiers are permanent, because the store
+is insert-only and a scheme that allows renaming is one that allows a citation
+to rot. `MUS-F-0025` is cited in `Plan.md`, `docs/ingress.md`, this file and a
+pull request comment.
+
+So it stays, as the last record filed under the old scheme, and the owner said
+why that costs nothing: it was a test, and its information is used up by the
+finding it already produced.
