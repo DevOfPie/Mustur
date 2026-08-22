@@ -263,7 +263,17 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
              background: transparent; color: inherit; box-sizing: border-box; }
   button { font: inherit; padding: .6rem 1.2rem; margin-top: .6rem;
            border: 1px solid var(--edge); border-radius: .5rem;
-           background: transparent; color: inherit; width: 100%; }
+           background: transparent; color: inherit; width: 100%;
+           /* MUS-F-0024, filed from a phone: the button looked the same before
+              and after a tap, so there was no way to tell one had registered.
+              A phone has no hover, so :active is the half that matters — it is
+              first, and the transition is short enough to survive a quick tap
+              rather than animating past it. */
+           transition: background-color .12s ease, border-color .12s ease; }
+  button:hover { border-color: #888a; background: #8881; }
+  button:active { border-color: #8888; background: #8883;
+                  transition-duration: 0s; }
+  button:focus-visible { outline: 2px solid #888a; outline-offset: 2px; }
   .said { margin: .9rem 0; padding: .6rem .8rem; border-left: 3px solid var(--edge); }
   /* Pinned above the box, not below it. A blocked agent is work stopped, and
      the owner should see that before they start typing something else. This is

@@ -33,7 +33,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0021](#mus-f-0021) | The public hostname has no Access application in front of it | GET / returned 502 with no location or cf-access headers, read 2026-08-21 | resolved 2026-08-21 |
 | [MUS-F-0022](#mus-f-0022) | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |  | unreviewed |
 | [MUS-F-0023](#mus-f-0023) | Test for Mustur 2c |  | unreviewed |
-| [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… |  | unreviewed |
+| [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… | Filed from a phone by the owner while proving milestone 2c's last clause. | fixed |
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
 
 ---
@@ -421,8 +421,9 @@ Mustur intake screen, the file button has no hover or press interaction so you c
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | Filed from a phone by the owner while proving milestone 2c's last clause. |
+| Status | fixed |
+| Fix | The button now has :active and :hover states and a focus ring. A phone has no hover, so :active is the half that matters; its transition is zero-length so a quick tap cannot animate past the feedback. |
 | Routed to | DevOfPie/Mustur (MUS-R-0001) |
 | Routing | the jot names DevOfPie/Mustur |
 | Filed by | dev@killerofpie.com |

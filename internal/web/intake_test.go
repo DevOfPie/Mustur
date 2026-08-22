@@ -367,3 +367,30 @@ func TestAnUnknownDestinationComesBackWithTheText(t *testing.T) {
 		t.Errorf("%d record(s) written for a refused destination", len(findings))
 	}
 }
+
+// The file button says a tap registered.
+//
+// MUS-F-0024, filed from a phone while the owner was proving milestone 2c: the
+// button looked identical before and after a tap. A phone has no hover, so
+// :active is the half that matters and is asserted first.
+func TestTheFileButtonHasAPressState(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+
+	in := &Intake{Store: st, Project: "MUS", Actor: "pie"}
+	mux := http.NewServeMux()
+	mux.Handle("/", in.Handler())
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	body := getFrom(t, srv, "/intake")
+	for _, want := range []string{"button:active", "button:hover", "button:focus-visible"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the file button has no %s rule, so a tap says nothing", want)
+		}
+	}
+}
