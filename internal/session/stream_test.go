@@ -2,7 +2,9 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -207,6 +209,76 @@ func TestAttachRefusesASessionMusturDidNotStart(t *testing.T) {
 	h := &Hub{Adapter: &Adapter{Run: &fake{out: listing(unowned("mustur/theirs", 1, false))}}}
 	if _, _, _, _, err := h.Attach(context.Background(), "theirs", 0); err == nil {
 		t.Fatal("attached to a session Mustur did not start")
+	}
+}
+
+// The seam between the capture-pane seed and the pipe.
+//
+// Both carry whatever the pane printed while the reader was being set up, so
+// the join repeats lines. At 5 lines/s it never shows; a review found 6-11
+// duplicated lines on four of six sessions at 50 lines/s, which is nearer an
+// agent's actual output rate. Six sessions because the overlap depends on
+// timing and one is not evidence.
+func TestTheSeedSeamDoesNotDuplicateLines(t *testing.T) {
+	realTmux(t)
+	a := &Adapter{}
+	re := regexp.MustCompile(`LINE (\d{6})`)
+
+	for n := 0; n < 6; n++ {
+		start(t, a, fmt.Sprintf("zzSeam%d", n),
+			"sh -c 'i=0; while true; do i=$((i+1)); printf \"LINE %06d\\n\" $i; sleep 0.02; done'")
+	}
+	// Let the panes get ahead, so capture-pane has something to overlap with.
+	time.Sleep(2 * time.Second)
+
+	for n := 0; n < 6; n++ {
+		project := fmt.Sprintf("zzSeam%d", n)
+		h := &Hub{Adapter: a, Dir: t.TempDir()}
+		sub, backlog, _, _, err := h.Attach(context.Background(), project, 0)
+		if err != nil {
+			t.Fatalf("%s: %v", project, err)
+		}
+		var b strings.Builder
+		b.Write(backlog)
+		deadline := time.After(3 * time.Second)
+	collect:
+		for {
+			select {
+			case u := <-sub.C:
+				b.WriteString(u.Text)
+			case <-deadline:
+				break collect
+			}
+		}
+		sub.Close()
+		h.Shutdown()
+
+		seen := map[string]int{}
+		var dups []string
+		for _, m := range re.FindAllStringSubmatch(b.String(), -1) {
+			seen[m[1]]++
+			if seen[m[1]] == 2 {
+				dups = append(dups, m[1])
+			}
+		}
+		if len(dups) > 0 {
+			t.Errorf("%s: %d line numbers arrived twice across the seam: %v",
+				project, len(dups), dups)
+		}
+	}
+}
+
+// A viewer whose offset is ahead of the stream was reading a previous reader —
+// the linger expired and a new one began at zero. Handing it the new stream's
+// position silently loses everything between, which a review measured at 5,550
+// lines with nothing said.
+func TestAViewerFromAPreviousReaderIsToldItMissedSomething(t *testing.T) {
+	s := &Stream{project: "x", subs: map[chan Update]struct{}{}}
+	s.buf = []byte("fresh output")
+	s.next = int64(len(s.buf))
+
+	if _, _, gap := s.since(9999); !gap {
+		t.Fatal("a viewer ahead of this stream was told nothing was missing")
 	}
 }
 

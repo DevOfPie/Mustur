@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 10 | [milestones.md](milestones.md) |
-| question | 19 | [questions.md](questions.md) |
-| decision | 81 | [decisions.md](decisions.md) |
+| question | 23 | [questions.md](questions.md) |
+| decision | 86 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 17 | [work-units/index.md](work-units/index.md) |
@@ -66,6 +66,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0017](questions.md#mus-q-0017) | question | How should sub-agents become visible on the session surface? |
 | [MUS-Q-0018](questions.md#mus-q-0018) | question | Should typing into a session be armed separately from watching it? |
 | [MUS-Q-0019](questions.md#mus-q-0019) | question | Where does a session's exit get recorded? |
+| [MUS-Q-0020](questions.md#mus-q-0020) | question | A WebSocket library, or RFC 6455 by hand? |
+| [MUS-Q-0021](questions.md#mus-q-0021) | question | How long should the reader outlive its last viewer? |
+| [MUS-Q-0022](questions.md#mus-q-0022) | question | What should the idle timeout on a session socket mean? |
+| [MUS-Q-0023](questions.md#mus-q-0023) | question | Should a WebSocket handshake carrying no Origin header be refused? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -147,6 +151,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0079](decisions.md#mus-d-0079) | decision | The buffer is seeded from the pane, not only from the pipe |
 | [MUS-D-0080](decisions.md#mus-d-0080) | decision | A WebSocket library rather than hand-rolled framing |
 | [MUS-D-0081](decisions.md#mus-d-0081) | decision | The origin check refuses a handshake with no Origin at all |
+| [MUS-D-0082](decisions.md#mus-d-0082) | decision | The answer path is no longer the only caller, and the entries saying it is stay put |
+| [MUS-D-0083](decisions.md#mus-d-0083) | decision | The idle timeout was a lie about the session |
+| [MUS-D-0084](decisions.md#mus-d-0084) | decision | A viewer that falls behind is disconnected, not quietly starved |
+| [MUS-D-0085](decisions.md#mus-d-0085) | decision | The bar grows in three templates, not one |
+| [MUS-D-0086](decisions.md#mus-d-0086) | decision | The exit is logged, and supervision only runs while somebody is watching |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

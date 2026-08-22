@@ -315,6 +315,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{range .Recent}}<li><code>{{.ID}}</code> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
+  <a href="/sessions">Sessions</a>
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake" class="here">Intake</a>
 </nav>

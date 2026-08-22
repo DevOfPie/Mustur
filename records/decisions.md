@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-81 record(s), by identifier.
+86 record(s), by identifier.
 
 ## Index
 
@@ -93,6 +93,11 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0079](#mus-d-0079) | The buffer is seeded from the pane, not only from the pipe | 2026-08-22 |
 | [MUS-D-0080](#mus-d-0080) | A WebSocket library rather than hand-rolled framing | 2026-08-22 |
 | [MUS-D-0081](#mus-d-0081) | The origin check refuses a handshake with no Origin at all | 2026-08-22 |
+| [MUS-D-0082](#mus-d-0082) | The answer path is no longer the only caller, and the entries saying it is stay put | 2026-08-22 |
+| [MUS-D-0083](#mus-d-0083) | The idle timeout was a lie about the session | 2026-08-22 |
+| [MUS-D-0084](#mus-d-0084) | A viewer that falls behind is disconnected, not quietly starved | 2026-08-22 |
+| [MUS-D-0085](#mus-d-0085) | The bar grows in three templates, not one | 2026-08-22 |
+| [MUS-D-0086](#mus-d-0086) | The exit is logged, and supervision only runs while somebody is watching | 2026-08-22 |
 
 ---
 
@@ -1341,3 +1346,84 @@ Browsers always send Origin on a WebSocket handshake, so its absence means the c
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#the-origin-check-refuses-a-handshake-with-no-origin-at-all](../decisions.md#the-origin-check-refuses-a-handshake-with-no-origin-at-all) |
+
+---
+
+## MUS-D-0082
+
+**The answer path is no longer the only caller, and the entries saying it is stay put**
+
+decision · 2026-08-22
+
+Corrects: [MUS-D-0063](#mus-d-0063)
+
+Raised by: [MUS-Q-0018](questions.md#mus-q-0018)
+
+MUS-D-0063 named three limits on typing into an agent and called them enforced rather than documented; MUS-D-0070 removed an operator verb specifically to keep the third true. The session composer is a second caller, taking arbitrary text with no owner-answered framing. The capability is the owner's, taken on MUS-Q-0018; both earlier entries are append-only and could not be edited, so this is the correction. One of the three limits survives — the ownership option, the one enforced in code — and the other two are now true of the answer path and not of the surface.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-answer-path-is-no-longer-the-only-caller-and-the-entries-saying-it-is-stay-put](../decisions.md#the-answer-path-is-no-longer-the-only-caller-and-the-entries-saying-it-is-stay-put) |
+
+---
+
+## MUS-D-0083
+
+**The idle timeout was a lie about the session**
+
+decision · 2026-08-22
+
+Raised by: [MUS-Q-0022](questions.md#mus-q-0022)
+
+Corrects: [MUS-D-0075](#mus-d-0075)
+
+The socket's idle timer was created once and never reset, so thirty minutes after a tab opened it sent ended and closed whatever the session was doing. The client then said Nothing is running about a session that was, disabled the composer, and did not reconnect. It resets on output or typing now, and a genuinely idle socket gets an ordinary close the client treats as a disconnect. That also repairs MUS-D-0075's stated reason for an always-writable composer — a tab left open in a pocket could not type after thirty minutes, which was not the argument anybody made.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 4b review, measured with a ten-second build against a session printing every 200ms |
+| Rationale | [decisions.md#the-idle-timeout-was-a-lie-about-the-session](../decisions.md#the-idle-timeout-was-a-lie-about-the-session) |
+
+---
+
+## MUS-D-0084
+
+**A viewer that falls behind is disconnected, not quietly starved**
+
+decision · 2026-08-22
+
+The fan-out skipped a viewer whose buffer was full. Go discards the new item, so that viewer kept receiving a contiguous but ever-staler prefix with no sequence jump for anything to notice — measured 8 MB behind with zero holes and zero notice, under a comment claiming the viewer would resume from its own sequence, which nothing implemented. Closing the channel ends that socket and the client reconnects from the offset it reached.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-viewer-that-falls-behind-is-disconnected-not-quietly-starved](../decisions.md#a-viewer-that-falls-behind-is-disconnected-not-quietly-starved) |
+
+---
+
+## MUS-D-0085
+
+**The bar grows in three templates, not one**
+
+decision · 2026-08-22
+
+Corrects: [MUS-D-0057](#mus-d-0057)
+
+MUS-D-0057 says the bar renders the built surfaces and grows as the rest arrive. Sessions arrived, the session page rendered three tabs, and the other two surfaces went on rendering two — three different bars in one binary, and the promise was made in the file that did not keep it. A promise kept in three templates at once needs a test that reads all three. Same shape as the queue being reachable from intake only when it had something to say: a rule stated in one place and implemented in one place, while the rule was about every place.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-bar-grows-in-three-templates-not-one](../decisions.md#the-bar-grows-in-three-templates-not-one) |
+
+---
+
+## MUS-D-0086
+
+**The exit is logged, and supervision only runs while somebody is watching**
+
+decision · 2026-08-22
+
+stream.go claimed an exit is reported on the surface and in the log before anything logged anything; it does now. The limitation underneath is stated rather than fixed quietly: the reader is started by a viewer, so a session nobody has looked at is not being watched, and an exit is noticed when a tab is open on it or not at all. Watching every owned session would mean polling tmux continuously for sessions nobody is reading, and that trade has not been made.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching](../decisions.md#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching) |

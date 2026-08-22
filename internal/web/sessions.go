@@ -7,7 +7,9 @@ package web
 // one is server-rendered with no script, no stylesheet, no font and no image,
 // and that stays the rule — a live terminal simply cannot be server-rendered.
 // The stack table names this as the exception so the rule is not quietly
-// dropped, and the script here is the only script in the tree.
+// dropped, and this is the only *page* that carries one. (A tracked .js file
+// also exists under docs/investigations — a fixture from milestone 1, served to
+// nobody.)
 //
 // **The origin check is the control, not hardening.** The composer is always
 // writable (MUS-Q-0018), so there is no second layer: this check and the Access
@@ -56,9 +58,8 @@ type Sessions struct {
 	Adapter *session.Adapter
 	// Store is read only for the count the Decisions tab carries. Nil means the
 	// tab renders without one.
-	Store   *store.Store
-	Project string
-	Actor   string
+	Store *store.Store
+	Actor string
 	Now     func() time.Time
 }
 
@@ -225,7 +226,16 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if gap {
-		if err := send(frame{T: "gap", Lost: from - at}); err != nil {
+		// at is the oldest byte still held, so the loss is at-from. Written the
+		// other way round it reported a negative count, which the client
+		// rendered to the reader verbatim: "[-7988948 bytes … were not kept]".
+		// A viewer whose offset is ahead of this stream was reading a previous
+		// one, and how much it missed is not knowable — zero says so.
+		lost := at - from
+		if lost < 0 {
+			lost = 0
+		}
+		if err := send(frame{T: "gap", Lost: lost}); err != nil {
 			return
 		}
 	}
@@ -235,17 +245,25 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	go s.readInput(conn, cancel, c, project, s.actor(r))
-
+	// Reset on activity. The timer used to be created once and never touched,
+	// which made it a cap on the connection's age rather than on its idleness:
+	// after thirty minutes a tab watching a working session was told the
+	// session had ended, and the client stopped reconnecting. Idle means the
+	// session is quiet, not that the tab is old (MUS-Q-0022).
 	idle := time.NewTimer(IdleTimeout)
 	defer idle.Stop()
+
+	go s.readInput(conn, cancel, c, project, s.actor(r), idle)
 
 	for {
 		select {
 		case <-conn.Done():
 			return
 		case <-idle.C:
-			_ = send(frame{T: "ended", Error: "idle"})
+			// Not "ended" — the session is very likely still running and only
+			// this connection is going. The client treats it as a disconnect
+			// and reconnects if anyone is still looking.
+			_ = c.Close(websocket.StatusNormalClosure, "idle")
 			return
 		case u, ok := <-sub.C:
 			if !ok {
@@ -258,8 +276,21 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			if err := send(frame{T: "out", Seq: u.Seq, Text: u.Text}); err != nil {
 				return
 			}
+			resetIdle(idle, IdleTimeout)
 		}
 	}
+}
+
+// resetIdle restarts the timer, draining it first so a reset that races the
+// fire does not leave a stale tick queued.
+func resetIdle(t *time.Timer, d time.Duration) {
+	if !t.Stop() {
+		select {
+		case <-t.C:
+		default:
+		}
+	}
+	t.Reset(d)
 }
 
 // readInput carries what the viewer typed into the session.
@@ -267,7 +298,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 // Ownership is re-checked on every message rather than only at connect: a
 // socket opened against a live session must not keep writing to that project's
 // name after the session ends and a different one is started under it.
-func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Conn, project, actor string) {
+func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Conn, project, actor string, idle *time.Timer) {
 	defer cancel()
 	c.SetReadLimit(MaxInput)
 	last := time.Time{}
@@ -296,6 +327,9 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 		if err := s.Adapter.Send(ctx, project, text); err != nil {
 			return
 		}
+		// Typing counts as activity, so a session the owner is talking to does
+		// not time out mid-conversation.
+		resetIdle(idle, IdleTimeout)
 	}
 }
 
@@ -370,7 +404,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake">Intake</a>
 </nav>
-<script src="/assets/session.js"></script>
+{{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
 </body>
 </html>
 `))

@@ -101,6 +101,11 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The buffer is seeded from the pane, not only from the pipe](#the-buffer-is-seeded-from-the-pane-not-only-from-the-pipe) | pipe-pane carries nothing that happened before it |
 | [A WebSocket library rather than hand-rolled framing](#a-websocket-library-rather-than-hand-rolled-framing) | Not on the path that types into an agent |
 | [The origin check refuses a handshake with no Origin at all](#the-origin-check-refuses-a-handshake-with-no-origin-at-all) | It is the control, not hardening |
+| [The answer path is no longer the only caller, and the entries saying it is stay put](#the-answer-path-is-no-longer-the-only-caller-and-the-entries-saying-it-is-stay-put) | One of MUS-D-0063's three limits survives |
+| [The idle timeout was a lie about the session](#the-idle-timeout-was-a-lie-about-the-session) | Thirty minutes of a live session read as ended |
+| [A viewer that falls behind is disconnected, not quietly starved](#a-viewer-that-falls-behind-is-disconnected-not-quietly-starved) | Skipping left it 8 MB behind with no notice |
+| [The bar grows in three templates, not one](#the-bar-grows-in-three-templates-not-one) | Three different bars in one binary |
+| [The exit is logged, and supervision only runs while somebody is watching](#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching) | A session nobody opened is not being watched |
 
 ---
 
@@ -1575,3 +1580,72 @@ cookies with the handshake. Without this check, a page the owner merely visited
 could open a socket here on their authenticated session and type into an agent.
 It is the control, not hardening, and it is the first thing the verification
 list tests.
+
+## 2026-08-22 — what the milestone 4b review changed
+
+### The answer path is no longer the only caller, and the entries saying it is stay put
+
+[MUS-D-0063](#mustur-can-type-into-a-session-it-started) named three limits on
+typing into an agent and called them "enforced rather than documented": the
+ownership option, the self-describing text, and the answer path being the only
+caller. [MUS-D-0070](#there-is-no-session-send) removed an operator verb
+specifically to keep the third true.
+
+The session composer is a second caller. It takes arbitrary text and sends it
+with no *"The owner answered …"* framing, because it is not answering anything.
+
+The capability is the owner's, taken on `MUS-Q-0018` with the trade named. What
+was missing is this entry: both of those are append-only and neither could be
+edited, so the correction is here. **One of the three limits survives** — the
+ownership option — and it is the one enforced in code. The other two are now
+true of the answer path and not of the surface.
+
+### The idle timeout was a lie about the session
+
+Thirty minutes after a tab opened, the socket sent `ended` and closed, whatever
+the session was doing; the timer was created once and never reset. The client
+then said *"Nothing is running"* about a session that was, disabled the
+composer, and did not reconnect.
+
+It resets on activity now — output or typing — and a genuinely idle socket gets
+an ordinary close, which the client treats as a disconnect. `ended` means the
+session ended.
+
+That also repairs MUS-D-0075's stated reason for an always-writable composer:
+*"a tab left open in a pocket could not type"*. After thirty minutes it could
+not, which was not the argument anybody made.
+
+### A viewer that falls behind is disconnected, not quietly starved
+
+The fan-out skipped a viewer whose buffer was full. Go discards the *new* item,
+so that viewer kept receiving a contiguous but ever-staler prefix — no sequence
+jump, nothing to notice. A review measured one 8 MB behind with zero holes and
+zero notice, under a comment claiming "the viewer will resume from its own
+sequence", which nothing implemented.
+
+Closing the channel ends that socket and the client reconnects from the offset
+it actually reached, which is what the comment always claimed. A stalled tab
+still cannot hold up the reader or the other viewers.
+
+### The bar grows in three templates, not one
+
+`MUS-D-0057` says the bar "renders the built ones and grows as the rest arrive".
+Sessions arrived, the session page rendered three tabs, and the other two
+surfaces went on rendering two — three different bars in one binary, and the
+promise was made in the file that did not keep it.
+
+A promise that has to be kept in three templates at once needs a test that reads
+all three, and now has one. This is the same shape as the queue being reachable
+from intake only when it had something to say: a rule stated in one place and
+implemented in one place, while the rule was about every place.
+
+### The exit is logged, and supervision only runs while somebody is watching
+
+`stream.go` claimed an exit "is reported on the surface and in the log" before
+anything logged anything. It does now.
+
+The limitation underneath is worth stating rather than fixing quietly: the
+reader is started by a viewer, so **a session nobody has looked at is not being
+watched**. An exit is noticed when a tab is open on it, or not at all. Watching
+every owned session would mean polling tmux continuously for sessions nobody is
+reading, and that trade has not been made.

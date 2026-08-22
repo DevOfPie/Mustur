@@ -10,12 +10,19 @@
 #
 # **Never enable this on a host whose hostname is not already behind Cloudflare
 # Access.** The tunnel routes mustur.devofpie.com to 127.0.0.1:7777, so starting
-# this publishes the intake box. The surface reads the filer's identity from a
-# header Access sets at the edge, and cloudflared passes client headers through
-# — with no Access application in front, anyone reaching the hostname can file a
-# jot and claim to be anyone. On mustur.devofpie.com that gate went up first and
-# the unit is enabled; the rule is stated for the next host, not as a note about
-# this one. docs/ingress.md carries the order and the reason.
+# this publishes every surface on that port.
+#
+# Since milestone 4b that is no longer only the intake box. The session surface
+# is on the same mux, so an unprotected hostname is **a writable channel into a
+# running agent's stdin** — not somebody filing a jot under the wrong name. The
+# WebSocket refuses a cross-origin handshake, which stops a page the owner
+# visited from opening one; it does nothing about somebody who simply reaches
+# the hostname. Access is what does that, and MUS-Q-0018 is explicit that Access
+# and the origin check are the whole of the defence.
+#
+# On mustur.devofpie.com the gate went up before anything listened and the unit
+# is enabled; the rule is stated for the next host. docs/ingress.md carries the
+# order and the reason.
 
 [Unit]
 Description=Mustur — records, routing and intake

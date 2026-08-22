@@ -4,10 +4,12 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/DevOfPie/Mustur/internal/session"
+	"github.com/DevOfPie/Mustur/internal/store"
 )
 
 // fakeRunner replies to tmux commands from a script so the surface can be
@@ -24,7 +26,7 @@ func (f fakeRunner) Run(_ context.Context, _ string, args ...string) (string, er
 func serveSessions(t *testing.T, listing string) *httptest.Server {
 	t.Helper()
 	a := &session.Adapter{Run: fakeRunner{listing: listing}}
-	s := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Project: "MUS", Actor: "pie"}
+	s := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie"}
 	mux := http.NewServeMux()
 	s.Routes(mux)
 	srv := httptest.NewServer(mux)
@@ -164,19 +166,80 @@ func TestThePageSaysWhenMusturDidNotStartTheSession(t *testing.T) {
 	}
 }
 
-// The exception is this surface and no other. If the script leaks anywhere
-// else, the stack table's rule has quietly become a suggestion.
+// The exception is this surface and no other. The first version of this test
+// asserted only that the session page *does* load the client and checked no
+// other surface — it could not fail for the reason its name gave.
 func TestOnlyTheSessionSurfaceCarriesScript(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
+	if !strings.Contains(getFrom(t, srv, "/sessions/Mustur"), "/assets/session.js") {
+		t.Error("the session page does not load the client")
+	}
 
-	res, err := srv.Client().Get(srv.URL + "/sessions/Mustur")
+	// Every other surface, served from its own handler, must carry none.
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer res.Body.Close()
-	b := make([]byte, 16384)
-	n, _ := res.Body.Read(b)
-	if !strings.Contains(string(b[:n]), "/assets/session.js") {
-		t.Error("the session page does not load the client")
+	defer st.Close()
+
+	in := &Intake{Store: st, Project: "MUS", Actor: "pie"}
+	q := &Questions{Store: st, Project: "MUS", Actor: "pie"}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	mux.Handle("/", in.Handler())
+	other := httptest.NewServer(mux)
+	defer other.Close()
+
+	for _, path := range []string{"/intake", "/questions"} {
+		if body := getFrom(t, other, path); strings.Contains(body, "<script") {
+			t.Errorf("%s carries script; the exception has become a suggestion", path)
+		}
 	}
 }
+
+// A page with no socket and no composer has nothing for the client to do, and
+// loading it there was the exception spreading by accident rather than by
+// decision.
+func TestAPageWithNoSessionCarriesNoScript(t *testing.T) {
+	srv := serveSessions(t, "")
+	if body := getFrom(t, srv, "/sessions/nosuchproject"); strings.Contains(body, "<script") {
+		t.Error("the no-session page loads the client")
+	}
+}
+
+// "The bar grows as the rest arrive" is a promise that has to be kept in three
+// templates at once. Sessions arrived at 4b and only its own page grew, leaving
+// two, two and three tabs in one binary.
+func TestEverySurfaceCarriesTheSameBar(t *testing.T) {
+	tabs := []string{`href="/sessions"`, `href="/questions"`, `href="/intake"`}
+
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	st, err := store.Open(context.Background(), filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+
+	in := &Intake{Store: st, Project: "MUS", Actor: "pie"}
+	q := &Questions{Store: st, Project: "MUS", Actor: "pie"}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	mux.Handle("/", in.Handler())
+	other := httptest.NewServer(mux)
+	defer other.Close()
+
+	pages := map[string]string{
+		"/sessions/Mustur": getFrom(t, srv, "/sessions/Mustur"),
+		"/questions":       getFrom(t, other, "/questions"),
+		"/intake":          getFrom(t, other, "/intake"),
+	}
+	for path, body := range pages {
+		for _, tab := range tabs {
+			if !strings.Contains(body, tab) {
+				t.Errorf("%s is missing %s from its bar", path, tab)
+			}
+		}
+	}
+}
+

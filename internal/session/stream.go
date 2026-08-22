@@ -6,10 +6,11 @@ package session
 // Three things shape this file.
 //
 // **One reader per session, not per viewer.** `tmux pipe-pane` is opened when
-// the first viewer arrives and closed when the last one leaves. Two tabs on the
-// same session share it. That is what keeps the client flat as sessions
-// multiply, which is a constraint every surface inherits rather than an
-// optimisation.
+// the first viewer arrives, and closed a while after the last one leaves — see
+// LingerAfter, which exists because closing it immediately is what would make a
+// dropped phone connection lose its place. Two tabs on the same session share
+// one reader. That is what keeps the client flat as sessions multiply, which is
+// a constraint every surface inherits rather than an optimisation.
 //
 // **The sequence number is a byte count.** Every byte the session has produced
 // since the reader opened has an offset, and a viewer resuming says which
@@ -28,6 +29,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,6 +56,16 @@ const BufferBytes = 256 << 10
 // it, the session is still running and the next viewer simply starts fresh from
 // what the pane already holds.
 var LingerAfter = 2 * time.Minute
+
+// captureLines is how far back the seed reads the pane's scrollback. tmux keeps
+// its own history; this asks for the part of it a viewer might plausibly scroll
+// to, and the byte cap in BufferBytes is what actually bounds memory.
+const captureLines = "-2000"
+
+// overlapWindow is how much of the seed's tail is compared against the first
+// bytes off the pipe, looking for the duplicate seam. Larger than any plausible
+// overlap and small enough to compare cheaply once per reader.
+const overlapWindow = 8 << 10
 
 // pollEvery is how often a reader checks whether its session is still alive.
 // The pipe closing is the usual signal; this catches the case where it does
@@ -143,6 +155,22 @@ func (h *Hub) Attach(ctx context.Context, project string, from int64) (*Sub, []b
 		h.streams = map[string]*Stream{}
 	}
 	s := h.streams[project]
+	// A stream that has ended is not this session's, whatever it is keyed by.
+	// A session stopped and restarted under the same project inside the linger
+	// window used to hand the new viewer the dead one's buffer, labelled
+	// running, with no reader open and no ended frame — a frozen replay of
+	// something that was over. Discard it and read the live pane instead.
+	if s != nil && s.hasEnded() {
+		if s.linger != nil {
+			s.linger.Stop()
+			s.linger = nil
+		}
+		if s.stop != nil {
+			s.stop()
+		}
+		delete(h.streams, project)
+		s = nil
+	}
 	if s == nil {
 		s = &Stream{project: project, subs: map[chan Update]struct{}{}, done: make(chan struct{})}
 		h.streams[project] = s
@@ -172,7 +200,12 @@ func (h *Hub) Attach(ctx context.Context, project string, from int64) (*Sub, []b
 func (sub *Sub) Close() {
 	s := sub.stream
 	s.mu.Lock()
-	delete(s.subs, sub.ch)
+	// Only close it if broadcast has not already, which it does to a viewer
+	// that fell too far behind.
+	if _, live := s.subs[sub.ch]; live {
+		delete(s.subs, sub.ch)
+		close(sub.ch)
+	}
 	s.mu.Unlock()
 
 	h := sub.hub
@@ -195,8 +228,6 @@ func (sub *Sub) Close() {
 		})
 	}
 	h.mu.Unlock()
-
-	close(sub.ch)
 }
 
 // Shutdown stops every reader. For a server going down, and for a test that
@@ -231,7 +262,16 @@ func (s *Stream) since(from int64) (out []byte, at int64, gap bool) {
 		// exists; only the second is told something is missing.
 		return append([]byte(nil), s.buf...), oldest, from > 0 && from < oldest
 	}
-	if from >= s.next {
+	if from > s.next {
+		// The viewer is ahead of this stream, which means it is not the stream
+		// it was reading: the reader was restarted while it was away and the
+		// byte offsets began again at zero. Silently handing it the new
+		// stream's position loses everything between, which a review measured
+		// at 5,550 lines with nothing said. It is a gap, and the honest answer
+		// is that the size is unknown.
+		return append([]byte(nil), s.buf...), oldest, true
+	}
+	if from == s.next {
 		return nil, s.next, false
 	}
 	return append([]byte(nil), s.buf[from-oldest:]...), from, false
@@ -250,6 +290,12 @@ func (s *Stream) append(text []byte, at time.Time) {
 	s.mu.Unlock()
 }
 
+func (s *Stream) hasEnded() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.ended
+}
+
 func (s *Stream) end(at time.Time) {
 	s.mu.Lock()
 	if !s.ended {
@@ -259,14 +305,25 @@ func (s *Stream) end(at time.Time) {
 	s.mu.Unlock()
 }
 
-// broadcast is called with the lock held. A viewer whose buffer is full is
-// skipped rather than waited for: one stalled tab must not hold up the reader
-// or the other viewers, and the viewer will resume from its own sequence.
+// broadcast is called with the lock held.
+//
+// A viewer whose buffer is full is **disconnected**, not skipped. Skipping was
+// the first attempt and it is worse than it looks: Go discards the new item, so
+// the viewer keeps receiving a contiguous but ever-staler prefix with no
+// sequence jump for anything to notice. A review measured a viewer ending 8 MB
+// behind with zero holes and zero notice.
+//
+// Closing the channel ends that viewer's socket, and the client reconnects
+// asking to resume from the offset it actually reached — which is what the old
+// comment claimed happened and nothing implemented. One stalled tab still does
+// not hold up the reader or the other viewers.
 func (s *Stream) broadcast(u Update) {
 	for ch := range s.subs {
 		select {
 		case ch <- u:
 		default:
+			delete(s.subs, ch)
+			close(ch)
 		}
 	}
 }
@@ -288,6 +345,8 @@ func (h *Hub) start(s *Stream) {
 			_, _ = h.Adapter.runner().Run(off, "tmux", "pipe-pane", "-t", name)
 			offCancel()
 		}()
+
+		var seedTail string
 
 		dir := h.Dir
 		if dir == "" {
@@ -327,9 +386,19 @@ func (h *Hub) start(s *Stream) {
 		// taken once, before the first byte off the pipe, so the buffer reads
 		// in order.
 		if out, err := h.Adapter.runner().Run(ctx, "tmux",
-			"capture-pane", "-p", "-J", "-S", "-2000", "-t", name); err == nil {
+			"capture-pane", "-p", "-J", "-S", captureLines, "-t", name); err == nil {
 			if trimmed := strings.TrimRight(out, "\n \t"); trimmed != "" {
-				s.append([]byte(trimmed+"\n"), time.Now())
+				seeded := trimmed + "\n"
+				s.append([]byte(seeded), time.Now())
+				// The seed and the pipe overlap: anything the pane printed
+				// between capture-pane reading it and pipe-pane delivering it
+				// arrives twice. A review saw 6-11 duplicated lines on four of
+				// six sessions at 50 lines/s, invisible at 5. Keep the tail so
+				// the first chunk off the pipe can have that overlap removed.
+				seedTail = seeded
+				if len(seedTail) > overlapWindow {
+					seedTail = seedTail[len(seedTail)-overlapWindow:]
+				}
 			}
 		}
 
@@ -345,16 +414,62 @@ func (h *Hub) start(s *Stream) {
 
 		r := bufio.NewReader(f)
 		chunk := make([]byte, 4096)
+		first := true
 		for {
 			n, err := r.Read(chunk)
 			if n > 0 {
-				s.append(chunk[:n], time.Now())
+				text := chunk[:n]
+				if first {
+					text = dropOverlap(seedTail, text)
+					first = false
+				}
+				if len(text) > 0 {
+					s.append(text, time.Now())
+				}
 			}
 			if err != nil {
 				return
 			}
 		}
 	}()
+}
+
+// dropOverlap removes from next any prefix that duplicates a suffix of seed.
+//
+// capture-pane and pipe-pane both carry whatever the pane printed while the
+// reader was being set up, so the join between them repeats a few lines. Line
+// endings differ between the two — capture gives \n, the pipe gives \r\n — so
+// the comparison is made on normalised copies and the cut is applied to the
+// original.
+func dropOverlap(seed string, next []byte) []byte {
+	if seed == "" || len(next) == 0 {
+		return next
+	}
+	norm := func(b []byte) []byte { return []byte(strings.ReplaceAll(string(b), "\r\n", "\n")) }
+	ns, nn := norm([]byte(seed)), norm(next)
+
+	max := len(ns)
+	if len(nn) < max {
+		max = len(nn)
+	}
+	for n := max; n > 0; n-- {
+		if string(ns[len(ns)-n:]) != string(nn[:n]) {
+			continue
+		}
+		// Walk the original forward until the same number of normalised bytes
+		// has been consumed, so \r\n pairs are cut whole.
+		consumed, i := 0, 0
+		for i < len(next) && consumed < n {
+			if next[i] == '\r' && i+1 < len(next) && next[i+1] == '\n' {
+				i += 2
+			} else {
+				i++
+			}
+			consumed++
+		}
+		return next[i:]
+	}
+	return next
 }
 
 // watch is supervision, and it is the whole of it: notice that a session is
@@ -374,7 +489,14 @@ func (h *Hub) watch(ctx context.Context, s *Stream) {
 				continue
 			}
 			if !live {
-				s.end(time.Now())
+				at := time.Now()
+				s.end(at)
+				// Recorded where an exit belongs: the surface and the log, and
+				// nowhere in records/ (MUS-Q-0019). The claim that this is
+				// "reported in the log" was in the file's own header before
+				// anything logged anything.
+				log.Printf("mustur: session %s%s ended at %s",
+					Prefix, s.project, at.Format("2006-01-02 15:04:05"))
 				return
 			}
 		}

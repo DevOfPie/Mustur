@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-19 record(s), by identifier.
+23 record(s), by identifier.
 
 ---
 
@@ -424,4 +424,99 @@ Supervision notices an exit and records it. The store is insert-only and exports
 | Surfaced | 2026-08-21 23:14 |
 | Answer | The surface and the service log, nothing in records/. An exit is an event, not a record anyone cites. |
 | Answered | 2026-08-21 23:14 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0020
+
+**A WebSocket library, or RFC 6455 by hand?**
+
+question · 2026-08-22
+
+The session socket needs WebSocket framing. This was decided by the builder and written into MUS-D-0080 without being asked, which is the failure this project is named after; it is being put properly now. coder/websocket is pure Go with no transitive dependencies, so the static binary stays static.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4b's dependency surface |
+| Needed to proceed | yes |
+| Option | coder/websocket :: Recommended · a vetted implementation on the path that types into an agent :: Masking, fragmentation, close handshakes and ping/pong all come from a maintained library rather than from this repository. One new direct dependency, no transitive ones. |
+| Option | Hand-roll RFC 6455 :: Zero dependencies, and the framing is ours to get wrong :: Around two hundred lines. The repository already prizes a small dependency surface, and this is the one place where getting framing wrong is a security bug rather than a rendering one. |
+| Option | Server-sent events instead :: One direction, and no framing at all :: SSE is plain HTTP and needs no library. It cannot carry the composer's keystrokes, so input would need a separate POST — which is arguably better isolation, and is a different design from the approved artboard. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | coder/websocket. A vetted implementation on the path that types into an agent. |
+| Answered | 2026-08-22 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0021
+
+**How long should the reader outlive its last viewer?**
+
+question · 2026-08-22
+
+The reader currently lingers two minutes after the last viewer leaves, so a reconnect inside that window is continuous. A review found that beyond it output is lost silently — the stream restarts at zero and no gap is reported. The silence is a bug and is being fixed regardless; how long the window should be is the decision.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a dropped phone connection keeps its place |
+| Needed to proceed | yes |
+| Option | Two minutes :: Recommended · covers a dropped connection, not a closed tab :: Long enough for a lift, a tunnel or a backgrounded phone. A tab closed deliberately stops costing anything a couple of minutes later. |
+| Option | While the session lives :: Never lose continuity, and never stop reading :: The reader stays open as long as the session does, so any reconnect resumes exactly. Costs one pipe and up to 256 KB per running session whether or not anyone is watching. |
+| Option | Fifteen minutes :: A commute, not a lift :: Covers being away from the phone rather than a momentary drop, at fifteen times the idle cost of two minutes. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | Two minutes. It covers a dropped connection rather than a closed tab; losing output beyond it silently is a bug to fix, not a reason to widen the window. |
+| Answered | 2026-08-22 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0022
+
+**What should the idle timeout on a session socket mean?**
+
+question · 2026-08-22
+
+The socket closes after thirty minutes and the timer is never reset, so the tab shows 'ended' and 'Nothing is running' while the session is still running, and does not reconnect. A review measured it. The lie is a bug either way; what the timeout should mean is the decision.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a tab left open reads as a dead session |
+| Needed to proceed | yes |
+| Option | Reset on activity :: Recommended · idle means the session is quiet, not that the tab is old :: The timer resets whenever output arrives or the viewer types, so only a genuinely silent session drops. A tab watching a working session stays connected. |
+| Option | No timeout at all :: A socket costs almost nothing :: Simplest and most honest. It also means a tab in a drawer holds a writable channel into an agent indefinitely, which is the thing the timeout was for. |
+| Option | Keep the lifetime cap, but reconnect :: The socket recycles and the tab does not lie :: The cap stays as a bound on any one connection, and the client treats the close as a disconnect rather than an ending. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | Reset on activity. Idle means the session is quiet, not that the tab is old. |
+| Answered | 2026-08-22 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0023
+
+**Should a WebSocket handshake carrying no Origin header be refused?**
+
+question · 2026-08-22
+
+Browsers always send Origin on a WebSocket handshake, so its absence means the client is not a browser. The socket refuses it. That was the builder's call, written into MUS-D-0081 without being asked. It is strict: it also refuses curl, a script, and anything else that might legitimately want to watch a session.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | nothing; it is built this way and works |
+| Option | Refuse it :: Recommended · this path types into an agent :: A client that declines to identify where it came from has no business on the one socket that carries keystrokes into a running agent. Strictness costs a use case nobody has asked for yet. |
+| Option | Allow it :: A non-browser client is not automatically hostile :: Watching a session from a script or from curl becomes possible. The origin check then protects browsers only, which is who it was written for anyway. |
+| Option | Allow read-only, refuse input :: Split the difference :: A client without an Origin can watch and cannot type. More code, and the composer's authorisation stops being one rule. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | Refuse it. A client that will not say where it came from has no business on the socket that types into an agent. |
+| Answered | 2026-08-22 10:40 |
 | Delivered | not delivered: the question names no session |

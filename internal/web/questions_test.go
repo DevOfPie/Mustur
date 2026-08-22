@@ -382,14 +382,20 @@ func TestTheQueueIsReachableFromIntakeWhenNothingIsOpen(t *testing.T) {
 }
 
 // A tab that goes nowhere is an unbuilt capability described as existing.
+//
+// The list of built surfaces moves as milestones land, so this asserts the rule
+// rather than a snapshot: everything built has a tab, and nothing unbuilt does.
+// Sessions was on the unbuilt side until milestone 4b and had to move.
 func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
 	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
 	body := getFrom(t, srv, "/questions")
 
-	if !strings.Contains(body, `href="/intake"`) {
-		t.Error("no tab for the intake surface, which exists")
+	for _, built := range []string{"/intake", "/sessions"} {
+		if !strings.Contains(body, `href="`+built+`"`) {
+			t.Errorf("no tab for %s, which is built", built)
+		}
 	}
-	for _, unbuilt := range []string{"/sessions", "/records"} {
+	for _, unbuilt := range []string{"/records"} {
 		if strings.Contains(body, `href="`+unbuilt+`"`) {
 			t.Errorf("a tab points at %s, which is not built", unbuilt)
 		}

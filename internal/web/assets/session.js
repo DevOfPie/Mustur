@@ -84,16 +84,24 @@
       }
       if (f.t === "hello") {
         if (typeof f.seq === "number") seq = f.seq;
+        // The server says how long the session has already been silent, so the
+        // counter continues rather than restarting at zero on every page load.
+        if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
         if (scrollback) scrollback.textContent = "live";
       } else if (f.t === "out") {
         append(f.text || "");
         if (typeof f.seq === "number") seq = f.seq;
         lastOutput = Date.now();
       } else if (f.t === "gap") {
-        // Told what was missed rather than shown a hole where it was.
+        // Told what was missed rather than shown a hole where it was. A zero
+        // means the reader restarted while we were away and how much was
+        // produced in between is not knowable — saying "some" is honest where
+        // a number would not be.
+        var lost = f.lostBytes || 0;
         append(
-          "\n[" + (f.lostBytes || 0) + " bytes of output are older than the " +
-            "buffer and were not kept]\n"
+          lost > 0
+            ? "\n[" + lost + " bytes of earlier output were not kept]\n"
+            : "\n[output produced while this tab was away was not kept]\n"
         );
       } else if (f.t === "ended") {
         closed = true;

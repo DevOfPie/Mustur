@@ -1,9 +1,10 @@
 // Command mustur holds a project's records and routing, and serves them to a
 // session that is told to ask.
 //
-// Nothing here talks to an agent process. This binary is the store, the
-// export, and the one tool call the injection kit mandates; sessions arrive at
-// a later milestone.
+// This binary is the store, the export, the one tool call the injection kit
+// mandates, the surfaces those are read and answered through — and, since
+// milestone 4a, the adapter that starts agent sessions inside tmux and can type
+// into one it started.
 package main
 
 import (
@@ -438,13 +439,12 @@ func cmdServe(args []string) error {
 	// queue is reachable at a hostname whose "/" belongs to intake.
 	questions.Routes(mux)
 	adapter := &session.Adapter{}
-	sessions := &web.Sessions{
-		Hub:     &session.Hub{Adapter: adapter},
-		Adapter: adapter,
-		Store:   s,
-		Project: *project,
-		Actor:   defaultActor(),
-	}
+	hub := &session.Hub{Adapter: adapter}
+	// Readers hold a fifo and a tmux pipe-pane each; without this a server that
+	// goes down leaves both behind, with tmux still writing into a pipe nobody
+	// will ever read.
+	defer hub.Shutdown()
+	sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor()}
 	sessions.Routes(mux)
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
