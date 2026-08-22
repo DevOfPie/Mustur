@@ -97,6 +97,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The session composer is always writable](#the-session-composer-is-always-writable) | And what that puts on the origin check |
 | [A session's exit is an event, not a record](#a-sessions-exit-is-an-event-not-a-record) | The line already drawn around session output |
 | [A surface reachable only when it has something to say is not reachable](#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable) | The owner found it by loading the site |
+| [The reader lingers after the last viewer leaves](#the-reader-lingers-after-the-last-viewer-leaves) | Otherwise a dropped phone loses the session's continuity |
+| [The buffer is seeded from the pane, not only from the pipe](#the-buffer-is-seeded-from-the-pane-not-only-from-the-pipe) | pipe-pane carries nothing that happened before it |
+| [A WebSocket library rather than hand-rolled framing](#a-websocket-library-rather-than-hand-rolled-framing) | Not on the path that types into an agent |
+| [The origin check refuses a handshake with no Origin at all](#the-origin-check-refuses-a-handshake-with-no-origin-at-all) | It is the control, not hardening |
 
 ---
 
@@ -1514,3 +1518,60 @@ arrive, exactly as it does on the queue. The banner stays beside it rather than
 being replaced: the bar is the fixed place the eye knows to check, and the
 banner is what makes an open decision impossible to miss on whichever surface
 was opened. That is the pair MUS-D-0041 argued for, not an alternative to it.
+
+## 2026-08-22 — decisions taken while building milestone 4b
+
+### The reader lingers after the last viewer leaves
+
+The plan said `pipe-pane` is opened when the first viewer arrives and closed
+when the last one leaves. Building it showed that is wrong for the case the
+milestone exists for.
+
+One owner with one phone **is** the last viewer. Closing the reader when they
+disconnect throws away the buffer and the byte offsets, so reconnecting a second
+later resumes from zero with nothing to replay — and "survives a dropped phone
+connection" is precisely the clause that would not work.
+
+The reader now stays open for two minutes after the last viewer leaves. A
+reconnect inside that window is continuous; after it, the session is still
+running and the next viewer starts from what the pane already holds.
+
+### The buffer is seeded from the pane, not only from the pipe
+
+`pipe-pane` carries output produced after it is enabled and nothing before it.
+Without a seed, the first viewer of a session that has been running for an hour
+opens an empty screen and waits for the next line — which is not "2,140 earlier
+lines", it is a blank page that reads as a hung session.
+
+`capture-pane` supplies the scrollback tmux is already keeping, taken once
+before the first byte off the pipe so the buffer reads in order. Found by
+writing a test that watched a session which had already finished printing, and
+seeing nothing arrive.
+
+### A WebSocket library rather than hand-rolled framing
+
+`coder/websocket`: pure Go, no transitive dependencies, so the static binary
+stays static.
+
+The alternative was implementing RFC 6455 here — masking, fragmentation, close
+handshakes, ping/pong. On the one path in this project that carries keystrokes
+into an agent, a vetted implementation beats a hand-written one, and that is the
+whole argument. The owner named the connection's security a first-order concern
+on the same day; hand-rolling the framing under it would have been the wrong
+reading of that.
+
+### The origin check refuses a handshake with no Origin at all
+
+Browsers always send `Origin` on a WebSocket handshake, so its absence means the
+client is not a browser — and a non-browser client has no business on the path
+that types into an agent. Refusing is the strict reading and this is the place
+to take it: a socket that reaches a running agent is not somewhere to be
+generous with clients that decline to identify themselves.
+
+The check compares the origin's host to the request's own. Cloudflare Access
+authenticates the *person*; it says nothing about which page opened the socket,
+and browsers exempt WebSockets from the same-origin policy while still sending
+cookies with the handshake. Without this check, a page the owner merely visited
+could open a socket here on their authenticated session and type into an agent.
+It is the control, not hardening, and it is the first thing the verification
+list tests.

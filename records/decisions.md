@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-77 record(s), by identifier.
+81 record(s), by identifier.
 
 ## Index
 
@@ -89,6 +89,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0075](#mus-d-0075) | The session composer is always writable | 2026-08-21 |
 | [MUS-D-0076](#mus-d-0076) | A session's exit is an event, not a record | 2026-08-21 |
 | [MUS-D-0077](#mus-d-0077) | A surface reachable only when it has something to say is not reachable | 2026-08-21 |
+| [MUS-D-0078](#mus-d-0078) | The reader lingers after the last viewer leaves | 2026-08-22 |
+| [MUS-D-0079](#mus-d-0079) | The buffer is seeded from the pane, not only from the pipe | 2026-08-22 |
+| [MUS-D-0080](#mus-d-0080) | A WebSocket library rather than hand-rolled framing | 2026-08-22 |
+| [MUS-D-0081](#mus-d-0081) | The origin check refuses a handshake with no Origin at all | 2026-08-22 |
 
 ---
 
@@ -1279,3 +1283,61 @@ The decision queue's only route from intake was the banner, which renders when s
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable](../decisions.md#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable) |
+
+---
+
+## MUS-D-0078
+
+**The reader lingers after the last viewer leaves**
+
+decision · 2026-08-22
+
+The plan said pipe-pane is opened when the first viewer arrives and closed when the last leaves. One owner with one phone is the last viewer, so closing the reader on disconnect throws away the buffer and the byte offsets and a reconnect resumes from zero — which is exactly the clause the milestone exists for. The reader stays open two minutes after the last viewer leaves; a reconnect inside that window is continuous.
+
+| Field | Value |
+| --- | --- |
+| Found by | Building it. The reconnect test resumed at 0 having asked for 15 |
+| Rationale | [decisions.md#the-reader-lingers-after-the-last-viewer-leaves](../decisions.md#the-reader-lingers-after-the-last-viewer-leaves) |
+
+---
+
+## MUS-D-0079
+
+**The buffer is seeded from the pane, not only from the pipe**
+
+decision · 2026-08-22
+
+pipe-pane carries output produced after it is enabled and nothing before it, so the first viewer of a session that has been running for an hour opened an empty screen and waited. capture-pane supplies the scrollback tmux already keeps, taken once before the first byte off the pipe so the buffer reads in order.
+
+| Field | Value |
+| --- | --- |
+| Found by | A test that watched a session which had already finished printing, and saw nothing |
+| Rationale | [decisions.md#the-buffer-is-seeded-from-the-pane-not-only-from-the-pipe](../decisions.md#the-buffer-is-seeded-from-the-pane-not-only-from-the-pipe) |
+
+---
+
+## MUS-D-0080
+
+**A WebSocket library rather than hand-rolled framing**
+
+decision · 2026-08-22
+
+coder/websocket: pure Go, no transitive dependencies, so the static binary stays static. The alternative was implementing RFC 6455 here — masking, fragmentation, close handshakes. On the one path in this project that carries keystrokes into an agent, a vetted implementation beats a hand-written one, and the owner named the connection's security a first-order concern the same day.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-websocket-library-rather-than-hand-rolled-framing](../decisions.md#a-websocket-library-rather-than-hand-rolled-framing) |
+
+---
+
+## MUS-D-0081
+
+**The origin check refuses a handshake with no Origin at all**
+
+decision · 2026-08-22
+
+Browsers always send Origin on a WebSocket handshake, so its absence means the client is not a browser, and a non-browser client has no business on the path that types into an agent. The check compares the origin's host to the request's own. Access authenticates the person and says nothing about which page opened the socket; browsers exempt WebSockets from the same-origin policy while still sending cookies with the handshake. Without this, a page the owner merely visited could open a socket on their authenticated session and type into an agent.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-origin-check-refuses-a-handshake-with-no-origin-at-all](../decisions.md#the-origin-check-refuses-a-handshake-with-no-origin-at-all) |

@@ -196,8 +196,8 @@ it, and specific enough that failing them is unambiguous.
 
 **Milestones 1 and 2 have passed. 2b, 2c and 3 are built and reviewed; 2c is now
 reachable and gated, and waits only on the owner filing a jot from a phone. None
-of 2b, 2c or 3 is accepted. 4a is built and not yet reviewed. Nothing below 4a
-is built.**
+of 2b, 2c or 3 is accepted. 4a is built and reviewed; 4b is built and not yet
+reviewed. Nothing below 4b is built.**
 
 | # | State | Evidence |
 | --- | --- | --- |
@@ -207,7 +207,8 @@ is built.**
 | 2c | built and reviewed 2026-08-20. Reachable and gated 2026-08-21: `mustur.devofpie.com` behind Cloudflare Access, answered by a service that starts at boot. **The one sentence still unproven is the milestone's own** — a jot from a phone — which only the owner can test, because only the owner can get through Access | `MUS-F-0022`, filed through the running service and carried into `records/findings.md` by it; ten filings on loopback at a median of 1.71 ms, worst 2.10 ms, method in [docs/ingress.md](docs/ingress.md) |
 | 3 | built and reviewed 2026-08-21, split by the owner so that injection moves to milestone 4. An open question blocks `make check` when it was never surfaced, or when it is marked as one the work depends on; the queue is answerable from a phone | `records/questions.md`, `make questions` over it, and the questions this repository has raised — including the four carrying `Blocks: MUS-M-0005`, which stopped this milestone's own build until they were surfaced. The count is in [records/README.md](records/README.md) rather than restated here, because restating it is how it went stale twice |
 | 4a | built and reviewed 2026-08-21, awaiting acceptance. The adapter starts a session per project inside tmux, lists and stops only sessions it started, and carries an answered decision back into the one that raised it | Against real tmux: a session named `mustur/zzfake` created by hand was invisible to `list` and refused by `stop`, while a session Mustur started in the same server was listed; a command exiting immediately is reported as such rather than as started; a missing `--dir` is refused rather than silently becoming `$HOME`; an answer reached a live session's input and an answer whose session had gone was recorded with the reason. Method in [records/work-units/MUS-W-0016.md](records/work-units/MUS-W-0016.md) |
-| 4b onwards | not started | |
+| 4b | built 2026-08-22, not yet reviewed. A session's output streams to a browser tab over a WebSocket; a dropped connection reconnects and replays what it missed; a session that ends says so; one socket serves however many sessions the tab switches between | Against real tmux and the running server: a cross-origin handshake carrying a valid session is refused **403**, and an origin-less one with it; a same-origin socket received the pane's backlog and then live output; text typed over the socket arrived in the session's stdin; a reconnect replayed the gap with every line appearing exactly once; a stopped session refuses the socket **404** and its page says Mustur did not start it. Method in [records/work-units/MUS-W-0017.md](records/work-units/MUS-W-0017.md) |
+| 4c onwards | not started | |
 
 *Passed* is a verdict acceptance makes, and this file does not make it early —
 the same reason its own note below says the status change in IdeaWarehouse was
