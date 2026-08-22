@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-92 record(s), by identifier.
+93 record(s), by identifier.
 
 ## Index
 
@@ -104,6 +104,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0090](#mus-d-0090) | A task is paired to a sub-agent by order, inside a measured window | 2026-08-22 |
 | [MUS-D-0091](#mus-d-0091) | The adapter is vendor-neutral except where a capability belongs to one vendor | 2026-08-22 |
 | [MUS-D-0092](#mus-d-0092) | Sub-agent rows are pushed down the session socket | 2026-08-22 |
+| [MUS-D-0093](#mus-d-0093) | A jot's identifier prefix comes from where it routes, not from the store | 2026-08-22 |
 
 ---
 
@@ -1509,3 +1510,19 @@ decision · 2026-08-22
 answers: [MUS-Q-0029](questions.md#mus-q-0029)
 
 The owner chose live rows over a page reload, against the recommendation to leave them static. The server polls the hook's log on a two-second ticker, skips the parse when the file's size and modification time have not moved, and sends a frame only when the rows differ. Ages are not sent: each row carries its start and end stamps and the client counts, so a running sub-agent's clock moves without a frame per second to move it. This is the one thing the surface's client layer models that is not the terminal.
+
+---
+
+## MUS-D-0093
+
+**A jot's identifier prefix comes from where it routes, not from the store**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0030](questions.md#mus-q-0030)
+
+and: [MUS-Q-0031](questions.md#mus-q-0031)
+
+and grandfathering: [MUS-Q-0032](questions.md#mus-q-0032)
+
+Intake stamped the store's prefix on every jot at creation, so a jot routed to the idea inbox was called MUS-F-0025 and read as a Mustur record. The routing record now names its own prefix and intake files under it: the idea inbox's is IDW, for IdeaWarehouse, so a record keeps its identifier when that project is finally onboarded rather than being renamed into it. A routing record whose prefix is not three upper-case letters is ignored and the store's prefix used, because wrong in a way somebody can see beats an identifier the scheme cannot parse. Narrow on purpose: only the one target that exists carries a prefix, and generalising it to every routing target is milestone 7's, which is where the second project's cases will be real. MUS-F-0025 keeps its identifier — the permanence rule is what makes citations safe, and one misleading prefix on a test jot is a smaller cost than an exception to it.

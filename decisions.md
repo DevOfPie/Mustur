@@ -1819,3 +1819,52 @@ each row carries its stamps and the client counts, so a running sub-agent's
 clock moves without a frame per second to move it. Tested against real tmux
 with a real handshake, because this is the one thing the client layer now models
 that is not the terminal.
+
+## 2026-08-22 — a record's prefix says which project it belongs to
+
+The owner filed three jots from a phone to prove milestone 2c, and one of them
+routed correctly to the idea inbox while reading as though it had not. It was
+called `MUS-F-0025`, which is indistinguishable at a glance from a record about
+Mustur itself.
+
+Nothing was mis-routed. The point stands anyway, and it is the owner's: **the
+MUS tag should mean the Mustur project, not the store that happens to hold the
+record.** A prefix that is the same for everything is a prefix that cannot be
+scanned, and every jot to the idea inbox had to be opened to find out where it
+had gone.
+
+The identifier scheme already anticipated this — three upper-case letters,
+chosen "so a second project onboarded later cannot collide with this one". What
+was wrong is that intake stamped the serving project's prefix at creation, some
+lines before it knew where the jot was going.
+
+### What changed
+
+A routing record names its own prefix in a field, the way it already names
+itself the intake default. The idea inbox's is **IDW**, for IdeaWarehouse, which
+is where these go once that project is onboarded at milestone 7 — so the prefix
+names the destination and a record keeps its identifier when it finally arrives,
+rather than being renamed into it.
+
+A routing record whose prefix is not three upper-case letters is ignored and the
+store's used instead. Wrong in a way somebody can see beats an identifier the
+scheme cannot parse.
+
+### Narrow on purpose
+
+Only the one routing target that exists carries a prefix. Generalising it to
+every target is milestone 7's work, where a second project's cases are real
+rather than imagined, and doing it now would front-run those decisions with one
+example to test against. The owner chose the narrow cut on
+[MUS-Q-0030](records/questions.md#mus-q-0030).
+
+### `MUS-F-0025` keeps its name
+
+The `ident` package's rule is that identifiers are permanent, because the store
+is insert-only and a scheme that allows renaming is one that allows a citation
+to rot. `MUS-F-0025` is cited in `Plan.md`, `docs/ingress.md`, this file and a
+pull request comment.
+
+So it stays, as the last record filed under the old scheme, and the owner said
+why that costs nothing: it was a test, and its information is used up by the
+finding it already produced.

@@ -61,13 +61,14 @@ The project this store belongs to. Its identifier prefix is MUS, and every recor
 
 **Idea inbox**
 
-project · 2026-08-20
+project · 2026-08-22
 
 Held by: [MUS-P-0001](#mus-p-0001)
 
-Where a jot goes when no destination is obvious. A routing target inside Mustur, not a write into IdeaWarehouse: no file in another project is touched before that project is deliberately onboarded, and a capture surface that edited one would break that on its first use.
+Where a jot goes when no destination is obvious. A routing target inside Mustur, not a write into IdeaWarehouse: no file in another project is touched before that project is deliberately onboarded, and a capture surface that edited one would break that on its first use. Jots routed here are filed under IDW rather than MUS, so a record's identifier says which project it belongs to rather than which store holds it.
 
 | Field | Value |
 | --- | --- |
 | Intake | default |
+| Prefix | IDW |
 | Aliases | inbox, ideas |

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-29 record(s), by identifier.
+32 record(s), by identifier.
 
 ---
 
@@ -658,4 +658,73 @@ The rows are server-rendered like the rest of this surface, so a sub-agent's age
 | Surfaced | 2026-08-22 19:53 |
 | Answer | Push rows down the socket. |
 | Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0030
+
+**Should a jot's identifier prefix come from where it routes rather than from the store?**
+
+question · 2026-08-22
+
+Intake stamps the store's project prefix on every jot at creation, so a jot routed to the idea inbox is MUS-F-0025 — indistinguishable at a glance from a record about Mustur itself. The owner noticed it looking mis-routed for exactly this reason. The ident scheme already anticipates more than one prefix: three upper-case letters, chosen so a second project onboarded later cannot collide.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether an idea-inbox jot is distinguishable from a Mustur record by its identifier |
+| Needed to proceed | yes |
+| Option | Now, narrowly :: Recommended · proves the mechanism on the one target that exists :: The idea inbox carries a prefix and intake stamps the destination's rather than the store's. Milestone 7 generalises it to every routing target when there are real cases to design against. |
+| Option | As part of milestone 7 :: Design it once, with more than one example :: Jots to the idea inbox keep saying MUS until a second project is genuinely onboarded. |
+| Option | Now, and generalise it :: Every routing target carries a prefix from the start :: More design today, and it front-runs milestone 7's decisions with one real example to test against. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 22:14 |
+| Answer | Now, narrowly. The MUS tag should only be used for records associated with the Mustur project; a different tag for the general idea store and other projects minimises confusion and improves trackability. |
+| Answered | 2026-08-22 22:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0031
+
+**What prefix should the general idea store use?**
+
+question · 2026-08-22
+
+Three upper-case letters, per the ident scheme. The idea inbox is a routing target inside Mustur rather than a write into IdeaWarehouse, because no file in another project is touched before that project is onboarded — so the prefix can name where a jot is now or where it is going, and those are different answers.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what an idea-inbox jot is called |
+| Option | IDW :: Reads as IdeaWarehouse, where these go once it is onboarded :: The prefix names the destination, so a record keeps its identifier when the project it belongs to is finally onboarded at milestone 7. The inbox becomes a holding pen for records already carrying their final prefix. |
+| Option | IDE :: Reads as idea, and promises nothing about IdeaWarehouse :: Safer if the general store turns out not to be IdeaWarehouse. |
+| Option | INB :: Names the holding pen rather than the destination :: A jot's prefix says where it is now. Costs a rename when it moves, which the scheme forbids. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 22:14 |
+| Answer | IDW. |
+| Answered | 2026-08-22 22:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0032
+
+**MUS-F-0025 carries the old prefix. Grandfather it or reissue it?**
+
+question · 2026-08-22
+
+MUS-F-0025 sits in the idea inbox carrying a MUS prefix, and is cited in Plan.md, docs/ingress.md, decisions.md and a pull request comment. The ident package's own rule is that identifiers are permanent, because the store is insert-only and a scheme that allows renaming is one that allows a citation to rot.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the permanence rule gets an exception |
+| Option | Grandfather it :: Recommended · the permanence rule survives intact :: MUS-F-0025 keeps its identifier and the new scheme applies from the next jot. One record with a misleading prefix, documented as the last of the old scheme. |
+| Option | Reissue it :: One fewer misleading record, at the cost of the rule :: Withdrawn and refiled under the new prefix. Every citation has to be found and updated, and the permanence rule gains an exception that weakens it for every future record. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 22:14 |
+| Answer | Grandfather it, since it was a test and its information is useless beyond the finding it already provided. |
+| Answered | 2026-08-22 22:40 |
 | Delivered | not delivered: the question names no session |

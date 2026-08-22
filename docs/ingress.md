@@ -136,10 +136,17 @@ correctly:
 
 The third is the one that mattered, because it is the clause's default case and
 the only one a routing guess cannot get right by accident. It also read as
-mis-routed at first glance and was not: every record in this store carries the
-`MUS-` prefix, which is the store's and not the destination's, and the idea
-inbox is a target inside Mustur rather than a write into IdeaWarehouse — no file
-in another project is touched before that project is onboarded.
+mis-routed at first glance and was not — and the reason it read that way has
+since been fixed. Every record in the store then carried the `MUS-` prefix,
+which was the store's rather than the destination's; the owner's point was that
+this makes a store you have to open rather than one you can scan. A routing
+record now names its own prefix and intake files under it, so the next jot with
+no obvious home is `IDW-F-0001` and not a Mustur record at all
+([MUS-D-0093](../records/decisions.md#mus-d-0093)).
+
+`MUS-F-0025` keeps its identifier. It is the last jot filed under the old
+scheme, and renaming it would put an exception into the rule that makes every
+citation in this tree safe.
 
 `MUS-F-0024` is a real defect the owner noticed while proving the milestone,
 which is the surface working as intended in a second sense.

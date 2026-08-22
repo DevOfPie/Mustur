@@ -26,7 +26,22 @@ type Destination struct {
 	ID   string // A routing record's identifier.
 	Name string
 	Why  string
+	// Prefix is the identifier prefix a jot routed here is filed under, when
+	// the routing record names one. Empty means the store's own.
+	//
+	// It exists because the owner filed a jot that routed correctly to the idea
+	// inbox and still read as mis-routed: it was called MUS-F-0025, which is
+	// indistinguishable at a glance from a record about Mustur itself. A prefix
+	// that says where a record belongs is the difference between a store you
+	// can scan and one you have to open (MUS-Q-0030).
+	Prefix string
 }
+
+// PrefixField names the identifier prefix a routing record's jots are filed
+// under. A field on the record rather than a constant here, for the same reason
+// the default is: the routing registry is something the store holds and a
+// reader can see, not something compiled in.
+const PrefixField = "Prefix"
 
 // DefaultField marks the routing record a jot falls back to. It is a field on
 // a record rather than a constant here, so the fallback is something the store
@@ -67,12 +82,12 @@ func Route(text string, routing []record.Record) Destination {
 	switch len(narrowed) {
 	case 1:
 		for _, r := range narrowed {
-			return Destination{ID: r.ID, Name: r.Title, Why: fmt.Sprintf("the jot names %s", r.Title)}
+			return Destination{ID: r.ID, Name: r.Title, Prefix: prefixOf(r), Why: fmt.Sprintf("the jot names %s", r.Title)}
 		}
 	case 0:
 		// Nothing obvious. That is the ordinary case and not a problem.
 		if fallback != nil {
-			return Destination{ID: fallback.ID, Name: fallback.Title, Why: "no destination is obvious"}
+			return Destination{ID: fallback.ID, Name: fallback.Title, Prefix: prefixOf(*fallback), Why: "no destination is obvious"}
 		}
 		return Destination{Why: "no destination is obvious, and the routing registry declares no default"}
 	}
@@ -89,7 +104,7 @@ func Route(text string, routing []record.Record) Destination {
 	sort.Strings(named)
 	why := "the jot names more than one destination: " + strings.Join(named, ", ")
 	if fallback != nil {
-		return Destination{ID: fallback.ID, Name: fallback.Title, Why: why}
+		return Destination{ID: fallback.ID, Name: fallback.Title, Prefix: prefixOf(*fallback), Why: why}
 	}
 	return Destination{Why: why + ", and the routing registry declares no default"}
 }
@@ -276,7 +291,13 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 	if to.ID != "" {
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}
 	}
-	written, err := s.Create(ctx, r, project, ident.Finding, actor)
+	// Where it routes decides what it is called. A jot in the idea inbox is not
+	// a Mustur record and no longer says it is (MUS-Q-0030, MUS-Q-0031).
+	under := project
+	if to.Prefix != "" {
+		under = to.Prefix
+	}
+	written, err := s.Create(ctx, r, under, ident.Finding, actor)
 	if err != nil {
 		return record.Record{}, Destination{}, err
 	}
@@ -328,6 +349,23 @@ func chosen(routing []record.Record, id string) (Destination, error) {
 // the way every listing here sorts.
 func Destinations(ctx context.Context, s *store.Store) ([]record.Record, error) {
 	return routingRecords(ctx, s)
+}
+
+// prefixOf reads a routing record's identifier prefix, and returns nothing for
+// one that does not name a valid prefix rather than filing under a malformed
+// one. A jot filed under the store's own prefix is the old behaviour, which is
+// wrong in a way somebody can see; a jot filed under "IDWX" is wrong in a way
+// that breaks the identifier scheme.
+func prefixOf(r record.Record) string {
+	v, ok := r.Get(PrefixField)
+	if !ok {
+		return ""
+	}
+	v = strings.ToUpper(strings.TrimSpace(v))
+	if !ident.ValidProject(v) {
+		return ""
+	}
+	return v
 }
 
 func routedTo(d Destination) string {
