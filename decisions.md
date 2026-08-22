@@ -1649,3 +1649,66 @@ reader is started by a viewer, so **a session nobody has looked at is not being
 watched**. An exit is noticed when a tab is open on it, or not at all. Watching
 every owned session would mean polling tmux continuously for sessions nobody is
 reading, and that trade has not been made.
+
+## 2026-08-22 — sub-agents can be seen, and how
+
+### The investigation was registered before it was run
+
+Milestone 4c began with a question rather than a build:
+[can Mustur see a sub-agent at all](docs/investigations/0002-sub-agent-visibility.md).
+The routes to try, the three properties an answer had to carry — enumerable,
+separable, terminal — and the rule for reaching *cannot be done* were committed
+in one commit, and the finding in the next. The history is the evidence that the
+rule was not written to fit the result, which is the same discipline
+[milestone 1's disproof](docs/investigations/0001-mandated-tool-call.md) rested
+on.
+
+The rule was worth having for one reason in particular. A session's sub-agents
+are already on disk, in a `subagents/` directory holding a transcript and a
+metadata file for each — enumerable, separable and readable, and it would have
+worked today. It is undocumented, so it is written up as a finding and not used.
+Without a rule fixed beforehand, that directory is exactly what a builder in a
+hurry adopts.
+
+### The route is lifecycle hooks, and the pane is untouched
+
+`SubagentStart` and `SubagentStop` are documented hooks carrying `agent_id` and
+`agent_type`, with the final message and the per-agent transcript path on stop. A
+tool-use hook carries `agent_id` when the call happens inside a sub-agent and
+omits it in the main conversation, so a sub-agent's activity is attributed by an
+identifier the CLI supplies rather than by reading its prose — which is what
+[route D was ruled out for](docs/investigations/0002-sub-agent-visibility.md),
+and what the owner declined an inferred status for on `MUS-Q-0005`.
+
+The important property is what it does *not* change. Everything milestones 4a
+and 4b built stands: the session is still a tmux pane, still typed into with
+`send-keys`, still read with `pipe-pane`, still attachable from a terminal.
+
+The alternative would have cost exactly that. `--output-format stream-json` with
+`--forward-subagent-text` carries all three properties and is fully documented,
+and a session held open on `--input-format stream-json` accepts further messages,
+so it is a real session rather than a one-shot. It requires `-p`, and `-p` is not
+a terminal. Adopting it would replace the pane with a JSON harness — a different
+product, not a way of showing sub-agents in this one. It is recorded rather than
+adopted, so it is findable if the pane is ever given up for other reasons.
+
+### The hook is passed per session, and persists nowhere — MUS-Q-0024
+
+A hook is executable configuration running inside the agent's own session, so
+where it is installed was the owner's decision and not the builder's.
+
+Mustur starts the session, so it passes the hook as a `--settings` JSON string on
+the command line it already builds. Nothing is written to `~/.claude` and nothing
+into the checkout the session runs in. The cost, accepted: a session started by
+hand carries no hook and shows no sub-agents. Mustur reports on what Mustur
+started, which is the same line the
+[ownership option](decisions.md#2026-08-21--the-session-surfaces-last-three-questions)
+already draws.
+
+### A row shows what is documented — MUS-Q-0025
+
+What a sub-agent was asked to do, how long it has been running, what it is doing
+now, and its output once it finishes. Full prose while it is still running would
+mean deriving the per-agent transcript path, and the owner declined to make that
+exception. Reading a sub-agent mid-flight means opening the parent pane, which is
+still there.

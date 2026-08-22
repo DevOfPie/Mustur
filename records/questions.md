@@ -520,3 +520,51 @@ Browsers always send Origin on a WebSocket handshake, so its absence means the c
 | Answer | Refuse it. A client that will not say where it came from has no business on the socket that types into an agent. |
 | Answered | 2026-08-22 10:40 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0024
+
+**How should Mustur install the hook that makes sub-agents visible?**
+
+question · 2026-08-22
+
+Investigation 0002 established that sub-agents can be seen at all, and that the only route which keeps a session an attachable terminal is the CLI's lifecycle hooks. A hook is executable configuration running inside the agent's own session, which makes where it is installed a decision rather than a detail.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 4c is built at all |
+| Needed to proceed | yes |
+| Option | Per session, nothing persists :: Recommended · Mustur touches no configuration it does not own :: The hook is passed as a `--settings` JSON string on the command line Mustur already builds. Verified: nothing written to `~/.claude`, nothing written into the checkout. The cost is that a session started by hand shows no sub-agents, because it carries no hook. |
+| Option | Write it into the owner's config once :: Every session shows sub-agents, including ones Mustur did not start :: Mustur adds the hook to `~/.claude/settings.json`. It also means Mustur mutating the owner's agent configuration, and a hook that keeps firing when Mustur is not running. |
+| Option | Neither, and close 4c :: The investigation is the deliverable :: No hook and no rows. Plan.md records that it was possible and declined, which is a real outcome for a milestone that began by asking whether it was possible. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 11:15 |
+| Answer | Per session, nothing persists. Mustur passes the hook on the command line it already builds and touches no configuration it does not own. |
+| Answered | 2026-08-22 11:15 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0025
+
+**How much of a running sub-agent should the surface show?**
+
+question · 2026-08-22
+
+The hooks give an identifier, a type, the description it was launched with, each tool as it is called, and its full text when it ends. Full text *while it is still running* lives in a per-agent transcript whose path the CLI documents nowhere — it hands the path over at `SubagentStop` and not before. Investigation 0002's rule, fixed before looking, says an undocumented path is a finding and not a route, so overriding it is the owner's to do and not the builder's.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what a sub-agent row contains |
+| Needed to proceed | yes |
+| Option | Documented only :: Recommended · everything rests on an interface the CLI documents :: A row says what the sub-agent was asked to do, how long it has been running and what it is doing right now. Its output appears when it finishes. Reading one mid-flight means opening the parent pane. |
+| Option | Read the transcript live :: Full prose while it runs :: Works today, by deriving the per-agent transcript path. It also makes Mustur depend on an undocumented on-disk layout, which Plan.md lists under never — a deliberate exception rather than a detail. |
+| Option | Rows only, no text :: Which are running and for how long, nothing more :: Cheapest and least useful. The owner asked to be able to read through a sub-agent's progress, which this does not do. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 11:15 |
+| Answer | Documented only. What a sub-agent is doing now, and its output once it finishes. |
+| Answered | 2026-08-22 11:15 |
+| Delivered | not delivered: the question names no session |
