@@ -1,15 +1,18 @@
 # Surfaces awaiting design
 
-**Two of these are built. Both were first written the way this file exists to
-prevent, and one has been put back.** Surface 5, intake, shipped at milestone 2c
-as a Go template — the layout decided in code and shown to the owner afterwards.
-Surface 4, the decision queue, shipped at milestone 3 the same way, from the
-brief below rather than from the published plan's artboard for it.
+**Three of these are built, and the first two were written the way this file
+exists to prevent.** Surface 5, intake, shipped at milestone 2c as a Go template
+— the layout decided in code and shown to the owner afterwards. Surface 4, the
+decision queue, shipped at milestone 3 the same way, from the brief below rather
+than from the published plan's artboard for it.
 
 That the second happened after the first was recorded is the part worth keeping:
 the record alone was not the safeguard. The owner's answer on MUS-Q-0010 was to
 rebuild the queue from its artboard, which is done. Intake is unchanged and
 still stands as built.
+
+Surface 8, the session output, is the third, and it is the first built from a
+drawing rather than from a brief — which is what the instruction below was for.
 
 **The standing instruction, which an earlier draft of this file deleted and a
 review caught:** the owner's answer after intake was to publish a plan for every
@@ -107,7 +110,7 @@ summarised.
 
 | Difference | Why |
 | --- | --- |
-| The tab bar carries two tabs, not four | Sessions and Records are not built, and a tab pointing at one would be an unbuilt capability described as existing. MUS-D-0041's four still stands; MUS-Q-0012 confirms this as its interim |
+| The tab bar carries three tabs, not four | Records is not built, and a tab pointing at it would be an unbuilt capability described as existing. Sessions joined at 4b. MUS-D-0041's four still stands; MUS-Q-0012 confirms this as its interim |
 | The banner on intake stays, beside the bar | They do different jobs: the bar is the fixed place the eye knows to check, the banner makes an open decision impossible to miss on whichever surface was opened. MUS-Q-0006 |
 | Every open question is on one page, not one per screen | The queue is short by construction. The drawing is a single-question screen and this is a list with a rule between entries; the earlier claim to be "one question per screen" was simply false of the code beneath it |
 | Options carry a radio | The drawing makes the card itself the selection. A radio is what a form can express without script, and the whole row is the control |
@@ -174,10 +177,10 @@ server-rendered. The stack table names this as the exception and keeps the rule
 for everything else; a second surface wanting script is a new decision, not a
 precedent.
 
-**Sub-agents are part of it.** A session that spawns three reviewers is one pane
-with three agents writing into it. They must appear as their own rows, running,
-and one must be readable without losing the parent — which needs Mustur to know a
-sub-agent started, and today it does not.
+**Sub-agents are not part of it.** They moved to milestone 4c on MUS-Q-0017,
+because showing them requires Mustur to know a sub-agent exists and it does not:
+it reads one pane, and sub-agents are the CLI's internal business. 4c begins by
+establishing whether that can change.
 
 **The connection is the first one that carries keystrokes in**, not only records
 out. A flaw here is not a wrong page; it is somebody else typing into an agent

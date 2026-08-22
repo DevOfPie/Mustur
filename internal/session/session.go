@@ -2,13 +2,16 @@
 // sessions inside tmux, reports which are running, can type into one, and can
 // stop one.
 //
-// **It does not supervise them.** There is no restart, no health check, no
-// output capture and no notification when a session dies — a review found the
-// word "supervises" asserted in three places and implemented in none. What
-// exists is Start, List, Alive, Send and Stop. Start verifies the session is
-// there afterwards, which is the one thing it does beyond asking tmux nicely,
-// and it exists because tmux reports success whether or not the command
-// survived: an agent CLI crashing on startup used to read as a started session.
+// **It still does not restart anything.** Start, List, Alive, Send and Stop are
+// what this file provides; Start verifies the session is there afterwards,
+// because tmux reports success whether or not the command survived and an agent
+// CLI crashing on startup used to read as a started session.
+//
+// Output capture and noticing a death arrived with milestone 4b and live in
+// stream.go, next door. They apply **while a viewer is attached** — the reader
+// is opened by a viewer and lingers after one leaves, so a session nobody has
+// looked at is not being watched. An earlier version of this comment said the
+// package did neither at all, which stopped being true in the same package.
 //
 // Two decisions shape the whole package.
 //

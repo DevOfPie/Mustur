@@ -1,9 +1,10 @@
 // Command mustur holds a project's records and routing, and serves them to a
 // session that is told to ask.
 //
-// Nothing here talks to an agent process. This binary is the store, the
-// export, and the one tool call the injection kit mandates; sessions arrive at
-// a later milestone.
+// This binary is the store, the export, the one tool call the injection kit
+// mandates, the surfaces those are read and answered through — and, since
+// milestone 4a, the adapter that starts agent sessions inside tmux and can type
+// into one it started.
 package main
 
 import (
@@ -437,6 +438,14 @@ func cmdServe(args []string) error {
 	// Registered on the outer mux, ahead of the intake box's catch-all, so the
 	// queue is reachable at a hostname whose "/" belongs to intake.
 	questions.Routes(mux)
+	adapter := &session.Adapter{}
+	hub := &session.Hub{Adapter: adapter}
+	// Readers hold a fifo and a tmux pipe-pane each; without this a server that
+	// goes down leaves both behind, with tmux still writing into a pipe nobody
+	// will ever read.
+	defer hub.Shutdown()
+	sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor()}
+	sessions.Routes(mux)
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
@@ -446,8 +455,8 @@ func cmdServe(args []string) error {
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
-		version, n, *db, *addr, *addr, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n  sessions   http://%s/sessions\n",
+		version, n, *db, *addr, *addr, *addr, *addr)
 	return srv.ListenAndServe()
 }
 

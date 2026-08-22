@@ -283,12 +283,15 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 }
 
 // The tab bar. MUS-D-0041 is owner-set: the phone bar has four tabs, decided
-// against a recommendation of three, and it still stands. Two of those four
-// surfaces do not exist yet, and a tab that goes nowhere would be an unbuilt
-// capability described as existing, which is a gate in workflow.md — so the bar
+// against a recommendation of three, and it still stands. A tab that goes
+// nowhere would be an unbuilt capability described as existing, so the bar
 // renders the built ones and grows as the rest arrive. Owner-confirmed as the
-// interim on MUS-Q-0012, which also corrected MUS-D-0053's claim that no bar
-// exists before milestone 4.
+// interim on MUS-Q-0012.
+//
+// "Grows as the rest arrive" is a promise that has to be kept in every template
+// at once. Sessions arrived at milestone 4b and this bar did not grow, which
+// left three surfaces in one binary showing two, two and three tabs. A test
+// asserts they match.
 //
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
@@ -402,6 +405,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 {{end}}
 </main>
 <nav>
+  <a href="/sessions">Sessions</a>
   <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
   <a href="/intake">Intake</a>
 </nav>

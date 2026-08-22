@@ -3,7 +3,7 @@
 Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
-**Milestones 1 and 2 have passed; 2b, 2c, 3 and 4a are built and not yet
+**Milestones 1 and 2 have passed; 2b, 2c, 3, 4a and 4b are built and not yet
 accepted.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
@@ -16,9 +16,15 @@ holds open questions and refuses to let work be reported complete around one.
 It also starts agent sessions inside tmux, reports which are running, stops one,
 and types an answered decision back into the session that raised it — where the
 question named one with `--in`, which is the only way delivery has a target.
-**It does not supervise them:** no restart, no health check, no output capture.
-Nothing below milestone 4a is built; do not describe any of it in the present
-tense.
+It streams a running session's output to a browser tab you can reply from, and
+notices when one ends. **It does not restart anything** — an agent CLI that
+crashed wants a person, not a loop. Nothing below milestone 4b is built; do not
+describe any of it in the present tense.
+
+The session view is the **only** page in this repository that carries script.
+Every other surface is server-rendered with nothing to fetch, and that is the
+rule; a second surface wanting a client layer is a new decision, not a
+precedent.
 
 **A session left running in a terminal is invisible to Mustur and will not
 become visible.** Mustur starts sessions and never attaches to one it did not.
