@@ -39,8 +39,11 @@ import (
 )
 
 // BufferBytes is how much of a session's recent output is kept for replay.
-// Roughly an hour of ordinary agent output, and small enough that several
-// sessions cost nothing on a machine with 1.5 GB free.
+//
+// 256 KB is the owner's, on MUS-Q-0021. The "roughly an hour of ordinary agent
+// output" this comment used to claim was never measured and is removed rather
+// than defended; what is known is the size, and that a reader holds one buffer
+// per session with a viewer attached.
 const BufferBytes = 256 << 10
 
 // LingerAfter is how long a reader stays open after the last viewer leaves.

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
+	"github.com/coder/websocket"
 )
 
 // fakeRunner replies to tmux commands from a script so the surface can be
@@ -314,5 +316,95 @@ func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "sub-agent") {
 		t.Error("a session with no hook directory claims sub-agents")
+	}
+}
+
+// Live sub-agent rows, over the socket, against real tmux.
+//
+// The owner chose this over a page reload on MUS-Q-0029, against the
+// recommendation, so it is tested the way the rest of the socket is: a real
+// session, a real handshake, and a frame that has to arrive.
+func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzWebAgents"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 6'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	// A sub-agent appears after the socket is already open, which is the case
+	// the reload could not serve.
+	now := time.Now()
+	for _, p := range []map[string]any{
+		{"hook_event_name": "PreToolUse", "tool_name": "Agent",
+			"tool_input": map[string]any{"description": "Contract reviewer", "subagent_type": "general-purpose"}},
+		{"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose"},
+		{"hook_event_name": "PreToolUse", "agent_id": "a1", "tool_name": "Grep"},
+	} {
+		b, err := json.Marshal(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		session.RecordHookEvent(dir, project, b, now)
+		now = now.Add(time.Second)
+	}
+
+	for {
+		_, data, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("no agents frame arrived: %v", err)
+		}
+		var f struct {
+			T      string `json:"t"`
+			Agents []struct {
+				Title   string `json:"title"`
+				State   string `json:"state"`
+				Started int64  `json:"started"`
+				For     string `json:"for"`
+			} `json:"agents"`
+			Running int `json:"running"`
+		}
+		if json.Unmarshal(data, &f) != nil || f.T != "agents" {
+			continue
+		}
+		if len(f.Agents) != 1 {
+			t.Fatalf("%d rows in the frame, want 1", len(f.Agents))
+		}
+		if f.Agents[0].Title != "Contract reviewer" || f.Agents[0].State != "Grep" {
+			t.Errorf("row is %+v", f.Agents[0])
+		}
+		if f.Running != 1 {
+			t.Errorf("running %d, want 1", f.Running)
+		}
+		if f.Agents[0].Started == 0 {
+			t.Error("no start stamp; the client counts the age from it")
+		}
+		if f.Agents[0].For != "" {
+			t.Error("a rendered age was sent as well as the stamp, so the two can disagree")
+		}
+		return
 	}
 }

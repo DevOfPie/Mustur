@@ -167,6 +167,10 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 	// sub-agents visible — appended here and nowhere else, so nothing is
 	// written to the owner's configuration (MUS-Q-0024). A command this package
 	// does not recognise comes back unchanged.
+	// Last session's sub-agents are not this one's. Cleared before the command
+	// runs, so the first hook to fire writes into an empty log rather than
+	// underneath rows belonging to a session that has already ended.
+	ForgetSubagents(a.HookDir, project)
 	args = append(args, withHook(cmd, a.exe(), a.HookDir, project))
 	if out, err := a.runner().Run(ctx, "tmux", args...); err != nil {
 		return Session{}, fmt.Errorf("tmux new-session: %w: %s", err, strings.TrimSpace(out))

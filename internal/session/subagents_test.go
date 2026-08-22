@@ -158,7 +158,7 @@ func TestTheHookSurvivesAnythingItIsGiven(t *testing.T) {
 	}
 }
 
-// Payloads the CLI actually emitted, captured from a run of two sub-agents.
+// Payloads the CLI actually emitted, captured from a run of three sub-agents.
 // A parser tested only against payloads its author wrote is a parser tested
 // against its author's beliefs.
 func TestRealPayloadsFromTheCLI(t *testing.T) {
@@ -328,5 +328,171 @@ func TestAStopWithNoStartMakesNoRow(t *testing.T) {
 	}
 	if rows[0].ID != "real" {
 		t.Errorf("row is %q, want the one that started", rows[0].ID)
+	}
+}
+
+// A sub-agent belongs to the session that spawned it.
+//
+// Before this, the log outlived the session: stop, start again, and the new
+// session's page showed the old one's rows — one still pilled running, ageing
+// forever, for a process dead before the page existed. That is the condition
+// the investigation's own rule called disqualifying.
+func TestStartingASessionForgetsTheLastOnesSubagents(t *testing.T) {
+	realTmux(t)
+	dir := t.TempDir()
+	a := &Adapter{HookDir: dir}
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+
+	record(t, dir, "zzForget", now, map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "old", "agent_type": "general-purpose",
+	})
+	if rows, _ := Subagents(dir, "zzForget"); len(rows) != 1 {
+		t.Fatalf("%d rows before the restart, want 1", len(rows))
+	}
+
+	start(t, a, "zzForget", "sh -c 'sleep 30'")
+
+	rows, err := Subagents(dir, "zzForget")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 0 {
+		t.Errorf("the new session shows the old session's rows: %+v", rows)
+	}
+}
+
+// A launch that never produced a sub-agent must not label the next one.
+//
+// A reviewer reproduced a row reading "DENIED call, never ran" — an Agent call
+// denied permission left its description in the queue, and the next sub-agent
+// of that type took it. The owner chose to bound the pairing (MUS-Q-0026).
+func TestAStaleLaunchDoesNotLabelALaterSubagent(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+
+	record(t, dir, "P", now, map[string]any{
+		"hook_event_name": "PreToolUse", "tool_name": "Agent",
+		"tool_input": map[string]any{"description": "DENIED call, never ran", "subagent_type": "general-purpose"},
+	})
+	// Well past the window, and a real sub-agent starts.
+	record(t, dir, "P", now.Add(LaunchWindow+time.Second), map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+
+	rows, err := Subagents(dir, "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 1 {
+		t.Fatalf("%d rows, want 1", len(rows))
+	}
+	if rows[0].Task != "" {
+		t.Errorf("task %q — a stale launch labelled a later sub-agent", rows[0].Task)
+	}
+}
+
+// And the bound must not cost a correct pairing. The slowest launch-to-start
+// pair measured in docs/investigations/0002-harness/captured is 5.985s, so a
+// window that expired inside that would strip the label off rows that are
+// right — which is the same failure arriving by the other door.
+func TestTheWindowIsWiderThanTheSlowestMeasuredSpawn(t *testing.T) {
+	const slowestMeasured = 5985 * time.Millisecond
+	if LaunchWindow <= slowestMeasured {
+		t.Fatalf("LaunchWindow is %v, not wider than the %v actually measured", LaunchWindow, slowestMeasured)
+	}
+
+	dir := t.TempDir()
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	record(t, dir, "P", now, map[string]any{
+		"hook_event_name": "PreToolUse", "tool_name": "Agent",
+		"tool_input": map[string]any{"description": "Slow to spawn", "subagent_type": "general-purpose"},
+	})
+	record(t, dir, "P", now.Add(slowestMeasured), map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+	rows, _ := Subagents(dir, "P")
+	if len(rows) != 1 || rows[0].Task != "Slow to spawn" {
+		t.Errorf("a pairing as slow as the slowest measured lost its task: %+v", rows)
+	}
+}
+
+// A sub-agent between tool calls is not still in the last one.
+//
+// The first version hooked only the start of a tool call, so a row showed the
+// last tool forever — including after the process died — while a comment on the
+// surface claimed the opposite. PostToolUse is the other half.
+func TestASubagentLeavesAToolWhenTheToolEnds(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	record(t, dir, "P", now, map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+	record(t, dir, "P", now.Add(time.Second), map[string]any{
+		"hook_event_name": "PreToolUse", "agent_id": "a1", "tool_name": "Bash",
+	})
+	if rows, _ := Subagents(dir, "P"); rows[0].Doing != "Bash" {
+		t.Fatalf("doing %q during the call, want Bash", rows[0].Doing)
+	}
+
+	record(t, dir, "P", now.Add(2*time.Second), map[string]any{
+		"hook_event_name": "PostToolUse", "agent_id": "a1", "tool_name": "Bash",
+	})
+	rows, _ := Subagents(dir, "P")
+	if rows[0].Doing != "" {
+		t.Errorf("doing %q after the call ended, want nothing", rows[0].Doing)
+	}
+}
+
+// The parent's PostToolUse for its own Agent call carries no agent_id either,
+// so without checking the event name it landed as a second launch — every
+// description in the queue twice. Verified against the real CLI before it
+// shipped; kept here so it cannot come back.
+func TestTheParentsAgentPostToolUseIsNotASecondLaunch(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	for _, ev := range []string{"PreToolUse", "PostToolUse"} {
+		record(t, dir, "P", now, map[string]any{
+			"hook_event_name": ev, "tool_name": "Agent",
+			"tool_input": map[string]any{"description": "Only once", "subagent_type": "general-purpose"},
+		})
+	}
+	record(t, dir, "P", now.Add(time.Second), map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+	record(t, dir, "P", now.Add(2*time.Second), map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a2", "agent_type": "general-purpose",
+	})
+
+	rows, _ := Subagents(dir, "P")
+	if len(rows) != 2 {
+		t.Fatalf("%d rows, want 2", len(rows))
+	}
+	if rows[0].Task != "Only once" {
+		t.Errorf("first row task %q", rows[0].Task)
+	}
+	if rows[1].Task != "" {
+		t.Errorf("second row took a duplicate of the first row's task: %q", rows[1].Task)
+	}
+}
+
+// The poll that drives live rows skips a parse when the log has not moved, so
+// the stamp has to move whenever it has.
+func TestTheStampMovesWithTheLog(t *testing.T) {
+	dir := t.TempDir()
+	if got := SubagentStamp(dir, "P"); got != "" {
+		t.Errorf("stamp %q for a log that does not exist", got)
+	}
+	record(t, dir, "P", time.Now(), map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+	first := SubagentStamp(dir, "P")
+	if first == "" {
+		t.Fatal("no stamp after the first event")
+	}
+	record(t, dir, "P", time.Now(), map[string]any{
+		"hook_event_name": "SubagentStop", "agent_id": "a1",
+	})
+	if SubagentStamp(dir, "P") == first {
+		t.Error("the stamp did not move when the log did")
 	}
 }

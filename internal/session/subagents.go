@@ -5,8 +5,8 @@ package session
 // A sub-agent is a tool call inside the CLI's own process. It is not a process
 // the adapter starts, so there is no tmux window to hold it and nothing for
 // `list-windows` to enumerate — which is why milestone 4c began by asking
-// whether it could be done rather than by building it. The answer, and the four
-// routes that were tried and rejected, are in
+// whether it could be done rather than by building it. The answer, the routes
+// that failed and the two that did not, are in
 // docs/investigations/0002-sub-agent-visibility.md.
 //
 // The route is the CLI's lifecycle hooks. `SubagentStart` and `SubagentStop`
@@ -19,7 +19,7 @@ package session
 // Everything in milestones 4a and 4b survives this: the session is still a tmux
 // pane, still typed into with send-keys, still read with pipe-pane, still
 // attachable from a terminal. A structured-output mode exists that would give
-// more, and it costs the pane; MUS-D-0087 records why it was not taken.
+// more, and it costs the pane; the owner kept the pane on MUS-Q-0027.
 //
 // **Mustur installs the hook per session and persists nothing** (MUS-Q-0024).
 // The hook rides in on a `--settings` JSON string appended to the command line
@@ -42,6 +42,31 @@ import (
 // whose start scrolled out of it does not appear at all, which is the honest
 // failure — a half-read row would say a sub-agent began when it did not.
 const TailBytes = 256 << 10
+
+// LaunchWindow is how long a launching call waits to be claimed by the
+// sub-agent it produced.
+//
+// An `Agent` call does not always produce one — permission denied, a failed
+// call — and an unclaimed description used to sit in the queue until the *next*
+// sub-agent of that type took it, which a reviewer reproduced as a row reading
+// "DENIED call, never ran". The owner chose to bound the pairing rather than
+// drop task labels or read an undocumented file (MUS-Q-0026), and was told
+// plainly what that buys: it narrows the window and does not close it. A label
+// can still be wrong; it can no longer be minutes stale.
+//
+// Thirty seconds, and the number came from the captures rather than from
+// intuition. The owner said "a few seconds"; measuring the nine launch-to-start
+// pairs in docs/investigations/0002-harness/captured says a few seconds is
+// wrong — they run from 1.563s to 5.985s, because three sub-agents launched
+// together are spawned in sequence and the last one waits for the first two. A
+// two-second window would have stripped the label off most correctly paired
+// rows, which is the failure the bound exists to prevent, arriving by a
+// different door. Thirty is five times the slowest pair observed and still two
+// orders below the "minutes stale" case that prompted the question.
+//
+// Reproduce with docs/investigations/0002-harness/score.py, whose captures this
+// was measured from.
+const LaunchWindow = 30 * time.Second
 
 // SaidMax bounds the final message kept for one sub-agent. Long enough for a
 // reviewer's verdict, finite so one runaway reply cannot make the log the
@@ -104,6 +129,25 @@ func DefaultHookDir() string {
 	return filepath.Join(home, ".local", "state", "mustur", "sessions")
 }
 
+// ForgetSubagents removes a project's log.
+//
+// Called when a session starts, because a sub-agent belongs to the session that
+// spawned it and nothing else. Without this a stopped session's rows survived
+// into the next one, still pilled *running*, ageing forever, for a process that
+// had been dead since before the page existed — which is the condition the
+// investigation's own rule named as disqualifying: rows that never leave are
+// worse than no rows.
+//
+// A missing log is nothing to forget. Failure is ignored for the same reason
+// the hook ignores it: a session that will not start because last week's rows
+// could not be deleted is a worse outcome than stale rows.
+func ForgetSubagents(dir, project string) {
+	if dir == "" || project == "" {
+		return
+	}
+	_ = os.Remove(SubagentLog(dir, project))
+}
+
 // SubagentLog is where one project's events are appended.
 func SubagentLog(dir, project string) string {
 	return filepath.Join(dir, "subagents", project+".jsonl")
@@ -137,13 +181,23 @@ func RecordHookEvent(dir, project string, payload []byte, now time.Time) {
 		e = event{Kind: "start", ID: p.AgentID, Type: p.AgentType}
 	case p.Event == "SubagentStop":
 		e = event{Kind: "stop", ID: p.AgentID, Said: clip(p.Said, SaidMax)}
+	case p.AgentID != "" && p.Event == "PostToolUse":
+		// The tool finished. Without this the row showed the last tool a
+		// sub-agent reached for forever, including after its process died, and
+		// the comment on the surface claimed the opposite.
+		e = event{Kind: "done", ID: p.AgentID, Tool: p.Tool}
 	case p.AgentID != "":
 		// A tool call inside a sub-agent. This is the only signal for what one
 		// is doing while it runs.
 		e = event{Kind: "doing", ID: p.AgentID, Tool: p.Tool}
-	case p.Tool == "Agent":
+	case p.Tool == "Agent" && p.Event == "PreToolUse":
 		// The parent launching one. The description is the only place a
 		// sub-agent's task is stated in a documented field.
+		//
+		// The event name is checked because the parent's *Post*ToolUse for the
+		// same call carries no agent_id either, and without this it landed here
+		// as a second launch — one description in the queue for every
+		// sub-agent, twice, which a verified run caught before it shipped.
 		e = event{Kind: "launch", Type: p.Input.SubagentType, Task: clip(p.Input.Description, 200)}
 	default:
 		return // Any other tool call in the main conversation. Not ours.
@@ -177,6 +231,22 @@ func clip(s string, n int) string {
 	return s[:n] + "…"
 }
 
+// SubagentStamp identifies the state of a project's log without reading it: its
+// size and modification time. A caller polling for changes can skip the parse
+// when the stamp has not moved. A missing log stamps as empty, which is a state
+// like any other — it is what a session that has launched nothing looks like,
+// and what one looks like after Start clears it.
+func SubagentStamp(dir, project string) string {
+	if dir == "" || project == "" {
+		return ""
+	}
+	info, err := os.Stat(SubagentLog(dir, project))
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%d-%d", info.Size(), info.ModTime().UnixNano())
+}
+
 // Subagents folds a project's log into rows, oldest first.
 func Subagents(dir, project string) ([]Subagent, error) {
 	data, err := tail(SubagentLog(dir, project), TailBytes)
@@ -188,7 +258,11 @@ func Subagents(dir, project string) ([]Subagent, error) {
 	var order []string
 	// Launches waiting to be claimed by a start, oldest first, keyed by the
 	// type the parent asked for. See the note on pairing below.
-	pending := map[string][]string{}
+	type launch struct {
+		task string
+		at   time.Time
+	}
+	pending := map[string][]launch{}
 
 	for _, line := range strings.Split(string(data), "\n") {
 		if strings.TrimSpace(line) == "" {
@@ -200,7 +274,7 @@ func Subagents(dir, project string) ([]Subagent, error) {
 		}
 		switch e.Kind {
 		case "launch":
-			pending[e.Type] = append(pending[e.Type], e.Task)
+			pending[e.Type] = append(pending[e.Type], launch{task: e.Task, at: e.At})
 		case "start":
 			if _, seen := rows[e.ID]; seen {
 				continue
@@ -214,7 +288,8 @@ func Subagents(dir, project string) ([]Subagent, error) {
 			// share nothing but the type. The one place both appear together is
 			// an undocumented file the owner declined to read (MUS-Q-0025).
 			//
-			// So this pairs by order within a type, and the basis is measured
+			// So this pairs by order within a type, inside a window, and the
+			// basis is measured
 			// rather than assumed: three sub-agents of one type launched
 			// together, over three runs, with each one's own tool call as
 			// independent ground truth for which was which — six agents scored,
@@ -222,14 +297,29 @@ func Subagents(dir, project string) ([]Subagent, error) {
 			// whose failure mode is saying a sub-agent is doing something it is
 			// not, which is why an unclaimed start shows no task at all rather
 			// than borrowing the nearest one.
-			if q := pending[e.Type]; len(q) > 0 {
-				r.Task, pending[e.Type] = q[0], q[1:]
+			// Anything older than the window belongs to a launch that never
+			// produced a sub-agent, and is dropped rather than handed to this
+			// one.
+			q := pending[e.Type]
+			for len(q) > 0 && e.At.Sub(q[0].at) > LaunchWindow {
+				q = q[1:]
 			}
+			if len(q) > 0 {
+				r.Task, q = q[0].task, q[1:]
+			}
+			pending[e.Type] = q
 			rows[e.ID] = r
 			order = append(order, e.ID)
 		case "doing":
 			if r := rows[e.ID]; r != nil && r.Ended.IsZero() {
 				r.Doing = e.Tool
+			}
+		case "done":
+			// Only clears the tool it names. A sub-agent's calls arrive in
+			// order, but a stray PostToolUse for a tool the row is no longer in
+			// should not blank a call that has since started.
+			if r := rows[e.ID]; r != nil && r.Doing == e.Tool {
+				r.Doing = ""
 			}
 		case "stop":
 			// Only a sub-agent that started gets a row. A run against the real
@@ -283,10 +373,12 @@ func tail(path string, n int64) ([]byte, error) {
 // HookSettings is the `--settings` value that makes a session's sub-agents
 // visible: three hooks, all of them calling this same binary back.
 //
-// PreToolUse is registered against every tool because the field that identifies
-// a sub-agent's own tool call is on the payload rather than in the tool's name,
-// so there is nothing narrower to match on. The cost is one short-lived process
-// per tool call in the session.
+// The tool hooks are registered against every tool because the field that
+// identifies a sub-agent's own tool call is on the payload rather than in the
+// tool's name, so there is nothing narrower to match on. The cost is two
+// short-lived processes per tool call in the session — the pair is what lets a
+// row distinguish a sub-agent inside a tool from one between tools, which the
+// first version claimed to do with only the first half.
 func HookSettings(exe, dir, project string) (string, error) {
 	call := fmt.Sprintf("%s session subagent-event --dir %s --project %s",
 		shellQuote(exe), shellQuote(dir), shellQuote(project))
@@ -298,6 +390,10 @@ func HookSettings(exe, dir, project string) (string, error) {
 			"SubagentStart": []any{map[string]any{"hooks": hooks}},
 			"SubagentStop":  []any{map[string]any{"hooks": hooks}},
 			"PreToolUse":    []any{map[string]any{"matcher": "*", "hooks": hooks}},
+			// The pair, not just the start. A row that says which tool a
+			// sub-agent is in has to be able to say when it left one, or it is
+			// a claim about now that stops being true and never says so.
+			"PostToolUse": []any{map[string]any{"matcher": "*", "hooks": hooks}},
 		},
 	}
 	b, err := json.Marshal(settings)

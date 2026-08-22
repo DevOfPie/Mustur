@@ -149,13 +149,13 @@ Done when: Its own verdict, not assumed here. The first project onboarded proves
 
 **Sub-agents are visible**
 
-milestone · 2026-08-21
+milestone · 2026-08-22
 
 Split from: [MUS-M-0006](#mus-m-0006)
 
 Raised by: [MUS-Q-0017](questions.md#mus-q-0017)
 
-Done when: A session that spawns sub-agents shows them as their own rows — which are running, for how long, and one readable without losing the parent. It starts by establishing whether that is possible at all: Mustur shells out to a CLI and reads one pane, so the first unit finds out whether the CLI will let the adapter place sub-agents where they can be read separately. If it will not, the milestone's verdict is that it cannot be done rather than a heuristic that guesses.
+Done when: A session that spawns sub-agents shows them as their own rows — what each was asked to do, how long it has run, the tool it is in, and one readable without losing the parent. It begins by establishing whether that is possible at all, with the decision rule fixed before the evidence is looked at, so that the verdict may be that it cannot be done. It was: the adapter cannot place a sub-agent, because a sub-agent is a call inside the CLI's one process. MUS-I-0002 settled the route as the CLI's lifecycle hooks, which leave the session a tmux pane.
 
 | Field | Value |
 | --- | --- |

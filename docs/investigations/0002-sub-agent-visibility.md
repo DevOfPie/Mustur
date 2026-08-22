@@ -4,9 +4,12 @@
 the decision rule were committed before any of it was run — the previous commit
 to this file — so the git history shows the rule preceding the finding, which is
 the whole reason milestone 1 was believable.
-**Verified against:** Claude Code 2.1.239 on this machine; the runs and their
-captured output in `hooks.log` and `stream.jsonl`, reproduced by the commands
-quoted below.
+**Verified against:** Claude Code 2.1.239; the runs, their captured output and
+the commands that produced them, all committed in
+[0002-harness/](0002-harness/). A review found this line naming files that were
+not in the tree and promising commands that were not quoted anywhere — the
+harness is the correction, and `python3 docs/investigations/0002-harness/score.py`
+reproduces the pairing result below without a CLI or a network.
 **Run during:** milestone 4c of [Plan.md](../../Plan.md#milestones), which the
 owner split out of 4b on [MUS-Q-0017](../../records/questions.md#mus-q-0017)
 precisely so that "this cannot be done" would be a permitted verdict.
@@ -181,6 +184,16 @@ seam: `SubagentStop` hands `agent_transcript_path` over directly, so reading
 ### D — pattern-matching the pane: not tried
 
 Ruled out in advance and left ruled out. Route E makes it unnecessary.
+
+### A fifth route, and what that costs the pre-registration
+
+Route E was not registered. That is worth stating rather than absorbing: a rule
+fixed beforehand constrains how evidence is judged, and it cannot constrain a
+route nobody thought of. What protects the finding here is that E was judged by
+the same three properties as the four that were registered, and that the route
+the rule was most likely to be bent for — the undocumented directory in route
+B — was still refused. A reader who wants to discount the pre-registration by
+one route is right to.
 
 ### Verdict against the rule
 

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-86 record(s), by identifier.
+92 record(s), by identifier.
 
 ## Index
 
@@ -98,6 +98,12 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0084](#mus-d-0084) | A viewer that falls behind is disconnected, not quietly starved | 2026-08-22 |
 | [MUS-D-0085](#mus-d-0085) | The bar grows in three templates, not one | 2026-08-22 |
 | [MUS-D-0086](#mus-d-0086) | The exit is logged, and supervision only runs while somebody is watching | 2026-08-22 |
+| [MUS-D-0087](#mus-d-0087) | Sub-agents are found through the CLI's lifecycle hooks, not by placing them | 2026-08-22 |
+| [MUS-D-0088](#mus-d-0088) | The pane is kept, and the structured-output route is recorded rather than taken | 2026-08-22 |
+| [MUS-D-0089](#mus-d-0089) | A row shows what a documented interface carries, and no more | 2026-08-22 |
+| [MUS-D-0090](#mus-d-0090) | A task is paired to a sub-agent by order, inside a measured window | 2026-08-22 |
+| [MUS-D-0091](#mus-d-0091) | The adapter is vendor-neutral except where a capability belongs to one vendor | 2026-08-22 |
+| [MUS-D-0092](#mus-d-0092) | Sub-agent rows are pushed down the session socket | 2026-08-22 |
 
 ---
 
@@ -1427,3 +1433,79 @@ stream.go claimed an exit is reported on the surface and in the log before anyth
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching](../decisions.md#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching) |
+
+---
+
+## MUS-D-0087
+
+**Sub-agents are found through the CLI's lifecycle hooks, not by placing them**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0024](questions.md#mus-q-0024)
+
+from: [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002)
+
+The adapter cannot place a sub-agent anywhere: it is a call inside the CLI's one process, so there is no window for tmux to hold. SubagentStart and SubagentStop carry an agent_id, and a tool-use hook carries the same id when the call happens inside a sub-agent, so rows are attributed by an identifier the CLI supplies rather than inferred from the pane. The hook is passed as a --settings JSON string on the command line Start already builds: nothing is written to the owner's configuration or into the checkout, and a session started by hand carries no hook and shows no sub-agents.
+
+---
+
+## MUS-D-0088
+
+**The pane is kept, and the structured-output route is recorded rather than taken**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0027](questions.md#mus-q-0027)
+
+from: [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002)
+
+stream-json with --forward-subagent-text carries every property the rule asked for, is fully documented, and was verified end to end including a session held open on --input-format stream-json that accepted a second message. It requires --print, which is not a terminal. Taking it would stop a Mustur session being something the owner can attach to and would rebuild 4a and 4b around a JSON harness. Recorded so it is findable if the pane is ever given up for other reasons.
+
+---
+
+## MUS-D-0089
+
+**A row shows what a documented interface carries, and no more**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0025](questions.md#mus-q-0025)
+
+What a sub-agent was asked to do, how long it has run, the tool it is in, and its output once it finishes. Full prose while it runs exists in a per-agent transcript at a path the CLI documents nowhere and hands over only at SubagentStop; depending on it was declined. Reading a sub-agent mid-flight means opening the parent pane, which is still there.
+
+---
+
+## MUS-D-0090
+
+**A task is paired to a sub-agent by order, inside a measured window**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0026](questions.md#mus-q-0026)
+
+No documented field connects the parent's launching call to the sub-agent it produced. Pairing by spawn order was adopted without asking, and a reviewer showed it mislabels: a launch that never produced a sub-agent left its description for the next one. The bound is thirty seconds, from the nine launch-to-start pairs in the harness captures, which run from 1.563s to 5.985s — the owner said 'a few seconds' and the measurement says a few seconds would have stripped the label off rows that were right. It narrows the window and does not close it; a start with nothing left to claim carries no task at all.
+
+---
+
+## MUS-D-0091
+
+**The adapter is vendor-neutral except where a capability belongs to one vendor**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0028](questions.md#mus-q-0028)
+
+The adapter runs whatever CLI the owner configured and has no default of its own. The hook interface belongs to one of them, so Start appends the hook flags only to a command whose program is that CLI and leaves anything else exactly as given. The boundary stops being described as absolute rather than being quietly crossed; the failure mode is a session that starts normally and shows no sub-agent rows.
+
+---
+
+## MUS-D-0092
+
+**Sub-agent rows are pushed down the session socket**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0029](questions.md#mus-q-0029)
+
+The owner chose live rows over a page reload, against the recommendation to leave them static. The server polls the hook's log on a two-second ticker, skips the parse when the file's size and modification time have not moved, and sends a frame only when the rows differ. Ages are not sent: each row carries its start and end stamps and the client counts, so a running sub-agent's clock moves without a frame per second to move it. This is the one thing the surface's client layer models that is not the terminal.

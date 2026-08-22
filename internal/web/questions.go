@@ -286,7 +286,9 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 // against a recommendation of three, and it still stands. A tab that goes
 // nowhere would be an unbuilt capability described as existing, so the bar
 // renders the built ones and grows as the rest arrive. Owner-confirmed as the
-// interim on MUS-Q-0012.
+// interim on MUS-Q-0012, which also corrected MUS-D-0053's claim that no bar
+// exists before milestone 4 — a pointer an earlier edit dropped, leaving the
+// superseded decision with nothing pointing at what superseded it.
 //
 // "Grows as the rest arrive" is a promise that has to be kept in every template
 // at once. Sessions arrived at milestone 4b and this bar did not grow, which

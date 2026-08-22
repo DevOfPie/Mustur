@@ -46,8 +46,9 @@ questions: ## No open question was left unsurfaced as a prompt
 	@go run ./cmd/mustur questions --gate --records records \
 	  && echo "  ok    no open question in records/ was left unsurfaced"
 
-# go.mod said a directly imported package was `// indirect` for a whole
-# milestone, and nothing noticed. The file that documents the dependency surface
+# go.mod said a directly imported package was `// indirect` for one commit, and
+# nothing noticed. An earlier version of this comment said "a whole milestone",
+# which was longer than the truth. The file that documents the dependency surface
 # is the one place a wrong claim about it should not survive.
 tidy-check: ## go.mod and go.sum are what the imports actually need
 	@go mod tidy -diff >/dev/null 2>&1 \

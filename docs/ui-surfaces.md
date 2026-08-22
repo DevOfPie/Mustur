@@ -11,8 +11,11 @@ the record alone was not the safeguard. The owner's answer on MUS-Q-0010 was to
 rebuild the queue from its artboard, which is done. Intake is unchanged and
 still stands as built.
 
-Surface 8, the session output, is the third, and it is the first built from a
-drawing rather than from a brief — which is what the instruction below was for.
+Surface 8, the session output, is the third. It is the first built from a
+drawing before anything existed to redraw — surface 4 was built from its brief
+at milestone 3 and rebuilt from the plan's artboard afterwards, which is a
+different order and was, until a review corrected this line, described here as
+though surface 8 got there first.
 
 **The standing instruction, which an earlier draft of this file deleted and a
 review caught:** the owner's answer after intake was to publish a plan for every
@@ -202,7 +205,9 @@ Its plan is
 Milestone 4b builds it from that drawing, not from this brief. The owner has
 settled the composer, the scrollback cap, what idle means, what supervision
 does, and — at 4c — how sub-agents are found and how much of one a row shows.
-What remains open is whether typing is armed separately from watching.
+Typing is not armed separately from watching — the owner settled that on
+MUS-Q-0018, "always writable, as drawn", and an edit for milestone 4c briefly
+listed it as open again. Nothing on this surface is open.
 
 ## Not surfaces
 

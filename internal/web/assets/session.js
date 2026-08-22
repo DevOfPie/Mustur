@@ -13,6 +13,7 @@
   if (!project || !out) return;
 
   var state = document.getElementById("state");
+  var agentsBox = document.querySelector(".agents");
   var scrollback = document.getElementById("scrollback");
   var foot = document.getElementById("foot");
   var form = document.getElementById("say");
@@ -58,7 +59,65 @@
 
   setInterval(function () {
     if (foot && !closed) foot.textContent = quiet();
+    // The ages move on their own, so the server does not send a frame to move
+    // them.
+    if (!closed) drawAgents();
   }, 1000);
+
+  // Sub-agent rows.
+  //
+  // The one thing this script models that is not the terminal. The owner chose
+  // that on MUS-Q-0029, against the recommendation to leave the rows static —
+  // so it is kept as small as it can be: the server sends the rows, this draws
+  // them, and the only thing computed here is the age, from the stamps, so a
+  // running sub-agent's clock moves without a frame per second to move it.
+  var agents = null;
+
+  function age(from, to) {
+    var d = Math.max(0, Math.round((to ? to * 1000 : Date.now()) - from * 1000) / 1000);
+    if (d < 60) return Math.round(d) + "s";
+    if (d < 3600) return Math.round(d / 60) + "m";
+    return Math.floor(d / 3600) + "h " + (Math.round(d / 60) % 60) + "m";
+  }
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt !== undefined) n.textContent = txt;
+    return n;
+  }
+
+  function drawAgents() {
+    if (!agentsBox || agents === null) return;
+    if (!agents.length) {
+      agentsBox.hidden = true;
+      return;
+    }
+    agentsBox.hidden = false;
+    var running = 0;
+    var i;
+    for (i = 0; i < agents.length; i++) if (!agents[i].done) running++;
+
+    // Rebuilt rather than diffed. Four rows of three spans is not worth a
+    // reconciler, and a rebuild cannot leave a stale row behind.
+    agentsBox.textContent = "";
+    agentsBox.appendChild(
+      el("div", "count",
+         agents.length + " sub-agent" + (agents.length === 1 ? "" : "s") +
+         (running ? " · " + running + " running" : ""))
+    );
+    for (i = 0; i < agents.length; i++) {
+      var a = agents[i];
+      var row = el("div", "agent");
+      row.appendChild(
+        a.title ? el("span", "what", a.title) : el("span", "what untitled", a.type)
+      );
+      row.appendChild(el("span", "pill" + (a.done ? " done" : ""), a.state));
+      row.appendChild(el("span", "age", age(a.started, a.ended)));
+      agentsBox.appendChild(row);
+      if (a.said) agentsBox.appendChild(el("p", "said", a.said));
+    }
+  }
 
   function connect() {
     var proto = location.protocol === "https:" ? "wss:" : "ws:";
@@ -103,6 +162,9 @@
             ? "\n[" + lost + " bytes of earlier output were not kept]\n"
             : "\n[output produced while this tab was away was not kept]\n"
         );
+      } else if (f.t === "agents") {
+        agents = f.agents || [];
+        drawAgents();
       } else if (f.t === "ended") {
         closed = true;
         setState("ended", false);

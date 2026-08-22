@@ -9,12 +9,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 10 | [milestones.md](milestones.md) |
-| question | 23 | [questions.md](questions.md) |
-| decision | 86 | [decisions.md](decisions.md) |
+| question | 29 | [questions.md](questions.md) |
+| decision | 92 | [decisions.md](decisions.md) |
 | finding | 22 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 17 | [work-units/index.md](work-units/index.md) |
-| investigation | 1 | [investigations/index.md](investigations/index.md) |
+| work-unit | 18 | [work-units/index.md](work-units/index.md) |
+| investigation | 2 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
 
@@ -47,6 +47,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0015](work-units/MUS-W-0015.md#mus-w-0015) | work-unit | The decision queue, rebuilt from its artboard |
 | [MUS-W-0016](work-units/MUS-W-0016.md#mus-w-0016) | work-unit | The per-machine adapter, and the answer carried back |
 | [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017) | work-unit | A session in a browser tab |
+| [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018) | work-unit | Sub-agents are visible |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -70,6 +71,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0021](questions.md#mus-q-0021) | question | How long should the reader outlive its last viewer? |
 | [MUS-Q-0022](questions.md#mus-q-0022) | question | What should the idle timeout on a session socket mean? |
 | [MUS-Q-0023](questions.md#mus-q-0023) | question | Should a WebSocket handshake carrying no Origin header be refused? |
+| [MUS-Q-0024](questions.md#mus-q-0024) | question | How should Mustur install the hook that makes sub-agents visible? |
+| [MUS-Q-0025](questions.md#mus-q-0025) | question | How much of a running sub-agent should the surface show? |
+| [MUS-Q-0026](questions.md#mus-q-0026) | question | A sub-agent's task is paired to it by order. Keep the inference? |
+| [MUS-Q-0027](questions.md#mus-q-0027) | question | Was rejecting the structured-output route the right call? |
+| [MUS-Q-0028](questions.md#mus-q-0028) | question | A vendor name now sits in the adapter's start path. Accept it? |
+| [MUS-Q-0029](questions.md#mus-q-0029) | question | Should sub-agent rows update live, or only on reload? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -156,6 +163,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0084](decisions.md#mus-d-0084) | decision | A viewer that falls behind is disconnected, not quietly starved |
 | [MUS-D-0085](decisions.md#mus-d-0085) | decision | The bar grows in three templates, not one |
 | [MUS-D-0086](decisions.md#mus-d-0086) | decision | The exit is logged, and supervision only runs while somebody is watching |
+| [MUS-D-0087](decisions.md#mus-d-0087) | decision | Sub-agents are found through the CLI's lifecycle hooks, not by placing them |
+| [MUS-D-0088](decisions.md#mus-d-0088) | decision | The pane is kept, and the structured-output route is recorded rather than taken |
+| [MUS-D-0089](decisions.md#mus-d-0089) | decision | A row shows what a documented interface carries, and no more |
+| [MUS-D-0090](decisions.md#mus-d-0090) | decision | A task is paired to a sub-agent by order, inside a measured window |
+| [MUS-D-0091](decisions.md#mus-d-0091) | decision | The adapter is vendor-neutral except where a capability belongs to one vendor |
+| [MUS-D-0092](decisions.md#mus-d-0092) | decision | Sub-agent rows are pushed down the session socket |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -179,6 +192,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0021](findings.md#mus-f-0021) | finding | The public hostname has no Access application in front of it |
 | [MUS-F-0022](findings.md#mus-f-0022) | finding | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
+| [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |

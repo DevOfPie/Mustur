@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-23 record(s), by identifier.
+29 record(s), by identifier.
 
 ---
 
@@ -536,11 +536,11 @@ Investigation 0002 established that sub-agents can be seen at all, and that the 
 | Status | answered |
 | Blocks | whether milestone 4c is built at all |
 | Needed to proceed | yes |
-| Option | Per session, nothing persists :: Recommended · Mustur touches no configuration it does not own :: The hook is passed as a `--settings` JSON string on the command line Mustur already builds. Verified: nothing written to `~/.claude`, nothing written into the checkout. The cost is that a session started by hand shows no sub-agents, because it carries no hook. |
-| Option | Write it into the owner's config once :: Every session shows sub-agents, including ones Mustur did not start :: Mustur adds the hook to `~/.claude/settings.json`. It also means Mustur mutating the owner's agent configuration, and a hook that keeps firing when Mustur is not running. |
+| Option | Per session, nothing persists :: Recommended · Mustur touches no configuration it does not own :: The hook is passed as a --settings JSON string on the command line Mustur already builds. Verified: nothing written to ~/.claude, nothing written into the checkout. The cost is that a session started by hand shows no sub-agents, because it carries no hook. |
+| Option | Write it into the owner's config once :: Every session shows sub-agents, including ones Mustur did not start :: Mustur adds the hook to ~/.claude/settings.json. It also means Mustur mutating the owner's agent configuration, and a hook that keeps firing when Mustur is not running. |
 | Option | Neither, and close 4c :: The investigation is the deliverable :: No hook and no rows. Plan.md records that it was possible and declined, which is a real outcome for a milestone that began by asking whether it was possible. |
 | Asked by | whippy |
-| Surfaced | 2026-08-22 11:15 |
+| Surfaced | 2026-08-22 19:52 |
 | Answer | Per session, nothing persists. Mustur passes the hook on the command line it already builds and touches no configuration it does not own. |
 | Answered | 2026-08-22 11:15 |
 | Delivered | not delivered: the question names no session |
@@ -553,7 +553,7 @@ Investigation 0002 established that sub-agents can be seen at all, and that the 
 
 question · 2026-08-22
 
-The hooks give an identifier, a type, the description it was launched with, each tool as it is called, and its full text when it ends. Full text *while it is still running* lives in a per-agent transcript whose path the CLI documents nowhere — it hands the path over at `SubagentStop` and not before. Investigation 0002's rule, fixed before looking, says an undocumented path is a finding and not a route, so overriding it is the owner's to do and not the builder's.
+The hooks give an identifier, a type, the description it was launched with, each tool as it is called, and its full text when it ends. Full text while it is still running lives in a per-agent transcript whose path the CLI documents nowhere. Investigation 0002's rule, fixed before looking, says an undocumented path is a finding and not a route, so overriding it is the owner's to do and not the builder's.
 
 | Field | Value |
 | --- | --- |
@@ -564,7 +564,98 @@ The hooks give an identifier, a type, the description it was launched with, each
 | Option | Read the transcript live :: Full prose while it runs :: Works today, by deriving the per-agent transcript path. It also makes Mustur depend on an undocumented on-disk layout, which Plan.md lists under never — a deliberate exception rather than a detail. |
 | Option | Rows only, no text :: Which are running and for how long, nothing more :: Cheapest and least useful. The owner asked to be able to read through a sub-agent's progress, which this does not do. |
 | Asked by | whippy |
-| Surfaced | 2026-08-22 11:15 |
+| Surfaced | 2026-08-22 19:52 |
 | Answer | Documented only. What a sub-agent is doing now, and its output once it finishes. |
 | Answered | 2026-08-22 11:15 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0026
+
+**A sub-agent's task is paired to it by order. Keep the inference?**
+
+question · 2026-08-22
+
+No documented field connects the parent's launching call to the sub-agent it produced, so the builder paired them by spawn order and did not ask. A reviewer showed it mislabels: an Agent call that never produces a sub-agent leaves its description for the next one to claim, rendering a row that read 'DENIED call, never ran'. This was not among MUS-Q-0025's options because the gap had not been found yet.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a sub-agent row can carry the wrong task |
+| Needed to proceed | yes |
+| Option | Keep pairing, bound it :: Narrows the window, does not close it :: A launch nobody claimed within a few seconds is dropped, so a stale description cannot wait for the next sub-agent. A wrong label stays possible and would still read as a fact. |
+| Option | Drop the labels :: No inference anywhere, and no row can be wrong :: A row shows its type, its age and its tool, never a task. Loses the thing that tells three identical general-purpose rows apart. |
+| Option | Read the undocumented file :: Exact rather than inferred :: Each sub-agent's metadata file holds its description and its id together. The owner declined this dependency on MUS-Q-0025, before a reviewer showed the alternative mislabels. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Keep pairing, bound it. Drop a launch nobody claimed within a few seconds. |
+| Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0027
+
+**Was rejecting the structured-output route the right call?**
+
+question · 2026-08-22
+
+Both the hooks route and the structured-output route cleared investigation 0002's pre-registered rule. The builder rejected structured output because it requires --print, which is not a terminal, and argued it down in prose instead of asking. MUS-Q-0024 covered where the hook is installed, not which route.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | nothing; it is built the other way and works |
+| Option | Keep the pane :: Recommended · ratifies what is built :: Sessions stay real terminals the owner can attach to, everything in 4a and 4b stands, and rows come from hooks. Structured output stays recorded as the option if the pane is ever given up for other reasons. |
+| Option | Reconsider structured output :: Strictly more, at the cost of the pane :: Every sub-agent message tagged with the call that spawned it, at every nesting depth, plus live progress and durations. Sessions become a JSON stream Mustur renders, and 4a and 4b are rebuilt around it. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Keep the pane. |
+| Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0028
+
+**A vendor name now sits in the adapter's start path. Accept it?**
+
+question · 2026-08-22
+
+The adapter has no default CLI and Plan.md calls that neutrality a designed boundary, but the hook interface belongs to one CLI, so Start checks whether the command is claude before appending the hook flags. A reviewer flagged the vendor name in the core start path.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | how far the adapter's vendor neutrality actually goes |
+| Option | Accept it, name it :: Recommended · the boundary stops being described as absolute :: The check stays and Plan.md says vendor-neutral except where a capability belongs to one vendor. The failure mode is a session that simply shows no rows. |
+| Option | Move it behind a flag :: The boundary stays clean, the feature stops being default :: session start --watch-subagents installs the hook, with no name-sniffing. Sub-agents become something to ask for each time. |
+| Option | Make it configurable :: Another CLI could be configured in :: The hook flags become a setting rather than a constant. More moving parts today for a second CLI nobody has. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Accept it, and name it: the boundary is vendor-neutral except where a capability belongs to one vendor. |
+| Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0029
+
+**Should sub-agent rows update live, or only on reload?**
+
+question · 2026-08-22
+
+The rows are server-rendered like the rest of this surface, so a sub-agent's age and the tool it is in freeze until the page is reloaded — on the one page that already holds a live socket.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a row's age and current tool are current |
+| Option | Push rows down the socket :: Rows are current, and the client layer grows :: Rows update alongside the output. It widens the one scripted surface from a terminal to a terminal and a model of sub-agent state, which is a second thing for it to be wrong about. |
+| Option | Leave them static :: Recommended · a reload is how you see current state :: Keeps the client layer doing one job, and keeps the rule that this surface's script exists for the terminal and nothing else. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Push rows down the socket. |
+| Answered | 2026-08-22 14:10 |
 | Delivered | not delivered: the question names no session |

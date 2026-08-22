@@ -40,3 +40,4 @@ is a copy that will drift.
 | [MUS-W-0015](MUS-W-0015.md) | The decision queue, rebuilt from its artboard | 2026-08-21 |
 | [MUS-W-0016](MUS-W-0016.md) | The per-machine adapter, and the answer carried back | 2026-08-21 |
 | [MUS-W-0017](MUS-W-0017.md) | A session in a browser tab | 2026-08-22 |
+| [MUS-W-0018](MUS-W-0018.md) | Sub-agents are visible | 2026-08-22 |
