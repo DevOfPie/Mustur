@@ -60,6 +60,10 @@ type Sessions struct {
 	// tab renders without one.
 	Store *store.Store
 	Actor string
+	// HookDir is where the adapter's sub-agent hook logs its events. Empty
+	// means the surface shows no sub-agent rows, which is also what a session
+	// started without the hook shows.
+	HookDir string
 	Now     func() time.Time
 }
 
@@ -116,8 +120,69 @@ type sessionRow struct {
 type sessionPage struct {
 	Project       string
 	Rows          []sessionRow
+	Subagents     []subagentRow
+	Running       int
 	OpenQuestions int
 	Missing       bool
+}
+
+// A subagentRow is one sub-agent as the page says it, with every value already
+// decided here rather than in the template.
+type subagentRow struct {
+	Title string // what it was asked to do; empty when that could not be told
+	Type  string
+	State string // the tool in flight, or "finished"
+	Done  bool
+	For   string
+	Said  string
+}
+
+// subagents reads what the hook recorded for this session.
+//
+// The rows are server-rendered like everything else on this surface bar the
+// output stream: a sub-agent starting is not a keystroke-latency event, and the
+// page is already reloaded to see one. Nothing here reaches the socket.
+func (s *Sessions) subagents(project string) ([]subagentRow, int) {
+	if s.HookDir == "" || project == "" {
+		return nil, 0
+	}
+	live, err := session.Subagents(s.HookDir, project)
+	if err != nil || len(live) == 0 {
+		return nil, 0
+	}
+	now := s.now()
+	rows := make([]subagentRow, 0, len(live))
+	running := 0
+	for _, a := range live {
+		r := subagentRow{Title: a.Task, Type: a.Type, For: since(a.For(now)), Said: a.Said}
+		if a.Running() {
+			running++
+			// The tool it last reached for. A sub-agent between tool calls is
+			// thinking, and says so rather than holding up the last tool's name
+			// as though it were still in it.
+			r.State = a.Doing
+			if r.State == "" {
+				r.State = "working"
+			}
+		} else {
+			r.Done, r.State = true, "finished"
+		}
+		rows = append(rows, r)
+	}
+	return rows, running
+}
+
+// since renders an age the way the surface already renders quiet time: coarse,
+// because a sub-agent's precise second is not a thing anyone acts on.
+func since(d time.Duration) string {
+	switch {
+	case d < time.Minute:
+		return fmt.Sprintf("%ds", int(d.Seconds()))
+	case d < time.Hour:
+		return fmt.Sprintf("%dm", int(d.Minutes()))
+	default:
+		return fmt.Sprintf("%dh %dm", int(d.Hours()), int(d.Minutes())%60)
+	}
 }
 
 func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, bool) {
@@ -152,7 +217,11 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	project := r.PathValue("project")
 	rows, found := s.rows(r.Context(), project)
-	s.render(w, r, sessionPage{Project: project, Rows: rows, Missing: !found})
+	agents, running := s.subagents(project)
+	s.render(w, r, sessionPage{
+		Project: project, Rows: rows, Missing: !found,
+		Subagents: agents, Running: running,
+	})
 }
 
 func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage) {
@@ -376,6 +445,23 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .rail a.here { opacity: 1; border-color: var(--accent);
                  background: var(--accent-soft); }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
+  /* Sub-agents sit above the session's own output, because they are Mustur
+     talking about the session rather than the session talking. Same tint as
+     every other strip for the same reason. */
+  .agents { padding: .6rem 1rem; background: #8881;
+            border-bottom: 1.4px solid var(--edge); font-size: .85em; }
+  .agents > .count { opacity: .6; font-size: .9em; }
+  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .3rem 0;
+           white-space: nowrap; }
+  .agent .what { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .agent .what.untitled { opacity: .55; font-style: italic; }
+  .agent .pill { border: 1px solid var(--edge); border-radius: 999px;
+                 padding: .05rem .5rem; font-size: .78em; }
+  .agent .pill.done { border-color: var(--accent); background: var(--accent-soft); }
+  .agent .age { opacity: .6; font-size: .82em; }
+  .said { margin: 0 0 .4rem .2rem; padding-left: .6rem;
+          border-left: 1.4px solid var(--edge); white-space: pre-wrap;
+          word-break: break-word; opacity: .85; font-size: .92em; }
   nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap;
         margin-top: auto; }
   nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
@@ -395,6 +481,13 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <small>A session left running in a terminal is not here and will not appear.</small></p>
 {{else}}
 <div class="strip"><span class="grow" id="scrollback">connecting</span></div>
+{{if .Subagents}}<div class="agents">
+  <div class="count">{{len .Subagents}} sub-agent{{if ne (len .Subagents) 1}}s{{end}}{{if .Running}} · {{.Running}} running{{end}}</div>
+  {{range .Subagents}}<div class="agent">
+    {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
+    <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span>
+  </div>{{if .Said}}<p class="said">{{.Said}}</p>{{end}}{{end}}
+</div>{{end}}
 <pre id="out"></pre>
 <div id="foot">quiet 0s</div>
 <form id="say"><input type="text" id="text" placeholder="Reply to this session" autocomplete="off"><button type="submit">Send</button></form>

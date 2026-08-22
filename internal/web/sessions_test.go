@@ -2,11 +2,13 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
@@ -243,3 +245,74 @@ func TestEverySurfaceCarriesTheSameBar(t *testing.T) {
 	}
 }
 
+// Sub-agent rows on the session surface.
+//
+// The hook writes a log; this reads it back through the page, so a change to
+// either half that the other does not expect shows up here rather than as an
+// empty strip on a phone.
+func TestTheSessionPageShowsSubagents(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	s := &Sessions{
+		Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie",
+		HookDir: dir, Now: func() time.Time { return now.Add(3 * time.Minute) },
+	}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	// Nothing recorded yet: no strip at all, rather than an empty one.
+	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "sub-agent") {
+		t.Error("a session that has launched nothing still claims sub-agents")
+	}
+
+	rec := func(payload map[string]any, at time.Time) {
+		b, err := json.Marshal(payload)
+		if err != nil {
+			t.Fatal(err)
+		}
+		session.RecordHookEvent(dir, "Mustur", b, at)
+	}
+	rec(map[string]any{
+		"hook_event_name": "PreToolUse", "tool_name": "Agent",
+		"tool_input": map[string]any{"description": "Contract reviewer", "subagent_type": "general-purpose"},
+	}, now)
+	rec(map[string]any{"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose"}, now)
+	rec(map[string]any{"hook_event_name": "PreToolUse", "agent_id": "a1", "tool_name": "Grep"}, now)
+	rec(map[string]any{"hook_event_name": "SubagentStart", "agent_id": "a2", "agent_type": "Explore"}, now)
+	rec(map[string]any{"hook_event_name": "SubagentStop", "agent_id": "a2", "last_assistant_message": "Nothing found."}, now.Add(time.Minute))
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	for _, want := range []string{
+		"2 sub-agents",      // both of them
+		"1 running",         // and only one still going
+		"Contract reviewer", // the task it was launched with
+		"Grep",              // what it is doing now
+		"3m",                // how long it has been at it
+		"finished",          // the other one
+		"Nothing found.",    // and what it said
+		"Explore",           // a row with no task falls back to its type
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the page does not show %q", want)
+		}
+	}
+
+	// The rows are server-rendered. This surface carries one script and it is
+	// for the output stream; a sub-agent appearing is not worth a second.
+	if strings.Count(body, "<script") != 1 {
+		t.Errorf("%d scripts on the page, want the one that drives the socket", strings.Count(body, "<script"))
+	}
+}
+
+// A surface with no hook directory is the sessions Mustur started before this
+// milestone, and the ones started by hand after it. They show output and no
+// rows, rather than an error.
+func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "sub-agent") {
+		t.Error("a session with no hook directory claims sub-agents")
+	}
+}

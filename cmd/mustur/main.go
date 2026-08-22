@@ -438,13 +438,16 @@ func cmdServe(args []string) error {
 	// Registered on the outer mux, ahead of the intake box's catch-all, so the
 	// queue is reachable at a hostname whose "/" belongs to intake.
 	questions.Routes(mux)
-	adapter := &session.Adapter{}
+	// The hook directory is what makes a session's sub-agents visible: the
+	// adapter installs a hook pointing at it, and the surface reads it back.
+	hookDir := session.DefaultHookDir()
+	adapter := &session.Adapter{HookDir: hookDir}
 	hub := &session.Hub{Adapter: adapter}
 	// Readers hold a fifo and a tmux pipe-pane each; without this a server that
 	// goes down leaves both behind, with tmux still writing into a pipe nobody
 	// will ever read.
 	defer hub.Shutdown()
-	sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor()}
+	sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor(), HookDir: hookDir}
 	sessions.Routes(mux)
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {

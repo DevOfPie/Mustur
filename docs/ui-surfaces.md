@@ -177,10 +177,18 @@ server-rendered. The stack table names this as the exception and keeps the rule
 for everything else; a second surface wanting script is a new decision, not a
 precedent.
 
-**Sub-agents are not part of it.** They moved to milestone 4c on MUS-Q-0017,
-because showing them requires Mustur to know a sub-agent exists and it does not:
-it reads one pane, and sub-agents are the CLI's internal business. 4c begins by
-establishing whether that can change.
+**Sub-agents arrived at milestone 4c**, and not by the route this file expected.
+They moved out of 4b on MUS-Q-0017 because showing them requires Mustur to know
+a sub-agent exists, and reading one pane does not tell it. What settled the
+question is [investigation 0002](investigations/0002-sub-agent-visibility.md),
+whose rule was fixed before the evidence was looked at.
+
+The adapter cannot place a sub-agent anywhere — a sub-agent is a call inside the
+CLI's one process, so there is no window to put it in. The CLI's lifecycle hooks
+say when one starts, which tool it is in, and when it stops, each tagged with an
+identifier the CLI supplies. Rows above the output are therefore attributed
+rather than inferred, and the pane is untouched. What they do not carry is a
+sub-agent's prose while it runs; that arrives when it finishes.
 
 **The connection is the first one that carries keystrokes in**, not only records
 out. A flaw here is not a wrong page; it is somebody else typing into an agent
@@ -192,9 +200,9 @@ opened by a page they happened to visit.
 Its plan is
 [plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58).
 Milestone 4b builds it from that drawing, not from this brief. The owner has
-settled the composer, the scrollback cap, what idle means and what supervision
-does; what remains open is how sub-agents are found, whether typing is armed
-separately from watching, and where a session's exit is recorded.
+settled the composer, the scrollback cap, what idle means, what supervision
+does, and — at 4c — how sub-agents are found and how much of one a row shows.
+What remains open is whether typing is armed separately from watching.
 
 ## Not surfaces
 

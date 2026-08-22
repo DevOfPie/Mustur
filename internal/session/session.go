@@ -89,6 +89,13 @@ type Adapter struct {
 	// Stat checks a directory exists. Nil means the real filesystem; injected
 	// so the check itself is testable.
 	Stat func(dir string) error
+	// HookDir is where sub-agent events are logged, and the switch that turns
+	// sub-agent visibility on. Empty means Start installs no hook and the
+	// session shows no sub-agents — which is what every session did before
+	// milestone 4c, and what a session started by hand still does.
+	HookDir string
+	// Exe is the Mustur binary the hook calls back. Empty means this one.
+	Exe string
 }
 
 type execRunner struct{}
@@ -156,7 +163,11 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 		}
 		args = append(args, "-c", d)
 	}
-	args = append(args, cmd)
+	// The command the owner configured, plus the hook that makes this session's
+	// sub-agents visible — appended here and nowhere else, so nothing is
+	// written to the owner's configuration (MUS-Q-0024). A command this package
+	// does not recognise comes back unchanged.
+	args = append(args, withHook(cmd, a.exe(), a.HookDir, project))
 	if out, err := a.runner().Run(ctx, "tmux", args...); err != nil {
 		return Session{}, fmt.Errorf("tmux new-session: %w: %s", err, strings.TrimSpace(out))
 	}
