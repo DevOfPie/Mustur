@@ -120,13 +120,31 @@ If Access is ever removed from the hostname, stop this first:
 systemctl --user disable --now mustur
 ```
 
-## What is still not demonstrable
+## The last sentence, demonstrated
 
-One sentence, and it is the milestone's own: *a jot from a phone lands in
-Mustur's findings-queue in seconds*. Only the owner can test it, because only
-the owner can get through Access.
+*A jot from a phone lands in Mustur's findings-queue in seconds, carries a
+routing hint where one is obvious, and defaults to the idea inbox where it is
+not.* Only the owner could test it, because only the owner gets through Access,
+and on **2026-08-22** they did — three jots from a phone, all three routed
+correctly:
 
-Everything under it is proven. A jot filed through the running service on
+| Jot | Text | Went to | Because |
+| --- | --- | --- | --- |
+| `MUS-F-0023` | "Test for Mustur 2c" | `DevOfPie/Mustur` | the jot names Mustur |
+| `MUS-F-0024` | the intake screen's file button has no hover or press state | `DevOfPie/Mustur` | the jot names Mustur |
+| `MUS-F-0025` | "Test" | Idea inbox (`MUS-P-0002`) | no destination is obvious |
+
+The third is the one that mattered, because it is the clause's default case and
+the only one a routing guess cannot get right by accident. It also read as
+mis-routed at first glance and was not: every record in this store carries the
+`MUS-` prefix, which is the store's and not the destination's, and the idea
+inbox is a target inside Mustur rather than a write into IdeaWarehouse — no file
+in another project is touched before that project is onboarded.
+
+`MUS-F-0024` is a real defect the owner noticed while proving the milestone,
+which is the surface working as intended in a second sense.
+
+Everything under it was already proven. A jot filed through the running service on
 loopback was routed by the guess to `DevOfPie/Mustur` and appeared in
 `records/findings.md` — the file the `findings` role is mapped at — without
 anybody running `make export`. That is `MUS-F-0022`, filed by the surface rather

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-22 record(s), by identifier.
+25 record(s), by identifier.
 
 ## The queue
 
@@ -32,6 +32,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0020](#mus-f-0020) | A shallow clone made the history check pass for the wrong reason | CI run 32437277197 reported 28 ok, 0 waived where a full clone reports 27 ok, 1 waived | fixed 2026-08-21 |
 | [MUS-F-0021](#mus-f-0021) | The public hostname has no Access application in front of it | GET / returned 502 with no location or cf-access headers, read 2026-08-21 | resolved 2026-08-21 |
 | [MUS-F-0022](#mus-f-0022) | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |  | unreviewed |
+| [MUS-F-0023](#mus-f-0023) | Test for Mustur 2c |  | unreviewed |
+| [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… |  | unreviewed |
+| [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
 
 ---
 
@@ -383,3 +386,63 @@ mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed thr
 | Routed to | DevOfPie/Mustur (MUS-R-0001) |
 | Routing | the jot names DevOfPie/Mustur |
 | Filed by | whippy |
+
+---
+
+## MUS-F-0023
+
+**Test for Mustur 2c**
+
+finding · 2026-08-22
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+Test for Mustur 2c
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | the jot names DevOfPie/Mustur |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0024
+
+**Mustur intake screen, the file button has no hover or press interaction so you cannot tell if…**
+
+finding · 2026-08-22
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+Mustur intake screen, the file button has no hover or press interaction so you cannot tell if it worked
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | the jot names DevOfPie/Mustur |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0025
+
+**Test**
+
+finding · 2026-08-22
+
+Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Test
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |

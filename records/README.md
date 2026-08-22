@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 10 | [milestones.md](milestones.md) |
 | question | 29 | [questions.md](questions.md) |
 | decision | 92 | [decisions.md](decisions.md) |
-| finding | 22 | [findings.md](findings.md) |
+| finding | 25 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 18 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -191,6 +191,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0020](findings.md#mus-f-0020) | finding | A shallow clone made the history check pass for the wrong reason |
 | [MUS-F-0021](findings.md#mus-f-0021) | finding | The public hostname has no Access application in front of it |
 | [MUS-F-0022](findings.md#mus-f-0022) | finding | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |
+| [MUS-F-0023](findings.md#mus-f-0023) | finding | Test for Mustur 2c |
+| [MUS-F-0024](findings.md#mus-f-0024) | finding | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… |
+| [MUS-F-0025](findings.md#mus-f-0025) | finding | Test |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
