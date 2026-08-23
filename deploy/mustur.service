@@ -21,12 +21,13 @@
 # MUS-Q-0018 is explicit that Access and the origin check are the whole of the
 # defence.
 #
-# **This unit does not serve it.** `serve` needs `--sessions` and this ExecStart
-# does not pass it, so the deployed service is records, routing and intake, and
-# the other surfaces offer no tab to a session view they cannot reach. Adding
-# the flag here publishes a path into a running agent, which is a decision to
-# take on its own and not a side effect of deploying whatever else shipped in
-# the same binary.
+# **This unit serves it, since 2026-08-23.** `serve` needs `--sessions` and this
+# ExecStart passes it. It did not until the owner confirmed the Access policy
+# admits only their identity, because publishing a path into a running agent is
+# a decision to take on its own and not a side effect of deploying whatever else
+# shipped in the same binary (MUS-D-0095). Remove the flag and the surface is
+# gone again, along with the tab the other surfaces offer to it — which is the
+# knob to reach for if the policy ever widens.
 #
 # On mustur.devofpie.com the gate went up before anything listened and the unit
 # is enabled; the rule is stated for the next host. docs/ingress.md carries the
@@ -44,7 +45,7 @@ After=network-online.target
 Type=simple
 # Loopback only. The tunnel is what publishes it, and `serve` refuses any
 # address that is not loopback for that reason.
-ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records
+ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions
 # Not on-failure: systemd counts a SIGTERM as a clean exit, so on-failure left a
 # TERMed process dead with no restart scheduled and nothing watching. Access
 # answers 302 whether or not the origin is up, so the hostname check in

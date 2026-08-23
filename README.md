@@ -22,8 +22,11 @@ that carries a client layer, and the only place a live terminal makes that
 unavoidable.
 That box is published at `mustur.devofpie.com`, behind Cloudflare Access and
 answered by a service that starts at boot; [docs/ingress.md](docs/ingress.md) is
-what it took. The one sentence still unproven is 2c's own — a jot filed *from a
-phone* — because only the owner can get through Access.
+what it took. 2c's own sentence — a jot filed *from a phone* — was proven there
+on 2026-08-22 by the only person who could, and the session view joined it on
+2026-08-23 once the Access policy's scope was confirmed. That last one is served
+only on `--sessions`, because it is the one surface that types into a running
+agent.
 
 | | |
 | --- | --- |

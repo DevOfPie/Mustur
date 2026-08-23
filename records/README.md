@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 10 | [milestones.md](milestones.md) |
 | question | 33 | [questions.md](questions.md) |
-| decision | 94 | [decisions.md](decisions.md) |
+| decision | 95 | [decisions.md](decisions.md) |
 | finding | 26 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 18 | [work-units/index.md](work-units/index.md) |
@@ -176,6 +176,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0092](decisions.md#mus-d-0092) | decision | Sub-agent rows are pushed down the session socket |
 | [MUS-D-0093](decisions.md#mus-d-0093) | decision | A jot's identifier prefix comes from where it routes, not from the store |
 | [MUS-D-0094](decisions.md#mus-d-0094) | decision | The session surface is served only when asked for |
+| [MUS-D-0095](decisions.md#mus-d-0095) | decision | The session surface is published, and Access is the reason it can be |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

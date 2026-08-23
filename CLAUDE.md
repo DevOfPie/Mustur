@@ -8,9 +8,13 @@ yet accepted.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
-nothing without a StrucGu checkout. On this machine the intake box is published
-at `mustur.devofpie.com` behind Cloudflare Access; that is a deployment, not
-something a clone inherits. What is unconditionally here is
+nothing without a StrucGu checkout. On this machine the intake box, the decision
+queue and — since 2026-08-23 — the session view are published at
+`mustur.devofpie.com` behind Cloudflare Access; that is a deployment, not
+something a clone inherits. The session view is served only when `serve` is
+given `--sessions`, because it types into a running agent's stdin: dropping the
+flag removes the surface and the tab the others offer to it, which is the knob
+to reach for if the Access policy ever widens. What is unconditionally here is
 [records/](records/README.md). It also
 holds open questions and refuses to let work be reported complete around one.
 It also starts agent sessions inside tmux, reports which are running, stops one,

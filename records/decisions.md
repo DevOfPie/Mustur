@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-94 record(s), by identifier.
+95 record(s), by identifier.
 
 ## Index
 
@@ -106,6 +106,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0092](#mus-d-0092) | Sub-agent rows are pushed down the session socket | 2026-08-22 |
 | [MUS-D-0093](#mus-d-0093) | A jot's identifier prefix comes from where it routes, not from the store | 2026-08-22 |
 | [MUS-D-0094](#mus-d-0094) | The session surface is served only when asked for | 2026-08-23 |
+| [MUS-D-0095](#mus-d-0095) | The session surface is published, and Access is the reason it can be | 2026-08-23 |
 
 ---
 
@@ -1539,3 +1540,17 @@ decision · 2026-08-23
 answers: [MUS-Q-0033](questions.md#mus-q-0033)
 
 Everything else this binary serves reads records or files a jot; the session surface writes into a running agent's stdin. Publishing it should be an act rather than a consequence of deploying an unrelated fix that shipped in the same binary, which is exactly what the idea-inbox prefix would otherwise have done. serve takes --sessions, default off; when it is off the routes are not registered and the other surfaces offer no tab, because a tab that goes nowhere is an unbuilt capability described as existing. The deployed unit does not pass the flag, so mustur.devofpie.com is records, routing and intake until the owner has confirmed the Access policy admits only their identity.
+
+---
+
+## MUS-D-0095
+
+**The session surface is published, and Access is the reason it can be**
+
+decision · 2026-08-23
+
+follows: [MUS-Q-0033](questions.md#mus-q-0033)
+
+and: [MUS-Q-0018](questions.md#mus-q-0018)
+
+The owner confirmed the Cloudflare Access policy admits only their identity, which was the condition MUS-Q-0033 attached to publishing a surface that types into a running agent's stdin. The half a machine can check was checked rather than assumed: every path on mustur.devofpie.com — /, /intake, /questions, /mcp, /healthz, /sessions and the WebSocket path /sessions/{project}/ws — answers an unauthenticated request with a 302 to killerofpie.cloudflareaccess.com carrying auth_status NONE and no service token, so nothing reaches the origin unauthenticated and the socket path is covered rather than merely adjacent to something that is. Who the policy admits is visible only to the owner, and is theirs. The unit now passes --sessions; per MUS-Q-0018 the origin check and the Access policy's scope remain the whole of the defence, with no second layer behind them.
