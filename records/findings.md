@@ -4,12 +4,13 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-25 record(s), by identifier.
+26 record(s), by identifier.
 
 ## The queue
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
+| [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
 | [MUS-F-0002](#mus-f-0002) | One of the three promised open design questions is missing |  |  |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
@@ -35,6 +36,26 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0023](#mus-f-0023) | Test for Mustur 2c |  | unreviewed |
 | [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… | Filed from a phone by the owner while proving milestone 2c's last clause. | fixed |
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
+
+---
+
+## IDW-F-0001
+
+**Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox…**
+
+finding · 2026-08-23
+
+Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox under IDW rather than MUS.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | the jot names Idea inbox |
+| Filed by | whippy |
 
 ---
 

@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 10 | [milestones.md](milestones.md) |
 | question | 33 | [questions.md](questions.md) |
 | decision | 94 | [decisions.md](decisions.md) |
-| finding | 25 | [findings.md](findings.md) |
+| finding | 26 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 18 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -20,6 +20,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 
 | Identifier | Kind | Title |
 | --- | --- | --- |
+| [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [MUS-M-0001](milestones.md#mus-m-0001) | milestone | The delivery bet is tested |
 | [MUS-M-0002](milestones.md#mus-m-0002) | milestone | Records and routing, behind one call |
 | [MUS-M-0003](milestones.md#mus-m-0003) | milestone | The audit StrucGu never shipped |
