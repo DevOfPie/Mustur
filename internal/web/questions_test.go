@@ -30,7 +30,9 @@ func serveQuestions(t *testing.T, recs ...record.Record) (*httptest.Server, *sto
 			t.Fatal(err)
 		}
 	}
-	q := &Questions{Store: s, Project: "MUS", Actor: "pie"}
+	// Sessions on: this helper stands in for a server serving everything, and
+	// the surface-that-is-not-served case has its own test next door.
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", ShowSessions: true}
 	mux := http.NewServeMux()
 	q.Routes(mux)
 	srv := httptest.NewServer(mux)
@@ -384,8 +386,10 @@ func TestTheQueueIsReachableFromIntakeWhenNothingIsOpen(t *testing.T) {
 // A tab that goes nowhere is an unbuilt capability described as existing.
 //
 // The list of built surfaces moves as milestones land, so this asserts the rule
-// rather than a snapshot: everything built has a tab, and nothing unbuilt does.
-// Sessions was on the unbuilt side until milestone 4b and had to move.
+// rather than a snapshot: everything built and served has a tab, and nothing
+// else does. Sessions was on the unbuilt side until milestone 4b and had to
+// move; it is now built but served only on request, which is why this server is
+// constructed with it switched on.
 func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
 	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
 	body := getFrom(t, srv, "/questions")

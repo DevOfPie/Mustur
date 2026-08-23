@@ -225,8 +225,8 @@ func TestEverySurfaceCarriesTheSameBar(t *testing.T) {
 	}
 	defer st.Close()
 
-	in := &Intake{Store: st, Project: "MUS", Actor: "pie"}
-	q := &Questions{Store: st, Project: "MUS", Actor: "pie"}
+	in := &Intake{Store: st, Project: "MUS", Actor: "pie", ShowSessions: true}
+	q := &Questions{Store: st, Project: "MUS", Actor: "pie", ShowSessions: true}
 	mux := http.NewServeMux()
 	q.Routes(mux)
 	mux.Handle("/", in.Handler())
@@ -242,6 +242,40 @@ func TestEverySurfaceCarriesTheSameBar(t *testing.T) {
 		for _, tab := range tabs {
 			if !strings.Contains(body, tab) {
 				t.Errorf("%s is missing %s from its bar", path, tab)
+			}
+		}
+	}
+}
+
+// And a server that does not serve sessions offers no tab to them.
+//
+// The session surface can type into a running agent, so it is served only when
+// asked for. A bar that pointed at it anyway would be the same defect as a tab
+// for an unbuilt surface: something described as reachable that 404s.
+func TestASurfaceThatIsNotServedGetsNoTab(t *testing.T) {
+	st, err := store.Open(context.Background(), filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+
+	in := &Intake{Store: st, Project: "MUS", Actor: "pie"}
+	q := &Questions{Store: st, Project: "MUS", Actor: "pie"}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	mux.Handle("/", in.Handler())
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	for _, path := range []string{"/questions", "/intake"} {
+		body := getFrom(t, srv, path)
+		if strings.Contains(body, `href="/sessions"`) {
+			t.Errorf("%s offers a tab to a surface this server does not serve", path)
+		}
+		// The other two are unaffected by the switch.
+		for _, tab := range []string{`href="/questions"`, `href="/intake"`} {
+			if !strings.Contains(body, tab) {
+				t.Errorf("%s lost %s when sessions were turned off", path, tab)
 			}
 		}
 	}

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-32 record(s), by identifier.
+33 record(s), by identifier.
 
 ---
 
@@ -727,4 +727,28 @@ MUS-F-0025 sits in the idea inbox carrying a MUS prefix, and is cited in Plan.md
 | Surfaced | 2026-08-22 22:14 |
 | Answer | Grandfather it, since it was a test and its information is useless beyond the finding it already provided. |
 | Answered | 2026-08-22 22:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0033
+
+**Should deploying an unrelated fix also publish the session surface?**
+
+question · 2026-08-22
+
+One binary serves everything, and the live service is still the build from before milestone 4b. Restarting it to pick up the idea-inbox prefix and the intake button fix would also publish the session surface and its always-writable composer, behind an Access policy whose scope has never been confirmed.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the idea-inbox prefix can reach the live service |
+| Needed to proceed | yes |
+| Option | Ship it, sessions off :: Recommended · the fix now, the writable channel when you have checked Access :: A flag registers the session routes only when asked, default off, and the other surfaces drop the tab so nothing points at a 404. Costs one flag and this record. |
+| Option | Ship the whole thing :: One restart, everything live :: Fastest, and it puts a writable path into a running agent behind a policy neither of us has verified. |
+| Option | Deploy nothing yet :: Nothing changes until Access is checked :: The next jot from a phone is still tagged MUS and the file button still gives no feedback. |
+| Asked by | whippy |
+| Surfaced | 2026-08-23 10:39 |
+| Answer | Ship it, sessions off. |
+| Answered | 2026-08-23 00:10 |
 | Delivered | not delivered: the question names no session |

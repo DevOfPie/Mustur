@@ -53,6 +53,13 @@ type Questions struct {
 	Actor   string
 	Now     func() time.Time
 
+	// ShowSessions says whether this server serves the session surface, which
+	// decides whether the bar offers a tab to it. Off by default: the session
+	// surface carries a composer that types into a running agent's stdin, so
+	// publishing it is a deliberate act rather than a consequence of deploying
+	// something else that happens to be in the same binary.
+	ShowSessions bool
+
 	// ExportTo is the tree the store is rendered into after an answer, for the
 	// same reason the intake box has one: whoever answers from a phone cannot
 	// run `make export`, and an answer that reached the store and not the file
@@ -122,6 +129,8 @@ type queuePage struct {
 	OpenN    int
 	Answered string
 	Error    string
+	// ShowSessions renders the Sessions tab. See the note on intake's page.
+	ShowSessions bool
 }
 
 func (q *Questions) open(ctx context.Context) ([]queued, error) {
@@ -160,11 +169,12 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	page := queuePage{
-		Project:  q.Project,
-		Open:     openQs,
-		OpenN:    len(openQs),
-		Answered: r.URL.Query().Get("answered"),
-		Error:    r.URL.Query().Get("error"),
+		ShowSessions: q.ShowSessions,
+		Project:      q.Project,
+		Open:         openQs,
+		OpenN:        len(openQs),
+		Answered:     r.URL.Query().Get("answered"),
+		Error:        r.URL.Query().Get("error"),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := queueTmpl.Execute(w, page); err != nil {
@@ -407,7 +417,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 {{end}}
 </main>
 <nav>
-  <a href="/sessions">Sessions</a>
+  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
   <a href="/intake">Intake</a>
 </nav>

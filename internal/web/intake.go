@@ -29,6 +29,13 @@ type Intake struct {
 	Actor   string
 	Now     func() time.Time
 
+	// ShowSessions says whether this server serves the session surface, which
+	// decides whether the bar offers a tab to it. Off by default: the session
+	// surface carries a composer that types into a running agent's stdin, so
+	// publishing it is a deliberate act rather than a consequence of deploying
+	// something else that happens to be in the same binary.
+	ShowSessions bool
+
 	// ExportTo is the tree the store is rendered into after a jot is filed.
 	// Empty means no export, which is the safe default for a server that is
 	// not sitting on a checkout.
@@ -79,6 +86,10 @@ type page struct {
 	Recent       []recentJot
 	Cutoff       string
 	Project      string
+	// ShowSessions renders the Sessions tab. Off unless the server is actually
+	// serving that surface: a tab that goes nowhere is an unbuilt capability
+	// described as existing, which is what MUS-D-0041's bar exists to avoid.
+	ShowSessions bool
 
 	// OpenQuestions drives the banner, which is **interim**. MUS-D-0041 chose a
 	// fixed place the eye already knows to check over a banner on another
@@ -114,12 +125,13 @@ func (in *Intake) now() time.Time {
 
 func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	p := page{
-		Filed:   r.URL.Query().Get("filed"),
-		Routed:  r.URL.Query().Get("routed"),
-		Why:     r.URL.Query().Get("why"),
-		Warn:    r.URL.Query().Get("warn"),
-		Project: in.Project,
-		Cutoff:  "the last hour",
+		ShowSessions: in.ShowSessions,
+		Filed:        r.URL.Query().Get("filed"),
+		Routed:       r.URL.Query().Get("routed"),
+		Why:          r.URL.Query().Get("why"),
+		Warn:         r.URL.Query().Get("warn"),
+		Project:      in.Project,
+		Cutoff:       "the last hour",
 	}
 	if choices, err := in.destinations(r.Context()); err != nil {
 		p.Error = err.Error()
@@ -141,7 +153,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// the whole requirement.
 	r.Body = http.MaxBytesReader(w, r.Body, MaxJot)
 	if err := r.ParseForm(); err != nil {
-		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project})
+		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions})
 		return
 	}
 	text := r.PostFormValue("jot")
@@ -158,7 +170,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		// failure this surface cannot have, above code that dropped it: the
 		// page had no field for it and the textarea came back empty. On a
 		// phone that is a thumb-typed paragraph gone.
-		render(w, page{Error: err.Error(), Project: in.Project, Jot: text})
+		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions})
 		return
 	}
 	// The record is already in the store, so an export that fails has not lost
@@ -325,7 +337,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{range .Recent}}<li><code>{{.ID}}</code> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
-  <a href="/sessions">Sessions</a>
+  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake" class="here">Intake</a>
 </nav>

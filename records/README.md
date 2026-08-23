@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 10 | [milestones.md](milestones.md) |
-| question | 32 | [questions.md](questions.md) |
-| decision | 93 | [decisions.md](decisions.md) |
+| question | 33 | [questions.md](questions.md) |
+| decision | 94 | [decisions.md](decisions.md) |
 | finding | 25 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 18 | [work-units/index.md](work-units/index.md) |
@@ -80,6 +80,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0030](questions.md#mus-q-0030) | question | Should a jot's identifier prefix come from where it routes rather than from the store? |
 | [MUS-Q-0031](questions.md#mus-q-0031) | question | What prefix should the general idea store use? |
 | [MUS-Q-0032](questions.md#mus-q-0032) | question | MUS-F-0025 carries the old prefix. Grandfather it or reissue it? |
+| [MUS-Q-0033](questions.md#mus-q-0033) | question | Should deploying an unrelated fix also publish the session surface? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -173,6 +174,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0091](decisions.md#mus-d-0091) | decision | The adapter is vendor-neutral except where a capability belongs to one vendor |
 | [MUS-D-0092](decisions.md#mus-d-0092) | decision | Sub-agent rows are pushed down the session socket |
 | [MUS-D-0093](decisions.md#mus-d-0093) | decision | A jot's identifier prefix comes from where it routes, not from the store |
+| [MUS-D-0094](decisions.md#mus-d-0094) | decision | The session surface is served only when asked for |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

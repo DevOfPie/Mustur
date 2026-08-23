@@ -23,8 +23,8 @@ import (
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/mcpsrv"
 	"github.com/DevOfPie/Mustur/internal/record"
-	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/seed"
+	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
 	"github.com/DevOfPie/Mustur/internal/web"
@@ -411,6 +411,19 @@ func cmdServe(args []string) error {
 	// Without this the surface writes the store and nothing else, and the file
 	// the findings role is mapped at falls behind every jot filed from a phone.
 	exportTo := fs.String("export", "", "render the store into this directory after each filing; empty means do not")
+	// Off by default, and deliberately not a detail.
+	//
+	// The session surface carries a composer that types into a running agent's
+	// stdin. Everything else this binary serves reads records or files a jot;
+	// that one writes into a process with a checkout and a shell. Publishing it
+	// should be an act, not a consequence of deploying an unrelated fix that
+	// happens to be in the same binary — which is exactly what shipping the
+	// idea-inbox prefix would otherwise have done.
+	//
+	// When it is off the routes are not registered at all, and the tab bar on
+	// the other surfaces does not offer a tab to them: a tab that goes nowhere
+	// is an unbuilt capability described as existing.
+	withSessions := fs.Bool("sessions", false, "serve the session surface, which can type into a running agent")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -428,9 +441,13 @@ func cmdServe(args []string) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
-	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
+	intake := &web.Intake{
+		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
+		ShowSessions: *withSessions,
+	}
 	questions := &web.Questions{
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
+		ShowSessions: *withSessions,
 		// An answer typed from a phone is carried into the session that raised
 		// it, if that session is still alive and Mustur started it.
 		Sessions: &session.Adapter{},
@@ -447,8 +464,10 @@ func cmdServe(args []string) error {
 	// goes down leaves both behind, with tmux still writing into a pipe nobody
 	// will ever read.
 	defer hub.Shutdown()
-	sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor(), HookDir: hookDir}
-	sessions.Routes(mux)
+	if *withSessions {
+		sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor(), HookDir: hookDir}
+		sessions.Routes(mux)
+	}
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
@@ -458,8 +477,13 @@ func cmdServe(args []string) error {
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n  sessions   http://%s/sessions\n",
-		version, n, *db, *addr, *addr, *addr, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
+		version, n, *db, *addr, *addr, *addr)
+	if *withSessions {
+		fmt.Printf("  sessions   http://%s/sessions  — this one can type into a running agent\n", *addr)
+	} else {
+		fmt.Println("  sessions   not served; --sessions publishes a surface that types into a running agent")
+	}
 	return srv.ListenAndServe()
 }
 

@@ -12,13 +12,21 @@
 # Access.** The tunnel routes mustur.devofpie.com to 127.0.0.1:7777, so starting
 # this publishes every surface on that port.
 #
-# Since milestone 4b that is no longer only the intake box. The session surface
-# is on the same mux, so an unprotected hostname is **a writable channel into a
-# running agent's stdin** — not somebody filing a jot under the wrong name. The
-# WebSocket refuses a cross-origin handshake, which stops a page the owner
-# visited from opening one; it does nothing about somebody who simply reaches
-# the hostname. Access is what does that, and MUS-Q-0018 is explicit that Access
-# and the origin check are the whole of the defence.
+# Since milestone 4b that need not be only the intake box. The session surface
+# can go on the same mux, and where it does an unprotected hostname is **a
+# writable channel into a running agent's stdin** — not somebody filing a jot
+# under the wrong name. The WebSocket refuses a cross-origin handshake, which
+# stops a page the owner visited from opening one; it does nothing about
+# somebody who simply reaches the hostname. Access is what does that, and
+# MUS-Q-0018 is explicit that Access and the origin check are the whole of the
+# defence.
+#
+# **This unit does not serve it.** `serve` needs `--sessions` and this ExecStart
+# does not pass it, so the deployed service is records, routing and intake, and
+# the other surfaces offer no tab to a session view they cannot reach. Adding
+# the flag here publishes a path into a running agent, which is a decision to
+# take on its own and not a side effect of deploying whatever else shipped in
+# the same binary.
 #
 # On mustur.devofpie.com the gate went up before anything listened and the unit
 # is enabled; the rule is stated for the next host. docs/ingress.md carries the
