@@ -491,11 +491,23 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
          word-break: break-word; font-size: .9em; }
   #foot { padding: .4rem 1rem; background: #8881;
           border-top: 1.4px solid var(--edge); font-size: .82em; opacity: .75; }
-  form { display: flex; gap: .5rem; padding: .7rem 1rem;
+  form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
          border-top: 1.4px solid var(--edge); }
-  input[type=text] { flex: 1; min-width: 0; font: inherit; padding: .55rem;
+  form .row { display: flex; gap: .5rem; align-items: flex-end; }
+  /* Destination above the box, not inside it. Thought first, destination
+     second: the line says where this is going and is changeable without the
+     draft being at risk. */
+  .dest { display: flex; align-items: baseline; gap: .5rem; font-size: .8em;
+          opacity: .7; white-space: nowrap; }
+  .dest .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .dest a { color: inherit; }
+  #kept { opacity: .75; font-style: italic; }
+  /* Grows with what is typed, to a point, then scrolls. A phone keyboard eats
+     half the screen, so the cap is small deliberately. */
+  textarea { flex: 1; min-width: 0; font: inherit; padding: .55rem;
              border: 1px solid var(--edge); border-radius: .5rem;
-             background: transparent; color: inherit; }
+             background: transparent; color: inherit; resize: none;
+             max-height: 9rem; overflow-y: auto; line-height: 1.4; }
   button { font: inherit; padding: .55rem 1rem; border: 1px solid var(--accent);
            border-radius: .5rem; background: var(--accent-soft); color: inherit; }
   .rail { display: flex; gap: .4rem; padding: .5rem 1rem; overflow-x: auto;
@@ -534,7 +546,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <header><strong>{{if .Project}}{{.Project}}{{else}}Sessions{{end}}</strong>
   <span class="pill" id="state">connecting</span>
   <span class="who">whippy-vm</span></header>
-{{if .Rows}}<div class="rail">
+{{if .Rows}}<div class="rail" id="rail">
   {{range .Rows}}<a href="/sessions/{{.Project}}"{{if .Here}} class="here"{{end}}>{{.Project}}</a>{{end}}
 </div>{{end}}
 {{if .Missing}}
@@ -551,7 +563,15 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 </div>
 <pre id="out"></pre>
 <div id="foot">quiet 0s</div>
-<form id="say"><input type="text" id="text" placeholder="Reply to this session" autocomplete="off"><button type="submit">Send</button></form>
+<form id="say">
+  <div class="dest"><span class="grow" id="dest">Send to {{.Project}}</span><a href="#rail" id="change">Change</a><span id="kept" hidden>draft kept</span></div>
+  <div class="row">
+    <textarea id="text" rows="1" placeholder="Reply to this session"
+              spellcheck="true" autocapitalize="sentences" autocorrect="on"
+              autocomplete="off"></textarea>
+    <button type="submit">Send</button>
+  </div>
+</form>
 {{end}}
 <nav>
   <a href="/sessions" class="here">Sessions</a>

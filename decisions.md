@@ -1868,3 +1868,75 @@ pull request comment.
 So it stays, as the last record filed under the old scheme, and the owner said
 why that costs nothing: it was a test, and its information is used up by the
 finding it already produced.
+
+## 2026-08-23 — the composer, and a newline that would have submitted
+
+Milestone 5's sentence is *multi-line, spell-checked text from the phone, off
+the home network, without a terminal, reaching the intended session.* Four of
+those were already true at 4b. The two that were not are the two that make it a
+composer rather than a chat box.
+
+### The design question was answered, and this repository went on calling it open
+
+`docs/ui-surfaces.md` listed *"whether a message is composed against a chosen
+session, or composed first and routed second"* as an open question for design.
+The owner answered it on 2026-08-20, in the plan, and the annotation on the
+composer artboard is the decision: **thought first, destination second, with the
+last-active session as the default**, and *"the draft indicator is the whole
+reason this is not a chat box."*
+
+Three days of that being stale is a small thing on its own and the same shape as
+the larger one the reviews keep finding: a claim true in the file that makes it
+and false against the thing it names.
+
+### One draft, not one per session
+
+What is being written is a thought; which session it goes to is a separate
+choice that can change *after* it is written. That is what thought-first means,
+and it decides the implementation: the draft is kept under one key, not one per
+project, because a per-project key loses it at exactly the moment the design
+exists to protect — the owner deciding mid-sentence that this belongs somewhere
+else.
+
+It is written on every keystroke rather than on unload, because a backgrounded
+phone need never deliver another event, and the clause is that a draft survives
+being backgrounded. Where the browser refuses to store it at all, typing still
+works and nothing is kept.
+
+### It is not a fourth tab, and not a second scripted page
+
+The four tabs are Sessions, Decisions, Intake and Records (MUS-D-0041). A
+composer needs a client layer, and the session view is the only surface that
+carries one — a second is a decision rather than a consequence of building this.
+So the composer is the session view's, made real: a textarea where an input was.
+
+### A newline typed into a terminal is Enter
+
+The part that would have shipped broken. Enter in an agent's composer submits,
+so the obvious path turns a three-line draft into three prompts and a fourth
+empty one.
+
+Measured, before choosing: `send-keys -l` with embedded newlines *does* land
+every line in Claude Code's composer, because the TUI reads one burst as a
+paste. That is the CLI inferring intent from timing, and a write that arrives
+split is a message submitted halfway through. So multi-line goes as a bracketed
+paste, which says *this is text* instead of leaving it to be guessed, and drops
+its buffer afterwards so a draft does not sit in tmux's paste stack. Single-line
+still goes as keystrokes: that is 4a's answer-delivery path, and it has shipped
+behaviour behind it that this had no reason to disturb.
+
+**No test in this tree proves the clause that matters.** That a paste arrives as
+one message rather than one prompt per line was measured by hand against the
+real CLI — four lines, one Enter, and the agent answered from all four. The
+real-tmux tests hold `cat`, and `cat` is happy with newlines either way, so they
+prove the bytes arrive and not which mechanism carried them. The tests say so in
+their own comments rather than leaving a reader to find out.
+
+### An hour lost to `timeout`
+
+Worth writing down because it will happen again. A test fixture ran the pane as
+`timeout 20 cat > file` so the program would exit on its own. `timeout` puts its
+child in a new process group without the terminal, so `cat` was stopped on
+SIGTTIN the moment it read, and received nothing at all — a green mechanism
+looking like a broken one. Plain `cat`, with the hub's cleanup registered before
+the session's so it runs after it, was the fix.

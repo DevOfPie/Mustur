@@ -299,7 +299,36 @@ func (a *Adapter) Send(ctx context.Context, project, text string) error {
 	if !live {
 		return fmt.Errorf("%s has no session Mustur started", project)
 	}
-	if out, err := a.runner().Run(ctx, "tmux", "send-keys", "-t", name, "-l", text); err != nil {
+	if strings.Contains(text, "\n") {
+		// Multi-line goes in as a paste, not as keystrokes.
+		//
+		// A newline typed into a terminal is Enter, and Enter in an agent's
+		// composer submits. Measured on Claude Code, `send-keys -l` with
+		// embedded newlines does land all the lines in the composer — the TUI
+		// treats one burst as a paste — but that is the CLI guessing from
+		// timing, and a slow or split write is a message submitted halfway
+		// through. A bracketed paste says "this is text" rather than leaving it
+		// to be inferred.
+		//
+		// Verified end to end against the real CLI: four lines pasted, one
+		// Enter, and the agent answered from all four
+		// (records/work-units/MUS-W-0019.md).
+		//
+		// set-buffer rather than load-buffer, because the buffer content
+		// arrives as an argument and this package's runner does not carry
+		// stdin — and because a draft written to a temp file to be read back is
+		// the owner's prose sitting on disk for no reason.
+		buf := "mustur-" + project
+		if out, err := a.runner().Run(ctx, "tmux", "set-buffer", "-b", buf, "--", text); err != nil {
+			return fmt.Errorf("tmux set-buffer: %w: %s", err, strings.TrimSpace(out))
+		}
+		// -p brackets it so the receiving program knows it is a paste; -d drops
+		// the buffer afterwards, so a draft does not outlive its delivery in
+		// tmux's paste stack where anything on this machine could read it.
+		if out, err := a.runner().Run(ctx, "tmux", "paste-buffer", "-b", buf, "-t", name, "-p", "-d"); err != nil {
+			return fmt.Errorf("tmux paste-buffer: %w: %s", err, strings.TrimSpace(out))
+		}
+	} else if out, err := a.runner().Run(ctx, "tmux", "send-keys", "-t", name, "-l", text); err != nil {
 		return fmt.Errorf("tmux send-keys: %w: %s", err, strings.TrimSpace(out))
 	}
 	// Enter is a separate call: sending it with -l would type the word.

@@ -10,10 +10,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 10 | [milestones.md](milestones.md) |
 | question | 33 | [questions.md](questions.md) |
-| decision | 95 | [decisions.md](decisions.md) |
+| decision | 97 | [decisions.md](decisions.md) |
 | finding | 26 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 18 | [work-units/index.md](work-units/index.md) |
+| work-unit | 19 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -49,6 +49,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0016](work-units/MUS-W-0016.md#mus-w-0016) | work-unit | The per-machine adapter, and the answer carried back |
 | [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017) | work-unit | A session in a browser tab |
 | [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018) | work-unit | Sub-agents are visible |
+| [MUS-W-0019](work-units/MUS-W-0019.md#mus-w-0019) | work-unit | Composition |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -177,6 +178,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0093](decisions.md#mus-d-0093) | decision | A jot's identifier prefix comes from where it routes, not from the store |
 | [MUS-D-0094](decisions.md#mus-d-0094) | decision | The session surface is served only when asked for |
 | [MUS-D-0095](decisions.md#mus-d-0095) | decision | The session surface is published, and Access is the reason it can be |
+| [MUS-D-0096](decisions.md#mus-d-0096) | decision | Multi-line reaches a session as a bracketed paste, not as keystrokes |
+| [MUS-D-0097](decisions.md#mus-d-0097) | decision | One draft, not one per session |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | One of the three promised open design questions is missing |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

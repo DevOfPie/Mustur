@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -440,5 +441,165 @@ func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
 			t.Error("a rendered age was sent as well as the stamp, so the two can disagree")
 		}
 		return
+	}
+}
+
+// The composer is a composer, not a chat box.
+//
+// Milestone 5's clause is multi-line, spell-checked text composed on a phone.
+// A single-line input is none of those things, and the browser will not
+// spell-check a field unless it is told to.
+func TestTheComposerIsMultiLineAndSpellChecked(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	if strings.Contains(body, `<input type="text" id="text"`) {
+		t.Error("the composer is still a single-line input")
+	}
+	if !strings.Contains(body, `<textarea id="text"`) {
+		t.Error("no textarea; multi-line is the milestone")
+	}
+	for _, want := range []string{
+		`spellcheck="true"`,          // the browser does not do this unasked
+		`autocapitalize="sentences"`, // a phone keyboard, writing prose
+		`autocorrect="on"`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the composer is missing %s", want)
+		}
+	}
+}
+
+// Thought first, destination second: the page says where what you are writing
+// is going, and offers a way to change it that is not "lose the draft".
+func TestTheComposerNamesItsDestination(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	if !strings.Contains(body, `id="dest"`) {
+		t.Error("the composer does not say where it is sending")
+	}
+	if !strings.Contains(body, "Send to Mustur") {
+		t.Error("the destination line does not name the session")
+	}
+	if !strings.Contains(body, `id="change"`) {
+		t.Error("no way to change the destination")
+	}
+	if !strings.Contains(body, `id="rail"`) {
+		t.Error("Change points at the session rail, which has no anchor to point at")
+	}
+	if !strings.Contains(body, `id="kept"`) {
+		t.Error("nothing tells the owner a draft is being kept, which is the whole reason this is not a chat box")
+	}
+}
+
+// The draft is one thought, not one per session.
+//
+// The client keeps it under a single key so that changing your mind about the
+// destination mid-sentence does not cost the sentence. A key that varied by
+// project would lose it at exactly the moment the design exists to protect.
+func TestTheDraftIsNotKeyedPerSession(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	js := getFrom(t, srv, "/assets/session.js")
+
+	if !strings.Contains(js, `"mustur.draft"`) {
+		t.Fatal("no draft key in the client")
+	}
+	// The key is a constant. If project ever gets concatenated into it, the
+	// draft stops following the owner between sessions.
+	for _, bad := range []string{`DRAFT + project`, `"mustur.draft." + project`, `DRAFT+project`} {
+		if strings.Contains(js, bad) {
+			t.Errorf("the draft key is per-session (%s), so switching sessions loses the draft", bad)
+		}
+	}
+	// It has to survive a backgrounded phone, which never guarantees another
+	// event — so it is written as the owner types, not on unload.
+	if !strings.Contains(js, `text.addEventListener("input"`) {
+		t.Error("the draft is not saved on input, so a backgrounded phone can lose it")
+	}
+	if strings.Contains(js, `"beforeunload"`) {
+		t.Error("the draft relies on beforeunload, which a backgrounded phone need never fire")
+	}
+}
+
+// The milestone's own sentence, minus the parts only a person can do.
+//
+// "The owner composes multi-line, spell-checked text from the phone, off the
+// home network, without a terminal, and it reaches the intended session." The
+// phone, the network and the spell-checker are the browser's and the owner's.
+// What this asserts is the rest of it: multi-line text leaving the composer
+// over the real socket and arriving in the intended session's input, whole.
+func TestMultiLineFromTheComposerReachesTheSession(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	got := filepath.Join(dir, "received.txt")
+	a := &session.Adapter{}
+	project := "zzComposeE2E"
+
+	// The hub's cleanup is registered before the session's so that it runs
+	// after it: t.Cleanup is last-in-first-out, and Shutdown waits on a reader
+	// whose pane is still alive, so stopping the session second hangs the test
+	// rather than failing it.
+	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	t.Cleanup(hub.Shutdown)
+
+	// Plain cat, and not `timeout N cat`: timeout puts the child in its own
+	// process group without the terminal, so cat is stopped on SIGTTIN the
+	// moment it reads and receives nothing at all. That cost an hour and is
+	// worth a sentence. cat also ends on EOF rather than on a newline, so a
+	// message that arrived in pieces still lands every piece in the file and
+	// cannot pass by looking finished.
+	if _, err := a.Start(context.Background(), project, dir, "sh -c 'cat > "+got+"'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie"}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	msg := "first line of the draft\nsecond line, which a chat box would have sent already\nthird line"
+	frame, err := json.Marshal(map[string]string{"t": "input", "text": msg})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Write(ctx, websocket.MessageText, frame); err != nil {
+		t.Fatal(err)
+	}
+
+	deadline := time.Now().Add(20 * time.Second)
+	var received string
+	for time.Now().Before(deadline) {
+		if b, err := os.ReadFile(got); err == nil {
+			received = string(b)
+			if strings.Contains(received, "third line") {
+				break
+			}
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+
+	for _, want := range []string{
+		"first line of the draft",
+		"second line, which a chat box would have sent already",
+		"third line",
+	} {
+		if !strings.Contains(received, want) {
+			t.Errorf("%q never reached the session; it received %q", want, received)
+		}
 	}
 }

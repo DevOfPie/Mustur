@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-95 record(s), by identifier.
+97 record(s), by identifier.
 
 ## Index
 
@@ -107,6 +107,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0093](#mus-d-0093) | A jot's identifier prefix comes from where it routes, not from the store | 2026-08-22 |
 | [MUS-D-0094](#mus-d-0094) | The session surface is served only when asked for | 2026-08-23 |
 | [MUS-D-0095](#mus-d-0095) | The session surface is published, and Access is the reason it can be | 2026-08-23 |
+| [MUS-D-0096](#mus-d-0096) | Multi-line reaches a session as a bracketed paste, not as keystrokes | 2026-08-23 |
+| [MUS-D-0097](#mus-d-0097) | One draft, not one per session | 2026-08-23 |
 
 ---
 
@@ -1554,3 +1556,23 @@ follows: [MUS-Q-0033](questions.md#mus-q-0033)
 and: [MUS-Q-0018](questions.md#mus-q-0018)
 
 The owner confirmed the Cloudflare Access policy admits only their identity, which was the condition MUS-Q-0033 attached to publishing a surface that types into a running agent's stdin. The half a machine can check was checked rather than assumed: every path on mustur.devofpie.com — /, /intake, /questions, /mcp, /healthz, /sessions and the WebSocket path /sessions/{project}/ws — answers an unauthenticated request with a 302 to killerofpie.cloudflareaccess.com carrying auth_status NONE and no service token, so nothing reaches the origin unauthenticated and the socket path is covered rather than merely adjacent to something that is. Who the policy admits is visible only to the owner, and is theirs. The unit now passes --sessions; per MUS-Q-0018 the origin check and the Access policy's scope remain the whole of the defence, with no second layer behind them.
+
+---
+
+## MUS-D-0096
+
+**Multi-line reaches a session as a bracketed paste, not as keystrokes**
+
+decision · 2026-08-23
+
+A newline typed into a terminal is Enter, and Enter in an agent's composer submits, so the obvious path turns a three-line draft into three prompts. Measured against Claude Code, send-keys -l with embedded newlines does land every line in the composer — the TUI treats one burst as a paste — but that is the CLI inferring intent from timing, and a write that arrives split is a message submitted halfway through. Send now uses set-buffer plus paste-buffer -p for anything containing a newline, which states that it is text rather than leaving it to be guessed, and -d drops the buffer so a draft does not outlive its delivery in tmux's paste stack. Single-line text still goes as keystrokes: that is the answer-delivery path milestone 4a shipped, and it has behaviour behind it that this change has no reason to disturb. set-buffer rather than load-buffer because the buffer content arrives as an argument, so the runner needs no stdin and the owner's prose is never written to a temp file.
+
+---
+
+## MUS-D-0097
+
+**One draft, not one per session**
+
+decision · 2026-08-23
+
+The composer keeps a single draft in the browser under one key, restored on whichever session page is open. What is being written is a thought; which session it goes to is a separate choice that can change after it is written, which is what thought-first composition means. A draft keyed per project would be lost at exactly the moment the design exists to protect — the owner deciding mid-sentence that this belongs somewhere else. It is written on every keystroke rather than on unload, because a backgrounded phone need never deliver another event. Where the browser refuses to store it, typing still works and nothing is kept.

@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"os/exec"
@@ -494,5 +495,111 @@ func TestTheStampMovesWithTheLog(t *testing.T) {
 	})
 	if SubagentStamp(dir, "P") == first {
 		t.Error("the stamp did not move when the log did")
+	}
+}
+
+// Multi-line reaches the session whole.
+//
+// What this catches and what it does not, because the difference matters. It
+// runs against a real pane and asserts the bytes arrive, in order, with the
+// newlines intact — so a paste that silently dropped or reordered lines fails
+// here. It does **not** discriminate between the paste path and plain
+// keystrokes: the pane holds `cat`, which is happy with newlines either way,
+// and this test passes with the paste path reverted.
+//
+// The mechanism is justified elsewhere. That a bracketed paste reaches an
+// agent's composer as one message rather than as one prompt per line was
+// measured against the real CLI and is written up in
+// records/work-units/MUS-W-0019.md; that Send actually uses it is asserted by
+// TestThePasteBufferIsDroppedAfterDelivery, on the fake runner, where the
+// command line is visible.
+func TestAMultiLineMessageArrivesInOnePiece(t *testing.T) {
+	realTmux(t)
+	dir := t.TempDir()
+	out := filepath.Join(dir, "got.txt")
+	a := &Adapter{}
+
+	// `cat > file` ends on EOF, not on a newline, so every line it receives
+	// lands in the file and a premature Enter cannot hide by looking like a
+	// finished message.
+	if _, err := a.Start(context.Background(), "zzMultiline", dir, "sh -c 'cat > "+out+"'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), "zzMultiline") })
+
+	msg := "ALPHA\nBRAVO\nCHARLIE"
+	if err := a.Send(context.Background(), "zzMultiline", msg); err != nil {
+		t.Fatal(err)
+	}
+
+	deadline := time.Now().Add(15 * time.Second)
+	var got string
+	for time.Now().Before(deadline) {
+		b, err := os.ReadFile(out)
+		if err == nil {
+			got = string(b)
+			if strings.Contains(got, "CHARLIE") {
+				break
+			}
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+
+	for _, want := range []string{"ALPHA", "BRAVO", "CHARLIE"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("%q never arrived; the pane received %q", want, got)
+		}
+	}
+	// Order preserved, and on separate lines: a paste that arrived as one run-on
+	// line would satisfy the check above and still be wrong.
+	if i, j := strings.Index(got, "ALPHA"), strings.Index(got, "CHARLIE"); i < 0 || j < 0 || i > j {
+		t.Errorf("lines arrived out of order: %q", got)
+	}
+	if !strings.Contains(got, "ALPHA\nBRAVO") && !strings.Contains(got, "ALPHA\r\nBRAVO") {
+		t.Errorf("the newline between lines did not survive: %q", got)
+	}
+}
+
+// A single-line message still goes as keystrokes, which is the path the answer
+// delivery from milestone 4a uses and the one with shipped behaviour behind it.
+func TestASingleLineStillGoesAsKeystrokes(t *testing.T) {
+	f := &fake{}
+	a := &Adapter{Run: f}
+	f.out = listing(owned("mustur/One", 1, false))
+	if err := a.Send(context.Background(), "One", "just one line"); err != nil {
+		t.Fatal(err)
+	}
+	if !f.ran("send-keys -t mustur/One -l just one line") {
+		t.Errorf("a single line did not go as keystrokes: %v", f.calls)
+	}
+	if f.ran("paste-buffer") {
+		t.Errorf("a single line went through the paste path: %v", f.calls)
+	}
+}
+
+// And the paste path cleans up after itself: a draft left in tmux's buffer
+// stack is the owner's prose readable by anything on the machine.
+func TestThePasteBufferIsDroppedAfterDelivery(t *testing.T) {
+	f := &fake{}
+	a := &Adapter{Run: f}
+	f.out = listing(owned("mustur/Two", 1, false))
+	if err := a.Send(context.Background(), "Two", "line one\nline two"); err != nil {
+		t.Fatal(err)
+	}
+	var pasted string
+	for _, c := range f.calls {
+		joined := strings.Join(c, " ")
+		if strings.Contains(joined, "paste-buffer") {
+			pasted = joined
+		}
+	}
+	if pasted == "" {
+		t.Fatalf("multi-line did not use the paste path: %v", f.calls)
+	}
+	if !strings.Contains(pasted, "-d") {
+		t.Errorf("the paste buffer is not dropped: %q", pasted)
+	}
+	if !strings.Contains(pasted, "-p") {
+		t.Errorf("the paste is not bracketed, so the receiving program has to guess: %q", pasted)
 	}
 }

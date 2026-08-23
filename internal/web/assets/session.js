@@ -194,6 +194,74 @@
     };
   }
 
+  // The composer.
+  //
+  // Milestone 5's whole clause is that a draft survives a dropped connection
+  // and a backgrounded phone, so the draft is written to localStorage on every
+  // keystroke rather than on some event that a phone being backgrounded might
+  // never deliver.
+  //
+  // **One draft, not one per session.** Thought first, destination second: what
+  // is being written is a thought, and which session it goes to is a separate
+  // choice that can change after it is written. Keying the draft per project
+  // would lose it at exactly the moment the design exists to protect — the
+  // owner deciding, mid-sentence, that this belongs somewhere else.
+  var DRAFT = "mustur.draft";
+  var kept = document.getElementById("kept");
+  var dest = document.getElementById("dest");
+
+  // localStorage throws rather than returning null in a private window, and a
+  // composer that cannot save a draft must still be a composer.
+  function readDraft() {
+    try {
+      return window.localStorage.getItem(DRAFT) || "";
+    } catch (e) {
+      return "";
+    }
+  }
+  function writeDraft(v) {
+    try {
+      if (v) window.localStorage.setItem(DRAFT, v);
+      else window.localStorage.removeItem(DRAFT);
+    } catch (e) {
+      /* No draft persistence here. Typing still works. */
+    }
+  }
+
+  function grow() {
+    if (!text) return;
+    text.style.height = "auto";
+    text.style.height = Math.min(text.scrollHeight, 9 * 16) + "px";
+  }
+
+  function showKept() {
+    if (!kept) return;
+    kept.hidden = !text.value.trim();
+  }
+
+  if (text) {
+    var saved = readDraft();
+    if (saved) text.value = saved;
+    grow();
+    showKept();
+    text.addEventListener("input", function () {
+      writeDraft(text.value);
+      grow();
+      showKept();
+    });
+    // Enter is a newline, because this is a composer and not a chat box. The
+    // Send button is the phone's submit, and the keyboard shortcut is for the
+    // desktop where a modifier is at hand.
+    text.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        if (form) form.dispatchEvent(new Event("submit", { cancelable: true }));
+      }
+    });
+  }
+
+  if (dest && project) dest.textContent = "Send to " + project;
+
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -201,7 +269,13 @@
       var v = text.value.trim();
       if (!v) return;
       ws.send(JSON.stringify({ t: "input", text: v }));
+      // Cleared only once it is on the wire. A send that failed leaves the
+      // draft where it was, which is the difference between a composer and a
+      // thing that eats what you wrote.
       text.value = "";
+      writeDraft("");
+      grow();
+      showKept();
     });
   }
 

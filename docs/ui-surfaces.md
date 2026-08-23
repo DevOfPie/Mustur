@@ -67,10 +67,25 @@ by the browser, and reachable off the home network without a terminal.
 Must answer: which session am I talking to, and how do I switch without losing
 what I have typed? Drafts survive a dropped connection and a backgrounded phone.
 
-**Open question for design:** whether a message is composed against a chosen
-session, or composed first and routed second. The second matches how the owner
-actually works — the thought arrives before the destination is decided — and is
-harder.
+**Answered, in the plan, on 2026-08-20:** thought first, destination second,
+with the last-active session as the default so the ordinary case is still one
+tap. This file went on calling it open until milestone 5 came to build it. The
+drawing is the composer artboard in
+[plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22),
+and its annotation is the decision: *"The draft indicator is the whole reason
+this is not a chat box."*
+
+What that meant in practice, once built: **one draft, not one per session.**
+What is being written is a thought, and which session it goes to is a separate
+choice that can change after it is written — so a draft keyed per project would
+be lost at exactly the moment the design exists to protect, the owner deciding
+mid-sentence that this belongs somewhere else. The destination line names the
+open session and the rail is how it changes, with the draft following.
+
+It is **not a fourth tab**. The four are Sessions, Decisions, Intake and
+Records (MUS-D-0041), and a composer needs the client layer that only the
+session view carries — a second scripted surface is a decision, not a
+consequence of building this one.
 
 ### 2. Session list
 
