@@ -60,3 +60,72 @@ BEGIN
     at      = excluded.at,
     payload = excluded.payload;
 END;
+
+-- Accounts, and everything that answers "who is asking".
+--
+-- Deliberately not records. A record is an immutable claim about the project
+-- that gets exported to markdown and read by strangers; an account is mutable
+-- operational state — sessions expire, passkeys are added and removed, a role
+-- changes — and none of it belongs in a log whose whole value is that it never
+-- changes. They share this file because they share a lifetime and a backup,
+-- and because two SQLite files would be two things to keep consistent.
+--
+-- Nothing here is exported. `mustur export` renders records; if an account ever
+-- appears in `records/`, that is a defect and not a feature.
+
+CREATE TABLE IF NOT EXISTS account (
+  id       TEXT PRIMARY KEY,
+  email    TEXT NOT NULL UNIQUE,
+  created  TEXT NOT NULL,
+  disabled TEXT
+);
+
+-- A passkey. One account may hold several, which is the ordinary recovery when
+-- a device is lost: the second device still works and can register a third.
+CREATE TABLE IF NOT EXISTS credential (
+  cred_id    BLOB PRIMARY KEY,
+  account_id TEXT    NOT NULL REFERENCES account (id),
+  public_key BLOB    NOT NULL,
+  sign_count INTEGER NOT NULL DEFAULT 0,
+  label      TEXT    NOT NULL,
+  created    TEXT    NOT NULL,
+  last_used  TEXT
+);
+
+CREATE INDEX IF NOT EXISTS credential_by_account ON credential (account_id);
+
+-- A role is per project, not per install: a person may read one project and
+-- have no business in another.
+CREATE TABLE IF NOT EXISTS grant_role (
+  account_id TEXT NOT NULL REFERENCES account (id),
+  project    TEXT NOT NULL,
+  role       TEXT NOT NULL CHECK (role IN ('owner', 'reader')),
+  granted    TEXT NOT NULL,
+  granted_by TEXT NOT NULL,
+  PRIMARY KEY (account_id, project)
+);
+
+-- An invitation carries the role it will grant, so accepting it is not a second
+-- decision. The token is stored hashed: this file is a backup away from being
+-- somewhere else, and a live invite is a way in.
+CREATE TABLE IF NOT EXISTS invite (
+  token_hash TEXT PRIMARY KEY,
+  email      TEXT NOT NULL,
+  project    TEXT NOT NULL,
+  role       TEXT NOT NULL CHECK (role IN ('owner', 'reader')),
+  created    TEXT NOT NULL,
+  created_by TEXT NOT NULL,
+  expires    TEXT NOT NULL,
+  used       TEXT
+);
+
+-- A signed-in browser. Hashed for the same reason an invite is.
+CREATE TABLE IF NOT EXISTS auth_session (
+  token_hash TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL REFERENCES account (id),
+  created    TEXT NOT NULL,
+  expires    TEXT NOT NULL,
+  last_seen  TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS auth_session_by_account ON auth_session (account_id);

@@ -44,6 +44,14 @@ func Open(ctx context.Context, path string) (*Store, error) {
 	return &Store{db: db, now: time.Now}, nil
 }
 
+// DB exposes the handle so accounts can live in the same file.
+//
+// Deliberately narrow: the account tables are mutable operational state and
+// have no business in the record log, but two SQLite files would be two things
+// to back up and keep consistent. Nothing that writes a *record* uses this —
+// records go through Append, which is where the insert-only rule lives.
+func (s *Store) DB() *sql.DB { return s.db }
+
 // Close releases the database.
 func (s *Store) Close() error { return s.db.Close() }
 

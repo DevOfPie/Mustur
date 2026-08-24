@@ -49,6 +49,8 @@ const usage = `mustur — records and routing for one project
   mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones
   mustur session  start P --dir D --cmd C     start a session Mustur owns, inside tmux
                   list | stop P               there is no send: see cmd/mustur/sessions.go
+  mustur account  invite --email E [--role R]  a one-time link; printed once, never stored
+                  list | grant                who Mustur knows, and what they may do
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
@@ -105,6 +107,8 @@ func run(argv []string) error {
 		return cmdQuestions(args)
 	case "session":
 		return cmdSession(args)
+	case "account":
+		return cmdAccount(args)
 	case "audit":
 		return cmdAudit(args)
 	case "version", "--version", "-version":
