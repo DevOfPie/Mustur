@@ -209,7 +209,8 @@ func (s *Store) Invitation(ctx context.Context, secret string) (Invitation, erro
 }
 
 // Redeem spends an invitation and returns the account it belongs to, creating
-// it if this is a first passkey and reusing it if the person already has one.
+// it with newID if this is a first passkey and reusing the existing one — newID
+// ignored — if the person already has an account.
 //
 // Reuse is what makes recovery work: an owner reissues an invitation to the
 // same address, and the person registers a new passkey against the account they
@@ -217,7 +218,7 @@ func (s *Store) Invitation(ctx context.Context, secret string) (Invitation, erro
 //
 // Spending and creating happen in one transaction, so an invitation cannot be
 // half-used by two requests arriving together.
-func (s *Store) Redeem(ctx context.Context, secret string) (Account, Invitation, error) {
+func (s *Store) Redeem(ctx context.Context, secret, newID string) (Account, Invitation, error) {
 	inv, err := s.Invitation(ctx, secret)
 	if err != nil {
 		return Account{}, Invitation{}, err
@@ -243,8 +244,14 @@ func (s *Store) Redeem(ctx context.Context, secret string) (Account, Invitation,
 	var id string
 	err = tx.QueryRowContext(ctx, `SELECT id FROM account WHERE email = ?`, inv.Email).Scan(&id)
 	if errors.Is(err, sql.ErrNoRows) {
-		if id, _, err = token(); err != nil {
-			return Account{}, Invitation{}, err
+		// The caller may name the identifier, because a passkey ceremony
+		// commits to a user handle before the account exists: the browser is
+		// told who it is registering for at the start, and the account is only
+		// created once the authenticator has answered.
+		if id = newID; id == "" {
+			if id, _, err = token(); err != nil {
+				return Account{}, Invitation{}, err
+			}
 		}
 		if _, err = tx.ExecContext(ctx,
 			`INSERT INTO account (id, email, created) VALUES (?, ?, ?)`,

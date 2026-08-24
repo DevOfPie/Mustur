@@ -129,3 +129,23 @@ CREATE TABLE IF NOT EXISTS auth_session (
 );
 
 CREATE INDEX IF NOT EXISTS auth_session_by_account ON auth_session (account_id);
+
+-- A WebAuthn ceremony in progress.
+--
+-- Registration and sign-in are two requests, and the challenge issued by the
+-- first has to be remembered — unmodified — until the second. In the database
+-- rather than in memory so a restart mid-ceremony fails cleanly rather than
+-- mysteriously, and so nothing depends on one process holding the state.
+--
+-- Rows are short-lived and swept on use. The cookie that points at one carries
+-- only the row's id: the challenge itself never goes to the browser except
+-- inside the ceremony's own JSON, which is what the browser is meant to sign.
+CREATE TABLE IF NOT EXISTS webauthn_ceremony (
+  id      TEXT PRIMARY KEY,
+  purpose TEXT NOT NULL CHECK (purpose IN ('register', 'signin')),
+  data    TEXT NOT NULL,
+  handle  BLOB,
+  secret  TEXT,
+  created TEXT NOT NULL,
+  expires TEXT NOT NULL
+);

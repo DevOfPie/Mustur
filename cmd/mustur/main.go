@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/account"
 	"github.com/DevOfPie/Mustur/internal/audit"
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
@@ -428,6 +429,14 @@ func cmdServe(args []string) error {
 	// the other surfaces does not offer a tab to them: a tab that goes nowhere
 	// is an unbuilt capability described as existing.
 	withSessions := fs.Bool("sessions", false, "serve the session surface and let the composer reach sessions; both type into a running agent")
+	// The site as a browser sees it. A passkey is bound to it, which is what
+	// makes one unphishable — and what makes a wrong value fail silently, by
+	// making every registered passkey unusable rather than by erroring.
+	origin := fs.String("origin", "", "the site as a browser sees it, e.g. https://mustur.devofpie.com; required to sign in")
+	// Off by default, and for the same reason --sessions is: turning
+	// enforcement on before anybody holds a passkey locks the owner out of
+	// their own running service. Turned on once somebody can get in.
+	withAccounts := fs.Bool("accounts", false, "require a signed-in account, and enforce its role")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -489,13 +498,33 @@ func cmdServe(args []string) error {
 		compose.Adapter = adapter
 	}
 	compose.Routes(mux)
+
+	// Sign-in is served whenever an origin is configured, whether or not
+	// enforcement is on: somebody has to be able to register a passkey before
+	// the guard can be turned on without locking everybody out.
+	accounts := account.New(s.DB())
+	var handler http.Handler = mux
+	if *origin != "" {
+		auth := &web.Auth{
+			Accounts: accounts,
+			Origin:   *origin,
+			Secure:   strings.HasPrefix(*origin, "https://"),
+		}
+		auth.Routes(mux)
+		if *withAccounts {
+			guard := &web.Guard{Auth: auth, Project: *project}
+			handler = guard.Wrap(mux)
+		}
+	} else if *withAccounts {
+		return fmt.Errorf("--accounts needs --origin: a passkey is bound to the site it was registered on")
+	}
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
 	})
 	srv := &http.Server{
 		Addr:              *addr,
-		Handler:           mux,
+		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
@@ -506,6 +535,14 @@ func cmdServe(args []string) error {
 	} else {
 		fmt.Printf("  compose    http://%s/compose   — the idea inbox only, with no session to send to\n", *addr)
 		fmt.Println("  sessions   not served; --sessions publishes the surfaces that type into a running agent")
+	}
+	switch {
+	case *origin == "":
+		fmt.Println("  accounts   no --origin, so nobody can sign in; whatever is in front is the only gate")
+	case *withAccounts:
+		fmt.Printf("  accounts   enforced, as %s\n", *origin)
+	default:
+		fmt.Printf("  accounts   sign-in served at %s/signin, and NOT enforced; --accounts enforces it\n", *origin)
 	}
 	return srv.ListenAndServe()
 }

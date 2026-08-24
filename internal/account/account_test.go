@@ -44,7 +44,7 @@ func TestAnInvitationBecomesAnAccountThatCanSignIn(t *testing.T) {
 		t.Errorf("the invitation does not carry its role and project: %+v", inv)
 	}
 
-	acct, _, err := s.Redeem(ctx, secret)
+	acct, _, err := s.Redeem(ctx, secret, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,10 +92,10 @@ func TestAnInvitationIsSpentOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := s.Redeem(ctx, secret); err != nil {
+	if _, _, err := s.Redeem(ctx, secret, ""); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := s.Redeem(ctx, secret); err != ErrNoInvite {
+	if _, _, err := s.Redeem(ctx, secret, ""); err != ErrNoInvite {
 		t.Errorf("a spent invitation was redeemed again: %v", err)
 	}
 	if _, err := s.Invitation(ctx, secret); err != ErrNoInvite {
@@ -117,7 +117,7 @@ func TestAnExpiredInvitationIsRefused(t *testing.T) {
 	if _, err := later.Invitation(ctx, secret); err != ErrNoInvite {
 		t.Errorf("an expired invitation was accepted: %v", err)
 	}
-	if _, _, err := later.Redeem(ctx, secret); err != ErrNoInvite {
+	if _, _, err := later.Redeem(ctx, secret, ""); err != ErrNoInvite {
 		t.Errorf("an expired invitation was redeemed: %v", err)
 	}
 }
@@ -134,7 +134,7 @@ func TestRecoveryReusesTheAccountRatherThanMakingASecond(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	acct, _, err := s.Redeem(ctx, first)
+	acct, _, err := s.Redeem(ctx, first, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,7 +149,7 @@ func TestRecoveryReusesTheAccountRatherThanMakingASecond(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	again, _, err := s.Redeem(ctx, second)
+	again, _, err := s.Redeem(ctx, second, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,7 +203,7 @@ func TestASessionEndsAndADisabledAccountIsRefused(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	acct, _, err := s.Redeem(ctx, secret)
+	acct, _, err := s.Redeem(ctx, secret, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -246,7 +246,7 @@ func TestEmptySaysWhenNobodyExists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := s.Redeem(ctx, secret); err != nil {
+	if _, _, err := s.Redeem(ctx, secret, ""); err != nil {
 		t.Fatal(err)
 	}
 	if empty, err := s.Empty(ctx); err != nil || empty {
@@ -262,7 +262,7 @@ func TestSecretsAreNotStored(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	acct, _, err := s.Redeem(ctx, secret)
+	acct, _, err := s.Redeem(ctx, secret, "")
 	if err != nil {
 		t.Fatal(err)
 	}
