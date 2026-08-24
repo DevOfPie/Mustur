@@ -4,7 +4,8 @@ Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
-yet accepted; 5 is built, reviewed twice and rebuilt after the first review.**
+yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
+everything through it is merged. 5b, accounts, is raised and not started.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits

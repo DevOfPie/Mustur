@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-38 record(s), by identifier.
+42 record(s), by identifier.
 
 ---
 
@@ -869,4 +869,100 @@ The composer files jots as well as typing into sessions, and the builder registe
 | Surfaced | 2026-08-24 19:54 |
 | Answer | Serve it always, and offer only the idea inbox when sessions are off. |
 | Answered | 2026-08-24 19:54 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0039
+
+**Should Mustur have its own accounts rather than relying on Cloudflare Access?**
+
+question · 2026-08-24
+
+Access is the only authorisation Mustur has: the identity header is read for attribution and never for a decision, so anyone the policy admits reaches every surface including the two that type into a running agent's stdin. Milestone 6 puts a second person through that gate. The builder recommended gating on the identity header instead; the owner asked for something larger.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 6, and what the stack table's Identity row says |
+| Needed to proceed | yes |
+| Option | Accounts instead of Access, with Access kept until Mustur is mostly complete :: The end state is self-contained, and the risky window is the owner's to open :: Mustur owns identity end to end. Access stays in front while it is built, so a bug in new authentication code is not immediately a stranger at an agent's keyboard, and comes off when the owner judges it ready. |
+| Option | Accounts behind Access permanently :: Two gates forever :: Per-user identity and roles, with an unauthenticated stranger never reaching the origin. Inviting someone means adding them in two places, which is the friction being removed. |
+| Option | Neither yet, make Access cheaper :: No new attack surface at all :: Lengthen the Access session and add the second person's email to the policy. Accounts become a milestone later, with evidence rather than a guess. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Aim for accounts instead of Access. Access stays enabled until Mustur is mostly complete, since it should not negatively affect anything behind it. |
+| Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0040
+
+**Where does authentication land in the plan?**
+
+question · 2026-08-24
+
+Authentication is not in Plan.md. The stack table's Identity row says Cloudflare Access at the edge, and milestone 6's own sentence says a second person signs in through Access.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 6 proceeds as written |
+| Needed to proceed | yes |
+| Option | Its own milestone, before 6 :: Milestone 6 waits, because a second person signing in is what it would prove :: Authentication becomes a numbered milestone with its own done-when, and the Identity row changes with it. |
+| Option | Fold it into 6 :: Fewer moving parts on the plan :: Milestone 6 grows and its sentence is rewritten, turning a milestone about reading into one mostly about authentication. |
+| Option | Its own milestone, after 6 :: Nothing is blocked :: Milestone 6 ships on Access, and the second person is invited twice. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Its own milestone, before 6. |
+| Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0041
+
+**What is the credential?**
+
+question · 2026-08-24
+
+The three shapes differ less in difficulty than in what has to be defended. A password brings hashing, rate limiting, lockout, reset by email and a breach story; a passkey brings none of those and brings device loss instead; an emailed link puts the inbox on the path to an agent.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what the sign-in surface is and what can go wrong with it |
+| Needed to proceed | yes |
+| Option | Passkey :: Nothing to remember and nothing to leak :: Face or fingerprint on the phone. No password store, no reset flow, no lockout — the three places auth code usually goes wrong do not exist. Needs a recovery path when a device is lost. |
+| Option | Emailed sign-in link :: No device dependency :: A lost phone is not a lockout. It puts the inbox on the critical path to an agent, and a forwarded link is a session. |
+| Option | Password :: Works on any browser :: Familiar, and the option that needs every piece of machinery the other two avoid. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Passkey, which still needs to be resettable in case someone moves devices and loses access to the old key. |
+| Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0042
+
+**Who gets an account, and does an account see everything?**
+
+question · 2026-08-24
+
+Milestone 6 wants a second person who reads. Today an identity that gets in reaches the composer and the session view, both of which type into a running agent.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a reader can be invited without inviting a writer |
+| Needed to proceed | yes |
+| Option | Invite-only, roles per project :: A person can read one project and not another :: Roles attach to a project rather than to the install. Right if Mustur holds several projects with different audiences, and more to build and keep correct with one project in it. |
+| Option | Invite-only, two roles :: Owner reaches everything, reader reads :: The read-only shape milestone 6 wanted, done in Mustur rather than at the edge. |
+| Option | Invite-only, everyone equal :: Simplest :: Anyone invited reaches everything, so a reader cannot be invited without inviting a writer. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Invite-only, roles per project. |
+| Answered | 2026-08-24 21:38 |
 | Delivered | not delivered: the question names no session |

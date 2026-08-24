@@ -9,8 +9,9 @@ see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built, reviewed
-and awaiting acceptance; 5 is built, reviewed twice and rebuilt after the first review; nothing below
-it is built.** What exists is one binary
+and awaiting acceptance; 5 is built, reviewed twice and rebuilt after the first
+review, and everything through it is merged. **5b, accounts, was raised on
+2026-08-24 and inserted before 6**; nothing below 5 is built.** What exists is one binary
 that can hold this project's records and routing, serve them to a session
 through a single mandated tool call, audit its own records against the
 conventions this repository declares, take a jot into its own findings queue

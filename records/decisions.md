@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-102 record(s), by identifier.
+105 record(s), by identifier.
 
 ## Index
 
@@ -114,6 +114,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0100](#mus-d-0100) | MUS-D-0013's fold clause is declined, and the records stop saying it is built | 2026-08-24 |
 | [MUS-D-0101](#mus-d-0101) | A question's lifecycle times come from the clock | 2026-08-24 |
 | [MUS-D-0102](#mus-d-0102) | The composer is served whether or not sessions are | 2026-08-24 |
+| [MUS-D-0103](#mus-d-0103) | Mustur grows its own accounts, and Access stays in front while they are built | 2026-08-24 |
+| [MUS-D-0104](#mus-d-0104) | The credential is a passkey, and losing the device is not losing the account | 2026-08-24 |
+| [MUS-D-0105](#mus-d-0105) | WebAuthn verification uses a maintained library rather than this repository's own crypto | 2026-08-24 |
 
 ---
 
@@ -1649,3 +1652,39 @@ decision · 2026-08-24
 answers: [MUS-Q-0038](questions.md#mus-q-0038)
 
 The composer was registered behind --sessions on the reasoning that it can type into a running agent. It also files jots, so with the flag off — the default, and the live service's posture until 2026-08-23 — the idea-inbox route the owner asked for was unreachable: a capture surface depending on a security switch. It is now always served, and offers sessions only when sessions are served, so with the flag off it has one destination and nothing it offers can reach an agent. The gating had been taken without asking and recorded only in a code comment.
+
+---
+
+## MUS-D-0103
+
+**Mustur grows its own accounts, and Access stays in front while they are built**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0039](questions.md#mus-q-0039)
+
+and placed by: [MUS-Q-0040](questions.md#mus-q-0040)
+
+Access is the only authorisation Mustur has: the identity header is read for attribution and never for a decision, so anyone the policy admits reaches the composer and the session view, both of which type into a running agent's stdin. The builder proposed gating on that header — read-only unless named — and the owner asked for accounts instead, on the grounds that proper sign-in makes the app easier to use and to share. The objection recorded and answered: taking Access off makes Mustur itself face the internet and own sessions, credential storage and every abuse path, on a service that types into an agent. The owner's answer keeps Access enabled until Mustur is mostly complete, so the window in which new authentication code is the only thing between a stranger and an agent is one the owner opens deliberately, later, and not a consequence of building this.
+
+---
+
+## MUS-D-0104
+
+**The credential is a passkey, and losing the device is not losing the account**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0041](questions.md#mus-q-0041)
+
+A password would bring hashing, rate limiting, lockout, reset by email and a breach story; an emailed link would put an inbox on the critical path to an agent. A passkey brings none of those and brings device loss instead, which the owner named in the same breath: it still needs to be resettable when someone moves devices and loses the old key. So recovery is part of the milestone rather than a later addition. An account may hold more than one passkey, so a second device is the ordinary recovery; where none is left, an invite reissued by someone who already has an owner role on the project restores it, and for the last owner standing the recovery is a command on the machine itself — which is the trust root anyway, since anyone who can run it can already read the store.
+
+---
+
+## MUS-D-0105
+
+**WebAuthn verification uses a maintained library rather than this repository's own crypto**
+
+decision · 2026-08-24
+
+Registering and asserting a passkey means parsing CBOR attestation objects, checking a relying-party hash, verifying an ES256 or RS256 signature and tracking a signature counter. This repository's dependency list is short and stays short on purpose, and this is the case where that stance loses: hand-rolled authentication crypto is the classic way to ship a hole that no test in the tree would show. go-webauthn/webauthn is the maintained implementation and it is pure Go, so the static binary and the modernc SQLite driver are unaffected.

@@ -4,7 +4,7 @@
 
 What the project has promised to do, and what counts as done.
 
-10 record(s), by identifier.
+11 record(s), by identifier.
 
 ---
 
@@ -160,4 +160,23 @@ Done when: A session that spawns sub-agents shows them as their own rows — wha
 | Field | Value |
 | --- | --- |
 | Plan number | 4c |
+| Source | [Plan.md#milestones](../Plan.md#milestones) |
+
+---
+
+## MUS-M-0011
+
+**Accounts**
+
+milestone · 2026-08-24
+
+Raised by: [MUS-Q-0039](questions.md#mus-q-0039)
+
+Placed by: [MUS-Q-0040](questions.md#mus-q-0040)
+
+Done when: Mustur knows who is asking. A person is invited, registers a passkey, signs in, and is recognised on their next visit from their own device; a passkey lost with a device can be replaced without losing the account. An account carries a role per project, and a role that only reads cannot reach the surfaces that type into a running agent. Cloudflare Access stays in front throughout and comes off when the owner judges Mustur ready to stand on its own, which is a separate act and not part of this milestone's verdict.
+
+| Field | Value |
+| --- | --- |
+| Plan number | 5b |
 | Source | [Plan.md#milestones](../Plan.md#milestones) |
