@@ -362,6 +362,67 @@ func (s *Store) UsedCredential(ctx context.Context, credID []byte, signCount uin
 	return err
 }
 
+// ErrLastPasskey refuses the removal that would lock somebody out of their own
+// account. The owner chose passkeys knowing device loss was the risk; deleting
+// the only one left is that risk arriving by the front door.
+var ErrLastPasskey = errors.New("that is the only passkey on this account")
+
+// RemoveCredential deletes one of an account's passkeys.
+//
+// The account id is part of the query rather than checked by the caller: a
+// check the caller can skip is not a check, and removing somebody else's
+// passkey is otherwise the same request with a different identifier.
+func (s *Store) RemoveCredential(ctx context.Context, accountID string, credID []byte) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	var n int
+	if err := tx.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM credential WHERE account_id = ?`, accountID).Scan(&n); err != nil {
+		return err
+	}
+	if n <= 1 {
+		return ErrLastPasskey
+	}
+	res, err := tx.ExecContext(ctx,
+		`DELETE FROM credential WHERE account_id = ? AND cred_id = ?`, accountID, credID)
+	if err != nil {
+		return err
+	}
+	if rows, _ := res.RowsAffected(); rows != 1 {
+		return errors.New("no such passkey on this account")
+	}
+	return tx.Commit()
+}
+
+// Disable turns an account off, or back on.
+//
+// Not a delete. What the account did stays attributed to it, and a person who
+// left and came back is the same person rather than a second one — which is the
+// same reason a reissued invitation reuses an account.
+func (s *Store) Disable(ctx context.Context, accountID string, undo bool) error {
+	var when any
+	if !undo {
+		when = s.now().UTC().Format(stamp)
+	}
+	res, err := s.db.ExecContext(ctx, `UPDATE account SET disabled = ? WHERE id = ?`, when, accountID)
+	if err != nil {
+		return err
+	}
+	if rows, _ := res.RowsAffected(); rows != 1 {
+		return errors.New("no such account")
+	}
+	if !undo {
+		// Sessions end with the account rather than lingering until they
+		// expire: disabling somebody who is signed in should sign them out.
+		_, _ = s.db.ExecContext(ctx, `DELETE FROM auth_session WHERE account_id = ?`, accountID)
+	}
+	return nil
+}
+
 // Grants lists what an account may do, by project.
 func (s *Store) Grants(ctx context.Context, accountID string) ([]Grant, error) {
 	rows, err := s.db.QueryContext(ctx,

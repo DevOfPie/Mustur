@@ -511,6 +511,8 @@ func cmdServe(args []string) error {
 			Secure:   strings.HasPrefix(*origin, "https://"),
 		}
 		auth.Routes(mux)
+		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project}
+		manage.Routes(mux)
 		if *withAccounts {
 			guard := &web.Guard{Auth: auth, Project: *project}
 			handler = guard.Wrap(mux)

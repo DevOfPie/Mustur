@@ -14,8 +14,17 @@
   var said = document.getElementById("said");
   if (!go) return;
 
+  // Three modes, two ceremonies. Registering from an invitation and adding a
+  // passkey to an account that already exists are both `create`; signing in is
+  // `get`. What differs between the first two is only which path is posted to.
   var invite = document.body.getAttribute("data-invite") === "1";
-  var base = invite ? location.pathname.replace(/\/$/, "") : "/signin";
+  var add = document.body.getAttribute("data-add") === "1";
+  var creating = invite || add;
+  var base = add
+    ? "/account/passkey"
+    : invite
+    ? location.pathname.replace(/\/$/, "")
+    : "/signin";
 
   function say(msg) {
     if (!said) return;
@@ -56,7 +65,7 @@
       return;
     }
     go.disabled = true;
-    say(invite ? "Waiting for your device…" : "Choose your passkey…");
+    say(creating ? "Waiting for your device…" : "Choose your passkey…");
 
     post(base + "/begin")
       .then(function (res) {
@@ -69,7 +78,7 @@
         if (pk.user && pk.user.id) pk.user.id = toBytes(pk.user.id);
         (pk.excludeCredentials || []).forEach(function (c) { c.id = toBytes(c.id); });
         (pk.allowCredentials || []).forEach(function (c) { c.id = toBytes(c.id); });
-        return invite
+        return creating
           ? navigator.credentials.create({ publicKey: pk })
           : navigator.credentials.get({ publicKey: pk });
       })
@@ -79,7 +88,7 @@
           id: cred.id,
           rawId: toText(cred.rawId),
           type: cred.type,
-          response: invite
+          response: creating
             ? {
                 clientDataJSON: toText(r.clientDataJSON),
                 attestationObject: toText(r.attestationObject),
@@ -104,8 +113,8 @@
         // Deliberately one message for every failure. The server already
         // refuses to say which check failed; saying it here would undo that.
         go.disabled = false;
-        say(invite
-          ? "That did not complete. Ask for another invitation if it keeps failing."
+        say(creating
+          ? "That did not complete. Try again, or ask for another invitation."
           : "That passkey was not recognised on this site.");
       });
   });

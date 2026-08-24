@@ -52,6 +52,22 @@ func public(path string) bool {
 	return false
 }
 
+// selfService is the one subtree this guard does not decide.
+//
+// Managing your own passkeys is a write by method and is not a write in the
+// sense this guard means: a reader who cannot add a second passkey is a reader
+// one lost device away from being locked out of an account they are entitled
+// to. The handlers under /account authorise themselves — every one of them
+// begins by asking who it is for, and the owner-only ones say so — which is
+// why the exemption is here, named, in one place, rather than spread across
+// them as a habit anybody could forget.
+//
+// It is still behind the guard's *first* question: a stranger reaches none of
+// it, and neither does an account with no role on this project.
+func selfService(path string) bool {
+	return path == "/account" || strings.HasPrefix(path, "/account/")
+}
+
 // writes reports whether a request would change something, or reach a surface
 // that types into a running agent.
 //
@@ -59,6 +75,9 @@ func public(path string) bool {
 // reading a live session is not a read: the page holds a socket that carries
 // keystrokes back, so a reader who could open it would be a writer.
 func writes(r *http.Request) bool {
+	if selfService(r.URL.Path) {
+		return false
+	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
 		return true
 	}

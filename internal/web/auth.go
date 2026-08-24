@@ -109,6 +109,9 @@ func (a *Auth) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /signin/begin", a.signinBegin)
 	mux.HandleFunc("POST /signin/finish", a.signinFinish)
 	mux.HandleFunc("POST /signout", a.signout)
+	mux.HandleFunc("GET /account/passkey", a.addPage)
+	mux.HandleFunc("POST /account/passkey/begin", a.addBegin)
+	mux.HandleFunc("POST /account/passkey/finish", a.addFinish)
 	mux.HandleFunc("GET /invite/{token}", a.invitePage)
 	mux.HandleFunc("POST /invite/{token}/begin", a.registerBegin)
 	mux.HandleFunc("POST /invite/{token}/finish", a.registerFinish)
@@ -126,6 +129,12 @@ type authPage struct {
 	Role    string
 	Error   string
 	Empty   bool
+	// Add is the third mode: a signed-in account registering another passkey,
+	// which is how somebody stops being one lost device away from locked out.
+	// It lives here rather than on the account page so that the account page
+	// carries no script — a ceremony needs the browser API, and the scripted
+	// surfaces stay at three.
+	Add bool
 }
 
 func (a *Auth) signinPage(w http.ResponseWriter, r *http.Request) {
@@ -145,6 +154,115 @@ func (a *Auth) invitePage(w http.ResponseWriter, r *http.Request) {
 	a.render(w, authPage{
 		Invite: true, Email: inv.Email, Project: inv.Project, Role: string(inv.Role),
 	})
+}
+
+func (a *Auth) addPage(w http.ResponseWriter, r *http.Request) {
+	acct, ok := a.Whoever(r.Context(), r)
+	if !ok {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	a.render(w, authPage{Add: true, Email: acct.Email})
+}
+
+// addBegin issues a challenge for a passkey on an account that already exists.
+//
+// Unlike registration from an invitation there is nothing to redeem and no
+// handle to invent: the account is known, so the ceremony commits to its
+// identifier and the new passkey lands beside the others.
+func (a *Auth) addBegin(w http.ResponseWriter, r *http.Request) {
+	if !sameOrigin(r) {
+		http.Error(w, "cross-origin request refused", http.StatusForbidden)
+		return
+	}
+	acct, ok := a.Whoever(r.Context(), r)
+	if !ok {
+		http.Error(w, "not signed in", http.StatusForbidden)
+		return
+	}
+	rp, err := a.relying()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	who := &person{id: []byte(acct.ID), email: acct.Email}
+	creds, err := a.Accounts.Credentials(r.Context(), acct.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Excluded, so a device that already holds one for this account offers to
+	// replace rather than silently making a duplicate.
+	for _, c := range creds {
+		who.creds = append(who.creds, webauthn.Credential{ID: c.ID, PublicKey: c.PublicKey})
+	}
+	creation, session, err := rp.BeginRegistration(who)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data, err := json.Marshal(session)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	id, err := a.Accounts.BeginCeremony(r.Context(), account.Ceremony{
+		Purpose: "register", Data: data, Handle: []byte(acct.ID),
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	a.setCeremony(w, id)
+	writeJSON(w, creation)
+}
+
+func (a *Auth) addFinish(w http.ResponseWriter, r *http.Request) {
+	if !sameOrigin(r) {
+		http.Error(w, "cross-origin request refused", http.StatusForbidden)
+		return
+	}
+	acct, ok := a.Whoever(r.Context(), r)
+	if !ok {
+		http.Error(w, "not signed in", http.StatusForbidden)
+		return
+	}
+	c, err := a.take(r, "register")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+	// A ceremony begun for somebody else cannot be finished as this account:
+	// the handle it committed to is the account it was for.
+	if string(c.Handle) != acct.ID || c.Secret != "" {
+		http.Error(w, "that attempt does not belong to this account", http.StatusForbidden)
+		return
+	}
+	rp, err := a.relying()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var session webauthn.SessionData
+	if err := json.Unmarshal(c.Data, &session); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	cred, err := rp.FinishRegistration(&person{id: []byte(acct.ID), email: acct.Email}, session, r)
+	if err != nil {
+		http.Error(w, "that passkey could not be verified", http.StatusForbidden)
+		return
+	}
+	if err := a.Accounts.AddCredential(r.Context(), acct.ID, account.Credential{
+		ID:        cred.ID,
+		PublicKey: cred.PublicKey,
+		SignCount: cred.Authenticator.SignCount,
+		Label:     labelFor(r),
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, map[string]string{"ok": "1", "to": "/account"})
 }
 
 // registerBegin issues the challenge the authenticator will sign.
@@ -497,10 +615,15 @@ var authTmpl = template.Must(template.New("auth").Parse(`<!doctype html>
   .who { font-weight: 600; }
 </style>
 </head>
-<body data-invite="{{if .Invite}}1{{end}}">
+<body data-invite="{{if .Invite}}1{{end}}" data-add="{{if .Add}}1{{end}}">
 {{if .Error}}
 <h1>Not usable</h1>
 <p>{{.Error}}</p>
+{{else if .Add}}
+<h1>Add a passkey</h1>
+<p>For <span class="who">{{.Email}}</span>. A second device is how you get back
+in if you lose this one.</p>
+<button id="go">Add a passkey</button>
 {{else if .Invite}}
 <h1>Accept this invitation</h1>
 <p><span class="who">{{.Email}}</span> — {{.Role}} on {{.Project}}.<br>
