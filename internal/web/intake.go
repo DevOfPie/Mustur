@@ -29,6 +29,13 @@ type Intake struct {
 	Actor   string
 	Now     func() time.Time
 
+	// ShowSessions says whether this server serves the session surface, which
+	// decides whether the bar offers a tab to it. Off by default: the session
+	// surface carries a composer that types into a running agent's stdin, so
+	// publishing it is a deliberate act rather than a consequence of deploying
+	// something else that happens to be in the same binary.
+	ShowSessions bool
+
 	// ExportTo is the tree the store is rendered into after a jot is filed.
 	// Empty means no export, which is the safe default for a server that is
 	// not sitting on a checkout.
@@ -79,16 +86,27 @@ type page struct {
 	Recent       []recentJot
 	Cutoff       string
 	Project      string
+	// ShowSessions renders the Sessions tab. Off unless the server is actually
+	// serving that surface: a tab that goes nowhere is an unbuilt capability
+	// described as existing, which is what MUS-D-0041's bar exists to avoid.
+	ShowSessions bool
 
 	// OpenQuestions drives the banner, which is **interim**. MUS-D-0041 chose a
 	// fixed place the eye already knows to check over a banner on another
 	// screen, on the grounds that a banner can be scrolled past — and that is
 	// still the decision.
 	//
-	// That bar now exists on the queue, carrying the surfaces that are built,
-	// and it grows as the rest arrive. It is not here yet: intake has no bar of
-	// its own, so this banner is still the only route from intake to the queue.
-	// Owner-confirmed as the interim on MUS-Q-0006 and again on MUS-Q-0012.
+	// The bar is on both surfaces now, carrying the ones that are built and
+	// growing as the rest arrive. The banner stays beside it because they do
+	// different jobs: the bar is the fixed place the eye knows to check, and the
+	// banner is what makes an open decision impossible to miss on the surface
+	// the owner happened to open. Owner-confirmed as interim on MUS-Q-0006 and
+	// MUS-Q-0012.
+	//
+	// Until the bar reached here, the banner was the *only* route from intake to
+	// the queue — which meant the queue was reachable from intake exactly when
+	// it had something to say, and unreachable when it did not. The owner found
+	// that by loading the site and seeing only the intake box.
 	OpenQuestions int
 }
 
@@ -107,12 +125,13 @@ func (in *Intake) now() time.Time {
 
 func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	p := page{
-		Filed:   r.URL.Query().Get("filed"),
-		Routed:  r.URL.Query().Get("routed"),
-		Why:     r.URL.Query().Get("why"),
-		Warn:    r.URL.Query().Get("warn"),
-		Project: in.Project,
-		Cutoff:  "the last hour",
+		ShowSessions: in.ShowSessions,
+		Filed:        r.URL.Query().Get("filed"),
+		Routed:       r.URL.Query().Get("routed"),
+		Why:          r.URL.Query().Get("why"),
+		Warn:         r.URL.Query().Get("warn"),
+		Project:      in.Project,
+		Cutoff:       "the last hour",
 	}
 	if choices, err := in.destinations(r.Context()); err != nil {
 		p.Error = err.Error()
@@ -134,7 +153,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// the whole requirement.
 	r.Body = http.MaxBytesReader(w, r.Body, MaxJot)
 	if err := r.ParseForm(); err != nil {
-		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project})
+		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions})
 		return
 	}
 	text := r.PostFormValue("jot")
@@ -151,7 +170,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		// failure this surface cannot have, above code that dropped it: the
 		// page had no field for it and the textarea came back empty. On a
 		// phone that is a thumb-typed paragraph gone.
-		render(w, page{Error: err.Error(), Project: in.Project, Jot: text})
+		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions})
 		return
 	}
 	// The record is already in the store, so an export that fails has not lost
@@ -256,7 +275,17 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
              background: transparent; color: inherit; box-sizing: border-box; }
   button { font: inherit; padding: .6rem 1.2rem; margin-top: .6rem;
            border: 1px solid var(--edge); border-radius: .5rem;
-           background: transparent; color: inherit; width: 100%; }
+           background: transparent; color: inherit; width: 100%;
+           /* MUS-F-0024, filed from a phone: the button looked the same before
+              and after a tap, so there was no way to tell one had registered.
+              A phone has no hover, so :active is the half that matters — it is
+              first, and the transition is short enough to survive a quick tap
+              rather than animating past it. */
+           transition: background-color .12s ease, border-color .12s ease; }
+  button:hover { border-color: #888a; background: #8881; }
+  button:active { border-color: #8888; background: #8883;
+                  transition-duration: 0s; }
+  button:focus-visible { outline: 2px solid #888a; outline-offset: 2px; }
   .said { margin: .9rem 0; padding: .6rem .8rem; border-left: 3px solid var(--edge); }
   /* Pinned above the box, not below it. A blocked agent is work stopped, and
      the owner should see that before they start typing something else. This is
@@ -278,6 +307,15 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
            white-space: nowrap; padding-bottom: .25rem; }
   .dests label { flex: 0 0 auto; border: 1px solid var(--edge);
                  border-radius: 999px; padding: .35rem .7rem; font-size: .9em; }
+  /* The bar MUS-D-0041 chose, carrying the surfaces that exist. Without it the
+     only route from here to the queue was the banner, which renders when
+     something is open — so the queue was reachable from intake exactly when it
+     had nothing to say. The owner found that by loading the site. */
+  nav { display: flex; border-top: 1px solid var(--edge); margin-top: 2rem;
+        white-space: nowrap; }
+  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
+          text-decoration: none; color: inherit; opacity: .6; }
+  nav a.here { opacity: 1; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -298,6 +336,11 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{if .Recent}}<ul>
 {{range .Recent}}<li><code>{{.ID}}</code> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
+<nav>
+  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
+  <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
+  <a href="/intake" class="here">Intake</a>
+</nav>
 </body>
 </html>
 `))

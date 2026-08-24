@@ -6,6 +6,14 @@
 // plays; the serial is zero-padded to four digits and unique within its
 // project and role.
 //
+// **The prefix says which project a record belongs to, not which store holds
+// it.** A jot routed to the idea inbox is filed under IDW even though the store
+// serving it is Mustur's — the routing record names the prefix and intake uses
+// it (MUS-D-0093). Before that, everything filed here was called MUS, and a jot
+// in the idea inbox was indistinguishable at a glance from a record about
+// Mustur itself. `MUS-F-0025` is the last one filed that way and keeps its
+// identifier, because the permanence rule below is what makes citations safe.
+//
 // Identifiers are permanent. The store is insert-only and records cite each
 // other by identifier, so a scheme that allows renaming is a scheme that
 // allows a citation to rot.
@@ -111,6 +119,17 @@ func Parse(s string) (ID, error) {
 	}
 	return ID{Project: m[1], Role: role, Serial: serial}, nil
 }
+
+// ValidProject reports whether s is a well-formed project prefix on its own:
+// exactly three upper-case letters. A routing record naming its own prefix is
+// checked with this before anything is filed under it, so a typo in the
+// registry produces a jot under the store's prefix rather than an identifier
+// the scheme cannot parse.
+func ValidProject(s string) bool {
+	return projectPattern.MatchString(s)
+}
+
+var projectPattern = regexp.MustCompile(`^[A-Z]{3}$`)
 
 // Valid reports whether s parses.
 func Valid(s string) bool {

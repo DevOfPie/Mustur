@@ -30,7 +30,9 @@ func serveQuestions(t *testing.T, recs ...record.Record) (*httptest.Server, *sto
 			t.Fatal(err)
 		}
 	}
-	q := &Questions{Store: s, Project: "MUS", Actor: "pie"}
+	// Sessions on: this helper stands in for a server serving everything, and
+	// the surface-that-is-not-served case has its own test next door.
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", ShowSessions: true}
 	mux := http.NewServeMux()
 	q.Routes(mux)
 	srv := httptest.NewServer(mux)
@@ -357,15 +359,47 @@ func TestABareOptionIsPickableWithoutExpandingAnything(t *testing.T) {
 	}
 }
 
+// The queue has to be reachable from intake when the queue is empty. Before
+// this, the only route was the banner — which renders when something is open —
+// so the queue could be reached from intake exactly when it had nothing to say.
+func TestTheQueueIsReachableFromIntakeWhenNothingIsOpen(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+
+	in := &Intake{Store: s, Project: "MUS", Actor: "pie"}
+	srv := httptest.NewServer(in.Handler())
+	defer srv.Close()
+
+	body := getFrom(t, srv, "/intake")
+	if strings.Contains(body, "waiting on you") {
+		t.Fatal("the banner rendered with no open questions; this test proves nothing")
+	}
+	if !strings.Contains(body, `href="/questions"`) {
+		t.Error("no route from intake to the decision queue")
+	}
+}
+
 // A tab that goes nowhere is an unbuilt capability described as existing.
+//
+// The list of built surfaces moves as milestones land, so this asserts the rule
+// rather than a snapshot: everything built and served has a tab, and nothing
+// else does. Sessions was on the unbuilt side until milestone 4b and had to
+// move; it is now built but served only on request, which is why this server is
+// constructed with it switched on.
 func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
 	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
 	body := getFrom(t, srv, "/questions")
 
-	if !strings.Contains(body, `href="/intake"`) {
-		t.Error("no tab for the intake surface, which exists")
+	for _, built := range []string{"/intake", "/sessions"} {
+		if !strings.Contains(body, `href="`+built+`"`) {
+			t.Errorf("no tab for %s, which is built", built)
+		}
 	}
-	for _, unbuilt := range []string{"/sessions", "/records"} {
+	for _, unbuilt := range []string{"/records"} {
 		if strings.Contains(body, `href="`+unbuilt+`"`) {
 			t.Errorf("a tab points at %s, which is not built", unbuilt)
 		}

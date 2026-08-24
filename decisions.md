@@ -93,6 +93,40 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The unit cannot have a private /tmp](#the-unit-cannot-have-a-private-tmp) | tmux's socket lives in /tmp, so the feature shipped inert |
 | [v1 has eight surfaces, and the eighth was found by trying to build it](#v1-has-eight-surfaces-and-the-eighth-was-found-by-trying-to-build-it) | The session list is not a session's output |
 | [The standing instruction is what stopped 4b starting](#the-standing-instruction-is-what-stopped-4b-starting) | Deleted by one commit, restored by a review, earned it at once |
+| [Sub-agents are their own milestone, and it starts by finding out whether it is possible](#sub-agents-are-their-own-milestone-and-it-starts-by-finding-out-whether-it-is-possible) | A verdict of "cannot be done" is a real outcome |
+| [The session composer is always writable](#the-session-composer-is-always-writable) | And what that puts on the origin check |
+| [A session's exit is an event, not a record](#a-sessions-exit-is-an-event-not-a-record) | The line already drawn around session output |
+| [A surface reachable only when it has something to say is not reachable](#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable) | The owner found it by loading the site |
+| [The reader lingers after the last viewer leaves](#the-reader-lingers-after-the-last-viewer-leaves) | Otherwise a dropped phone loses the session's continuity |
+| [The buffer is seeded from the pane, not only from the pipe](#the-buffer-is-seeded-from-the-pane-not-only-from-the-pipe) | pipe-pane carries nothing that happened before it |
+| [A WebSocket library rather than hand-rolled framing](#a-websocket-library-rather-than-hand-rolled-framing) | Not on the path that types into an agent |
+| [The origin check refuses a handshake with no Origin at all](#the-origin-check-refuses-a-handshake-with-no-origin-at-all) | It is the control, not hardening |
+| [The answer path is no longer the only caller, and the entries saying it is stay put](#the-answer-path-is-no-longer-the-only-caller-and-the-entries-saying-it-is-stay-put) | One of MUS-D-0063's three limits survives |
+| [The idle timeout was a lie about the session](#the-idle-timeout-was-a-lie-about-the-session) | Thirty minutes of a live session read as ended |
+| [A viewer that falls behind is disconnected, not quietly starved](#a-viewer-that-falls-behind-is-disconnected-not-quietly-starved) | Skipping left it 8 MB behind with no notice |
+| [The bar grows in three templates, not one](#the-bar-grows-in-three-templates-not-one) | Three different bars in one binary |
+| [The exit is logged, and supervision only runs while somebody is watching](#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching) | A session nobody opened is not being watched |
+| [The investigation was registered before it was run](#the-investigation-was-registered-before-it-was-run) | Why the rule preceding the finding is the evidence |
+| [The route is lifecycle hooks, and the pane is untouched](#the-route-is-lifecycle-hooks-and-the-pane-is-untouched) | How a sub-agent is found, and what it costs nothing |
+| [The hook is passed per session, and persists nowhere — MUS-Q-0024](#the-hook-is-passed-per-session-and-persists-nowhere--mus-q-0024) | Where the hook lives, and what it never writes to |
+| [A row shows what is documented — MUS-Q-0025](#a-row-shows-what-is-documented--mus-q-0025) | What a sub-agent row carries, and what it declines to |
+| [The gate that failed again, and what it cost this time](#the-gate-that-failed-again-and-what-it-cost-this-time) | Five decisions taken in prose, and the one that mislabelled a row |
+| [Three defects the fake runner could never have shown](#three-defects-the-fake-runner-could-never-have-shown) | Rows outliving their session, a tool never left, a launch queued twice |
+| [The records were the fiction, not the prose](#the-records-were-the-fiction-not-the-prose) | A generated export hand-edited, with every gate still green |
+| [A third invented citation, in the third place the verifier cannot look](#a-third-invented-citation-in-the-third-place-the-verifier-cannot-look) | Identifiers asserted in Go comments, where nothing checks them |
+| [Evidence a reader can reach](#evidence-a-reader-can-reach) | The harness that reproduces the investigation's numbers |
+| [Live rows, against the recommendation](#live-rows-against-the-recommendation) | Sub-agent rows pushed down the socket, and what that widened |
+| [What changed](#what-changed) | A routing record naming its own identifier prefix |
+| [Narrow on purpose](#narrow-on-purpose) | One target now, and why generalising waits for milestone 7 |
+| [`MUS-F-0025` keeps its name](#mus-f-0025-keeps-its-name) | Why a misleading prefix is cheaper than an exception to permanence |
+| [The design question was answered, and this repository went on calling it open](#the-design-question-was-answered-and-this-repository-went-on-calling-it-open) | Thought first, destination second, and three days of staleness |
+| [One draft, not one per session](#one-draft-not-one-per-session) | Why the draft follows the owner rather than the page |
+| [It is not a fourth tab, and not a second scripted page](#it-is-not-a-fourth-tab-and-not-a-second-scripted-page) | Where the composer lives — superseded by MUS-Q-0034 |
+| [A newline typed into a terminal is Enter](#a-newline-typed-into-a-terminal-is-enter) | Why multi-line goes as a bracketed paste |
+| [An hour lost to `timeout`](#an-hour-lost-to-timeout) | A test fixture that starved its own pane on SIGTTIN |
+| [The second review pass, and two of its findings](#the-second-review-pass-and-two-of-its-findings) | A correction is a claim, and nothing gates claims |
+| [Timestamps that could not be true](#timestamps-that-could-not-be-true) | Answers stamped before their questions existed |
+| [Amend replaces, and I have now been caught by that twice](#amend-replaces-and-i-have-now-been-caught-by-that-twice) | A record re-dated and stripped of provenance by its own correction |
 
 ---
 
@@ -1437,3 +1471,553 @@ It earned its restoration immediately. It is the rule that stopped milestone 4b
 being written from a brief the way intake and the decision queue both were —
 the third time would have been the one where the pattern stopped being an
 accident.
+
+## 2026-08-21 — the session surface's last three questions
+
+### Sub-agents are their own milestone, and it starts by finding out whether it is possible
+
+Mustur shells out to a CLI and reads one pane. A session that spawns three
+reviewers is three agents writing into that pane, unlabelled and interleaved
+with the parent — so every option for *showing* sub-agents was really an option
+for *finding out about them*, and none of the three was cheap.
+
+The owner's answer on `MUS-Q-0017`: ship 4b without them, and make sub-agents
+milestone 4c.
+
+What makes that the right shape rather than a deferral is the verdict it
+permits. 4c's first unit is establishing whether the CLI will let the adapter
+place a sub-agent where it can be read separately. **If it will not, the
+milestone's verdict is that this cannot be done** — which is a real outcome, and
+one the alternative could not reach. Parsing the pane for markers would have
+produced a sub-agent list that was sometimes wrong, and a wrong status reads as
+a fact once it is on a screen. That is the same failure as inferring
+waiting-for-input, which the owner declined on `MUS-Q-0005`.
+
+### The session composer is always writable
+
+Read and write share one connection. The alternative offered was read-only until
+armed per session, so that a tab left open in a pocket could not type.
+
+The owner's answer on `MUS-Q-0018`: always writable, as drawn. The embedded
+composer keeps its one tap from watching a session to answering it, which is the
+whole argument for embedding it.
+
+**What that costs, stated rather than left implicit.** The WebSocket origin
+check and the Access policy's scope are now the *only* things between a stranger
+and an agent's input; there is no second layer behind them. Two consequences
+follow, and both are heavier than they were an hour ago:
+
+- The origin check is not a hardening detail. It is the control, and it is
+  tested first in 4b's verification.
+- Confirming the Access policy admits the owner and nobody wider is now
+  urgent rather than tidy. It has been outstanding since the ingress went up.
+
+### A session's exit is an event, not a record
+
+Supervision notices an exit and reports it on the surface and in the service
+log. Nothing goes into `records/`.
+
+The owner's answer on `MUS-Q-0019`, and it follows the line already drawn around
+session output: not addressable, not exported, not a record. An exit is the same
+kind of thing. The alternative — a finding for every non-zero exit — fills the
+findings queue with noise the first time something is flaky, and a records tree
+nobody reads is worse than one that is missing something.
+
+## 2026-08-21 — the bar reaches intake
+
+### A surface reachable only when it has something to say is not reachable
+
+The decision queue's only route from intake was the banner, which renders when
+something is open. With every question answered the banner was absent, so
+loading `mustur.devofpie.com` gave the intake box and no way to reach anything
+else — the queue was reachable from intake exactly when it had something to say,
+and invisible when it did not.
+
+The owner found it by loading the site. It had been recorded as a queue line
+during the milestone 4a review and not acted on, which is worth noting: a defect
+written down is not a defect fixed, and this is the second time on this stack
+that a record was mistaken for a safeguard.
+
+The fix is [MUS-D-0041](#the-phone-bar-has-four-tabs) applied where it had not
+been yet. The bar carries the surfaces that are built and grows as the rest
+arrive, exactly as it does on the queue. The banner stays beside it rather than
+being replaced: the bar is the fixed place the eye knows to check, and the
+banner is what makes an open decision impossible to miss on whichever surface
+was opened. That is the pair MUS-D-0041 argued for, not an alternative to it.
+
+## 2026-08-22 — decisions taken while building milestone 4b
+
+### The reader lingers after the last viewer leaves
+
+The plan said `pipe-pane` is opened when the first viewer arrives and closed
+when the last one leaves. Building it showed that is wrong for the case the
+milestone exists for.
+
+One owner with one phone **is** the last viewer. Closing the reader when they
+disconnect throws away the buffer and the byte offsets, so reconnecting a second
+later resumes from zero with nothing to replay — and "survives a dropped phone
+connection" is precisely the clause that would not work.
+
+The reader now stays open for two minutes after the last viewer leaves. A
+reconnect inside that window is continuous; after it, the session is still
+running and the next viewer starts from what the pane already holds.
+
+### The buffer is seeded from the pane, not only from the pipe
+
+`pipe-pane` carries output produced after it is enabled and nothing before it.
+Without a seed, the first viewer of a session that has been running for an hour
+opens an empty screen and waits for the next line — which is not "2,140 earlier
+lines", it is a blank page that reads as a hung session.
+
+`capture-pane` supplies the scrollback tmux is already keeping, taken once
+before the first byte off the pipe so the buffer reads in order. Found by
+writing a test that watched a session which had already finished printing, and
+seeing nothing arrive.
+
+### A WebSocket library rather than hand-rolled framing
+
+`coder/websocket`: pure Go, no transitive dependencies, so the static binary
+stays static.
+
+The alternative was implementing RFC 6455 here — masking, fragmentation, close
+handshakes, ping/pong. On the one path in this project that carries keystrokes
+into an agent, a vetted implementation beats a hand-written one, and that is the
+whole argument. The owner named the connection's security a first-order concern
+on the same day; hand-rolling the framing under it would have been the wrong
+reading of that.
+
+### The origin check refuses a handshake with no Origin at all
+
+Browsers always send `Origin` on a WebSocket handshake, so its absence means the
+client is not a browser — and a non-browser client has no business on the path
+that types into an agent. Refusing is the strict reading and this is the place
+to take it: a socket that reaches a running agent is not somewhere to be
+generous with clients that decline to identify themselves.
+
+The check compares the origin's host to the request's own. Cloudflare Access
+authenticates the *person*; it says nothing about which page opened the socket,
+and browsers exempt WebSockets from the same-origin policy while still sending
+cookies with the handshake. Without this check, a page the owner merely visited
+could open a socket here on their authenticated session and type into an agent.
+It is the control, not hardening, and it is the first thing the verification
+list tests.
+
+## 2026-08-22 — what the milestone 4b review changed
+
+### The answer path is no longer the only caller, and the entries saying it is stay put
+
+[MUS-D-0063](#mustur-can-type-into-a-session-it-started) named three limits on
+typing into an agent and called them "enforced rather than documented": the
+ownership option, the self-describing text, and the answer path being the only
+caller. [MUS-D-0070](#there-is-no-session-send) removed an operator verb
+specifically to keep the third true.
+
+The session composer is a second caller. It takes arbitrary text and sends it
+with no *"The owner answered …"* framing, because it is not answering anything.
+
+The capability is the owner's, taken on `MUS-Q-0018` with the trade named. What
+was missing is this entry: both of those are append-only and neither could be
+edited, so the correction is here. **One of the three limits survives** — the
+ownership option — and it is the one enforced in code. The other two are now
+true of the answer path and not of the surface.
+
+### The idle timeout was a lie about the session
+
+Thirty minutes after a tab opened, the socket sent `ended` and closed, whatever
+the session was doing; the timer was created once and never reset. The client
+then said *"Nothing is running"* about a session that was, disabled the
+composer, and did not reconnect.
+
+It resets on activity now — output or typing — and a genuinely idle socket gets
+an ordinary close, which the client treats as a disconnect. `ended` means the
+session ended.
+
+That also repairs MUS-D-0075's stated reason for an always-writable composer:
+*"a tab left open in a pocket could not type"*. After thirty minutes it could
+not, which was not the argument anybody made.
+
+### A viewer that falls behind is disconnected, not quietly starved
+
+The fan-out skipped a viewer whose buffer was full. Go discards the *new* item,
+so that viewer kept receiving a contiguous but ever-staler prefix — no sequence
+jump, nothing to notice. A review measured one 8 MB behind with zero holes and
+zero notice, under a comment claiming "the viewer will resume from its own
+sequence", which nothing implemented.
+
+Closing the channel ends that socket and the client reconnects from the offset
+it actually reached, which is what the comment always claimed. A stalled tab
+still cannot hold up the reader or the other viewers.
+
+### The bar grows in three templates, not one
+
+`MUS-D-0057` says the bar "renders the built ones and grows as the rest arrive".
+Sessions arrived, the session page rendered three tabs, and the other two
+surfaces went on rendering two — three different bars in one binary, and the
+promise was made in the file that did not keep it.
+
+A promise that has to be kept in three templates at once needs a test that reads
+all three, and now has one. This is the same shape as the queue being reachable
+from intake only when it had something to say: a rule stated in one place and
+implemented in one place, while the rule was about every place.
+
+### The exit is logged, and supervision only runs while somebody is watching
+
+`stream.go` claimed an exit "is reported on the surface and in the log" before
+anything logged anything. It does now.
+
+The limitation underneath is worth stating rather than fixing quietly: the
+reader is started by a viewer, so **a session nobody has looked at is not being
+watched**. An exit is noticed when a tab is open on it, or not at all. Watching
+every owned session would mean polling tmux continuously for sessions nobody is
+reading, and that trade has not been made.
+
+## 2026-08-22 — sub-agents can be seen, and how
+
+### The investigation was registered before it was run
+
+Milestone 4c began with a question rather than a build:
+[can Mustur see a sub-agent at all](docs/investigations/0002-sub-agent-visibility.md).
+The routes to try, the three properties an answer had to carry — enumerable,
+separable, terminal — and the rule for reaching *cannot be done* were committed
+in one commit, and the finding in the next. The history is the evidence that the
+rule was not written to fit the result, which is the same discipline
+[milestone 1's disproof](docs/investigations/0001-mandated-tool-call.md) rested
+on.
+
+The rule was worth having for one reason in particular. A session's sub-agents
+are already on disk, in a `subagents/` directory holding a transcript and a
+metadata file for each — enumerable, separable and readable, and it would have
+worked today. It is undocumented, so it is written up as a finding and not used.
+Without a rule fixed beforehand, that directory is exactly what a builder in a
+hurry adopts.
+
+### The route is lifecycle hooks, and the pane is untouched
+
+`SubagentStart` and `SubagentStop` are documented hooks carrying `agent_id` and
+`agent_type`, with the final message and the per-agent transcript path on stop. A
+tool-use hook carries `agent_id` when the call happens inside a sub-agent and
+omits it in the main conversation, so a sub-agent's activity is attributed by an
+identifier the CLI supplies rather than by reading its prose — which is what
+[route D was ruled out for](docs/investigations/0002-sub-agent-visibility.md),
+and what the owner declined an inferred status for on `MUS-Q-0005`.
+
+The important property is what it does *not* change. Everything milestones 4a
+and 4b built stands: the session is still a tmux pane, still typed into with
+`send-keys`, still read with `pipe-pane`, still attachable from a terminal.
+
+The alternative would have cost exactly that. `--output-format stream-json` with
+`--forward-subagent-text` carries all three properties and is fully documented,
+and a session held open on `--input-format stream-json` accepts further messages,
+so it is a real session rather than a one-shot. It requires `-p`, and `-p` is not
+a terminal. Adopting it would replace the pane with a JSON harness — a different
+product, not a way of showing sub-agents in this one. It is recorded rather than
+adopted, so it is findable if the pane is ever given up for other reasons.
+
+### The hook is passed per session, and persists nowhere — MUS-Q-0024
+
+A hook is executable configuration running inside the agent's own session, so
+where it is installed was the owner's decision and not the builder's.
+
+Mustur starts the session, so it passes the hook as a `--settings` JSON string on
+the command line it already builds. Nothing is written to `~/.claude` and nothing
+into the checkout the session runs in. The cost, accepted: a session started by
+hand carries no hook and shows no sub-agents. Mustur reports on what Mustur
+started, which is the same line the
+[ownership option](decisions.md#2026-08-21--the-session-surfaces-last-three-questions)
+already draws.
+
+### A row shows what is documented — MUS-Q-0025
+
+What a sub-agent was asked to do, how long it has been running, what it is doing
+now, and its output once it finishes. Full prose while it is still running would
+mean deriving the per-agent transcript path, and the owner declined to make that
+exception. Reading a sub-agent mid-flight means opening the parent pane, which is
+still there.
+
+## 2026-08-22 — what the milestone 4c review changed
+
+Three reviewers, none given the pull request or any report. They agreed on
+something the builder had not noticed: **this milestone's own documents claimed
+things its tree did not support.** The investigation named captured files that
+were not committed, the code cited a decision that did not exist, and the plan
+recorded a review that had not happened.
+
+### The gate that failed again, and what it cost this time
+
+Five decisions were taken in prose. Two of the five were not small.
+
+**Pairing a task to a sub-agent by order is an inference**, and it went in
+without being asked — in a package whose own header says rows are *"attributed
+by an identifier the CLI supplies, never by reading the pane and guessing"*. A
+reviewer reproduced the failure: an `Agent` call that never produced a sub-agent
+left its description in the queue for the next one, rendering a row that read
+**"DENIED call, never ran"**. The owner bounded it on
+[MUS-Q-0026](records/questions.md#mus-q-0026) rather than dropping labels, and
+was told plainly that a bound narrows the failure without closing it.
+
+The number that bound it is the part worth keeping. "A few seconds" was the
+instinct, and measuring the captures says a few seconds is wrong: the nine
+launch-to-start pairs run from 1.563s to **5.985s**, because three sub-agents
+launched together are spawned in sequence and the last waits for the first two.
+A two-second window would have stripped the label off rows that were right —
+the same failure through the other door. Thirty seconds, and a test that fails
+if anyone shrinks it below the slowest pair actually observed.
+
+**Rejecting the structured-output route** was a product judgement argued down in
+prose. Both routes cleared the investigation's rule; choosing hooks over a JSON
+harness is what keeps a Mustur session a terminal you can attach to. Ratified on
+[MUS-Q-0027](records/questions.md#mus-q-0027), and it should have been asked
+before it was built on.
+
+### Three defects the fake runner could never have shown
+
+**Rows outlived their session.** The log was keyed on the project and nothing
+cleared it, so stopping a session and starting another showed the old one's
+rows — one still pilled *running*, ageing forever, for a process dead before the
+page existed. That is the condition the investigation's own rule named as
+disqualifying, arriving in the implementation of the route that passed it.
+`Start` now forgets them.
+
+**A row claimed to be in a tool it had left.** Only the start of a tool call was
+hooked, so `Doing` was the last tool forever, while a comment on the surface
+claimed a sub-agent between calls "is thinking, and says so". The comment
+described behaviour the code did not have; `PostToolUse` is the other half, and
+it costs a second short-lived process per tool call.
+
+Verifying that hook before relying on it caught a third defect that had not
+shipped: the parent's own `PostToolUse` for its `Agent` call carries no
+`agent_id` either, so without checking the event name it landed as a second
+launch — every task description queued twice.
+
+### The records were the fiction, not the prose
+
+`records/` is generated from the store and says so in its own header. The 4c
+questions were written **into the export by hand**, so the file said 23 records
+over a file holding 25, the identifier index stopped at `MUS-Q-0023`, the
+decisions had no `MUS-D` at all, and investigation 0002 existed on disk with no
+`MUS-I`. `make check` was green throughout, because every gate reads the export
+and the export was internally consistent.
+
+Fixed the only way that is not another fiction: through `mustur ask`, `surfaced`
+and `answer`, which is when the store refused to let the asker answer their own
+question — the gate built on
+[MUS-Q-0007](records/questions.md#mus-q-0007) — *refuse self-answer, allow
+self-withdraw* — doing exactly its job to the person who built it. The answers are recorded as the owner's because they are.
+
+### A third invented citation, in the third place the verifier cannot look
+
+`subagents.go` cited `MUS-D-0087` when the tree ended at `MUS-D-0086`. All three
+of this session's invented citations have been in Go comments, and `mustur
+verify` reads `records/`. The pattern is now specific enough to name: **prose in
+`.go` files is the one place identifiers are asserted and never checked.**
+Whatever fixes it is not another careful author.
+
+### Evidence a reader can reach
+
+The investigation claimed runs "reproduced by the commands quoted below" and
+quoted no commands, over captures that were not in the tree — the same complaint
+`queue.md` already carries against 4a. [0002-harness/](docs/investigations/0002-harness/)
+is the correction, following what 0001 did: the recorder, the runners, the
+scorer, and the captured output. `score.py` re-derives the pairing result and
+`count.py` the coverage, both from committed files, with no CLI and no network.
+
+4c also had no work unit, so the plan cited the investigation as its method — a
+document written two hours before the build and containing none of it.
+[MUS-W-0018](records/work-units/MUS-W-0018.md) is the method.
+
+### Live rows, against the recommendation
+
+The rows were server-rendered like the rest of the surface, so a sub-agent's age
+and current tool froze until reload, on the page that already holds a socket.
+The owner chose to push them down it
+([MUS-Q-0029](records/questions.md#mus-q-0029)) against the recommendation to
+leave them static.
+
+Kept as small as that can be: the server polls the hook's log on a two-second
+ticker, skips the parse entirely when the file's size and modification time have
+not moved, and sends a frame only when the rows differ. Ages are not sent —
+each row carries its stamps and the client counts, so a running sub-agent's
+clock moves without a frame per second to move it. Tested against real tmux
+with a real handshake, because this is the one thing the client layer now models
+that is not the terminal.
+
+## 2026-08-22 — a record's prefix says which project it belongs to
+
+The owner filed three jots from a phone to prove milestone 2c, and one of them
+routed correctly to the idea inbox while reading as though it had not. It was
+called `MUS-F-0025`, which is indistinguishable at a glance from a record about
+Mustur itself.
+
+Nothing was mis-routed. The point stands anyway, and it is the owner's: **the
+MUS tag should mean the Mustur project, not the store that happens to hold the
+record.** A prefix that is the same for everything is a prefix that cannot be
+scanned, and every jot to the idea inbox had to be opened to find out where it
+had gone.
+
+The identifier scheme already anticipated this — three upper-case letters,
+chosen "so a second project onboarded later cannot collide with this one". What
+was wrong is that intake stamped the serving project's prefix at creation, some
+lines before it knew where the jot was going.
+
+### What changed
+
+A routing record names its own prefix in a field, the way it already names
+itself the intake default. The idea inbox's is **IDW**, for IdeaWarehouse, which
+is where these go once that project is onboarded at milestone 7 — so the prefix
+names the destination and a record keeps its identifier when it finally arrives,
+rather than being renamed into it.
+
+A routing record whose prefix is not three upper-case letters is ignored and the
+store's used instead. Wrong in a way somebody can see beats an identifier the
+scheme cannot parse.
+
+### Narrow on purpose
+
+Only the one routing target that exists carries a prefix. Generalising it to
+every target is milestone 7's work, where a second project's cases are real
+rather than imagined, and doing it now would front-run those decisions with one
+example to test against. The owner chose the narrow cut on
+[MUS-Q-0030](records/questions.md#mus-q-0030).
+
+### `MUS-F-0025` keeps its name
+
+The `ident` package's rule is that identifiers are permanent, because the store
+is insert-only and a scheme that allows renaming is one that allows a citation
+to rot. `MUS-F-0025` is cited in `Plan.md`, `docs/ingress.md`, this file and a
+pull request comment.
+
+So it stays, as the last record filed under the old scheme, and the owner said
+why that costs nothing: it was a test, and its information is used up by the
+finding it already produced.
+
+## 2026-08-23 — the composer, and a newline that would have submitted
+
+Milestone 5's sentence is *multi-line, spell-checked text from the phone, off
+the home network, without a terminal, reaching the intended session.* Four of
+those were already true at 4b. The two that were not are the two that make it a
+composer rather than a chat box.
+
+### The design question was answered, and this repository went on calling it open
+
+`docs/ui-surfaces.md` listed *"whether a message is composed against a chosen
+session, or composed first and routed second"* as an open question for design.
+The owner answered it on 2026-08-20, in the plan, and the annotation on the
+composer artboard is the decision: **thought first, destination second, with the
+last-active session as the default**, and *"the draft indicator is the whole
+reason this is not a chat box."*
+
+Three days of that being stale is a small thing on its own and the same shape as
+the larger one the reviews keep finding: a claim true in the file that makes it
+and false against the thing it names.
+
+### One draft, not one per session
+
+What is being written is a thought; which session it goes to is a separate
+choice that can change *after* it is written. That is what thought-first means,
+and it decides the implementation: the draft is kept under one key, not one per
+project, because a per-project key loses it at exactly the moment the design
+exists to protect — the owner deciding mid-sentence that this belongs somewhere
+else.
+
+It is written on every keystroke rather than on unload, because a backgrounded
+phone need never deliver another event, and the clause is that a draft survives
+being backgrounded. Where the browser refuses to store it at all, typing still
+works and nothing is kept.
+
+### It is not a fourth tab, and not a second scripted page
+
+The four tabs are Sessions, Decisions, Intake and Records (MUS-D-0041). A
+composer needs a client layer, and the session view is the only surface that
+carries one — a second is a decision rather than a consequence of building this.
+So the composer is the session view's, made real: a textarea where an input was.
+
+### A newline typed into a terminal is Enter
+
+The part that would have shipped broken. Enter in an agent's composer submits,
+so the obvious path turns a three-line draft into three prompts and a fourth
+empty one.
+
+**Measured**, before choosing: `send-keys -l` with embedded newlines *does*
+land every line in Claude Code's composer, and a bracketed paste does too and
+arrives as one message. Both work.
+
+**Asserted**, and this is the part that actually chose the mechanism, so it is
+labelled rather than blended in: that the TUI reads one burst as a paste, that
+this is the CLI inferring intent from timing, and that a write arriving split
+would submit halfway through. **No split write was ever observed.** The paste is
+used because it states that it is text instead of leaving it to be inferred —
+an argument from reliability, not from a failure to work — and it drops its
+buffer afterwards so a draft does not sit in tmux's paste stack.
+
+Single-line still goes as keystrokes: that is 4a's answer-delivery path, and it
+has shipped behaviour behind it that this had no reason to disturb. That claim
+was itself too narrow and `MUS-D-0098` carries the correction: nothing limits an
+answer to one line.
+
+**No test in this tree proves the clause that matters.** That a paste arrives as
+one message rather than one prompt per line was measured by hand against the
+real CLI — four lines, one Enter, and the agent answered from all four. The
+real-tmux tests hold `cat`, and `cat` is happy with newlines either way, so they
+prove the bytes arrive and not which mechanism carried them. The tests say so in
+their own comments rather than leaving a reader to find out.
+
+### An hour lost to `timeout`
+
+Worth writing down because it will happen again. A test fixture ran the pane as
+`timeout 20 cat > file` so the program would exit on its own. `timeout` puts its
+child in a new process group without the terminal, so `cat` was stopped on
+SIGTTIN the moment it read, and received nothing at all — a green mechanism
+looking like a broken one. Plain `cat`, with the hub's cleanup registered before
+the session's so it runs after it, was the fix.
+
+## 2026-08-24 — correcting the entry above, and what the second review found
+
+The entry *"A newline typed into a terminal is Enter"* above says: **"The owner
+answered it on 2026-08-20, in the plan."** That is false. The composer decision
+is `MUS-D-0013`, taken on **2026-08-19** at the evening design review against
+the published wireframes — a day before that plan existed, and not among the
+four questions it settled. The correction is appended rather than edited in,
+because that is the rule; a reader arriving at the entry above should arrive at
+this one next.
+
+Getting the attribution wrong is what let two of `MUS-D-0013`'s three clauses go
+unbuilt without anyone noticing.
+
+### The second review pass, and two of its findings
+
+Three fresh reviewers read the rebuild. Two findings are worth keeping here
+because they are the *first* pass's findings reproduced inside the corrections
+written to fix them:
+
+- The record rewritten to stop crediting a test with assertions it did not make
+  credited **a different test with a different surface's proof**: the composer
+  has no socket, and "multi-line left the composer over a real WebSocket"
+  described the session view's reply box. The composer's own delivery into a
+  live session was exercised by nothing. It has a test now.
+- "Both say so in their own comments" — only one did.
+
+The lesson is not that the corrections were careless. It is that **a correction
+is a claim**, and this repository has no gate that reads claims.
+
+### Timestamps that could not be true
+
+Every question raised here up to today records an answer stamped **before the
+question existed**: `MUS-Q-0034` was created at 09:53 and says it was answered
+at 09:00, because the times were typed by hand from a conversation that had
+already happened. `make check` could not see it — the gate requires the
+`Surfaced` field to be non-empty and nothing else — so the record this
+repository leans on hardest was not evidence of the thing it is kept for.
+
+`surfaced` and `answer` now stamp the clock and refuse a `--at` in the past
+rather than silently overriding it (`MUS-D-0101`). The records already carrying
+impossible times stay as they are, with this as their correction.
+
+### Amend replaces, and I have now been caught by that twice
+
+`MUS-F-0002` was amended to note it had been overtaken, and the amend **moved a
+finding noticed on 2026-08-19 to the 24th and dropped its provenance rows** —
+in the export, which `MUS-D-0024` designates as the surface a reader checks
+without the binary. The same trap took `MUS-M-0010` earlier in this session.
+Both are restored. `amend` takes what it is given and writes exactly that; the
+habit it needs is reading the record first, which is not a thing a comment can
+enforce.

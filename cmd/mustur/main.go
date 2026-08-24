@@ -1,9 +1,10 @@
 // Command mustur holds a project's records and routing, and serves them to a
 // session that is told to ask.
 //
-// Nothing here talks to an agent process. This binary is the store, the
-// export, and the one tool call the injection kit mandates; sessions arrive at
-// a later milestone.
+// This binary is the store, the export, the one tool call the injection kit
+// mandates, the surfaces those are read and answered through — and, since
+// milestone 4a, the adapter that starts agent sessions inside tmux and can type
+// into one it started.
 package main
 
 import (
@@ -22,8 +23,8 @@ import (
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/mcpsrv"
 	"github.com/DevOfPie/Mustur/internal/record"
-	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/seed"
+	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
 	"github.com/DevOfPie/Mustur/internal/web"
@@ -410,6 +411,19 @@ func cmdServe(args []string) error {
 	// Without this the surface writes the store and nothing else, and the file
 	// the findings role is mapped at falls behind every jot filed from a phone.
 	exportTo := fs.String("export", "", "render the store into this directory after each filing; empty means do not")
+	// Off by default, and deliberately not a detail.
+	//
+	// The session surface carries a composer that types into a running agent's
+	// stdin. Everything else this binary serves reads records or files a jot;
+	// that one writes into a process with a checkout and a shell. Publishing it
+	// should be an act, not a consequence of deploying an unrelated fix that
+	// happens to be in the same binary — which is exactly what shipping the
+	// idea-inbox prefix would otherwise have done.
+	//
+	// When it is off the routes are not registered at all, and the tab bar on
+	// the other surfaces does not offer a tab to them: a tab that goes nowhere
+	// is an unbuilt capability described as existing.
+	withSessions := fs.Bool("sessions", false, "serve the session surface and let the composer reach sessions; both type into a running agent")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -427,9 +441,13 @@ func cmdServe(args []string) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
-	intake := &web.Intake{Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo}
+	intake := &web.Intake{
+		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
+		ShowSessions: *withSessions,
+	}
 	questions := &web.Questions{
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
+		ShowSessions: *withSessions,
 		// An answer typed from a phone is carried into the session that raised
 		// it, if that session is still alive and Mustur started it.
 		Sessions: &session.Adapter{},
@@ -437,6 +455,36 @@ func cmdServe(args []string) error {
 	// Registered on the outer mux, ahead of the intake box's catch-all, so the
 	// queue is reachable at a hostname whose "/" belongs to intake.
 	questions.Routes(mux)
+	// The hook directory is what makes a session's sub-agents visible: the
+	// adapter installs a hook pointing at it, and the surface reads it back.
+	hookDir := session.DefaultHookDir()
+	adapter := &session.Adapter{HookDir: hookDir}
+	hub := &session.Hub{Adapter: adapter}
+	// Readers hold a fifo and a tmux pipe-pane each; without this a server that
+	// goes down leaves both behind, with tmux still writing into a pipe nobody
+	// will ever read.
+	defer hub.Shutdown()
+	if *withSessions {
+		sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor(), HookDir: hookDir}
+		sessions.Routes(mux)
+	}
+	// The composer is served whatever the flag says, and offers sessions only
+	// when they are being served.
+	//
+	// It first went behind --sessions, on the reasoning that it can type into
+	// an agent. But it also files jots, so with the flag off — the default —
+	// the idea-inbox route the owner asked for on MUS-Q-0035 was unreachable: a
+	// capture surface that depended on a security switch. The owner took this
+	// on MUS-Q-0038. With sessions off the composer has one destination, the
+	// inbox, and nothing it offers can reach a running agent.
+	compose := &web.Compose{
+		Store: s, Project: *project,
+		Actor: defaultActor(), ExportTo: *exportTo,
+	}
+	if *withSessions {
+		compose.Adapter = adapter
+	}
+	compose.Routes(mux)
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
@@ -448,6 +496,13 @@ func cmdServe(args []string) error {
 	}
 	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
 		version, n, *db, *addr, *addr, *addr)
+	if *withSessions {
+		fmt.Printf("  sessions   http://%s/sessions  — this one can type into a running agent\n", *addr)
+		fmt.Printf("  compose    http://%s/compose   — and so can this one\n", *addr)
+	} else {
+		fmt.Printf("  compose    http://%s/compose   — the idea inbox only, with no session to send to\n", *addr)
+		fmt.Println("  sessions   not served; --sessions publishes the surfaces that type into a running agent")
+	}
 	return srv.ListenAndServe()
 }
 

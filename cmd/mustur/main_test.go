@@ -4,6 +4,7 @@ import (
 	"flag"
 	"io"
 	"testing"
+	"time"
 )
 
 // The bug this exists for is silent: Go's flag package stops at the first
@@ -68,5 +69,38 @@ func TestFieldsRefuseWhatIsNotAPair(t *testing.T) {
 		if err := f.Set(v); err == nil {
 			t.Errorf("%q was accepted as a field", v)
 		}
+	}
+}
+
+// A lifecycle verb records when it ran, not what the caller typed.
+//
+// Every question in this repository up to 2026-08-24 records an answer
+// timestamped before the question existed, because the times were typed in by
+// hand from a conversation that had already happened. The record is what says
+// surfacing preceded the answer.
+func TestStampedRefusesAPastTime(t *testing.T) {
+	now := time.Date(2026, 8, 24, 12, 0, 0, 0, time.Local)
+
+	if got, err := stamped("", now); err != nil || got != "2026-08-24 12:00" {
+		t.Errorf("an empty --at gave %q, %v; want the clock", got, err)
+	}
+	if _, err := stamped("2026-08-24 09:00", now); err == nil {
+		t.Error("a time three hours in the past was accepted")
+	}
+	if _, err := stamped("2026-08-23", now); err == nil {
+		t.Error("yesterday was accepted")
+	}
+	// A minute of slack, so a run straddling the boundary is not refused for
+	// being a second stale.
+	if _, err := stamped("2026-08-24 11:59", now); err != nil {
+		t.Errorf("a time inside the slack was refused: %v", err)
+	}
+	if _, err := stamped("not a time", now); err == nil {
+		t.Error("an unparseable --at was accepted")
+	}
+	// The future is allowed: it is not the failure this guards, and refusing it
+	// would break nothing that exists.
+	if _, err := stamped("2026-08-24 12:30", now); err != nil {
+		t.Errorf("a future time was refused: %v", err)
 	}
 }

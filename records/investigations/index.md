@@ -20,3 +20,4 @@ Stated here and nowhere else.
 | Investigation | Title | Date |
 | --- | --- | --- |
 | [MUS-I-0001](MUS-I-0001.md) | A mandated tool call is honoured | 2026-08-19 |
+| [MUS-I-0002](MUS-I-0002.md) | Sub-agents can be seen, and the pane survives | 2026-08-22 |

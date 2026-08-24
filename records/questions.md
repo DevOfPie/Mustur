@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-16 record(s), by identifier.
+38 record(s), by identifier.
 
 ---
 
@@ -355,4 +355,518 @@ question · 2026-08-21
 | Surfaced | 2026-08-21 10:52 |
 | Answer | Add an artboard for it, then build. Extend the published plan with a session-output surface and a brief, put it to me, and build 4b from the drawing. |
 | Answered | 2026-08-21 10:55 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0017
+
+**How should sub-agents become visible on the session surface?**
+
+question · 2026-08-21
+
+A session that spawns three reviewers is one pane with three agents writing into it, unlabelled and interleaved with the parent. Mustur does not know a sub-agent exists: it shells out to a CLI and reads a pane. Every option is really an option for finding out.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4b's scope |
+| Option | One tmux window per sub-agent :: Structural and exact :: list-windows enumerates them and pipe-pane reads each independently, so status is real rather than inferred. Needs the CLI to let Mustur place a sub-agent into a window, which it does not do today. |
+| Option | Parse the parent pane for markers :: Works with any CLI :: A heuristic over prose that will be wrong sometimes, and a wrong sub-agent status reads as a fact. |
+| Option | Ship 4b without them, own milestone :: Honest about what is known :: The session surface lands with parent output only, and sub-agents get a milestone that starts by establishing whether the CLI can cooperate at all. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 23:14 |
+| Answer | Ship 4b without them, and make sub-agents their own milestone. It starts by establishing whether the CLI can cooperate at all. |
+| Answered | 2026-08-21 23:14 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0018
+
+**Should typing into a session be armed separately from watching it?**
+
+question · 2026-08-21
+
+The surface carries an agent's output out and the owner's keystrokes in. Read and write share one connection unless deliberately separated. The owner named the connection's security a first-order concern.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | the session surface's input path |
+| Option | Read-only by default, unlock to type :: A second line of defence :: A tab left open in a pocket, or a socket opened by something unintended, cannot type. Costs one tap when a reply is wanted. |
+| Option | Always writable, as drawn :: One tap from watching to answering :: Relies entirely on Access and the WebSocket origin check being right, with nothing behind them. |
+| Option | Armed on desktop, read-only on the phone :: Splits the risk by device :: Removes the ability to answer from the one device this project exists for. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 23:14 |
+| Answer | Always writable, as drawn. The embedded composer keeps its one tap; Access and the origin check are the defence. |
+| Answered | 2026-08-21 23:14 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0019
+
+**Where does a session's exit get recorded?**
+
+question · 2026-08-21
+
+Supervision notices an exit and records it. The store is insert-only and exports to markdown, and session output is explicitly not a record: not addressable, not exported.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what supervision writes |
+| Option | The surface and the service log :: Nothing in records/ :: An exit is an event, not something a reader cites. Keeps the store for what belongs in it. |
+| Option | A finding when a session exits non-zero :: Crashes are arguably worth keeping :: Also a way to fill findings.md with noise the first time something is flaky. |
+| Option | A finding for every exit :: Complete history :: The fastest route to a records tree nobody reads. |
+| Asked by | whippy |
+| Surfaced | 2026-08-21 23:14 |
+| Answer | The surface and the service log, nothing in records/. An exit is an event, not a record anyone cites. |
+| Answered | 2026-08-21 23:14 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0020
+
+**A WebSocket library, or RFC 6455 by hand?**
+
+question · 2026-08-22
+
+The session socket needs WebSocket framing. This was decided by the builder and written into MUS-D-0080 without being asked, which is the failure this project is named after; it is being put properly now. coder/websocket is pure Go with no transitive dependencies, so the static binary stays static.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 4b's dependency surface |
+| Needed to proceed | yes |
+| Option | coder/websocket :: Recommended · a vetted implementation on the path that types into an agent :: Masking, fragmentation, close handshakes and ping/pong all come from a maintained library rather than from this repository. One new direct dependency, no transitive ones. |
+| Option | Hand-roll RFC 6455 :: Zero dependencies, and the framing is ours to get wrong :: Around two hundred lines. The repository already prizes a small dependency surface, and this is the one place where getting framing wrong is a security bug rather than a rendering one. |
+| Option | Server-sent events instead :: One direction, and no framing at all :: SSE is plain HTTP and needs no library. It cannot carry the composer's keystrokes, so input would need a separate POST — which is arguably better isolation, and is a different design from the approved artboard. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | coder/websocket. A vetted implementation on the path that types into an agent. |
+| Answered | 2026-08-22 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0021
+
+**How long should the reader outlive its last viewer?**
+
+question · 2026-08-22
+
+The reader currently lingers two minutes after the last viewer leaves, so a reconnect inside that window is continuous. A review found that beyond it output is lost silently — the stream restarts at zero and no gap is reported. The silence is a bug and is being fixed regardless; how long the window should be is the decision.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a dropped phone connection keeps its place |
+| Needed to proceed | yes |
+| Option | Two minutes :: Recommended · covers a dropped connection, not a closed tab :: Long enough for a lift, a tunnel or a backgrounded phone. A tab closed deliberately stops costing anything a couple of minutes later. |
+| Option | While the session lives :: Never lose continuity, and never stop reading :: The reader stays open as long as the session does, so any reconnect resumes exactly. Costs one pipe and up to 256 KB per running session whether or not anyone is watching. |
+| Option | Fifteen minutes :: A commute, not a lift :: Covers being away from the phone rather than a momentary drop, at fifteen times the idle cost of two minutes. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | Two minutes. It covers a dropped connection rather than a closed tab; losing output beyond it silently is a bug to fix, not a reason to widen the window. |
+| Answered | 2026-08-22 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0022
+
+**What should the idle timeout on a session socket mean?**
+
+question · 2026-08-22
+
+The socket closes after thirty minutes and the timer is never reset, so the tab shows 'ended' and 'Nothing is running' while the session is still running, and does not reconnect. A review measured it. The lie is a bug either way; what the timeout should mean is the decision.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a tab left open reads as a dead session |
+| Needed to proceed | yes |
+| Option | Reset on activity :: Recommended · idle means the session is quiet, not that the tab is old :: The timer resets whenever output arrives or the viewer types, so only a genuinely silent session drops. A tab watching a working session stays connected. |
+| Option | No timeout at all :: A socket costs almost nothing :: Simplest and most honest. It also means a tab in a drawer holds a writable channel into an agent indefinitely, which is the thing the timeout was for. |
+| Option | Keep the lifetime cap, but reconnect :: The socket recycles and the tab does not lie :: The cap stays as a bound on any one connection, and the client treats the close as a disconnect rather than an ending. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | Reset on activity. Idle means the session is quiet, not that the tab is old. |
+| Answered | 2026-08-22 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0023
+
+**Should a WebSocket handshake carrying no Origin header be refused?**
+
+question · 2026-08-22
+
+Browsers always send Origin on a WebSocket handshake, so its absence means the client is not a browser. The socket refuses it. That was the builder's call, written into MUS-D-0081 without being asked. It is strict: it also refuses curl, a script, and anything else that might legitimately want to watch a session.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | nothing; it is built this way and works |
+| Option | Refuse it :: Recommended · this path types into an agent :: A client that declines to identify where it came from has no business on the one socket that carries keystrokes into a running agent. Strictness costs a use case nobody has asked for yet. |
+| Option | Allow it :: A non-browser client is not automatically hostile :: Watching a session from a script or from curl becomes possible. The origin check then protects browsers only, which is who it was written for anyway. |
+| Option | Allow read-only, refuse input :: Split the difference :: A client without an Origin can watch and cannot type. More code, and the composer's authorisation stops being one rule. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 10:40 |
+| Answer | Refuse it. A client that will not say where it came from has no business on the socket that types into an agent. |
+| Answered | 2026-08-22 10:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0024
+
+**How should Mustur install the hook that makes sub-agents visible?**
+
+question · 2026-08-22
+
+Investigation 0002 established that sub-agents can be seen at all, and that the only route which keeps a session an attachable terminal is the CLI's lifecycle hooks. A hook is executable configuration running inside the agent's own session, which makes where it is installed a decision rather than a detail.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 4c is built at all |
+| Needed to proceed | yes |
+| Option | Per session, nothing persists :: Recommended · Mustur touches no configuration it does not own :: The hook is passed as a --settings JSON string on the command line Mustur already builds. Verified: nothing written to ~/.claude, nothing written into the checkout. The cost is that a session started by hand shows no sub-agents, because it carries no hook. |
+| Option | Write it into the owner's config once :: Every session shows sub-agents, including ones Mustur did not start :: Mustur adds the hook to ~/.claude/settings.json. It also means Mustur mutating the owner's agent configuration, and a hook that keeps firing when Mustur is not running. |
+| Option | Neither, and close 4c :: The investigation is the deliverable :: No hook and no rows. Plan.md records that it was possible and declined, which is a real outcome for a milestone that began by asking whether it was possible. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:52 |
+| Answer | Per session, nothing persists. Mustur passes the hook on the command line it already builds and touches no configuration it does not own. |
+| Answered | 2026-08-22 11:15 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0025
+
+**How much of a running sub-agent should the surface show?**
+
+question · 2026-08-22
+
+The hooks give an identifier, a type, the description it was launched with, each tool as it is called, and its full text when it ends. Full text while it is still running lives in a per-agent transcript whose path the CLI documents nowhere. Investigation 0002's rule, fixed before looking, says an undocumented path is a finding and not a route, so overriding it is the owner's to do and not the builder's.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what a sub-agent row contains |
+| Needed to proceed | yes |
+| Option | Documented only :: Recommended · everything rests on an interface the CLI documents :: A row says what the sub-agent was asked to do, how long it has been running and what it is doing right now. Its output appears when it finishes. Reading one mid-flight means opening the parent pane. |
+| Option | Read the transcript live :: Full prose while it runs :: Works today, by deriving the per-agent transcript path. It also makes Mustur depend on an undocumented on-disk layout, which Plan.md lists under never — a deliberate exception rather than a detail. |
+| Option | Rows only, no text :: Which are running and for how long, nothing more :: Cheapest and least useful. The owner asked to be able to read through a sub-agent's progress, which this does not do. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:52 |
+| Answer | Documented only. What a sub-agent is doing now, and its output once it finishes. |
+| Answered | 2026-08-22 11:15 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0026
+
+**A sub-agent's task is paired to it by order. Keep the inference?**
+
+question · 2026-08-22
+
+No documented field connects the parent's launching call to the sub-agent it produced, so the builder paired them by spawn order and did not ask. A reviewer showed it mislabels: an Agent call that never produces a sub-agent leaves its description for the next one to claim, rendering a row that read 'DENIED call, never ran'. This was not among MUS-Q-0025's options because the gap had not been found yet.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a sub-agent row can carry the wrong task |
+| Needed to proceed | yes |
+| Option | Keep pairing, bound it :: Narrows the window, does not close it :: A launch nobody claimed within a few seconds is dropped, so a stale description cannot wait for the next sub-agent. A wrong label stays possible and would still read as a fact. |
+| Option | Drop the labels :: No inference anywhere, and no row can be wrong :: A row shows its type, its age and its tool, never a task. Loses the thing that tells three identical general-purpose rows apart. |
+| Option | Read the undocumented file :: Exact rather than inferred :: Each sub-agent's metadata file holds its description and its id together. The owner declined this dependency on MUS-Q-0025, before a reviewer showed the alternative mislabels. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Keep pairing, bound it. Drop a launch nobody claimed within a few seconds. |
+| Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0027
+
+**Was rejecting the structured-output route the right call?**
+
+question · 2026-08-22
+
+Both the hooks route and the structured-output route cleared investigation 0002's pre-registered rule. The builder rejected structured output because it requires --print, which is not a terminal, and argued it down in prose instead of asking. MUS-Q-0024 covered where the hook is installed, not which route.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | nothing; it is built the other way and works |
+| Option | Keep the pane :: Recommended · ratifies what is built :: Sessions stay real terminals the owner can attach to, everything in 4a and 4b stands, and rows come from hooks. Structured output stays recorded as the option if the pane is ever given up for other reasons. |
+| Option | Reconsider structured output :: Strictly more, at the cost of the pane :: Every sub-agent message tagged with the call that spawned it, at every nesting depth, plus live progress and durations. Sessions become a JSON stream Mustur renders, and 4a and 4b are rebuilt around it. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Keep the pane. |
+| Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0028
+
+**A vendor name now sits in the adapter's start path. Accept it?**
+
+question · 2026-08-22
+
+The adapter has no default CLI and Plan.md calls that neutrality a designed boundary, but the hook interface belongs to one CLI, so Start checks whether the command is claude before appending the hook flags. A reviewer flagged the vendor name in the core start path.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | how far the adapter's vendor neutrality actually goes |
+| Option | Accept it, name it :: Recommended · the boundary stops being described as absolute :: The check stays and Plan.md says vendor-neutral except where a capability belongs to one vendor. The failure mode is a session that simply shows no rows. |
+| Option | Move it behind a flag :: The boundary stays clean, the feature stops being default :: session start --watch-subagents installs the hook, with no name-sniffing. Sub-agents become something to ask for each time. |
+| Option | Make it configurable :: Another CLI could be configured in :: The hook flags become a setting rather than a constant. More moving parts today for a second CLI nobody has. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Accept it, and name it: the boundary is vendor-neutral except where a capability belongs to one vendor. |
+| Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0029
+
+**Should sub-agent rows update live, or only on reload?**
+
+question · 2026-08-22
+
+The rows are server-rendered like the rest of this surface, so a sub-agent's age and the tool it is in freeze until the page is reloaded — on the one page that already holds a live socket.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a row's age and current tool are current |
+| Option | Push rows down the socket :: Rows are current, and the client layer grows :: Rows update alongside the output. It widens the one scripted surface from a terminal to a terminal and a model of sub-agent state, which is a second thing for it to be wrong about. |
+| Option | Leave them static :: Recommended · a reload is how you see current state :: Keeps the client layer doing one job, and keeps the rule that this surface's script exists for the terminal and nothing else. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 19:53 |
+| Answer | Push rows down the socket. |
+| Answered | 2026-08-22 14:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0030
+
+**Should a jot's identifier prefix come from where it routes rather than from the store?**
+
+question · 2026-08-22
+
+Intake stamps the store's project prefix on every jot at creation, so a jot routed to the idea inbox is MUS-F-0025 — indistinguishable at a glance from a record about Mustur itself. The owner noticed it looking mis-routed for exactly this reason. The ident scheme already anticipates more than one prefix: three upper-case letters, chosen so a second project onboarded later cannot collide.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether an idea-inbox jot is distinguishable from a Mustur record by its identifier |
+| Needed to proceed | yes |
+| Option | Now, narrowly :: Recommended · proves the mechanism on the one target that exists :: The idea inbox carries a prefix and intake stamps the destination's rather than the store's. Milestone 7 generalises it to every routing target when there are real cases to design against. |
+| Option | As part of milestone 7 :: Design it once, with more than one example :: Jots to the idea inbox keep saying MUS until a second project is genuinely onboarded. |
+| Option | Now, and generalise it :: Every routing target carries a prefix from the start :: More design today, and it front-runs milestone 7's decisions with one real example to test against. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 22:14 |
+| Answer | Now, narrowly. The MUS tag should only be used for records associated with the Mustur project; a different tag for the general idea store and other projects minimises confusion and improves trackability. |
+| Answered | 2026-08-22 22:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0031
+
+**What prefix should the general idea store use?**
+
+question · 2026-08-22
+
+Three upper-case letters, per the ident scheme. The idea inbox is a routing target inside Mustur rather than a write into IdeaWarehouse, because no file in another project is touched before that project is onboarded — so the prefix can name where a jot is now or where it is going, and those are different answers.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what an idea-inbox jot is called |
+| Option | IDW :: Reads as IdeaWarehouse, where these go once it is onboarded :: The prefix names the destination, so a record keeps its identifier when the project it belongs to is finally onboarded at milestone 7. The inbox becomes a holding pen for records already carrying their final prefix. |
+| Option | IDE :: Reads as idea, and promises nothing about IdeaWarehouse :: Safer if the general store turns out not to be IdeaWarehouse. |
+| Option | INB :: Names the holding pen rather than the destination :: A jot's prefix says where it is now. Costs a rename when it moves, which the scheme forbids. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 22:14 |
+| Answer | IDW. |
+| Answered | 2026-08-22 22:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0032
+
+**MUS-F-0025 carries the old prefix. Grandfather it or reissue it?**
+
+question · 2026-08-22
+
+MUS-F-0025 sits in the idea inbox carrying a MUS prefix, and is cited in Plan.md, docs/ingress.md, decisions.md and a pull request comment. The ident package's own rule is that identifiers are permanent, because the store is insert-only and a scheme that allows renaming is one that allows a citation to rot.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the permanence rule gets an exception |
+| Option | Grandfather it :: Recommended · the permanence rule survives intact :: MUS-F-0025 keeps its identifier and the new scheme applies from the next jot. One record with a misleading prefix, documented as the last of the old scheme. |
+| Option | Reissue it :: One fewer misleading record, at the cost of the rule :: Withdrawn and refiled under the new prefix. Every citation has to be found and updated, and the permanence rule gains an exception that weakens it for every future record. |
+| Asked by | whippy |
+| Surfaced | 2026-08-22 22:14 |
+| Answer | Grandfather it, since it was a test and its information is useless beyond the finding it already provided. |
+| Answered | 2026-08-22 22:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0033
+
+**Should deploying an unrelated fix also publish the session surface?**
+
+question · 2026-08-22
+
+One binary serves everything, and the live service is still the build from before milestone 4b. Restarting it to pick up the idea-inbox prefix and the intake button fix would also publish the session surface and its always-writable composer, behind an Access policy whose scope has never been confirmed.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the idea-inbox prefix can reach the live service |
+| Needed to proceed | yes |
+| Option | Ship it, sessions off :: Recommended · the fix now, the writable channel when you have checked Access :: A flag registers the session routes only when asked, default off, and the other surfaces drop the tab so nothing points at a 404. Costs one flag and this record. |
+| Option | Ship the whole thing :: One restart, everything live :: Fastest, and it puts a writable path into a running agent behind a policy neither of us has verified. |
+| Option | Deploy nothing yet :: Nothing changes until Access is checked :: The next jot from a phone is still tagged MUS and the file button still gives no feedback. |
+| Asked by | whippy |
+| Surfaced | 2026-08-23 10:39 |
+| Answer | Ship it, sessions off. |
+| Answered | 2026-08-23 00:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0034
+
+**The composer was built as a widget inside the session view rather than from its artboard. Which stands?**
+
+question · 2026-08-23
+
+Surface 1 has its own artboard in plan-4827b50a72674a22. Milestone 5 built it as a widget inside surface 8's page and then amended surface 1's brief to say that is where it lives, citing that artboard as authority two paragraphs above declining to build it. The reason given was that a composer needs a client layer and the session view is the only surface carrying one. The owner has already answered this question about this plan, on MUS-Q-0010: redesign from the artboard, because a plan agents route around is not a plan.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 5 as built is kept, rebuilt or reverted |
+| Needed to proceed | yes |
+| Option | Build the artboard :: Recommended · surface 1 becomes what it was drawn as :: Its own screen, the destination row defaulting to the last active session, and the idea inbox in it as a route like any other — all three clauses of MUS-D-0013. It needs a client layer, so this takes on a second scripted surface deliberately rather than by accident. |
+| Option | Amend the plan instead :: What shipped stands, and the plan says so :: The composer stays in the session view and surface 1 stops being described as its own screen, with the reason recorded: a second scripted page is a cost not yet agreed. |
+| Option | Revert milestone 5 :: Nothing false stays in the tree :: Back the composer out and leave 4b's single-line box until the surface question is settled with a redrawn artboard. The phone keeps a chat box for longer. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 09:53 |
+| Answer | Build the artboard. Surface 1 becomes its own screen, with the destination row and the idea inbox in it, and a second scripted surface is taken on deliberately. |
+| Answered | 2026-08-24 09:00 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0035
+
+**Two of MUS-D-0013's three clauses were dropped without being raised. Build them?**
+
+question · 2026-08-23
+
+MUS-D-0013 has three clauses. Text before destination was built. The route row defaulting to the last active session was not — the list is raw tmux order, which is alphabetical. The idea inbox being a route like any session, folding intake into the composer instead of keeping two capture muscles, was not either. Neither omission was recorded anywhere: not in the work unit's risks, not in decisions.md, not in the queue.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the composer honours the decision it was built from |
+| Needed to proceed | yes |
+| Option | Both :: The composer honours the decision it cites :: Last-active means reading activity from tmux, which the adapter can do. Folding intake in makes the composer the single capture surface and puts intake's routing behind it — the larger of the two. |
+| Option | Last-active only :: The cheap clause, which is the one that makes the fast path one tap :: Intake stays its own surface and MUS-D-0013 gets an entry recording that clause as declined. |
+| Option | Neither, record them as dropped :: The record stops claiming what the tree does not do :: Both stay unbuilt and MUS-D-0013 gains an entry saying two of its three clauses were declined, and why. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 09:53 |
+| Answer | Both. Last-active default and folding intake into the composer. |
+| Answered | 2026-08-24 09:00 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0036
+
+**Three surfaces can start a message. MUS-Q-0035's chosen option said one.**
+
+question · 2026-08-24
+
+The option the owner chose on MUS-Q-0035 reads: folding intake in makes the composer the single capture surface and puts intake's routing behind it. The tree keeps all three. The builder recorded that in queue.md as a conflict between two owner decisions, reported rather than picked; a reviewer showed the cited workflow.md clause scopes conflicts to Plan.md versus workflow.md, and that shipping all three is picking.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the composer, the reply box and the intake box all stay |
+| Needed to proceed | yes |
+| Option | Keep all three, say so :: Nothing is retired, and the records stop overclaiming :: MUS-D-0013's fold clause is recorded as declined with its reason — intake is proven and fast, the reply box is where you already are — and the two files asserting all three clauses are built are corrected. |
+| Option | One, as the option said :: The composer becomes the single capture surface :: Intake's tab points at the composer with the inbox preselected and the reply box becomes a link. Retires a surface milestone 2c proved works. |
+| Option | Keep intake, drop the reply box :: Two, and the duplication goes :: The composer for anything composed, intake kept as the fast path from a locked phone. MUS-Q-0018's embedded composer is explicitly superseded. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 19:54 |
+| Answer | Keep all three, say so. Record the fold clause as declined and stop claiming it is built. |
+| Answered | 2026-08-24 19:54 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0037
+
+**Should a question's lifecycle times come from the clock rather than from the caller?**
+
+question · 2026-08-24
+
+Every question raised in this repository up to today records an answer timestamped before the question existed: MUS-Q-0034 was created at 09:53 and says it was answered at 09:00, because the times were typed by hand from a conversation that had already happened. make check cannot see it — the gate only requires the Surfaced field to be non-empty — so the record leaned on hardest is not evidence of the thing it is kept for.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a question record is evidence that surfacing preceded the answer |
+| Needed to proceed | yes |
+| Option | Stamp from the clock :: The record proves the order by construction :: surfaced and answer record when they ran and refuse a --at in the past. Gives up backdating a question raised offline, which has never happened. |
+| Option | Gate on the ordering :: Catch it wherever it comes from :: Keep hand-set times and fail make check when an answer predates its surfacing, including a genuine clock disagreement. |
+| Option | Both :: Right by construction, and caught if it gets past :: Also needs correcting entries for the records already in the tree before the gate could pass. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 19:54 |
+| Answer | Stamp from the clock. |
+| Answered | 2026-08-24 19:54 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0038
+
+**Should the composer be reachable when the session surface is not served?**
+
+question · 2026-08-24
+
+The composer files jots as well as typing into sessions, and the builder registered it behind --sessions, which the owner gated on typing into a running agent. With the flag off — the default, and the live service's posture until 2026-08-23 — the idea-inbox route is unreachable. The gating was taken without asking and recorded only in a code comment.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the idea-inbox route depends on a security switch |
+| Option | Serve it always, hide sessions :: The capture surface never depends on a security switch :: The composer is always available and offers only the idea inbox when sessions are off. More code, and a second thing the flag means. |
+| Option | Keep it behind the flag :: One switch, one meaning :: The composer can type into an agent, so it sits behind the same gate. A deployment wanting jots without agent access has the intake box, which the flag does not touch. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 19:54 |
+| Answer | Serve it always, and offer only the idea inbox when sessions are off. |
+| Answered | 2026-08-24 19:54 |
 | Delivered | not delivered: the question names no session |

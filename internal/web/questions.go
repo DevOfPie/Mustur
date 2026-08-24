@@ -53,6 +53,13 @@ type Questions struct {
 	Actor   string
 	Now     func() time.Time
 
+	// ShowSessions says whether this server serves the session surface, which
+	// decides whether the bar offers a tab to it. Off by default: the session
+	// surface carries a composer that types into a running agent's stdin, so
+	// publishing it is a deliberate act rather than a consequence of deploying
+	// something else that happens to be in the same binary.
+	ShowSessions bool
+
 	// ExportTo is the tree the store is rendered into after an answer, for the
 	// same reason the intake box has one: whoever answers from a phone cannot
 	// run `make export`, and an answer that reached the store and not the file
@@ -122,6 +129,8 @@ type queuePage struct {
 	OpenN    int
 	Answered string
 	Error    string
+	// ShowSessions renders the Sessions tab. See the note on intake's page.
+	ShowSessions bool
 }
 
 func (q *Questions) open(ctx context.Context) ([]queued, error) {
@@ -160,11 +169,12 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	page := queuePage{
-		Project:  q.Project,
-		Open:     openQs,
-		OpenN:    len(openQs),
-		Answered: r.URL.Query().Get("answered"),
-		Error:    r.URL.Query().Get("error"),
+		ShowSessions: q.ShowSessions,
+		Project:      q.Project,
+		Open:         openQs,
+		OpenN:        len(openQs),
+		Answered:     r.URL.Query().Get("answered"),
+		Error:        r.URL.Query().Get("error"),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := queueTmpl.Execute(w, page); err != nil {
@@ -283,12 +293,17 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 }
 
 // The tab bar. MUS-D-0041 is owner-set: the phone bar has four tabs, decided
-// against a recommendation of three, and it still stands. Two of those four
-// surfaces do not exist yet, and a tab that goes nowhere would be an unbuilt
-// capability described as existing, which is a gate in workflow.md — so the bar
+// against a recommendation of three, and it still stands. A tab that goes
+// nowhere would be an unbuilt capability described as existing, so the bar
 // renders the built ones and grows as the rest arrive. Owner-confirmed as the
 // interim on MUS-Q-0012, which also corrected MUS-D-0053's claim that no bar
-// exists before milestone 4.
+// exists before milestone 4 — a pointer an earlier edit dropped, leaving the
+// superseded decision with nothing pointing at what superseded it.
+//
+// "Grows as the rest arrive" is a promise that has to be kept in every template
+// at once. Sessions arrived at milestone 4b and this bar did not grow, which
+// left three surfaces in one binary showing two, two and three tabs. A test
+// asserts they match.
 //
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
@@ -402,6 +417,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 {{end}}
 </main>
 <nav>
+  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
   <a href="/intake">Intake</a>
 </nav>

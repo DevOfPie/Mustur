@@ -4,14 +4,15 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-22 record(s), by identifier.
+26 record(s), by identifier.
 
 ## The queue
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
+| [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
-| [MUS-F-0002](#mus-f-0002) | One of the three promised open design questions is missing |  |  |
+| [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
 | [MUS-F-0004](#mus-f-0004) | The export and this repository's contract files hold the same records twice |  | unreviewed |
 | [MUS-F-0005](#mus-f-0005) | A seeded record's summary can drift from the prose it links to |  | unreviewed |
@@ -32,6 +33,29 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0020](#mus-f-0020) | A shallow clone made the history check pass for the wrong reason | CI run 32437277197 reported 28 ok, 0 waived where a full clone reports 27 ok, 1 waived | fixed 2026-08-21 |
 | [MUS-F-0021](#mus-f-0021) | The public hostname has no Access application in front of it | GET / returned 502 with no location or cf-access headers, read 2026-08-21 | resolved 2026-08-21 |
 | [MUS-F-0022](#mus-f-0022) | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |  | unreviewed |
+| [MUS-F-0023](#mus-f-0023) | Test for Mustur 2c |  | unreviewed |
+| [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… | Filed from a phone by the owner while proving milestone 2c's last clause. | fixed |
+| [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
+
+---
+
+## IDW-F-0001
+
+**Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox…**
+
+finding · 2026-08-23
+
+Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox under IDW rather than MUS.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | the jot names Idea inbox |
+| Filed by | whippy |
 
 ---
 
@@ -52,16 +76,19 @@ queue.md is a jot log with no evidence or review column, and the repository decl
 
 ## MUS-F-0002
 
-**One of the three promised open design questions is missing**
+**Pull request #1 promises three open design questions and the file marks two**
 
 finding · 2026-08-19
+
+Noticed by: [MUS-R-0001](routing.md#mus-r-0001)
 
 Pull request #1's body promises three open design questions in docs/ui-surfaces.md. The file marks two, on the composer and on records. The third is either unwritten or was retired without a note.
 
 | Field | Value |
 | --- | --- |
-| Noticed by | whippy |
-| Source | [docs/ui-surfaces.md](../docs/ui-surfaces.md) |
+| Source | pull request #1 |
+| Status | overtaken 2026-08-24 |
+| Since | Both questions the file still marked are now answered and it marks none: the composer's on MUS-D-0013 and MUS-Q-0034, records' earlier. The count was true when filed. An amend on 2026-08-24 moved this record's date to that day and dropped its provenance, which a review caught: amend replaces fields rather than merging them, and the export is the audit surface a reader checks without the binary. |
 
 ---
 
@@ -383,3 +410,64 @@ mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed thr
 | Routed to | DevOfPie/Mustur (MUS-R-0001) |
 | Routing | the jot names DevOfPie/Mustur |
 | Filed by | whippy |
+
+---
+
+## MUS-F-0023
+
+**Test for Mustur 2c**
+
+finding · 2026-08-22
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+Test for Mustur 2c
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | the jot names DevOfPie/Mustur |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0024
+
+**Mustur intake screen, the file button has no hover or press interaction so you cannot tell if…**
+
+finding · 2026-08-22
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+Mustur intake screen, the file button has no hover or press interaction so you cannot tell if it worked
+
+| Field | Value |
+| --- | --- |
+| Evidence | Filed from a phone by the owner while proving milestone 2c's last clause. |
+| Status | fixed |
+| Fix | The button now has :active and :hover states and a focus ring. A phone has no hover, so :active is the half that matters; its transition is zero-length so a quick tap cannot animate past the feedback. |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | the jot names DevOfPie/Mustur |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0025
+
+**Test**
+
+finding · 2026-08-22
+
+Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Test
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |

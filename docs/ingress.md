@@ -120,13 +120,38 @@ If Access is ever removed from the hostname, stop this first:
 systemctl --user disable --now mustur
 ```
 
-## What is still not demonstrable
+## The last sentence, demonstrated
 
-One sentence, and it is the milestone's own: *a jot from a phone lands in
-Mustur's findings-queue in seconds*. Only the owner can test it, because only
-the owner can get through Access.
+*A jot from a phone lands in Mustur's findings-queue in seconds, carries a
+routing hint where one is obvious, and defaults to the idea inbox where it is
+not.* Only the owner could test it, because only the owner gets through Access,
+and on **2026-08-22** they did — three jots from a phone, all three routed
+correctly:
 
-Everything under it is proven. A jot filed through the running service on
+| Jot | Text | Went to | Because |
+| --- | --- | --- | --- |
+| `MUS-F-0023` | "Test for Mustur 2c" | `DevOfPie/Mustur` | the jot names Mustur |
+| `MUS-F-0024` | the intake screen's file button has no hover or press state | `DevOfPie/Mustur` | the jot names Mustur |
+| `MUS-F-0025` | "Test" | Idea inbox (`MUS-P-0002`) | no destination is obvious |
+
+The third is the one that mattered, because it is the clause's default case and
+the only one a routing guess cannot get right by accident. It also read as
+mis-routed at first glance and was not — and the reason it read that way has
+since been fixed. Every record in the store then carried the `MUS-` prefix,
+which was the store's rather than the destination's; the owner's point was that
+this makes a store you have to open rather than one you can scan. A routing
+record now names its own prefix and intake files under it, so the next jot with
+no obvious home is `IDW-F-0001` and not a Mustur record at all
+([MUS-D-0093](../records/decisions.md#mus-d-0093)).
+
+`MUS-F-0025` keeps its identifier. It is the last jot filed under the old
+scheme, and renaming it would put an exception into the rule that makes every
+citation in this tree safe.
+
+`MUS-F-0024` is a real defect the owner noticed while proving the milestone,
+which is the surface working as intended in a second sense.
+
+Everything under it was already proven. A jot filed through the running service on
 loopback was routed by the guess to `DevOfPie/Mustur` and appeared in
 `records/findings.md` — the file the `findings` role is mapped at — without
 anybody running `make export`. That is `MUS-F-0022`, filed by the surface rather

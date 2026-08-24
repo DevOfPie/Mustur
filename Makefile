@@ -6,10 +6,10 @@
 
 SHELL := bash
 
-.PHONY: check check-links check-adoption shellcheck go-check verify-records conformance \
+.PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
         questions build serve seed export audit install install-service workflow-proposals help
 
-check: check-links check-adoption shellcheck go-check verify-records conformance questions ## Every commit gate this tree can enforce mechanically
+check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions ## Every commit gate this tree can enforce mechanically
 
 check-links: ## Tracked markdown: links and anchors resolve, table rows match their headers
 	@scripts/check-links.sh
@@ -17,8 +17,11 @@ check-links: ## Tracked markdown: links and anchors resolve, table rows match th
 check-adoption: ## strucgu.yaml parses, pins are exact, every mapped role path is tracked
 	@scripts/check-adoption.sh
 
-shellcheck: ## Tracked shell scripts pass shellcheck
-	@files=$$(git ls-files '*.sh'); \
+# Tracked *and* newly added: `git ls-files` alone lists neither, so a gate run
+# before `git add` passed over four new scripts and CI failed on all four. The
+# gate has to see what the commit will contain, not what the last one did.
+shellcheck: ## Shell scripts in the commit pass shellcheck
+	@files=$$(git ls-files -c -o --exclude-standard '*.sh'); \
 	if [ -z "$$files" ]; then \
 	  echo "  ok    no shell scripts"; \
 	else \
@@ -45,6 +48,15 @@ conformance: ## How many of StrucGu's fixture states this checker matched, out l
 questions: ## No open question was left unsurfaced as a prompt
 	@go run ./cmd/mustur questions --gate --records records \
 	  && echo "  ok    no open question in records/ was left unsurfaced"
+
+# go.mod said a directly imported package was `// indirect` for one commit, and
+# nothing noticed. An earlier version of this comment said "a whole milestone",
+# which was longer than the truth. The file that documents the dependency surface
+# is the one place a wrong claim about it should not survive.
+tidy-check: ## go.mod and go.sum are what the imports actually need
+	@go mod tidy -diff >/dev/null 2>&1 \
+	  && echo "  ok    go.mod matches the imports" \
+	  || { echo "  FAIL  go.mod is not tidy — run: go mod tidy"; go mod tidy -diff; exit 1; }
 
 verify-records: ## The committed export cites only identifiers it defines
 	@go run ./cmd/mustur verify --records records

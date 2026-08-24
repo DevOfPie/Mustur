@@ -110,6 +110,41 @@ func cmdAsk(args []string) error {
 	return nil
 }
 
+// stamped is the time a lifecycle verb records, and it is the clock rather than
+// whatever the caller typed.
+//
+// Every question raised in this repository up to 2026-08-24 records an answer
+// timestamped before the question existed — MUS-Q-0034 was created at 09:53 and
+// says it was answered at 09:00 — because the times were typed in by hand from
+// a conversation that had already happened. The record is what says surfacing
+// preceded the answer, and the gate leans on that; a field the writer chooses
+// cannot carry it.
+//
+// So `surfaced` and `answer` stamp the clock. A --at in the past is refused
+// rather than ignored, because silently overriding what somebody typed is how
+// the next person learns nothing. Backdating a question raised offline is the
+// use this gives up, and it has never happened. The owner took this on
+// MUS-Q-0037.
+func stamped(at string, now time.Time) (string, error) {
+	if strings.TrimSpace(at) == "" {
+		return now.Format("2006-01-02 15:04"), nil
+	}
+	when, err := time.ParseInLocation("2006-01-02 15:04", strings.TrimSpace(at), time.Local)
+	if err != nil {
+		when, err = time.ParseInLocation("2006-01-02", strings.TrimSpace(at), time.Local)
+		if err != nil {
+			return "", fmt.Errorf("--at %q is not a time this understands: use 2006-01-02 or 2006-01-02 15:04", at)
+		}
+	}
+	// A minute of slack, so a run that straddles the boundary is not refused
+	// for being a second stale.
+	if when.Before(now.Add(-time.Minute)) {
+		return "", fmt.Errorf("--at %s is in the past; this verb records when it ran, "+
+			"because a hand-set time cannot show that surfacing came before the answer", at)
+	}
+	return when.Format("2006-01-02 15:04"), nil
+}
+
 func cmdSurfaced(args []string) error {
 	fs := flag.NewFlagSet("surfaced", flag.ContinueOnError)
 	db := dbFlag(fs)
@@ -119,14 +154,15 @@ func cmdSurfaced(args []string) error {
 	if err != nil {
 		return err
 	}
-	if *at == "" {
-		*at = time.Now().Format("2006-01-02 15:04")
+	when, err := stamped(*at, time.Now())
+	if err != nil {
+		return err
 	}
 	return setField(*db, id, *actor, func(r *record.Record) error {
 		if r.Kind != question.Kind {
 			return fmt.Errorf("%s is a %s, not a question", r.ID, r.Kind)
 		}
-		question.MarkSurfaced(r, *at)
+		question.MarkSurfaced(r, when)
 		return nil
 	})
 }
@@ -145,8 +181,9 @@ func cmdAnswer(args []string) error {
 	if strings.TrimSpace(*answer) == "" && !*withdraw {
 		return fmt.Errorf("answer needs --answer, or --withdraw to close it without one")
 	}
-	if *at == "" {
-		*at = time.Now().Format("2006-01-02 15:04")
+	when, err := stamped(*at, time.Now())
+	if err != nil {
+		return err
 	}
 	return setField(*db, id, *actor, func(r *record.Record) error {
 		if r.Kind != question.Kind {
@@ -155,7 +192,7 @@ func cmdAnswer(args []string) error {
 		if *withdraw {
 			// Withdrawing your own question is honest: it is overtaken, or no
 			// longer worth asking, and the record keeps saying it was asked.
-			question.Withdraw(r, *at)
+			question.Withdraw(r, when)
 			return nil
 		}
 		// Answering your own is not. The owner's rule: the raiser may withdraw,
@@ -167,7 +204,7 @@ func cmdAnswer(args []string) error {
 				"If it is overtaken rather than answered, close it with --withdraw.",
 				r.ID, asker, *actor)
 		}
-		question.Answer(r, *answer, *at)
+		question.Answer(r, *answer, when)
 		dctx, cancel := context.WithTimeout(context.Background(), session.DeliverTimeout)
 		defer cancel()
 		question.Set(r, question.FieldDelivered,

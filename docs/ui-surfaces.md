@@ -1,15 +1,26 @@
 # Surfaces awaiting design
 
-**Two of these are built. Both were first written the way this file exists to
-prevent, and one has been put back.** Surface 5, intake, shipped at milestone 2c
-as a Go template — the layout decided in code and shown to the owner afterwards.
-Surface 4, the decision queue, shipped at milestone 3 the same way, from the
-brief below rather than from the published plan's artboard for it.
+**Four of these are built, and three of the four were first written the way this
+file exists to prevent.** Surface 5, intake, shipped at milestone 2c as a Go
+template — the layout decided in code and shown to the owner afterwards. Surface
+4, the decision queue, shipped at milestone 3 the same way, from the brief below
+rather than from the published plan's artboard for it. Surface 1, the composer,
+shipped at milestone 5 as a box inside another surface's page, with this file
+amended to say that was where it lived.
 
-That the second happened after the first was recorded is the part worth keeping:
-the record alone was not the safeguard. The owner's answer on MUS-Q-0010 was to
-rebuild the queue from its artboard, which is done. Intake is unchanged and
-still stands as built.
+Intake was the first and predates any such record. That the *other two*
+happened after one existed is the part worth keeping: **the record alone was not
+the safeguard, twice.** The owner's answer on
+MUS-Q-0010 was to rebuild the queue from its artboard, which is done; their
+answer on MUS-Q-0034, the same question about the same plan, was to rebuild the
+composer from its artboard, which is also done. Intake is unchanged and still
+stands as built.
+
+Surface 8, the session output, is the third. It is the first built from a
+drawing before anything existed to redraw — surface 4 was built from its brief
+at milestone 3 and rebuilt from the plan's artboard afterwards, which is a
+different order and was, until a review corrected this line, described here as
+though surface 8 got there first.
 
 **The standing instruction, which an earlier draft of this file deleted and a
 review caught:** the owner's answer after intake was to publish a plan for every
@@ -38,8 +49,9 @@ seven-surface plan does not draw it.
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
 published 2026-08-20. Eight artboards — intake as built and as proposed, plus
 the six then-unbuilt surfaces — the shell they share, and four open questions,
-which were answered 2026-08-20. Five of those six are still unbuilt; the
-decision queue is built, and is built from its artboard.
+which were answered 2026-08-20. Four of those six are still unbuilt; the
+decision queue is built from its artboard, and so, since milestone 5, is the
+composer.
 
 ## The constraints every surface inherits
 
@@ -61,10 +73,35 @@ by the browser, and reachable off the home network without a terminal.
 Must answer: which session am I talking to, and how do I switch without losing
 what I have typed? Drafts survive a dropped connection and a backgrounded phone.
 
-**Open question for design:** whether a message is composed against a chosen
-session, or composed first and routed second. The second matches how the owner
-actually works — the thought arrives before the destination is decided — and is
-harder.
+**Answered on 2026-08-19** as `MUS-D-0013`, *"The composer takes the thought
+first"*, taken at the evening design review against the published wireframes.
+This file went on calling it open until milestone 5 came to build it, and
+milestone 5's first attempt then attributed the answer to the surfaces plan on
+2026-08-20 — a plan published the day *after* the decision was recorded, whose
+four answered questions are Records, the tab bar, the routing guess and the
+audit. The composer is not among them. Getting that wrong is what let two thirds
+of the decision go unbuilt.
+
+`MUS-D-0013` has three clauses. Two are built and the third is declined:
+
+| Clause | How |
+| --- | --- |
+| Text before destination | The box is the screen; the route row is beneath it |
+| The route row defaults to the last active session | The adapter reads `session_activity` and the composer orders by it. Before this it was raw `tmux list-sessions` order, which is alphabetical, and the records described that as last-active |
+| The idea inbox is a route like any session… | Built. The inbox is a destination beside the sessions, and choosing it files a record under its own prefix rather than typing into anything |
+| …**folding intake into the composer** | **Declined** on [MUS-Q-0036](../records/questions.md#mus-q-0036). Intake is proven and fast from a locked phone and the reply box is where a person already is, so three surfaces can start a message and nothing is retired |
+
+**One draft, not one per session**, which follows from thought-first: what is
+being written is a thought, and where it goes is chosen after. A draft keyed per
+project would be lost at exactly the moment the design exists to protect. The
+composer and the session view's reply box share the one key.
+
+It is **not a fourth tab** — the four are Sessions, Decisions, Intake and
+Records (`MUS-D-0041`) — and it is reached from the session view. It **is** the
+second surface in this repository carrying script, which the owner took
+deliberately on `MUS-Q-0034`: a draft cannot survive a backgrounded phone
+without something running in the page. The form posts and works with the script
+blocked; the script keeps the draft and nothing else.
 
 ### 2. Session list
 
@@ -107,8 +144,8 @@ summarised.
 
 | Difference | Why |
 | --- | --- |
-| The tab bar carries two tabs, not four | Sessions and Records are not built, and a tab pointing at one would be an unbuilt capability described as existing. MUS-D-0041's four still stands; MUS-Q-0012 confirms this as its interim |
-| The banner on intake stays | It is the only route back from intake, which has no bar of its own yet. MUS-Q-0006 |
+| The tab bar carries three tabs, not four | Records is not built, and a tab pointing at it would be an unbuilt capability described as existing. Sessions joined at 4b. MUS-D-0041's four still stands; MUS-Q-0012 confirms this as its interim |
+| The banner on intake stays, beside the bar | They do different jobs: the bar is the fixed place the eye knows to check, the banner makes an open decision impossible to miss on whichever surface was opened. MUS-Q-0006 |
 | Every open question is on one page, not one per screen | The queue is short by construction. The drawing is a single-question screen and this is a list with a rule between entries; the earlier claim to be "one question per screen" was simply false of the code beneath it |
 | Options carry a radio | The drawing makes the card itself the selection. A radio is what a form can express without script, and the whole row is the control |
 | There is a free-text box under the options | The drawing has none. The owner wanting to say something the list does not contain is the case a list of options is worst at, and it must not be the case the surface refuses |
@@ -169,15 +206,39 @@ missed without the owner wondering whether walking into a lift killed the work.
 A session that has **ended** must not look like one that is merely quiet — that
 confusion is most of what this surface exists to prevent.
 
-**The one surface in v1 that carries a client layer.** A live terminal cannot be
-server-rendered. The stack table names this as the exception and keeps the rule
+**One of the two surfaces in v1 that carry a client layer**, and the only one
+with no alternative. A live terminal cannot be server-rendered. The stack table names this as the exception and keeps the rule
 for everything else; a second surface wanting script is a new decision, not a
 precedent.
 
+**Sub-agents arrived at milestone 4c**, and not by the route this file expected.
+They moved out of 4b on MUS-Q-0017 because showing them requires Mustur to know
+a sub-agent exists, and reading one pane does not tell it. What settled the
+question is [investigation 0002](investigations/0002-sub-agent-visibility.md),
+whose rule was fixed before the evidence was looked at.
+
+The adapter cannot place a sub-agent anywhere — a sub-agent is a call inside the
+CLI's one process, so there is no window to put it in. The CLI's lifecycle hooks
+say when one starts, which tool it is in, and when it stops, each tagged with an
+identifier the CLI supplies. Rows above the output are therefore attributed
+rather than inferred, and the pane is untouched. What they do not carry is a
+sub-agent's prose while it runs; that arrives when it finishes.
+
+**The connection is the first one that carries keystrokes in**, not only records
+out. A flaw here is not a wrong page; it is somebody else typing into an agent
+with a checkout and a shell. The WebSocket refuses any origin but its own —
+browsers exempt WebSockets from the same-origin policy and send cookies with the
+handshake, so Access authenticates the person and does nothing about a socket
+opened by a page they happened to visit.
+
 Its plan is
-[plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58) —
-four artboards, the transport, the wire format, and four open questions.
-Milestone 4b builds it from that drawing, not from this brief.
+[plan-6009f123020a4f58](https://plan.agent-native.com/plans/plan-6009f123020a4f58).
+Milestone 4b builds it from that drawing, not from this brief. The owner has
+settled the composer, the scrollback cap, what idle means, what supervision
+does, and — at 4c — how sub-agents are found and how much of one a row shows.
+Typing is not armed separately from watching — the owner settled that on
+MUS-Q-0018, "always writable, as drawn", and an edit for milestone 4c briefly
+listed it as open again. Nothing on this surface is open.
 
 ## Not surfaces
 

@@ -4,7 +4,7 @@
 
 What the project has promised to do, and what counts as done.
 
-9 record(s), by identifier.
+10 record(s), by identifier.
 
 ---
 
@@ -141,4 +141,23 @@ Done when: Its own verdict, not assumed here. The first project onboarded proves
 | Field | Value |
 | --- | --- |
 | Plan number | 7 |
+| Source | [Plan.md#milestones](../Plan.md#milestones) |
+
+---
+
+## MUS-M-0010
+
+**Sub-agents are visible**
+
+milestone · 2026-08-22
+
+Split from: [MUS-M-0006](#mus-m-0006)
+
+Raised by: [MUS-Q-0017](questions.md#mus-q-0017)
+
+Done when: A session that spawns sub-agents shows them as their own rows — what each was asked to do, how long it has run, the tool it is in, and one readable without losing the parent. It begins by establishing whether that is possible at all, with the decision rule fixed before the evidence is looked at, so that the verdict may be that it cannot be done. It was: the adapter cannot place a sub-agent, because a sub-agent is a call inside the CLI's one process. MUS-I-0002 settled the route as the CLI's lifecycle hooks, which leave the session a tmux pane.
+
+| Field | Value |
+| --- | --- |
+| Plan number | 4c |
 | Source | [Plan.md#milestones](../Plan.md#milestones) |

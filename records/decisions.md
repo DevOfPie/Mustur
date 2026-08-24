@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-73 record(s), by identifier.
+102 record(s), by identifier.
 
 ## Index
 
@@ -85,6 +85,35 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0071](#mus-d-0071) | The unit cannot have a private /tmp | 2026-08-21 |
 | [MUS-D-0072](#mus-d-0072) | v1 has eight surfaces, and the eighth was found by trying to build it | 2026-08-21 |
 | [MUS-D-0073](#mus-d-0073) | The standing instruction is what stopped 4b starting | 2026-08-21 |
+| [MUS-D-0074](#mus-d-0074) | Sub-agents are their own milestone, and it starts by finding out whether it is possible | 2026-08-21 |
+| [MUS-D-0075](#mus-d-0075) | The session composer is always writable | 2026-08-21 |
+| [MUS-D-0076](#mus-d-0076) | A session's exit is an event, not a record | 2026-08-21 |
+| [MUS-D-0077](#mus-d-0077) | A surface reachable only when it has something to say is not reachable | 2026-08-21 |
+| [MUS-D-0078](#mus-d-0078) | The reader lingers after the last viewer leaves | 2026-08-22 |
+| [MUS-D-0079](#mus-d-0079) | The buffer is seeded from the pane, not only from the pipe | 2026-08-22 |
+| [MUS-D-0080](#mus-d-0080) | A WebSocket library rather than hand-rolled framing | 2026-08-22 |
+| [MUS-D-0081](#mus-d-0081) | The origin check refuses a handshake with no Origin at all | 2026-08-22 |
+| [MUS-D-0082](#mus-d-0082) | The answer path is no longer the only caller, and the entries saying it is stay put | 2026-08-22 |
+| [MUS-D-0083](#mus-d-0083) | The idle timeout was a lie about the session | 2026-08-22 |
+| [MUS-D-0084](#mus-d-0084) | A viewer that falls behind is disconnected, not quietly starved | 2026-08-22 |
+| [MUS-D-0085](#mus-d-0085) | The bar grows in three templates, not one | 2026-08-22 |
+| [MUS-D-0086](#mus-d-0086) | The exit is logged, and supervision only runs while somebody is watching | 2026-08-22 |
+| [MUS-D-0087](#mus-d-0087) | Sub-agents are found through the CLI's lifecycle hooks, not by placing them | 2026-08-22 |
+| [MUS-D-0088](#mus-d-0088) | The pane is kept, and the structured-output route is recorded rather than taken | 2026-08-22 |
+| [MUS-D-0089](#mus-d-0089) | A row shows what a documented interface carries, and no more | 2026-08-22 |
+| [MUS-D-0090](#mus-d-0090) | A task is paired to a sub-agent by order, inside a measured window | 2026-08-22 |
+| [MUS-D-0091](#mus-d-0091) | The adapter is vendor-neutral except where a capability belongs to one vendor | 2026-08-22 |
+| [MUS-D-0092](#mus-d-0092) | Sub-agent rows are pushed down the session socket | 2026-08-22 |
+| [MUS-D-0093](#mus-d-0093) | A jot's identifier prefix comes from where it routes, not from the store | 2026-08-22 |
+| [MUS-D-0094](#mus-d-0094) | The session surface is served only when asked for | 2026-08-23 |
+| [MUS-D-0095](#mus-d-0095) | The session surface is published, and Access is the reason it can be | 2026-08-23 |
+| [MUS-D-0096](#mus-d-0096) | Multi-line reaches a session as a bracketed paste, not as keystrokes | 2026-08-23 |
+| [MUS-D-0097](#mus-d-0097) | One draft, not one per session | 2026-08-23 |
+| [MUS-D-0098](#mus-d-0098) | Correcting MUS-D-0096: the answer path is not limited to one line | 2026-08-24 |
+| [MUS-D-0099](#mus-d-0099) | The composer is surface 1, built from its artboard, and the second surface carrying script | 2026-08-24 |
+| [MUS-D-0100](#mus-d-0100) | MUS-D-0013's fold clause is declined, and the records stop saying it is built | 2026-08-24 |
+| [MUS-D-0101](#mus-d-0101) | A question's lifecycle times come from the clock | 2026-08-24 |
+| [MUS-D-0102](#mus-d-0102) | The composer is served whether or not sessions are | 2026-08-24 |
 
 ---
 
@@ -1210,3 +1239,413 @@ The owner's answer after intake was that a plan is published for every remaining
 | Field | Value |
 | --- | --- |
 | Rationale | [decisions.md#the-standing-instruction-is-what-stopped-4b-starting](../decisions.md#the-standing-instruction-is-what-stopped-4b-starting) |
+
+---
+
+## MUS-D-0074
+
+**Sub-agents are their own milestone, and it starts by finding out whether it is possible**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0017](questions.md#mus-q-0017)
+
+Every option for showing sub-agents was really an option for finding out about them, because Mustur reads one pane and sub-agents are the CLI's internal business. The owner split them out of 4b into 4c. What makes that the right shape rather than a deferral is the verdict it permits: 4c's first unit establishes whether the CLI will let the adapter place a sub-agent where it can be read separately, and if it will not, the verdict is that it cannot be done. Parsing the pane would have produced a list that was sometimes wrong, and a wrong status reads as a fact once it is on a screen — the same failure the owner declined on MUS-Q-0005.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#sub-agents-are-their-own-milestone-and-it-starts-by-finding-out-whether-it-is-possible](../decisions.md#sub-agents-are-their-own-milestone-and-it-starts-by-finding-out-whether-it-is-possible) |
+
+---
+
+## MUS-D-0075
+
+**The session composer is always writable**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0018](questions.md#mus-q-0018)
+
+Read and write share one connection. The alternative was read-only until armed per session, so a tab left open in a pocket could not type; the owner chose always writable, keeping the embedded composer's one tap from watching a session to answering it. The cost is that the WebSocket origin check and the Access policy's scope are the only things between a stranger and an agent's input, with no second layer behind them. The origin check is therefore the control rather than a hardening detail, and confirming the Access policy admits nobody wider is urgent rather than tidy.
+
+| Field | Value |
+| --- | --- |
+| Not taken | Read-only by default with an explicit unlock, and arming by device |
+| Rationale | [decisions.md#the-session-composer-is-always-writable](../decisions.md#the-session-composer-is-always-writable) |
+
+---
+
+## MUS-D-0076
+
+**A session's exit is an event, not a record**
+
+decision · 2026-08-21
+
+Raised by: [MUS-Q-0019](questions.md#mus-q-0019)
+
+Supervision reports an exit on the surface and in the service log, and writes nothing into records/. It follows the line already drawn around session output: not addressable, not exported, not a record. A finding for every non-zero exit fills the findings queue with noise the first time something is flaky, and a records tree nobody reads is worse than one that is missing something.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-sessions-exit-is-an-event-not-a-record](../decisions.md#a-sessions-exit-is-an-event-not-a-record) |
+
+---
+
+## MUS-D-0077
+
+**A surface reachable only when it has something to say is not reachable**
+
+decision · 2026-08-21
+
+Corrects: [MUS-D-0053](#mus-d-0053)
+
+The decision queue's only route from intake was the banner, which renders when something is open. With every question answered the banner was absent, so loading the site gave the intake box and no way to reach anything else. The owner found it by loading the site; it had been recorded as a queue line during the milestone 4a review and not acted on, which is the second time on this stack that a record was mistaken for a safeguard. The fix is MUS-D-0041 applied where it had not been yet: the bar carries the surfaces that are built and grows as the rest arrive. The banner stays beside it rather than being replaced, which is the pair MUS-D-0041 argued for.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable](../decisions.md#a-surface-reachable-only-when-it-has-something-to-say-is-not-reachable) |
+
+---
+
+## MUS-D-0078
+
+**The reader lingers after the last viewer leaves**
+
+decision · 2026-08-22
+
+The plan said pipe-pane is opened when the first viewer arrives and closed when the last leaves. One owner with one phone is the last viewer, so closing the reader on disconnect throws away the buffer and the byte offsets and a reconnect resumes from zero — which is exactly the clause the milestone exists for. The reader stays open two minutes after the last viewer leaves; a reconnect inside that window is continuous.
+
+| Field | Value |
+| --- | --- |
+| Found by | Building it. The reconnect test resumed at 0 having asked for 15 |
+| Rationale | [decisions.md#the-reader-lingers-after-the-last-viewer-leaves](../decisions.md#the-reader-lingers-after-the-last-viewer-leaves) |
+
+---
+
+## MUS-D-0079
+
+**The buffer is seeded from the pane, not only from the pipe**
+
+decision · 2026-08-22
+
+pipe-pane carries output produced after it is enabled and nothing before it, so the first viewer of a session that has been running for an hour opened an empty screen and waited. capture-pane supplies the scrollback tmux already keeps, taken once before the first byte off the pipe so the buffer reads in order.
+
+| Field | Value |
+| --- | --- |
+| Found by | A test that watched a session which had already finished printing, and saw nothing |
+| Rationale | [decisions.md#the-buffer-is-seeded-from-the-pane-not-only-from-the-pipe](../decisions.md#the-buffer-is-seeded-from-the-pane-not-only-from-the-pipe) |
+
+---
+
+## MUS-D-0080
+
+**A WebSocket library rather than hand-rolled framing**
+
+decision · 2026-08-22
+
+coder/websocket: pure Go, no transitive dependencies, so the static binary stays static. The alternative was implementing RFC 6455 here — masking, fragmentation, close handshakes. On the one path in this project that carries keystrokes into an agent, a vetted implementation beats a hand-written one, and the owner named the connection's security a first-order concern the same day.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-websocket-library-rather-than-hand-rolled-framing](../decisions.md#a-websocket-library-rather-than-hand-rolled-framing) |
+
+---
+
+## MUS-D-0081
+
+**The origin check refuses a handshake with no Origin at all**
+
+decision · 2026-08-22
+
+Browsers always send Origin on a WebSocket handshake, so its absence means the client is not a browser, and a non-browser client has no business on the path that types into an agent. The check compares the origin's host to the request's own. Access authenticates the person and says nothing about which page opened the socket; browsers exempt WebSockets from the same-origin policy while still sending cookies with the handshake. Without this, a page the owner merely visited could open a socket on their authenticated session and type into an agent.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-origin-check-refuses-a-handshake-with-no-origin-at-all](../decisions.md#the-origin-check-refuses-a-handshake-with-no-origin-at-all) |
+
+---
+
+## MUS-D-0082
+
+**The answer path is no longer the only caller, and the entries saying it is stay put**
+
+decision · 2026-08-22
+
+Corrects: [MUS-D-0063](#mus-d-0063)
+
+Raised by: [MUS-Q-0018](questions.md#mus-q-0018)
+
+MUS-D-0063 named three limits on typing into an agent and called them enforced rather than documented; MUS-D-0070 removed an operator verb specifically to keep the third true. The session composer is a second caller, taking arbitrary text with no owner-answered framing. The capability is the owner's, taken on MUS-Q-0018; both earlier entries are append-only and could not be edited, so this is the correction. One of the three limits survives — the ownership option, the one enforced in code — and the other two are now true of the answer path and not of the surface.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-answer-path-is-no-longer-the-only-caller-and-the-entries-saying-it-is-stay-put](../decisions.md#the-answer-path-is-no-longer-the-only-caller-and-the-entries-saying-it-is-stay-put) |
+
+---
+
+## MUS-D-0083
+
+**The idle timeout was a lie about the session**
+
+decision · 2026-08-22
+
+Raised by: [MUS-Q-0022](questions.md#mus-q-0022)
+
+Corrects: [MUS-D-0075](#mus-d-0075)
+
+The socket's idle timer was created once and never reset, so thirty minutes after a tab opened it sent ended and closed whatever the session was doing. The client then said Nothing is running about a session that was, disabled the composer, and did not reconnect. It resets on output or typing now, and a genuinely idle socket gets an ordinary close the client treats as a disconnect. That also repairs MUS-D-0075's stated reason for an always-writable composer — a tab left open in a pocket could not type after thirty minutes, which was not the argument anybody made.
+
+| Field | Value |
+| --- | --- |
+| Found by | The milestone 4b review, measured with a ten-second build against a session printing every 200ms |
+| Rationale | [decisions.md#the-idle-timeout-was-a-lie-about-the-session](../decisions.md#the-idle-timeout-was-a-lie-about-the-session) |
+
+---
+
+## MUS-D-0084
+
+**A viewer that falls behind is disconnected, not quietly starved**
+
+decision · 2026-08-22
+
+The fan-out skipped a viewer whose buffer was full. Go discards the new item, so that viewer kept receiving a contiguous but ever-staler prefix with no sequence jump for anything to notice — measured 8 MB behind with zero holes and zero notice, under a comment claiming the viewer would resume from its own sequence, which nothing implemented. Closing the channel ends that socket and the client reconnects from the offset it reached.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#a-viewer-that-falls-behind-is-disconnected-not-quietly-starved](../decisions.md#a-viewer-that-falls-behind-is-disconnected-not-quietly-starved) |
+
+---
+
+## MUS-D-0085
+
+**The bar grows in three templates, not one**
+
+decision · 2026-08-22
+
+Corrects: [MUS-D-0057](#mus-d-0057)
+
+MUS-D-0057 says the bar renders the built surfaces and grows as the rest arrive. Sessions arrived, the session page rendered three tabs, and the other two surfaces went on rendering two — three different bars in one binary, and the promise was made in the file that did not keep it. A promise kept in three templates at once needs a test that reads all three. Same shape as the queue being reachable from intake only when it had something to say: a rule stated in one place and implemented in one place, while the rule was about every place.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-bar-grows-in-three-templates-not-one](../decisions.md#the-bar-grows-in-three-templates-not-one) |
+
+---
+
+## MUS-D-0086
+
+**The exit is logged, and supervision only runs while somebody is watching**
+
+decision · 2026-08-22
+
+stream.go claimed an exit is reported on the surface and in the log before anything logged anything; it does now. The limitation underneath is stated rather than fixed quietly: the reader is started by a viewer, so a session nobody has looked at is not being watched, and an exit is noticed when a tab is open on it or not at all. Watching every owned session would mean polling tmux continuously for sessions nobody is reading, and that trade has not been made.
+
+| Field | Value |
+| --- | --- |
+| Rationale | [decisions.md#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching](../decisions.md#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching) |
+
+---
+
+## MUS-D-0087
+
+**Sub-agents are found through the CLI's lifecycle hooks, not by placing them**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0024](questions.md#mus-q-0024)
+
+from: [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002)
+
+The adapter cannot place a sub-agent anywhere: it is a call inside the CLI's one process, so there is no window for tmux to hold. SubagentStart and SubagentStop carry an agent_id, and a tool-use hook carries the same id when the call happens inside a sub-agent, so rows are attributed by an identifier the CLI supplies rather than inferred from the pane. The hook is passed as a --settings JSON string on the command line Start already builds: nothing is written to the owner's configuration or into the checkout, and a session started by hand carries no hook and shows no sub-agents.
+
+---
+
+## MUS-D-0088
+
+**The pane is kept, and the structured-output route is recorded rather than taken**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0027](questions.md#mus-q-0027)
+
+from: [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002)
+
+stream-json with --forward-subagent-text carries every property the rule asked for, is fully documented, and was verified end to end including a session held open on --input-format stream-json that accepted a second message. It requires --print, which is not a terminal. Taking it would stop a Mustur session being something the owner can attach to and would rebuild 4a and 4b around a JSON harness. Recorded so it is findable if the pane is ever given up for other reasons.
+
+---
+
+## MUS-D-0089
+
+**A row shows what a documented interface carries, and no more**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0025](questions.md#mus-q-0025)
+
+What a sub-agent was asked to do, how long it has run, the tool it is in, and its output once it finishes. Full prose while it runs exists in a per-agent transcript at a path the CLI documents nowhere and hands over only at SubagentStop; depending on it was declined. Reading a sub-agent mid-flight means opening the parent pane, which is still there.
+
+---
+
+## MUS-D-0090
+
+**A task is paired to a sub-agent by order, inside a measured window**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0026](questions.md#mus-q-0026)
+
+No documented field connects the parent's launching call to the sub-agent it produced. Pairing by spawn order was adopted without asking, and a reviewer showed it mislabels: a launch that never produced a sub-agent left its description for the next one. The bound is thirty seconds, from the nine launch-to-start pairs in the harness captures, which run from 1.563s to 5.985s — the owner said 'a few seconds' and the measurement says a few seconds would have stripped the label off rows that were right. It narrows the window and does not close it; a start with nothing left to claim carries no task at all.
+
+---
+
+## MUS-D-0091
+
+**The adapter is vendor-neutral except where a capability belongs to one vendor**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0028](questions.md#mus-q-0028)
+
+The adapter runs whatever CLI the owner configured and has no default of its own. The hook interface belongs to one of them, so Start appends the hook flags only to a command whose program is that CLI and leaves anything else exactly as given. The boundary stops being described as absolute rather than being quietly crossed; the failure mode is a session that starts normally and shows no sub-agent rows.
+
+---
+
+## MUS-D-0092
+
+**Sub-agent rows are pushed down the session socket**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0029](questions.md#mus-q-0029)
+
+The owner chose live rows over a page reload, against the recommendation to leave them static. The server polls the hook's log on a two-second ticker, skips the parse when the file's size and modification time have not moved, and sends a frame only when the rows differ. Ages are not sent: each row carries its start and end stamps and the client counts, so a running sub-agent's clock moves without a frame per second to move it. This is the one thing the surface's client layer models that is not the terminal.
+
+---
+
+## MUS-D-0093
+
+**A jot's identifier prefix comes from where it routes, not from the store**
+
+decision · 2026-08-22
+
+answers: [MUS-Q-0030](questions.md#mus-q-0030)
+
+and: [MUS-Q-0031](questions.md#mus-q-0031)
+
+and grandfathering: [MUS-Q-0032](questions.md#mus-q-0032)
+
+Intake stamped the store's prefix on every jot at creation, so a jot routed to the idea inbox was called MUS-F-0025 and read as a Mustur record. The routing record now names its own prefix and intake files under it: the idea inbox's is IDW, for IdeaWarehouse, so a record keeps its identifier when that project is finally onboarded rather than being renamed into it. A routing record whose prefix is not three upper-case letters is ignored and the store's prefix used, because wrong in a way somebody can see beats an identifier the scheme cannot parse. Narrow on purpose: only the one target that exists carries a prefix, and generalising it to every routing target is milestone 7's, which is where the second project's cases will be real. MUS-F-0025 keeps its identifier — the permanence rule is what makes citations safe, and one misleading prefix on a test jot is a smaller cost than an exception to it.
+
+---
+
+## MUS-D-0094
+
+**The session surface is served only when asked for**
+
+decision · 2026-08-23
+
+answers: [MUS-Q-0033](questions.md#mus-q-0033)
+
+Everything else this binary serves reads records or files a jot; the session surface writes into a running agent's stdin. Publishing it should be an act rather than a consequence of deploying an unrelated fix that shipped in the same binary, which is exactly what the idea-inbox prefix would otherwise have done. serve takes --sessions, default off; when it is off the routes are not registered and the other surfaces offer no tab, because a tab that goes nowhere is an unbuilt capability described as existing. The deployed unit does not pass the flag, so mustur.devofpie.com is records, routing and intake until the owner has confirmed the Access policy admits only their identity.
+
+---
+
+## MUS-D-0095
+
+**The session surface is published, and Access is the reason it can be**
+
+decision · 2026-08-23
+
+follows: [MUS-Q-0033](questions.md#mus-q-0033)
+
+and: [MUS-Q-0018](questions.md#mus-q-0018)
+
+The owner confirmed the Cloudflare Access policy admits only their identity, which was the condition MUS-Q-0033 attached to publishing a surface that types into a running agent's stdin. The half a machine can check was checked rather than assumed: every path on mustur.devofpie.com — /, /intake, /questions, /mcp, /healthz, /sessions and the WebSocket path /sessions/{project}/ws — answers an unauthenticated request with a 302 to killerofpie.cloudflareaccess.com carrying auth_status NONE and no service token, so nothing reaches the origin unauthenticated and the socket path is covered rather than merely adjacent to something that is. Who the policy admits is visible only to the owner, and is theirs. The unit now passes --sessions; per MUS-Q-0018 the origin check and the Access policy's scope remain the whole of the defence, with no second layer behind them.
+
+---
+
+## MUS-D-0096
+
+**Multi-line reaches a session as a bracketed paste, not as keystrokes**
+
+decision · 2026-08-23
+
+A newline typed into a terminal is Enter, and Enter in an agent's composer submits, so the obvious path turns a three-line draft into three prompts. Measured against Claude Code, send-keys -l with embedded newlines does land every line in the composer — the TUI treats one burst as a paste — but that is the CLI inferring intent from timing, and a write that arrives split is a message submitted halfway through. Send now uses set-buffer plus paste-buffer -p for anything containing a newline, which states that it is text rather than leaving it to be guessed, and -d drops the buffer so a draft does not outlive its delivery in tmux's paste stack. Single-line text still goes as keystrokes: that is the answer-delivery path milestone 4a shipped, and it has behaviour behind it that this change has no reason to disturb. set-buffer rather than load-buffer because the buffer content arrives as an argument, so the runner needs no stdin and the owner's prose is never written to a temp file.
+
+---
+
+## MUS-D-0097
+
+**One draft, not one per session**
+
+decision · 2026-08-23
+
+The composer keeps a single draft in the browser under one key, restored on whichever session page is open. What is being written is a thought; which session it goes to is a separate choice that can change after it is written, which is what thought-first composition means. A draft keyed per project would be lost at exactly the moment the design exists to protect — the owner deciding mid-sentence that this belongs somewhere else. It is written on every keystroke rather than on unload, because a backgrounded phone need never deliver another event. Where the browser refuses to store it, typing still works and nothing is kept.
+
+---
+
+## MUS-D-0098
+
+**Correcting MUS-D-0096: the answer path is not limited to one line**
+
+decision · 2026-08-24
+
+corrects: [MUS-D-0096](#mus-d-0096)
+
+and: [MUS-D-0063](#mus-d-0063)
+
+MUS-D-0096 said single-line text still goes as keystrokes because that is the answer-delivery path milestone 4a shipped. Nothing constrains an answer to one line: Text() only trims, so an answer containing interior newlines takes the paste branch. MUS-D-0063's claim that an answer is sent with -l, literally, so a body tmux would read as a key name arrives as characters, is therefore true of single-line answers and not of all of them. Neither entry could be edited, so this one carries the correction. The behaviour is right either way — a multi-line answer should arrive as one message — but the records described a narrower rule than the code follows.
+
+---
+
+## MUS-D-0099
+
+**The composer is surface 1, built from its artboard, and the second surface carrying script**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0034](questions.md#mus-q-0034)
+
+and: [MUS-Q-0035](questions.md#mus-q-0035)
+
+from: [MUS-D-0013](#mus-d-0013)
+
+Milestone 5 first built the composer as a box inside the session view, amended surface 1's brief to say that was where it lived, and attributed the design answer to a plan published the day after the decision was actually taken. The decision is MUS-D-0013, 2026-08-19, from the evening design review against the wireframes; two of its three clauses had gone unbuilt and unrecorded. The owner declined the widget on MUS-Q-0034, for the reason already given on MUS-Q-0010 — a plan agents route around is not a plan — and asked for both dropped clauses on MUS-Q-0035. The composer is now its own screen: the box first, the route row beneath it defaulting to the last active session, and the idea inbox among the routes so that a jot and a message to an agent are one gesture. It is the second surface in this repository carrying script, taken deliberately rather than by accident, and bounded: the form posts and works with the script blocked, which keeps the draft and nothing else. The session view keeps its reply box, so two surfaces can now start a message; whether the intake box itself is retired is not decided here.
+
+---
+
+## MUS-D-0100
+
+**MUS-D-0013's fold clause is declined, and the records stop saying it is built**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0036](questions.md#mus-q-0036)
+
+declines part of: [MUS-D-0013](#mus-d-0013)
+
+MUS-D-0013's third clause asks that the idea inbox be a route like any session, which folds intake into the composer instead of keeping two capture muscles. The route is built; the fold is not. Three surfaces can start a message — the composer, the session view's reply box, and the intake box — and the builder shipped all three while recording it in queue.md as a conflict reported rather than picked, which a reviewer showed was itself the picking. The owner has now declined the fold on MUS-Q-0036: intake is proven and fast from a locked phone, the reply box is where a person already is, and nothing is retired. What was wrong was the claim, not the shape: two files asserted that all three clauses were built while two other files written in the same commit said a message can be started in three places.
+
+---
+
+## MUS-D-0101
+
+**A question's lifecycle times come from the clock**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0037](questions.md#mus-q-0037)
+
+Every question raised in this repository up to 2026-08-24 records an answer timestamped before the question existed — MUS-Q-0034 was created at 09:53 and says it was answered at 09:00 — because the times were typed by hand from a conversation that had already happened. make check could not see it: the gate requires the Surfaced field to be non-empty and nothing more, so the record it leans on hardest was not evidence of the thing it is kept for. surfaced and answer now stamp the clock and refuse a --at in the past rather than silently overriding it. The records already carrying impossible times are left as they are, with this entry as the correction; backdating a question raised offline is the use this gives up, and it has never happened.
+
+---
+
+## MUS-D-0102
+
+**The composer is served whether or not sessions are**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0038](questions.md#mus-q-0038)
+
+The composer was registered behind --sessions on the reasoning that it can type into a running agent. It also files jots, so with the flag off — the default, and the live service's posture until 2026-08-23 — the idea-inbox route the owner asked for was unreachable: a capture surface depending on a security switch. It is now always served, and offers sessions only when sessions are served, so with the flag off it has one destination and nothing it offers can reach an agent. The gating had been taken without asking and recorded only in a code comment.
