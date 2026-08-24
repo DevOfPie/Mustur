@@ -420,6 +420,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
   <a href="/intake">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 </body>
 </html>

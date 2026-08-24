@@ -424,6 +424,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   <a href="/sessions">Sessions</a>
   <a href="/questions">Decisions</a>
   <a href="/intake">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 {{if not .None}}<script src="/assets/compose.js"></script>{{end}}
 </body>

@@ -595,6 +595,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <a href="/sessions" class="here">Sessions</a>
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 {{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
 </body>

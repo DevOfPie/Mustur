@@ -499,6 +499,12 @@ func cmdServe(args []string) error {
 	}
 	compose.Routes(mux)
 
+	// The records document, which is the fourth tab and milestone 6's subject.
+	// Served unconditionally: it reads what the store already holds, and it is
+	// the one surface that is useful before anything else is configured.
+	records := &web.Records{Store: s, Project: *project}
+	records.Routes(mux)
+
 	// Sign-in is served whenever an origin is configured, whether or not
 	// enforcement is on: somebody has to be able to register a passkey before
 	// the guard can be turned on without locking everybody out.
@@ -529,8 +535,8 @@ func cmdServe(args []string) error {
 		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
-		version, n, *db, *addr, *addr, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  records    http://%s/records\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
+		version, n, *db, *addr, *addr, *addr, *addr)
 	if *withSessions {
 		fmt.Printf("  sessions   http://%s/sessions  — this one can type into a running agent\n", *addr)
 		fmt.Printf("  compose    http://%s/compose   — and so can this one\n", *addr)

@@ -340,6 +340,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake" class="here">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 </body>
 </html>
