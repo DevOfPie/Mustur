@@ -4,7 +4,7 @@ Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
-yet accepted; 5 is built and not yet reviewed.**
+yet accepted; 5 is built, reviewed twice and rebuilt after the first review.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
@@ -34,10 +34,16 @@ rides in on the command line Mustur builds.
 a loop. Nothing below milestone 5 is built; do not describe any of it in the
 present tense.
 
-The session view is the **only** page in this repository that carries script.
-Every other surface is server-rendered with nothing to fetch, and that is the
-rule; a second surface wanting a client layer is a new decision, not a
-precedent.
+**Two pages carry script**: the session view and the composer. Every other
+surface is server-rendered with nothing to fetch, and that is still the rule —
+the second was a decision the owner took on
+[MUS-Q-0034](records/questions.md#mus-q-0034), not a precedent set by building
+it. A third is a new decision again.
+
+The two are not the same kind of exception. The session view cannot be
+server-rendered at all: it is a live terminal. The composer can be, and is —
+its form posts and works with the script blocked; what the script adds is the
+draft, which cannot survive a backgrounded phone any other way.
 
 **A session left running in a terminal is invisible to Mustur and will not
 become visible.** Mustur starts sessions and never attaches to one it did not.

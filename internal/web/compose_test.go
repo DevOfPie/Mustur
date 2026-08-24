@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -42,6 +44,27 @@ func itoa(n int64) string {
 		n /= 10
 	}
 	return string(b)
+}
+
+// post sends a form the way a browser does, with an Origin. The surface refuses
+// a post that will not say where it came from, for the reason the session
+// socket does: this path types into a running agent.
+func post(t *testing.T, srv *httptest.Server, form url.Values) *http.Response {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodPost, srv.URL+"/compose", strings.NewReader(form.Encode()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Origin", srv.URL)
+	client := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}}
+	res, err := client.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return res
 }
 
 func serveCompose(t *testing.T, listing string, withInbox bool) (*httptest.Server, *store.Store) {
@@ -134,13 +157,10 @@ func TestComposingToTheInboxFilesARecord(t *testing.T) {
 	now := time.Date(2026, 8, 24, 12, 0, 0, 0, time.UTC)
 	srv, st := serveCompose(t, active("mustur/Mustur", now), true)
 
-	res, err := srv.Client().PostForm(srv.URL+"/compose", url.Values{
+	res := post(t, srv, url.Values{
 		"text": {"a thought with no obvious home\nand a second line"},
 		"to":   {"MUS-P-0002"},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 	defer res.Body.Close()
 
 	findings, err := st.List(context.Background(), "finding")
@@ -207,32 +227,87 @@ func TestAFailedSendReturnsTheDraft(t *testing.T) {
 	// A listing with no sessions at all: the destination cannot be reached.
 	srv, _ := serveCompose(t, "", true)
 
-	client := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
-		return http.ErrUseLastResponse
-	}}
-	res, err := client.PostForm(srv.URL+"/compose", url.Values{
+	res := post(t, srv, url.Values{
 		"text": {"words that must not be lost"},
 		"to":   {"NoSuchSession"},
 	})
+	defer res.Body.Close()
+
+	body := make([]byte, 16384)
+	n, _ := res.Body.Read(body)
+	page := string(body[:n])
+
+	// Rendered, not redirected: the draft used to travel in the Location URL,
+	// where it lands in browser history and in the edge's logs.
+	if loc := res.Header.Get("Location"); strings.Contains(loc, "draft=") {
+		t.Errorf("the draft is in a redirect URL: %q", loc)
+	}
+	if !strings.Contains(page, "words that must not be lost") {
+		t.Error("a failed send did not put the text back in the box")
+	}
+	if !strings.Contains(page, "Not sent:") {
+		t.Error("a failed send did not say why")
+	}
+	_ = now
+}
+
+// A post that will not say where it came from is refused, as it is on the
+// socket. This path writes into a running agent's stdin.
+func TestComposePostRefusesACrossOriginForm(t *testing.T) {
+	now := time.Date(2026, 8, 24, 12, 0, 0, 0, time.UTC)
+	srv, _ := serveCompose(t, active("mustur/Mustur", now), true)
+
+	req, err := http.NewRequest(http.MethodPost, srv.URL+"/compose",
+		strings.NewReader(url.Values{"text": {"x"}, "to": {"Mustur"}}.Encode()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Origin", "https://evil.example")
+	res, err := srv.Client().Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer res.Body.Close()
-	loc := res.Header.Get("Location")
-	if !strings.Contains(loc, "draft=") {
-		t.Fatalf("a failed send did not carry the draft back: %q", loc)
+	if res.StatusCode != http.StatusForbidden {
+		t.Errorf("a cross-origin post returned %d, want 403", res.StatusCode)
 	}
-	if !strings.Contains(loc, "error=") {
-		t.Errorf("a failed send did not say why: %q", loc)
+}
+
+// A destination that is no longer there does not quietly become another one.
+func TestAVanishedDestinationIsNamedRatherThanReplaced(t *testing.T) {
+	now := time.Date(2026, 8, 24, 12, 0, 0, 0, time.UTC)
+	srv, _ := serveCompose(t, active("mustur/Mustur", now), true)
+
+	body := getFrom(t, srv, "/compose?to=GoneAway")
+	if !strings.Contains(body, "GoneAway is no longer a destination") {
+		t.Error("a destination that vanished was replaced without saying so")
 	}
-	u, err := url.Parse(loc)
-	if err != nil {
-		t.Fatal(err)
+}
+
+// A project name with a hyphen is a session, not a routing identifier.
+//
+// `strings.Contains(to, "-")` decided that, and project names admit hyphens, so
+// a session called TradeShop-Support rendered as a destination and could never
+// be sent to.
+func TestAHyphenatedProjectIsASession(t *testing.T) {
+	now := time.Date(2026, 8, 24, 12, 0, 0, 0, time.UTC)
+	srv, _ := serveCompose(t, active("mustur/TradeShop-Support", now), true)
+
+	body := getFrom(t, srv, "/compose")
+	if !strings.Contains(body, "TradeShop-Support") {
+		t.Fatal("a hyphenated project is not offered as a destination")
 	}
-	if got := u.Query().Get("draft"); got != "words that must not be lost" {
-		t.Errorf("the draft came back as %q", got)
+
+	res := post(t, srv, url.Values{"text": {"a message"}, "to": {"TradeShop-Support"}})
+	defer res.Body.Close()
+	page := make([]byte, 16384)
+	n, _ := res.Body.Read(page)
+	// The fake runner cannot deliver, so this fails — but it must fail as a
+	// session that could not be reached, never as an unknown routing record.
+	if strings.Contains(string(page[:n]), "is not a destination this registry holds") {
+		t.Error("a hyphenated project name was taken for a routing identifier")
 	}
-	_ = now
 }
 
 // Nowhere to send is its own page, not a form that always fails.
@@ -247,5 +322,74 @@ func TestNowhereToSendSaysSo(t *testing.T) {
 	}
 	if strings.Contains(body, "<script") {
 		t.Error("the client layer loads on a page with nothing for it to do")
+	}
+}
+
+// The composer's own path into a running session, against real tmux.
+//
+// Nothing exercised it. `Plan.md` and the work unit both said "multi-line left
+// the composer over a real WebSocket" — but the composer has no socket, it is a
+// form POST, and the test they meant drives the session view's reply box. The
+// composer's delivery was credited with another surface's proof, which is the
+// first review pass's own finding reproduced inside the record rewritten to fix
+// it.
+func TestMultiLineFromTheComposeSurfaceReachesTheSession(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	got := filepath.Join(dir, "received.txt")
+	a := &session.Adapter{}
+	project := "zzComposeSurface"
+
+	if _, err := a.Start(context.Background(), project, dir, "sh -c 'cat > "+got+"'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	c := &Compose{Adapter: a, Project: "MUS", Actor: "pie"}
+	mux := http.NewServeMux()
+	c.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	// The destination has to be offered before it can be chosen: this is the
+	// whole surface, not just its send path.
+	if body := getFrom(t, srv, "/compose"); !strings.Contains(body, project) {
+		t.Fatalf("the running session is not offered as a destination")
+	}
+
+	res := post(t, srv, url.Values{
+		"text": {"first line from the compose surface\nsecond line a chat box would have sent\nthird line"},
+		"to":   {project},
+	})
+	res.Body.Close()
+
+	deadline := time.Now().Add(20 * time.Second)
+	var received string
+	for time.Now().Before(deadline) {
+		if b, err := os.ReadFile(got); err == nil {
+			received = string(b)
+			if strings.Contains(received, "third line") {
+				break
+			}
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+
+	for _, want := range []string{
+		"first line from the compose surface",
+		"second line a chat box would have sent",
+		"third line",
+	} {
+		if !strings.Contains(received, want) {
+			t.Errorf("%q never reached the session; it received %q", want, received)
+		}
+	}
+	if i, j := strings.Index(received, "first line"), strings.Index(received, "third line"); i < 0 || j < 0 || i > j {
+		t.Errorf("the lines arrived out of order: %q", received)
+	}
+	if !strings.Contains(received, "surface\nsecond") && !strings.Contains(received, "surface\r\nsecond") {
+		t.Errorf("the newline between lines did not survive: %q", received)
 	}
 }

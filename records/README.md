@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 10 | [milestones.md](milestones.md) |
-| question | 35 | [questions.md](questions.md) |
-| decision | 99 | [decisions.md](decisions.md) |
+| question | 38 | [questions.md](questions.md) |
+| decision | 102 | [decisions.md](decisions.md) |
 | finding | 26 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 19 | [work-units/index.md](work-units/index.md) |
@@ -85,6 +85,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0033](questions.md#mus-q-0033) | question | Should deploying an unrelated fix also publish the session surface? |
 | [MUS-Q-0034](questions.md#mus-q-0034) | question | The composer was built as a widget inside the session view rather than from its artboard. Which stands? |
 | [MUS-Q-0035](questions.md#mus-q-0035) | question | Two of MUS-D-0013's three clauses were dropped without being raised. Build them? |
+| [MUS-Q-0036](questions.md#mus-q-0036) | question | Three surfaces can start a message. MUS-Q-0035's chosen option said one. |
+| [MUS-Q-0037](questions.md#mus-q-0037) | question | Should a question's lifecycle times come from the clock rather than from the caller? |
+| [MUS-Q-0038](questions.md#mus-q-0038) | question | Should the composer be reachable when the session surface is not served? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -184,6 +187,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0097](decisions.md#mus-d-0097) | decision | One draft, not one per session |
 | [MUS-D-0098](decisions.md#mus-d-0098) | decision | Correcting MUS-D-0096: the answer path is not limited to one line |
 | [MUS-D-0099](decisions.md#mus-d-0099) | decision | The composer is surface 1, built from its artboard, and the second surface carrying script |
+| [MUS-D-0100](decisions.md#mus-d-0100) | decision | MUS-D-0013's fold clause is declined, and the records stop saying it is built |
+| [MUS-D-0101](decisions.md#mus-d-0101) | decision | A question's lifecycle times come from the clock |
+| [MUS-D-0102](decisions.md#mus-d-0102) | decision | The composer is served whether or not sessions are |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

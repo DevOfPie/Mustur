@@ -78,14 +78,17 @@ queue.md is a jot log with no evidence or review column, and the repository decl
 
 **Pull request #1 promises three open design questions and the file marks two**
 
-finding · 2026-08-24
+finding · 2026-08-19
+
+Noticed by: [MUS-R-0001](routing.md#mus-r-0001)
 
 Pull request #1's body promises three open design questions in docs/ui-surfaces.md. The file marks two, on the composer and on records. The third is either unwritten or was retired without a note.
 
 | Field | Value |
 | --- | --- |
+| Source | pull request #1 |
 | Status | overtaken 2026-08-24 |
-| Since | Both questions the file still marked are now answered and the file marks none: the composer's on MUS-D-0013 and MUS-Q-0034, records' earlier. The count in this finding was true when filed and is not a description of the tree now. The underlying complaint — that a pull request body claimed a number nothing checked — stands, and is why the count is no longer written anywhere but the file itself. |
+| Since | Both questions the file still marked are now answered and it marks none: the composer's on MUS-D-0013 and MUS-Q-0034, records' earlier. The count was true when filed. An amend on 2026-08-24 moved this record's date to that day and dropped its provenance, which a review caught: amend replaces fields rather than merging them, and the export is the audit surface a reader checks without the binary. |
 
 ---
 

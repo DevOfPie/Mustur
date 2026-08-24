@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/coder/websocket"
@@ -171,16 +172,20 @@ func TestThePageSaysWhenMusturDidNotStartTheSession(t *testing.T) {
 	}
 }
 
-// The exception is this surface and no other. The first version of this test
-// asserted only that the session page *does* load the client and checked no
-// other surface — it could not fail for the reason its name gave.
-func TestOnlyTheSessionSurfaceCarriesScript(t *testing.T) {
+// Two surfaces carry script, and the rest carry none.
+//
+// The name of this test used to be TestOnlyTheSessionSurfaceCarriesScript, and
+// it went on passing after the composer was built — because it constructed a
+// mux without the composer in it and asserted about the two surfaces that were
+// never going to have script. A test that cannot fail for the reason its name
+// gives is worse than no test: `MUS-W-0017` cited this one as proof of a claim
+// the tree had stopped making.
+func TestExactlyTwoSurfacesCarryScript(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	if !strings.Contains(getFrom(t, srv, "/sessions/Mustur"), "/assets/session.js") {
 		t.Error("the session page does not load the client")
 	}
 
-	// Every other surface, served from its own handler, must carry none.
 	ctx := context.Background()
 	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
 	if err != nil {
@@ -188,14 +193,32 @@ func TestOnlyTheSessionSurfaceCarriesScript(t *testing.T) {
 	}
 	defer st.Close()
 
+	// A destination, so the composer renders a form at all: with nowhere to
+	// send it renders a notice and loads nothing, which is correct and would
+	// make this test pass for the wrong reason.
+	inbox := record.Record{
+		ID: "MUS-P-0002", Kind: "project", Title: "Idea inbox", At: "2026-08-20",
+		Data: []record.Field{{Key: "Intake", Value: "default"}, {Key: "Prefix", Value: "IDW"}},
+	}
+	if err := st.Append(ctx, inbox, "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
 	in := &Intake{Store: st, Project: "MUS", Actor: "pie"}
 	q := &Questions{Store: st, Project: "MUS", Actor: "pie"}
+	// The composer is in this mux, which is the whole point: the surface that
+	// went missing from the old version is the one that changed the answer.
+	comp := &Compose{Store: st, Project: "MUS", Actor: "pie"}
 	mux := http.NewServeMux()
 	q.Routes(mux)
+	comp.Routes(mux)
 	mux.Handle("/", in.Handler())
 	other := httptest.NewServer(mux)
 	defer other.Close()
 
+	if body := getFrom(t, other, "/compose"); !strings.Contains(body, "/assets/compose.js") {
+		t.Error("the composer does not load its client layer")
+	}
 	for _, path := range []string{"/intake", "/questions"} {
 		if body := getFrom(t, other, path); strings.Contains(body, "<script") {
 			t.Errorf("%s carries script; the exception has become a suggestion", path)

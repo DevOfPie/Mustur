@@ -3,12 +3,14 @@ package web
 // The session surface: a running session's output in a browser tab, and a way
 // to answer it.
 //
-// **This is the one surface in v1 that carries a client layer.** Every other
-// one is server-rendered with no script, no stylesheet, no font and no image,
-// and that stays the rule — a live terminal simply cannot be server-rendered.
-// The stack table names this as the exception so the rule is not quietly
-// dropped, and this is the only *page* that carries one. (A tracked .js file
-// also exists under docs/investigations — a fixture from milestone 1, served to
+// **This is one of the two surfaces in v1 that carry a client layer, and the
+// only one with no alternative.** Every other one is server-rendered with no
+// script, no stylesheet, no font and no image, and that stays the rule — a live
+// terminal simply cannot be server-rendered. The composer carries the other,
+// taken by the owner on MUS-Q-0034 rather than assumed by whoever built it, and
+// unlike this one its form posts and works with the script blocked. The stack
+// table names both so the rule is not quietly dropped. (A tracked .js file also
+// exists under docs/investigations — a fixture from milestone 1, served to
 // nobody.)
 //
 // **The origin check is the control, not hardening.** The composer is always
@@ -566,7 +568,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 </div>{{end}}
 {{if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
-<small>A session left running in a terminal is not here and will not appear.</small></p>
+<small>A session left running in a terminal is not here and will not appear.</small><br>
+<small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
 {{else}}
 <div class="strip"><span class="grow" id="scrollback">connecting</span></div>
 <div class="agents"{{if not .Subagents}} hidden{{end}}>

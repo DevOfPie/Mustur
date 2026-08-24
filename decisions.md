@@ -124,6 +124,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [It is not a fourth tab, and not a second scripted page](#it-is-not-a-fourth-tab-and-not-a-second-scripted-page) | Where the composer lives — superseded by MUS-Q-0034 |
 | [A newline typed into a terminal is Enter](#a-newline-typed-into-a-terminal-is-enter) | Why multi-line goes as a bracketed paste |
 | [An hour lost to `timeout`](#an-hour-lost-to-timeout) | A test fixture that starved its own pane on SIGTTIN |
+| [The second review pass, and two of its findings](#the-second-review-pass-and-two-of-its-findings) | A correction is a claim, and nothing gates claims |
+| [Timestamps that could not be true](#timestamps-that-could-not-be-true) | Answers stamped before their questions existed |
+| [Amend replaces, and I have now been caught by that twice](#amend-replaces-and-i-have-now-been-caught-by-that-twice) | A record re-dated and stripped of provenance by its own correction |
 
 ---
 
@@ -1966,3 +1969,55 @@ child in a new process group without the terminal, so `cat` was stopped on
 SIGTTIN the moment it read, and received nothing at all — a green mechanism
 looking like a broken one. Plain `cat`, with the hub's cleanup registered before
 the session's so it runs after it, was the fix.
+
+## 2026-08-24 — correcting the entry above, and what the second review found
+
+The entry *"A newline typed into a terminal is Enter"* above says: **"The owner
+answered it on 2026-08-20, in the plan."** That is false. The composer decision
+is `MUS-D-0013`, taken on **2026-08-19** at the evening design review against
+the published wireframes — a day before that plan existed, and not among the
+four questions it settled. The correction is appended rather than edited in,
+because that is the rule; a reader arriving at the entry above should arrive at
+this one next.
+
+Getting the attribution wrong is what let two of `MUS-D-0013`'s three clauses go
+unbuilt without anyone noticing.
+
+### The second review pass, and two of its findings
+
+Three fresh reviewers read the rebuild. Two findings are worth keeping here
+because they are the *first* pass's findings reproduced inside the corrections
+written to fix them:
+
+- The record rewritten to stop crediting a test with assertions it did not make
+  credited **a different test with a different surface's proof**: the composer
+  has no socket, and "multi-line left the composer over a real WebSocket"
+  described the session view's reply box. The composer's own delivery into a
+  live session was exercised by nothing. It has a test now.
+- "Both say so in their own comments" — only one did.
+
+The lesson is not that the corrections were careless. It is that **a correction
+is a claim**, and this repository has no gate that reads claims.
+
+### Timestamps that could not be true
+
+Every question raised here up to today records an answer stamped **before the
+question existed**: `MUS-Q-0034` was created at 09:53 and says it was answered
+at 09:00, because the times were typed by hand from a conversation that had
+already happened. `make check` could not see it — the gate requires the
+`Surfaced` field to be non-empty and nothing else — so the record this
+repository leans on hardest was not evidence of the thing it is kept for.
+
+`surfaced` and `answer` now stamp the clock and refuse a `--at` in the past
+rather than silently overriding it (`MUS-D-0101`). The records already carrying
+impossible times stay as they are, with this as their correction.
+
+### Amend replaces, and I have now been caught by that twice
+
+`MUS-F-0002` was amended to note it had been overtaken, and the amend **moved a
+finding noticed on 2026-08-19 to the 24th and dropped its provenance rows** —
+in the export, which `MUS-D-0024` designates as the surface a reader checks
+without the binary. The same trap took `MUS-M-0010` earlier in this session.
+Both are restored. `amend` takes what it is given and writes exactly that; the
+habit it needs is reading the record first, which is not a thing a comment can
+enforce.

@@ -270,9 +270,12 @@ func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 		s := Session{Name: name, Project: strings.TrimPrefix(name, Prefix)}
 		fmt.Sscanf(parts[1], "%d", &s.Windows)
 		s.Attached = strings.TrimSpace(parts[2]) == "1"
-		// Activity is optional: a tmux too old to know the format leaves the
-		// column empty rather than failing, and a session with no timestamp
-		// sorts last rather than taking the default.
+		// Activity is optional, and treated so on the assumption — not measured
+		// — that a tmux which does not know the format leaves the column empty
+		// rather than failing the whole listing. What is certain is the
+		// handling: a session with no timestamp sorts last rather than becoming
+		// the default, so the failure mode is a stale-looking order and never a
+		// message sent somewhere unintended.
 		if len(parts) > 4 {
 			var epoch int64
 			if _, err := fmt.Sscanf(strings.TrimSpace(parts[4]), "%d", &epoch); err == nil && epoch > 0 {
@@ -369,11 +372,14 @@ func (a *Adapter) Send(ctx context.Context, project, text string) error {
 		// arrives as an argument and this package's runner does not carry
 		// stdin — and because a draft written to a temp file to be read back is
 		// the owner's prose sitting on disk for no reason.
-		// A name per send, not per project. Two sends to the same session — the
-		// composer and `mustur answer`, or two tabs — used to share one buffer:
-		// the second set-buffer overwrote the first, the first paste delivered
-		// the wrong text and deleted the buffer, and the second found none.
-		buf := fmt.Sprintf("mustur-%s-%d", project, a.nextBuffer())
+		// A name per send, and per process. Two sends to the same session used
+		// to share one buffer: the second set-buffer overwrote the first, the
+		// first paste delivered the wrong text and deleted the buffer, and the
+		// second found none. The first fix counted within one Adapter, which
+		// left the case its own comment named — the server and `mustur answer`
+		// are different processes, each starting at one — so the pid is in the
+		// name too.
+		buf := fmt.Sprintf("mustur-%s-%d-%d", project, os.Getpid(), a.nextBuffer())
 		if out, err := a.runner().Run(ctx, "tmux", "set-buffer", "-b", buf, "--", text); err != nil {
 			return fmt.Errorf("tmux set-buffer: %w: %s", err, strings.TrimSpace(out))
 		}

@@ -297,7 +297,14 @@
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      if (!ws || ws.readyState !== 1 || closed) return;
+      // The box stays writable while the socket is down, so Send in that window
+      // has to say something. It used to return silently, which is the failure
+      // the error channel was added to end.
+      if (!ws || ws.readyState !== 1) {
+        if (!closed) append("\n[not sent: still reconnecting. What you wrote is kept.]\n");
+        return;
+      }
+      if (closed) return;
       var v = text.value.trim();
       if (!v) return;
       lastSent = v;

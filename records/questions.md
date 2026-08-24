@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-35 record(s), by identifier.
+38 record(s), by identifier.
 
 ---
 
@@ -799,4 +799,74 @@ MUS-D-0013 has three clauses. Text before destination was built. The route row d
 | Surfaced | 2026-08-24 09:53 |
 | Answer | Both. Last-active default and folding intake into the composer. |
 | Answered | 2026-08-24 09:00 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0036
+
+**Three surfaces can start a message. MUS-Q-0035's chosen option said one.**
+
+question · 2026-08-24
+
+The option the owner chose on MUS-Q-0035 reads: folding intake in makes the composer the single capture surface and puts intake's routing behind it. The tree keeps all three. The builder recorded that in queue.md as a conflict between two owner decisions, reported rather than picked; a reviewer showed the cited workflow.md clause scopes conflicts to Plan.md versus workflow.md, and that shipping all three is picking.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the composer, the reply box and the intake box all stay |
+| Needed to proceed | yes |
+| Option | Keep all three, say so :: Nothing is retired, and the records stop overclaiming :: MUS-D-0013's fold clause is recorded as declined with its reason — intake is proven and fast, the reply box is where you already are — and the two files asserting all three clauses are built are corrected. |
+| Option | One, as the option said :: The composer becomes the single capture surface :: Intake's tab points at the composer with the inbox preselected and the reply box becomes a link. Retires a surface milestone 2c proved works. |
+| Option | Keep intake, drop the reply box :: Two, and the duplication goes :: The composer for anything composed, intake kept as the fast path from a locked phone. MUS-Q-0018's embedded composer is explicitly superseded. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 19:54 |
+| Answer | Keep all three, say so. Record the fold clause as declined and stop claiming it is built. |
+| Answered | 2026-08-24 19:54 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0037
+
+**Should a question's lifecycle times come from the clock rather than from the caller?**
+
+question · 2026-08-24
+
+Every question raised in this repository up to today records an answer timestamped before the question existed: MUS-Q-0034 was created at 09:53 and says it was answered at 09:00, because the times were typed by hand from a conversation that had already happened. make check cannot see it — the gate only requires the Surfaced field to be non-empty — so the record leaned on hardest is not evidence of the thing it is kept for.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a question record is evidence that surfacing preceded the answer |
+| Needed to proceed | yes |
+| Option | Stamp from the clock :: The record proves the order by construction :: surfaced and answer record when they ran and refuse a --at in the past. Gives up backdating a question raised offline, which has never happened. |
+| Option | Gate on the ordering :: Catch it wherever it comes from :: Keep hand-set times and fail make check when an answer predates its surfacing, including a genuine clock disagreement. |
+| Option | Both :: Right by construction, and caught if it gets past :: Also needs correcting entries for the records already in the tree before the gate could pass. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 19:54 |
+| Answer | Stamp from the clock. |
+| Answered | 2026-08-24 19:54 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0038
+
+**Should the composer be reachable when the session surface is not served?**
+
+question · 2026-08-24
+
+The composer files jots as well as typing into sessions, and the builder registered it behind --sessions, which the owner gated on typing into a running agent. With the flag off — the default, and the live service's posture until 2026-08-23 — the idea-inbox route is unreachable. The gating was taken without asking and recorded only in a code comment.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the idea-inbox route depends on a security switch |
+| Option | Serve it always, hide sessions :: The capture surface never depends on a security switch :: The composer is always available and offers only the idea inbox when sessions are off. More code, and a second thing the flag means. |
+| Option | Keep it behind the flag :: One switch, one meaning :: The composer can type into an agent, so it sits behind the same gate. A deployment wanting jots without agent access has the intake box, which the flag does not touch. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 19:54 |
+| Answer | Serve it always, and offer only the idea inbox when sessions are off. |
+| Answered | 2026-08-24 19:54 |
 | Delivered | not delivered: the question names no session |

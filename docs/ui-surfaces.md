@@ -8,8 +8,9 @@ rather than from the published plan's artboard for it. Surface 1, the composer,
 shipped at milestone 5 as a box inside another surface's page, with this file
 amended to say that was where it lived.
 
-That each happened after the last was recorded is the part worth keeping: **the
-record alone was not the safeguard, three times.** The owner's answer on
+Intake was the first and predates any such record. That the *other two*
+happened after one existed is the part worth keeping: **the record alone was not
+the safeguard, twice.** The owner's answer on
 MUS-Q-0010 was to rebuild the queue from its artboard, which is done; their
 answer on MUS-Q-0034, the same question about the same plan, was to rebuild the
 composer from its artboard, which is also done. Intake is unchanged and still
@@ -81,13 +82,14 @@ four answered questions are Records, the tab bar, the routing guess and the
 audit. The composer is not among them. Getting that wrong is what let two thirds
 of the decision go unbuilt.
 
-`MUS-D-0013` has three clauses and all three are built:
+`MUS-D-0013` has three clauses. Two are built and the third is declined:
 
 | Clause | How |
 | --- | --- |
 | Text before destination | The box is the screen; the route row is beneath it |
 | The route row defaults to the last active session | The adapter reads `session_activity` and the composer orders by it. Before this it was raw `tmux list-sessions` order, which is alphabetical, and the records described that as last-active |
-| The idea inbox is a route like any session, folding intake into the composer | The inbox is a destination beside the sessions, and choosing it files a record under its own prefix rather than typing into anything |
+| The idea inbox is a route like any session… | Built. The inbox is a destination beside the sessions, and choosing it files a record under its own prefix rather than typing into anything |
+| …**folding intake into the composer** | **Declined** on [MUS-Q-0036](../records/questions.md#mus-q-0036). Intake is proven and fast from a locked phone and the reply box is where a person already is, so three surfaces can start a message and nothing is retired |
 
 **One draft, not one per session**, which follows from thought-first: what is
 being written is a thought, and where it goes is chosen after. A draft keyed per
@@ -204,8 +206,8 @@ missed without the owner wondering whether walking into a lift killed the work.
 A session that has **ended** must not look like one that is merely quiet — that
 confusion is most of what this surface exists to prevent.
 
-**The one surface in v1 that carries a client layer.** A live terminal cannot be
-server-rendered. The stack table names this as the exception and keeps the rule
+**One of the two surfaces in v1 that carry a client layer**, and the only one
+with no alternative. A live terminal cannot be server-rendered. The stack table names this as the exception and keeps the rule
 for everything else; a second surface wanting script is a new decision, not a
 precedent.
 

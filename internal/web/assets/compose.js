@@ -47,9 +47,16 @@
     if (kept) kept.hidden = !(storable && text.value.trim());
   }
 
+  // Cleared first, and before anything is restored. The clear used to run at
+  // the end of this file, after the restore, so the success page showed "sent
+  // to X" above a box still holding the message just sent — and the next
+  // keystroke stored it again, inviting a duplicate send.
+  var sent = /[?&]sent=/.test(location.search);
+  if (sent) write("");
+
   // A draft handed back by the server after a failed send wins over the stored
   // one: it is the text the owner just tried to send.
-  var saved = read();
+  var saved = sent ? "" : read();
   if (!text.value && saved) text.value = saved;
   show();
 
@@ -78,8 +85,4 @@
     });
   });
 
-  // Cleared only once the server says it went. The page comes back with sent=
-  // in the query string on success and with the draft on failure, so a message
-  // that did not arrive is still here to try again.
-  if (/[?&]sent=/.test(location.search)) write("");
 })();

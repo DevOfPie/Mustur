@@ -11,11 +11,12 @@ package web
 // not a plan.
 //
 // **Thought first, destination second** (MUS-D-0013). What is being written is
-// a thought; where it goes is a separate choice made after it is written, and
-// the three clauses of that decision are all here: the box comes before the
-// route row, the route row defaults to the last active session, and the idea
-// inbox is a route like any other — so a jot and a message to an agent are the
-// same gesture rather than two capture muscles.
+// a thought; where it goes is a separate choice made after it is written. Two
+// of that decision's three clauses are here: the box comes before the route
+// row, and the route row defaults to the last active session. The third asks
+// that the idea inbox be a route like any other — built — **which folds intake
+// into the composer** — declined on MUS-Q-0036, so the intake box and the
+// session view's reply box both stay and three surfaces can start a message.
 //
 // **This is the second surface carrying script**, which until now was a rule
 // rather than a count. The owner took that deliberately on MUS-Q-0034: a
@@ -38,6 +39,7 @@ import (
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/export"
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
@@ -109,11 +111,13 @@ type composePage struct {
 	Targets []composeTarget
 	// None is true when there is nowhere at all to send, which is a different
 	// page rather than a form that cannot be submitted.
-	None    bool
-	Draft   string
-	Sent    string
-	Error   string
-	Records bool
+	None  bool
+	Draft string
+	Sent  string
+	Error string
+	// Gone names a destination that was asked for and is no longer there, so
+	// the page can say the choice moved instead of moving it quietly.
+	Gone string
 }
 
 // targets is every destination, last-active first, with the idea inbox after
@@ -173,6 +177,24 @@ func (c *Compose) targets(ctx context.Context, chosen string) []composeTarget {
 	return out
 }
 
+// gone reports a destination that was asked for and is not on offer.
+//
+// It used to be silent: the pill moved to the last active session while the
+// error text still named the old one, so the next Send delivered somewhere the
+// owner had not chosen. MUS-D-0013's accepted cost is that the routing step
+// must never misfire silently, and quietly changing the target is exactly that.
+func gone(targets []composeTarget, chosen string) string {
+	if strings.TrimSpace(chosen) == "" {
+		return ""
+	}
+	for _, t := range targets {
+		if t.ID == chosen {
+			return ""
+		}
+	}
+	return chosen
+}
+
 // lastActive renders how long ago a session did anything. Coarse, because the
 // number is there to order the list and to reassure, not to be acted on.
 func lastActive(at, now time.Time) string {
@@ -195,17 +217,28 @@ func lastActive(at, now time.Time) string {
 }
 
 func (c *Compose) show(w http.ResponseWriter, r *http.Request) {
-	targets := c.targets(r.Context(), r.URL.Query().Get("to"))
+	want := r.URL.Query().Get("to")
+	targets := c.targets(r.Context(), want)
 	c.render(w, composePage{
 		Targets: targets,
 		None:    len(targets) == 0,
-		Draft:   r.URL.Query().Get("draft"),
 		Sent:    r.URL.Query().Get("sent"),
 		Error:   r.URL.Query().Get("error"),
+		Gone:    gone(targets, want),
 	})
 }
 
 func (c *Compose) send(w http.ResponseWriter, r *http.Request) {
+	// The same check the session socket makes, for the same reason: this path
+	// types into a running agent, browsers send Origin on a cross-site form
+	// post, and Access authenticates the person rather than the page they
+	// happened to be on. A request with no Origin at all is a form post from a
+	// browser that did not send one, or something that is not a browser; it is
+	// refused here as it is there.
+	if !sameOrigin(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	if err := r.ParseForm(); err != nil {
 		c.redirect(w, r, "", "", "that form did not arrive intact: "+err.Error())
 		return
@@ -226,9 +259,19 @@ func (c *Compose) send(w http.ResponseWriter, r *http.Request) {
 
 	sent, err := c.deliver(ctx, to, text, c.actor(r))
 	if err != nil {
-		// The draft comes back with the page. Losing what was written because
-		// the destination was busy is the failure this surface exists to avoid.
-		c.redirectDraft(w, r, to, text, err.Error())
+		// The failure page is rendered rather than redirected to, which is what
+		// the intake box already does. The draft used to travel in the redirect
+		// URL — where it lands in browser history and in the edge's logs, while
+		// this same package argues the prose must not sit in a tmux buffer
+		// anything on the machine could read.
+		targets := c.targets(r.Context(), to)
+		c.render(w, composePage{
+			Targets: targets,
+			None:    len(targets) == 0,
+			Draft:   text,
+			Error:   err.Error(),
+			Gone:    gone(targets, to),
+		})
 		return
 	}
 	c.redirect(w, r, to, sent, "")
@@ -240,8 +283,13 @@ func (c *Compose) deliver(ctx context.Context, to, text, actor string) (string, 
 	if to == "" {
 		return "", errors.New("no destination chosen")
 	}
-	// A routing identifier means a record; anything else is a session's name.
-	if strings.Contains(to, "-") && c.Store != nil {
+	// A record if the destination parses as an identifier, a session otherwise.
+	//
+	// This was `strings.Contains(to, "-")`, and project names admit hyphens:
+	// a session called TradeShop-Support was read as a routing identifier,
+	// refused by the registry, and could never be sent to at all. The
+	// identifier scheme is the thing that knows what an identifier looks like.
+	if ident.Valid(to) && c.Store != nil {
 		r, dest, err := intake.File(ctx, c.Store, intake.Request{
 			Project: c.Project, Text: text, Actor: actor, Now: c.now(), To: to,
 		})
@@ -278,18 +326,6 @@ func (c *Compose) redirect(w http.ResponseWriter, r *http.Request, to, sent, msg
 	if msg != "" {
 		q.Set("error", msg)
 	}
-	http.Redirect(w, r, "/compose?"+q.Encode(), http.StatusSeeOther)
-}
-
-// redirectDraft is the failure path, and carries the text back so a browser
-// with no script does not lose it either.
-func (c *Compose) redirectDraft(w http.ResponseWriter, r *http.Request, to, text, msg string) {
-	q := url.Values{}
-	if to != "" {
-		q.Set("to", to)
-	}
-	q.Set("draft", text)
-	q.Set("error", msg)
 	http.Redirect(w, r, "/compose?"+q.Encode(), http.StatusSeeOther)
 }
 
@@ -361,6 +397,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   <span class="kept" id="kept" hidden>draft kept</span></header>
 {{if .Sent}}<p class="said">{{.Sent}}</p>{{end}}
 {{if .Error}}<p class="said">Not sent: {{.Error}}</p>{{end}}
+{{if .Gone}}<p class="said">{{.Gone}} is no longer a destination, so nothing is chosen for you. Pick one below.</p>{{end}}
 {{if .None}}
 <p class="none">Nowhere to send.<br>
 <small>Mustur has no session running and no idea inbox to file to.</small></p>

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-99 record(s), by identifier.
+102 record(s), by identifier.
 
 ## Index
 
@@ -111,6 +111,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0097](#mus-d-0097) | One draft, not one per session | 2026-08-23 |
 | [MUS-D-0098](#mus-d-0098) | Correcting MUS-D-0096: the answer path is not limited to one line | 2026-08-24 |
 | [MUS-D-0099](#mus-d-0099) | The composer is surface 1, built from its artboard, and the second surface carrying script | 2026-08-24 |
+| [MUS-D-0100](#mus-d-0100) | MUS-D-0013's fold clause is declined, and the records stop saying it is built | 2026-08-24 |
+| [MUS-D-0101](#mus-d-0101) | A question's lifecycle times come from the clock | 2026-08-24 |
+| [MUS-D-0102](#mus-d-0102) | The composer is served whether or not sessions are | 2026-08-24 |
 
 ---
 
@@ -1608,3 +1611,41 @@ and: [MUS-Q-0035](questions.md#mus-q-0035)
 from: [MUS-D-0013](#mus-d-0013)
 
 Milestone 5 first built the composer as a box inside the session view, amended surface 1's brief to say that was where it lived, and attributed the design answer to a plan published the day after the decision was actually taken. The decision is MUS-D-0013, 2026-08-19, from the evening design review against the wireframes; two of its three clauses had gone unbuilt and unrecorded. The owner declined the widget on MUS-Q-0034, for the reason already given on MUS-Q-0010 — a plan agents route around is not a plan — and asked for both dropped clauses on MUS-Q-0035. The composer is now its own screen: the box first, the route row beneath it defaulting to the last active session, and the idea inbox among the routes so that a jot and a message to an agent are one gesture. It is the second surface in this repository carrying script, taken deliberately rather than by accident, and bounded: the form posts and works with the script blocked, which keeps the draft and nothing else. The session view keeps its reply box, so two surfaces can now start a message; whether the intake box itself is retired is not decided here.
+
+---
+
+## MUS-D-0100
+
+**MUS-D-0013's fold clause is declined, and the records stop saying it is built**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0036](questions.md#mus-q-0036)
+
+declines part of: [MUS-D-0013](#mus-d-0013)
+
+MUS-D-0013's third clause asks that the idea inbox be a route like any session, which folds intake into the composer instead of keeping two capture muscles. The route is built; the fold is not. Three surfaces can start a message — the composer, the session view's reply box, and the intake box — and the builder shipped all three while recording it in queue.md as a conflict reported rather than picked, which a reviewer showed was itself the picking. The owner has now declined the fold on MUS-Q-0036: intake is proven and fast from a locked phone, the reply box is where a person already is, and nothing is retired. What was wrong was the claim, not the shape: two files asserted that all three clauses were built while two other files written in the same commit said a message can be started in three places.
+
+---
+
+## MUS-D-0101
+
+**A question's lifecycle times come from the clock**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0037](questions.md#mus-q-0037)
+
+Every question raised in this repository up to 2026-08-24 records an answer timestamped before the question existed — MUS-Q-0034 was created at 09:53 and says it was answered at 09:00 — because the times were typed by hand from a conversation that had already happened. make check could not see it: the gate requires the Surfaced field to be non-empty and nothing more, so the record it leans on hardest was not evidence of the thing it is kept for. surfaced and answer now stamp the clock and refuse a --at in the past rather than silently overriding it. The records already carrying impossible times are left as they are, with this entry as the correction; backdating a question raised offline is the use this gives up, and it has never happened.
+
+---
+
+## MUS-D-0102
+
+**The composer is served whether or not sessions are**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0038](questions.md#mus-q-0038)
+
+The composer was registered behind --sessions on the reasoning that it can type into a running agent. It also files jots, so with the flag off — the default, and the live service's posture until 2026-08-23 — the idea-inbox route the owner asked for was unreachable: a capture surface depending on a security switch. It is now always served, and offers sessions only when sessions are served, so with the flag off it has one destination and nothing it offers can reach an agent. The gating had been taken without asking and recorded only in a code comment.
