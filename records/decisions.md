@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-97 record(s), by identifier.
+99 record(s), by identifier.
 
 ## Index
 
@@ -109,6 +109,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0095](#mus-d-0095) | The session surface is published, and Access is the reason it can be | 2026-08-23 |
 | [MUS-D-0096](#mus-d-0096) | Multi-line reaches a session as a bracketed paste, not as keystrokes | 2026-08-23 |
 | [MUS-D-0097](#mus-d-0097) | One draft, not one per session | 2026-08-23 |
+| [MUS-D-0098](#mus-d-0098) | Correcting MUS-D-0096: the answer path is not limited to one line | 2026-08-24 |
+| [MUS-D-0099](#mus-d-0099) | The composer is surface 1, built from its artboard, and the second surface carrying script | 2026-08-24 |
 
 ---
 
@@ -1576,3 +1578,33 @@ A newline typed into a terminal is Enter, and Enter in an agent's composer submi
 decision · 2026-08-23
 
 The composer keeps a single draft in the browser under one key, restored on whichever session page is open. What is being written is a thought; which session it goes to is a separate choice that can change after it is written, which is what thought-first composition means. A draft keyed per project would be lost at exactly the moment the design exists to protect — the owner deciding mid-sentence that this belongs somewhere else. It is written on every keystroke rather than on unload, because a backgrounded phone need never deliver another event. Where the browser refuses to store it, typing still works and nothing is kept.
+
+---
+
+## MUS-D-0098
+
+**Correcting MUS-D-0096: the answer path is not limited to one line**
+
+decision · 2026-08-24
+
+corrects: [MUS-D-0096](#mus-d-0096)
+
+and: [MUS-D-0063](#mus-d-0063)
+
+MUS-D-0096 said single-line text still goes as keystrokes because that is the answer-delivery path milestone 4a shipped. Nothing constrains an answer to one line: Text() only trims, so an answer containing interior newlines takes the paste branch. MUS-D-0063's claim that an answer is sent with -l, literally, so a body tmux would read as a key name arrives as characters, is therefore true of single-line answers and not of all of them. Neither entry could be edited, so this one carries the correction. The behaviour is right either way — a multi-line answer should arrive as one message — but the records described a narrower rule than the code follows.
+
+---
+
+## MUS-D-0099
+
+**The composer is surface 1, built from its artboard, and the second surface carrying script**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0034](questions.md#mus-q-0034)
+
+and: [MUS-Q-0035](questions.md#mus-q-0035)
+
+from: [MUS-D-0013](#mus-d-0013)
+
+Milestone 5 first built the composer as a box inside the session view, amended surface 1's brief to say that was where it lived, and attributed the design answer to a plan published the day after the decision was actually taken. The decision is MUS-D-0013, 2026-08-19, from the evening design review against the wireframes; two of its three clauses had gone unbuilt and unrecorded. The owner declined the widget on MUS-Q-0034, for the reason already given on MUS-Q-0010 — a plan agents route around is not a plan — and asked for both dropped clauses on MUS-Q-0035. The composer is now its own screen: the box first, the route row beneath it defaulting to the last active session, and the idea inbox among the routes so that a jot and a message to an agent are one gesture. It is the second surface in this repository carrying script, taken deliberately rather than by accident, and bounded: the form posts and works with the script blocked, which keeps the draft and nothing else. The session view keeps its reply box, so two surfaces can now start a message; whether the intake box itself is retired is not decided here.

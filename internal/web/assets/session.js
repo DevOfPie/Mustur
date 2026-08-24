@@ -162,6 +162,17 @@
             ? "\n[" + lost + " bytes of earlier output were not kept]\n"
             : "\n[output produced while this tab was away was not kept]\n"
         );
+      } else if (f.t === "error") {
+        // The server discarded a message and said so. The draft is put back,
+        // because the alternative — which shipped — was the text vanishing and
+        // a pill changing colour.
+        append("\n[not sent: " + (f.error || "unknown reason") + "]\n");
+        if (text && !text.value && lastSent) {
+          text.value = lastSent;
+          writeDraft(lastSent);
+          grow();
+          showKept();
+        }
       } else if (f.t === "agents") {
         agents = f.agents || [];
         drawAgents();
@@ -170,8 +181,10 @@
         setState("ended", false);
         if (scrollback) scrollback.textContent = "session ended" + (f.at ? " " + f.at : "");
         if (foot) foot.textContent = "Nothing is running. Output is kept until you start another.";
-        if (text) text.disabled = true;
-        if (form) form.style.opacity = ".5";
+        // The box stays writable: MUS-Q-0018 is that the composer is always
+        // writable, and a dropped connection is exactly when someone is most
+        // likely to be mid-sentence. Only the look dims.
+        if (form) form.style.opacity = ".6";
         ws.close();
       }
     };
@@ -181,7 +194,11 @@
       // A dropped connection is not a dropped session, and the label says so.
       setState("reconnecting", false);
       if (scrollback) scrollback.textContent = "reconnecting — the session kept running";
-      if (text) text.disabled = true;
+      // The box stays writable while the socket comes back: MUS-Q-0018 is that
+      // the composer is always writable, and a dropped connection is exactly
+      // when someone is most likely to be mid-sentence. Milestone 5's own row
+      // says a draft survives a dropped connection, and a draft that cannot be
+      // added to during one only half survives it.
       if (form) form.style.opacity = ".5";
       retry = Math.min(retry + 1, 6);
       setTimeout(connect, Math.min(500 * Math.pow(2, retry - 1), 15000));
@@ -207,6 +224,9 @@
   // would lose it at exactly the moment the design exists to protect — the
   // owner deciding, mid-sentence, that this belongs somewhere else.
   var DRAFT = "mustur.draft";
+  // The last message handed to the socket, kept until the server has had the
+  // chance to say it could not deliver it.
+  var lastSent = "";
   var kept = document.getElementById("kept");
   var dest = document.getElementById("dest");
 
@@ -219,24 +239,32 @@
       return "";
     }
   }
+  // Returns whether the browser actually kept it. A private window refuses,
+  // and the indicator must not say "draft kept" when nothing is.
+  var storable = true;
   function writeDraft(v) {
     try {
       if (v) window.localStorage.setItem(DRAFT, v);
       else window.localStorage.removeItem(DRAFT);
+      storable = true;
     } catch (e) {
-      /* No draft persistence here. Typing still works. */
+      storable = false;
     }
+    return storable;
   }
 
   function grow() {
     if (!text) return;
+    // The cap is 9rem in the stylesheet, so it is read from the stylesheet:
+    // hardcoding 9 * 16 was right only for a reader whose root font-size is 16.
+    var rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
     text.style.height = "auto";
-    text.style.height = Math.min(text.scrollHeight, 9 * 16) + "px";
+    text.style.height = Math.min(text.scrollHeight, 9 * rem) + "px";
   }
 
   function showKept() {
     if (!kept) return;
-    kept.hidden = !text.value.trim();
+    kept.hidden = !(storable && text.value.trim());
   }
 
   if (text) {
@@ -262,12 +290,17 @@
 
   if (dest && project) dest.textContent = "Send to " + project;
 
+  // The draft is shared with the composer, so a thought started there and not
+  // sent is still here — and the reply box says it is being kept for the same
+  // reason that screen does.
+
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       if (!ws || ws.readyState !== 1 || closed) return;
       var v = text.value.trim();
       if (!v) return;
+      lastSent = v;
       ws.send(JSON.stringify({ t: "input", text: v }));
       // Cleared only once it is on the wire. A send that failed leaves the
       // draft where it was, which is the difference between a composer and a

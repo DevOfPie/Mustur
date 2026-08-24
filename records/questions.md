@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-33 record(s), by identifier.
+35 record(s), by identifier.
 
 ---
 
@@ -751,4 +751,52 @@ One binary serves everything, and the live service is still the build from befor
 | Surfaced | 2026-08-23 10:39 |
 | Answer | Ship it, sessions off. |
 | Answered | 2026-08-23 00:10 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0034
+
+**The composer was built as a widget inside the session view rather than from its artboard. Which stands?**
+
+question · 2026-08-23
+
+Surface 1 has its own artboard in plan-4827b50a72674a22. Milestone 5 built it as a widget inside surface 8's page and then amended surface 1's brief to say that is where it lives, citing that artboard as authority two paragraphs above declining to build it. The reason given was that a composer needs a client layer and the session view is the only surface carrying one. The owner has already answered this question about this plan, on MUS-Q-0010: redesign from the artboard, because a plan agents route around is not a plan.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 5 as built is kept, rebuilt or reverted |
+| Needed to proceed | yes |
+| Option | Build the artboard :: Recommended · surface 1 becomes what it was drawn as :: Its own screen, the destination row defaulting to the last active session, and the idea inbox in it as a route like any other — all three clauses of MUS-D-0013. It needs a client layer, so this takes on a second scripted surface deliberately rather than by accident. |
+| Option | Amend the plan instead :: What shipped stands, and the plan says so :: The composer stays in the session view and surface 1 stops being described as its own screen, with the reason recorded: a second scripted page is a cost not yet agreed. |
+| Option | Revert milestone 5 :: Nothing false stays in the tree :: Back the composer out and leave 4b's single-line box until the surface question is settled with a redrawn artboard. The phone keeps a chat box for longer. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 09:53 |
+| Answer | Build the artboard. Surface 1 becomes its own screen, with the destination row and the idea inbox in it, and a second scripted surface is taken on deliberately. |
+| Answered | 2026-08-24 09:00 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0035
+
+**Two of MUS-D-0013's three clauses were dropped without being raised. Build them?**
+
+question · 2026-08-23
+
+MUS-D-0013 has three clauses. Text before destination was built. The route row defaulting to the last active session was not — the list is raw tmux order, which is alphabetical. The idea inbox being a route like any session, folding intake into the composer instead of keeping two capture muscles, was not either. Neither omission was recorded anywhere: not in the work unit's risks, not in decisions.md, not in the queue.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the composer honours the decision it was built from |
+| Needed to proceed | yes |
+| Option | Both :: The composer honours the decision it cites :: Last-active means reading activity from tmux, which the adapter can do. Folding intake in makes the composer the single capture surface and puts intake's routing behind it — the larger of the two. |
+| Option | Last-active only :: The cheap clause, which is the one that makes the fast path one tap :: Intake stays its own surface and MUS-D-0013 gets an entry recording that clause as declined. |
+| Option | Neither, record them as dropped :: The record stops claiming what the tree does not do :: Both stay unbuilt and MUS-D-0013 gains an entry saying two of its three clauses were declined, and why. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 09:53 |
+| Answer | Both. Last-active default and folding intake into the composer. |
+| Answered | 2026-08-24 09:00 |
 | Delivered | not delivered: the question names no session |

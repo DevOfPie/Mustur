@@ -1,15 +1,19 @@
 # Surfaces awaiting design
 
-**Three of these are built, and the first two were written the way this file
-exists to prevent.** Surface 5, intake, shipped at milestone 2c as a Go template
-— the layout decided in code and shown to the owner afterwards. Surface 4, the
-decision queue, shipped at milestone 3 the same way, from the brief below rather
-than from the published plan's artboard for it.
+**Four of these are built, and three of the four were first written the way this
+file exists to prevent.** Surface 5, intake, shipped at milestone 2c as a Go
+template — the layout decided in code and shown to the owner afterwards. Surface
+4, the decision queue, shipped at milestone 3 the same way, from the brief below
+rather than from the published plan's artboard for it. Surface 1, the composer,
+shipped at milestone 5 as a box inside another surface's page, with this file
+amended to say that was where it lived.
 
-That the second happened after the first was recorded is the part worth keeping:
-the record alone was not the safeguard. The owner's answer on MUS-Q-0010 was to
-rebuild the queue from its artboard, which is done. Intake is unchanged and
-still stands as built.
+That each happened after the last was recorded is the part worth keeping: **the
+record alone was not the safeguard, three times.** The owner's answer on
+MUS-Q-0010 was to rebuild the queue from its artboard, which is done; their
+answer on MUS-Q-0034, the same question about the same plan, was to rebuild the
+composer from its artboard, which is also done. Intake is unchanged and still
+stands as built.
 
 Surface 8, the session output, is the third. It is the first built from a
 drawing before anything existed to redraw — surface 4 was built from its brief
@@ -44,8 +48,9 @@ seven-surface plan does not draw it.
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
 published 2026-08-20. Eight artboards — intake as built and as proposed, plus
 the six then-unbuilt surfaces — the shell they share, and four open questions,
-which were answered 2026-08-20. Five of those six are still unbuilt; the
-decision queue is built, and is built from its artboard.
+which were answered 2026-08-20. Four of those six are still unbuilt; the
+decision queue is built from its artboard, and so, since milestone 5, is the
+composer.
 
 ## The constraints every surface inherits
 
@@ -67,25 +72,34 @@ by the browser, and reachable off the home network without a terminal.
 Must answer: which session am I talking to, and how do I switch without losing
 what I have typed? Drafts survive a dropped connection and a backgrounded phone.
 
-**Answered, in the plan, on 2026-08-20:** thought first, destination second,
-with the last-active session as the default so the ordinary case is still one
-tap. This file went on calling it open until milestone 5 came to build it. The
-drawing is the composer artboard in
-[plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22),
-and its annotation is the decision: *"The draft indicator is the whole reason
-this is not a chat box."*
+**Answered on 2026-08-19** as `MUS-D-0013`, *"The composer takes the thought
+first"*, taken at the evening design review against the published wireframes.
+This file went on calling it open until milestone 5 came to build it, and
+milestone 5's first attempt then attributed the answer to the surfaces plan on
+2026-08-20 — a plan published the day *after* the decision was recorded, whose
+four answered questions are Records, the tab bar, the routing guess and the
+audit. The composer is not among them. Getting that wrong is what let two thirds
+of the decision go unbuilt.
 
-What that meant in practice, once built: **one draft, not one per session.**
-What is being written is a thought, and which session it goes to is a separate
-choice that can change after it is written — so a draft keyed per project would
-be lost at exactly the moment the design exists to protect, the owner deciding
-mid-sentence that this belongs somewhere else. The destination line names the
-open session and the rail is how it changes, with the draft following.
+`MUS-D-0013` has three clauses and all three are built:
 
-It is **not a fourth tab**. The four are Sessions, Decisions, Intake and
-Records (MUS-D-0041), and a composer needs the client layer that only the
-session view carries — a second scripted surface is a decision, not a
-consequence of building this one.
+| Clause | How |
+| --- | --- |
+| Text before destination | The box is the screen; the route row is beneath it |
+| The route row defaults to the last active session | The adapter reads `session_activity` and the composer orders by it. Before this it was raw `tmux list-sessions` order, which is alphabetical, and the records described that as last-active |
+| The idea inbox is a route like any session, folding intake into the composer | The inbox is a destination beside the sessions, and choosing it files a record under its own prefix rather than typing into anything |
+
+**One draft, not one per session**, which follows from thought-first: what is
+being written is a thought, and where it goes is chosen after. A draft keyed per
+project would be lost at exactly the moment the design exists to protect. The
+composer and the session view's reply box share the one key.
+
+It is **not a fourth tab** — the four are Sessions, Decisions, Intake and
+Records (`MUS-D-0041`) — and it is reached from the session view. It **is** the
+second surface in this repository carrying script, which the owner took
+deliberately on `MUS-Q-0034`: a draft cannot survive a backgrounded phone
+without something running in the page. The form posts and works with the script
+blocked; the script keeps the draft and nothing else.
 
 ### 2. Session list
 

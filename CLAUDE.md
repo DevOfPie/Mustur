@@ -23,7 +23,9 @@ question named one with `--in`, which is the only way delivery has a target.
 It streams a running session's output to a browser tab and notices when one
 ends. You can reply from that tab: the box is multi-line and spell-checked, it
 holds one draft that survives a reload and follows you between sessions, and it
-sends what you wrote as a single message rather than a prompt per line. It shows
+sends what you wrote as a single message rather than a prompt per line —
+measured by hand against one CLI, and the thing to re-check first if another
+ever behaves oddly. It shows
 that session's sub-agents as their own rows too — what each was asked to do, how
 long it has run, the tool it is in, and its output once it finishes — and those
 rows appear only for sessions Mustur started, because the hook that reports them

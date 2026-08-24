@@ -467,6 +467,14 @@ func cmdServe(args []string) error {
 	if *withSessions {
 		sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor(), HookDir: hookDir}
 		sessions.Routes(mux)
+		// The composer types into a session, so it is published on the same
+		// switch: a compose screen whose destinations cannot be reached is a
+		// form that only ever fails.
+		compose := &web.Compose{
+			Adapter: adapter, Store: s, Project: *project,
+			Actor: defaultActor(), ExportTo: *exportTo,
+		}
+		compose.Routes(mux)
 	}
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
@@ -481,6 +489,7 @@ func cmdServe(args []string) error {
 		version, n, *db, *addr, *addr, *addr)
 	if *withSessions {
 		fmt.Printf("  sessions   http://%s/sessions  — this one can type into a running agent\n", *addr)
+		fmt.Printf("  compose    http://%s/compose   — and so does this one\n", *addr)
 	} else {
 		fmt.Println("  sessions   not served; --sessions publishes a surface that types into a running agent")
 	}

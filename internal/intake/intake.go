@@ -339,7 +339,15 @@ func chosen(routing []record.Record, id string) (Destination, error) {
 	}
 	for _, r := range routing {
 		if r.ID == id {
-			return Destination{ID: r.ID, Name: r.Title, Why: "chosen by the filer"}, nil
+			// The prefix comes from the destination however the destination was
+			// arrived at. A jot routed to the idea inbox by the guess was filed
+			// under IDW while the same jot sent there deliberately was filed
+			// under the store's prefix — the identifier depended on how the
+			// choice was made rather than on where the record went.
+			return Destination{
+				ID: r.ID, Name: r.Title, Prefix: prefixOf(r),
+				Why: "chosen by the filer",
+			}, nil
 		}
 	}
 	return Destination{}, fmt.Errorf("%s is not a destination this registry holds", id)

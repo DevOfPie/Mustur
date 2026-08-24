@@ -42,7 +42,9 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -73,6 +75,14 @@ type Session struct {
 	// Attached reports whether a terminal is attached right now. A session
 	// Mustur started is usually detached, and that is not a health signal.
 	Attached bool
+	// Activity is when the session last did anything, as tmux reports it.
+	//
+	// It exists so that "the route row defaults to the last active session" can
+	// be true. That clause is MUS-D-0013's and went unbuilt through milestone 5
+	// because nothing here read activity: the list came back in tmux's own
+	// order, which is by name, and alphabetical-as-default was described in the
+	// records as last-active. Zero means tmux reported nothing parseable.
+	Activity time.Time
 }
 
 // Runner runs a command and returns its combined output. Injected so the
@@ -84,6 +94,10 @@ type Runner interface {
 
 // Adapter starts and inspects sessions on this machine.
 type Adapter struct {
+	// buffers numbers the tmux paste buffers this adapter creates, so two
+	// concurrent sends cannot name the same one.
+	buffers atomic.Uint64
+
 	// Run shells out. Nil means the real tmux on this machine.
 	Run Runner
 	// Stat checks a directory exists. Nil means the real filesystem; injected
@@ -104,6 +118,9 @@ func (execRunner) Run(ctx context.Context, name string, args ...string) (string,
 	out, err := exec.CommandContext(ctx, name, args...).CombinedOutput()
 	return string(out), err
 }
+
+// nextBuffer hands out a number no other send in this process is using.
+func (a *Adapter) nextBuffer() uint64 { return a.buffers.Add(1) }
 
 func (a *Adapter) runner() Runner {
 	if a.Run != nil {
@@ -225,7 +242,7 @@ func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
 // List returns every session Mustur started on this machine, and nothing else.
 func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 	out, err := a.runner().Run(ctx, "tmux", "list-sessions", "-F",
-		"#{session_name}\t#{session_windows}\t#{session_attached}\t#{"+OwnedOption+"}")
+		"#{session_name}\t#{session_windows}\t#{session_attached}\t#{"+OwnedOption+"}\t#{session_activity}")
 	if err != nil {
 		// No server running is not an error: it is the honest answer that no
 		// session exists. Distinguished by the message tmux gives, because an
@@ -253,9 +270,35 @@ func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 		s := Session{Name: name, Project: strings.TrimPrefix(name, Prefix)}
 		fmt.Sscanf(parts[1], "%d", &s.Windows)
 		s.Attached = strings.TrimSpace(parts[2]) == "1"
+		// Activity is optional: a tmux too old to know the format leaves the
+		// column empty rather than failing, and a session with no timestamp
+		// sorts last rather than taking the default.
+		if len(parts) > 4 {
+			var epoch int64
+			if _, err := fmt.Sscanf(strings.TrimSpace(parts[4]), "%d", &epoch); err == nil && epoch > 0 {
+				s.Activity = time.Unix(epoch, 0)
+			}
+		}
 		sessions = append(sessions, s)
 	}
 	return sessions, nil
+}
+
+// ByActivity orders sessions most recently active first, and is what "the last
+// active session" means anywhere it is offered as a default.
+//
+// Ties and sessions tmux gave no timestamp for fall back to name order, so two
+// runs over the same sessions produce the same list — a default that moved
+// between page loads for no reason would be worse than an alphabetical one.
+func ByActivity(sessions []Session) []Session {
+	out := append([]Session(nil), sessions...)
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Activity.Equal(out[j].Activity) {
+			return out[i].Project < out[j].Project
+		}
+		return out[i].Activity.After(out[j].Activity)
+	})
+	return out
 }
 
 // Alive reports whether a project has a live session.
@@ -282,8 +325,10 @@ func (a *Adapter) Alive(ctx context.Context, project string) (bool, error) {
 // only caller is the answer path and why it refuses a session Mustur did not
 // start.
 //
-// The text is sent with `-l`, literally, so a body containing something tmux
-// would otherwise read as a key name arrives as characters.
+// Single-line text is sent with `-l`, literally, so a body containing something
+// tmux would otherwise read as a key name arrives as characters. Multi-line
+// text does not go through `-l` at all — see the paste branch below, and
+// MUS-D-0096 for why.
 func (a *Adapter) Send(ctx context.Context, project, text string) error {
 	name, err := NameFor(project)
 	if err != nil {
@@ -303,12 +348,18 @@ func (a *Adapter) Send(ctx context.Context, project, text string) error {
 		// Multi-line goes in as a paste, not as keystrokes.
 		//
 		// A newline typed into a terminal is Enter, and Enter in an agent's
-		// composer submits. Measured on Claude Code, `send-keys -l` with
-		// embedded newlines does land all the lines in the composer — the TUI
-		// treats one burst as a paste — but that is the CLI guessing from
-		// timing, and a slow or split write is a message submitted halfway
-		// through. A bracketed paste says "this is text" rather than leaving it
-		// to be inferred.
+		// composer submits.
+		//
+		// **Measured**, against Claude Code: `send-keys -l` with embedded
+		// newlines lands every line in the composer, and a bracketed paste
+		// does too and arrives as one message. Both work.
+		//
+		// **Asserted**, and the reason the paste is used anyway: that the TUI
+		// reads one burst as a paste, that this is the CLI inferring intent
+		// from timing, and that a write arriving split would therefore submit
+		// halfway through. No split write has been observed. A bracketed paste
+		// states that it is text instead of leaving it to be inferred, which is
+		// an argument from reliability rather than from a failure to work.
 		//
 		// Verified end to end against the real CLI: four lines pasted, one
 		// Enter, and the agent answered from all four
@@ -318,13 +369,21 @@ func (a *Adapter) Send(ctx context.Context, project, text string) error {
 		// arrives as an argument and this package's runner does not carry
 		// stdin — and because a draft written to a temp file to be read back is
 		// the owner's prose sitting on disk for no reason.
-		buf := "mustur-" + project
+		// A name per send, not per project. Two sends to the same session — the
+		// composer and `mustur answer`, or two tabs — used to share one buffer:
+		// the second set-buffer overwrote the first, the first paste delivered
+		// the wrong text and deleted the buffer, and the second found none.
+		buf := fmt.Sprintf("mustur-%s-%d", project, a.nextBuffer())
 		if out, err := a.runner().Run(ctx, "tmux", "set-buffer", "-b", buf, "--", text); err != nil {
 			return fmt.Errorf("tmux set-buffer: %w: %s", err, strings.TrimSpace(out))
 		}
-		// -p brackets it so the receiving program knows it is a paste; -d drops
-		// the buffer afterwards, so a draft does not outlive its delivery in
-		// tmux's paste stack where anything on this machine could read it.
+		// The owner's prose is in a tmux buffer from here until it is dropped,
+		// where anything running as this user can read it — so it is dropped on
+		// the way out whatever happens. -d does it on a successful paste; this
+		// covers the paste failing, which used to leave the text sitting there.
+		defer func() { _, _ = a.runner().Run(ctx, "tmux", "delete-buffer", "-b", buf) }()
+		// -p brackets it, so the receiving program is told it is a paste rather
+		// than left to infer it from timing.
 		if out, err := a.runner().Run(ctx, "tmux", "paste-buffer", "-b", buf, "-t", name, "-p", "-d"); err != nil {
 			return fmt.Errorf("tmux paste-buffer: %w: %s", err, strings.TrimSpace(out))
 		}

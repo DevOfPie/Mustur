@@ -106,6 +106,24 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A viewer that falls behind is disconnected, not quietly starved](#a-viewer-that-falls-behind-is-disconnected-not-quietly-starved) | Skipping left it 8 MB behind with no notice |
 | [The bar grows in three templates, not one](#the-bar-grows-in-three-templates-not-one) | Three different bars in one binary |
 | [The exit is logged, and supervision only runs while somebody is watching](#the-exit-is-logged-and-supervision-only-runs-while-somebody-is-watching) | A session nobody opened is not being watched |
+| [The investigation was registered before it was run](#the-investigation-was-registered-before-it-was-run) | Why the rule preceding the finding is the evidence |
+| [The route is lifecycle hooks, and the pane is untouched](#the-route-is-lifecycle-hooks-and-the-pane-is-untouched) | How a sub-agent is found, and what it costs nothing |
+| [The hook is passed per session, and persists nowhere — MUS-Q-0024](#the-hook-is-passed-per-session-and-persists-nowhere--mus-q-0024) | Where the hook lives, and what it never writes to |
+| [A row shows what is documented — MUS-Q-0025](#a-row-shows-what-is-documented--mus-q-0025) | What a sub-agent row carries, and what it declines to |
+| [The gate that failed again, and what it cost this time](#the-gate-that-failed-again-and-what-it-cost-this-time) | Five decisions taken in prose, and the one that mislabelled a row |
+| [Three defects the fake runner could never have shown](#three-defects-the-fake-runner-could-never-have-shown) | Rows outliving their session, a tool never left, a launch queued twice |
+| [The records were the fiction, not the prose](#the-records-were-the-fiction-not-the-prose) | A generated export hand-edited, with every gate still green |
+| [A third invented citation, in the third place the verifier cannot look](#a-third-invented-citation-in-the-third-place-the-verifier-cannot-look) | Identifiers asserted in Go comments, where nothing checks them |
+| [Evidence a reader can reach](#evidence-a-reader-can-reach) | The harness that reproduces the investigation's numbers |
+| [Live rows, against the recommendation](#live-rows-against-the-recommendation) | Sub-agent rows pushed down the socket, and what that widened |
+| [What changed](#what-changed) | A routing record naming its own identifier prefix |
+| [Narrow on purpose](#narrow-on-purpose) | One target now, and why generalising waits for milestone 7 |
+| [`MUS-F-0025` keeps its name](#mus-f-0025-keeps-its-name) | Why a misleading prefix is cheaper than an exception to permanence |
+| [The design question was answered, and this repository went on calling it open](#the-design-question-was-answered-and-this-repository-went-on-calling-it-open) | Thought first, destination second, and three days of staleness |
+| [One draft, not one per session](#one-draft-not-one-per-session) | Why the draft follows the owner rather than the page |
+| [It is not a fourth tab, and not a second scripted page](#it-is-not-a-fourth-tab-and-not-a-second-scripted-page) | Where the composer lives — superseded by MUS-Q-0034 |
+| [A newline typed into a terminal is Enter](#a-newline-typed-into-a-terminal-is-enter) | Why multi-line goes as a bracketed paste |
+| [An hour lost to `timeout`](#an-hour-lost-to-timeout) | A test fixture that starved its own pane on SIGTTIN |
 
 ---
 
@@ -1916,14 +1934,22 @@ The part that would have shipped broken. Enter in an agent's composer submits,
 so the obvious path turns a three-line draft into three prompts and a fourth
 empty one.
 
-Measured, before choosing: `send-keys -l` with embedded newlines *does* land
-every line in Claude Code's composer, because the TUI reads one burst as a
-paste. That is the CLI inferring intent from timing, and a write that arrives
-split is a message submitted halfway through. So multi-line goes as a bracketed
-paste, which says *this is text* instead of leaving it to be guessed, and drops
-its buffer afterwards so a draft does not sit in tmux's paste stack. Single-line
-still goes as keystrokes: that is 4a's answer-delivery path, and it has shipped
-behaviour behind it that this had no reason to disturb.
+**Measured**, before choosing: `send-keys -l` with embedded newlines *does*
+land every line in Claude Code's composer, and a bracketed paste does too and
+arrives as one message. Both work.
+
+**Asserted**, and this is the part that actually chose the mechanism, so it is
+labelled rather than blended in: that the TUI reads one burst as a paste, that
+this is the CLI inferring intent from timing, and that a write arriving split
+would submit halfway through. **No split write was ever observed.** The paste is
+used because it states that it is text instead of leaving it to be inferred —
+an argument from reliability, not from a failure to work — and it drops its
+buffer afterwards so a draft does not sit in tmux's paste stack.
+
+Single-line still goes as keystrokes: that is 4a's answer-delivery path, and it
+has shipped behaviour behind it that this had no reason to disturb. That claim
+was itself too narrow and `MUS-D-0098` carries the correction: nothing limits an
+answer to one line.
 
 **No test in this tree proves the clause that matters.** That a paste arrives as
 one message rather than one prompt per line was measured by hand against the

@@ -29,6 +29,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/session"
@@ -310,11 +311,17 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	quiet := 0
+	// Both the reader loop and the input goroutine write frames now — the
+	// second only to report that a message was discarded — and a WebSocket
+	// permits one writer at a time.
+	var writing sync.Mutex
 	send := func(f frame) error {
 		b, err := json.Marshal(f)
 		if err != nil {
 			return err
 		}
+		writing.Lock()
+		defer writing.Unlock()
 		wctx, wcancel := context.WithTimeout(conn, 10*time.Second)
 		defer wcancel()
 		return c.Write(wctx, websocket.MessageText, b)
@@ -359,7 +366,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	idle := time.NewTimer(IdleTimeout)
 	defer idle.Stop()
 
-	go s.readInput(conn, cancel, c, project, s.actor(r), idle)
+	go s.readInput(conn, cancel, c, project, s.actor(r), idle, send)
 
 	for {
 		select {
@@ -428,7 +435,7 @@ func resetIdle(t *time.Timer, d time.Duration) {
 // Ownership is re-checked on every message rather than only at connect: a
 // socket opened against a live session must not keep writing to that project's
 // name after the session ends and a different one is started under it.
-func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Conn, project, actor string, idle *time.Timer) {
+func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Conn, project, actor string, idle *time.Timer, say func(frame) error) {
 	defer cancel()
 	c.SetReadLimit(MaxInput)
 	last := time.Time{}
@@ -445,16 +452,24 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 		if text == "" {
 			continue
 		}
+		// Every path out of here used to be silent: a message inside the rate
+		// limit was skipped, a dead session closed the socket, and a failed
+		// Send closed it too. The owner saw a pill change and their text gone.
+		// frame.Error existed in this file the whole time and was never
+		// assigned; the client now has a branch for it and keeps the draft.
 		if now := s.now(); now.Sub(last) < InputEvery {
+			_ = say(frame{T: "error", Error: "sent too quickly; that one was not delivered"})
 			continue
 		} else {
 			last = now
 		}
 		live, err := s.Adapter.Alive(ctx, project)
 		if err != nil || !live {
+			_ = say(frame{T: "error", Error: "that session is no longer running, so nothing was sent"})
 			return
 		}
 		if err := s.Adapter.Send(ctx, project, text); err != nil {
+			_ = say(frame{T: "error", Error: "the session did not take it: " + err.Error()})
 			return
 		}
 		// Typing counts as activity, so a session the owner is talking to does
@@ -564,7 +579,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <pre id="out"></pre>
 <div id="foot">quiet 0s</div>
 <form id="say">
-  <div class="dest"><span class="grow" id="dest">Send to {{.Project}}</span><a href="#rail" id="change">Change</a><span id="kept" hidden>draft kept</span></div>
+  <div class="dest"><span class="grow" id="dest">Send to {{.Project}}</span><a href="/compose" id="compose-link">Compose…</a><span id="kept" hidden>draft kept</span></div>
   <div class="row">
     <textarea id="text" rows="1" placeholder="Reply to this session"
               spellcheck="true" autocapitalize="sentences" autocorrect="on"

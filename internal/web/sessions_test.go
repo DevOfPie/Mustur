@@ -482,11 +482,12 @@ func TestTheComposerNamesItsDestination(t *testing.T) {
 	if !strings.Contains(body, "Send to Mustur") {
 		t.Error("the destination line does not name the session")
 	}
-	if !strings.Contains(body, `id="change"`) {
-		t.Error("no way to change the destination")
-	}
-	if !strings.Contains(body, `id="rail"`) {
-		t.Error("Change points at the session rail, which has no anchor to point at")
+	// Changing the destination is the composer's job, not this box's: the
+	// owner declined a reply box that pretends to be a router on MUS-Q-0034,
+	// so this one names where it is going and links to the screen where that
+	// can be changed.
+	if !strings.Contains(body, `href="/compose"`) {
+		t.Error("no route from the reply box to the composer")
 	}
 	if !strings.Contains(body, `id="kept"`) {
 		t.Error("nothing tells the owner a draft is being kept, which is the whole reason this is not a chat box")
@@ -601,5 +602,14 @@ func TestMultiLineFromTheComposerReachesTheSession(t *testing.T) {
 		if !strings.Contains(received, want) {
 			t.Errorf("%q never reached the session; it received %q", want, received)
 		}
+	}
+	// Order and the newlines themselves, because "all three arrived" is also
+	// true of three lines arriving backwards or run together on one. The work
+	// unit credited this test with both checks before it made either.
+	if i, j := strings.Index(received, "first line"), strings.Index(received, "third line"); i < 0 || j < 0 || i > j {
+		t.Errorf("the lines arrived out of order: %q", received)
+	}
+	if !strings.Contains(received, "draft\nsecond") && !strings.Contains(received, "draft\r\nsecond") {
+		t.Errorf("the newline between lines did not survive: %q", received)
 	}
 }

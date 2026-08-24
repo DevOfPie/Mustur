@@ -377,3 +377,47 @@ func TestTheSeededIdeaInboxCarriesItsPrefix(t *testing.T) {
 		t.Errorf("routing against the seed gives prefix %q, want IDW", got)
 	}
 }
+
+// A destination chosen by hand carries its own prefix, exactly as one arrived
+// at by the guess does.
+//
+// It did not. The prefix was read only inside Route, so a jot the router sent
+// to the idea inbox was IDW-F-0001 while the same jot sent there deliberately
+// was filed under the store's prefix — the identifier depended on how the
+// choice was made rather than on where the record went. Found by the composer,
+// which only ever chooses explicitly.
+func TestAnExplicitDestinationCarriesItsPrefix(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	for _, r := range routing() {
+		if r.Kind == "decision" {
+			continue
+		}
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Text that names Mustur, sent deliberately to the inbox instead: the guess
+	// would have gone the other way, so this can only pass on the chosen path.
+	r, to, err := File(ctx, s, Request{
+		Project: "MUS",
+		Text:    "DevOfPie/Mustur could use a second look at this",
+		Actor:   "pie",
+		To:      "MUS-P-0002",
+		Now:     time.Date(2026, 8, 24, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if to.ID != "MUS-P-0002" {
+		t.Fatalf("routed to %s; the explicit choice was overruled", to.ID)
+	}
+	if !strings.HasPrefix(r.ID, "IDW-F-") {
+		t.Errorf("filed as %s, want the idea inbox's prefix", r.ID)
+	}
+}

@@ -12,7 +12,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | --- | --- | --- | --- |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
-| [MUS-F-0002](#mus-f-0002) | One of the three promised open design questions is missing |  |  |
+| [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
 | [MUS-F-0004](#mus-f-0004) | The export and this repository's contract files hold the same records twice |  | unreviewed |
 | [MUS-F-0005](#mus-f-0005) | A seeded record's summary can drift from the prose it links to |  | unreviewed |
@@ -76,16 +76,16 @@ queue.md is a jot log with no evidence or review column, and the repository decl
 
 ## MUS-F-0002
 
-**One of the three promised open design questions is missing**
+**Pull request #1 promises three open design questions and the file marks two**
 
-finding · 2026-08-19
+finding · 2026-08-24
 
 Pull request #1's body promises three open design questions in docs/ui-surfaces.md. The file marks two, on the composer and on records. The third is either unwritten or was retired without a note.
 
 | Field | Value |
 | --- | --- |
-| Noticed by | whippy |
-| Source | [docs/ui-surfaces.md](../docs/ui-surfaces.md) |
+| Status | overtaken 2026-08-24 |
+| Since | Both questions the file still marked are now answered and the file marks none: the composer's on MUS-D-0013 and MUS-Q-0034, records' earlier. The count in this finding was true when filed and is not a description of the tree now. The underlying complaint — that a pull request body claimed a number nothing checked — stands, and is why the count is no longer written anywhere but the file itself. |
 
 ---
 
