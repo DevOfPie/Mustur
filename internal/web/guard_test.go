@@ -47,8 +47,9 @@ func guarded(t *testing.T) (*httptest.Server, *account.Store) {
 }
 
 // signedInAs invites somebody, redeems, and returns a client carrying their
-// session cookie. The passkey ceremony itself needs a browser; everything after
-// it is a cookie, which is what the guard actually reads.
+// session cookie. It skips the ceremony rather than being unable to run one —
+// auth_test.go drives that against a virtual authenticator — because what the
+// guard reads is the cookie, and getting there twice would test the wrong file.
 func signedInAs(t *testing.T, srv *httptest.Server, accounts *account.Store, email, project string, role account.Role) *http.Client {
 	t.Helper()
 	ctx := context.Background()
