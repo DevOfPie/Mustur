@@ -55,10 +55,18 @@ these were four of them.
 
 They now have [a plan of their
 own](https://plan.agent-native.com/plans/plan-b1277e4f36f24da3), published
-2026-08-25 with seven artboards, and the owner's answer on
+2026-08-25 and reviewed the same day, and the owner's answer on
 [MUS-Q-0043](../records/questions.md#mus-q-0043) is that they are rebuilt from
 whatever it settles. What exists is the baseline to argue with, which is the
 standing intake was given.
+
+**Twelve comments came back, and five said the same thing:** take the
+explanatory prose out of the wireframes. That is worth recording as a fact about
+how these were written rather than as twelve separate corrections — the pages
+were narrating themselves. What survives is the line telling somebody with no
+account where one comes from, and the line naming the command that makes the
+first owner. The rest of the changes are in
+[MUS-D-0106](../records/decisions.md#mus-d-0106).
 
 **The plan for the original seven is
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
@@ -275,25 +283,41 @@ Must answer: what does a bad invitation look like? One message for expired,
 already spent and never existed — anything finer is an oracle for somebody
 guessing tokens.
 
-### 11. Add a passkey
+### 11. Account
 
-The recovery the owner named when they chose passkeys: a second device, so a
-lost one is not a lost account. The only page in this set that assumes somebody
-is already signed in.
+Your roles and your passkeys, and nothing about anybody else — the owner settled
+that directly on
+[MUS-Q-0046](../records/questions.md#mus-q-0046). A project reads as
+*Mustur (MUS)*, in full and with the tag, because an invited reader has never
+seen the tag and the tag is what every identifier uses.
 
-Must answer: nothing more than which account it is adding to. It is separate
-from the account page so that the account page carries no script — a WebAuthn
-ceremony needs the browser API and a management page should not.
+**Adding a passkey happens here**, in place, rather than on a page of its own.
+The first drawing gave it a page holding a heading and one button, which the
+review called what it was. The cost is named rather than absorbed: a WebAuthn
+ceremony needs the browser's credentials API, so this page carries script and
+the count of scripted surfaces is four rather than three
+([MUS-Q-0047](../records/questions.md#mus-q-0047)). Everything else on it works
+without.
 
-### 12. Account
+Must answer: what the surface refuses, and when you find out. The last passkey
+cannot be removed and the only owner cannot stand down. The banner that
+pre-announced the second was cut in review, so both are now met at the control
+rather than before it.
 
-Your roles, your passkeys, and — if you own the project — everybody else's roles
-and an invite form.
+### 12. People and invitations
 
-Must answer: what a reader sees, which is themselves and nothing about anybody
-else; and what the surface refuses. The last passkey cannot be removed and the
-only owner cannot stand down, and both are told *before* the button is pressed
-rather than after.
+Owners only, and a second screen rather than the bottom of the account page
+([MUS-Q-0045](../records/questions.md#mus-q-0045)) — which is also where the
+room came from, since the people rows overlapped on a phone when they shared a
+screen.
+
+Must answer: **an invitation link is a secret shown once.** It is never stored,
+so a truncated one is a secret destroyed and the only recovery is issuing
+another. It is shown whole, with a copy button.
+
+Must also answer: a control that appears to do something must do it. Changing a
+role saves it; there is no separate button to press afterwards, which the review
+named as the failure it is.
 
 ## Not surfaces
 

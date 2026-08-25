@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 11 | [milestones.md](milestones.md) |
-| question | 44 | [questions.md](questions.md) |
-| decision | 105 | [decisions.md](decisions.md) |
+| question | 47 | [questions.md](questions.md) |
+| decision | 106 | [decisions.md](decisions.md) |
 | finding | 26 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 19 | [work-units/index.md](work-units/index.md) |
@@ -95,6 +95,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0042](questions.md#mus-q-0042) | question | Who gets an account, and does an account see everything? |
 | [MUS-Q-0043](questions.md#mus-q-0043) | question | Four authentication pages were built with no wireframe. What happens to them? |
 | [MUS-Q-0044](questions.md#mus-q-0044) | question | How much design do the authentication pages actually need? |
+| [MUS-Q-0045](questions.md#mus-q-0045) | question | Is the account surface one screen or two? |
+| [MUS-Q-0046](questions.md#mus-q-0046) | question | Should a reader see who else has access? |
+| [MUS-Q-0047](questions.md#mus-q-0047) | question | Does adding a passkey deserve its own page? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -200,6 +203,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0103](decisions.md#mus-d-0103) | decision | Mustur grows its own accounts, and Access stays in front while they are built |
 | [MUS-D-0104](decisions.md#mus-d-0104) | decision | The credential is a passkey, and losing the device is not losing the account |
 | [MUS-D-0105](decisions.md#mus-d-0105) | decision | WebAuthn verification uses a maintained library rather than this repository's own crypto |
+| [MUS-D-0106](decisions.md#mus-d-0106) | decision | The authentication surfaces, after their first review |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

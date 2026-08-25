@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-44 record(s), by identifier.
+47 record(s), by identifier.
 
 ---
 
@@ -1012,4 +1012,70 @@ Three of the four are a sentence and a button: sign in, accept an invitation, ad
 | Surfaced | 2026-08-25 04:05 |
 | Answer | Wireframe like the others. |
 | Answered | 2026-08-25 04:05 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0045
+
+**Is the account surface one screen or two?**
+
+question · 2026-08-25
+
+The drawing stacked your own passkeys and, for an owner, everybody else's roles on one screen. An owner scrolled past their own two passkeys to reach the people list, and a review found the people rows overlapping on a phone.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what a reader can reach, and how crowded the owner's view is |
+| Option | Split: yours, and everybody's :: Two screens :: /account is your roles and your passkeys. People and invitations is a second screen only an owner can reach. A reader never sees it and cannot navigate to it. |
+| Option | One screen :: Everything in one place :: Honest about how little there is, until somebody has twenty accounts. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:28 |
+| Answer | Split: yours, and everybody's. |
+| Answered | 2026-08-25 04:28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0046
+
+**Should a reader see who else has access?**
+
+question · 2026-08-25
+
+A reader currently sees themselves and nothing else. The alternative is that anybody with a role can see the list of people without being able to change it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what an invited reader learns about the people around them |
+| Option | No, only themselves :: A reader learns nothing about the shape of the team :: They were given an account to read records, and the list of addresses is not that. |
+| Option | Yes, read-only :: Everybody sees who has access :: Useful in a shared project, and it means inviting one reader tells them every other address. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:28 |
+| Answer | No — only themselves. |
+| Answered | 2026-08-25 04:28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0047
+
+**Does adding a passkey deserve its own page?**
+
+question · 2026-08-25
+
+The first drawing gave the ceremony a page: a heading, a sentence and one button. A review called it a page for one button. Opening it in place on the account screen removes the page and gives that screen the browser credentials API, which takes the count of scripted surfaces from three to four.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | how many surfaces carry script |
+| Option | In place, on the account screen :: One fewer page, one more script :: The button opens the ceremony where you already are. Everything else on that page still works without script. |
+| Option | Its own page :: The account page stays script-free :: A whole page whose content is a heading and a button. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:28 |
+| Answer | In place. It does not need a whole screen for it. |
+| Answered | 2026-08-25 04:28 |
 | Delivered | not delivered: the question names no session |

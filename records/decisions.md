@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-105 record(s), by identifier.
+106 record(s), by identifier.
 
 ## Index
 
@@ -117,6 +117,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0103](#mus-d-0103) | Mustur grows its own accounts, and Access stays in front while they are built | 2026-08-24 |
 | [MUS-D-0104](#mus-d-0104) | The credential is a passkey, and losing the device is not losing the account | 2026-08-24 |
 | [MUS-D-0105](#mus-d-0105) | WebAuthn verification uses a maintained library rather than this repository's own crypto | 2026-08-24 |
+| [MUS-D-0106](#mus-d-0106) | The authentication surfaces, after their first review | 2026-08-25 |
 
 ---
 
@@ -1688,3 +1689,21 @@ A password would bring hashing, rate limiting, lockout, reset by email and a bre
 decision · 2026-08-24
 
 Registering and asserting a passkey means parsing CBOR attestation objects, checking a relying-party hash, verifying an ES256 or RS256 signature and tracking a signature counter. This repository's dependency list is short and stays short on purpose, and this is the case where that stance loses: hand-rolled authentication crypto is the classic way to ship a hole that no test in the tree would show. go-webauthn/webauthn is the maintained implementation and it is pure Go, so the static binary and the modernc SQLite driver are unaffected.
+
+---
+
+## MUS-D-0106
+
+**The authentication surfaces, after their first review**
+
+decision · 2026-08-25
+
+answers: [MUS-Q-0045](questions.md#mus-q-0045)
+
+and: [MUS-Q-0046](questions.md#mus-q-0046)
+
+and inline: [MUS-Q-0047](questions.md#mus-q-0047)
+
+drawn under: [MUS-Q-0043](questions.md#mus-q-0043)
+
+Twelve comments on plan-b1277e4f36f24da3, and five of them were the same instruction: take the explanatory prose out of the wireframes. What survives is the line telling somebody with no account where one comes from, and the line naming the command that makes the first owner — both do work rather than narrate. What went is every sentence reassuring the reader about passkeys. The account surface splits in two, a reader sees only themselves, and adding a passkey happens in place rather than on a page, which takes the count of scripted surfaces from three to four and is recorded here rather than absorbed. Three fixes came from the drawing being wrong rather than wordy: a one-time invitation link was shown truncated with no way to copy it, which for a secret that is never stored again is a secret destroyed; the people rows overlapped on a phone; and a role dropdown did nothing until a separate Set button was pressed, which the owner named as bad and is now a save on change. One thing was cut that had argued for itself: the banner warning the only owner that some controls would refuse. The refusals remain, so the change is that somebody meets the rule by meeting it.
