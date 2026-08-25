@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 55 | [questions.md](questions.md) |
-| decision | 112 | [decisions.md](decisions.md) |
+| decision | 113 | [decisions.md](decisions.md) |
 | finding | 29 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -221,6 +221,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0110](decisions.md#mus-d-0110) | decision | An agent's token is not an account, and its scope is what makes it safe |
 | [MUS-D-0111](decisions.md#mus-d-0111) | decision | The guard lets a token past the tool call with no write check, and a test in another package holds that |
 | [MUS-D-0112](decisions.md#mus-d-0112) | decision | A flag that changes nothing describes a credential that does not exist |
+| [MUS-D-0113](decisions.md#mus-d-0113) | decision | A token's lifetime is optional and defaults to never |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-112 record(s), by identifier.
+113 record(s), by identifier.
 
 ## Index
 
@@ -124,6 +124,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0110](#mus-d-0110) | An agent's token is not an account, and its scope is what makes it safe | 2026-08-25 |
 | [MUS-D-0111](#mus-d-0111) | The guard lets a token past the tool call with no write check, and a test in another package holds that | 2026-08-25 |
 | [MUS-D-0112](#mus-d-0112) | A flag that changes nothing describes a credential that does not exist | 2026-08-25 |
+| [MUS-D-0113](#mus-d-0113) | A token's lifetime is optional and defaults to never | 2026-08-25 |
 
 ---
 
@@ -1797,3 +1798,19 @@ decision · 2026-08-25
 built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
 
 `mustur account token` took a --role of owner or reader. The role was stored, printed in the listing, and consulted by no request path: measured, a reader token and an owner token reached exactly the same thing, because the surface a token opens serves one read-only tool. The flag is gone and every token is issued as a reader. A role here becomes meaningful the day the tool surface stops being read-only, which is the same day the decision above needs revisiting; until then, offering the choice advertised a weaker credential nobody could actually have. The same review found --project's help calling it 'the project the token may read', when a token reads nothing — it opens the tool call.
+
+---
+
+## MUS-D-0113
+
+**A token's lifetime is optional and defaults to never**
+
+decision · 2026-08-25
+
+answers: [MUS-Q-0055](questions.md#mus-q-0055)
+
+corrects: [MUS-D-0110](#mus-d-0110)
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+The owner's answer on MUS-Q-0051 said a token has 'its own lifetime and its own revocation'. The build had revocation and no lifetime, and the reasoning for that was written into decisions.md rather than put to the owner — which workflow.md names as a bug to report, not a conflict to resolve. A review found it, and it went back as MUS-Q-0055. The answer is the middle shape: --expires is optional and zero means never. An invitation expires because it is a link in transit and a session expires because a browser is borrowed; an agent token is configuration, and one that stops on a date nobody chose is an outage rather than a control. A lifetime is still worth having for a token minted for a single job or for somebody else's machine. A token therefore has two ways to stop, so the listing says which: revoked beats expired, because a revocation is a decision and an expiry is only a date arriving. ByToken tells a caller neither, for the same reason ErrNoInvite says nothing about why.

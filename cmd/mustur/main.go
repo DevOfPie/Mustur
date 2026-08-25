@@ -52,7 +52,7 @@ const usage = `mustur — records and routing for one project
                   list | stop P               there is no send: see cmd/mustur/sessions.go
   mustur account  invite --email E [--role R]  a one-time link; printed once, never stored
                   list | grant                who Mustur knows, and what they may do
-                  token --for LABEL           an agent's credential; printed once, never stored
+                  token --for LABEL [--expires D]  an agent's credential; printed once, never stored
                   tokens | revoke ID          which agents can reach the tool call
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version

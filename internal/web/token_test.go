@@ -10,11 +10,13 @@ package web
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/DevOfPie/Mustur/internal/account"
 	"github.com/DevOfPie/Mustur/internal/mcpsrv"
@@ -100,7 +102,7 @@ func TestAnAgentReachesTheToolCallWithATokenAndNoCookie(t *testing.T) {
 		t.Fatalf("an agent with no credential got %d; the guard is not on", code)
 	}
 
-	secret, tok, err := accounts.IssueToken(ctx, "claude-code on this machine", "MUS", account.Reader, "test")
+	secret, tok, err := accounts.IssueToken(ctx, "claude-code on this machine", "MUS", account.Reader, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,7 +156,7 @@ func TestAnAgentReachesTheToolCallWithATokenAndNoCookie(t *testing.T) {
 func TestRevokingATokenStopsItAtOnce(t *testing.T) {
 	srv, accounts := tokenGuarded(t)
 	ctx := context.Background()
-	secret, tok, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test")
+	secret, tok, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,7 +188,7 @@ func TestRevokingATokenStopsItAtOnce(t *testing.T) {
 func TestATokenOpensTheToolCallAndNothingElse(t *testing.T) {
 	srv, accounts := tokenGuarded(t)
 	ctx := context.Background()
-	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Owner, "test")
+	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Owner, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,7 +220,7 @@ func TestATokenOpensTheToolCallAndNothingElse(t *testing.T) {
 func TestATokenForAnotherProjectIsRefused(t *testing.T) {
 	srv, accounts := tokenGuarded(t)
 	ctx := context.Background()
-	secret, _, err := accounts.IssueToken(ctx, "an agent elsewhere", "IDW", account.Owner, "test")
+	secret, _, err := accounts.IssueToken(ctx, "an agent elsewhere", "IDW", account.Owner, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,7 +234,7 @@ func TestATokenForAnotherProjectIsRefused(t *testing.T) {
 func TestRubbishInTheHeaderIsJustRefused(t *testing.T) {
 	srv, accounts := tokenGuarded(t)
 	ctx := context.Background()
-	secret, _, err := accounts.IssueToken(ctx, "real", "MUS", account.Reader, "test")
+	secret, _, err := accounts.IssueToken(ctx, "real", "MUS", account.Reader, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,7 +262,7 @@ func TestRubbishInTheHeaderIsJustRefused(t *testing.T) {
 func TestTheTokenPrefixIsRequired(t *testing.T) {
 	srv, accounts := tokenGuarded(t)
 	ctx := context.Background()
-	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test")
+	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -283,7 +285,7 @@ func TestTheTokenPrefixIsRequired(t *testing.T) {
 func TestOnlyTheRegisteredToolPathIsOpenedByAToken(t *testing.T) {
 	srv, accounts := tokenGuarded(t)
 	ctx := context.Background()
-	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test")
+	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -325,7 +327,7 @@ func TestATokenAndACookieOnTheSameRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	secret, tok, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test")
+	secret, tok, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -377,4 +379,66 @@ func postBoth(t *testing.T, srv *httptest.Server, path, bearer, cookie string) i
 	}
 	defer res.Body.Close()
 	return res.StatusCode
+}
+
+// A lifetime, when one is asked for — and none when it is not (MUS-Q-0055).
+//
+// The builder argued for no lifetime at all and wrote the argument into
+// decisions.md rather than asking, which is the failure this repository keeps
+// making. The owner's answer was the middle one: optional, defaulting to never.
+func TestATokenExpiresOnlyWhenAskedTo(t *testing.T) {
+	srv, accounts := tokenGuarded(t)
+	ctx := context.Background()
+
+	// The ordinary token: no expiry, and hours later it still works.
+	forever, _, err := accounts.IssueToken(ctx, "the deployment", "MUS", account.Reader, "test", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A short-lived one, for a single job.
+	brief, tok, err := accounts.IssueToken(ctx, "a one-off agent", "MUS", account.Reader, "test", time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tok.Expires.IsZero() {
+		t.Fatal("a token asked to expire recorded no expiry")
+	}
+	for _, secret := range []string{forever, brief} {
+		if code, _ := call(t, srv, http.MethodPost, "/mcp", "Bearer "+secret); code != http.StatusOK {
+			t.Fatalf("a fresh token was refused: %d", code)
+		}
+	}
+
+	// Two hours on, by the clock the store reads rather than by waiting.
+	later := time.Now().Add(2 * time.Hour)
+	aged := accounts.WithClock(func() time.Time { return later })
+	if _, err := aged.ByToken(ctx, brief); !errors.Is(err, account.ErrNoToken) {
+		t.Errorf("an expired token resolved: %v", err)
+	}
+	if _, err := aged.ByToken(ctx, forever); err != nil {
+		t.Errorf("a token with no expiry stopped working anyway: %v", err)
+	}
+
+	// The listing says which stopped, rather than only that one did.
+	all, err := aged.Tokens(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 2 {
+		t.Fatalf("%d tokens listed", len(all))
+	}
+	for _, tk := range all {
+		live := tk.LiveAt(later)
+		if tk.Expires.IsZero() && !live {
+			t.Error("a token with no expiry is reported as not live")
+		}
+		if !tk.Expires.IsZero() && live {
+			t.Error("an expired token is reported as live")
+		}
+	}
+
+	// A negative lifetime is refused rather than minting something born dead.
+	if _, _, err := accounts.IssueToken(ctx, "backwards", "MUS", account.Reader, "test", -time.Hour); err == nil {
+		t.Error("a token was issued with a lifetime in the past")
+	}
 }

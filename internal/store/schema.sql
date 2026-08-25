@@ -176,6 +176,11 @@ CREATE TABLE IF NOT EXISTS agent_token (
   -- Revocation is a timestamp rather than a deletion, so `mustur account
   -- tokens` can still say a token existed and when it stopped.
   revoked    TEXT,
+  -- Optional, and empty means never (MUS-Q-0055). A token is configuration, so
+  -- expiring by default would make an ordinary Tuesday into an outage; but a
+  -- one-off agent, or one on somebody else's machine, is exactly the case for a
+  -- token that stops on its own.
+  expires    TEXT,
   last_used  TEXT
 );
 

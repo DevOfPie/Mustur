@@ -128,6 +128,11 @@ func cmdAccount(args []string) error {
 		db := dbFlag(fs)
 		label := fs.String("for", "", "what carries it, in your words: \"claude-code on whippy-vm\"")
 		project := fs.String("project", "MUS", "the project whose tool call it opens")
+		// Zero means never, which is the default and the ordinary case. A token
+		// is configuration; one that expires on a date nobody chose is an
+		// outage. A lifetime is for the token that wants one — a single job, or
+		// somebody else's machine (MUS-Q-0055).
+		life := fs.Duration("expires", 0, "how long it lasts, e.g. 720h; the default never expires")
 		if err := fs.Parse(rest); err != nil {
 			return err
 		}
@@ -146,13 +151,17 @@ func cmdAccount(args []string) error {
 		// A role here becomes meaningful the day that stops being true, and
 		// until then offering the choice describes a weaker credential that
 		// does not exist.
-		secret, t, err := accounts.IssueToken(storeCtx, *label, *project, account.Reader, defaultActor())
+		secret, t, err := accounts.IssueToken(storeCtx, *label, *project, account.Reader, defaultActor(), *life)
 		if err != nil {
 			return err
 		}
 		// Printed once. Only the hash was written, so there is nothing to look
 		// up and a token that goes missing is reissued and the old one revoked.
-		fmt.Printf("token %s for %s — %s on %s\n", t.ID, t.Label, t.Role, t.Project)
+		when := "never expires"
+		if !t.Expires.IsZero() {
+			when = "expires " + t.Expires.Format("2006-01-02 15:04")
+		}
+		fmt.Printf("token %s for %s — %s on %s, %s\n", t.ID, t.Label, t.Role, t.Project, when)
 		fmt.Printf("  %s\n", secret)
 		fmt.Println("  shown once; carry it as: Authorization: Bearer <token>")
 		fmt.Printf("  revoke with: mustur account revoke %s\n", t.ID)
@@ -184,8 +193,17 @@ func cmdAccount(args []string) error {
 			if !t.LastUsed.IsZero() {
 				state = "last used " + t.LastUsed.Format("2006-01-02 15:04")
 			}
+			// Why it stopped, in the order somebody would want to know: revoked
+			// beats expired, because a revocation is a decision and an expiry is
+			// a date arriving.
+			if !t.Expires.IsZero() && !t.Live() {
+				state = "expired " + t.Expires.Format("2006-01-02 15:04")
+			}
 			if !t.Revoked.IsZero() {
 				state = "revoked " + t.Revoked.Format("2006-01-02 15:04")
+			}
+			if t.Live() && !t.Expires.IsZero() {
+				state += ", expires " + t.Expires.Format("2006-01-02 15:04")
 			}
 			fmt.Printf("%-14s %-32s %-14s %s\n",
 				t.ID, t.Label, t.Project+":"+string(t.Role), state)

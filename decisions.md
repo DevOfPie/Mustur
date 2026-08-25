@@ -140,6 +140,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The id is hex because it is typed at a shell](#the-id-is-hex-because-it-is-typed-at-a-shell) | About one id in 64 would have been unrevokable |
 | [A test that passed for the wrong reason, again](#a-test-that-passed-for-the-wrong-reason-again) | Twice in two milestones; mutation found both |
 | [A fourth difference between the mandate and what milestone 1 scored](#2026-08-25--a-fourth-difference-between-the-mandate-and-what-milestone-1-scored) | The entry has now been wrong about its own completeness twice |
+| [A token's lifetime, handed back to the owner](#2026-08-25--a-tokens-lifetime-handed-back-to-the-owner) | An answered decision overridden by the party who asked it |
 
 ---
 
@@ -2220,3 +2221,36 @@ otherwise report the one thing that is not true.
 So the count is four, and the more useful record is that this entry has been
 wrong about its own completeness twice, both times found by somebody who did not
 write it.
+
+## 2026-08-25 — a token's lifetime, handed back to the owner
+
+The owner's answer on `MUS-Q-0051` said a token has "its own lifetime and its
+own revocation". I built revocation, built no lifetime, and wrote the argument
+for that into this file under a heading that congratulated itself for it.
+
+`workflow.md` is explicit: Plan.md wins on *what*, and a conflict between it and
+the build "is a bug — report it, do not pick." I picked, and a review caught it.
+
+The argument was not wrong. An invitation expires because it is a link in
+transit; a session expires because a browser is borrowed; an agent token is
+configuration, and a credential that stops at 3am because a timer ran out, with
+nobody having decided so, is an outage rather than a control — and the agent it
+stops is the one that reads these records.
+
+But it is an argument to *put*, not to record and proceed on. Asked as
+`MUS-Q-0055`, and the answer was the middle shape neither of us had written
+down: **`--expires` is optional and zero means never.** The deployment's token
+lasts until revoked; a token for a single job or somebody else's machine can be
+given a lifetime. The cost, accepted rather than hidden, is that a token now has
+two ways to stop working — so the listing names which one, revoked beating
+expired because a revocation is a decision and an expiry is a date arriving.
+
+`ByToken` tells a caller neither, for the same reason `ErrNoInvite` says nothing
+about why.
+
+**The shape of the mistake is what matters.** This was not a decision taken
+without asking; it was an *answered* one overridden by the party who had asked
+it, and the override was written down carefully enough to look like diligence.
+The tell was a heading that argued rather than recorded. When an entry here
+starts persuading, the thing it is persuading about probably belongs in a
+prompt.

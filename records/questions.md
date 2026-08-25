@@ -1242,9 +1242,13 @@ question · 2026-08-25
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-M-0012 |
 | Option | Recommended — No expiry, and the clause is amended :: Revocation is the only stop; Plan.md's row loses the lifetime words :: An invitation expires because it is a link in transit and a session expires because a browser is borrowed. An agent token is configuration. A credential that stops working at 3am because a timer ran out, with nobody having decided that, is an outage rather than a control — and the agent it stops is the one that reads your records. Revocation is immediate and is a decision somebody takes. This asks you to drop half a clause you wrote, which is why it is a question rather than something I do quietly. |
 | Option | An optional --expires, defaulting to never :: The clause is satisfied and nothing changes unless you ask for it :: Cheap, honest, and lets a short-lived token exist for a one-off agent or somebody else's machine. It also adds a second way for a token to stop working, so 'why did this break' has two answers instead of one — which is the cost, and it is small. |
 | Option | A real default lifetime, say 90 days :: Every token expires unless renewed :: The strictest reading of your answer, and the ordinary industry shape. It means the deployment's own token stops on a date, and the failure mode is an agent that cannot read the records until somebody notices — on a machine you may not be sitting at. |
 | Asked by | whippy |
+| Surfaced | 2026-08-25 07:59 |
+| Answer | An optional --expires, defaulting to never. The clause the owner wrote is satisfied without making an ordinary Tuesday into an outage: a token issued for the deployment lasts until it is revoked, and a token for a one-off agent or somebody else's machine can be given a lifetime. The cost the owner accepted is that a token now has two ways to stop working, so 'why did this break' has two answers rather than one — which is why the listing names which. |
+| Answered | 2026-08-25 07:59 |
+| Delivered | not delivered: the question names no session |
