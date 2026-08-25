@@ -45,6 +45,13 @@ type Records struct {
 	// without depending on whose machine the test runs on.
 	Home string
 	Now  func() time.Time
+	// ShowSessions renders the Sessions tab. This surface shipped without it,
+	// which quietly reduced MUS-D-0041's bar from four tabs to three.
+	ShowSessions bool
+	// ShowAccount renders the header link to the account surface, which is
+	// served only when an origin is configured. Off means the link is absent
+	// rather than dead (MUS-Q-0052).
+	ShowAccount bool
 }
 
 func (rr *Records) now() time.Time {
@@ -126,9 +133,11 @@ type kindView struct {
 }
 
 type recordsPage struct {
-	Project string
-	Kinds   []kindView
-	Total   int
+	Project      string
+	ShowSessions bool
+	ShowAccount  bool
+	Kinds        []kindView
+	Total        int
 	// One is set when a single record was asked for by identifier.
 	One     *recordView
 	Missing string
@@ -313,6 +322,10 @@ func less(a, b string) bool {
 func (rr *Records) render(w http.ResponseWriter, p recordsPage) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
+	// Set here rather than at three call sites, because a page built without
+	// them renders a bar missing a tab and says nothing about it.
+	p.ShowSessions = rr.ShowSessions
+	p.ShowAccount = rr.ShowAccount
 	if err := recordsTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -332,6 +345,12 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   header { display: flex; align-items: baseline; gap: .6rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); }
   header strong { font-size: 1rem; }
+  /* MUS-Q-0052: the account surface is reached from here rather than from
+     a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
+     actually serves it — a link that goes nowhere is the failure the bar
+     itself was written to avoid. */
+  .acct { font-size: .82em; opacity: .6; text-decoration: none;
+          color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
   /* The counts are the only navigation, which is the decision this page rests
      on: no tree, no filter, no search box. */
@@ -371,7 +390,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 <body>
 <header><strong>{{if .One}}{{.One.ID}}{{else}}Records{{end}}</strong>
   {{if .One}}<a href="/records" style="font-size:.82em">all records</a>{{end}}
-  <span class="who">{{.Project}}</span></header>
+  <span class="who">{{.Project}}</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 
 {{if .Missing}}
 <p class="none">No record called {{.Missing}}.<br>
@@ -389,10 +408,10 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 {{end}}
 
 <nav>
-  <a href="/records" class="here">Records</a>
+  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions">Decisions</a>
   <a href="/intake">Intake</a>
-  <a href="/account">Account</a>
+  <a href="/records" class="here">Records</a>
 </nav>
 </body>
 </html>

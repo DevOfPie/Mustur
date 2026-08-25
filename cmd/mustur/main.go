@@ -454,13 +454,20 @@ func cmdServe(args []string) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
+	// One condition for all five headers: /account is registered only when an
+	// origin is configured, so the link exists exactly when the surface does.
+	// MUS-Q-0052 chose a header link over a fifth tab, and a link that goes
+	// nowhere is the failure the bar was written to avoid.
+	showAccount := *origin != ""
 	intake := &web.Intake{
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
 		ShowSessions: *withSessions,
+		ShowAccount:  showAccount,
 	}
 	questions := &web.Questions{
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
 		ShowSessions: *withSessions,
+		ShowAccount:  showAccount,
 		// An answer typed from a phone is carried into the session that raised
 		// it, if that session is still alive and Mustur started it.
 		Sessions: &session.Adapter{},
@@ -478,7 +485,11 @@ func cmdServe(args []string) error {
 	// will ever read.
 	defer hub.Shutdown()
 	if *withSessions {
-		sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor(), HookDir: hookDir}
+		sessions := &web.Sessions{
+			Hub: hub, Adapter: adapter, Store: s,
+			Actor: defaultActor(), HookDir: hookDir,
+			ShowAccount: showAccount,
+		}
 		sessions.Routes(mux)
 	}
 	// The composer is served whatever the flag says, and offers sessions only
@@ -493,6 +504,7 @@ func cmdServe(args []string) error {
 	compose := &web.Compose{
 		Store: s, Project: *project,
 		Actor: defaultActor(), ExportTo: *exportTo,
+		ShowAccount: showAccount,
 	}
 	if *withSessions {
 		compose.Adapter = adapter
@@ -502,7 +514,10 @@ func cmdServe(args []string) error {
 	// The records document, which is the fourth tab and milestone 6's subject.
 	// Served unconditionally: it reads what the store already holds, and it is
 	// the one surface that is useful before anything else is configured.
-	records := &web.Records{Store: s, Project: *project}
+	records := &web.Records{
+		Store: s, Project: *project,
+		ShowSessions: *withSessions, ShowAccount: showAccount,
+	}
 	records.Routes(mux)
 
 	// Sign-in is served whenever an origin is configured, whether or not

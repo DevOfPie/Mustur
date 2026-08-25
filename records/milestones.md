@@ -4,7 +4,7 @@
 
 What the project has promised to do, and what counts as done.
 
-11 record(s), by identifier.
+12 record(s), by identifier.
 
 ---
 
@@ -180,3 +180,23 @@ Done when: Mustur knows who is asking. A person is invited, registers a passkey,
 | --- | --- |
 | Plan number | 5b |
 | Source | [Plan.md#milestones](../Plan.md#milestones) |
+
+---
+
+## MUS-M-0012
+
+**An agent carries a token**
+
+milestone · 2026-08-25
+
+raised by: [MUS-Q-0051](questions.md#mus-q-0051)
+
+after: [MUS-M-0011](#mus-m-0011)
+
+Mustur issues a token an agent carries in a header, with its own lifetime and its own revocation, so the mandated tool call works while accounts are enforced. A passkey is a person's credential and an agent has no browser; measured, POST /mcp under --accounts answers 403 to every caller without a session cookie, which is every agent. Until this exists, --accounts and the tool call cannot both be on and --accounts stays off.
+
+| Field | Value |
+| --- | --- |
+| Plan number | 5c |
+| Source | [Plan.md#milestones](../Plan.md#milestones) |
+| Done when | An agent reaches the mandated tool call on a server started with --accounts, carrying a token and no session cookie. A token is printed once and stored only as a hash. A token can be revoked and stops working immediately. A token is not a passkey and cannot sign in to a browser surface. The startup banner does not print a tool-call URL that refuses. |

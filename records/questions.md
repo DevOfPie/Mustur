@@ -1157,13 +1157,17 @@ question · 2026-08-25
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-M-0011 |
 | Needed to proceed | yes |
 | Option | Recommended — Public inside the guard :: /mcp joins the short public list; identity stays at the edge, where it already is :: Cloudflare Access is in front of the origin and nothing reaches /mcp without passing it. The guard's job is telling a reader from an owner among people with browsers; an agent CLI is neither. This keeps milestone 1's mandate working and writes down, in public(), that one endpoint is deliberately not gated by accounts. The cost is that if Access ever comes off, /mcp is open until something else covers it — which is exactly the judgement MUS-Q-0039 reserves to you. |
 | Option | A bearer token per agent :: Mustur issues a token an agent carries in a header; a second credential kind, with its own lifetime and its own revocation :: The honest answer if Mustur is ever to stand alone. It is also a second thing to lose, rotate and store, and every agent session's command line grows a secret. It would be its own milestone rather than a fix inside this one. |
 | Option | Leave it refused, and write it down :: --accounts and the MCP mandate become mutually exclusive, stated in both files :: Costs nothing to build and is the truthful description of what exists today. It also means the flag this milestone was built to enable can never be turned on while any agent needs the tool call, which is every session. |
 | Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | A bearer token per agent. Mustur issues a token an agent carries in a header, with its own lifetime and its own revocation — not the public exemption the builder recommended. The owner took the answer that lets Mustur stand alone rather than the one that keeps leaning on Access. It is its own milestone: until it exists, --accounts and the mandated tool call cannot both be on, and --accounts stays off. |
+| Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |
 
 ---
 
@@ -1175,12 +1179,16 @@ question · 2026-08-25
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-M-0011 |
 | Option | Recommended — Five tabs, Account last :: The bar grows by one on every surface; your decision is amended rather than worked around :: Four tabs was decided against a recommendation of three, so the bar has already been argued once. Account is where a passkey is added and where People is reached, and it is the only surface with no other way in. Five fits a phone. This asks you to move your own line rather than to accept a fifth thing smuggled in beside it. |
 | Option | Four tabs, and a header link :: The bar stays as you set it; Account is reached from a small link in each page header :: Keeps MUS-D-0041 untouched and costs a header on six surfaces. A header link is easier to miss than a tab, which matters for the surface holding the button that recovers a lost device. |
 | Option | Four tabs, and Account by URL only :: Nothing in the bar changes; you reach /account by typing it :: Cheapest and worst. It is the shape that just produced a People screen nobody could reach. |
 | Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | Four tabs, and a header link. MUS-D-0041 stands untouched; the account surface is reached from a small link in each page header rather than from a fifth tab. The Account tab the builder added to the records page comes out. |
+| Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |
 
 ---
 
@@ -1192,12 +1200,16 @@ question · 2026-08-25
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-M-0011 |
 | Option | Recommended — Count script tags, and the number is six :: The rule keeps its plain meaning and the count is corrected everywhere :: A surface either ships script or it does not, and that is checkable by grep — which is what made the drift visible at all. Six is honest: composer, session output, sign in, accept an invitation, account, people. The rule's teeth stay, since a seventh still needs you. |
 | Option | Count what cannot work without script, and the number is two :: The rule is reframed to mean surfaces that break with script blocked :: Arguably what the rule always meant: the composer's form posts, the account page's forms post, and only the session view and the ceremony genuinely require a client layer. It also makes the count uncheckable without judging each surface, and judgement is what let it drift. |
 | Option | Retire the rule :: Script is no longer the thing being rationed :: The rule was written when nothing had script and it has now been amended twice. Retiring it is defensible and loses the brake that has, twice, made a builder come and ask you. |
 | Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | Count script tags, and the number is six. A surface either ships script or it does not, which is checkable by grep — and that is what made the drift visible at all. The rule keeps its teeth: a seventh is a new decision again. |
+| Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |
 
 ---
 
@@ -1209,9 +1221,13 @@ question · 2026-08-25
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-M-0011 |
 | Option | Recommended — It stands, and milestone 6 is that much shorter :: Nothing moves; 6's row is amended to say its surface already exists :: The records document was owed by MUS-D-0041 as the fourth tab and was built here to fill it. It works and is tested. The cost is that the decision was announced in a commit message rather than asked, which is the failure this repository keeps making, and accepting it rewards that. |
 | Option | Split it into its own pull request before 5b merges :: The commit is cherry-picked onto its own branch and reviewed as milestone 6's own work :: Restores one topic per pull request and gives the surface the review it did not get. Costs a rebase of eight commits and delays 5b behind it. |
 | Option | Revert it from this branch :: The records surface is removed here and rebuilt at milestone 6 :: The strictest reading, and it throws away working, tested code to make a point about process. It also leaves the fourth tab unfilled again. |
 | Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | It stands, and milestone 6 is that much shorter. Its row says its reading surface already exists; what remains is a second person signing in and reading from their own device. The decision having been announced rather than asked is recorded, not undone. |
+| Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |

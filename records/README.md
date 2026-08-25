@@ -8,7 +8,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 
 | Kind | Records | Where |
 | --- | --- | --- |
-| milestone | 11 | [milestones.md](milestones.md) |
+| milestone | 12 | [milestones.md](milestones.md) |
 | question | 54 | [questions.md](questions.md) |
 | decision | 109 | [decisions.md](decisions.md) |
 | finding | 28 | [findings.md](findings.md) |
@@ -32,6 +32,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-M-0009](milestones.md#mus-m-0009) | milestone | A second project moves in |
 | [MUS-M-0010](milestones.md#mus-m-0010) | milestone | Sub-agents are visible |
 | [MUS-M-0011](milestones.md#mus-m-0011) | milestone | Accounts |
+| [MUS-M-0012](milestones.md#mus-m-0012) | milestone | An agent carries a token |
 | [MUS-W-0001](work-units/MUS-W-0001.md#mus-w-0001) | work-unit | An identifier scheme records can be addressed by |
 | [MUS-W-0002](work-units/MUS-W-0002.md#mus-w-0002) | work-unit | An insert-only store with a materialized latest |
 | [MUS-W-0003](work-units/MUS-W-0003.md#mus-w-0003) | work-unit | A seed that puts what already exists into the store |
