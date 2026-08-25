@@ -183,10 +183,23 @@ func TestAnOwnerInvitesAndSeesPeople(t *testing.T) {
 	srv, accounts := managed(t)
 	owner, _ := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
 
+	// The first screen is theirs, and carries the way to the second. A screen
+	// drawn, described and unreachable is how the first attempt at this shipped.
 	page := body(t, owner, srv.URL+"/account")
-	for _, want := range []string{"Invite somebody", "People", "owner@example.com"} {
-		if !strings.Contains(page, want) {
-			t.Errorf("an owner is not shown %q", want)
+	if !strings.Contains(page, "owner@example.com") {
+		t.Error("the account page does not say whose it is")
+	}
+	if !strings.Contains(page, `href="/account/people"`) {
+		t.Error("an owner has no way to reach the people screen")
+	}
+	if strings.Contains(page, "Invite somebody") {
+		t.Error("the invite form is on the account screen; it belongs on the second one")
+	}
+
+	people := body(t, owner, srv.URL+"/account/people")
+	for _, want := range []string{"Invite somebody", "owner@example.com"} {
+		if !strings.Contains(people, want) {
+			t.Errorf("the people screen does not show %q", want)
 		}
 	}
 
@@ -201,11 +214,17 @@ func TestAnOwnerInvitesAndSeesPeople(t *testing.T) {
 	if !strings.Contains(loc, "invited=") {
 		t.Fatalf("the invitation link was not carried back: %q", loc)
 	}
-	// Shown once, and the page says so, because the secret is not stored and
-	// somebody who closes the tab will otherwise go looking for it.
+	if !strings.HasPrefix(loc, "/account/people") {
+		t.Errorf("inviting returned to %q rather than the screen it was done on", loc)
+	}
+	// Shown once, whole, and the page says so: the secret is not stored, so a
+	// truncated link and a closed tab cost the same — another invitation.
 	shown := body(t, owner, srv.URL+loc)
-	if !strings.Contains(shown, "shown once") {
+	if !strings.Contains(shown, "Shown once") {
 		t.Error("the page does not say the link cannot be shown again")
+	}
+	if strings.Contains(shown, "\u2026") || strings.Contains(shown, "&hellip;") {
+		t.Error("the invitation link is elided; a truncated one-time secret is a destroyed one")
 	}
 	pending, err := accounts.Pending(context.Background())
 	if err != nil {
@@ -248,15 +267,21 @@ func TestTheLastOwnerCannotStandDown(t *testing.T) {
 	srv, accounts := managed(t)
 	owner, acct := personWith(t, accounts, "solo@example.com", "MUS", account.Owner, "k")
 
-	page := body(t, owner, srv.URL+"/account")
-	if !strings.Contains(page, "only owner") {
-		t.Error("the page does not warn the only owner")
+	// No standing warning: the page said "you are the only owner" above controls
+	// that still looked usable, which reads as a caption rather than a rule
+	// (MUS-Q-0048). The refusal carries the reason instead.
+	page := body(t, owner, srv.URL+"/account/people")
+	if strings.Contains(page, "only owner") {
+		t.Error("the page warns in advance; the refusal is supposed to say it")
 	}
 
 	res := form(t, owner, srv, "/account/role", url.Values{"id": {acct.ID}, "role": {"reader"}})
 	res.Body.Close()
 	if role, _ := accounts.RoleFor(context.Background(), acct.ID, "MUS"); role != account.Owner {
 		t.Errorf("the only owner demoted themselves to %q", role)
+	}
+	if said := body(t, owner, srv.URL+res.Header.Get("Location")); !strings.Contains(said, "only owner") {
+		t.Error("the refusal does not say why it refused")
 	}
 
 	res = form(t, owner, srv, "/account/disable", url.Values{"id": {acct.ID}})
@@ -299,21 +324,47 @@ func TestDisablingEndsTheirSession(t *testing.T) {
 	}
 }
 
-// The account page carries no script: adding a passkey is a link to the auth
-// family's own page, so the scripted surfaces stay at three.
-func TestTheAccountPageCarriesNoScript(t *testing.T) {
+// Adding a passkey happens where the passkeys are listed. It had a page of its
+// own — a heading and one button — which a review named for what it was.
+func TestAddingAPasskeyHappensOnTheAccountPage(t *testing.T) {
 	srv, accounts := managed(t)
 	owner, _ := personWith(t, accounts, "quiet@example.com", "MUS", account.Owner, "k")
 
 	page := body(t, owner, srv.URL+"/account")
-	if strings.Contains(page, "<script") {
-		t.Error("the account page carries script; the count of scripted surfaces was three")
+	if !strings.Contains(page, "/assets/auth.js") {
+		t.Error("the account page does not load the ceremony, so no passkey can be added from it")
 	}
-	if !strings.Contains(page, `href="/account/passkey"`) {
-		t.Error("no link to the page where a passkey is added")
+	if !strings.Contains(page, `id="addkey"`) {
+		t.Error("nothing on the account page starts the ceremony")
 	}
-	// And that page is the scripted one.
-	if got := body(t, owner, srv.URL+"/account/passkey"); !strings.Contains(got, "/assets/auth.js") {
-		t.Error("the add-a-passkey page does not load the ceremony")
+	// The page it replaced is gone rather than orphaned.
+	if code := statusOf(t, owner, srv.URL+"/account/passkey"); code != http.StatusNotFound {
+		t.Errorf("the add-a-passkey page still answers with %d", code)
+	}
+	// Everything else still works without script: the role select keeps its
+	// Save button behind a <noscript>, and every action is a form.
+	people := body(t, owner, srv.URL+"/account/people")
+	if !strings.Contains(people, "<noscript>") {
+		t.Error("the role control has no scriptless path")
+	}
+}
+
+// The second screen is the owner's. A reader is refused rather than shown an
+// empty one, which would read as "nobody is here" instead of "not yours".
+func TestAReaderHasNoPeopleScreen(t *testing.T) {
+	srv, accounts := managed(t)
+	reader, _ := personWith(t, accounts, "r2@example.com", "MUS", account.Reader, "k")
+
+	page := body(t, reader, srv.URL+"/account")
+	if strings.Contains(page, `href="/account/people"`) {
+		t.Error("a reader is offered a screen they cannot open")
+	}
+	// And their own screen is whole: there is nothing on it they should not
+	// see, so it is not trimmed (MUS-Q-0046).
+	if !strings.Contains(page, "r2@example.com") || !strings.Contains(page, `id="addkey"`) {
+		t.Error("a reader's own account screen is missing part of itself")
+	}
+	if code := statusOf(t, reader, srv.URL+"/account/people"); code != http.StatusForbidden {
+		t.Errorf("a reader reached the people screen: %d", code)
 	}
 }

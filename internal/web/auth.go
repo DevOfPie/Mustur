@@ -2,12 +2,16 @@ package web
 
 // Sign in, and the surface that creates an account from an invitation.
 //
-// **This is the third page carrying script, and unlike the other two it has no
-// choice at all.** WebAuthn is a browser API: `navigator.credentials.create`
-// and `.get` cannot be reached from a server-rendered form, so choosing
-// passkeys (MUS-D-0104) chose a client layer here. Recorded as a consequence of
-// that decision rather than as a decision of its own — but the count is now
-// three, and the rule that a fourth is a decision still stands.
+// **These pages carry script, and unlike the other surfaces they have no choice
+// at all.** WebAuthn is a browser API: `navigator.credentials.create` and
+// `.get` cannot be reached from a server-rendered form, so choosing passkeys
+// (MUS-D-0104) chose a client layer here.
+//
+// Adding a passkey used to have a page of its own for that reason, keeping the
+// account page script-free. A review called it what it was — a page holding a
+// heading and one button — so the ceremony opens on the account page instead
+// and that page carries script too (MUS-Q-0047). Four surfaces now, counted
+// rather than absorbed.
 //
 // What the script does is the ceremony and nothing else: ask the browser to
 // make or use a passkey, and post what it returns. No state, no rendering, no
@@ -31,6 +35,7 @@ import (
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/account"
+	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
@@ -55,7 +60,11 @@ type Auth struct {
 	// Secure marks the session cookie secure. Off only for a plain-HTTP local
 	// server, which is the one place a browser will do WebAuthn without TLS.
 	Secure bool
-	Now    func() time.Time
+	// Records resolves a project's prefix to its name, so an invitation names
+	// the project rather than showing a tag the invited person has never seen.
+	// Nil means the tag is shown alone.
+	Records *store.Store
+	Now     func() time.Time
 }
 
 func (a *Auth) now() time.Time {
@@ -124,7 +133,6 @@ func (a *Auth) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /signin/begin", a.signinBegin)
 	mux.HandleFunc("POST /signin/finish", a.signinFinish)
 	mux.HandleFunc("POST /signout", a.signout)
-	mux.HandleFunc("GET /account/passkey", a.addPage)
 	mux.HandleFunc("POST /account/passkey/begin", a.addBegin)
 	mux.HandleFunc("POST /account/passkey/finish", a.addFinish)
 	mux.HandleFunc("GET /invite/{token}", a.invitePage)
@@ -144,12 +152,10 @@ type authPage struct {
 	Role    string
 	Error   string
 	Empty   bool
-	// Add is the third mode: a signed-in account registering another passkey,
-	// which is how somebody stops being one lost device away from locked out.
-	// It lives here rather than on the account page so that the account page
-	// carries no script — a ceremony needs the browser API, and the scripted
-	// surfaces stay at three.
-	Add bool
+	// ProjectName is the project written out with its tag — "Mustur (MUS)" —
+	// because an invited reader has never seen the tag, and the tag is what
+	// every identifier in the records uses.
+	ProjectName string
 }
 
 func (a *Auth) signinPage(w http.ResponseWriter, r *http.Request) {
@@ -168,16 +174,8 @@ func (a *Auth) invitePage(w http.ResponseWriter, r *http.Request) {
 	}
 	a.render(w, authPage{
 		Invite: true, Email: inv.Email, Project: inv.Project, Role: string(inv.Role),
+		ProjectName: projectName(r.Context(), a.Records, inv.Project),
 	})
-}
-
-func (a *Auth) addPage(w http.ResponseWriter, r *http.Request) {
-	acct, ok := a.Whoever(r.Context(), r)
-	if !ok {
-		http.Redirect(w, r, "/signin", http.StatusSeeOther)
-		return
-	}
-	a.render(w, authPage{Add: true, Email: acct.Email})
 }
 
 // addBegin issues a challenge for a passkey on an account that already exists.
@@ -628,22 +626,16 @@ var authTmpl = template.Must(template.New("auth").Parse(`<!doctype html>
   .said { margin: .9rem 0 0; padding: .6rem .8rem;
           border-left: 3px solid var(--edge); font-size: .9em; }
   .who { font-weight: 600; }
+  .foot { margin-top: 1.2rem; font-size: .85em; opacity: .6; }
 </style>
 </head>
-<body data-invite="{{if .Invite}}1{{end}}" data-add="{{if .Add}}1{{end}}">
+<body data-invite="{{if .Invite}}1{{end}}">
 {{if .Error}}
 <h1>Not usable</h1>
 <p>{{.Error}}</p>
-{{else if .Add}}
-<h1>Add a passkey</h1>
-<p>For <span class="who">{{.Email}}</span>. A second device is how you get back
-in if you lose this one.</p>
-<button id="go">Add a passkey</button>
 {{else if .Invite}}
 <h1>Accept this invitation</h1>
-<p><span class="who">{{.Email}}</span> — {{.Role}} on {{.Project}}.<br>
-Creating a passkey stores nothing you have to remember, and it works only on
-this site.</p>
+<p><span class="who">{{.Email}}</span> — {{.Role}} on {{.ProjectName}}.</p>
 <button id="go">Create a passkey</button>
 {{else}}
 <h1>Sign in</h1>
@@ -651,8 +643,9 @@ this site.</p>
 <p>Mustur has no accounts yet. The first one is made on the machine:
 <code>mustur account invite --email you@example.com --role owner</code></p>
 {{else}}
-<p>Use the passkey you registered on this device.</p>
 <button id="go">Sign in</button>
+<p class="foot">No account here? An invitation comes from somebody who already
+has one.</p>
 {{end}}
 {{end}}
 <p class="said" id="said" hidden></p>

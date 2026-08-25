@@ -1,8 +1,8 @@
 // The passkey ceremony, and nothing else.
 //
-// This is the third script in Mustur and the only one with no alternative:
+// One of four scripts in Mustur and the only one with no alternative:
 // `navigator.credentials` is a browser API and cannot be reached from a form.
-// Choosing passkeys chose this; it is not a precedent for a fourth.
+// Choosing passkeys chose this; it is not a precedent for a fifth.
 //
 // What it does: ask the server for a challenge, hand it to the authenticator,
 // post back what the authenticator signed. It renders nothing, holds no state,
@@ -10,15 +10,18 @@
 (function () {
   "use strict";
 
-  var go = document.getElementById("go");
-  var said = document.getElementById("said");
+  // The account page is the fourth surface this runs on: adding a passkey used
+  // to have a page of its own, which was a heading and one button, so the
+  // ceremony happens where the passkeys are listed instead (MUS-Q-0047).
+  var go = document.getElementById("go") || document.getElementById("addkey");
+  var said = document.getElementById("said") || document.getElementById("ceremony");
   if (!go) return;
 
   // Three modes, two ceremonies. Registering from an invitation and adding a
   // passkey to an account that already exists are both `create`; signing in is
   // `get`. What differs between the first two is only which path is posted to.
-  var invite = document.body.getAttribute("data-invite") === "1";
-  var add = document.body.getAttribute("data-add") === "1";
+  var add = go.id === "addkey";
+  var invite = !add && document.body.getAttribute("data-invite") === "1";
   var creating = invite || add;
   var base = add
     ? "/account/passkey"

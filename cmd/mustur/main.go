@@ -515,9 +515,12 @@ func cmdServe(args []string) error {
 			Accounts: accounts,
 			Origin:   *origin,
 			Secure:   strings.HasPrefix(*origin, "https://"),
+			// The record store, so an invitation names the project rather than
+			// showing a tag the invited person has never seen.
+			Records: s,
 		}
 		auth.Routes(mux)
-		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project}
+		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project, Records: s}
 		manage.Routes(mux)
 		if *withAccounts {
 			guard := &web.Guard{Auth: auth, Project: *project}

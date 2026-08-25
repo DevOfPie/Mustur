@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 11 | [milestones.md](milestones.md) |
-| question | 49 | [questions.md](questions.md) |
+| question | 50 | [questions.md](questions.md) |
 | decision | 107 | [decisions.md](decisions.md) |
 | finding | 27 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -100,6 +100,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0047](questions.md#mus-q-0047) | question | Does adding a passkey deserve its own page? |
 | [MUS-Q-0048](questions.md#mus-q-0048) | question | Should the only-owner refusals be announced before they happen? |
 | [MUS-Q-0049](questions.md#mus-q-0049) | question | What happens to an invitation link after it is copied? |
+| [MUS-Q-0050](questions.md#mus-q-0050) | question | Should sign-in ask for an address before offering passkeys? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |

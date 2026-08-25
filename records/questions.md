@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-49 record(s), by identifier.
+50 record(s), by identifier.
 
 ---
 
@@ -1122,4 +1122,27 @@ It is shown once and never stored, so there is nothing to come back for. It curr
 | Surfaced | 2026-08-25 05:45 |
 | Answer | Stays until you leave the page. |
 | Answered | 2026-08-25 05:45 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0050
+
+**Should sign-in ask for an address before offering passkeys?**
+
+question · 2026-08-25
+
+A review asked for one, so that somebody holding several passkeys can control which account they reach. The builder disagreed once, on the mechanism: the browser is asked for any passkey scoped to this site and the operating system lists what it holds, labelled by the address each was registered under, so the choice already exists and Mustur neither styles that sheet nor sees the list. The canvas now draws it. The cost of a field is that typing an address tells a stranger whether it has an account here, unless every address produces an identical prompt.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the sign-in surface has a field on it |
+| Option | No, the system chooser already asks :: Recommended · nothing typed, nothing disclosed :: One button. The chooser lists every passkey for this site by address and the person picks. |
+| Option | Yes, address first :: Familiar, and it works where a chooser confuses :: A field, then only that address's passkeys. Reintroduces account enumeration unless every address looks the same. |
+| Option | Chooser by default, address as a way out :: An escape hatch :: One button, plus a link revealing the field when the chooser shows the wrong thing. Two paths to keep correct. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 05:56 |
+| Answer | No — the system chooser already asks. |
+| Answered | 2026-08-25 05:56 |
 | Delivered | not delivered: the question names no session |
