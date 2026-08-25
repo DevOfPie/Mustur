@@ -135,3 +135,9 @@ repository's records and routing live.
 If the tool is not there, say so and carry on. A server that is not running is
 not a licence to skip the call — it is a thing to report, in the same breath as
 whatever you were asked to do. Start it with `make serve`.
+
+There is a third state, since milestone 5c: the tool is there and **refuses**.
+A server running with `--accounts` answers `/mcp` with 403 to a caller carrying
+no token, so an agent needs one in its MCP configuration. Report that as itself
+rather than as absence — they are different problems and only one is fixed by
+starting the server. `mustur account token --for "..."` issues one.

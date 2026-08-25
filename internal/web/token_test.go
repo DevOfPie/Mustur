@@ -201,13 +201,16 @@ func TestATokenOpensTheToolCallAndNothingElse(t *testing.T) {
 		}
 	}
 	for _, path := range []string{"/intake", "/questions"} {
-		if code, _ := call(t, srv, http.MethodPost, path, "Bearer "+secret); code == http.StatusOK {
-			t.Errorf("a token wrote to %s", path)
+		if code, _ := call(t, srv, http.MethodPost, path, "Bearer "+secret); code != http.StatusForbidden {
+			t.Errorf("a token posting to %s got %d, want 403", path, code)
 		}
 	}
 	// And it is not a session: nothing about it makes Whoever return anybody.
-	if code, _ := call(t, srv, http.MethodGet, "/account", "Bearer "+secret); code == http.StatusOK {
-		t.Errorf("a token reached the account surface: %d", code)
+	// Asserted as 303 rather than as not-200, because "not 200" is what a
+	// followed redirect satisfies — which is how the loop above first passed
+	// while proving nothing.
+	if code, _ := call(t, srv, http.MethodGet, "/account", "Bearer "+secret); code != http.StatusSeeOther {
+		t.Errorf("a token on the account surface got %d, want 303 to sign-in", code)
 	}
 }
 
@@ -246,4 +249,132 @@ func TestRubbishInTheHeaderIsJustRefused(t *testing.T) {
 			t.Errorf("header %q got %d, want 403", h, code)
 		}
 	}
+}
+
+// The prefix is part of the secret, not decoration.
+//
+// It exists so a token found in a log or a unit file is identifiable by a
+// person and by a scanner. The first version trimmed it if present, which made
+// it optional — and a prefix an agent can be configured without identifies
+// nothing.
+func TestTheTokenPrefixIsRequired(t *testing.T) {
+	srv, accounts := tokenGuarded(t)
+	ctx := context.Background()
+	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(secret, "mus_") {
+		t.Fatalf("the issued secret carries no prefix: %q", secret)
+	}
+	if code, _ := call(t, srv, http.MethodPost, "/mcp", "Bearer "+secret); code != http.StatusOK {
+		t.Fatalf("the prefixed form was refused: %d", code)
+	}
+	bare := strings.TrimPrefix(secret, "mus_")
+	if code, _ := call(t, srv, http.MethodPost, "/mcp", "Bearer "+bare); code != http.StatusForbidden {
+		t.Errorf("the same secret without its prefix got %d, want 403", code)
+	}
+}
+
+// The guard opens exactly the path the server registers, not the subtree.
+//
+// A prefix would hand any handler later mounted under /mcp/ both the token
+// bypass and the write-check exemption, without anybody editing the guard.
+func TestOnlyTheRegisteredToolPathIsOpenedByAToken(t *testing.T) {
+	srv, accounts := tokenGuarded(t)
+	ctx := context.Background()
+	secret, _, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Registered here as it is in main.go: exact path only. Something else
+	// under the subtree, to stand for whatever might be mounted there later.
+	if code, _ := call(t, srv, http.MethodPost, "/mcp", "Bearer "+secret); code != http.StatusOK {
+		t.Fatalf("the tool call itself was refused: %d", code)
+	}
+	if !toolCall("/mcp") {
+		t.Error("the guard does not recognise the path the server registers")
+	}
+	for _, path := range []string{"/mcp/", "/mcp/anything", "/mcp/admin"} {
+		if toolCall(path) {
+			t.Errorf("%s is treated as the tool call; a later handler there would "+
+				"inherit the token bypass and the missing write check", path)
+		}
+	}
+}
+
+// Precedence, pinned. The guard consults a token before a cookie on /mcp, and
+// falls through to the cookie when the token is unusable. Both directions are
+// deliberate and neither was tested, so either could have been inverted by a
+// later edit with the suite still green.
+func TestATokenAndACookieOnTheSameRequest(t *testing.T) {
+	srv, accounts := tokenGuarded(t)
+	ctx := context.Background()
+
+	// Somebody signed in, with a role that may write.
+	invite, err := accounts.Invite(ctx, "boss@example.com", "MUS", account.Owner, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	acct, _, err := accounts.Redeem(ctx, invite, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cookie, _, err := accounts.StartSession(ctx, acct.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	secret, tok, err := accounts.IssueToken(ctx, "an agent", "MUS", account.Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// A valid token wins, and the call is recorded against the token rather
+	// than passing as the person.
+	code := postBoth(t, srv, "/mcp", "Bearer "+secret, cookie)
+	if code != http.StatusOK {
+		t.Fatalf("a request carrying both got %d", code)
+	}
+	all, err := accounts.Tokens(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 1 || all[0].ID != tok.ID || all[0].LastUsed.IsZero() {
+		t.Error("the request was not attributed to the token it carried")
+	}
+
+	// An unusable token falls through to the cookie rather than refusing, so a
+	// signed-in owner with a stale token in their environment still gets in.
+	if code := postBoth(t, srv, "/mcp", "Bearer not-a-token", cookie); code != http.StatusOK {
+		t.Errorf("a bad token masked a valid session: %d", code)
+	}
+	// And with no session behind it, the same bad token is refused.
+	if code, _ := call(t, srv, http.MethodPost, "/mcp", "Bearer not-a-token"); code != http.StatusForbidden {
+		t.Errorf("a bad token with no session got %d, want 403", code)
+	}
+}
+
+// postBoth sends a bearer token and a session cookie on one request.
+func postBoth(t *testing.T, srv *httptest.Server, path, bearer, cookie string) int {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodPost, srv.URL+path,
+		strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"initialize",`+
+			`"params":{"protocolVersion":"2025-06-18","capabilities":{},`+
+			`"clientInfo":{"name":"c","version":"1"}}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
+	req.Header.Set("Authorization", bearer)
+	req.AddCookie(&http.Cookie{Name: SessionCookie, Value: cookie})
+	res, err := (&http.Client{
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}).Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	return res.StatusCode
 }

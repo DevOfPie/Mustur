@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-54 record(s), by identifier.
+55 record(s), by identifier.
 
 ---
 
@@ -1231,3 +1231,20 @@ question · 2026-08-25
 | Answer | It stands, and milestone 6 is that much shorter. Its row says its reading surface already exists; what remains is a second person signing in and reading from their own device. The decision having been announced rather than asked is recorded, not undone. |
 | Answered | 2026-08-25 07:09 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0055
+
+**Your answer said a token has its own lifetime; I built it without one**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-M-0012 |
+| Option | Recommended — No expiry, and the clause is amended :: Revocation is the only stop; Plan.md's row loses the lifetime words :: An invitation expires because it is a link in transit and a session expires because a browser is borrowed. An agent token is configuration. A credential that stops working at 3am because a timer ran out, with nobody having decided that, is an outage rather than a control — and the agent it stops is the one that reads your records. Revocation is immediate and is a decision somebody takes. This asks you to drop half a clause you wrote, which is why it is a question rather than something I do quietly. |
+| Option | An optional --expires, defaulting to never :: The clause is satisfied and nothing changes unless you ask for it :: Cheap, honest, and lets a short-lived token exist for a one-off agent or somebody else's machine. It also adds a second way for a token to stop working, so 'why did this break' has two answers instead of one — which is the cost, and it is small. |
+| Option | A real default lifetime, say 90 days :: Every token expires unless renewed :: The strictest reading of your answer, and the ordinary industry shape. It means the deployment's own token stops on a date, and the failure mode is an agent that cannot read the records until somebody notices — on a machine you may not be sitting at. |
+| Asked by | whippy |

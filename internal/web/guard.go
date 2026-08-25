@@ -80,10 +80,17 @@ func selfService(path string) bool {
 // A token is a long-lived secret living in a systemd unit or a process's
 // environment — a weaker place than a device's secure element — so it is scoped
 // to the thing an agent actually needs and nothing else. It cannot read the
-// records surface, cannot open a session, cannot sign in. That scope is what
-// makes the weaker secret acceptable (MUS-Q-0051).
+// records surface, cannot open a session, cannot sign in.
+//
+// That scope argument is the builder's, not the owner's: MUS-Q-0051 chose a
+// token over exempting this path and said nothing about scope. An earlier
+// version of this comment cited the question for it, which is somebody else's
+// reasoning wearing the owner's name.
 func toolCall(path string) bool {
-	return path == "/mcp" || strings.HasPrefix(path, "/mcp/")
+	// Exactly the path main.go registers, and not the subtree. A prefix would
+	// hand every handler later mounted under /mcp/ both the token bypass and
+	// the missing write check above, without anybody editing this file.
+	return path == "/mcp"
 }
 
 // agent resolves a bearer token, if the request carries one.
@@ -141,9 +148,11 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 					http.Error(w, "no access to this project", http.StatusForbidden)
 					return
 				}
-				// No write check. This surface serves one tool and it reads;
-				// TestTheToolSurfaceIsReadOnly fails if a second is added, which
-				// is what makes this line safe to leave.
+				// No write check. This surface serves one tool and it reads,
+				// which internal/mcpsrv's TestToolIsReachableOverHTTP asserts and
+				// says why — a second tool fails there and names this line. An
+				// earlier version of this comment cited a test that did not
+				// exist, which is a safety argument discharged against nothing.
 				_ = g.Auth.Accounts.UsedToken(r.Context(), t.ID)
 				next.ServeHTTP(w, r)
 				return

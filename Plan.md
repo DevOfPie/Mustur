@@ -200,9 +200,10 @@ it, and specific enough that failing them is unambiguous.
 reachable, gated, and proven from the owner's phone, so nothing in it is
 outstanding. None of 2b, 2c or 3 is accepted. 4a, 4b, 4c and 5 are built and
 reviewed — 5 twice, and rebuilt in between — and none of them is accepted
-either. Everything through 5 is merged. **5b was raised on 2026-08-24, inserted
-before 6, and is built and reviewed; it is not merged and nothing it adds is
-deployed. Nothing below 5b is built.**
+either. Everything through 5 is merged. **5b was raised on 2026-08-24 and
+inserted before 6; 5c came out of 5b's own review and was inserted before it.
+Both are built and reviewed, neither is merged, and nothing either adds is
+deployed. Nothing below 5c is built.**
 
 | # | State | Evidence |
 | --- | --- | --- |

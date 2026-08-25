@@ -32,6 +32,9 @@ import (
 	"time"
 )
 
+// tokenPrefix marks a Mustur agent token wherever one ends up.
+const tokenPrefix = "mus_"
+
 // A Token is what an agent carries. The secret itself is never in here — it is
 // returned once by Issue and then exists only in the caller's hands.
 type Token struct {
@@ -81,8 +84,13 @@ func (s *Store) IssueToken(ctx context.Context, label, project string, role Role
 	}
 	// Hex rather than base64url. An id is typed at a shell — "mustur account
 	// revoke <id>" — and a base64url id starting with "-" is parsed as a flag
-	// and never reaches the argument, which is a one-in-thirty-two token nobody
-	// can revoke by the route the tool itself printed.
+	// and never reaches the argument, so the tool would print a revoke command
+	// that cannot work.
+	//
+	// About one id in 64: the alphabet is 64 symbols and "-" is one of them.
+	// Measured over 200,000 draws, 3,072 began with "-", or 1 in 65.1. An
+	// earlier version of this comment said one in thirty-two, which was a
+	// number nobody had counted.
 	raw := make([]byte, 6)
 	if _, err := rand.Read(raw); err != nil {
 		return "", Token{}, err
@@ -96,8 +104,9 @@ func (s *Store) IssueToken(ctx context.Context, label, project string, role Role
 		return "", Token{}, fmt.Errorf("write token: %w", err)
 	}
 	// The secret is prefixed so an operator who finds one in a log or a unit
-	// file knows what they are looking at, and so does a scanner.
-	return "mus_" + secret, Token{
+	// file knows what they are looking at, and so does a scanner. Required on
+	// presentation, not merely tolerated — see ByToken.
+	return tokenPrefix + secret, Token{
 		ID: id, Label: label, Project: project, Role: role, Created: now,
 	}, nil
 }
@@ -108,10 +117,15 @@ func (s *Store) IssueToken(ctx context.Context, label, project string, role Role
 // a check the caller can forget is not a check.
 func (s *Store) ByToken(ctx context.Context, secret string) (Token, error) {
 	secret = strings.TrimSpace(secret)
-	if secret == "" {
+	// The prefix is required rather than trimmed if present. It exists so a
+	// secret found in a log or a unit file is identifiable — by a person and by
+	// a scanner — and a prefix the server does not insist on is one an agent
+	// can be configured without, at which point it identifies nothing.
+	rest, ok := strings.CutPrefix(secret, tokenPrefix)
+	if !ok || rest == "" {
 		return Token{}, ErrNoToken
 	}
-	secret = strings.TrimPrefix(secret, "mus_")
+	secret = rest
 
 	var t Token
 	var role, created, revoked, lastUsed string
@@ -149,6 +163,12 @@ func (s *Store) UsedToken(ctx context.Context, id string) error {
 }
 
 // RevokeToken stops one immediately.
+//
+// The only stop there is. A token belongs to no account, so disabling or
+// removing a person does not touch tokens they minted — deliberate, since an
+// agent's credential outliving the person who set it up is usually what you
+// want, but it means offboarding somebody means reading `mustur account tokens`
+// as well as `mustur account list`.
 //
 // A timestamp rather than a delete, so a listing can still say the token
 // existed and when it stopped — which is what somebody investigating wants,

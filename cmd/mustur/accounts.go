@@ -127,8 +127,7 @@ func cmdAccount(args []string) error {
 		fs := flag.NewFlagSet("account token", flag.ContinueOnError)
 		db := dbFlag(fs)
 		label := fs.String("for", "", "what carries it, in your words: \"claude-code on whippy-vm\"")
-		project := fs.String("project", "MUS", "the project the token may read")
-		role := fs.String("role", string(account.Reader), "owner or reader")
+		project := fs.String("project", "MUS", "the project whose tool call it opens")
 		if err := fs.Parse(rest); err != nil {
 			return err
 		}
@@ -141,7 +140,13 @@ func cmdAccount(args []string) error {
 		}
 		defer s.Close()
 		accounts := account.New(s.DB())
-		secret, t, err := accounts.IssueToken(storeCtx, *label, *project, account.Role(*role), defaultActor())
+		// No --role. The flag existed, was stored, printed, and consulted by
+		// nothing: an owner token and a reader token reached exactly the same
+		// thing, because the surface a token opens serves one read-only tool.
+		// A role here becomes meaningful the day that stops being true, and
+		// until then offering the choice describes a weaker credential that
+		// does not exist.
+		secret, t, err := accounts.IssueToken(storeCtx, *label, *project, account.Reader, defaultActor())
 		if err != nil {
 			return err
 		}

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-109 record(s), by identifier.
+112 record(s), by identifier.
 
 ## Index
 
@@ -121,6 +121,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0107](#mus-d-0107) | Sign-in stays usernameless, and the chooser is drawn rather than described | 2026-08-25 |
 | [MUS-D-0108](#mus-d-0108) | The surface count is twelve, and MUS-D-0072's eight is superseded | 2026-08-25 |
 | [MUS-D-0109](#mus-d-0109) | What the last four answers settled, and one correction to MUS-D-0107 | 2026-08-25 |
+| [MUS-D-0110](#mus-d-0110) | An agent's token is not an account, and its scope is what makes it safe | 2026-08-25 |
+| [MUS-D-0111](#mus-d-0111) | The guard lets a token past the tool call with no write check, and a test in another package holds that | 2026-08-25 |
+| [MUS-D-0112](#mus-d-0112) | A flag that changes nothing describes a credential that does not exist | 2026-08-25 |
 
 ---
 
@@ -1756,3 +1759,41 @@ and also: [MUS-Q-0048](questions.md#mus-q-0048)
 and finally: [MUS-Q-0049](questions.md#mus-q-0049)
 
 MUS-D-0107 said the question about a usernameless sign-in was on the plan awaiting an answer. It had been answered: MUS-Q-0050, 'No — the system chooser already asks', so no address field is revealed and nothing further is owed. decisions.md is append-only, so this corrects it here rather than editing it. Three other answers had no record. MUS-Q-0044: keep all three surfaces the owner can start a message from, and say so, rather than folding them. MUS-Q-0048: the only-owner banner is cut, and the refusals say why at the moment they refuse. MUS-Q-0049: a question's timestamps are stamped from the clock and a past --at is refused, which is why no question can any more record an answer before its own creation.
+
+---
+
+## MUS-D-0110
+
+**An agent's token is not an account, and its scope is what makes it safe**
+
+decision · 2026-08-25
+
+raised by: [MUS-Q-0051](questions.md#mus-q-0051)
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+A passkey needs a browser, an authenticator and a gesture; an agent has none of the three and still has to reach the mandated tool call. The token it carries instead is deliberately not an account: no email, no passkey, no session, and the guard consults it on exactly one path. A token lives in a systemd unit or a process's environment, which is a materially weaker place than a device's secure element, so scope is what makes the weaker secret acceptable. Folding it into the account tables would have made a leaked token a way into the browser surfaces rather than into the one call it exists for. This argument is the builder's. MUS-Q-0051 chose a token over exempting the path and said nothing about scope; an earlier comment in the code cited the question for it, which is one party's reasoning wearing another's name.
+
+---
+
+## MUS-D-0111
+
+**The guard lets a token past the tool call with no write check, and a test in another package holds that**
+
+decision · 2026-08-25
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+An MCP call is a POST by method and a read by nature: the surface serves one tool and it reads. So the guard does not apply its write check to a request authenticated by an agent token, which is the only reason a reader-scoped token can call the tool at all. That is a real assumption about a different package. A comment saying so is a promise nobody checks, so internal/mcpsrv's TestToolIsReachableOverHTTP asserts exactly one tool named mustur_route and says why — a second tool fails there and names the guard as the thing to revisit. The first version of that comment cited a test called TestTheToolSurfaceIsReadOnly, which does not exist anywhere. A safety argument discharged against a test nobody can find is discharged against nothing, and two of three reviewers found it.
+
+---
+
+## MUS-D-0112
+
+**A flag that changes nothing describes a credential that does not exist**
+
+decision · 2026-08-25
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+`mustur account token` took a --role of owner or reader. The role was stored, printed in the listing, and consulted by no request path: measured, a reader token and an owner token reached exactly the same thing, because the surface a token opens serves one read-only tool. The flag is gone and every token is issued as a reader. A role here becomes meaningful the day the tool surface stops being read-only, which is the same day the decision above needs revisiting; until then, offering the choice advertised a weaker credential nobody could actually have. The same review found --project's help calling it 'the project the token may read', when a token reads nothing — it opens the tool call.

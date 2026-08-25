@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-28 record(s), by identifier.
+29 record(s), by identifier.
 
 ## The queue
 
@@ -38,6 +38,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
 | [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
 | [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
+| [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
 
 ---
 
@@ -513,4 +514,21 @@ docs/ui-surfaces.md exists to stop a surface being designed in a Go template and
 | Field | Value |
 | --- | --- |
 | Where | docs/ui-surfaces.md, and every milestone that added a surface |
+| Status | open |
+
+---
+
+## MUS-F-0028
+
+**Revoking a token does not close a stream already open under it**
+
+finding · 2026-08-25
+
+found in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+Revocation is enforced per request: ByToken reads the row rather than a cache, so the next call carrying a revoked token is refused on the running server with no restart. A standalone SSE stream opened before the revocation is not torn down, and was measured still open three seconds after. The impact is bounded rather than absent. That stream is server-to-client only, so no tool call can travel it and nothing can be read through it that was not already being sent; every new request is refused. But 'stops working immediately' is true of calls and not of an already-open connection, and the difference is worth writing down rather than discovering.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/guard.go, internal/account/token.go |
 | Status | open |

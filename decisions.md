@@ -137,8 +137,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A token is not an account, and that is the point](#a-token-is-not-an-account-and-that-is-the-point) | Scope is what makes a weaker secret acceptable |
 | [No expiry, deliberately](#no-expiry-deliberately) | A credential that stops at 3am is an outage, not a control |
 | [The guard trusts one thing about the tool surface](#the-guard-trusts-one-thing-about-the-tool-surface) | Why a second MCP tool fails a test in another package |
-| [The id is hex because it is typed at a shell](#the-id-is-hex-because-it-is-typed-at-a-shell) | One in thirty-two ids would have been unrevokable |
+| [The id is hex because it is typed at a shell](#the-id-is-hex-because-it-is-typed-at-a-shell) | About one id in 64 would have been unrevokable |
 | [A test that passed for the wrong reason, again](#a-test-that-passed-for-the-wrong-reason-again) | Twice in two milestones; mutation found both |
+| [A fourth difference between the mandate and what milestone 1 scored](#2026-08-25--a-fourth-difference-between-the-mandate-and-what-milestone-1-scored) | The entry has now been wrong about its own completeness twice |
 
 ---
 
@@ -2164,10 +2165,17 @@ guard as the thing to revisit.
 ### The id is hex because it is typed at a shell
 
 The first version made ids base64url, like every other secret here. One in
-thirty-two would have begun with `-`, which `flag` parses as a flag — so
+sixty-four would have begun with `-`, which `flag` parses as a flag — so
 `mustur account revoke <id>` would have failed on the exact id the tool itself
 had just printed. Found by issuing one and reading the output, which is the
 cheapest test there is and the one most easily skipped.
+
+The first version of this paragraph said **one in thirty-two**, and a review
+caught it: the alphabet is 64 symbols, not 32. Measured afterwards over 200,000
+draws — 3,072 leading hyphens, 1 in 65.1. The entry congratulating itself for
+finding a bug by running the code had a number in it that nobody had counted,
+which is `workflow.md`'s own gate failing inside the entry that celebrates
+having met it.
 
 ### A test that passed for the wrong reason, again
 
@@ -2182,3 +2190,33 @@ That is the second time in two milestones. The first was 5b's cross-account
 ceremony test, refused by the library rather than by the check under test. Both
 were found by mutation, neither by reading, and the habit is now the point:
 **a negative test is not evidence until it has been seen to fail.**
+
+## 2026-08-25 — a fourth difference between the mandate and what milestone 1 scored
+
+`Three things differ from what was scored, and the entry exists to name all
+three` — and that entry's own history is that an earlier draft named two and a
+review found the third. A review has now found a fourth, which makes the pattern
+more interesting than the item.
+
+**The tool call can require a credential.** Milestone 1's fixture registered a
+stub over stdio, where the client launches the server and the tool is therefore
+always present. What ships is HTTP on loopback — difference 3 — and since
+milestone 5c that transport can be gated: with `--accounts` on, `/mcp` refuses a
+caller carrying no token. An agent honouring the clause at the bottom of
+`CLAUDE.md` now needs a secret in its MCP configuration under one supported flag
+setting, which the disproof never measured.
+
+It bites only under `--accounts`, which is off by default and which
+`deploy/mustur.service` does not pass, so nothing running today contradicts the
+original entry. The claim is that the enumeration is incomplete for the shipped
+binary, not that the deployment falsifies it.
+
+**And a third state the instruction does not name.** `CLAUDE.md` tells a session
+what to do when the tool "is not there": say so and carry on. Under `--accounts`
+with no token the tool *is* there and answers 403 — neither absent nor working.
+That sentence now names the third case, because a session meeting it would
+otherwise report the one thing that is not true.
+
+So the count is four, and the more useful record is that this entry has been
+wrong about its own completeness twice, both times found by somebody who did not
+write it.
