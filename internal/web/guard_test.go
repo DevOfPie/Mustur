@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -232,5 +233,72 @@ func TestSigningOutEndsIt(t *testing.T) {
 	}
 	if code := statusOf(t, c, srv.URL+"/records"); code != http.StatusSeeOther {
 		t.Errorf("a signed-out cookie still reaches a surface: %d", code)
+	}
+}
+
+// A passkey this server can never ask for is an account nobody can reach.
+//
+// Sign-in asks the browser for any credential scoped to this site and lets the
+// person pick. A non-discoverable credential is not offered, and this server
+// has no other way to name one — so an authenticator left to choose could make
+// a passkey, store it, and lock the account it belongs to. Required rather
+// than preferred, because preferred leaves the choice with the authenticator.
+func TestRegistrationRequiresADiscoverableCredential(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	accounts := account.New(st.DB())
+
+	secret, err := accounts.Invite(ctx, "new@example.com", "MUS", account.Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	auth := &Auth{Accounts: accounts, Origin: "http://127.0.0.1"}
+	mux := http.NewServeMux()
+	auth.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	req, err := http.NewRequest(http.MethodPost, srv.URL+"/invite/"+secret+"/begin", strings.NewReader("{}"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Origin", srv.URL)
+	res, err := srv.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("beginning registration returned %d", res.StatusCode)
+	}
+
+	var out struct {
+		PublicKey struct {
+			AuthenticatorSelection struct {
+				ResidentKey string `json:"residentKey"`
+			} `json:"authenticatorSelection"`
+			User struct {
+				Name        string `json:"name"`
+				DisplayName string `json:"displayName"`
+			} `json:"user"`
+		} `json:"publicKey"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		t.Fatal(err)
+	}
+	if got := out.PublicKey.AuthenticatorSelection.ResidentKey; got != "required" {
+		t.Errorf("residentKey is %q; a credential that is not discoverable cannot be signed in with", got)
+	}
+	// The name the account picker shows. Without it, somebody holding several
+	// passkeys for this site is choosing between unlabelled entries — which is
+	// the real form of "you cannot control which account you sign in to".
+	if out.PublicKey.User.Name != "new@example.com" || out.PublicKey.User.DisplayName != "new@example.com" {
+		t.Errorf("the passkey would be offered as %q/%q rather than by address",
+			out.PublicKey.User.Name, out.PublicKey.User.DisplayName)
 	}
 }

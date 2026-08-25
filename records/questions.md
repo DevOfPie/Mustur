@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-47 record(s), by identifier.
+49 record(s), by identifier.
 
 ---
 
@@ -1078,4 +1078,48 @@ The first drawing gave the ceremony a page: a heading, a sentence and one button
 | Surfaced | 2026-08-25 04:28 |
 | Answer | In place. It does not need a whole screen for it. |
 | Answered | 2026-08-25 04:28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0048
+
+**Should the only-owner refusals be announced before they happen?**
+
+question · 2026-08-25
+
+The first drawing warned the only owner that some controls would refuse. A review cut it as prose with no use. The refusals themselves remain, so the question is only whether somebody meets the rule before pressing the control or by pressing it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a control explains itself before or after it refuses |
+| Option | Nothing, as cut :: One fewer paragraph :: The control refuses and explains itself at that moment. |
+| Option | A word on the control :: No banner, and no surprise :: The Disable button reads as unavailable for the only owner, with the reason on it. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 05:45 |
+| Answer | Nothing, as cut. |
+| Answered | 2026-08-25 05:45 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0049
+
+**What happens to an invitation link after it is copied?**
+
+question · 2026-08-25
+
+It is shown once and never stored, so there is nothing to come back for. It currently stays on the page until you navigate away.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | how long a one-time secret sits on a screen |
+| Option | Stays until you leave the page :: On screen while you paste it somewhere :: You can copy it twice, and it is gone the moment you go anywhere. |
+| Option | Hidden after copying :: Tap to reveal again :: Guards against a shoulder rather than anything technical, since the page is already behind sign-in. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 05:45 |
+| Answer | Stays until you leave the page. |
+| Answered | 2026-08-25 05:45 |
 | Delivered | not delivered: the question names no session |

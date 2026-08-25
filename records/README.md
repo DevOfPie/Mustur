@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 11 | [milestones.md](milestones.md) |
-| question | 47 | [questions.md](questions.md) |
-| decision | 106 | [decisions.md](decisions.md) |
-| finding | 26 | [findings.md](findings.md) |
+| question | 49 | [questions.md](questions.md) |
+| decision | 107 | [decisions.md](decisions.md) |
+| finding | 27 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 19 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -98,6 +98,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0045](questions.md#mus-q-0045) | question | Is the account surface one screen or two? |
 | [MUS-Q-0046](questions.md#mus-q-0046) | question | Should a reader see who else has access? |
 | [MUS-Q-0047](questions.md#mus-q-0047) | question | Does adding a passkey deserve its own page? |
+| [MUS-Q-0048](questions.md#mus-q-0048) | question | Should the only-owner refusals be announced before they happen? |
+| [MUS-Q-0049](questions.md#mus-q-0049) | question | What happens to an invitation link after it is copied? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -204,6 +206,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0104](decisions.md#mus-d-0104) | decision | The credential is a passkey, and losing the device is not losing the account |
 | [MUS-D-0105](decisions.md#mus-d-0105) | decision | WebAuthn verification uses a maintained library rather than this repository's own crypto |
 | [MUS-D-0106](decisions.md#mus-d-0106) | decision | The authentication surfaces, after their first review |
+| [MUS-D-0107](decisions.md#mus-d-0107) | decision | Sign-in stays usernameless, and the chooser is drawn rather than described |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -229,6 +232,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0023](findings.md#mus-f-0023) | finding | Test for Mustur 2c |
 | [MUS-F-0024](findings.md#mus-f-0024) | finding | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… |
 | [MUS-F-0025](findings.md#mus-f-0025) | finding | Test |
+| [MUS-F-0026](findings.md#mus-f-0026) | finding | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

@@ -87,6 +87,21 @@ func (a *Auth) relying() (*webauthn.WebAuthn, error) {
 		RPID:          host,
 		RPDisplayName: "Mustur",
 		RPOrigins:     []string{origin},
+		AuthenticatorSelection: protocol.AuthenticatorSelection{
+			// Discoverable, required rather than preferred.
+			//
+			// Sign-in here asks the browser for any passkey scoped to this site
+			// and lets the person choose from what it offers. An authenticator
+			// that made a non-discoverable credential would have made one this
+			// server can never ask for by name — the account would exist, hold a
+			// passkey, and be unreachable. Left unset, that is the authenticator's
+			// choice to make.
+			ResidentKey: protocol.ResidentKeyRequirementRequired,
+			// Preferred rather than required: the passkey is the credential, and
+			// refusing an authenticator that cannot do a second factor would
+			// refuse hardware the owner may be holding.
+			UserVerification: protocol.VerificationPreferred,
+		},
 	})
 }
 
