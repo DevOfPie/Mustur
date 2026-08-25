@@ -5,14 +5,17 @@ work is done, and [decisions.md](decisions.md) for why.
 
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
 yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
-everything through it is merged. 5b, accounts, is raised and not started.**
+everything through it is merged. 5b, accounts, is built and reviewed and not
+merged; nothing it adds is deployed.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
 nothing without a StrucGu checkout. On this machine the intake box, the decision
-queue and — since 2026-08-23 — the session view are published at
-`mustur.devofpie.com` behind Cloudflare Access; that is a deployment, not
-something a clone inherits. The session view is served only when `serve` is
+queue, the records document and — since 2026-08-23 — the session view are
+published at `mustur.devofpie.com` behind Cloudflare Access; that is a
+deployment, not something a clone inherits. **Accounts are not published**: the
+running service passes neither `--origin` nor `--accounts`, so nothing from
+milestone 5b answers there. The session view is served only when `serve` is
 given `--sessions`, because it types into a running agent's stdin: dropping the
 flag removes the surface and the tab the others offer to it, which is the knob
 to reach for if the Access policy ever widens. What is unconditionally here is
@@ -32,19 +35,34 @@ long it has run, the tool it is in, and its output once it finishes — and thos
 rows appear only for sessions Mustur started, because the hook that reports them
 rides in on the command line Mustur builds.
 **It does not restart anything** — an agent CLI that crashed wants a person, not
-a loop. Nothing below milestone 5 is built; do not describe any of it in the
-present tense.
+a loop.
 
-**Two pages carry script**: the session view and the composer. Every other
-surface is server-rendered with nothing to fetch, and that is still the rule —
-the second was a decision the owner took on
-[MUS-Q-0034](records/questions.md#mus-q-0034), not a precedent set by building
-it. A third is a new decision again.
+Since milestone 5b it also knows who is asking: an invitation, a passkey, and a
+role per project that decides what somebody reaches. That is built and refuses
+correctly, and it is **off** — enforcement is a flag, because turning it on
+before the owner holds a passkey locks the owner out. Nothing below 5b is built;
+do not describe any of it in the present tense.
 
-The two are not the same kind of exception. The session view cannot be
-server-rendered at all: it is a live terminal. The composer can be, and is —
-its form posts and works with the script blocked; what the script adds is the
-draft, which cannot survive a backgrounded phone any other way.
+**Six pages carry script**: the session view, the composer, and the four
+authentication surfaces — sign in, accept an invitation, account, and people.
+Every other surface is server-rendered with nothing to fetch, and that is still
+the rule. Each addition was a decision the owner took, never a precedent set by
+building it: the composer on
+[MUS-Q-0034](records/questions.md#mus-q-0034), the account page on
+[MUS-Q-0047](records/questions.md#mus-q-0047). A seventh is a new decision
+again.
+
+**What the rule counts is itself open** on
+[MUS-Q-0053](records/questions.md#mus-q-0053), because six is the count of
+surfaces shipping a `<script>` tag and only two of them stop working without it.
+
+They are not the same kind of exception. The session view cannot be
+server-rendered at all: it is a live terminal, and neither can the passkey
+ceremony, which is a browser API. The composer can be, and is — its form posts
+and works with the script blocked; what the script adds is the draft, which
+cannot survive a backgrounded phone any other way. The account and people
+screens are the same: every action is a form, and the script adds a copy button
+and a save-on-change.
 
 **A session left running in a terminal is invisible to Mustur and will not
 become visible.** Mustur starts sessions and never attaches to one it did not.

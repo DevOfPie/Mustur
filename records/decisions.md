@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-107 record(s), by identifier.
+109 record(s), by identifier.
 
 ## Index
 
@@ -119,6 +119,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0105](#mus-d-0105) | WebAuthn verification uses a maintained library rather than this repository's own crypto | 2026-08-24 |
 | [MUS-D-0106](#mus-d-0106) | The authentication surfaces, after their first review | 2026-08-25 |
 | [MUS-D-0107](#mus-d-0107) | Sign-in stays usernameless, and the chooser is drawn rather than described | 2026-08-25 |
+| [MUS-D-0108](#mus-d-0108) | The surface count is twelve, and MUS-D-0072's eight is superseded | 2026-08-25 |
+| [MUS-D-0109](#mus-d-0109) | What the last four answers settled, and one correction to MUS-D-0107 | 2026-08-25 |
 
 ---
 
@@ -1720,3 +1722,37 @@ decision · 2026-08-25
 from: [MUS-F-0026](findings.md#mus-f-0026)
 
 A review asked for an address field on sign-in, so that somebody holding several passkeys can control which account they reach. They already can: the browser is asked for any passkey scoped to this site and the operating system lists what it holds, labelled by the address each was registered under. Mustur cannot style that sheet and never sees the list, which is why nothing is typed. The canvas now draws it rather than asserting it. Typing an address first would tell a stranger whether an address has an account here unless every address produced an identical prompt, and would put a keyboard in front of the one flow that had none — so the field is not built, and the question is on the plan with a middle option: one button by default, with a way out that reveals a field. The comment was right about something else, which is MUS-F-0026: registration never required a discoverable credential.
+
+---
+
+## MUS-D-0108
+
+**The surface count is twelve, and MUS-D-0072's eight is superseded**
+
+decision · 2026-08-25
+
+supersedes: [MUS-D-0072](#mus-d-0072)
+
+pattern: [MUS-F-0027](findings.md#mus-f-0027)
+
+MUS-D-0072 recorded that v1 has eight surfaces. docs/ui-surfaces.md now says twelve and no record carried the change, which a review found. Seven to eight got its own decision; eight to twelve got none, because the four that arrived — sign in, accept an invitation, account, people — were built before anyone counted them. The count is twelve. Surface 8 is a running session's output, named at 4b by trying to build against nothing. Surfaces 9 to 12 are the authentication pages, and MUS-F-0027 is the pattern that produced all four at once. This supersedes the number in MUS-D-0072 and nothing else in it.
+
+---
+
+## MUS-D-0109
+
+**What the last four answers settled, and one correction to MUS-D-0107**
+
+decision · 2026-08-25
+
+corrects: [MUS-D-0107](#mus-d-0107)
+
+answers: [MUS-Q-0050](questions.md#mus-q-0050)
+
+and: [MUS-Q-0044](questions.md#mus-q-0044)
+
+and also: [MUS-Q-0048](questions.md#mus-q-0048)
+
+and finally: [MUS-Q-0049](questions.md#mus-q-0049)
+
+MUS-D-0107 said the question about a usernameless sign-in was on the plan awaiting an answer. It had been answered: MUS-Q-0050, 'No — the system chooser already asks', so no address field is revealed and nothing further is owed. decisions.md is append-only, so this corrects it here rather than editing it. Three other answers had no record. MUS-Q-0044: keep all three surfaces the owner can start a message from, and say so, rather than folding them. MUS-Q-0048: the only-owner banner is cut, and the refusals say why at the moment they refuse. MUS-Q-0049: a question's timestamps are stamped from the clock and a past --at is refused, which is why no question can any more record an answer before its own creation.

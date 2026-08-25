@@ -12,8 +12,12 @@ package web
 // **It carries script**, which it did not. Adding a passkey had a page of its
 // own so this one could stay server-rendered; a review called that page what it
 // was — a heading and one button — so the ceremony opens here instead
-// (MUS-Q-0047). The count of scripted surfaces is four, written down rather
-// than absorbed. Everything else on this page works without.
+// (MUS-Q-0047). Everything else on this page works without: every action is a
+// form, and the script adds a copy button and a save-on-change.
+//
+// This template serves both screens, so the script it loads is on both — which
+// is half of why the count is six rather than the four first written down
+// (MUS-Q-0053).
 //
 // **Two authorisations, not one.** Anyone signed in may manage their own
 // passkeys; only an owner of the project may invite, change a role or disable

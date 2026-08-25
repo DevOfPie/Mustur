@@ -10,8 +10,12 @@ package web
 // Adding a passkey used to have a page of its own for that reason, keeping the
 // account page script-free. A review called it what it was — a page holding a
 // heading and one button — so the ceremony opens on the account page instead
-// and that page carries script too (MUS-Q-0047). Four surfaces now, counted
-// rather than absorbed.
+// and that page carries script too (MUS-Q-0047).
+//
+// Six surfaces carry script now, not the four a later review found this comment
+// claiming: this template serves both sign-in and the invitation page, and
+// accountpage.go's serves both of its screens, so each addition was two. What
+// the count should measure is MUS-Q-0053.
 //
 // What the script does is the ceremony and nothing else: ask the browser to
 // make or use a passkey, and post what it returns. No state, no rendering, no

@@ -127,6 +127,13 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The second review pass, and two of its findings](#the-second-review-pass-and-two-of-its-findings) | A correction is a claim, and nothing gates claims |
 | [Timestamps that could not be true](#timestamps-that-could-not-be-true) | Answers stamped before their questions existed |
 | [Amend replaces, and I have now been caught by that twice](#amend-replaces-and-i-have-now-been-caught-by-that-twice) | A record re-dated and stripped of provenance by its own correction |
+| [Who may read the records is not itself a record](#who-may-read-the-records-is-not-itself-a-record) | Why accounts live beside the log rather than in it |
+| [The gate is a flag, and the flag is off](#the-gate-is-a-flag-and-the-flag-is-off) | Enforcement turned on before a passkey exists locks the owner out |
+| [The ceremony needed a client, not a browser](#the-ceremony-needed-a-client-not-a-browser) | A virtual authenticator, and the test that was passing for the wrong reason |
+| [A drawing found a bug no test would have](#a-drawing-found-a-bug-no-test-would-have) | Discoverable credentials, caught by a comment on a picture |
+| [The count that nobody drew](#the-count-that-nobody-drew) | Two reviewers, two wrong replacements, one structural cause |
+| [Four surfaces built before they were drawn, and the pattern has a number now](#four-surfaces-built-before-they-were-drawn-and-the-pattern-has-a-number-now) | Seven instances, a rising rate, and MUS-F-0027 |
+| [What the review caught in the code](#what-the-review-caught-in-the-code) | Three fixed, one disputed with the measurement |
 
 ---
 
@@ -2021,3 +2028,91 @@ without the binary. The same trap took `MUS-M-0010` earlier in this session.
 Both are restored. `amend` takes what it is given and writes exactly that; the
 habit it needs is reading the record first, which is not a thing a comment can
 enforce.
+
+## 2026-08-25 — accounts of Mustur's own, and what the review found
+
+### Who may read the records is not itself a record
+
+`internal/account` lives beside the record log rather than in it. The log is
+insert-only, exported to markdown and read by strangers; an account is mutable,
+private, and gets deleted. They share one SQLite file because two files would be
+two things to back up and one of them would be forgotten, and they share nothing
+else: `mustur export` renders records and has never seen an account table.
+
+The credential is a passkey, and losing the device is not losing the account —
+the owner's clause on `MUS-Q-0041`. An address that already has an account
+reuses its identifier when it redeems a second invitation, which is what makes a
+replacement passkey land on the account it is replacing a key for rather than on
+a second account with the same email. That is the whole recovery story and it is
+one line of SQL, which is the only reason it is trustworthy.
+
+### The gate is a flag, and the flag is off
+
+Turning enforcement on before the owner holds a passkey locks the owner out of
+their own running service. So `--accounts` is off by default and the deployment
+does not pass it, the same shape as `--sessions`. Cloudflare Access stays in
+front throughout; taking it off is the owner's judgement, reserved on
+`MUS-Q-0039` and not part of this milestone's verdict.
+
+### The ceremony needed a client, not a browser
+
+Every test of authentication here started *after* the passkey — invite, redeem,
+mint a session cookie by hand — and a comment in `guard_test.go` said why: the
+ceremony needs a browser. It does not. It needs a correct client of the
+protocol, which is 224 lines of ES256 and CBOR, and with one the whole clause
+runs: invited, registered, signed out, recognised.
+
+That mattered more than the coverage. One of the tests it made possible was
+**passing for the wrong reason** — a cross-account ceremony was being refused by
+the library's session check, not by Mustur's own handle check, and deleting that
+check left the test green. A true outcome proving nothing about the line under
+test is the failure mode this whole file exists to catch, and it was found by
+mutating the code rather than by reading it.
+
+### A drawing found a bug no test would have
+
+`MUS-F-0026`: registration never required a discoverable credential. An
+authenticator could have made one this server can never ask for — an account
+that exists, holds a passkey, and cannot be signed into. It was found by a
+comment on a *picture*, during a plan review, by somebody looking at a screen
+that said "choose a passkey" and asking which passkeys.
+
+### The count that nobody drew
+
+Two of three reviewers independently found that "two surfaces carry script" was
+false. Both then got the replacement wrong, and so had the builder: one said
+five, one said six, the code said four. Six is right, and the reason is
+structural rather than arithmetic — `authTmpl` serves sign-in *and* the
+invitation page, `accountTmpl` serves the account *and* people screens, so each
+"one more scripted surface" was two. A count asserted rather than enumerated is
+a count nobody has checked. What the rule should measure at all is
+`MUS-Q-0053`.
+
+### Four surfaces built before they were drawn, and the pattern has a number now
+
+`docs/ui-surfaces.md` exists to stop exactly this and has now failed seven
+times, four of them in this one milestone. Recording each instance has not
+reduced the rate; it has gone up. `MUS-F-0027` records the pattern as a defect
+with an identifier rather than as four more paragraphs in the file that already
+says not to.
+
+The surfaces were drawn afterwards under `MUS-Q-0043` and rebuilt from what
+three rounds of review settled. That remediates the instance. It does not
+remediate the pattern, and saying otherwise would be the fifth time.
+
+### What the review caught in the code
+
+A disabled account could be re-invited: the invitation was spent, a passkey
+stored, a cookie issued and immediately refused by the guard, and the person
+dropped back at sign-in knowing nothing. `RemoveCredential` counted before it
+checked ownership, so removing somebody else's passkey answered "that is your
+only passkey" — true about an account that was not theirs. The ceremony script
+loaded on two pages with no ceremony.
+
+One finding was disputed and is worth recording as disputed: foreign keys were
+reported as enforcing nothing because no pragma sets them. They enforce. Measured
+with no pragma anywhere in the tree, a grant to a nonexistent account fails with
+`SQLITE_CONSTRAINT_FOREIGNKEY`, because modernc's driver switches them on. The
+pragma was added anyway, so the guarantee belongs to this schema rather than to a
+driver default, and the test stays — the property is worth pinning wherever it
+comes from.

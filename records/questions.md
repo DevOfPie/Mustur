@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-50 record(s), by identifier.
+54 record(s), by identifier.
 
 ---
 
@@ -1146,3 +1146,72 @@ A review asked for one, so that somebody holding several passkeys can control wh
 | Answer | No — the system chooser already asks. |
 | Answered | 2026-08-25 05:56 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0051
+
+**What authenticates the mandated tool call once the guard is on**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-M-0011 |
+| Needed to proceed | yes |
+| Option | Recommended — Public inside the guard :: /mcp joins the short public list; identity stays at the edge, where it already is :: Cloudflare Access is in front of the origin and nothing reaches /mcp without passing it. The guard's job is telling a reader from an owner among people with browsers; an agent CLI is neither. This keeps milestone 1's mandate working and writes down, in public(), that one endpoint is deliberately not gated by accounts. The cost is that if Access ever comes off, /mcp is open until something else covers it — which is exactly the judgement MUS-Q-0039 reserves to you. |
+| Option | A bearer token per agent :: Mustur issues a token an agent carries in a header; a second credential kind, with its own lifetime and its own revocation :: The honest answer if Mustur is ever to stand alone. It is also a second thing to lose, rotate and store, and every agent session's command line grows a secret. It would be its own milestone rather than a fix inside this one. |
+| Option | Leave it refused, and write it down :: --accounts and the MCP mandate become mutually exclusive, stated in both files :: Costs nothing to build and is the truthful description of what exists today. It also means the flag this milestone was built to enable can never be turned on while any agent needs the tool call, which is every session. |
+| Asked by | whippy |
+
+---
+
+## MUS-Q-0052
+
+**MUS-D-0041 set four tabs; accounts want a fifth**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-M-0011 |
+| Option | Recommended — Five tabs, Account last :: The bar grows by one on every surface; your decision is amended rather than worked around :: Four tabs was decided against a recommendation of three, so the bar has already been argued once. Account is where a passkey is added and where People is reached, and it is the only surface with no other way in. Five fits a phone. This asks you to move your own line rather than to accept a fifth thing smuggled in beside it. |
+| Option | Four tabs, and a header link :: The bar stays as you set it; Account is reached from a small link in each page header :: Keeps MUS-D-0041 untouched and costs a header on six surfaces. A header link is easier to miss than a tab, which matters for the surface holding the button that recovers a lost device. |
+| Option | Four tabs, and Account by URL only :: Nothing in the bar changes; you reach /account by typing it :: Cheapest and worst. It is the shape that just produced a People screen nobody could reach. |
+| Asked by | whippy |
+
+---
+
+## MUS-Q-0053
+
+**The scripted-surface rule now counts six, not two**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-M-0011 |
+| Option | Recommended — Count script tags, and the number is six :: The rule keeps its plain meaning and the count is corrected everywhere :: A surface either ships script or it does not, and that is checkable by grep — which is what made the drift visible at all. Six is honest: composer, session output, sign in, accept an invitation, account, people. The rule's teeth stay, since a seventh still needs you. |
+| Option | Count what cannot work without script, and the number is two :: The rule is reframed to mean surfaces that break with script blocked :: Arguably what the rule always meant: the composer's form posts, the account page's forms post, and only the session view and the ceremony genuinely require a client layer. It also makes the count uncheckable without judging each surface, and judgement is what let it drift. |
+| Option | Retire the rule :: Script is no longer the thing being rationed :: The rule was written when nothing had script and it has now been amended twice. Retiring it is defensible and loses the brake that has, twice, made a builder come and ask you. |
+| Asked by | whippy |
+
+---
+
+## MUS-Q-0054
+
+**Milestone 6's records surface was built inside 5b**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-M-0011 |
+| Option | Recommended — It stands, and milestone 6 is that much shorter :: Nothing moves; 6's row is amended to say its surface already exists :: The records document was owed by MUS-D-0041 as the fourth tab and was built here to fill it. It works and is tested. The cost is that the decision was announced in a commit message rather than asked, which is the failure this repository keeps making, and accepting it rewards that. |
+| Option | Split it into its own pull request before 5b merges :: The commit is cherry-picked onto its own branch and reviewed as milestone 6's own work :: Restores one topic per pull request and gives the surface the review it did not get. Costs a rebase of eight commits and delays 5b behind it. |
+| Option | Revert it from this branch :: The records surface is removed here and rebuilt at milestone 6 :: The strictest reading, and it throws away working, tested code to make a point about process. It also leaves the fourth tab unfilled again. |
+| Asked by | whippy |

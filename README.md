@@ -10,8 +10,9 @@ repo-local file that mandates the call.
 
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built, reviewed
 and awaiting acceptance; 5 is built, reviewed twice and rebuilt after the first
-review, and everything through it is merged. **5b, accounts, was raised on
-2026-08-24 and inserted before 6**; nothing below 5 is built.** What exists is one binary
+review, and everything through it is merged. 5b, accounts, was raised on
+2026-08-24, inserted before 6, and is built and reviewed but not merged and not
+deployed. Nothing below 5b is built.** What exists is one binary
 that can hold this project's records and routing, serve them to a session
 through a single mandated tool call, audit its own records against the
 conventions this repository declares, take a jot into its own findings queue
@@ -20,10 +21,16 @@ be reported complete while one has never been surfaced as a prompt, and serving
 a queue they are answered from. It also starts agent sessions inside tmux,
 types an answered decision back into the session that raised it, and streams a
 running session's output to a browser tab you can reply from, and gives that
-thought a screen of its own in the composer. Those two are the only surfaces
-carrying a client layer: the session view because a live terminal cannot be
-server-rendered, the composer because a draft cannot otherwise survive a
-backgrounded phone — and the composer's form posts without it.
+thought a screen of its own in the composer. Since milestone 5b it also knows
+who is asking — an invitation, a passkey, and a role per project — which is
+built, refuses correctly, and is switched off until somebody holds a passkey.
+
+Six surfaces carry a client layer: the session view, the composer, and the four
+authentication surfaces. Only two of them stop working without it — the session
+view, because a live terminal cannot be server-rendered, and the passkey
+ceremony, because `navigator.credentials` is a browser API. Everywhere else the
+form posts and the script adds a convenience. What the rule should count is open
+on [MUS-Q-0053](records/questions.md#mus-q-0053).
 That box is published at `mustur.devofpie.com`, behind Cloudflare Access and
 answered by a service that starts at boot; [docs/ingress.md](docs/ingress.md) is
 what it took. 2c's own sentence — a jot filed *from a phone* — was proven there

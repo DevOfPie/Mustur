@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 11 | [milestones.md](milestones.md) |
-| question | 50 | [questions.md](questions.md) |
-| decision | 107 | [decisions.md](decisions.md) |
-| finding | 27 | [findings.md](findings.md) |
+| question | 54 | [questions.md](questions.md) |
+| decision | 109 | [decisions.md](decisions.md) |
+| finding | 28 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 20 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -102,6 +102,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0048](questions.md#mus-q-0048) | question | Should the only-owner refusals be announced before they happen? |
 | [MUS-Q-0049](questions.md#mus-q-0049) | question | What happens to an invitation link after it is copied? |
 | [MUS-Q-0050](questions.md#mus-q-0050) | question | Should sign-in ask for an address before offering passkeys? |
+| [MUS-Q-0051](questions.md#mus-q-0051) | question | What authenticates the mandated tool call once the guard is on |
+| [MUS-Q-0052](questions.md#mus-q-0052) | question | MUS-D-0041 set four tabs; accounts want a fifth |
+| [MUS-Q-0053](questions.md#mus-q-0053) | question | The scripted-surface rule now counts six, not two |
+| [MUS-Q-0054](questions.md#mus-q-0054) | question | Milestone 6's records surface was built inside 5b |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -209,6 +213,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0105](decisions.md#mus-d-0105) | decision | WebAuthn verification uses a maintained library rather than this repository's own crypto |
 | [MUS-D-0106](decisions.md#mus-d-0106) | decision | The authentication surfaces, after their first review |
 | [MUS-D-0107](decisions.md#mus-d-0107) | decision | Sign-in stays usernameless, and the chooser is drawn rather than described |
+| [MUS-D-0108](decisions.md#mus-d-0108) | decision | The surface count is twelve, and MUS-D-0072's eight is superseded |
+| [MUS-D-0109](decisions.md#mus-d-0109) | decision | What the last four answers settled, and one correction to MUS-D-0107 |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -235,6 +241,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0024](findings.md#mus-f-0024) | finding | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… |
 | [MUS-F-0025](findings.md#mus-f-0025) | finding | Test |
 | [MUS-F-0026](findings.md#mus-f-0026) | finding | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |
+| [MUS-F-0027](findings.md#mus-f-0027) | finding | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

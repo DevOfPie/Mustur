@@ -1,12 +1,18 @@
 # Surfaces awaiting design
 
-**Four of these are built, and three of the four were first written the way this
+**Nine of these are built, and seven of the nine were first written the way this
 file exists to prevent.** Surface 5, intake, shipped at milestone 2c as a Go
 template — the layout decided in code and shown to the owner afterwards. Surface
 4, the decision queue, shipped at milestone 3 the same way, from the brief below
 rather than from the published plan's artboard for it. Surface 1, the composer,
 shipped at milestone 5 as a box inside another surface's page, with this file
-amended to say that was where it lived.
+amended to say that was where it lived. Surfaces 9 to 12, the authentication
+pages, shipped at milestone 5b with no plan at all — four at once, described in
+the paragraph below.
+
+Seven of nine is the number to argue with. Recording each instance has not
+stopped the next one; that is [MUS-Q-0053](../records/questions.md#mus-q-0053)'s
+neighbour in `queue.md` and not something another paragraph here fixes.
 
 Intake was the first and predates any such record. That the *other two*
 happened after one existed is the part worth keeping: **the record alone was not
@@ -57,8 +63,9 @@ They now have [a plan of their
 own](https://plan.agent-native.com/plans/plan-b1277e4f36f24da3), published
 2026-08-25 and reviewed the same day, and the owner's answer on
 [MUS-Q-0043](../records/questions.md#mus-q-0043) is that they are rebuilt from
-whatever it settles. What exists is the baseline to argue with, which is the
-standing intake was given.
+whatever it settles. They were. What already existed became the baseline to
+argue with rather than the thing being defended, which is the only useful shape
+for a surface that arrived this way.
 
 **Twelve comments came back, and five said the same thing:** take the
 explanatory prose out of the wireframes. That is worth recording as a fact about
@@ -72,9 +79,10 @@ first owner. The rest of the changes are in
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
 published 2026-08-20. Eight artboards — intake as built and as proposed, plus
 the six then-unbuilt surfaces — the shell they share, and four open questions,
-which were answered 2026-08-20. Four of those six are still unbuilt; the
-decision queue is built from its artboard, and so, since milestone 5, is the
-composer.
+which were answered 2026-08-20. Three of those six are still unbuilt; the
+decision queue is built from its artboard, the composer since milestone 5, and
+the records document since 5b — which arrived inside another milestone's branch
+and is [MUS-Q-0054](../records/questions.md#mus-q-0054).
 
 ## The constraints every surface inherits
 
@@ -295,9 +303,16 @@ seen the tag and the tag is what every identifier uses.
 The first drawing gave it a page holding a heading and one button, which the
 review called what it was. The cost is named rather than absorbed: a WebAuthn
 ceremony needs the browser's credentials API, so this page carries script and
-the count of scripted surfaces is four rather than three
+this page carries script
 ([MUS-Q-0047](../records/questions.md#mus-q-0047)). Everything else on it works
 without.
+
+**The count is six**, not the four an earlier version of this line claimed:
+surfaces 9 and 10 are one template and 11 and 12 are another, and each loads its
+script for both. Nobody drew that consequence, which is why the number is
+written out per surface — 1, 8, 9, 10, 11, 12 — rather than asserted. Whether
+six is the right thing to count at all is
+[MUS-Q-0053](../records/questions.md#mus-q-0053).
 
 Must answer: what the surface refuses, and when you find out. The last passkey
 cannot be removed and the only owner cannot stand down. The banner that
