@@ -163,6 +163,13 @@ type authPage struct {
 	ProjectName string
 }
 
+// Ceremony is whether this rendering has a button to press. The script tag used
+// to sit outside every conditional, so it loaded on the invitation-failure page
+// and on the sign-in page of an install with no accounts — two pages with
+// nothing for it to bind to. A script that runs where there is no ceremony is
+// not harmful; it is a surface counted as scripted for no reason.
+func (p authPage) Ceremony() bool { return p.Error == "" && !p.Empty }
+
 func (a *Auth) signinPage(w http.ResponseWriter, r *http.Request) {
 	empty, _ := a.Accounts.Empty(r.Context())
 	a.render(w, authPage{Empty: empty})
@@ -654,7 +661,7 @@ has one.</p>
 {{end}}
 {{end}}
 <p class="said" id="said" hidden></p>
-<script src="/assets/auth.js"></script>
+{{if .Ceremony}}<script src="/assets/auth.js"></script>{{end}}
 </body>
 </html>
 `))

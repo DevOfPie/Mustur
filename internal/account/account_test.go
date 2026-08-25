@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -289,5 +290,106 @@ func TestSecretsAreNotStored(t *testing.T) {
 			}
 		}
 		rows.Close()
+	}
+}
+
+// enrolled invites somebody and redeems it, which is the shortest way to an
+// account that exists.
+func enrolled(t *testing.T, s *Store, ctx context.Context, email string, role Role) Account {
+	t.Helper()
+	secret, err := s.Invite(ctx, email, "MUS", role, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	acct, _, err := s.Redeem(ctx, secret, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return acct
+}
+
+// A disabled account is not re-admitted by an invitation.
+//
+// Found by following what happened rather than by reading it: the invitation
+// was spent, a passkey stored, a cookie issued and then refused, and the person
+// landed back at sign-in knowing nothing. The invitation was gone.
+func TestADisabledAccountCannotBeInvitedBackIn(t *testing.T) {
+	s, ctx := open(t)
+	acct := enrolled(t, s, ctx, "gone@example.com", Reader)
+	if err := s.Disable(ctx, acct.ID, false); err != nil {
+		t.Fatal(err)
+	}
+
+	// The owner cannot issue one at all.
+	if _, err := s.Invite(ctx, "gone@example.com", "MUS", Reader, "test"); !errors.Is(err, ErrDisabled) {
+		t.Errorf("inviting a disabled account returned %v, want ErrDisabled", err)
+	}
+
+	// One issued before the disabling is refused without being spent, so
+	// undoing the disabling leaves it usable.
+	other := enrolled(t, s, ctx, "early@example.com", Reader)
+	second, err := s.Invite(ctx, "early@example.com", "MUS", Owner, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Disable(ctx, other.ID, false); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.Redeem(ctx, second, ""); !errors.Is(err, ErrDisabled) {
+		t.Errorf("redeeming onto a disabled account returned %v, want ErrDisabled", err)
+	}
+	if err := s.Disable(ctx, other.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.Redeem(ctx, second, ""); err != nil {
+		t.Errorf("the refused invitation had been spent anyway: %v", err)
+	}
+}
+
+// Removing a passkey answers about the passkey named, not about the account.
+//
+// The two checks were the other way round, so removing somebody else's passkey
+// from an account holding one was told "that is your only passkey" — true about
+// an account that was not theirs, and a small oracle about somebody else's.
+func TestRemovingSomebodyElsesPasskeySaysSo(t *testing.T) {
+	s, ctx := open(t)
+	mine := enrolled(t, s, ctx, "mine@example.com", Owner)
+	theirs := enrolled(t, s, ctx, "theirs@example.com", Reader)
+
+	for _, id := range []string{"mine-a", "mine-b"} {
+		if err := s.AddCredential(ctx, mine.ID, Credential{ID: []byte(id), PublicKey: []byte("k")}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.AddCredential(ctx, theirs.ID, Credential{ID: []byte("theirs-only"), PublicKey: []byte("k")}); err != nil {
+		t.Fatal(err)
+	}
+
+	err := s.RemoveCredential(ctx, mine.ID, []byte("theirs-only"))
+	if err == nil {
+		t.Fatal("removed a passkey belonging to another account")
+	}
+	if errors.Is(err, ErrLastPasskey) {
+		t.Error("answered about the other account's passkey count instead of saying this one is not theirs")
+	}
+	creds, err := s.Credentials(ctx, theirs.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(creds) != 1 {
+		t.Errorf("%d passkeys left on the other account", len(creds))
+	}
+}
+
+// A role cannot be granted to an account that does not exist.
+//
+// A review reported this as broken on the grounds that nothing switches foreign
+// keys on. Measured: modernc's driver does, and the constraint fires with no
+// pragma in the tree at all. The test stays because the guarantee is worth
+// pinning wherever it comes from — the finding does not.
+func TestARoleNeedsAnAccountThatExists(t *testing.T) {
+	s, ctx := open(t)
+	if err := s.Grant(ctx, "no-such-account", "MUS", Owner, "test"); err == nil {
+		t.Error("granted a role to an account id that does not exist")
 	}
 }

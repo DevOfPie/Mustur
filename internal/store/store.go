@@ -37,6 +37,17 @@ func Open(ctx context.Context, path string) (*Store, error) {
 	// One writer. The store is a single long-lived process's, and a second
 	// writer would interleave sequence numbers the export depends on.
 	db.SetMaxOpenConns(1)
+	// SQLite parses REFERENCES and then ignores it unless this is on, per
+	// connection. modernc's driver already switches it on, which a review missed
+	// and this comment nearly repeated: measured with no pragma at all, a grant
+	// to a nonexistent account id still fails with SQLITE_CONSTRAINT_FOREIGNKEY.
+	// The line stays so the guarantee is this schema's rather than a driver
+	// default that could change under it. The record tables declare no
+	// references, so it changes nothing for them.
+	if _, err := db.ExecContext(ctx, `PRAGMA foreign_keys = ON`); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("enable foreign keys on %s: %w", path, err)
+	}
 	if _, err := db.ExecContext(ctx, schema); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("apply schema to %s: %w", path, err)

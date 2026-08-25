@@ -129,6 +129,13 @@ var (
 	// ErrNoAccount is returned when nothing is signed in, or the session has
 	// expired, or the account behind it is disabled.
 	ErrNoAccount = errors.New("not signed in")
+	// ErrDisabled refuses an invitation to somebody who has been turned off.
+	//
+	// Named rather than folded into ErrNoInvite, because this one is told to an
+	// owner who already knows the address exists. The reticence ErrNoInvite
+	// buys is about strangers guessing tokens; there is nothing to protect from
+	// somebody who is looking at the account in a list.
+	ErrDisabled = errors.New("that account is disabled; enable it before inviting them again")
 )
 
 // token makes a secret and the hash it is stored under.
@@ -165,6 +172,21 @@ func (s *Store) Invite(ctx context.Context, email, project string, role Role, by
 	}
 	if !role.Valid() {
 		return "", fmt.Errorf("%q is not a role", role)
+	}
+	// A disabled account cannot be re-admitted by invitation. Redeeming one
+	// would spend the invitation, store a passkey, issue a cookie the guard
+	// then refuses, and drop the person back at sign-in with no explanation —
+	// which is what it did before a review followed it through. Enabling is a
+	// deliberate act with its own control, and this says so rather than
+	// performing it as a side effect of an invitation.
+	var off string
+	err := s.db.QueryRowContext(ctx,
+		`SELECT COALESCE(disabled, '') FROM account WHERE email = ?`, email).Scan(&off)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return "", err
+	}
+	if off != "" {
+		return "", ErrDisabled
 	}
 	secret, hash, err := token()
 	if err != nil {
@@ -241,8 +263,16 @@ func (s *Store) Redeem(ctx context.Context, secret, newID string) (Account, Invi
 		return Account{}, Invitation{}, ErrNoInvite
 	}
 
-	var id string
-	err = tx.QueryRowContext(ctx, `SELECT id FROM account WHERE email = ?`, inv.Email).Scan(&id)
+	var id, off string
+	err = tx.QueryRowContext(ctx,
+		`SELECT id, COALESCE(disabled, '') FROM account WHERE email = ?`, inv.Email).Scan(&id, &off)
+	if err == nil && off != "" {
+		// Refused before the invitation is spent. An invitation lives a day and
+		// the account may have been disabled inside it, so the check at Invite
+		// is not enough on its own. The rollback keeps the link usable, which
+		// matters if the disabling is itself undone.
+		return Account{}, Invitation{}, ErrDisabled
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		// The caller may name the identifier, because a passkey ceremony
 		// commits to a user handle before the account exists: the browser is
@@ -379,6 +409,19 @@ func (s *Store) RemoveCredential(ctx context.Context, accountID string, credID [
 	}
 	defer tx.Rollback()
 
+	// Whether this passkey is theirs, before whether it is their last. The
+	// other order answered "that is your only passkey" to somebody removing a
+	// passkey that was not theirs from an account holding one — a true sentence
+	// about the wrong account, and a small oracle about somebody else's.
+	var mine int
+	if err := tx.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM credential WHERE account_id = ? AND cred_id = ?`,
+		accountID, credID).Scan(&mine); err != nil {
+		return err
+	}
+	if mine == 0 {
+		return errors.New("no such passkey on this account")
+	}
 	var n int
 	if err := tx.QueryRowContext(ctx,
 		`SELECT COUNT(*) FROM credential WHERE account_id = ?`, accountID).Scan(&n); err != nil {
@@ -387,13 +430,9 @@ func (s *Store) RemoveCredential(ctx context.Context, accountID string, credID [
 	if n <= 1 {
 		return ErrLastPasskey
 	}
-	res, err := tx.ExecContext(ctx,
-		`DELETE FROM credential WHERE account_id = ? AND cred_id = ?`, accountID, credID)
-	if err != nil {
+	if _, err := tx.ExecContext(ctx,
+		`DELETE FROM credential WHERE account_id = ? AND cred_id = ?`, accountID, credID); err != nil {
 		return err
-	}
-	if rows, _ := res.RowsAffected(); rows != 1 {
-		return errors.New("no such passkey on this account")
 	}
 	return tx.Commit()
 }

@@ -379,3 +379,36 @@ func pageOf(t *testing.T, c *http.Client, url string) string {
 	}
 	return string(b)
 }
+
+// The script loads where there is a ceremony, and not where there is none.
+//
+// The tag sat outside every conditional, so it also loaded on the
+// invitation-failure page and on the sign-in page of an install with nobody in
+// it — two pages holding nothing for it to bind to, counted as scripted for no
+// reason.
+func TestTheCeremonyScriptLoadsOnlyWhereThereIsOne(t *testing.T) {
+	srv, accounts, _ := ceremonial(t)
+	ctx := context.Background()
+	c := browser(t)
+
+	// Nobody has an account: the page names the command instead of offering a
+	// button, so there is nothing to run.
+	if got := pageOf(t, c, srv.URL+"/signin"); strings.Contains(got, "auth.js") {
+		t.Error("the empty sign-in page loads a ceremony it has no button for")
+	}
+	secret, err := accounts.Invite(ctx, "somebody@example.com", "MUS", account.Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A live invitation still leaves no accounts, so sign-in keeps naming the
+	// command. Only somebody actually registering changes it.
+	register(t, browser(t), srv, newAuthenticator(t), secret)
+	// Now there is somebody to sign in as, so there is a button.
+	if got := pageOf(t, c, srv.URL+"/signin"); !strings.Contains(got, "auth.js") {
+		t.Error("sign-in cannot run its ceremony")
+	}
+	// A bad invitation renders a message and nothing to press.
+	if got := pageOf(t, c, srv.URL+"/invite/not-a-token"); strings.Contains(got, "auth.js") {
+		t.Error("the invitation-failure page loads a ceremony it has no button for")
+	}
+}
