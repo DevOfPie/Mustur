@@ -11,8 +11,9 @@ repo-local file that mandates the call.
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built, reviewed
 and awaiting acceptance; 5 is built, reviewed twice and rebuilt after the first
 review, and everything through it is merged. 5b, accounts, was raised on
-2026-08-24, inserted before 6, and is built and reviewed but not merged and not
-deployed. Nothing below 5b is built.** What exists is one binary
+2026-08-24 and inserted before 6; 5c, the credential an agent can hold, came out
+of 5b's own review. Both are built and neither is merged or deployed. Nothing
+below 5c is built.** What exists is one binary
 that can hold this project's records and routing, serve them to a session
 through a single mandated tool call, audit its own records against the
 conventions this repository declares, take a jot into its own findings queue
@@ -23,7 +24,9 @@ types an answered decision back into the session that raised it, and streams a
 running session's output to a browser tab you can reply from, and gives that
 thought a screen of its own in the composer. Since milestone 5b it also knows
 who is asking — an invitation, a passkey, and a role per project — which is
-built, refuses correctly, and is switched off until somebody holds a passkey.
+built, refuses correctly, and is switched off until somebody holds a passkey. An
+agent, which has no browser and so no passkey, carries a token instead: one
+path, one project, revoked the moment you say so.
 
 Six surfaces carry a client layer: the session view, the composer, and the four
 authentication surfaces. Only two of them stop working without it — the session

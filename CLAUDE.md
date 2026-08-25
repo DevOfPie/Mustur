@@ -5,8 +5,8 @@ work is done, and [decisions.md](decisions.md) for why.
 
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
 yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
-everything through it is merged. 5b, accounts, is built and reviewed and not
-merged; nothing it adds is deployed.**
+everything through it is merged. 5b, accounts, and 5c, agent tokens, are built
+and not merged; nothing either adds is deployed.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
@@ -40,8 +40,16 @@ a loop.
 Since milestone 5b it also knows who is asking: an invitation, a passkey, and a
 role per project that decides what somebody reaches. That is built and refuses
 correctly, and it is **off** — enforcement is a flag, because turning it on
-before the owner holds a passkey locks the owner out. Nothing below 5b is built;
-do not describe any of it in the present tense.
+before the owner holds a passkey locks the owner out.
+
+Milestone 5c is the credential an agent can hold. A passkey needs a browser and
+a gesture; an agent has neither and still has to reach the mandated tool call,
+so `mustur account token` issues one carried in an `Authorization: Bearer`
+header. It opens `/mcp` and nothing else, is scoped to one project, and is
+revoked immediately rather than at the next restart. Without it, enforcement and
+the mandate could not both be on — measured, not reasoned.
+
+Nothing below 5c is built; do not describe any of it in the present tense.
 
 **Six pages carry script**: the session view, the composer, and the four
 authentication surfaces — sign in, accept an invitation, account, and people.

@@ -16,6 +16,13 @@ package web
 // is: turning it on before the owner holds a passkey locks the owner out of
 // their own running service. It is turned on deliberately, once somebody can
 // get in.
+//
+// **Two kinds of caller.** A person carries a session cookie earned with a
+// passkey; an agent carries a bearer token and reaches exactly one path. That
+// second kind is milestone 5c, and it exists because 5b built this guard and
+// then could not switch it on: `/mcp` is on this mux, an MCP call is a POST, and
+// every agent was answered 403. The owner chose a token over exempting the path
+// (MUS-Q-0051).
 
 import (
 	"net/http"
@@ -68,6 +75,39 @@ func selfService(path string) bool {
 	return path == "/account" || strings.HasPrefix(path, "/account/")
 }
 
+// toolCall is the one path an agent token opens, and the only one.
+//
+// A token is a long-lived secret living in a systemd unit or a process's
+// environment — a weaker place than a device's secure element — so it is scoped
+// to the thing an agent actually needs and nothing else. It cannot read the
+// records surface, cannot open a session, cannot sign in. That scope is what
+// makes the weaker secret acceptable (MUS-Q-0051).
+func toolCall(path string) bool {
+	return path == "/mcp" || strings.HasPrefix(path, "/mcp/")
+}
+
+// agent resolves a bearer token, if the request carries one.
+//
+// Absent or unusable both return false and the request falls through to the
+// browser rules, so a signed-in owner can still exercise the tool call from a
+// browser and an agent with a revoked token gets the same 403 as one with none.
+func (g *Guard) agent(r *http.Request) (account.Token, bool) {
+	h := r.Header.Get("Authorization")
+	if h == "" {
+		return account.Token{}, false
+	}
+	// Case-insensitive on the scheme, because clients differ and this is not
+	// the place to be strict about a thing that carries no meaning.
+	if len(h) < 7 || !strings.EqualFold(h[:7], "bearer ") {
+		return account.Token{}, false
+	}
+	t, err := g.Auth.Accounts.ByToken(r.Context(), h[7:])
+	if err != nil {
+		return account.Token{}, false
+	}
+	return t, true
+}
+
 // writes reports whether a request would change something, or reach a surface
 // that types into a running agent.
 //
@@ -90,6 +130,27 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 		if public(r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return
+		}
+		// An agent, before a person. The mandated tool call has to work while
+		// this gate is on, which is what milestone 5c exists for: 5b built a
+		// guard that answered 403 to every agent and could therefore never be
+		// turned on.
+		if toolCall(r.URL.Path) {
+			if t, ok := g.agent(r); ok {
+				if t.Project != g.Project {
+					http.Error(w, "no access to this project", http.StatusForbidden)
+					return
+				}
+				// No write check. This surface serves one tool and it reads;
+				// TestTheToolSurfaceIsReadOnly fails if a second is added, which
+				// is what makes this line safe to leave.
+				_ = g.Auth.Accounts.UsedToken(r.Context(), t.ID)
+				next.ServeHTTP(w, r)
+				return
+			}
+			// No usable token: fall through, so an owner can still exercise it
+			// from a signed-in browser and a revoked token is refused exactly
+			// as an absent one is.
 		}
 		acct, ok := g.Auth.Whoever(r.Context(), r)
 		if !ok {

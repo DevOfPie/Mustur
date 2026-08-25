@@ -43,3 +43,4 @@ is a copy that will drift.
 | [MUS-W-0018](MUS-W-0018.md) | Sub-agents are visible | 2026-08-22 |
 | [MUS-W-0019](MUS-W-0019.md) | Composition | 2026-08-24 |
 | [MUS-W-0020](MUS-W-0020.md) | Accounts of Mustur's own | 2026-08-25 |
+| [MUS-W-0021](MUS-W-0021.md) | An agent carries a token | 2026-08-25 |

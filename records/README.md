@@ -13,7 +13,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | decision | 109 | [decisions.md](decisions.md) |
 | finding | 28 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 20 | [work-units/index.md](work-units/index.md) |
+| work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -53,6 +53,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018) | work-unit | Sub-agents are visible |
 | [MUS-W-0019](work-units/MUS-W-0019.md#mus-w-0019) | work-unit | Composition |
 | [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020) | work-unit | Accounts of Mustur's own |
+| [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |

@@ -41,8 +41,12 @@ func TestToolIsReachableOverHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// One tool, and it reads. The guard leans on this: an agent token is let
+	// past /mcp with no write check (internal/web/guard.go), which is only safe
+	// while nothing on this surface writes. A second tool here means that line
+	// needs revisiting, and this is where it is noticed.
 	if len(tools.Tools) != 1 || tools.Tools[0].Name != "mustur_route" {
-		t.Fatalf("tools offered: %+v", tools.Tools)
+		t.Fatalf("tools offered: %+v — internal/web/guard.go assumes this surface is read-only", tools.Tools)
 	}
 
 	res, err := session.CallTool(ctx, &mcp.CallToolParams{

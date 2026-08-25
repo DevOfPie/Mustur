@@ -14,6 +14,10 @@ package main
 // passkey or an invitation reissued by somebody else with an owner role. When
 // neither exists — one owner, one device, gone — this is the way back, and it
 // needs a shell on the machine rather than a password anybody could phish.
+//
+// **An agent's credential**, which is a third and is not a moment at all: a
+// token is configuration, minted here because there is nowhere else it could
+// come from. An agent has no browser to run a ceremony in (MUS-Q-0051).
 
 import (
 	"flag"
@@ -25,7 +29,7 @@ import (
 
 func cmdAccount(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("account needs a verb: invite, list, grant")
+		return fmt.Errorf("account needs a verb: invite, list, grant, token, tokens, revoke")
 	}
 	verb, rest := args[0], args[1:]
 
@@ -117,6 +121,93 @@ func cmdAccount(args []string) error {
 			fmt.Printf("%-32s %-24s invited, not yet accepted\n",
 				inv.Email, inv.Project+":"+string(inv.Role))
 		}
+		return nil
+
+	case "token":
+		fs := flag.NewFlagSet("account token", flag.ContinueOnError)
+		db := dbFlag(fs)
+		label := fs.String("for", "", "what carries it, in your words: \"claude-code on whippy-vm\"")
+		project := fs.String("project", "MUS", "the project the token may read")
+		role := fs.String("role", string(account.Reader), "owner or reader")
+		if err := fs.Parse(rest); err != nil {
+			return err
+		}
+		if strings.TrimSpace(*label) == "" {
+			return fmt.Errorf("account token needs --for: a token nobody can identify is one nobody dares revoke")
+		}
+		s, storeCtx, err := openStore(*db)
+		if err != nil {
+			return err
+		}
+		defer s.Close()
+		accounts := account.New(s.DB())
+		secret, t, err := accounts.IssueToken(storeCtx, *label, *project, account.Role(*role), defaultActor())
+		if err != nil {
+			return err
+		}
+		// Printed once. Only the hash was written, so there is nothing to look
+		// up and a token that goes missing is reissued and the old one revoked.
+		fmt.Printf("token %s for %s — %s on %s\n", t.ID, t.Label, t.Role, t.Project)
+		fmt.Printf("  %s\n", secret)
+		fmt.Println("  shown once; carry it as: Authorization: Bearer <token>")
+		fmt.Printf("  revoke with: mustur account revoke %s\n", t.ID)
+		return nil
+
+	case "tokens":
+		fs := flag.NewFlagSet("account tokens", flag.ContinueOnError)
+		db := dbFlag(fs)
+		if err := fs.Parse(rest); err != nil {
+			return err
+		}
+		s, storeCtx, err := openStore(*db)
+		if err != nil {
+			return err
+		}
+		defer s.Close()
+		accounts := account.New(s.DB())
+		tokens, err := accounts.Tokens(storeCtx)
+		if err != nil {
+			return err
+		}
+		if len(tokens) == 0 {
+			fmt.Println("no agent tokens")
+			fmt.Println("  mustur account token --for \"claude-code on this machine\"")
+			return nil
+		}
+		for _, t := range tokens {
+			state := "never used"
+			if !t.LastUsed.IsZero() {
+				state = "last used " + t.LastUsed.Format("2006-01-02 15:04")
+			}
+			if !t.Revoked.IsZero() {
+				state = "revoked " + t.Revoked.Format("2006-01-02 15:04")
+			}
+			fmt.Printf("%-14s %-32s %-14s %s\n",
+				t.ID, t.Label, t.Project+":"+string(t.Role), state)
+		}
+		return nil
+
+	case "revoke":
+		fs := flag.NewFlagSet("account revoke", flag.ContinueOnError)
+		db := dbFlag(fs)
+		if err := fs.Parse(rest); err != nil {
+			return err
+		}
+		if fs.NArg() != 1 {
+			return fmt.Errorf("account revoke needs one token id; mustur account tokens lists them")
+		}
+		s, storeCtx, err := openStore(*db)
+		if err != nil {
+			return err
+		}
+		defer s.Close()
+		accounts := account.New(s.DB())
+		if err := accounts.RevokeToken(storeCtx, fs.Arg(0)); err != nil {
+			return err
+		}
+		// Immediate: the next call carrying it is refused, because ByToken
+		// reads the row rather than a cache.
+		fmt.Printf("revoked %s — it stops working now, not at the next restart\n", fs.Arg(0))
 		return nil
 
 	case "grant":

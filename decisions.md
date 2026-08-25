@@ -134,6 +134,11 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The count that nobody drew](#the-count-that-nobody-drew) | Two reviewers, two wrong replacements, one structural cause |
 | [Four surfaces built before they were drawn, and the pattern has a number now](#four-surfaces-built-before-they-were-drawn-and-the-pattern-has-a-number-now) | Seven instances, a rising rate, and MUS-F-0027 |
 | [What the review caught in the code](#what-the-review-caught-in-the-code) | Three fixed, one disputed with the measurement |
+| [A token is not an account, and that is the point](#a-token-is-not-an-account-and-that-is-the-point) | Scope is what makes a weaker secret acceptable |
+| [No expiry, deliberately](#no-expiry-deliberately) | A credential that stops at 3am is an outage, not a control |
+| [The guard trusts one thing about the tool surface](#the-guard-trusts-one-thing-about-the-tool-surface) | Why a second MCP tool fails a test in another package |
+| [The id is hex because it is typed at a shell](#the-id-is-hex-because-it-is-typed-at-a-shell) | One in thirty-two ids would have been unrevokable |
+| [A test that passed for the wrong reason, again](#a-test-that-passed-for-the-wrong-reason-again) | Twice in two milestones; mutation found both |
 
 ---
 
@@ -2116,3 +2121,64 @@ with no pragma anywhere in the tree, a grant to a nonexistent account fails with
 pragma was added anyway, so the guarantee belongs to this schema rather than to a
 driver default, and the test stays — the property is worth pinning wherever it
 comes from.
+
+## 2026-08-25 — the credential an agent can hold
+
+### A token is not an account, and that is the point
+
+A passkey needs a browser, an authenticator and a gesture. An agent has none of
+the three and still has to reach the mandated tool call, so milestone 5c gives it
+a token carried in an `Authorization: Bearer` header.
+
+The temptation was to make it an account with a funny credential. It is not one:
+no email, no passkey, no session, and the guard consults it on exactly one path.
+That is not tidiness. A token lives in a systemd unit or a process's
+environment, which is a materially weaker place than a device's secure element,
+and **scope is what makes the weaker secret acceptable**. An agent token opens
+`/mcp` for one project and cannot read a record, open a session, or sign in.
+Folding it into `account` would have made a leaked token a way into the browser
+surfaces instead of into the one call it exists for.
+
+### No expiry, deliberately
+
+An invitation expires because it is a one-time link in transit. A session
+expires because a browser is borrowed. An agent token is **configuration**, and
+a credential that stops working at 3am without anybody having decided that is an
+outage, not a security control. Revocation is the control, it is a row read on
+every call rather than a cache, and it takes effect on the running server —
+measured, not assumed.
+
+Revocation is a timestamp rather than a delete, so a listing can still say the
+token existed and when it stopped. A row that vanished cannot tell anybody
+investigating anything.
+
+### The guard trusts one thing about the tool surface
+
+An agent token is let past `/mcp` with **no write check**, because an MCP call is
+a POST by method and a read by nature — the surface serves one tool and it
+reads. That is a real assumption, and a comment saying so is a promise nobody
+checks. `internal/mcpsrv`'s own test asserts exactly one tool named
+`mustur_route` and now says why, so a second tool fails there and names the
+guard as the thing to revisit.
+
+### The id is hex because it is typed at a shell
+
+The first version made ids base64url, like every other secret here. One in
+thirty-two would have begun with `-`, which `flag` parses as a flag — so
+`mustur account revoke <id>` would have failed on the exact id the tool itself
+had just printed. Found by issuing one and reading the output, which is the
+cheapest test there is and the one most easily skipped.
+
+### A test that passed for the wrong reason, again
+
+The scope test — "a token opens the tool call and nothing else" — passed while
+asserting nothing. Its client followed the guard's `303` to `/signin`, landed on
+a public page, and reported `200`; the test looked for "not 200" and was
+satisfied by a redirect it had already followed. It now follows no redirects and
+asserts `303` or `403`, and both negative tests here were checked by breaking
+the code to see them fail.
+
+That is the second time in two milestones. The first was 5b's cross-account
+ceremony test, refused by the library rather than by the check under test. Both
+were found by mutation, neither by reading, and the habit is now the point:
+**a negative test is not evidence until it has been seen to fail.**

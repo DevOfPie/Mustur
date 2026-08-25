@@ -149,3 +149,34 @@ CREATE TABLE IF NOT EXISTS webauthn_ceremony (
   created TEXT NOT NULL,
   expires TEXT NOT NULL
 );
+
+-- An agent's credential.
+--
+-- A passkey is a person's: it needs a browser, a authenticator and a gesture.
+-- An agent has none of those and still has to reach the mandated tool call, so
+-- milestone 5c gives it a token it carries in a header. Hashed, like every
+-- other secret here, and for the same reason.
+--
+-- Deliberately NOT an account. It has no email, cannot hold a passkey, cannot
+-- sign in to a browser surface, and the guard consults it on exactly one path.
+-- Folding it into `account` would have made every question about people also a
+-- question about robots, and made a leaked token a way into the browser
+-- surfaces rather than into the tool call it is scoped to.
+CREATE TABLE IF NOT EXISTS agent_token (
+  id         TEXT PRIMARY KEY,
+  token_hash TEXT NOT NULL UNIQUE,
+  -- What it is for, in the operator's words: "claude-code on whippy-vm". Shown
+  -- in every listing, because a token nobody can identify is a token nobody
+  -- dares revoke.
+  label      TEXT NOT NULL,
+  project    TEXT NOT NULL,
+  role       TEXT NOT NULL CHECK (role IN ('owner', 'reader')),
+  created    TEXT NOT NULL,
+  created_by TEXT NOT NULL,
+  -- Revocation is a timestamp rather than a deletion, so `mustur account
+  -- tokens` can still say a token existed and when it stopped.
+  revoked    TEXT,
+  last_used  TEXT
+);
+
+CREATE INDEX IF NOT EXISTS agent_token_by_project ON agent_token (project);

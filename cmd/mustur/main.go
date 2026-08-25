@@ -52,6 +52,8 @@ const usage = `mustur — records and routing for one project
                   list | stop P               there is no send: see cmd/mustur/sessions.go
   mustur account  invite --email E [--role R]  a one-time link; printed once, never stored
                   list | grant                who Mustur knows, and what they may do
+                  token --for LABEL           an agent's credential; printed once, never stored
+                  tokens | revoke ID          which agents can reach the tool call
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
@@ -553,8 +555,17 @@ func cmdServe(args []string) error {
 		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  records    http://%s/records\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
-		version, n, *db, *addr, *addr, *addr, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n", version, n, *db)
+	// The tool call, said truthfully. With the guard on it answers 403 to a
+	// caller with no credential, and a banner that printed the URL as though it
+	// were open was how milestone 5b shipped a flag nobody could turn on.
+	if *withAccounts {
+		fmt.Printf("  tool call  http://%s/mcp  — needs a token: Authorization: Bearer <token>\n", *addr)
+	} else {
+		fmt.Printf("  tool call  http://%s/mcp\n", *addr)
+	}
+	fmt.Printf("  records    http://%s/records\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
+		*addr, *addr, *addr)
 	if *withSessions {
 		fmt.Printf("  sessions   http://%s/sessions  — this one can type into a running agent\n", *addr)
 		fmt.Printf("  compose    http://%s/compose   — and so can this one\n", *addr)
@@ -567,10 +578,34 @@ func cmdServe(args []string) error {
 		fmt.Println("  accounts   no --origin, so nobody can sign in; whatever is in front is the only gate")
 	case *withAccounts:
 		fmt.Printf("  accounts   enforced, as %s\n", *origin)
+		// Said at the moment it matters. An agent that cannot reach the tool
+		// call is the failure this whole milestone exists to prevent, and the
+		// operator finds out here rather than from a 403 in a transcript.
+		if live, err := liveTokens(ctx, s); err == nil && live == 0 {
+			fmt.Println("  tokens     none issued, so no agent can reach the tool call")
+			fmt.Println("             mustur account token --for \"claude-code on this machine\"")
+		} else if err == nil {
+			fmt.Printf("  tokens     %d live; mustur account tokens lists them\n", live)
+		}
 	default:
 		fmt.Printf("  accounts   sign-in served at %s/signin, and NOT enforced; --accounts enforces it\n", *origin)
 	}
 	return srv.ListenAndServe()
+}
+
+// liveTokens counts the agent tokens that would still be accepted.
+func liveTokens(ctx context.Context, s *store.Store) (int, error) {
+	tokens, err := account.New(s.DB()).Tokens(ctx)
+	if err != nil {
+		return 0, err
+	}
+	live := 0
+	for _, t := range tokens {
+		if t.Live() {
+			live++
+		}
+	}
+	return live, nil
 }
 
 // loopbackOnly refuses an address that is not on the loopback interface. The
