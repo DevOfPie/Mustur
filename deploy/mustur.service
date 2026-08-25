@@ -32,6 +32,25 @@
 # On mustur.devofpie.com the gate went up before anything listened and the unit
 # is enabled; the rule is stated for the next host. docs/ingress.md carries the
 # order and the reason.
+#
+# **`--origin` since 2026-08-25, and deliberately without `--accounts`.** The
+# origin publishes the sign-in and invitation surfaces and enforces nothing: a
+# passkey is bound to the origin it was registered on, so somebody has to be
+# able to register one before the guard can be turned on without locking the
+# owner out of their own service. It must be the public origin exactly — the
+# hostname a browser sees — because the relying-party id derives from it and a
+# passkey registered under the wrong one is a passkey this server can never ask
+# for again.
+#
+# Adding `--accounts` is the separate act, and the order is: origin, first owner
+# on the machine, a passkey registered from a device, then enforcement. Doing it
+# in any other order locks the owner out. Cloudflare Access stays in front
+# throughout and comes off on the owner's judgement (MUS-Q-0039), not as a side
+# effect of this flag.
+#
+# `--accounts` also needs an agent token to exist before any session can reach
+# the mandated tool call (MUS-M-0012), which is a second reason it is not here
+# yet.
 
 [Unit]
 Description=Mustur — records, routing and intake
@@ -45,7 +64,7 @@ After=network-online.target
 Type=simple
 # Loopback only. The tunnel is what publishes it, and `serve` refuses any
 # address that is not loopback for that reason.
-ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions
+ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions --origin https://mustur.devofpie.com
 # Not on-failure: systemd counts a SIGTERM as a clean exit, so on-failure left a
 # TERMed process dead with no restart scheduled and nothing watching. Access
 # answers 302 whether or not the origin is up, so the hostname check in
