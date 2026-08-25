@@ -19,8 +19,13 @@ package web
 //
 // The verification is not this repository's own. Parsing CBOR attestation,
 // checking a relying-party hash and verifying an ES256 signature is exactly the
-// code that looks right and is not, and no test here would show the difference
-// (MUS-D-0105).
+// code that looks right and is not (MUS-D-0105).
+//
+// The wiring around it is this repository's, and `auth_test.go` drives it with
+// a virtual authenticator: invited, registered, signed out, recognised, plus a
+// spent challenge, a passkey signed for another site, and a device replaced
+// after a loss. What that does not test is a real authenticator, which is the
+// owner's to try.
 
 import (
 	"context"
