@@ -38,12 +38,27 @@ blank page.
 published visual plan, never as ASCII in a document or a prompt. This file is the
 brief; the design is the answer to it.
 
-**There are eight.** This file listed seven until milestone 4b needed the one it
-had never named — a running session's *output*, which is not the session list.
-Surface 8 below is that gap, found by trying to build against nothing, and it
-has [a plan of its
+**There are twelve.** This file listed seven until milestone 4b needed the one
+it had never named — a running session's *output*, which is not the session
+list. Surface 8 below is that gap, found by trying to build against nothing, and
+it has [a plan of its
 own](https://plan.agent-native.com/plans/plan-6009f123020a4f58) because the
 seven-surface plan does not draw it.
+
+Surfaces 9 to 12 are the authentication pages, and they arrived the worst way
+this file knows: **built first and listed afterwards.** Milestone 5b wrote
+`/signin`, `/invite/{token}`, `/account/passkey` and `/account` straight into Go
+templates. Nothing was routed around — they were never in any plan to route
+around — which is a different failure from surfaces 4 and 1 and not a smaller
+one, because the standing instruction below covers *every remaining surface* and
+these were four of them.
+
+They now have [a plan of their
+own](https://plan.agent-native.com/plans/plan-b1277e4f36f24da3), published
+2026-08-25 with seven artboards, and the owner's answer on
+[MUS-Q-0043](../records/questions.md#mus-q-0043) is that they are rebuilt from
+whatever it settles. What exists is the baseline to argue with, which is the
+standing intake was given.
 
 **The plan for the original seven is
 [plan-4827b50a72674a22](https://plan.agent-native.com/plans/plan-4827b50a72674a22)**,
@@ -239,6 +254,46 @@ does, and — at 4c — how sub-agents are found and how much of one a row shows
 Typing is not armed separately from watching — the owner settled that on
 MUS-Q-0018, "always writable, as drawn", and an edit for milestone 4c briefly
 listed it as open again. Nothing on this surface is open.
+
+### 9. Sign in
+
+One button. A passkey needs nothing typed, so there is no address field, no
+password field and no forgotten-password path — none of them exist to be
+forgotten.
+
+Must answer: what does somebody see who has no account here? It must never say
+whether an address is known, and the empty case — nobody has an account at all —
+is a different page, because with no accounts there is nobody to send an
+invitation and the machine makes the first owner.
+
+### 10. Accept an invitation
+
+Who is being invited, to what, and with which role, before anything is created.
+Accepting is one action because the invitation carries the role it grants.
+
+Must answer: what does a bad invitation look like? One message for expired,
+already spent and never existed — anything finer is an oracle for somebody
+guessing tokens.
+
+### 11. Add a passkey
+
+The recovery the owner named when they chose passkeys: a second device, so a
+lost one is not a lost account. The only page in this set that assumes somebody
+is already signed in.
+
+Must answer: nothing more than which account it is adding to. It is separate
+from the account page so that the account page carries no script — a WebAuthn
+ceremony needs the browser API and a management page should not.
+
+### 12. Account
+
+Your roles, your passkeys, and — if you own the project — everybody else's roles
+and an invite form.
+
+Must answer: what a reader sees, which is themselves and nothing about anybody
+else; and what the surface refuses. The last passkey cannot be removed and the
+only owner cannot stand down, and both are told *before* the button is pressed
+rather than after.
 
 ## Not surfaces
 

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-42 record(s), by identifier.
+44 record(s), by identifier.
 
 ---
 
@@ -965,4 +965,51 @@ Milestone 6 wants a second person who reads. Today an identity that gets in reac
 | Surfaced | 2026-08-24 21:38 |
 | Answer | Invite-only, roles per project. |
 | Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0043
+
+**Four authentication pages were built with no wireframe. What happens to them?**
+
+question · 2026-08-25
+
+/signin, /invite/{token}, /account/passkey and /account were written straight into Go templates. They are not among the eight surfaces docs/ui-surfaces.md lists, so they are a new surface class rather than existing drawings that were routed around — but that file carries a standing instruction to publish a plan for every remaining surface before any more are built, and this is the fourth time a surface has been built the way it exists to prevent. The owner has answered the same question twice, on MUS-Q-0010 and MUS-Q-0034, and was asked rather than assumed a third time.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 5b's surfaces stand as built |
+| Needed to proceed | yes |
+| Option | Draw them, then rebuild :: Recommended · the order the owner has settled twice :: Artboards published for all four as new surfaces, reviewed, and the pages rebuilt from what is approved. What exists becomes a baseline to argue with, as intake was. Costs a round trip and a rebuild of work that functions. |
+| Option | Draw them, keep what works :: Documented and reviewable, without undoing working pages :: The built pages change only where drawing and code disagree. Accepts that code led design for these four, which is the thing the instruction exists to stop. |
+| Option | Leave them undrawn, record it :: Retires a rule enforced three times :: The pages stand, the file records that a fourth set was built without a plan, and the instruction narrows to the surfaces it covers. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:05 |
+| Answer | Draw them, then rebuild. |
+| Answered | 2026-08-25 04:05 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0044
+
+**How much design do the authentication pages actually need?**
+
+question · 2026-08-25
+
+Three of the four are a sentence and a button: sign in, accept an invitation, add a passkey. The fourth has real content and destructive controls — passkeys, roles, disabling somebody. The awkward states are the interesting part either way: nobody signed in, an invitation that cannot be used, the last passkey, the only owner.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what is published for review |
+| Option | Wireframe like the others :: Screens rather than prose :: Full artboards at the same fidelity as the composer and records screens, annotated for the states that matter. |
+| Option | Only the account page :: Draw what has choices in it :: The three ceremony pages are described; a drawing of one button would say nothing a sentence does not. |
+| Option | Just the states, in prose :: Cheapest :: A written brief naming each page, what it must never get wrong, and the awkward states — which is what surfaces 1 to 8 had before anyone drew them. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:05 |
+| Answer | Wireframe like the others. |
+| Answered | 2026-08-25 04:05 |
 | Delivered | not delivered: the question names no session |

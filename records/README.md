@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 11 | [milestones.md](milestones.md) |
-| question | 42 | [questions.md](questions.md) |
+| question | 44 | [questions.md](questions.md) |
 | decision | 105 | [decisions.md](decisions.md) |
 | finding | 26 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -93,6 +93,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0040](questions.md#mus-q-0040) | question | Where does authentication land in the plan? |
 | [MUS-Q-0041](questions.md#mus-q-0041) | question | What is the credential? |
 | [MUS-Q-0042](questions.md#mus-q-0042) | question | Who gets an account, and does an account see everything? |
+| [MUS-Q-0043](questions.md#mus-q-0043) | question | Four authentication pages were built with no wireframe. What happens to them? |
+| [MUS-Q-0044](questions.md#mus-q-0044) | question | How much design do the authentication pages actually need? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
