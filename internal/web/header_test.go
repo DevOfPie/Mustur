@@ -226,6 +226,17 @@ func TestTheSessionDockIsLockedToTheBottom(t *testing.T) {
 			t.Errorf("the dock rule is missing %q, so it can be pushed off the screen:\n%s", want, rule)
 		}
 	}
+	// Beside a rail the dock lines up with the reading column. Spanning the
+	// viewport ran it underneath the rail and took the quiet timer and the
+	// composer's first inch with it.
+	if strings.Contains(rule, "left: 0") || strings.Contains(rule, "right: 0") {
+		t.Errorf("the dock is pinned to the viewport edges, so the rail covers it:\n%s", rule)
+	}
+	for _, want := range []string{"--shell-dock-left", "--shell-dock-width"} {
+		if !strings.Contains(rule, want) {
+			t.Errorf("the dock does not take %q from the shell, so it cannot know where the rail ends:\n%s", want, rule)
+		}
+	}
 
 	// And the output keeps its tail above the dock rather than under it.
 	outAt := strings.Index(css, "#out {")

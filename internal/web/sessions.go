@@ -548,7 +548,9 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      elements are anchored to the viewport and cannot be pushed anywhere. It
      sits above the tab bar; where the bar becomes a rail there is nothing
      below it, and --shell-dock-offset is 0. */
-  .dock { position: fixed; left: 0; right: 0; bottom: var(--shell-dock-offset, 0px);
+  .dock { position: fixed; bottom: var(--shell-dock-offset, 0px);
+          left: var(--shell-dock-left, 0px);
+          width: var(--shell-dock-width, 100%);
           z-index: 2; background: var(--paper);
           border-top: 1.4px solid var(--edge); }
   #foot { padding: .4rem 1rem; background: #8881;

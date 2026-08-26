@@ -39,9 +39,13 @@ const shellCSS = `
           /* Tall enough for the bar; asserted against the rendered height in
              TestTheBarIsNotCoveringTheContent rather than eyeballed. */
           --shell-bar: 3rem;
-          /* What sits below a docked bottom section: the bar, or nothing once
-             the bar has become a rail. */
-          --shell-dock-offset: var(--shell-bar); }
+          /* Where a docked bottom section sits. Below the breakpoint it spans
+             the screen above the bar; beside a rail it lines up with the
+             reading column instead, or it runs underneath the rail and takes
+             its first inch of text with it. */
+          --shell-dock-offset: var(--shell-bar);
+          --shell-dock-left: 0px;
+          --shell-dock-width: 100%; }
 
   /* A column as tall as the screen, with the bar on its bottom edge. Three
      surfaces already did this and three did not. */
@@ -83,7 +87,11 @@ const shellCSS = `
      simpler promise than a breakpoint per page. */
   @media (min-width: 60rem) {
     body { margin-inline: calc(var(--shell-rail) + var(--shell-gutter)) auto;
-           max-width: var(--shell-content, 46rem); }
+           max-width: var(--shell-content, 46rem);
+           /* Set here rather than on :root so --shell-content resolves to
+              whatever this surface's reading column actually is. */
+           --shell-dock-left: calc(var(--shell-rail) + var(--shell-gutter));
+           --shell-dock-width: var(--shell-content, 46rem); }
     /* border-box, or the padding and the border are added to the width and the
        rail sits on top of the first inch of every page. */
     nav  { position: fixed; left: 0; top: 0; bottom: 0;
@@ -98,6 +106,6 @@ const shellCSS = `
     /* No bar, so no room reserved for one and nothing under a docked
        section. */
     body::after { display: none; }
-    :root { --shell-dock-offset: 0px; }
+    body { --shell-dock-offset: 0px; }
   }
 `
