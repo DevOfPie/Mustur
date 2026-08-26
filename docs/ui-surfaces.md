@@ -91,9 +91,12 @@ session view is a repair — its own CSS sets `min-height:100vh`, `#out{flex:1}`
 and `nav{margin-top:auto}`, which is an app shell that never caps its height.
 What the document surfaces should do is a choice, and it is drawn in
 [plan-ba6b90e7d9064d09](https://plan.agent-native.com/plans/plan-ba6b90e7d9064d09)
-rather than decided in code: pin everywhere, pin the session view only, or pin
-on a phone and move to a left rail on a wide screen. Drawn before built, which
-is the thing MUS-F-0027 says this file keeps failing to do.
+rather than decided in code, and the owner answered it: **pinned below 60rem, a
+left rail above it, the rail replacing the bar rather than joining it**
+(MUS-D-0118). The rail is the same `<nav>` every surface already ends with,
+moved by a media query, so one nav exists in the DOM at every width and these
+surfaces keep working with script blocked. Drawn before built, which is the
+thing MUS-F-0027 says this file keeps failing to do.
 
 ## The constraints every surface inherits
 

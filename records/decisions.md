@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-117 record(s), by identifier.
+118 record(s), by identifier.
 
 ## Index
 
@@ -129,6 +129,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0115](#mus-d-0115) | The browser is told nothing and the log is told everything | 2026-08-26 |
 | [MUS-D-0116](#mus-d-0116) | Columns are added to existing stores rather than assumed into them | 2026-08-26 |
 | [MUS-D-0117](#mus-d-0117) | Accounts are enforced on the deployment, in the only order that works | 2026-08-26 |
+| [MUS-D-0118](#mus-d-0118) | The tab bar pins on a phone and becomes a left rail on a wide screen | 2026-08-26 |
 
 ---
 
@@ -1872,3 +1873,19 @@ gated by: [MUS-F-0029](findings.md#mus-f-0029)
 and: [MUS-F-0030](findings.md#mus-f-0030)
 
 mustur.devofpie.com now runs with --accounts. A reader reads and only an owner reaches the surfaces that type into a running agent; an agent reaches the mandated tool call with a token and nothing else. Cloudflare Access is still in front of all of it, and taking it off remains a separate judgement (MUS-Q-0039). The order is the whole of it. Origin first, because a passkey binds to the origin it was registered on. Then the first owner, made on the machine, because a store that knows nobody has nobody to send an invitation. Then a passkey registered from a device and SEEN TO SIGN IN — not merely registered, which is the step MUS-F-0029 proves is not a formality: the first passkey registered here could never have signed in, and enforcing on top of it would have locked the owner out with no way back except the unit file. Then an agent token, because an MCP client carries no cookie and without one every session loses the tool call. Then the flag. Verified after the restart rather than assumed: an unauthenticated read redirects to sign-in, the session view and the composer redirect too, /signin and /healthz stay public, /mcp answers 403 without a token and 200 with, and the public hostname still answers 302 from Access. Sessions already signed in were not invalidated by the restart. One operational note, learned the hard way: stopping the service while a pane is being piped hangs for ninety seconds and holds the port (MUS-F-0030). Turning the pipe off first makes the stop immediate, and that is how this restart was done.
+
+---
+
+## MUS-D-0118
+
+**The tab bar pins on a phone and becomes a left rail on a wide screen**
+
+decision · 2026-08-26
+
+answers: [MUS-F-0032](findings.md#mus-f-0032)
+
+holds: [MUS-D-0041](#mus-d-0041)
+
+pattern: [MUS-F-0027](findings.md#mus-f-0027)
+
+MUS-F-0032, answered. The bar is pinned to the viewport below 60rem and replaced by a left rail above it — one navigation per width, never two ways to the same four places on one screen. MUS-D-0041's four destinations are unchanged; only where they sit changes. The session view is a repair rather than a choice, and would have been done either way: its own stylesheet already sets min-height:100vh, #out{flex:1} and nav{margin-top:auto}, which is an app shell that never caps its height and whose output pane never scrolls. The margin-top:auto is the proof of an intent the other two lines defeat. Three things the drawing settled that a code change would have decided silently. The rail needs no second template: it is the same nav element every surface already ends with, moved into the first grid column by a media query, so one nav exists in the DOM at every width and the tab set cannot drift. The breakpoint is derived rather than picked — the content column is already 46rem and a 13rem rail beside it needs 59rem, so 60rem is the first round width at which the reading column survives the rail unchanged. And the shared shell CSS moves into one Go constant, because five templates each carry their own copy of the nav rules and have already drifted once, which is how the records surface ended up with a different bar from every other surface. Drawn before built, in plan-ba6b90e7d9064d09, which is what MUS-F-0027 says this repository keeps failing to do.
