@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -161,9 +162,15 @@ func TestThePageSaysWhenMusturDidNotStartTheSession(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer res.Body.Close()
-	b := make([]byte, 8192)
-	n, _ := res.Body.Read(b)
-	body := string(b[:n])
+	// The whole body, not the first 8KB of it. Reading a fixed window made this
+	// test a measure of how long the stylesheet above the message happened to
+	// be: adding the drawer's CSS pushed the message past 8192 bytes and this
+	// failed without anything about the page being wrong.
+	raw, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(raw)
 
 	for _, want := range []string{"did not start", "will not appear"} {
 		if !strings.Contains(body, want) {
@@ -348,7 +355,7 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 
 	body := getFrom(t, srv, "/sessions/Mustur")
 	for _, want := range []string{
-		"2 sub-agents",      // both of them
+		"2",                 // both of them, on the badge and in the drawer's count
 		"1 running",         // and only one still going
 		"Contract reviewer", // the task it was launched with
 		"Grep",              // what it is doing now
@@ -381,13 +388,29 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 		}
 	}
 	if !strings.Contains(body, `<div class="say" data-for="a2">Nothing found.</div>`) {
-		t.Error("the final message is not where the sheet reads it from")
+		t.Error("the final message is not where the reading pane gets it from")
 	}
-	// And there is something for a row to open.
-	for _, want := range []string{`id="sheet"`, `role="dialog"`, `id="sheetread"`} {
+	// And there is a drawer for a row to open into.
+	for _, want := range []string{`id="drawer"`, `role="dialog"`, `id="dread"`, `id="dlist"`} {
 		if !strings.Contains(body, want) {
-			t.Errorf("no sheet to open: %q missing", want)
+			t.Errorf("no drawer to open: %q missing", want)
 		}
+	}
+	// Shut on arrival. It is the whole point of moving the list off the page.
+	if !strings.Contains(body, `<div class="drawer" id="drawer" hidden>`) {
+		t.Error("the drawer is not shut on arrival")
+	}
+	// The rows are inside it, not in the column with the terminal.
+	list := between(body, `<div class="dlist" id="dlist">`, "</div>\n    <div class=\"dread\"")
+	if !strings.Contains(list, `data-id="a2"`) {
+		t.Error("the sub-agent rows are not inside the drawer")
+	}
+	// The badge says what is running, and the ring turns because one is.
+	if !strings.Contains(body, `class="ring live"`) {
+		t.Error("a running sub-agent does not light the ring")
+	}
+	if !strings.Contains(body, `class="badge" id="badge">1<`) {
+		t.Error("the badge does not count the running sub-agent")
 	}
 	// A running sub-agent has said nothing, so it has nothing to read from.
 	if strings.Contains(body, `class="say" data-for="a1"`) {

@@ -13,7 +13,7 @@
   if (!project || !out) return;
 
   var state = document.getElementById("state");
-  var agentsBox = document.querySelector(".agents");
+  var agentsBox = document.getElementById("dlist");
   var scrollback = document.getElementById("scrollback");
   var foot = document.getElementById("foot");
   var form = document.getElementById("say");
@@ -96,26 +96,26 @@
 
   function drawAgents() {
     if (!agentsBox || agents === null) return;
-    if (!agents.length) {
-      agentsBox.hidden = true;
-      return;
-    }
-    agentsBox.hidden = false;
     var running = 0;
     var i;
     for (i = 0; i < agents.length; i++) if (!agents[i].done) running++;
+    badge(agents.length, running);
 
-    // Rebuilt rather than diffed. Four rows of three spans is not worth a
-    // reconciler, and a rebuild cannot leave a stale row behind.
+    // Rebuilt rather than diffed. A handful of rows is not worth a reconciler,
+    // and a rebuild cannot leave a stale row behind.
     agentsBox.textContent = "";
-    agentsBox.appendChild(
-      el("div", "count",
-         agents.length + " sub-agent" + (agents.length === 1 ? "" : "s") +
-         (running ? " · " + running + " running" : ""))
-    );
+    if (!agents.length) {
+      agentsBox.appendChild(
+        el("p", "none", "Nothing has been launched from this session.")
+      );
+      shutRead();
+      return;
+    }
     for (i = 0; i < agents.length; i++) {
       var a = agents[i];
-      var row = el("div", "agent");
+      var row = el("button", "agent");
+      row.type = "button";
+      row.dataset.id = a.id;
       row.appendChild(
         a.title ? el("span", "what", a.title) : el("span", "what untitled", a.type)
       );
@@ -123,101 +123,181 @@
       row.appendChild(el("span", "age", age(a.started, a.ended)));
       row.appendChild(el("span", "more", "\u203a"));
       agentsBox.appendChild(row);
-      // Out of view, not out of the page: the sheet reads from here, so it
-      // shows the same text whether or not a frame has arrived yet.
+      // Out of view, not out of the page: the reading pane reads from here, so
+      // it shows the same text whether or not a frame has arrived yet.
       if (a.said) {
         var say = el("div", "say", a.said);
         say.setAttribute("data-for", a.id);
         agentsBox.appendChild(say);
       }
     }
-    // The rows were just thrown away and rebuilt, so an open sheet is now
-    // pointing at a button that no longer exists. Re-read it rather than close
-    // it: a sub-agent finishing while you are reading it should fill the sheet
-    // in, not shut it.
-    if (openID) fill(openID);
+    // The rows were just thrown away, so anything being read is now pointing
+    // at a button that no longer exists. Re-read it rather than close it: a
+    // sub-agent finishing while you read it should fill the pane in.
+    if (openID && !fill(openID)) shutRead();
   }
 
-  // The sheet.
+  // The strip.
   //
-  // A sub-agent's output is read here instead of in the list, which is what
-  // MUS-F-0038 asked for; the owner chose it over giving each sub-agent its
-  // own page on MUS-Q-0056, so the socket is never dropped to read one.
-  //
-  // Everything it shows is read back out of the row it was opened from. That
-  // is one code path for the server's first paint and for every rebuild after
-  // it, and it means a tap before the first frame is answered the same as one
-  // after it.
-  var sheet = document.getElementById("sheet");
-  var openID = null;
-  var cameFrom = null;
+  // The badge counts what is running and falls back to the total, because a
+  // count of only the active ones goes blank the moment they all finish —
+  // which is when their reports are worth reading, and with the drawer shut
+  // nothing else says they exist. The ring turns only while something runs.
+  var ring = document.getElementById("ring");
+  var badgeEl = document.getElementById("badge");
+  var toggle = document.getElementById("toggle");
+  var dcount = document.getElementById("dcount");
 
+  function badge(total, running) {
+    if (badgeEl) {
+      badgeEl.hidden = !total;
+      badgeEl.textContent = String(running || total || "");
+    }
+    if (ring) ring.classList.toggle("live", running > 0);
+    if (toggle) {
+      if (total) toggle.removeAttribute("data-empty");
+      else toggle.setAttribute("data-empty", "");
+    }
+    if (dcount) {
+      dcount.textContent = total
+        ? total + (running ? " \u00b7 " + running + " running" : "")
+        : "";
+    }
+  }
+
+  // The drawer.
+  //
+  // Shut on every load. The owner chose that over remembering it (MUS-Q-0057):
+  // shut by default means shut, and the badge is what says whether opening it
+  // is worth it. The pushed class does nothing below 60rem — the stylesheet
+  // only acts on it on a wide screen, where the drawer takes a column instead
+  // of covering one.
+  var drawer = document.getElementById("drawer");
+  var openID = null;
+
+  function openDrawer(yes) {
+    if (!drawer) return;
+    drawer.hidden = !yes;
+    document.body.classList.toggle("pushed", yes);
+    if (toggle) toggle.setAttribute("aria-expanded", yes ? "true" : "false");
+    // The composer is placed by custom properties rather than by flow, so its
+    // height has to be re-measured once the column it sits in has changed
+    // width and its text may have rewrapped.
+    measureDock();
+    if (yes) {
+      var shutBtn = document.getElementById("shut");
+      if (shutBtn) shutBtn.focus();
+    } else {
+      shutRead();
+      if (toggle) toggle.focus();
+    }
+  }
+
+  // Reading one sub-agent, in the same drawer rather than a second layer over
+  // it. Everything shown is read back out of the row it was opened from: one
+  // code path for the server's first paint and every rebuild after it, so a
+  // tap before the first frame is answered the same as one after it.
   function fill(id) {
     var row = agentsBox && agentsBox.querySelector('.agent[data-id="' + id + '"]');
     if (!row) return false;
     var what = row.querySelector(".what");
     var pill = row.querySelector(".pill");
-    var target = document.getElementById("sheetwhat");
-    target.textContent = what ? what.textContent : "";
-    target.className = what && what.classList.contains("untitled") ? "untitled" : "";
-    document.getElementById("sheetstate").textContent = pill ? pill.textContent : "";
-    var done = pill && pill.classList.contains("done");
-    document.getElementById("sheetstate").className = "pill" + (done ? " done" : "");
     var ageTxt = row.querySelector(".age");
-    document.getElementById("sheetmeta").textContent =
-      (done ? "ran " : "running ") + (ageTxt ? ageTxt.textContent : "");
+    var done = !!(pill && pill.classList.contains("done"));
+
+    var title = document.getElementById("dtitle");
+    title.textContent = what ? what.textContent : "";
+    title.className = what && what.classList.contains("untitled") ? "untitled" : "";
+
+    var meta = document.getElementById("dmeta");
+    meta.hidden = false;
+    meta.textContent =
+      (pill ? pill.textContent : "") +
+      (ageTxt ? " \u00b7 " + (done ? "ran " : "running ") + ageTxt.textContent : "");
 
     var say = agentsBox.querySelector('.say[data-for="' + id + '"]');
-    var read = document.getElementById("sheetread");
+    var read = document.getElementById("dread");
     if (say) {
       read.textContent = say.textContent;
-      read.className = "read";
+      read.className = "dread";
     } else {
-      // Nothing said yet. The owner asked for what it is doing and nothing
-      // else (MUS-Q-0056): a sub-agent is a call inside the CLI's own process,
-      // so there is no second pane to stream and inventing one would mean the
-      // hook carrying output, which milestone 4c deliberately did not build.
+      // Nothing said yet. What it is doing and no more (MUS-Q-0056): a
+      // sub-agent is a call inside the CLI's own process, so there is no
+      // second pane to stream, and inventing one would mean the hook carrying
+      // output — which milestone 4c deliberately did not build.
       var state = pill ? pill.textContent : "";
       read.textContent = done
         ? "It finished without a final message."
         : "Nothing said yet \u2014 it is " +
           (state === "working" ? "between tool calls" : "in " + state) + ".";
-      read.className = "read quiet";
+      read.className = "dread quiet";
     }
+    read.hidden = false;
+    agentsBox.hidden = true;
+    document.getElementById("back").hidden = false;
+    if (dcount) dcount.hidden = true;
+    openID = id;
     return true;
   }
 
-  function openSheet(id, from) {
-    if (!sheet || !fill(id)) return;
-    openID = id;
-    cameFrom = from || null;
-    sheet.hidden = false;
-    document.getElementById("shut").focus();
-  }
-
-  function shutSheet() {
-    if (!sheet || sheet.hidden) return;
-    sheet.hidden = true;
+  function shutRead() {
+    if (!drawer) return;
     openID = null;
-    // Back to the row it was opened from, so a keyboard is not dropped at the
-    // top of the page every time one is read.
-    if (cameFrom && document.contains(cameFrom)) cameFrom.focus();
-    cameFrom = null;
+    var read = document.getElementById("dread");
+    if (read) read.hidden = true;
+    var meta = document.getElementById("dmeta");
+    if (meta) meta.hidden = true;
+    if (agentsBox) agentsBox.hidden = false;
+    var back = document.getElementById("back");
+    if (back) back.hidden = true;
+    if (dcount) dcount.hidden = false;
+    var title = document.getElementById("dtitle");
+    if (title) {
+      title.textContent = "Sub-agents";
+      title.className = "";
+    }
   }
 
+  if (toggle) {
+    toggle.addEventListener("click", function () {
+      openDrawer(drawer.hidden);
+    });
+  }
   if (agentsBox) {
     // Delegated, because drawAgents throws the rows away and rebuilds them.
     agentsBox.addEventListener("click", function (e) {
       var row = e.target.closest && e.target.closest(".agent");
-      if (row && row.dataset.id) openSheet(row.dataset.id, row);
+      if (row && row.dataset.id) fill(row.dataset.id);
     });
   }
-  if (sheet) {
-    document.getElementById("shut").addEventListener("click", shutSheet);
-    document.getElementById("veil").addEventListener("click", shutSheet);
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") shutSheet();
+  if (drawer) {
+    document.getElementById("shut").addEventListener("click", function () {
+      openDrawer(false);
     });
+    document.getElementById("back").addEventListener("click", shutRead);
+    document.getElementById("veil").addEventListener("click", function () {
+      openDrawer(false);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape" || drawer.hidden) return;
+      // One step at a time: out of the reading pane first, then out of the
+      // drawer. Escape emptying the whole thing in one press loses your place
+      // in a list you may have scrolled.
+      if (openID) shutRead();
+      else openDrawer(false);
+    });
+  }
+
+  // The picker navigates on change, so the Go button beside it is only ever
+  // needed with script off — which this surface cannot survive anyway. It is
+  // there because the strip is the one part of the page that can.
+  var picker = document.getElementById("pick");
+  if (picker) {
+    picker.addEventListener("change", function () {
+      if (picker.value) location.href = "/sessions/" + encodeURIComponent(picker.value);
+    });
+    var go = document.getElementById("go");
+    if (go) go.hidden = true;
   }
 
   function connect() {

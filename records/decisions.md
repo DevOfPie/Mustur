@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-122 record(s), by identifier.
+123 record(s), by identifier.
 
 ## Index
 
@@ -134,6 +134,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0120](#mus-d-0120) | A scratch filing is not a record, so it costs no identifier | 2026-08-26 |
 | [MUS-D-0121](#mus-d-0121) | Destinations are a grouped list, and the kind is what tells two of them apart | 2026-08-26 |
 | [MUS-D-0122](#mus-d-0122) | A sub-agent's output is read in a sheet over the session, not in the list and not on its own page | 2026-08-26 |
+| [MUS-D-0123](#mus-d-0123) | The sub-agent list lives in a drawer that is shut by default, and the session strip is a dropdown | 2026-08-26 |
 
 ---
 
@@ -1957,3 +1958,34 @@ The sheet does not add a scripted surface. Six ship a script tag and the session
 Everything the sheet shows is read back out of the row it was opened from, rather than from the frame the socket last sent. That is one code path for the server's first paint and for every rebuild after it, and it means a tap before the first frame is answered the same as one after it — the rows are server-rendered, so the alternative would have left the first few seconds of every page load unable to answer a tap.
 
 Corrected in place: this first said the session view was one of two exceptions the composer's question and MUS-Q-0053 had named. It is one of six surfaces carrying script, and MUS-Q-0053 is the open question about what the rule counts rather than a decision granting an exception.
+
+---
+
+## MUS-D-0123
+
+**The sub-agent list lives in a drawer that is shut by default, and the session strip is a dropdown**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0057](questions.md#mus-q-0057)
+
+fixes: [MUS-F-0038](findings.md#mus-f-0038)
+
+retires: [MUS-D-0122](#mus-d-0122)
+
+follows: [MUS-D-0121](#mus-d-0121)
+
+The sub-agent list moved off the session column and into a drawer that is shut on arrival, opened by a button pinned beside the session picker. Answered on MUS-Q-0057, every part chosen by the owner:
+
+The session strip became a dropdown. That is MUS-D-0121's answer to the identical problem on the intake row — a row that scrolls sideways hides its last choice behind a swipe with nothing on screen saying so — applied to the place the same defect had reappeared. The form is real: without script the button submits it and /sessions turns the query into a path.
+
+The drawer pushes on a laptop and opens over on a phone, against the recommendation of one behaviour everywhere. It buys what a sidebar is for over a sheet: the terminal and the list at once. The cost was named before it was built and had to be handled deliberately — the composer is placed by --shell-dock-left and --shell-dock-width rather than by flow, so it does not narrow with the content and would slide under the drawer. Both take the same min() expression, which turns out to mean nothing moves at all on a wide screen: at 1366px the reading column is 736px with 406px already empty beside it.
+
+Output is read inside the drawer rather than in the sheet built the day before, so there is one surface for sub-agents instead of two. That retires MUS-D-0122.
+
+The badge counts what is running and falls back to the total, because a count of only the active ones goes blank the moment they all finish — which is when their reports are worth reading, and with the drawer shut nothing else says they exist. While anything runs the whole button wears a rotating accent ring with two highlights on opposing sides: painted once and turned with the rotate property rather than by animating a gradient angle, which would repaint the whole gradient every frame. Constant speed, because a rotation that eases reads as a stutter. Removed rather than paused under prefers-reduced-motion, with the accent colour carrying the state on its own.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Measured against the owner's own Demo session log served under four sessions, in Chrome and Firefox at 390x844, 1000x800 and 1366x768. Shut on arrival with the old box gone entirely, the terminal holds 618-654px. At 1366 the drawer opens into space that was already empty: the composer stays 224..960 and the panel sits 1094..1366, so nothing moves. At 1000, where that space runs out, the reading column narrows from 736 to 488 and the composer narrows with it — dock 224..712 against a panel at 728, no overlap. On a phone it overlays with the veil painted. Crossing the breakpoint with it open behaves in both directions, and shutting it restores dock 224..960 and a 736px body. The ring: a conic gradient with two bright stops at 40deg and 220deg — exactly 180 apart, same accent colour, transparent stops either side of each so there is no hard edge — animated 'turn 3s linear infinite' on the rotate property, with a two-layer halo and nothing clipping it. Under prefers-reduced-motion the animation computes to none while the ring stays painted and the badge stays accent-coloured. A sub-agent starting mid-watch took the badge from the total 3 to the running 1, lit the ring and added a row without a reload. Reading a 7,267-character message inside the drawer at 390px: all of it, scrolling in 334px. Escape steps out of the reading pane first and closes the drawer second. |

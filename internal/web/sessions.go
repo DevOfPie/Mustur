@@ -245,6 +245,16 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, bool) {
 }
 
 func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
+	// Where the session picker submits.
+	//
+	// A GET form cannot build a path segment, so the dropdown posts a query
+	// here and this turns it into one. With script the change event navigates
+	// first and this is never reached; without it, this is the whole of how
+	// the picker works.
+	if pick := r.URL.Query().Get("p"); pick != "" {
+		http.Redirect(w, r, "/sessions/"+url.PathEscape(pick), http.StatusSeeOther)
+		return
+	}
 	rows, _ := s.rows(r.Context(), "")
 	if len(rows) > 0 {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(rows[0].Project), http.StatusSeeOther)
@@ -598,83 +608,145 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
              max-height: 9rem; overflow-y: auto; line-height: 1.4; }
   button { font: inherit; padding: .55rem 1rem; border: 1px solid var(--accent);
            border-radius: .5rem; background: var(--accent-soft); color: inherit; }
-  .rail { display: flex; gap: .4rem; padding: .5rem 1rem; overflow-x: auto;
-          border-bottom: 1.4px solid var(--edge); white-space: nowrap; }
-  .rail a { flex: 0 0 auto; border: 1px solid var(--edge); border-radius: 999px;
-            padding: .2rem .7rem; font-size: .82em; text-decoration: none;
-            color: inherit; opacity: .65; }
-  .rail a.here { opacity: 1; border-color: var(--accent);
-                 background: var(--accent-soft); }
-  .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-  /* Sub-agents sit above the session's own output, because they are Mustur
-     talking about the session rather than the session talking. Same tint as
-     every other strip for the same reason. */
-  /* One line each, and the cap is now a floor rather than the thing holding
-     this box down.
+  /* The session picker.
 
-     It carried every sub-agent's whole final message and had no cap at all:
-     three of them grew this box to 8,211px on the owner's own session, which
-     is not a row of status — it is the page. Everything else in the column was
-     squeezed around it: the rail collapsed to 17px so the session chips
-     spilled under the strip below, the output pane was left a line or two
-     tall, and the composer was pushed past the bottom of the screen
-     (MUS-F-0035). Capping it at a third of the screen stopped the squeezing
-     and left a 250px window onto a page of prose, which is why MUS-F-0038
-     asked for the reading to move somewhere else entirely.
+     A dropdown rather than a row of chips. MUS-D-0121 answered the identical
+     problem on the intake row: a row that scrolls sideways hides its last
+     choice behind a swipe with nothing on screen saying so, and a jot went to
+     the very chip nobody could see. A native select has no off-screen end,
+     however many sessions there are.
 
-     The cap stays because a sub-agent with an unusually long task line should
-     not be able to do it again. dvh so a phone's URL bar is counted. */
-  .agents { padding: .6rem 1rem; background: #8881;
-            border-bottom: 1.4px solid var(--edge); font-size: .85em;
-            flex: 0 0 auto; max-height: 30dvh;
-            overflow-y: auto; overscroll-behavior: contain; }
-  .agents > .count { opacity: .6; font-size: .9em; }
-  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .35rem 0;
+     The form is real. Without script the button submits it and the server
+     turns the query into a path; with script the change event gets there
+     first. This surface cannot work without script at all — it is a live
+     terminal — but the picker is the one part that can, so it does. */
+  .rail { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem;
+          border-bottom: 1.4px solid var(--edge); min-width: 0; }
+  .pick { display: flex; gap: .35rem; flex: 1; min-width: 0; }
+  .pick select { flex: 1; min-width: 0; font: inherit; font-size: .85em; }
+  .pick .go { font: inherit; font-size: .8em; }
+
+  /* The button that opens the drawer, and the ring that says something is
+     running.
+
+     A word rather than a glyph, because everything else on this surface is
+     words and a glyph said nothing about what was behind it.
+
+     The ring is a conic gradient with two bright points 180 degrees apart,
+     painted once and turned with the rotate property. Not an animated
+     gradient angle: that repaints the whole gradient every frame, where
+     rotating a pre-painted layer is composited and costs a phone almost
+     nothing — which is what makes it affordable on a page already streaming a
+     terminal over a socket. Constant speed, because a rotation that eases
+     reads as a stutter rather than as light travelling. No hard stops in the
+     gradient, or the seam becomes an edge sweeping round the rim. */
+  body { --drawer-w: 17rem; }
+  .ring { position: relative; flex: 0 0 auto; display: inline-flex;
+          padding: 1.4px; border-radius: 999px; overflow: hidden; }
+  /* Two layers of the same token rather than a new colour: --accent-soft is
+     12.5% alpha, which at one layer is too faint to read as a glow at all.
+     Nothing here needs tuning per theme — --accent is a single mid-blue that
+     carries on both, which is why there is no dark-mode branch. */
+  .ring.live { box-shadow: 0 0 .75rem var(--accent-soft),
+                           0 0 .25rem var(--accent-soft); }
+  .ring.live::before {
+      content: ""; position: absolute; left: 50%; top: 50%;
+      width: 190%; aspect-ratio: 1; translate: -50% -50%;
+      background: conic-gradient(from 0deg, transparent 0deg,
+                  var(--accent) 40deg, transparent 95deg, transparent 180deg,
+                  var(--accent) 220deg, transparent 275deg, transparent 360deg);
+      animation: turn 3s linear infinite; }
+  @keyframes turn { from { rotate: 0deg } to { rotate: 1turn } }
+  /* An indefinite rotation is exactly the motion this setting exists for. The
+     accent colour carries the state on its own, so holding still costs the
+     movement and no information. */
+  @media (prefers-reduced-motion: reduce) {
+    .ring.live::before { animation: none; }
+  }
+  .toggle { position: relative; display: inline-flex; align-items: center;
+            gap: .4rem; padding: .25rem .7rem; border: 1px solid var(--edge);
+            border-radius: 999px; background: var(--paper); color: inherit;
+            font: inherit; font-size: .82em; cursor: pointer;
+            white-space: nowrap; }
+  .ring.live .toggle { border-color: transparent; }
+  .toggle[data-empty] { opacity: .5; }
+  .badge { border: 1px solid var(--edge); border-radius: 999px;
+           padding: 0 .4rem; font-size: .85em; }
+  .ring.live .badge { border-color: var(--accent); background: var(--accent-soft); }
+
+  /* The drawer.
+
+     Shut by default, so the sub-agent list takes none of the screen until it
+     is asked for — it is what squeezed the rail to 17px, the terminal to a
+     line and the composer off the bottom of a phone (MUS-F-0035, MUS-F-0038).
+
+     On a phone it opens over the terminal: at 390px a 17rem drawer would leave
+     about 110px of it. On a wide screen it pushes instead, which is the whole
+     reason for a drawer rather than a sheet — the terminal and the list at
+     once. */
+  .drawer[hidden] { display: none; }
+  .drawer { position: fixed; inset: 0; z-index: 20; }
+  .veil { position: absolute; inset: 0; background: #0007; }
+  .panel { position: absolute; top: 0; right: 0; bottom: 0;
+           width: 86%; max-width: 22rem; box-sizing: border-box;
+           background: var(--paper); border-left: 1.4px solid var(--edge);
+           display: flex; flex-direction: column; }
+  .dhead { display: flex; align-items: center; gap: .5rem; padding: .7rem 1rem;
+           border-bottom: 1.4px solid var(--edge); flex: 0 0 auto; }
+  .dhead > strong { flex: 1; overflow: hidden; text-overflow: ellipsis;
+                    white-space: nowrap; }
+  .dhead > strong.untitled { opacity: .55; font-style: italic; }
+  .dhead .count { opacity: .6; font-size: .85em; white-space: nowrap; }
+  .back, .shut { background: none; border: 0; color: inherit; font: inherit;
+                 cursor: pointer; padding: 0 .3rem; opacity: .7; }
+  /* Its own scroller from the start, rather than after the measurement says
+     8,211px again. */
+  .dlist { flex: 1; min-height: 0; overflow-y: auto;
+           overscroll-behavior: contain; padding: .2rem 1rem; }
+  .dmeta { padding: .5rem 1rem; opacity: .6; font-size: .85em; flex: 0 0 auto;
+           border-bottom: 1.4px solid var(--edge); }
+  .dread { flex: 1; min-height: 0; overflow-y: auto;
+           overscroll-behavior: contain; padding: .9rem 1rem;
+           white-space: pre-wrap; word-break: break-word; }
+  .dread.quiet { opacity: .6; }
+  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .5rem 0;
            white-space: nowrap; width: 100%; text-align: left; cursor: pointer;
            background: none; border: 0; border-bottom: 1px solid var(--edge);
-           color: inherit; font: inherit; font-size: 1em; }
+           color: inherit; font: inherit; font-size: .9em; }
   .agent:last-of-type { border-bottom: 0; }
   .agent .more { opacity: .5; }
-  /* Never drawn. It is where the sheet reads a sub-agent's final message
-     from, so the sheet has something to show before the socket has sent a
-     frame — the first paint is the server's, and a tap should not have to wait
-     for a poll to answer it. hidden, so it has no layout box and cannot grow
-     this box the way the old inline paragraph did. */
-  .say { display: none; }
   .agent .what { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .agent .what.untitled { opacity: .55; font-style: italic; }
   .agent .pill { border: 1px solid var(--edge); border-radius: 999px;
                  padding: .05rem .5rem; font-size: .78em; }
   .agent .pill.done { border-color: var(--accent); background: var(--accent-soft); }
   .agent .age { opacity: .6; font-size: .82em; }
-  /* A sub-agent's output is read here rather than in the list above, so the
-     list can go back to being a list. The owner chose this over giving each
-     sub-agent its own page on MUS-Q-0056: the session keeps streaming behind
-     it and the socket is never dropped.
+  /* Never drawn. Where the reading pane gets a sub-agent's final message from,
+     so a tap is answered before the socket has sent a frame — the first paint
+     is the server's. display:none, so it has no layout box. */
+  .say { display: none; }
 
-     Bottom-anchored and offset by the same variables the composer uses, so on
-     a wide screen it sits beside the rail rather than under it. */
-  .sheet { position: fixed; inset: 0; z-index: 20;
-           display: flex; flex-direction: column; justify-content: flex-end; }
-  .sheet[hidden] { display: none; }
-  .veil { position: absolute; inset: 0; background: #0007; }
-  .card { position: relative; margin-left: var(--shell-dock-left, 0px);
-          width: var(--shell-dock-width, 100%); max-height: 80dvh;
-          display: flex; flex-direction: column; background: var(--paper);
-          border-top: 1.4px solid var(--edge); }
-  .card > .top { display: flex; align-items: baseline; gap: .5rem;
-                 padding: .7rem 1rem; border-bottom: 1.4px solid var(--edge); }
-  .card > .top > strong { flex: 1; overflow: hidden; text-overflow: ellipsis;
-                          white-space: nowrap; }
-  .card > .top > .untitled { opacity: .55; font-style: italic; }
-  .card > .meta { padding: .5rem 1rem; opacity: .6; font-size: .85em;
-                  border-bottom: 1.4px solid var(--edge); }
-  .card > .read { padding: .9rem 1rem; overflow-y: auto;
-                  overscroll-behavior: contain; white-space: pre-wrap;
-                  word-break: break-word; }
-  .card > .read.quiet { opacity: .6; }
-  .shut { background: none; border: 0; color: inherit; font: inherit;
-          cursor: pointer; padding: 0 .3rem; opacity: .6; }
+  @media (min-width: 60rem) {
+    /* Only its own column, so the terminal beside it stays clickable. */
+    .drawer { inset: 0 0 0 auto; width: var(--drawer-w); }
+    .veil { display: none; }
+    .panel { width: var(--drawer-w); max-width: none; }
+    /* The push, and the reason it needs saying out loud.
+
+       The composer is placed by --shell-dock-left and --shell-dock-width
+       rather than by flow, so it does not narrow with the content and would
+       slide under the drawer. The reading column and the dock therefore take
+       the same expression.
+
+       min(), because the free space is usually already there: at 1366px the
+       reading column is 736px with 406px empty beside it, so a 17rem drawer
+       fits and nothing moves at all. It is only near 60rem, where that space
+       runs out, that either of them narrows. */
+    body.pushed { max-width: min(var(--shell-content, 46rem),
+                    calc(100vw - var(--shell-dock-left) - var(--drawer-w) - var(--shell-gutter)));
+                  --shell-dock-width: min(var(--shell-content, 46rem),
+                    calc(100vw - var(--shell-dock-left) - var(--drawer-w) - var(--shell-gutter))); }
+  }
 ` + shellCSS + `
 </style>
 </head>
@@ -683,7 +755,15 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <span class="pill" id="state">connecting</span>
   <span class="who">whippy-vm</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 {{if .Rows}}<div class="rail" id="rail">
-  {{range .Rows}}<a href="/sessions/{{.Project}}"{{if .Here}} class="here"{{end}}>{{.Project}}</a>{{end}}
+  <form class="pick" method="get" action="/sessions">
+    <select name="p" id="pick" aria-label="Session">
+      {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
+    </select>
+    <button type="submit" class="go" id="go">Go</button>
+  </form>
+  <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
+    aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
+    class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>
 </div>{{end}}
 {{if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
@@ -691,21 +771,24 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
 {{else}}
 <div class="strip"><span class="grow" id="scrollback">connecting</span></div>
-<div class="agents"{{if not .Subagents}} hidden{{end}}>
-  {{if .Subagents}}<div class="count">{{len .Subagents}} sub-agent{{if ne (len .Subagents) 1}}s{{end}}{{if .Running}} · {{.Running}} running{{end}}</div>
-  {{range .Subagents}}<button type="button" class="agent" data-id="{{.ID}}">
-    {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
-    <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
-  </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{end}}{{end}}{{end}}
-</div>
-<div class="sheet" id="sheet" hidden>
+<div class="drawer" id="drawer" hidden>
   <div class="veil" id="veil"></div>
-  <div class="card" role="dialog" aria-modal="true" aria-labelledby="sheetwhat">
-    <div class="top"><strong id="sheetwhat"></strong><span class="pill" id="sheetstate"></span>
-      <button type="button" class="shut" id="shut" aria-label="Close">&times;</button></div>
-    <div class="meta" id="sheetmeta"></div>
-    <div class="read" id="sheetread"></div>
-  </div>
+  <aside class="panel" role="dialog" aria-label="Sub-agents">
+    <div class="dhead">
+      <button type="button" class="back" id="back" hidden aria-label="Back to the list">&larr;</button>
+      <strong id="dtitle">Sub-agents</strong>
+      <small class="count" id="dcount">{{if .Subagents}}{{len .Subagents}}{{if .Running}} · {{.Running}} running{{end}}{{end}}</small>
+      <button type="button" class="shut" id="shut" aria-label="Close">&times;</button>
+    </div>
+    <div class="dmeta" id="dmeta" hidden></div>
+    <div class="dlist" id="dlist">
+      {{if .Subagents}}{{range .Subagents}}<button type="button" class="agent" data-id="{{.ID}}">
+      {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
+      <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
+    </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{end}}{{end}}{{else}}<p class="none">Nothing has been launched from this session.</p>{{end}}
+    </div>
+    <div class="dread" id="dread" hidden></div>
+  </aside>
 </div>
 <pre id="out"></pre>
 <div class="dock">

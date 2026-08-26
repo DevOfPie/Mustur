@@ -270,14 +270,21 @@ func TestOnlyTheOutputPaneFlexes(t *testing.T) {
 	}
 	css := string(src)
 
-	at := strings.Index(css, ".agents {")
+	// The sub-agent list is not in this column at all any more — it lives in a
+	// drawer that is shut on arrival (MUS-F-0038, MUS-Q-0057). So the rule that
+	// used to cap it is gone, and what has to be true instead is that the box
+	// it moved into scrolls inside itself rather than growing.
+	if strings.Contains(css, ".agents {") {
+		t.Error("the sub-agent box is back in the column with the terminal")
+	}
+	at := strings.Index(css, ".dlist {")
 	if at < 0 {
-		t.Fatal("no .agents rule")
+		t.Fatal("no .dlist rule, so the sub-agent list has nowhere bounded to live")
 	}
 	rule := css[at : at+strings.Index(css[at:], "}")]
-	for _, want := range []string{"max-height", "overflow-y: auto"} {
+	for _, want := range []string{"min-height: 0", "overflow-y: auto"} {
 		if !strings.Contains(rule, want) {
-			t.Errorf("the sub-agent box is missing %q, so it can grow without limit:\n%s", want, rule)
+			t.Errorf("the sub-agent list is missing %q, so it can grow without limit:\n%s", want, rule)
 		}
 	}
 

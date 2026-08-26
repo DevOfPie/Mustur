@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-45 record(s), by identifier.
+46 record(s), by identifier.
 
 ## The queue
 
@@ -55,6 +55,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0040](#mus-f-0040) | Can't move from the account page to the session screen |  | unreviewed |
 | [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
 | [MUS-F-0042](#mus-f-0042) | The Session quiet timer only counts since the tab was opened not since the session was idle |  | unreviewed |
+| [MUS-F-0043](#mus-f-0043) | A dead Mustur keeps its port for as long as its tmux pipe is running | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. | open |
 
 ---
 
@@ -863,3 +864,25 @@ The Session quiet timer only counts since the tab was opened not since the sessi
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0043
+
+**A dead Mustur keeps its port for as long as its tmux pipe is running**
+
+finding · 2026-08-26
+
+same shape as: [MUS-F-0030](#mus-f-0030)
+
+Noticed while tearing down a test server. Its process was a zombie — [mustur] <defunct> — and 127.0.0.1:7972 was still bound, with ss showing a LISTEN socket it could name no owner for and both lsof and fuser finding nothing. The only thing left alive from that server was the child tmux had spawned for its pipe: sh -c cat > /tmp/mustur-Sheet-<pid>.fifo. Running 'tmux pipe-pane' with no command against that pane released the port immediately.
+
+So a Mustur that has exited can still be holding its listening socket for as long as its output pipe is running, which is why a restart reports 'address already in use' against a process that is already dead. That is the same shape as MUS-F-0030, where a piping service could not be stopped at all and the site was down for about ten minutes — and it has the same workaround, which is to turn the pipe off first.
+
+The mechanism is not proven. The obvious explanation is fd inheritance, but tmux spawns that child itself and is a long-running server of its own, so how the listening socket reaches it is exactly the thing that has not been established. Recorded as what was observed rather than as a diagnosis.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur, internal/session |
+| Evidence | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. |
+| Status | open |

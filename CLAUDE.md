@@ -31,15 +31,20 @@ ends. You can reply from that tab: the box is multi-line and spell-checked, it
 holds one draft that survives a reload and follows you between sessions, and it
 sends what you wrote as a single message rather than a prompt per line —
 measured by hand against one CLI, and the thing to re-check first if another
-ever behaves oddly. It shows
-that session's sub-agents as their own rows too — one line each, naming what it
-was asked to do, how long it has run and the tool it is in — and opening a row
-reads what that sub-agent said in a sheet over the session, which keeps
-streaming behind it. The rows carry no output themselves: printing it there grew
-that box to 8,211px and squeezed everything else off the screen
-([MUS-F-0038](records/findings.md#mus-f-0038)). Those rows appear only for
-sessions Mustur started, because the hook that reports them rides in on the
-command line Mustur builds.
+ever behaves oddly. That session's sub-agents live in a
+drawer that is **shut on arrival** — a button beside the session picker says
+how many there are and wears a turning accent ring while any is running, and
+opening it lists them one line each: what it was asked to do, how long it has
+run, the tool it is in. Opening a row reads what that sub-agent said in the same
+drawer. On a wide screen the drawer pushes the terminal rather than covering it;
+on a phone it opens over. Nothing about a sub-agent is ever printed into the
+session column: doing that grew one box to 8,211px and squeezed everything else
+off the screen ([MUS-F-0038](records/findings.md#mus-f-0038)). Those rows appear
+only for sessions Mustur started, because the hook that reports them rides in on
+the command line Mustur builds. The session picker is a dropdown for the same
+reason the intake destinations are
+([MUS-D-0121](records/decisions.md#mus-d-0121)): a row that scrolls sideways
+hides its last choice behind a swipe.
 **It does not restart anything** — an agent CLI that crashed wants a person, not
 a loop.
 
