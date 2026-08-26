@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-57 record(s), by identifier.
+59 record(s), by identifier.
 
 ---
 
@@ -1293,3 +1293,38 @@ question · 2026-08-26
 | Option | Output read inside the drawer, retiring the sheet :: one surface for sub-agents instead of two :: The sheet built yesterday would go. One place, one way back. It costs width — on a phone the drawer is about 320px where the sheet had the full 390px — and it throws away something measured and working. Keeping both means two layers over the terminal and Escape having to decide which it means. Recommended |
 | Asked by | whippy |
 | Surfaced | 2026-08-26 21:11 |
+
+---
+
+## MUS-Q-0058
+
+**How a mis-routed jot is corrected, when the identifier is the routing**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0044 |
+| Needed to proceed | yes |
+| Option | A correction files a new record and retires the old :: keeps identifiers permanent; costs two records per correction :: IDW-F-0004 would be re-filed as a MUS finding, and IDW-F-0004 would stay, marked superseded and pointing at it. Nothing an identifier ever meant changes, which is the promise the whole store rests on. The cost is that every correction leaves a stub in the wrong project's list, and the idea inbox counter the scratch pad exists to protect goes up rather than down. Recommended |
+| Option | Routing becomes mutable and the identifier is reissued :: reads better afterwards; breaks the one rule everything else assumes :: The record keeps its content and gets a new identifier at the correct destination, and the old identifier stops resolving. Anything that cited it — a commit message, a decision, a comment in the code — is then pointing at nothing. That is the failure the permanence rule exists to prevent, and it would be reintroduced for the convenience of a tidy list. |
+| Option | Routing becomes mutable and the identifier does not change :: no stub and no broken citation; the prefix then lies :: IDW-F-0004 stays IDW-F-0004 and is routed to Mustur. Every citation keeps working and nothing is duplicated. What breaks is that the prefix stops meaning where the record lives, so an identifier can no longer be read — and every surface that groups by prefix would have to stop trusting it. |
+| Asked by | whippy |
+
+---
+
+## MUS-Q-0059
+
+**How a question answered somewhere other than Mustur gets closed in Mustur**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0045 |
+| Option | An agent may record the owner's answer, attributed :: closes the queue; weakens the rule that only the owner answers :: 'mustur answer --from-owner' would let a session write down what the owner said in a prompt, a plan or a chat, stamped with who recorded it and that it was relayed rather than given here. The queue matches reality. The cost is that the one thing an agent currently cannot do becomes something it can do, and the record can no longer be read as proof the owner touched Mustur itself. Recommended |
+| Option | Only the owner closes it, from the queue :: the record stays trustworthy; the queue keeps filling up :: Exactly today's behaviour, which is what the finding is about. Every question answered in a prompt or a plan stays open here until the owner opens /questions and answers it a second time. It is honest and it is friction, and the friction lands on the one person whose time the whole system is meant to protect. |
+| Option | A question can be withdrawn as overtaken, by whoever raised it :: no new answering power; says less than an answer :: 'mustur answer --withdraw' already exists and an agent may already use it on its own question. Making 'overtaken by a decision taken elsewhere' an explicit withdrawal reason would clear the queue without anyone claiming to have recorded what the owner said. What is lost is the answer itself: the record would say the question stopped mattering, not what was decided. |
+| Asked by | whippy |

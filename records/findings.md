@@ -13,7 +13,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
-| [IDW-F-0004](#idw-f-0004) | Allow resizing the sub-agent dropdown on Musturs session tab on desktop, it can take up more… |  | unreviewed |
+| [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | fixed |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
@@ -53,12 +53,12 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
 | [MUS-F-0038](#mus-f-0038) | The session view printed a sub-agent's whole final message where its name belonged | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. | fixed |
 | [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
-| [MUS-F-0040](#mus-f-0040) | Can't move from the account page to the session screen |  | unreviewed |
+| [MUS-F-0040](#mus-f-0040) | The account page was the one surface with no way back to a session | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. | fixed |
 | [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
-| [MUS-F-0042](#mus-f-0042) | The Session quiet timer only counts since the tab was opened not since the session was idle |  | unreviewed |
+| [MUS-F-0042](#mus-f-0042) | The quiet timer measured the age of the tab, not the silence of the session | A session left idle 1.5s reported quiet=0 before and >=1 after, over a real tmux session and a real socket. Mutation-checked: restoring 'quiet := 0' fails the test with the same reading the owner saw. | fixed |
 | [MUS-F-0043](#mus-f-0043) | A dead Mustur keeps its port for as long as its tmux pipe is running | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. | open |
-| [MUS-F-0044](#mus-f-0044) | IDW-F-0004 sould have been routed to Mustur and was not, correct this and plan a route for… |  | unreviewed |
-| [MUS-F-0045](#mus-f-0045) | Decisions made elsewhere are not cleared from Mustur |  | unreviewed |
+| [MUS-F-0044](#mus-f-0044) | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there is no way to correct that | amend exposes no routing flag. The prefix in an identifier is derived from the destination at intake, so re-routing and re-identifying are the same act. | blocked on MUS-Q-0058 |
+| [MUS-F-0045](#mus-f-0045) | A question answered somewhere other than Mustur stays open in Mustur | mustur answer refuses when the actor recording the answer is the actor who raised the question: 'MUS-Q-0057 was asked by whippy, and whippy cannot answer it.' | blocked on MUS-Q-0059 |
 | [MUS-F-0046](#mus-f-0046) | A submit button nobody drew, hidden by script, stacked by a selector written for another form | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. | fixed |
 
 ---
@@ -127,21 +127,25 @@ Testing image on mobile
 
 ## IDW-F-0004
 
-**Allow resizing the sub-agent dropdown on Musturs session tab on desktop, it can take up more…**
+**The sub-agent drawer can be dragged wider on a desktop screen**
 
 finding · 2026-08-26
 
-Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+Filed by the owner: the drawer takes more space than it needs on a laptop, and being able to drag it wider would be nice when wanted.
 
-Allow resizing the sub-agent dropdown on Musturs session tab on desktop, it can take up more space on my laptop and being able to drag it wider would be nice wen desired
+Built. A grip on the drawer's leading edge, above 60rem only — on a phone the drawer is already most of the screen and there is nothing to widen into. It is a button with a separator role rather than a decorated edge, so it is focusable and moves on the arrow keys: a drag handle that answers only a pointer is one that some people cannot move at all.
+
+Only --drawer-w is set. Everything that has to move with it already reads that variable — the drawer's width, and the min() the reading column and the composer share — so the composer narrows in step without the resize code knowing the composer exists.
+
+The width is remembered per browser; the drawer's open state deliberately is not (MUS-Q-0057). Those are different kinds of thing: shut by default is a statement about what is happening, and a width is how this screen suits this person. Re-dragging it every load would be the annoyance the request exists to remove. Stated as an assumption rather than asked, because it is one line either way.
+
+This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q-0058, because the identifier prefix is the routing and there is no way to change one without deciding what happens to the other.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
-| Routed to | Idea inbox (MUS-P-0002) |
-| Routing | no destination is obvious |
-| Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
+| Status | fixed |
 
 ---
 
@@ -833,21 +837,23 @@ The owner asked for search if it were an easy add. It is not, and the reason is 
 
 ## MUS-F-0040
 
-**Can't move from the account page to the session screen**
+**The account page was the one surface with no way back to a session**
 
 finding · 2026-08-26
 
-Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+Filed by the owner: can't move from the account page to the session screen.
 
-Can't move from the account page to the session screen
+Every other surface carries the same four-tab nav. The account page carried three — Records, Decisions, Intake — and no Sessions tab at all, so an owner who reached their account from a running session had no way back to it but the browser's own history. The header link into the account page goes one way.
+
+It was not a missing condition but a missing field: Accounts had no ShowSessions at all, where every other surface takes one, so there was nothing to render the tab from even when the server was serving sessions. Fixed by carrying the flag and setting it in render() rather than at the two call sites, which is the same shape sessions.go uses and for the same reason — a page built without it renders a nav that is quietly wrong.
+
+Gated on the flag like everywhere else, because a build served without --sessions has no such surface and a dead tab is worse than an absent one (MUS-Q-0052).
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
-| Routed to | Mustur (MUS-P-0001) |
-| Routing | chosen by the filer |
-| Filed by | dev@killerofpie.com |
+| Where | internal/web/accountpage.go, cmd/mustur/main.go |
+| Evidence | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. |
+| Status | fixed |
 
 ---
 
@@ -873,21 +879,23 @@ The session view was the only surface in this binary that did not send Cache-Con
 
 ## MUS-F-0042
 
-**The Session quiet timer only counts since the tab was opened not since the session was idle**
+**The quiet timer measured the age of the tab, not the silence of the session**
 
 finding · 2026-08-26
 
-Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+Filed by the owner: the session quiet timer only counts since the tab was opened, not since the session was idle.
 
-The Session quiet timer only counts since the tab was opened not since the session was idle
+Stream.Quiet has existed since the stream did, documented, correct, and never called. The socket handler declared 'quiet := 0', never assigned it, and sent it in the hello frame — and because the field is omitempty, zero was not sent at all, so the client's 'if the server told me' branch never ran and it began counting from whenever the tab attached. Opening a second tab on a session that had been silent for an hour read 'quiet 0s'.
+
+This is the third defect this week of the same kind: a comment or a declaration describing an intention the code does not carry out. The variable named the right thing and held nothing.
+
+Fixed by exposing Sub.Quiet — the viewer's own attachment already holds the stream — and computing the value the frame was always shaped to carry.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
-| Routed to | Mustur (MUS-P-0001) |
-| Routing | chosen by the filer |
-| Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, internal/session/stream.go |
+| Evidence | A session left idle 1.5s reported quiet=0 before and >=1 after, over a real tmux session and a real socket. Mutation-checked: restoring 'quiet := 0' fails the test with the same reading the owner saw. |
+| Status | fixed |
 
 ---
 
@@ -915,41 +923,51 @@ The mechanism is not proven. The obvious explanation is fd inheritance, but tmux
 
 ## MUS-F-0044
 
-**IDW-F-0004 sould have been routed to Mustur and was not, correct this and plan a route for…**
+**IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there is no way to correct that**
 
 finding · 2026-08-26
 
-Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+about: [IDW-F-0004](#idw-f-0004)
 
-IDW-F-0004 sould have been routed to Mustur and was not, correct this and plan a route for corrections of incorrect 'Route it for me' in the future.
+blocked by: [MUS-Q-0058](questions.md#mus-q-0058)
+
+Filed by the owner: IDW-F-0004 should have been routed to Mustur and was not — correct this, and plan a route for corrections of an incorrect 'Route it for me' in future.
+
+The jot itself is a request to drag the sub-agent drawer wider, which is plainly Mustur's. Intake routed it to the idea inbox under 'no destination is obvious'.
+
+The correction cannot be made with what exists. amend takes a title, a body, refs and fields, and no destination — and that is not an oversight. The identifier prefix is the routing: IDW-F-0004 is IDW because it went to the idea inbox. Changing where it lives means changing what it is called, and identifiers are permanent. So a correction route is not a flag, it is a decision about which of those two promises gives way. Raised as MUS-Q-0058.
+
+The work the jot asked for is built regardless; only its filing is in the wrong place.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
-| Routed to | DevOfPie/Mustur (MUS-R-0001) |
-| Routing | the jot names DevOfPie/Mustur |
-| Filed by | dev@killerofpie.com |
+| Where | cmd/mustur/amend.go, internal/intake |
+| Evidence | amend exposes no routing flag. The prefix in an identifier is derived from the destination at intake, so re-routing and re-identifying are the same act. |
+| Status | blocked on MUS-Q-0058 |
 
 ---
 
 ## MUS-F-0045
 
-**Decisions made elsewhere are not cleared from Mustur**
+**A question answered somewhere other than Mustur stays open in Mustur**
 
 finding · 2026-08-26
 
-Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+raised as: [MUS-Q-0059](questions.md#mus-q-0059)
 
-Decisions made elsewhere are not cleared from Mustur
+Filed by the owner: decisions made elsewhere are not cleared from Mustur.
+
+The queue holds what has been asked and not answered here. When the owner answers in a prompt, in a plan's question form, or in conversation, the question stays open — because the store refuses to let the asker record the answer, by design: you may withdraw your own question and you may not answer it.
+
+That rule is what makes an answered record mean something, so the fix is not to drop it. But the cost lands on the owner, who answers once where they are and then has to answer again where the record lives. Seen twice today: MUS-Q-0056 and MUS-Q-0057 were both answered in a plan, and MUS-Q-0057 could not be closed here at all.
+
+Raised as MUS-Q-0059, because every route out of it trades against the same rule.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
-| Routed to | DevOfPie/Mustur (MUS-R-0001) |
-| Routing | the jot names DevOfPie/Mustur |
-| Filed by | dev@killerofpie.com |
+| Where | internal/question, cmd/mustur/answer.go |
+| Evidence | mustur answer refuses when the actor recording the answer is the actor who raised the question: 'MUS-Q-0057 was asked by whippy, and whippy cannot answer it.' |
+| Status | blocked on MUS-Q-0059 |
 
 ---
 

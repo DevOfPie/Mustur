@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -28,7 +29,7 @@ func managed(t *testing.T) (*httptest.Server, *account.Store) {
 	mux := http.NewServeMux()
 	auth := &Auth{Accounts: accounts, Origin: "http://127.0.0.1"}
 	auth.Routes(mux)
-	manage := &Accounts{Store: accounts, Auth: auth, Project: "MUS"}
+	manage := &Accounts{Store: accounts, Auth: auth, Project: "MUS", ShowSessions: true}
 	manage.Routes(mux)
 	mux.HandleFunc("/records", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("records"))
@@ -366,5 +367,74 @@ func TestAReaderHasNoPeopleScreen(t *testing.T) {
 	}
 	if code := statusOf(t, reader, srv.URL+"/account/people"); code != http.StatusForbidden {
 		t.Errorf("a reader reached the people screen: %d", code)
+	}
+}
+
+// The account page can be left again.
+//
+// Every other surface carries the same four-tab row. This one carried three:
+// Records, Decisions, Intake, and no Sessions — so an owner who reached their
+// account from a session had no way back to it but the browser's own history
+// (MUS-F-0040). The header link goes one way only.
+//
+// Gated on ShowSessions like everywhere else, because a build served without
+// --sessions has no such surface and a dead tab is worse than an absent one
+// (MUS-Q-0052).
+func TestTheAccountPageOffersTheWayBackToASession(t *testing.T) {
+	srv, accounts := managed(t)
+	client, _ := personWith(t, accounts, "pie@example.com", "MUS", account.Owner, "k1")
+
+	for _, path := range []string{"/account", "/account/people"} {
+		res, err := client.Get(srv.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		page := string(body)
+		if !strings.Contains(page, `<a href="/sessions">Sessions</a>`) {
+			t.Errorf("%s has no way back to a session", path)
+		}
+		// And the row is the same one every other surface has, in the same
+		// order, so the tabs do not move as you cross between them.
+		for _, want := range []string{`href="/questions"`, `href="/intake"`, `href="/records"`} {
+			if !strings.Contains(page, want) {
+				t.Errorf("%s is missing %s from the nav", path, want)
+			}
+		}
+		if at, sessions := strings.Index(page, `href="/sessions"`), strings.Index(page, `href="/questions"`); at > sessions {
+			t.Errorf("%s puts Sessions after Decisions; every other surface leads with it", path)
+		}
+	}
+}
+
+// A build with no session surface offers no tab to it, rather than a dead one.
+func TestTheAccountPageHidesSessionsWhenThereIsNoSuchSurface(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	accounts := account.New(st.DB())
+
+	mux := http.NewServeMux()
+	auth := &Auth{Accounts: accounts, Origin: "http://127.0.0.1"}
+	auth.Routes(mux)
+	// ShowSessions left off, which is what a server without --sessions is.
+	(&Accounts{Store: accounts, Auth: auth, Project: "MUS"}).Routes(mux)
+	guard := &Guard{Auth: auth, Project: "MUS"}
+	srv := httptest.NewServer(guard.Wrap(mux))
+	t.Cleanup(srv.Close)
+
+	client, _ := personWith(t, accounts, "pie@example.com", "MUS", account.Owner, "k1")
+	res, err := client.Get(srv.URL + "/account")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	if strings.Contains(string(body), `href="/sessions"`) {
+		t.Error("a build with no session surface still offers a tab to it")
 	}
 }

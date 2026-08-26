@@ -551,7 +551,8 @@ func cmdServe(args []string) error {
 			Records: s,
 		}
 		auth.Routes(mux)
-		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project, Records: s}
+		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project, Records: s,
+			ShowSessions: *withSessions}
 		manage.Routes(mux)
 		if *withAccounts {
 			guard := &web.Guard{Auth: auth, Project: *project}

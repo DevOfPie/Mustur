@@ -199,6 +199,22 @@ func (h *Hub) Attach(ctx context.Context, project string, from int64) (*Sub, []b
 	return &Sub{C: ch, stream: s, hub: h, ch: ch}, backlog, at, gap, nil
 }
 
+// Quiet is how long since the session this viewer is attached to last produced
+// output.
+//
+// Stream.Quiet has existed since the stream did and was never reachable from
+// the web layer, which declared a quiet counter, sent it as zero and let the
+// browser start counting from whenever the tab happened to connect. So the
+// timer measured the age of the tab rather than the idleness of the session
+// (MUS-F-0042): opening a second tab on a session that had been silent for an
+// hour showed "quiet 0s".
+func (sub *Sub) Quiet(now time.Time) time.Duration {
+	if sub == nil || sub.stream == nil {
+		return 0
+	}
+	return sub.stream.Quiet(now)
+}
+
 // Close detaches one viewer, and stops the reader if it was the last.
 func (sub *Sub) Close() {
 	s := sub.stream

@@ -36,8 +36,9 @@ drawer that is **shut on arrival** — a button beside the session picker says
 how many there are and wears a turning accent ring while any is running, and
 opening it lists them one line each: what it was asked to do, how long it has
 run, the tool it is in. Opening a row reads what that sub-agent said in the same
-drawer. On a wide screen the drawer pushes the terminal rather than covering it;
-on a phone it opens over. Nothing about a sub-agent is ever printed into the
+drawer. On a wide screen the drawer pushes the terminal rather than covering it and can
+be dragged wider by its leading edge, which remembers the width per browser; on
+a phone it opens over and there is no grip. Nothing about a sub-agent is ever printed into the
 session column: doing that grew one box to 8,211px and squeezed everything else
 off the screen ([MUS-F-0038](records/findings.md#mus-f-0038)). Those rows appear
 only for sessions Mustur started, because the hook that reports them rides in on

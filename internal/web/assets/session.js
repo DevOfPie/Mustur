@@ -288,6 +288,92 @@
     });
   }
 
+  // Dragging the drawer wider, on a wide screen (IDW-F-0004).
+  //
+  // Only --drawer-w is set. Everything that has to move with it already reads
+  // that variable: the drawer's own width, and the min() the reading column and
+  // the composer share — so the composer narrows in step without this knowing
+  // the composer exists.
+  //
+  // The width is remembered per browser. The drawer itself deliberately is not
+  // (MUS-Q-0057): shut by default means shut. A width is a different kind of
+  // thing — it is how this screen suits this person, not a piece of state about
+  // what is happening — and re-dragging it every load would be the annoyance
+  // the feature was asked for to remove.
+  var GRIP_MIN = 224; // 14rem: narrower and a task line has nowhere to go.
+  var GRIP_KEY = "mustur.drawer.w";
+
+  function gripMax() {
+    // Never more than half the window, and never so wide that the reading
+    // column it is pushing has less room than the drawer.
+    return Math.max(GRIP_MIN, Math.min(innerWidth * 0.5, 640));
+  }
+
+  function setDrawerWidth(px, remember) {
+    var w = Math.round(Math.min(gripMax(), Math.max(GRIP_MIN, px)));
+    document.body.style.setProperty("--drawer-w", w + "px");
+    // The column just changed width, so the composer may have rewrapped.
+    measureDock();
+    if (remember) {
+      try {
+        localStorage.setItem(GRIP_KEY, String(w));
+      } catch (e) {
+        // A private window, or storage refused. The drag still worked; it just
+        // will not be there next time.
+      }
+    }
+    return w;
+  }
+
+  var grip = document.getElementById("grip");
+  if (grip) {
+    try {
+      var saved = parseInt(localStorage.getItem(GRIP_KEY) || "", 10);
+      if (saved > 0) setDrawerWidth(saved, false);
+    } catch (e) {
+      // Nothing saved, or nothing readable. The stylesheet's own width stands.
+    }
+
+    grip.addEventListener("pointerdown", function (e) {
+      // Capture, so a fast drag that leaves the 7px strip keeps being ours.
+      grip.setPointerCapture(e.pointerId);
+      document.body.classList.add("dragging");
+      e.preventDefault();
+    });
+    grip.addEventListener("pointermove", function (e) {
+      if (!grip.hasPointerCapture(e.pointerId)) return;
+      setDrawerWidth(innerWidth - e.clientX, false);
+    });
+    var done = function (e) {
+      if (!grip.hasPointerCapture(e.pointerId)) return;
+      grip.releasePointerCapture(e.pointerId);
+      document.body.classList.remove("dragging");
+      setDrawerWidth(document.querySelector(".panel").getBoundingClientRect().width, true);
+    };
+    grip.addEventListener("pointerup", done);
+    grip.addEventListener("pointercancel", done);
+
+    // The keyboard reaches it too. A separator that only answers a pointer is
+    // one that half the people using it cannot move.
+    grip.addEventListener("keydown", function (e) {
+      var step = e.shiftKey ? 64 : 16;
+      var now = document.querySelector(".panel").getBoundingClientRect().width;
+      if (e.key === "ArrowLeft") setDrawerWidth(now + step, true);
+      else if (e.key === "ArrowRight") setDrawerWidth(now - step, true);
+      else if (e.key === "Home") setDrawerWidth(gripMax(), true);
+      else if (e.key === "End") setDrawerWidth(GRIP_MIN, true);
+      else return;
+      e.preventDefault();
+    });
+
+    // The cap is a share of the window, so a window that shrinks has to bring
+    // the drawer with it or the terminal is squeezed to nothing.
+    addEventListener("resize", function () {
+      var now = document.querySelector(".panel").getBoundingClientRect().width;
+      if (now > gripMax()) setDrawerWidth(gripMax(), false);
+    });
+  }
+
   // The picker navigates on change. Nothing here touches the submit button
   // beside it, because there is none to touch: it lives in a noscript element,
   // so if this line is running the browser has already left it out. The first

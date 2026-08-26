@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 57 | [questions.md](questions.md) |
+| question | 59 | [questions.md](questions.md) |
 | decision | 124 | [decisions.md](decisions.md) |
 | finding | 50 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -23,7 +23,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
 | [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
-| [IDW-F-0004](findings.md#idw-f-0004) | finding | Allow resizing the sub-agent dropdown on Musturs session tab on desktop, it can take up more… |
+| [IDW-F-0004](findings.md#idw-f-0004) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
 | [MUS-M-0001](milestones.md#mus-m-0001) | milestone | The delivery bet is tested |
 | [MUS-M-0002](milestones.md#mus-m-0002) | milestone | Records and routing, behind one call |
 | [MUS-M-0003](milestones.md#mus-m-0003) | milestone | The audit StrucGu never shipped |
@@ -114,6 +114,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0055](questions.md#mus-q-0055) | question | Your answer said a token has its own lifetime; I built it without one |
 | [MUS-Q-0056](questions.md#mus-q-0056) | question | Where a sub-agent's output is read once the session only identifies it |
 | [MUS-Q-0057](questions.md#mus-q-0057) | question | How the sub-agent drawer opens, what its badge counts, and where output is read |
+| [MUS-Q-0058](questions.md#mus-q-0058) | question | How a mis-routed jot is corrected, when the identifier is the routing |
+| [MUS-Q-0059](questions.md#mus-q-0059) | question | How a question answered somewhere other than Mustur gets closed in Mustur |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -277,12 +279,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0037](findings.md#mus-f-0037) | finding | A stored photo kept the metadata its camera wrote into it |
 | [MUS-F-0038](findings.md#mus-f-0038) | finding | The session view printed a sub-agent's whole final message where its name belonged |
 | [MUS-F-0039](findings.md#mus-f-0039) | finding | Searching the destination list costs either the no-script promise or the name in the box |
-| [MUS-F-0040](findings.md#mus-f-0040) | finding | Can't move from the account page to the session screen |
+| [MUS-F-0040](findings.md#mus-f-0040) | finding | The account page was the one surface with no way back to a session |
 | [MUS-F-0041](findings.md#mus-f-0041) | finding | The session page was the only surface that let itself be cached, so its markup could outlive its script |
-| [MUS-F-0042](findings.md#mus-f-0042) | finding | The Session quiet timer only counts since the tab was opened not since the session was idle |
+| [MUS-F-0042](findings.md#mus-f-0042) | finding | The quiet timer measured the age of the tab, not the silence of the session |
 | [MUS-F-0043](findings.md#mus-f-0043) | finding | A dead Mustur keeps its port for as long as its tmux pipe is running |
-| [MUS-F-0044](findings.md#mus-f-0044) | finding | IDW-F-0004 sould have been routed to Mustur and was not, correct this and plan a route for… |
-| [MUS-F-0045](findings.md#mus-f-0045) | finding | Decisions made elsewhere are not cleared from Mustur |
+| [MUS-F-0044](findings.md#mus-f-0044) | finding | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there is no way to correct that |
+| [MUS-F-0045](findings.md#mus-f-0045) | finding | A question answered somewhere other than Mustur stays open in Mustur |
 | [MUS-F-0046](findings.md#mus-f-0046) | finding | A submit button nobody drew, hidden by script, stacked by a selector written for another form |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |

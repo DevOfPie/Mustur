@@ -332,8 +332,14 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 
-	// Nothing recorded yet: no strip at all, rather than an empty one.
-	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "sub-agent") {
+	// Nothing recorded yet: the badge is absent and the drawer's count is
+	// empty, rather than either of them reading zero.
+	//
+	// This used to search the whole page for the string "sub-agent", which made
+	// it a test of every word on the surface: a resize grip whose label
+	// mentioned sub-agents turned it red without anything about the page being
+	// wrong. Ask the two elements that carry the claim.
+	if body := getFrom(t, srv, "/sessions/Mustur"); !claimsNoSubagents(body) {
 		t.Error("a session that has launched nothing still claims sub-agents")
 	}
 
@@ -429,7 +435,7 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 // rows, rather than an error.
 func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
-	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "sub-agent") {
+	if body := getFrom(t, srv, "/sessions/Mustur"); !claimsNoSubagents(body) {
 		t.Error("a session with no hook directory claims sub-agents")
 	}
 }
@@ -812,5 +818,133 @@ func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
 	res.Body.Close()
 	if res.Request.URL.Path != "/sessions/Mustur" {
 		t.Errorf("?p= landed on %q, not the session it names", res.Request.URL.Path)
+	}
+}
+
+// The quiet timer measures the session, not the tab.
+//
+// The web layer declared a quiet counter, left it at zero and sent it — and
+// omitempty meant zero was not sent at all, so the browser's "if the server
+// told me" branch never ran and it started counting from whenever the tab
+// happened to attach. Opening a second tab on a session silent for an hour said
+// "quiet 0s" (MUS-F-0042). Stream.Quiet had existed since the stream did and
+// nothing reached it.
+//
+// So this attaches to a session that has been silent for a beat and asks what
+// the hello frame says. A second is enough: the defect reported zero forever,
+// not a value one tick out.
+func TestTheHelloFrameSaysHowLongTheSessionHasBeenQuiet(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzQuiet"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'echo working; sleep 5'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	dial := func() frame {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+			"/sessions/"+project+"/ws", &websocket.DialOptions{
+			HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer c.CloseNow()
+		_, b, err := c.Read(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var f frame
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
+		if f.T != "hello" {
+			t.Fatalf("first frame is %q, not the hello this reads", f.T)
+		}
+		return f
+	}
+
+	// The first viewer opens the reader, which is when the stream starts
+	// noticing output at all.
+	dial()
+	// Long enough that a counter starting now and a counter starting at the
+	// session's last byte cannot be confused for each other.
+	time.Sleep(1500 * time.Millisecond)
+
+	second := dial()
+	if second.Quiet < 1 {
+		t.Errorf("a session idle for over a second says quiet=%d; the timer is measuring the tab, not the session", second.Quiet)
+	}
+}
+
+// claimsNoSubagents reports whether the strip and the drawer both say there are
+// none — the badge absent rather than zero, and the drawer's count empty.
+func claimsNoSubagents(body string) bool {
+	if !strings.Contains(body, `id="badge" hidden`) {
+		return false
+	}
+	if !strings.Contains(body, `<small class="count" id="dcount"></small>`) {
+		return false
+	}
+	// And no rows to open.
+	return !strings.Contains(body, `class="agent" data-id=`)
+}
+
+// The drawer can be dragged wider, and the handle is a control.
+//
+// IDW-F-0004, from the owner: the drawer can take more space on a laptop and
+// dragging it wider would be nice when wanted. The behaviour itself is measured
+// in a browser — a drag is not something markup can prove — so what this holds
+// is the part that quietly rots: that the handle stays reachable without a
+// pointer, and that it does not appear on a phone where there is nothing to
+// widen into.
+func TestTheDrawerHasAResizeHandleThatIsNotPointerOnly(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	s := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	// A button, so it is focusable and reachable by keyboard without anything
+	// being added to make it so. A div with a pointer handler is the shape this
+	// is deliberately not.
+	if !strings.Contains(body, `<button type="button" class="grip" id="grip" role="separator"`) {
+		t.Error("the resize handle is not a focusable control")
+	}
+	for _, want := range []string{`aria-orientation="vertical"`, `aria-label="Resize the drawer"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the handle does not say what it is: %q missing", want)
+		}
+	}
+
+	// Hidden by default and shown only above the breakpoint. On a phone the
+	// drawer is most of the screen already.
+	at := strings.Index(body, ".grip { display: none; }")
+	if at < 0 {
+		t.Error("the handle is not hidden below the breakpoint")
+	}
+	wide := strings.Index(body, "@media (min-width: 60rem)")
+	if wide < 0 || wide < at {
+		t.Error("the handle is not brought back inside the wide-screen block")
+	}
+	if !strings.Contains(body[wide:], "cursor: col-resize") {
+		t.Error("the handle does not read as draggable on a wide screen")
 	}
 }

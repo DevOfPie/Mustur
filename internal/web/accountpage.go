@@ -89,7 +89,12 @@ type Accounts struct {
 	Records *store.Store
 	// Project is the project whose roles this install manages.
 	Project string
-	Now     func() time.Time
+	// ShowSessions says whether this server serves the session surface, so the
+	// nav can offer it. Without this the account page was the one surface with
+	// no way back to a running session (MUS-F-0040) — the header link goes one
+	// way, and the four-tab row every other page carries was three tabs here.
+	ShowSessions bool
+	Now          func() time.Time
 }
 
 func (a *Accounts) now() time.Time {
@@ -158,6 +163,8 @@ type accountPage struct {
 	// page announces it any more — the controls refuse and say why at the
 	// moment they refuse (MUS-Q-0048) — but the handlers still need to know.
 	LastOwner bool
+	// ShowSessions renders the nav's first tab, which every other surface has.
+	ShowSessions bool
 }
 
 // A roleRow is one project an account may do something in, written out with its
@@ -245,6 +252,9 @@ func (a *Accounts) people(w http.ResponseWriter, r *http.Request) {
 
 // render fills in everything the page shows about whoever is asking.
 func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.Account, p accountPage) {
+	// Set here rather than at the call sites: a page built without it renders a
+	// nav with no way back to a running session, which is what MUS-F-0040 was.
+	p.ShowSessions = a.ShowSessions
 	ctx := r.Context()
 	p.Email = acct.Email
 	p.Project = a.Project
@@ -597,9 +607,10 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
 {{end}}
 
 <nav>
-  <a href="/records">Records</a>
+  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions">Decisions</a>
   <a href="/intake">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 <script src="/assets/auth.js"></script>
 <script src="/assets/account.js"></script>

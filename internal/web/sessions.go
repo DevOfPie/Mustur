@@ -353,7 +353,15 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	conn, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	quiet := 0
+	// How long the session has been silent, from the stream rather than from
+	// this connection. Declared and left at zero, it made the browser start
+	// counting at whatever moment the tab attached, so the footer measured the
+	// age of the tab (MUS-F-0042). Rounded down to whole seconds, which is what
+	// the client renders anyway.
+	quiet := int(sub.Quiet(s.now()).Seconds())
+	if quiet < 0 {
+		quiet = 0
+	}
 	// Both the reader loop and the input goroutine write frames now — the
 	// second only to report that a message was discarded — and a WebSocket
 	// permits one writer at a time.
@@ -760,11 +768,30 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      is the server's. display:none, so it has no layout box. */
   .say { display: none; }
 
+  /* Drag the drawer wider, on a wide screen only (IDW-F-0004).
+
+     The grip is a real control rather than a decorated edge: focusable, with
+     a separator role, and it moves on the arrow keys as well as the pointer.
+     A drag handle that only answers a mouse is a drag handle half the people
+     using it cannot reach.
+
+     It only exists above 60rem. On a phone the drawer is 86% of the screen and
+     there is nothing to widen it into. */
+  .grip { display: none; }
+
   @media (min-width: 60rem) {
     /* Only its own column, so the terminal beside it stays clickable. */
     .drawer { inset: 0 0 0 auto; width: var(--drawer-w); }
     .veil { display: none; }
     .panel { width: var(--drawer-w); max-width: none; }
+    .grip { display: block; position: absolute; left: -3px; top: 0; bottom: 0;
+            width: 7px; cursor: col-resize; background: none; border: 0;
+            padding: 0; z-index: 1; }
+    .grip:hover, .grip:focus-visible { background: var(--accent-soft); }
+    .grip:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    /* While dragging, nothing else should be selecting text or handing the
+       pointer to the terminal underneath. */
+    body.dragging { user-select: none; cursor: col-resize; }
     /* The push, and the reason it needs saying out loud.
 
        The composer is placed by --shell-dock-left and --shell-dock-width
@@ -807,6 +834,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <div class="drawer" id="drawer" hidden>
   <div class="veil" id="veil"></div>
   <aside class="panel" role="dialog" aria-label="Sub-agents">
+    <button type="button" class="grip" id="grip" role="separator"
+      aria-orientation="vertical" aria-label="Resize the drawer"></button>
     <div class="dhead">
       <button type="button" class="back" id="back" hidden aria-label="Back to the list">&larr;</button>
       <strong id="dtitle">Sub-agents</strong>
