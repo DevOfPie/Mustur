@@ -55,6 +55,7 @@ const usage = `mustur — records and routing for one project
                   token --for LABEL [--expires D]  an agent's credential; printed once, never stored
                   tokens | revoke ID          which agents can reach the tool call
   mustur image    list | read ID [--out F]   a jot's picture, held privately and never exported
+                  forget ID                 drop the picture, keep what was written about it
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 

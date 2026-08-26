@@ -85,6 +85,97 @@ func ImageType(data []byte) (string, error) {
 	return kind, nil
 }
 
+// stripMetadata drops everything a camera wrote into a picture that is not the
+// picture.
+//
+// The sender's filename is not stored here, on the reasoning that it carries a
+// date, a device and often the content. EXIF carries all three and carries them
+// explicitly — the first real upload from the owner's phone arrived naming the
+// exact device build it was taken on (MUS-F-0037). The rule was written and
+// then applied to the smaller of the two carriers.
+//
+// Dropped as the bytes are stored rather than as they are served, so a thing
+// nobody wanted is never written down at all. Byte surgery rather than a
+// re-encode: decoding and re-encoding would lose quality on somebody's evidence
+// to remove a header, which is the wrong trade for a screenshot of a defect.
+func stripMetadata(kind string, data []byte) []byte {
+	switch kind {
+	case "image/jpeg":
+		return stripJPEG(data)
+	case "image/png":
+		return stripPNG(data)
+	}
+	// GIF and WebP carry their own comment and metadata chunks. They are left
+	// alone rather than half-handled: an unstripped format named here is a
+	// smaller lie than one silently believed to be clean.
+	return data
+}
+
+// stripJPEG removes the APPn application segments, which is where EXIF, the
+// thumbnail, XMP and any colour-profile comment live.
+func stripJPEG(data []byte) []byte {
+	if len(data) < 4 || data[0] != 0xFF || data[1] != 0xD8 {
+		return data
+	}
+	out := make([]byte, 0, len(data))
+	out = append(out, data[0], data[1]) // SOI
+	i := 2
+	for i+3 < len(data) {
+		if data[i] != 0xFF {
+			break
+		}
+		marker := data[i+1]
+		// Start of scan: the compressed image follows and is not segmented.
+		if marker == 0xDA {
+			return append(out, data[i:]...)
+		}
+		size := int(data[i+2])<<8 | int(data[i+3])
+		if size < 2 || i+2+size > len(data) {
+			return data
+		}
+		// APP0 through APP15, and the comment segment.
+		if !(marker >= 0xE0 && marker <= 0xEF) && marker != 0xFE {
+			out = append(out, data[i:i+2+size]...)
+		}
+		i += 2 + size
+	}
+	if i >= len(data) {
+		return out
+	}
+	return append(out, data[i:]...)
+}
+
+// stripPNG removes the ancillary chunks that carry text, time and colour
+// profiles, keeping the ones an image needs to decode.
+func stripPNG(data []byte) []byte {
+	const sig = 8
+	if len(data) < sig+12 {
+		return data
+	}
+	drop := map[string]bool{
+		"tEXt": true, "iTXt": true, "zTXt": true,
+		"tIME": true, "eXIf": true, "iCCP": true,
+	}
+	out := make([]byte, 0, len(data))
+	out = append(out, data[:sig]...)
+	i := sig
+	for i+8 <= len(data) {
+		size := int(data[i])<<24 | int(data[i+1])<<16 | int(data[i+2])<<8 | int(data[i+3])
+		if size < 0 || i+12+size > len(data) {
+			return data
+		}
+		name := string(data[i+4 : i+8])
+		if !drop[name] {
+			out = append(out, data[i:i+12+size]...)
+		}
+		i += 12 + size
+		if name == "IEND" {
+			break
+		}
+	}
+	return out
+}
+
 // Attach stores an image against a record.
 //
 // The media type is sniffed from the bytes. A caller's Content-Type is a claim
@@ -109,6 +200,8 @@ func (s *Store) Attach(ctx context.Context, recordID string, data []byte, by str
 	if _, err := rand.Read(raw); err != nil {
 		return Attachment{}, err
 	}
+	// Before the hash, so what is recorded describes what is kept.
+	data = stripMetadata(kind, data)
 	sum := sha256.Sum256(data)
 	a := Attachment{
 		ID:        hex.EncodeToString(raw),
@@ -150,6 +243,24 @@ func (s *Store) Attachments(ctx context.Context, recordID string) ([]Attachment,
 		out = append(out, a)
 	}
 	return out, rows.Err()
+}
+
+// Forget removes an image, leaving the record and its description.
+//
+// Records are insert-only and an attachment is not a record: it is a private
+// thing held beside one, and the durable half was always the description an
+// agent wrote from it. So a picture can go — a test filing, a screenshot whose
+// job is done, something that should not have been sent — and what it meant
+// stays in the record where a reader can still find it.
+func (s *Store) Forget(ctx context.Context, id string) error {
+	res, err := s.db.ExecContext(ctx, `DELETE FROM attachment WHERE id = ?`, strings.TrimSpace(id))
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n != 1 {
+		return errors.New("no such attachment")
+	}
+	return nil
 }
 
 // Image reads one back.

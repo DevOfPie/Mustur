@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 55 | [questions.md](questions.md) |
 | decision | 119 | [decisions.md](decisions.md) |
-| finding | 36 | [findings.md](findings.md) |
+| finding | 40 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -21,6 +21,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Identifier | Kind | Title |
 | --- | --- | --- |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
+| [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
+| [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
 | [MUS-M-0001](milestones.md#mus-m-0001) | milestone | The delivery bet is tested |
 | [MUS-M-0002](milestones.md#mus-m-0002) | milestone | Records and routing, behind one call |
 | [MUS-M-0003](milestones.md#mus-m-0003) | milestone | The audit StrucGu never shipped |
@@ -263,6 +265,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0033](findings.md#mus-f-0033) | finding | A long field value made the records page wider than the phone, and the tab bar went with it |
 | [MUS-F-0034](findings.md#mus-f-0034) | finding | The session view's quiet timer and composer could be scrolled off the bottom of a phone |
 | [MUS-F-0035](findings.md#mus-f-0035) | finding | The sub-agent box had no height cap, so it took the whole session view with it |
+| [MUS-F-0036](findings.md#mus-f-0036) | finding | The intake destination row hides its last choice behind a sideways scroll |
+| [MUS-F-0037](findings.md#mus-f-0037) | finding | A stored photo kept the metadata its camera wrote into it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

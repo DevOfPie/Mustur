@@ -23,7 +23,7 @@ import (
 
 func cmdImage(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("image needs a verb: list, read")
+		return fmt.Errorf("image needs a verb: list, read, forget")
 	}
 	verb, rest := args[0], args[1:]
 
@@ -103,6 +103,31 @@ func cmdImage(args []string) error {
 		// what matters and nothing that did not need to travel.
 		fmt.Println("  the record is exported and public; the image is neither")
 		return nil
+
+	case "forget":
+		fs := flag.NewFlagSet("image forget", flag.ContinueOnError)
+		db := dbFlag(fs)
+		id, err := parseWithPositional(fs, rest, "image forget needs one image id; mustur image list shows them")
+		if err != nil {
+			return err
+		}
+		s, ctx, err := openStore(*db)
+		if err != nil {
+			return err
+		}
+		defer s.Close()
+
+		a, _, err := s.Image(ctx, id)
+		if err != nil {
+			return err
+		}
+		if err := s.Forget(ctx, id); err != nil {
+			return err
+		}
+		// The record is untouched, which is the point: the description an agent
+		// wrote from the picture is the half that was meant to last.
+		fmt.Printf("forgot %s; %s keeps what was written about it\n", a.ID, a.RecordID)
+		return nil
 	}
-	return fmt.Errorf("image has no verb %q: list, read", verb)
+	return fmt.Errorf("image has no verb %q: list, read, forget", verb)
 }

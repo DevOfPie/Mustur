@@ -4,13 +4,15 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-36 record(s), by identifier.
+40 record(s), by identifier.
 
 ## The queue
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
+| [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
+| [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
@@ -46,6 +48,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0033](#mus-f-0033) | A long field value made the records page wider than the phone, and the tab bar went with it | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. | fixed |
 | [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
 | [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
+| [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself does not overflow. | open |
+| [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
 
 ---
 
@@ -66,6 +70,48 @@ Deploy check for the IDW prefix: this jot names no project and should land in th
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | the jot names Idea inbox |
 | Filed by | whippy |
+
+---
+
+## IDW-F-0002
+
+**Test image, dicard after verfication**
+
+finding · 2026-08-26
+
+routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Test image, dicard after verfication
+
+| Field | Value |
+| --- | --- |
+| Evidence | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. |
+| Status | verified |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## IDW-F-0003
+
+**Testing image on mobile**
+
+finding · 2026-08-26
+
+routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+found: [MUS-F-0037](#mus-f-0037)
+
+Testing image on mobile
+
+| Field | Value |
+| --- | --- |
+| Evidence | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. |
+| Status | verified |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |
 
 ---
 
@@ -674,3 +720,41 @@ The owner described the session view as a mess: session-selection chips half cov
 | Where | internal/web/sessions.go |
 | Evidence | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. |
 | Status | fixed |
+
+---
+
+## MUS-F-0036
+
+**The intake destination row hides its last choice behind a sideways scroll**
+
+finding · 2026-08-26
+
+seen in: [IDW-F-0002](#idw-f-0002)
+
+Seen in the owner's own screenshot: the destination chips are cut off mid-row, so 'Idea inbox' is not visible. Measured on the same page — 741px of chips in a 640px row, so the last one is always off the edge and reaching it needs a horizontal swipe with nothing on screen suggesting there is more. It is the same at 1366, 1600 and 1920px, because the row is capped at the reading column rather than the window: at 1920 there is over a thousand pixels of empty space beside a row that still scrolls. The row was built to scroll deliberately — the comment beside it says one line that scrolls, never a block that wraps, because a clipped repository name is a wrong destination picked by accident. The implementation now produces the thing that comment exists to prevent: a destination nobody can see is a destination nobody picks, and the jot that revealed this went to the very chip that was hidden. Not fixed here. Whether the row wraps, widens past the reading column on a big screen, or grows an affordance saying there is more, is a change to a decision that was taken on purpose, so it goes to the owner rather than being reversed quietly.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go |
+| Evidence | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself does not overflow. |
+| Status | open |
+
+---
+
+## MUS-F-0037
+
+**A stored photo kept the metadata its camera wrote into it**
+
+finding · 2026-08-26
+
+found in: [IDW-F-0003](#idw-f-0003)
+
+contradicts: [MUS-D-0119](decisions.md#mus-d-0119)
+
+The first real upload from the owner's phone arrived carrying EXIF, including the exact device build it was taken on. Nothing strips it, so it is sitting in the store and would be handed to anyone the record surface is opened to. This contradicts a decision taken in the same change. The sender's filename is deliberately not stored, on the reasoning that a filename carries a date, a device and often the content of the picture. EXIF carries all three more explicitly, and it was kept — the rule was written and then applied to the smaller of the two carriers. The exposure is bounded today: images never reach the export, and the record surface is behind the guard with one account on it. It stops being bounded at milestone 6, which is a second person reading these surfaces. The fix is to drop metadata as the bytes are stored rather than when they are served, so nothing that was never wanted is ever written down. For JPEG that is removing the APPn segments; PNG's text chunks are the same shape of problem.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/store/attach.go |
+| Evidence | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. |
+| Status | open |
