@@ -35,6 +35,10 @@ type Intake struct {
 	// served only when an origin is configured. Off means the link is absent
 	// rather than dead (MUS-Q-0052).
 	ShowAccount bool
+	// Placeholders is how many not-real destinations to pad the list with, for
+	// judging its shape before there is anything real to fill it. Zero, and
+	// deliberately not persisted anywhere.
+	Placeholders int
 	// ShowSessions says whether this server serves the session surface, which
 	// decides whether the bar offers a tab to it. Off by default: the session
 	// surface carries a composer that types into a running agent's stdin, so
@@ -70,6 +74,32 @@ func (in *Intake) Handler() http.Handler {
 		http.Redirect(w, r, "/intake", http.StatusSeeOther)
 	})
 	return mux
+}
+
+// placeholderTo marks a destination that is not one.
+//
+// The owner wanted to see what the list feels like once there are more things
+// to route to, before deciding whether it needs searching. Ten more routing
+// records would have been ten permanent identifiers in the store for a question
+// about a control — the exact cost that produced the scratch pad — so these
+// exist only while a flag says so, are never written down, and refuse to be
+// filed to.
+const placeholderTo = "placeholder:"
+
+// Placeholders are plausible future destinations, named after real projects so
+// the list sizes the way it actually would. They are not records and nothing
+// resolves them.
+var placeholders = []string{
+	"DevOfPie/LinkCtrl",
+	"DevOfPie/StrucGu",
+	"DevOfPie/TradeShop",
+	"DevOfPie/TradeShop-Support",
+	"DevOfPie/Cypht",
+	"IdeaWarehouse",
+	"LinkCtrl",
+	"StrucGu",
+	"TradeShop",
+	"whippy-laptop",
 }
 
 // scratchTo is the destination that files nothing.
@@ -135,10 +165,13 @@ type page struct {
 	// Groups are the destinations, gathered by kind. The owner asked why
 	// "DevOfPie/Mustur" and "Mustur" both appear: they are a repository and the
 	// project that contains it, which the flat row gave no way to tell.
-	Groups      []destGroup
-	Cutoff      string
-	Project     string
-	ShowAccount bool
+	Groups []destGroup
+	// Placeholders pad the list so its shape can be judged before there is
+	// anything real to put in it. Empty unless the server was asked for them.
+	Placeholders []string
+	Cutoff       string
+	Project      string
+	ShowAccount  bool
 	// ShowSessions renders the Sessions tab. Off unless the server is actually
 	// serving that surface: a tab that goes nowhere is an unbuilt capability
 	// described as existing, which is what MUS-D-0041's bar exists to avoid.
@@ -192,6 +225,12 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	} else {
 		p.Destinations = choices
 		p.Groups = grouped(choices)
+		if n := in.Placeholders; n > 0 {
+			if n > len(placeholders) {
+				n = len(placeholders)
+			}
+			p.Placeholders = placeholders[:n]
+		}
 	}
 	recent, err := in.recent(r.Context())
 	if err != nil {
@@ -243,6 +282,14 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// Scratch: filed beside the records rather than among them. It takes no
 	// identifier and never enters the log, which is the whole point — testing
 	// the box twice cost two permanent identifiers in the idea warehouse.
+	if strings.HasPrefix(r.PostFormValue("to"), placeholderTo) {
+		render(w, page{
+			Error:   "that destination is a placeholder for sizing the list, not somewhere a jot can go",
+			Project: in.Project, Jot: text,
+			ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+		})
+		return
+	}
 	if r.PostFormValue("to") == scratchTo {
 		sc, err := in.Store.Scratched(r.Context(), text, in.actor(r))
 		if err != nil {
@@ -516,6 +563,9 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
       <option value="" selected>Route it for me</option>
       {{range .Groups}}<optgroup label="{{.Label}}">
         {{range .Items}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+      </optgroup>{{end}}
+      {{if .Placeholders}}<optgroup label="Placeholders &mdash; not real, for sizing this list">
+        {{range .Placeholders}}<option value="placeholder:{{.}}">{{.}}</option>{{end}}
       </optgroup>{{end}}
       <option value="scratch">Scratch &mdash; not kept, not counted</option>
     </select>
