@@ -684,3 +684,28 @@ func between(s, open, close string) string {
 	}
 	return rest[:j]
 }
+
+// The page and the script beside it have to agree, so the page is never kept.
+//
+// This is the whole of MUS-F-0041. The script is revalidated on every load and
+// the page was not, so a deploy could leave a reader holding markup from before
+// it beside a script from after it — which is exactly how sub-agent rows became
+// un-openable: rows drawn by the old markup carry no identifier, and the
+// delegated handler looking for one silently finds nothing.
+//
+// no-store, not no-cache, because it also keeps the page out of the
+// back/forward cache. bfcache restores a whole live document, script state and
+// all, and a phone returning to a backgrounded tab is the common way to meet it.
+func TestTheSessionPageIsNeverCached(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	for _, path := range []string{"/sessions", "/sessions/Mustur"} {
+		res, err := srv.Client().Get(srv.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if got := res.Header.Get("Cache-Control"); !strings.Contains(got, "no-store") {
+			t.Errorf("%s says Cache-Control: %q; a cached page outlives the script it agrees with", path, got)
+		}
+	}
+}

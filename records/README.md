@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 56 | [questions.md](questions.md) |
+| question | 57 | [questions.md](questions.md) |
 | decision | 122 | [decisions.md](decisions.md) |
-| finding | 42 | [findings.md](findings.md) |
+| finding | 45 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -112,6 +112,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0054](questions.md#mus-q-0054) | question | Milestone 6's records surface was built inside 5b |
 | [MUS-Q-0055](questions.md#mus-q-0055) | question | Your answer said a token has its own lifetime; I built it without one |
 | [MUS-Q-0056](questions.md#mus-q-0056) | question | Where a sub-agent's output is read once the session only identifies it |
+| [MUS-Q-0057](questions.md#mus-q-0057) | question | How the sub-agent drawer opens, what its badge counts, and where output is read |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -273,6 +274,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0037](findings.md#mus-f-0037) | finding | A stored photo kept the metadata its camera wrote into it |
 | [MUS-F-0038](findings.md#mus-f-0038) | finding | The session view printed a sub-agent's whole final message where its name belonged |
 | [MUS-F-0039](findings.md#mus-f-0039) | finding | Searching the destination list costs either the no-script promise or the name in the box |
+| [MUS-F-0040](findings.md#mus-f-0040) | finding | Can't move from the account page to the session screen |
+| [MUS-F-0041](findings.md#mus-f-0041) | finding | The session page was the only surface that let itself be cached, so its markup could outlive its script |
+| [MUS-F-0042](findings.md#mus-f-0042) | finding | The Session quiet timer only counts since the tab was opened not since the session was idle |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

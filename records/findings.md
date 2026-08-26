@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-42 record(s), by identifier.
+45 record(s), by identifier.
 
 ## The queue
 
@@ -52,6 +52,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
 | [MUS-F-0038](#mus-f-0038) | The session view printed a sub-agent's whole final message where its name belonged | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. | fixed |
 | [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
+| [MUS-F-0040](#mus-f-0040) | Can't move from the account page to the session screen |  | unreviewed |
+| [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
+| [MUS-F-0042](#mus-f-0042) | The Session quiet timer only counts since the tab was opened not since the session was idle |  | unreviewed |
 
 ---
 
@@ -800,3 +803,63 @@ The owner asked for search if it were an easy add. It is not, and the reason is 
 | Where | internal/web/intake.go |
 | Evidence | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. |
 | Status | open |
+
+---
+
+## MUS-F-0040
+
+**Can't move from the account page to the session screen**
+
+finding · 2026-08-26
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Can't move from the account page to the session screen
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0041
+
+**The session page was the only surface that let itself be cached, so its markup could outlive its script**
+
+finding · 2026-08-26
+
+broke: [MUS-F-0038](#mus-f-0038)
+
+Reported by the owner: clicking a sub-agent row on the deployed session view opened nothing, hours after MUS-F-0038 shipped the sheet that a row is supposed to open.
+
+The session view was the only surface in this binary that did not send Cache-Control on its page. Intake, compose, account, sign-in and records all send no-store; this one sent nothing at all, and the script beside it sends no-cache and is therefore revalidated on every load. So the two halves of a page that have to agree with each other were delivered under different rules, and a deploy could leave a reader holding markup from before it next to a script from after it. Rows drawn by the old markup carry no identifier attribute; the delegated handler looks for one, finds nothing, and does nothing — silently, which is why it presents as a dead control rather than an error.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. |
+| Status | fixed |
+
+---
+
+## MUS-F-0042
+
+**The Session quiet timer only counts since the tab was opened not since the session was idle**
+
+finding · 2026-08-26
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The Session quiet timer only counts since the tab was opened not since the session was idle
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |

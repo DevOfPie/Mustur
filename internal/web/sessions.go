@@ -270,6 +270,21 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 	// Set here rather than at the call sites: a page built without it renders
 	// a header missing its only route to the account surface.
 	p.ShowAccount = s.ShowAccount
+	// Never cached, which every other surface here already says of itself and
+	// this one did not.
+	//
+	// This page is markup and a script that has to agree with it. The script
+	// is revalidated on every load; the page was not, so a deploy could leave
+	// a reader holding yesterday's markup beside today's script. That is not
+	// theoretical — it is how sub-agent rows came to be un-openable after
+	// MUS-F-0038 shipped: rows drawn before the change carry no identifier,
+	// and the delegated handler looking for one finds nothing to open
+	// (MUS-F-0041).
+	//
+	// no-store rather than no-cache because it also keeps the page out of the
+	// back/forward cache, which restores a whole live document — script state
+	// and all — from before the deploy.
+	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := sessionTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

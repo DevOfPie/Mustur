@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-56 record(s), by identifier.
+57 record(s), by identifier.
 
 ---
 
@@ -1274,3 +1274,22 @@ question · 2026-08-26
 | Answered | 2026-08-26 11:56 |
 | Delivered | not delivered: the question names no session |
 | Surfaced | 2026-08-26 11:57 |
+
+---
+
+## MUS-Q-0057
+
+**How the sub-agent drawer opens, what its badge counts, and where output is read**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0038 |
+| Option | Opens over, everywhere :: one behaviour, nothing reflows, cannot push the composer anywhere :: The drawer is the same object on a phone and a laptop and the layout underneath never moves. The composer is placed by --shell-dock-left and --shell-dock-width, the coupling behind two defects on this surface already; an overlay never touches it. What it costs is watching the terminal and the list at the same time. Recommended |
+| Option | Pushes on a laptop, opens over on a phone :: you can watch both at once; the dock has to narrow in step :: The reason to want a sidebar rather than a sheet is seeing the terminal beside the list. A phone cannot do it — a 280px drawer leaves about 110px of terminal at 390px — so one control ends up with two behaviours, and on the wide screen the composer must narrow with the drawer or run under it. |
+| Option | Badge counts running, falling back to the total :: never blank while there is something to open :: Counting only active sub-agents goes blank the moment they all finish, which is exactly when their reports are worth reading, and the drawer is shut so nothing else says they exist. Accent while any run, then a quiet count of how many are readable. Recommended |
+| Option | Output read inside the drawer, retiring the sheet :: one surface for sub-agents instead of two :: The sheet built yesterday would go. One place, one way back. It costs width — on a phone the drawer is about 320px where the sheet had the full 390px — and it throws away something measured and working. Keeping both means two layers over the terminal and Escape having to decide which it means. Recommended |
+| Asked by | whippy |
+| Surfaced | 2026-08-26 21:11 |
