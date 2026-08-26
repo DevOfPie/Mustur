@@ -48,7 +48,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0033](#mus-f-0033) | A long field value made the records page wider than the phone, and the tab bar went with it | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. | fixed |
 | [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
 | [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
-| [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself does not overflow. | open |
+| [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. | fixed |
 | [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
 
 ---
@@ -731,13 +731,15 @@ finding · 2026-08-26
 
 seen in: [IDW-F-0002](#idw-f-0002)
 
-Seen in the owner's own screenshot: the destination chips are cut off mid-row, so 'Idea inbox' is not visible. Measured on the same page — 741px of chips in a 640px row, so the last one is always off the edge and reaching it needs a horizontal swipe with nothing on screen suggesting there is more. It is the same at 1366, 1600 and 1920px, because the row is capped at the reading column rather than the window: at 1920 there is over a thousand pixels of empty space beside a row that still scrolls. The row was built to scroll deliberately — the comment beside it says one line that scrolls, never a block that wraps, because a clipped repository name is a wrong destination picked by accident. The implementation now produces the thing that comment exists to prevent: a destination nobody can see is a destination nobody picks, and the jot that revealed this went to the very chip that was hidden. Not fixed here. Whether the row wraps, widens past the reading column on a big screen, or grows an affordance saying there is more, is a change to a decision that was taken on purpose, so it goes to the owner rather than being reversed quietly.
+fixed by: [MUS-D-0121](decisions.md#mus-d-0121)
+
+Seen in the owner's own screenshot: the destination chips are cut off mid-row, so 'Idea inbox' is not visible. Measured on the same page — 741px of chips in a 640px row, so the last one is always off the edge and reaching it needs a horizontal swipe with nothing on screen suggesting there is more. It is the same at 1366, 1600 and 1920px, because the row is capped at the reading column rather than the window: at 1920 there is over a thousand pixels of empty space beside a row that still scrolls. The row was built to scroll deliberately — the comment beside it says one line that scrolls, never a block that wraps, because a clipped repository name is a wrong destination picked by accident. The implementation now produces the thing that comment exists to prevent: a destination nobody can see is a destination nobody picks, and the jot that revealed this went to the very chip that was hidden.
 
 | Field | Value |
 | --- | --- |
 | Where | internal/web/intake.go |
-| Evidence | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself does not overflow. |
-| Status | open |
+| Evidence | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. |
+| Status | fixed |
 
 ---
 

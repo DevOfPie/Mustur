@@ -432,3 +432,56 @@ func TestFiledIdentifiersLinkToTheirRecord(t *testing.T) {
 		t.Errorf("the recent list has %d linked identifiers, want at least 1", n)
 	}
 }
+
+// Destinations are a list, grouped by what kind of thing each one is.
+//
+// The owner asked why "DevOfPie/Mustur" and "Mustur" both appeared and said the
+// pair was confusing on its own. They are a repository and the project that
+// contains it; a flat row of chips gave no way to tell, and the row had also
+// grown past its own width and was hiding its last choice (MUS-F-0036).
+func TestDestinationsAreGroupedByKind(t *testing.T) {
+	srv, _ := serve(t)
+	defer srv.Close()
+
+	res, err := srv.Client().Get(srv.URL + "/intake")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := io.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	page := string(body)
+
+	// One control, no row of chips to run off the edge.
+	if !strings.Contains(page, `<select name="to">`) {
+		t.Error("the destinations are not a list")
+	}
+	if strings.Contains(page, `class="dests"`) {
+		t.Error("the sideways-scrolling row is still there")
+	}
+	// The pair the owner asked about, each under a heading that tells them
+	// apart rather than sitting side by side unlabelled.
+	for _, want := range []string{
+		`<optgroup label="Projects">`,
+		`<optgroup label="Repositories">`,
+	} {
+		if !strings.Contains(page, want) {
+			t.Errorf("no %s", want)
+		}
+	}
+	project := strings.Index(page, `<optgroup label="Projects">`)
+	repo := strings.Index(page, `<optgroup label="Repositories">`)
+	if project < 0 || repo < 0 || project > repo {
+		t.Error("projects should come first: a jot belongs to one, and a repository sits inside it")
+	}
+	// Routing itself is unchanged, including the two that are not records.
+	for _, want := range []string{
+		`<option value="" selected>`, `value="scratch"`,
+	} {
+		if !strings.Contains(page, want) {
+			t.Errorf("no %s; the default and the scratch pad must survive the change", want)
+		}
+	}
+}

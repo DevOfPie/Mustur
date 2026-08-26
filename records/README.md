@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 55 | [questions.md](questions.md) |
-| decision | 120 | [decisions.md](decisions.md) |
+| decision | 121 | [decisions.md](decisions.md) |
 | finding | 40 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -231,6 +231,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0118](decisions.md#mus-d-0118) | decision | The tab bar pins on a phone and becomes a left rail on a wide screen |
 | [MUS-D-0119](decisions.md#mus-d-0119) | decision | A jot may carry a picture, and the description travels rather than the picture |
 | [MUS-D-0120](decisions.md#mus-d-0120) | decision | A scratch filing is not a record, so it costs no identifier |
+| [MUS-D-0121](decisions.md#mus-d-0121) | decision | Destinations are a grouped list, and the kind is what tells two of them apart |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

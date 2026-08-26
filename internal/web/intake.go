@@ -87,6 +87,40 @@ type destination struct {
 	Kind string
 }
 
+// A destGroup is one kind of destination, with a heading a reader can use to
+// tell two similarly-named things apart.
+type destGroup struct {
+	Label string
+	Items []destination
+}
+
+// grouped orders the destinations by kind, projects first.
+//
+// A project is what a jot usually belongs to; a repository is a tree inside one
+// and a machine is where that tree sits. Presented flat they read as four equal
+// choices, two of which are the same thing at different altitudes — which is
+// exactly what the owner asked about.
+func grouped(all []destination) []destGroup {
+	order := []struct{ kind, label string }{
+		{"project", "Projects"},
+		{"repository", "Repositories"},
+		{"machine", "Machines"},
+	}
+	var out []destGroup
+	for _, o := range order {
+		g := destGroup{Label: o.label}
+		for _, d := range all {
+			if d.Kind == o.kind {
+				g.Items = append(g.Items, d)
+			}
+		}
+		if len(g.Items) > 0 {
+			out = append(out, g)
+		}
+	}
+	return out
+}
+
 type page struct {
 	Jot          string // What was typed, when it has to come back.
 	Warn         string
@@ -97,7 +131,11 @@ type page struct {
 	Error        string
 	Recent       []recentJot
 	// Scratch filings, which are not records and have no identifier.
-	Scratch     []store.Scratch
+	Scratch []store.Scratch
+	// Groups are the destinations, gathered by kind. The owner asked why
+	// "DevOfPie/Mustur" and "Mustur" both appear: they are a repository and the
+	// project that contains it, which the flat row gave no way to tell.
+	Groups      []destGroup
 	Cutoff      string
 	Project     string
 	ShowAccount bool
@@ -153,6 +191,7 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		p.Error = err.Error()
 	} else {
 		p.Destinations = choices
+		p.Groups = grouped(choices)
 	}
 	recent, err := in.recent(r.Context())
 	if err != nil {
@@ -428,21 +467,23 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .rec:hover, .rec:focus-visible { border-bottom-color: var(--accent, currentColor); }
   li .to { opacity: .7; font-size: .85em; display: block; }
   .none { opacity: .6; font-size: .9em; margin-top: 1.5rem; }
-  /* One line that scrolls, never a block that wraps. Each choice sizes to its
-     own text: a clipped repository name is a wrong destination picked by
-     accident. */
-  .dests { display: flex; gap: .4rem; margin-top: .6rem; overflow-x: auto;
-           white-space: nowrap; padding-bottom: .25rem; }
-  /* Still one line that scrolls. What changes is that it may use the width
-     there is: the row was capped at the reading column, so at 1920px it hid
-     its last choice behind a swipe with a thousand pixels of empty space
-     beside it (MUS-F-0036). Whether it should wrap instead is a decision taken
-     deliberately and is not reversed here. */
-  @media (min-width: 60rem) {
-    .dests { width: max-content; max-width: 40rem; }
-  }
-  .dests label { flex: 0 0 auto; border: 1px solid var(--edge);
-                 border-radius: 999px; padding: .35rem .7rem; font-size: .9em; }
+  /* A list rather than a row of chips.
+
+     The chips were one line that scrolled sideways, on the reasoning that a
+     clipped repository name is a wrong destination picked by accident. They
+     produced exactly that: 741px of choices in a 640px row, so the last one —
+     the idea inbox — sat off the edge with nothing saying it was there
+     (MUS-F-0036). Adding scratch made a sixth.
+
+     A native select has no hidden end, groups its options by kind so two
+     similarly-named destinations can be told apart, becomes the system picker
+     on a phone, and takes type-ahead on a desktop for free. It is still a form
+     control, so this surface still works with script blocked. */
+  .to { display: flex; flex-direction: column; gap: .25rem; margin-top: .6rem; }
+  .to span { font-size: .85em; opacity: .6; }
+  .to select { font: inherit; font-size: .95em; padding: .5rem;
+               border: 1px solid var(--edge); border-radius: .5rem;
+               background: transparent; color: inherit; width: 100%; }
   /* The bar MUS-D-0041 chose, carrying the surfaces that exist. Without it the
      only route from here to the queue was the banner, which renders when
      something is open — so the queue was reachable from intake exactly when it
@@ -470,11 +511,15 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
     <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
     <small>Held privately. The record carries what an agent reads in it, never the picture.</small>
   </label>
-  {{if .Destinations}}<div class="dests">
-    <label><input type="radio" name="to" value="" checked> Route it for me</label>
-    {{range .Destinations}}<label><input type="radio" name="to" value="{{.ID}}"> {{.Name}}</label>{{end}}
-    <label><input type="radio" name="to" value="scratch"> Scratch</label>
-  </div>{{end}}
+  <label class="to"><span>Where</span>
+    <select name="to">
+      <option value="" selected>Route it for me</option>
+      {{range .Groups}}<optgroup label="{{.Label}}">
+        {{range .Items}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+      </optgroup>{{end}}
+      <option value="scratch">Scratch &mdash; not kept, not counted</option>
+    </select>
+  </label>
   <button type="submit">File it</button>
 </form>
 {{if .Scratch}}<ul class="scratch">

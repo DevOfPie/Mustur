@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-120 record(s), by identifier.
+121 record(s), by identifier.
 
 ## Index
 
@@ -132,6 +132,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0118](#mus-d-0118) | The tab bar pins on a phone and becomes a left rail on a wide screen | 2026-08-26 |
 | [MUS-D-0119](#mus-d-0119) | A jot may carry a picture, and the description travels rather than the picture | 2026-08-26 |
 | [MUS-D-0120](#mus-d-0120) | A scratch filing is not a record, so it costs no identifier | 2026-08-26 |
+| [MUS-D-0121](#mus-d-0121) | Destinations are a grouped list, and the kind is what tells two of them apart | 2026-08-26 |
 
 ---
 
@@ -1921,3 +1922,17 @@ and: [IDW-F-0003](findings.md#idw-f-0003)
 holds: [MUS-D-0024](#mus-d-0024)
 
 The owner tested the picture upload twice and it left IDW-F-0002 and IDW-F-0003 in the idea warehouse permanently, both of which say 'test' in their own titles. An identifier here never comes back and the log only ever grows, so the cost of checking that a box works was two entries in the records forever. That is the whole complaint, and the owner put it plainly: a test filing should not advance a counter. The obvious shape was a record with an expiry and it is the wrong one. The log is insert-only and the exported tree is the surface a reader checks without running the binary (MUS-D-0024). A record that later vanishes puts an exception under both, and an exception is what the next one argues from. So a scratch filing is not a record. It takes no identifier, never enters the log, never reaches the export, is never counted and cannot be cited — its id is deliberately unlike an identifier so that nothing can try. It carries a picture like any other jot, and the sweep takes the picture with the note rather than leaving it unreachable. It goes when the serving process starts, which is the owner's own 'or until a restart', and is swept at a day old while the process runs. The sweep first lived in store.Open, which meant every `mustur list` and `mustur get` wiped the pad — the first end-to-end run lost a filing to the very command that went looking for it. A serving process starting is the event that was meant.
+
+---
+
+## MUS-D-0121
+
+**Destinations are a grouped list, and the kind is what tells two of them apart**
+
+decision · 2026-08-26
+
+asked by: [MUS-F-0036](findings.md#mus-f-0036)
+
+holds: [MUS-D-0041](#mus-d-0041)
+
+The owner asked why 'DevOfPie/Mustur' and 'Mustur' both appear as destinations and said the pair is confusing on its own. They are two different kinds of routing record: MUS-R-0001 is the repository — a remote, a checkout path, a contract file — and MUS-P-0001 is the project that contains it, which carries the MUS prefix. Filed to either, a jot comes out as MUS-F-####; only the cited destination differs, because a repository record names no prefix and falls back to the store's own. So today they are nearly the same choice, and the row gave no way to tell why there were two. Neither is removed. The distinction earns its keep the day a project has two repositories, or a jot is about the checkout rather than the work, and deleting a destination to tidy a control would be solving the wrong half. What was missing was the kind, so the kind is now the heading: Projects, then Repositories, then Machines, projects first because a jot usually belongs to one. The control itself is a list rather than a row of chips, which the owner asked to try. The chips were one line that scrolled sideways, on the reasoning that a clipped name is a wrong destination picked by accident, and they produced exactly that — MUS-F-0036, six choices in a row that could show four. A native select has no hidden end, becomes the system picker on a phone, takes type-ahead on a desktop, and is still a form control, so this surface still works with script blocked. Searching the list is noted for later rather than built: with six destinations a search box would be furniture.
