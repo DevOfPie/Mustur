@@ -39,6 +39,7 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -121,6 +122,26 @@ func (a *Auth) relying() (*webauthn.WebAuthn, error) {
 			UserVerification: protocol.VerificationPreferred,
 		},
 	})
+}
+
+// refused writes to the log what the browser is deliberately not told.
+//
+// The reticence on the wire is right: a page that distinguished "no such
+// credential" from "bad signature" would be an oracle. The reticence in the log
+// was not a decision, it was an omission — and it cost a diagnosis. When the
+// owner's own passkey was refused, the server had recorded nothing at all, and
+// the reason had to be reconstructed from a ceremony table and a library's
+// source (MUS-F-0029).
+//
+// go-webauthn's errors carry the check that failed in their Details, which is
+// the sentence somebody debugging actually wants.
+func refused(r *http.Request, what string, err error) {
+	var detailed *protocol.Error
+	if errors.As(err, &detailed) && detailed.Details != "" {
+		log.Printf("auth: %s refused: %s (%s)", what, detailed.Details, detailed.DevInfo)
+		return
+	}
+	log.Printf("auth: %s refused: %v", what, err)
 }
 
 // A person is what the library needs to know about whoever is registering or
@@ -279,6 +300,7 @@ func (a *Auth) addFinish(w http.ResponseWriter, r *http.Request) {
 	}
 	cred, err := rp.FinishRegistration(&person{id: []byte(acct.ID), email: acct.Email}, session, r)
 	if err != nil {
+		refused(r, "adding a passkey", err)
 		http.Error(w, "that passkey could not be verified", http.StatusForbidden)
 		return
 	}
@@ -287,6 +309,10 @@ func (a *Auth) addFinish(w http.ResponseWriter, r *http.Request) {
 		PublicKey: cred.PublicKey,
 		SignCount: cred.Authenticator.SignCount,
 		Label:     labelFor(r),
+		// Stored, because sign-in has to hand them back. See MUS-F-0029: not
+		// storing these let a synced passkey register and never sign in.
+		BackupEligible: cred.Flags.BackupEligible,
+		BackupState:    cred.Flags.BackupState,
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -390,7 +416,8 @@ func (a *Auth) registerFinish(w http.ResponseWriter, r *http.Request) {
 	cred, err := rp.FinishRegistration(who, session, r)
 	if err != nil {
 		// The library's message names the check that failed, which is useful in
-		// a log and not to a browser.
+		// a log and not to a browser. It goes to both places, separately.
+		refused(r, "registering from an invitation", err)
 		http.Error(w, "that passkey could not be verified", http.StatusForbidden)
 		return
 	}
@@ -407,6 +434,10 @@ func (a *Auth) registerFinish(w http.ResponseWriter, r *http.Request) {
 		PublicKey: cred.PublicKey,
 		SignCount: cred.Authenticator.SignCount,
 		Label:     labelFor(r),
+		// Stored, because sign-in has to hand them back. See MUS-F-0029: not
+		// storing these let a synced passkey register and never sign in.
+		BackupEligible: cred.Flags.BackupEligible,
+		BackupState:    cred.Flags.BackupState,
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -470,6 +501,7 @@ func (a *Auth) signinFinish(w http.ResponseWriter, r *http.Request) {
 
 	parsed, err := protocol.ParseCredentialRequestResponse(r)
 	if err != nil {
+		refused(r, "parsing a sign-in response", err)
 		http.Error(w, "that passkey was not recognised", http.StatusForbidden)
 		return
 	}
@@ -491,6 +523,17 @@ func (a *Auth) signinFinish(w http.ResponseWriter, r *http.Request) {
 			creds: []webauthn.Credential{{
 				ID:        stored.ID,
 				PublicKey: stored.PublicKey,
+				// The flags matter as much as the key. WebAuthn requires the
+				// relying party to notice if backup eligibility changed, so the
+				// library compares this against what the assertion carries — and
+				// a credential rebuilt without them is refused against every
+				// synced passkey there is (MUS-F-0029).
+				Flags: webauthn.CredentialFlags{
+					UserPresent:    true,
+					UserVerified:   true,
+					BackupEligible: stored.BackupEligible,
+					BackupState:    stored.BackupState,
+				},
 				Authenticator: webauthn.Authenticator{
 					SignCount: stored.SignCount,
 				},
@@ -498,6 +541,10 @@ func (a *Auth) signinFinish(w http.ResponseWriter, r *http.Request) {
 		}, nil
 	}, session, parsed)
 	if err != nil || signedIn.ID == "" {
+		if err == nil {
+			err = errors.New("the credential resolved to no account")
+		}
+		refused(r, "signing in", err)
 		http.Error(w, "that passkey was not recognised", http.StatusForbidden)
 		return
 	}
@@ -505,7 +552,7 @@ func (a *Auth) signinFinish(w http.ResponseWriter, r *http.Request) {
 	// The signature counter is the one anti-cloning signal WebAuthn offers, and
 	// many authenticators never move it. Recorded where it means something and
 	// not treated as an attack when it stays at zero.
-	_ = a.Accounts.UsedCredential(ctx, cred.ID, cred.Authenticator.SignCount)
+	_ = a.Accounts.UsedCredential(ctx, cred.ID, cred.Authenticator.SignCount, cred.Flags.BackupState)
 	a.signIn(w, r, signedIn.ID)
 	writeJSON(w, map[string]string{"ok": "1", "to": "/records"})
 }

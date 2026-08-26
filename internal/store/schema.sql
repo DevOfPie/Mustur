@@ -87,6 +87,22 @@ CREATE TABLE IF NOT EXISTS credential (
   account_id TEXT    NOT NULL REFERENCES account (id),
   public_key BLOB    NOT NULL,
   sign_count INTEGER NOT NULL DEFAULT 0,
+  -- The backup flags, which have to be stored or nobody with a synced passkey
+  -- can ever sign in.
+  --
+  -- WebAuthn requires the relying party to check that BE has not changed since
+  -- registration, and go-webauthn enforces it: a credential reconstructed with
+  -- BE unset, matched against an assertion carrying BE=1, is refused. Every
+  -- synced credential manager — Bitwarden, iCloud Keychain, Google Password
+  -- Manager, 1Password — sets BE=1, so not storing this made registration
+  -- succeed and sign-in fail for essentially every passkey a person would
+  -- actually use. Found by the owner, on a phone, at the only moment it could
+  -- have been (MUS-F-0029).
+  --
+  -- BE is immutable for the life of a credential; BS moves as the thing is
+  -- backed up or restored, and is updated on use rather than compared.
+  backup_eligible INTEGER NOT NULL DEFAULT 0,
+  backup_state    INTEGER NOT NULL DEFAULT 0,
   label      TEXT    NOT NULL,
   created    TEXT    NOT NULL,
   last_used  TEXT

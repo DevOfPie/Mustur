@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-29 record(s), by identifier.
+31 record(s), by identifier.
 
 ## The queue
 
@@ -39,6 +39,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
 | [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
 | [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
+| [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
+| [MUS-F-0030](#mus-f-0030) | A session being piped makes the service unkillable, and systemd's stop times out holding the port |  | open |
 
 ---
 
@@ -531,4 +533,40 @@ Revocation is enforced per request: ByToken reads the row rather than a cache, s
 | Field | Value |
 | --- | --- |
 | Where | internal/web/guard.go, internal/account/token.go |
+| Status | open |
+
+---
+
+## MUS-F-0029
+
+**No passkey from a password manager could ever sign in, because the backup flags were never stored**
+
+finding · 2026-08-26
+
+found in: [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020)
+
+and: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+The owner registered a passkey on a phone through Bitwarden, then tried to sign in from a laptop and was told the passkey was not recognised. Registration had worked: the account existed, with one credential, sixteen-byte id and a seventy-seven byte ES256 key. Sign-in could never have worked. WebAuthn asks the relying party to notice if a credential's backup-eligible flag changes between registration and use, and go-webauthn enforces it at login. Mustur stored no flags at all, so the credential it rebuilt to check the assertion claimed BE=0 while the assertion carried BE=1, and the library refused with 'Backup Eligible flag inconsistency detected during login validation'. That is not an edge case. Every synced credential manager sets BE=1 — Bitwarden, iCloud Keychain, Google Password Manager, 1Password — so every passkey a person would realistically use could be registered and then never used. Only a credential welded to hardware, which sets BE=0, would have worked, and only because zero happened to match the flag that was never written. It shipped through a three-reviewer pass because the virtual authenticator written for milestone 5b modelled only the hardware case. The double agreed with the bug, which is worse than having no double: the suite was evidence pointing the wrong way. The diagnosis was also harder than it needed to be. The server tells a browser nothing about why a passkey was refused, which is right and deliberate; it also told the operator nothing, which was an omission rather than a decision. The reason had to be reconstructed from an empty ceremony table and the library's source.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/store/schema.sql, internal/account/account.go, internal/web/auth.go, internal/web/authenticator_test.go |
+| Status | fixed |
+
+---
+
+## MUS-F-0030
+
+**A session being piped makes the service unkillable, and systemd's stop times out holding the port**
+
+finding · 2026-08-26
+
+found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
+
+Stopping the service to install a new binary left it in stop-sigkill for ten minutes and took the site down. The main thread was a zombie; one thread remained in uninterruptible sleep on anon_pipe_read, and because the process was never reaped the kernel kept the listening socket on 7777 — ss showed it LISTEN, owned by the service's cgroup, attributed to no process, answering nothing. The blocked read is the session surface's: tmux pipe-pane writes a live pane's output into a pipe that Mustur reads, and nothing closes that pipe on shutdown. A read on a pipe with no writer, in D state, does not answer SIGTERM and does not answer SIGKILL either. Turning the pipe off with `tmux pipe-pane -t <pane>` released it instantly, which is what confirms the cause. It needs one live piped pane to happen, so it only bites a deployment actually serving sessions — which is this one, since 2026-08-23. The fix is for the server to close its pipe readers on shutdown rather than leaving them to the kernel; recorded rather than built, because it wants a deliberate shutdown path and this was found in the middle of an unrelated repair.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session, internal/web/sessions.go, cmd/mustur/main.go |
 | Status | open |

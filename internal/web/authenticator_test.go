@@ -35,9 +35,30 @@ type authenticator struct {
 	// leave it at zero forever; this one moves it, because a counter that never
 	// moves would not exercise the server's handling of one that does.
 	count uint32
+	// synced makes this a credential a password manager holds and copies
+	// between devices — BE and BS set — rather than one welded to a piece of
+	// hardware.
+	//
+	// This is not a detail. Until MUS-F-0029 this file modelled only the
+	// hardware case, which set BE=0, which happened to agree with a server that
+	// stored no flag at all. The whole suite passed while every passkey a person
+	// would actually use — Bitwarden, iCloud Keychain, Google Password Manager,
+	// 1Password — could register and never sign in. A test double that agrees
+	// with the bug is worse than no double, because it is evidence pointing the
+	// wrong way.
+	synced bool
 }
 
+// newAuthenticator is a synced credential, because that is what almost every
+// passkey now is. newHardwareAuthenticator is the other kind.
 func newAuthenticator(t *testing.T) *authenticator {
+	t.Helper()
+	a := newHardwareAuthenticator(t)
+	a.synced = true
+	return a
+}
+
+func newHardwareAuthenticator(t *testing.T) *authenticator {
 	t.Helper()
 	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -176,6 +197,13 @@ func (a *authenticator) authData(rpID string, attested bool) []byte {
 	// that just asked somebody for a fingerprint, which is what the server asks
 	// for and what it must accept.
 	flags := byte(0x01 | 0x04)
+	if a.synced {
+		// Backup eligible, and backed up. A password manager's passkey says
+		// both, at registration and at every assertion after it — which is what
+		// the server has to store and hand back, or the library refuses the
+		// login as a flag inconsistency.
+		flags |= 0x08 | 0x10
+	}
 	if attested {
 		flags |= 0x40
 	}

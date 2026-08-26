@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-113 record(s), by identifier.
+116 record(s), by identifier.
 
 ## Index
 
@@ -125,6 +125,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0111](#mus-d-0111) | The guard lets a token past the tool call with no write check, and a test in another package holds that | 2026-08-25 |
 | [MUS-D-0112](#mus-d-0112) | A flag that changes nothing describes a credential that does not exist | 2026-08-25 |
 | [MUS-D-0113](#mus-d-0113) | A token's lifetime is optional and defaults to never | 2026-08-25 |
+| [MUS-D-0114](#mus-d-0114) | A test double that agrees with the bug is worse than no double | 2026-08-26 |
+| [MUS-D-0115](#mus-d-0115) | The browser is told nothing and the log is told everything | 2026-08-26 |
+| [MUS-D-0116](#mus-d-0116) | Columns are added to existing stores rather than assumed into them | 2026-08-26 |
 
 ---
 
@@ -1814,3 +1817,39 @@ corrects: [MUS-D-0110](#mus-d-0110)
 built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
 
 The owner's answer on MUS-Q-0051 said a token has 'its own lifetime and its own revocation'. The build had revocation and no lifetime, and the reasoning for that was written into decisions.md rather than put to the owner — which workflow.md names as a bug to report, not a conflict to resolve. A review found it, and it went back as MUS-Q-0055. The answer is the middle shape: --expires is optional and zero means never. An invitation expires because it is a link in transit and a session expires because a browser is borrowed; an agent token is configuration, and one that stops on a date nobody chose is an outage rather than a control. A lifetime is still worth having for a token minted for a single job or for somebody else's machine. A token therefore has two ways to stop, so the listing says which: revoked beats expired, because a revocation is a decision and an expiry is only a date arriving. ByToken tells a caller neither, for the same reason ErrNoInvite says nothing about why.
+
+---
+
+## MUS-D-0114
+
+**A test double that agrees with the bug is worse than no double**
+
+decision · 2026-08-26
+
+from: [MUS-F-0029](findings.md#mus-f-0029)
+
+MUS-F-0029 shipped past three reviewers and a mutation-checked suite. Nothing in the review was careless: the virtual authenticator was a correct client of the protocol, and every test it ran passed truthfully. It modelled a hardware key, whose backup-eligible flag is zero, and the server stored no flag, which also reads as zero. The two wrongs agreed, and agreement reads exactly like correctness. The lesson is not 'write more tests'. It is that a double is a claim about the world, and the claim here — that an authenticator looks like a YubiKey — was never examined, because it was made in passing while building something else. The authenticator now defaults to a synced credential, because that is what almost every passkey now is, and the hardware case is the named exception rather than the unexamined default. Both are tested, and dropping the stored flag fails the synced case while leaving the hardware one green — which is the shape of the original bug. The general rule this repository takes from it: when a double and the code under test share an assumption, the test proves the assumption is shared, not that it is right. The place to look is wherever the double was written by the same person, in the same sitting, as the thing it tests.
+
+---
+
+## MUS-D-0115
+
+**The browser is told nothing and the log is told everything**
+
+decision · 2026-08-26
+
+from: [MUS-F-0029](findings.md#mus-f-0029)
+
+A page that distinguished 'no such credential' from 'bad signature' would be an oracle for somebody probing, so every authentication failure gives a browser one sentence. That was a decision and it stands. Telling the operator nothing was not a decision. When the owner's passkey was refused there was no log line at all, and the cause had to be reconstructed from a ceremony table that happened to retain abandoned rows and from reading go-webauthn's source. The two audiences are different and the code had been treating them as one. Every refusal in the authentication path now logs the check that failed — go-webauthn carries it in the error's Details — while the browser keeps its single sentence. Reproduced against the bug it would have named: 'auth: signing in refused: Backup Eligible flag inconsistency detected during login validation'.
+
+---
+
+## MUS-D-0116
+
+**Columns are added to existing stores rather than assumed into them**
+
+decision · 2026-08-26
+
+from: [MUS-F-0029](findings.md#mus-f-0029)
+
+CREATE TABLE IF NOT EXISTS builds a missing table and says nothing about one that already exists with the wrong shape, so a column added to schema.sql after a store was created never appears in it. MUS-F-0029 needed two such columns, and the store that needed them was the owner's live one. store.Open now adds missing columns on open, from a list in the source. Deliberately the smallest thing that works: columns are added, never dropped or retyped, and each carries a default so existing rows stay valid. Anything a column cannot express — a table split, a value that must be recomputed — is a decision rather than a migration, and does not belong in a helper. The record tables are not in the list and are not expected to be. They are insert-only and their shape is the export's contract; changing one is a decision, not a migration.

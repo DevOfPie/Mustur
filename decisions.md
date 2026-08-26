@@ -141,6 +141,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A test that passed for the wrong reason, again](#a-test-that-passed-for-the-wrong-reason-again) | Twice in two milestones; mutation found both |
 | [A fourth difference between the mandate and what milestone 1 scored](#2026-08-25--a-fourth-difference-between-the-mandate-and-what-milestone-1-scored) | The entry has now been wrong about its own completeness twice |
 | [A token's lifetime, handed back to the owner](#2026-08-25--a-tokens-lifetime-handed-back-to-the-owner) | An answered decision overridden by the party who asked it |
+| [The owner found the bug the whole suite agreed with](#2026-08-26--the-owner-found-the-bug-the-whole-suite-agreed-with) | No synced passkey could sign in; the test double shared the mistake |
 
 ---
 
@@ -2254,3 +2255,74 @@ it, and the override was written down carefully enough to look like diligence.
 The tell was a heading that argued rather than recorded. When an entry here
 starts persuading, the thing it is persuading about probably belongs in a
 prompt.
+
+## 2026-08-26 — the owner found the bug the whole suite agreed with
+
+The owner registered a passkey on a phone, through Bitwarden, then tried to sign
+in from a laptop and was told the passkey was not recognised.
+
+Registration had worked — the account existed with one credential, a sixteen-byte
+id and a seventy-seven byte ES256 key. **Sign-in could never have worked**, for
+that credential or any other like it.
+
+### What was wrong
+
+WebAuthn asks a relying party to notice if a credential's backup-eligible flag
+changes between registration and use. `go-webauthn` enforces it at login.
+Mustur stored no flags at all, so the credential it rebuilt to check the
+assertion claimed `BE=0` against an assertion carrying `BE=1`, and the library
+refused: *Backup Eligible flag inconsistency detected during login validation*.
+
+Every synced credential manager sets `BE=1` — Bitwarden, iCloud Keychain,
+Google Password Manager, 1Password. So **every passkey a person would
+realistically use could be registered and then never used.** Only a credential
+welded to hardware would have worked, and only because its `BE=0` happened to
+match a flag that was never written.
+
+### Why three reviewers and a mutation-checked suite missed it
+
+The virtual authenticator built for milestone 5b modelled a hardware key. Its
+`BE=0` agreed with the server's missing flag, and agreement reads exactly like
+correctness. Nothing in the review was careless; the double was a correct client
+of the protocol and every test it ran passed truthfully.
+
+**A double is a claim about the world**, and this one — that an authenticator
+looks like a YubiKey — was never examined, because it was made in passing while
+building something else. It is now a synced credential by default, with the
+hardware case named as the exception, and both are tested. Dropping the stored
+flag fails the synced case and leaves the hardware one green, which is the shape
+of the original bug.
+
+The rule worth keeping: when a double and the code under test share an
+assumption, the test proves the assumption is *shared*, not that it is *right*.
+Look wherever the double was written by the same hand, in the same sitting, as
+the thing it tests.
+
+### And the diagnosis was harder than it needed to be
+
+A page that distinguished "no such credential" from "bad signature" would be an
+oracle, so a browser gets one sentence. That was a decision and it stands.
+
+Telling the *operator* nothing was not a decision, it was an omission. There was
+no log line at all, and the cause had to be reconstructed from a ceremony table
+that happened to retain abandoned rows and from reading the library's source.
+Two different audiences had been treated as one. Every refusal in the
+authentication path now logs the check that failed while the browser keeps its
+single sentence.
+
+### The store had to be migrated, which it had never needed before
+
+`CREATE TABLE IF NOT EXISTS` builds a missing table and says nothing about one
+that exists with the wrong shape. Two columns had to reach a store that already
+existed, and that store was the owner's live one. `store.Open` now adds missing
+columns from a list in the source — added, never dropped or retyped, each with a
+default. The record tables are not in that list and are not expected to be:
+their shape is the export's contract, and changing one is a decision rather than
+a migration.
+
+### What it cost the owner
+
+One passkey, deleted rather than guessed at. The stored credential carried no
+flags, so no honest value could be backfilled for a security-relevant field —
+and leaving it in place would have made the authenticator refuse to create a
+replacement, since a registration excludes credentials the site already holds.
