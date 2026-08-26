@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 55 | [questions.md](questions.md) |
 | decision | 116 | [decisions.md](decisions.md) |
-| finding | 31 | [findings.md](findings.md) |
+| finding | 32 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -255,6 +255,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0028](findings.md#mus-f-0028) | finding | Revoking a token does not close a stream already open under it |
 | [MUS-F-0029](findings.md#mus-f-0029) | finding | No passkey from a password manager could ever sign in, because the backup flags were never stored |
 | [MUS-F-0030](findings.md#mus-f-0030) | finding | A session being piped makes the service unkillable, and systemd's stop times out holding the port |
+| [MUS-F-0031](findings.md#mus-f-0031) | finding | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

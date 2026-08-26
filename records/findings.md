@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-31 record(s), by identifier.
+32 record(s), by identifier.
 
 ## The queue
 
@@ -41,6 +41,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
 | [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
 | [MUS-F-0030](#mus-f-0030) | A session being piped makes the service unkillable, and systemd's stop times out holding the port |  | open |
+| [MUS-F-0031](#mus-f-0031) | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |  | open |
 
 ---
 
@@ -569,4 +570,23 @@ Stopping the service to install a new binary left it in stop-sigkill for ten min
 | Field | Value |
 | --- | --- |
 | Where | internal/session, internal/web/sessions.go, cmd/mustur/main.go |
+| Status | open |
+
+---
+
+## MUS-F-0031
+
+**The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted**
+
+finding · 2026-08-26
+
+found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
+
+and: [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018)
+
+The owner watched a session from a laptop and reported it piping out unformatted text. Two separate causes, and they disagree with each other. The seed and the live stream are captured differently. The scrollback comes from `tmux capture-pane -p -J` with no `-e`, which strips every escape sequence, so it arrives as clean plain text. The live bytes come from `tmux pipe-pane`, which carries the pane raw. So the page reads properly until the first live byte and degrades from there — the same session rendering two ways depending on when you looked. What the raw stream carries, measured on the pane Mustur is piping: SGR colour (ESC[38;5;37m, ESC[39m), underline (ESC[4m), and OSC 8 hyperlinks (ESC]8;id=uzlkec;https://github.com/... ESC backslash). The client does `out.textContent += s` (internal/web/assets/session.js:41), so none of it is interpreted. The ESC itself is an invisible control character, which leaves the bracket codes and the hyperlink payload on screen as literal text. Underneath that is a larger mismatch. The pane runs an agent CLI, which is a full-screen TUI that repaints by moving the cursor. Appending its byte stream linearly stacks partial frames on top of each other; no amount of escape-stripping makes a repainting application read as a transcript. Stripping the codes would at least make the live stream match the seed, which is the cheap half of a fix and not the whole of one. Not urgent and not fixed here: the owner asked for it to be noted. The choice behind it — strip to match the seed, interpret the escapes in the browser, or render frames rather than a log — is a design decision rather than a repair.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/stream.go, internal/web/assets/session.js |
 | Status | open |
