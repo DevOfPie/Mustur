@@ -732,3 +732,85 @@ func TestTheSessionPageIsNeverCached(t *testing.T) {
 		}
 	}
 }
+
+// The picker's button appears only with scripting off, and the browser is what
+// decides that.
+//
+// A GET form cannot build a path segment, so the select posts a query and
+// /sessions turns it into a path; with script the change event navigates first
+// and the button is not wanted, without it the button is the only way to
+// submit. The first version drew it always and hid it from the script, and that
+// was the defect: a control the server draws and the script removes can fail
+// visible, and it did — on a stale page carrying new markup beside old script,
+// at full size under the dropdown, having never been in the wireframes.
+//
+// noscript has neither half of that. It is resolved at parse time from whether
+// scripting is enabled, so a page whose script is stale, blocked or missing
+// still gets exactly the control it needs.
+func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	s := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	if !strings.Contains(body, `</select><noscript><button type="submit" class="go">Go</button></noscript>`) {
+		t.Error("the button is not inside a noscript beside the select")
+	}
+	// Not hidden, not conditional on anything the server knows: those are the
+	// two shapes that produced the defect.
+	if strings.Contains(body, `class="go" hidden`) || strings.Contains(body, `id="go"`) {
+		t.Error("the button is shipped hidden or given a handle for the script to grab")
+	}
+
+	// And the script does not reach for it. If the server renders it, the
+	// server — or here, the browser's own noscript — decides whether it is
+	// there.
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, banned := range []string{`getElementById("go")`, "go.hidden", `querySelector(".go")`} {
+		if strings.Contains(string(js), banned) {
+			t.Errorf("the script still touches the button: %q", banned)
+		}
+	}
+
+	// The picker form has to undo the bare form rule written for the composer.
+	//
+	// That rule is a bare element selector — form { display: flex;
+	// flex-direction: column } with its own padding — so it reshapes every form
+	// added after it. This one inherited column and came out stacked and
+	// centred inside 69px of nothing, which is precisely the giant button under
+	// the dropdown that was reported. Overriding display alone is not enough,
+	// because .pick never mentioned direction or padding at all.
+	at := strings.Index(body, ".pick { display: flex;")
+	if at < 0 {
+		t.Fatal("no .pick rule")
+	}
+	rule := body[at : at+strings.Index(body[at:], "}")]
+	for _, want := range []string{"flex-direction: row", "padding: 0"} {
+		if !strings.Contains(rule, want) {
+			t.Errorf("the picker row does not reset %q, so the composer's form rule reshapes it:\n%s", want, rule)
+		}
+	}
+	// And the noscript wrapper must not be the flex item, or the button is laid
+	// out under the select rather than beside it.
+	if !strings.Contains(body, ".pick noscript { display: contents; }") {
+		t.Error("the noscript is the flex item, so the button lands below the select")
+	}
+
+	// The query it submits has to land on the session it names, or the button
+	// is decoration for the one reader who needs it.
+	res, err := srv.Client().Get(srv.URL + "/sessions?p=Mustur")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.Request.URL.Path != "/sessions/Mustur" {
+		t.Errorf("?p= landed on %q, not the session it names", res.Request.URL.Path)
+	}
+}

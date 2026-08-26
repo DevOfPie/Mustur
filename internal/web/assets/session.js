@@ -288,16 +288,17 @@
     });
   }
 
-  // The picker navigates on change, so the Go button beside it is only ever
-  // needed with script off — which this surface cannot survive anyway. It is
-  // there because the strip is the one part of the page that can.
+  // The picker navigates on change. Nothing here touches the submit button
+  // beside it, because there is none to touch: it lives in a noscript element,
+  // so if this line is running the browser has already left it out. The first
+  // version drew it and hid it from here, and a control the server draws and
+  // the script removes is one that can fail visible — which is how the owner
+  // met it, on a stale page holding new markup beside old script.
   var picker = document.getElementById("pick");
   if (picker) {
     picker.addEventListener("change", function () {
       if (picker.value) location.href = "/sessions/" + encodeURIComponent(picker.value);
     });
-    var go = document.getElementById("go");
-    if (go) go.hidden = true;
   }
 
   function connect() {

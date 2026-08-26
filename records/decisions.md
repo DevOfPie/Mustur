@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-123 record(s), by identifier.
+124 record(s), by identifier.
 
 ## Index
 
@@ -135,6 +135,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0121](#mus-d-0121) | Destinations are a grouped list, and the kind is what tells two of them apart | 2026-08-26 |
 | [MUS-D-0122](#mus-d-0122) | A sub-agent's output is read in a sheet over the session, not in the list and not on its own page | 2026-08-26 |
 | [MUS-D-0123](#mus-d-0123) | The sub-agent list lives in a drawer that is shut by default, and the session strip is a dropdown | 2026-08-26 |
+| [MUS-D-0124](#mus-d-0124) | A control whose presence depends on scripting is decided by the browser, not by our script | 2026-08-26 |
 
 ---
 
@@ -1989,3 +1990,23 @@ The badge counts what is running and falls back to the total, because a count of
 | --- | --- |
 | Where | internal/web/sessions.go, internal/web/assets/session.js |
 | Evidence | Measured against the owner's own Demo session log served under four sessions, in Chrome and Firefox at 390x844, 1000x800 and 1366x768. Shut on arrival with the old box gone entirely, the terminal holds 618-654px. At 1366 the drawer opens into space that was already empty: the composer stays 224..960 and the panel sits 1094..1366, so nothing moves. At 1000, where that space runs out, the reading column narrows from 736 to 488 and the composer narrows with it — dock 224..712 against a panel at 728, no overlap. On a phone it overlays with the veil painted. Crossing the breakpoint with it open behaves in both directions, and shutting it restores dock 224..960 and a 736px body. The ring: a conic gradient with two bright stops at 40deg and 220deg — exactly 180 apart, same accent colour, transparent stops either side of each so there is no hard edge — animated 'turn 3s linear infinite' on the rotate property, with a two-layer halo and nothing clipping it. Under prefers-reduced-motion the animation computes to none while the ring stays painted and the badge stays accent-coloured. A sub-agent starting mid-watch took the badge from the total 3 to the running 1, lit the ring and added a row without a reload. Reading a 7,267-character message inside the drawer at 390px: all of it, scrolling in 334px. Escape steps out of the reading pane first and closes the drawer second. |
+
+---
+
+## MUS-D-0124
+
+**A control whose presence depends on scripting is decided by the browser, not by our script**
+
+decision · 2026-08-26
+
+fixes: [MUS-F-0046](findings.md#mus-f-0046)
+
+amends: [MUS-D-0123](#mus-d-0123)
+
+The session picker's submit button is rendered inside a noscript element rather than rendered always and hidden by the script.
+
+The owner asked for it to appear only when scripting is disabled, having first asked for it to be small and beside the dropdown rather than large and beneath it. noscript delivers the first exactly and makes the second moot for anyone with script.
+
+The reason to prefer it over a hidden attribute is not tidiness. Anything the server renders and the script removes has two states that must agree, and they are delivered separately: the markup is one response and the script is another. When they disagree — a stale page, a blocked asset, a script that never runs — the failure is a control appearing that nobody expected, which is what happened. noscript is resolved by the browser at parse time from a single fact it already knows, so there is no second state to keep in step.
+
+The general rule this leaves behind: if a control's presence depends on scripting, let the browser decide it, not our script. And a bare element selector is a rule about every element of that kind that will ever exist on the surface — the composer's form rule silently reshaped a form written months later, which is worth remembering before writing the next one.

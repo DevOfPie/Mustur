@@ -616,15 +616,49 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      the very chip nobody could see. A native select has no off-screen end,
      however many sessions there are.
 
-     The form is real. Without script the button submits it and the server
-     turns the query into a path; with script the change event gets there
-     first. This surface cannot work without script at all — it is a live
-     terminal — but the picker is the one part that can, so it does. */
+     The form is real, and its button lives in a noscript element.
+
+     A GET form cannot build a path segment, so the select posts a query to
+     /sessions and the server turns it into a path. With script the change
+     event navigates first and the button is not wanted; without it, the button
+     is the only way to submit.
+
+     noscript rather than hiding it, because the first version did hide it and
+     that was the defect. A control the server draws and the script removes is
+     a control that can fail visible, and it did: the owner met a stale page
+     carrying new markup beside old script, and found a full-size button under
+     the dropdown that had never been in the wireframes. Clearing cookies made
+     it go away, which is the same cache mismatch as MUS-F-0041 rather than a
+     fix for anything.
+
+     noscript has neither half of that problem. The browser decides, from
+     whether scripting is enabled, and it decides at parse time — so a page
+     whose script is stale, blocked, or never arrives still gets exactly the
+     control it needs and nothing else. */
   .rail { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem;
           border-bottom: 1.4px solid var(--edge); min-width: 0; }
-  .pick { display: flex; gap: .35rem; flex: 1; min-width: 0; }
+  /* flex-direction and padding are set here because they have to be undone,
+     not because a row needs declaring. The bare form rule above was written
+     for the composer (column, gap, its own padding) and a bare element
+     selector reshapes every form added afterwards. This one came out stacked
+     and centred inside 69px of nothing, which is exactly the giant button
+     under the dropdown the owner reported. */
+  .pick { display: flex; flex-direction: row; align-items: center; gap: .3rem;
+          padding: 0; flex: 1; min-width: 0; }
   .pick select { flex: 1; min-width: 0; font: inherit; font-size: .85em; }
-  .pick .go { font: inherit; font-size: .8em; }
+  /* display: contents on the noscript, or the button is not a flex item of
+     this row — the noscript wrapping it is, and the button lands underneath
+     the select instead of beside it. Measured with scripting off, which is the
+     only state either of them can be seen in: 34x26px on its own line, which
+     is the shape the owner objected to in the first place.
+
+     Small and quiet otherwise. flex: 0 0 auto, or it stretches to the row's
+     height and becomes the giant button. */
+  .pick noscript { display: contents; }
+  .pick .go { flex: 0 0 auto; font: inherit; font-size: .75em; line-height: 1;
+              padding: .2rem .45rem; border: 1px solid var(--edge);
+              border-radius: .35rem; background: none; color: inherit;
+              opacity: .6; cursor: pointer; }
 
   /* The button that opens the drawer, and the ring that says something is
      running.
@@ -758,8 +792,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <form class="pick" method="get" action="/sessions">
     <select name="p" id="pick" aria-label="Session">
       {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
-    </select>
-    <button type="submit" class="go" id="go">Go</button>
+    </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
     aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span

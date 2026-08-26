@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-46 record(s), by identifier.
+50 record(s), by identifier.
 
 ## The queue
 
@@ -13,6 +13,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
+| [IDW-F-0004](#idw-f-0004) | Allow resizing the sub-agent dropdown on Musturs session tab on desktop, it can take up more… |  | unreviewed |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
@@ -56,6 +57,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
 | [MUS-F-0042](#mus-f-0042) | The Session quiet timer only counts since the tab was opened not since the session was idle |  | unreviewed |
 | [MUS-F-0043](#mus-f-0043) | A dead Mustur keeps its port for as long as its tmux pipe is running | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. | open |
+| [MUS-F-0044](#mus-f-0044) | IDW-F-0004 sould have been routed to Mustur and was not, correct this and plan a route for… |  | unreviewed |
+| [MUS-F-0045](#mus-f-0045) | Decisions made elsewhere are not cleared from Mustur |  | unreviewed |
+| [MUS-F-0046](#mus-f-0046) | A submit button nobody drew, hidden by script, stacked by a selector written for another form | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. | fixed |
 
 ---
 
@@ -115,6 +119,26 @@ Testing image on mobile
 | --- | --- |
 | Evidence | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. |
 | Status | verified |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## IDW-F-0004
+
+**Allow resizing the sub-agent dropdown on Musturs session tab on desktop, it can take up more…**
+
+finding · 2026-08-26
+
+Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Allow resizing the sub-agent dropdown on Musturs session tab on desktop, it can take up more space on my laptop and being able to drag it wider would be nice wen desired
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | no destination is obvious |
 | Filed by | dev@killerofpie.com |
@@ -886,3 +910,71 @@ The mechanism is not proven. The obvious explanation is fd inheritance, but tmux
 | Where | cmd/mustur, internal/session |
 | Evidence | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. |
 | Status | open |
+
+---
+
+## MUS-F-0044
+
+**IDW-F-0004 sould have been routed to Mustur and was not, correct this and plan a route for…**
+
+finding · 2026-08-26
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+IDW-F-0004 sould have been routed to Mustur and was not, correct this and plan a route for corrections of incorrect 'Route it for me' in the future.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | the jot names DevOfPie/Mustur |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0045
+
+**Decisions made elsewhere are not cleared from Mustur**
+
+finding · 2026-08-26
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+Decisions made elsewhere are not cleared from Mustur
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | the jot names DevOfPie/Mustur |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0046
+
+**A submit button nobody drew, hidden by script, stacked by a selector written for another form**
+
+finding · 2026-08-26
+
+seen through: [MUS-F-0041](#mus-f-0041)
+
+on: [MUS-D-0123](decisions.md#mus-d-0123)
+
+Reported by the owner: a Go button under the session dropdown, at full size, that had been on none of the wireframes. Two separate defects, and the second only visible because of the first.
+
+It was on no wireframe because it was added without being drawn. A GET form cannot build a path segment, so the picker posts a query to /sessions and the server turns it into a path; the button was there to submit it with scripting off. The reasoning was sound and it was still a control the approved drawings did not contain.
+
+It was visible because the first version drew it always and removed it from the script. A control the server draws and the script takes away is a control that can fail visible, and it did: the owner met a stale page carrying new markup beside old script. Clearing cookies made it go away, which is MUS-F-0041's cache mismatch rather than a fix for anything.
+
+It was under the dropdown rather than beside it, and full height, because of a bare element selector. form { display: flex; flex-direction: column; gap; padding } was written for the composer, and a bare element selector reshapes every form added after it. The picker set display and never mentioned direction or padding, so it inherited column: the row measured 215x69px with the select centred and the button stacked underneath it inside its own padding.
+
+Fixed on the owner's instruction that the button should appear only with scripting disabled. It lives in a noscript element rather than being hidden, so the browser decides at parse time and a page whose script is stale, blocked or missing still gets exactly the control it needs. The noscript is given display: contents so the button rather than the wrapper is the flex item, and .pick resets flex-direction and padding.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. |
+| Status | fixed |
