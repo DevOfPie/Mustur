@@ -124,8 +124,9 @@ func TestEveryBarSurfaceUsesTheSharedShell(t *testing.T) {
 	for path, body := range pages {
 		for _, want := range []string{
 			"min-width: 60rem", // the rail
-			"margin-top: auto", // the bar holds the bottom edge
-			"position: sticky", // and stays there on a long page
+			"position: fixed",  // the bar is anchored to the viewport, not to the page
+			"--shell-bar",      // and the room it takes is given back
+			"body::after",      // by a spacer, not by each surface's own padding
 		} {
 			if !strings.Contains(body, want) {
 				t.Errorf("%s is missing %q; the shared shell did not reach it", path, want)
