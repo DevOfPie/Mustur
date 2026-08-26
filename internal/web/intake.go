@@ -272,7 +272,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mustur — intake</title>
 <style>
-  :root { color-scheme: light dark; --edge: #8884; }
+  :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8; }
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; padding: 1rem;
          --shell-content: 40rem;
          max-width: 40rem; margin-inline: auto; }
@@ -305,6 +305,10 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .why { opacity: .7; font-size: .9em; }
   ul { list-style: none; padding: 0; margin: 1.5rem 0 0; }
   li { padding: .5rem 0; border-top: 1px solid var(--edge); }
+  /* An identifier is the thing you want next: it goes to the record rather
+     than sitting there as text you have to retype somewhere else. */
+  .rec { color: inherit; text-decoration: none; border-bottom: 1px solid var(--edge); }
+  .rec:hover, .rec:focus-visible { border-bottom-color: var(--accent, currentColor); }
   li .to { opacity: .7; font-size: .85em; display: block; }
   .none { opacity: .6; font-size: .9em; margin-top: 1.5rem; }
   /* One line that scrolls, never a block that wraps. Each choice sizes to its
@@ -332,7 +336,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <h1>Mustur — {{.Project}}{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</h1>
 {{if .OpenQuestions}}<p class="waiting"><a href="/questions">{{.OpenQuestions}} decision{{if ne .OpenQuestions 1}}s{{end}} waiting on you</a></p>{{end}}
 {{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
-{{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .Routed}} → {{.Routed}}{{end}}<br>
+{{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
 <form method="post" action="/intake">
@@ -344,7 +348,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   <button type="submit">File it</button>
 </form>
 {{if .Recent}}<ul>
-{{range .Recent}}<li><code>{{.ID}}</code> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
+{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
   {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}

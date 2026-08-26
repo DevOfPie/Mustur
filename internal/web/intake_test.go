@@ -394,3 +394,41 @@ func TestTheFileButtonHasAPressState(t *testing.T) {
 		}
 	}
 }
+
+// An identifier on the intake surface goes to its record.
+//
+// The owner asked for it and the reason is plain: a jot's id is the thing you
+// want next, and it was sitting there as text to be retyped somewhere else.
+func TestFiledIdentifiersLinkToTheirRecord(t *testing.T) {
+	srv, _ := serve(t)
+	defer srv.Close()
+
+	res, err := srv.Client().PostForm(srv.URL+"/intake", url.Values{"jot": {"a thing worth noting"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := io.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	page := string(body)
+
+	// The confirmation carries the identifier, and it is a link to the record.
+	if !strings.Contains(page, `href="/records/MUS-F-`) {
+		t.Error("the filed identifier is not a link to its record")
+	}
+	// And so does the recent list, which is where you look a minute later.
+	again, err := srv.Client().Get(srv.URL + "/intake")
+	if err != nil {
+		t.Fatal(err)
+	}
+	listBody, err := io.ReadAll(again.Body)
+	again.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := strings.Count(string(listBody), `class="rec" href="/records/`); n < 1 {
+		t.Errorf("the recent list has %d linked identifiers, want at least 1", n)
+	}
+}
