@@ -72,6 +72,12 @@ func (in *Intake) Handler() http.Handler {
 	return mux
 }
 
+// scratchTo is the destination that files nothing.
+//
+// Not a routing identifier and deliberately unlike one: nothing should be able
+// to cite a scratch filing, because there is nothing there to cite.
+const scratchTo = "scratch"
+
 // MaxJot is the largest body the capture path accepts.
 const MaxJot = 64 << 10
 
@@ -90,9 +96,11 @@ type page struct {
 	Why          string
 	Error        string
 	Recent       []recentJot
-	Cutoff       string
-	Project      string
-	ShowAccount  bool
+	// Scratch filings, which are not records and have no identifier.
+	Scratch     []store.Scratch
+	Cutoff      string
+	Project     string
+	ShowAccount bool
 	// ShowSessions renders the Sessions tab. Off unless the server is actually
 	// serving that surface: a tab that goes nowhere is an unbuilt capability
 	// described as existing, which is what MUS-D-0041's bar exists to avoid.
@@ -151,6 +159,13 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		p.Error = err.Error()
 	}
 	p.Recent = recent
+	// Swept as the page is drawn rather than on a timer: this surface is the
+	// only thing that reads them, so nothing accumulates unseen.
+	if _, err := in.Store.SweepScratch(r.Context(), in.now().Add(-store.ScratchLife)); err == nil {
+		if left, err := in.Store.Scratches(r.Context()); err == nil {
+			p.Scratch = left
+		}
+	}
 	p.OpenQuestions = OpenCount(r.Context(), in.Store)
 	render(w, p)
 }
@@ -186,6 +201,30 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		render(w, page{Error: imageErr.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
 		return
 	}
+	// Scratch: filed beside the records rather than among them. It takes no
+	// identifier and never enters the log, which is the whole point — testing
+	// the box twice cost two permanent identifiers in the idea warehouse.
+	if r.PostFormValue("to") == scratchTo {
+		sc, err := in.Store.Scratched(r.Context(), text, in.actor(r))
+		if err != nil {
+			render(w, page{Error: err.Error(), Project: in.Project, Jot: text,
+				ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+			return
+		}
+		if len(image) > 0 {
+			// Attached to the scratch row's own id, so the sweep takes the
+			// picture with the note rather than leaving it unreachable.
+			if _, err := in.Store.Attach(r.Context(), sc.ID, image, in.actor(r)); err != nil {
+				render(w, page{Error: "kept the note, but not the image: " + err.Error(),
+					Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+				return
+			}
+		}
+		http.Redirect(w, r, "/intake?warn="+template.URLQueryEscaper(
+			"filed to scratch: no identifier, not exported, gone on restart"), http.StatusSeeOther)
+		return
+	}
+
 	rec, to, err := intake.File(r.Context(), in.Store, intake.Request{
 		Project: in.Project,
 		Text:    text,
@@ -377,6 +416,11 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   li { padding: .5rem 0; border-top: 1px solid var(--edge); }
   /* An identifier is the thing you want next: it goes to the record rather
      than sitting there as text you have to retype somewhere else. */
+  /* A scratch filing looks like what it is: no identifier to follow, and a
+     standing note that it is going. */
+  .scratch li { opacity: .75; }
+  .tmp { font-size: .78em; border: 1px solid var(--edge); border-radius: 999px;
+         padding: .05rem .5rem; margin-right: .4rem; opacity: .8; }
   .pic { display: flex; flex-direction: column; gap: .3rem; margin-top: .6rem;
          font-size: .88em; opacity: .8; }
   .pic small { opacity: .7; font-size: .85em; }
@@ -389,6 +433,14 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
      accident. */
   .dests { display: flex; gap: .4rem; margin-top: .6rem; overflow-x: auto;
            white-space: nowrap; padding-bottom: .25rem; }
+  /* Still one line that scrolls. What changes is that it may use the width
+     there is: the row was capped at the reading column, so at 1920px it hid
+     its last choice behind a swipe with a thousand pixels of empty space
+     beside it (MUS-F-0036). Whether it should wrap instead is a decision taken
+     deliberately and is not reversed here. */
+  @media (min-width: 60rem) {
+    .dests { width: max-content; max-width: 40rem; }
+  }
   .dests label { flex: 0 0 auto; border: 1px solid var(--edge);
                  border-radius: 999px; padding: .35rem .7rem; font-size: .9em; }
   /* The bar MUS-D-0041 chose, carrying the surfaces that exist. Without it the
@@ -421,9 +473,13 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   {{if .Destinations}}<div class="dests">
     <label><input type="radio" name="to" value="" checked> Route it for me</label>
     {{range .Destinations}}<label><input type="radio" name="to" value="{{.ID}}"> {{.Name}}</label>{{end}}
+    <label><input type="radio" name="to" value="scratch"> Scratch</label>
   </div>{{end}}
   <button type="submit">File it</button>
 </form>
+{{if .Scratch}}<ul class="scratch">
+{{range .Scratch}}<li><span class="tmp">scratch</span> {{.Text}}<span class="to">goes on restart</span></li>{{end}}
+</ul>{{end}}
 {{if .Recent}}<ul>
 {{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}

@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/DevOfPie/Mustur/internal/export"
 )
@@ -215,5 +216,126 @@ func TestAnImageIsServedAsAnImageAndNothingElse(t *testing.T) {
 	}
 	if code := statusOf(t, rec.Client(), rec.URL+"/records/image/deadbeef"); code != http.StatusNotFound {
 		t.Errorf("an unknown image returned %d", code)
+	}
+}
+
+// A scratch filing costs no identifier, which is the whole reason it exists.
+//
+// The owner tested the picture upload twice and it left IDW-F-0002 and
+// IDW-F-0003 in the idea warehouse forever, both saying "test" in their own
+// titles. An identifier here is permanent and the log only ever grows, so a
+// test filing must not advance the counter.
+func TestAScratchFilingIsNotARecord(t *testing.T) {
+	srv, st := serve(t)
+	defer srv.Close()
+	ctx := context.Background()
+
+	before, err := st.List(ctx, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var body bytes.Buffer
+	mw := multipart.NewWriter(&body)
+	_ = mw.WriteField("jot", "testing the box again")
+	_ = mw.WriteField("to", "scratch")
+	part, err := mw.CreateFormFile("image", "shot.png")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := part.Write(aPNG(t, 16, 16)); err != nil {
+		t.Fatal(err)
+	}
+	mw.Close()
+	res, err := srv.Client().Post(srv.URL+"/intake", mw.FormDataContentType(), &body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	// Not a record, and the counter has not moved.
+	after, err := st.List(ctx, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after) != len(before) {
+		t.Errorf("the log grew from %d to %d; a scratch filing must not take an identifier",
+			len(before), len(after))
+	}
+
+	// It is there, though, and it is readable.
+	left, err := st.Scratches(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(left) != 1 || left[0].Text != "testing the box again" {
+		t.Fatalf("scratch holds %+v", left)
+	}
+	if strings.HasPrefix(left[0].ID, "MUS-") || strings.HasPrefix(left[0].ID, "IDW-") {
+		t.Errorf("a scratch filing was given something that looks like an identifier: %q", left[0].ID)
+	}
+
+	// The picture went with it, keyed to the scratch rather than to a record.
+	shots, err := st.Attachments(ctx, left[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(shots) != 1 {
+		t.Fatalf("%d pictures on the scratch filing", len(shots))
+	}
+
+	// And the sweep takes both, so no picture is left unreachable.
+	if _, err := st.SweepScratch(ctx, time.Time{}); err != nil {
+		t.Fatal(err)
+	}
+	if gone, _ := st.Scratches(ctx); len(gone) != 0 {
+		t.Errorf("%d scratch filings survived the sweep", len(gone))
+	}
+	if _, _, err := st.Image(ctx, shots[0].ID); err == nil {
+		t.Error("the picture outlived the scratch filing it was attached to")
+	}
+}
+
+// It never reaches the exported tree either, because it is not a record and the
+// export only ever writes records.
+func TestAScratchFilingIsNeverExported(t *testing.T) {
+	srv, st := serve(t)
+	defer srv.Close()
+	ctx := context.Background()
+
+	var body bytes.Buffer
+	mw := multipart.NewWriter(&body)
+	_ = mw.WriteField("jot", "a phrase that would be easy to find")
+	_ = mw.WriteField("to", "scratch")
+	mw.Close()
+	res, err := srv.Client().Post(srv.URL+"/intake", mw.FormDataContentType(), &body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	dir := t.TempDir()
+	all, err := st.List(ctx, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := export.Write(dir, all); err != nil {
+		t.Fatal(err)
+	}
+	err = filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		if bytes.Contains(b, []byte("a phrase that would be easy to find")) {
+			t.Errorf("%s carries a scratch filing", p)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 }

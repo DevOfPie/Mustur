@@ -180,8 +180,14 @@ func stripPNG(data []byte) []byte {
 //
 // The media type is sniffed from the bytes. A caller's Content-Type is a claim
 // about a file the caller also chose, so it is not evidence of anything.
+//
+// The id is taken as given. It used to be upper-cased here, on the reasoning
+// that record identifiers are upper-case — which quietly broke the day a
+// scratch filing attached a picture: its lower-case id was stored shouting, the
+// sweep's subquery no longer matched, and the picture outlived the note it
+// belonged to. Callers pass the id they mean; this does not second-guess it.
 func (s *Store) Attach(ctx context.Context, recordID string, data []byte, by string) (Attachment, error) {
-	recordID = strings.ToUpper(strings.TrimSpace(recordID))
+	recordID = strings.TrimSpace(recordID)
 	if recordID == "" {
 		return Attachment{}, errors.New("an attachment needs a record")
 	}
@@ -227,7 +233,7 @@ func (s *Store) Attachments(ctx context.Context, recordID string) ([]Attachment,
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, record_id, media_type, size, sha256, created, created_by
 		   FROM attachment WHERE record_id = ? ORDER BY created`,
-		strings.ToUpper(strings.TrimSpace(recordID)))
+		strings.TrimSpace(recordID))
 	if err != nil {
 		return nil, err
 	}

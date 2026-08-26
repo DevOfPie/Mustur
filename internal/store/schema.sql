@@ -228,3 +228,19 @@ CREATE TABLE IF NOT EXISTS attachment (
 );
 
 CREATE INDEX IF NOT EXISTS attachment_by_record ON attachment (record_id);
+
+-- A filing that was never meant to be kept.
+--
+-- Not a record: no identifier, never in the log, never exported, never counted.
+-- The owner tested the picture upload twice and it cost two permanent
+-- identifiers in the idea warehouse, which is the whole reason this exists — a
+-- test filing should not advance a counter.
+--
+-- Everything here is dropped when the process starts, and swept by age while it
+-- runs. Nothing should come to depend on a row in this table surviving.
+CREATE TABLE IF NOT EXISTS scratch (
+  id         TEXT PRIMARY KEY,
+  text       TEXT NOT NULL,
+  created    TEXT NOT NULL,
+  created_by TEXT NOT NULL
+);

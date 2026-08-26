@@ -458,6 +458,16 @@ func cmdServe(args []string) error {
 	if err != nil {
 		return err
 	}
+	// "Or until a restart", in the owner's words — and it is *this* restart
+	// that is meant. The sweep began life in store.Open, which made every
+	// `mustur list` and every `mustur get` wipe the scratch pad: the first
+	// end-to-end run lost a filing to the command that went looking for it.
+	// A serving process starting is the event the owner described.
+	if dropped, err := s.SweepScratch(ctx, time.Time{}); err != nil {
+		return fmt.Errorf("clear the scratch pad: %w", err)
+	} else if dropped > 0 {
+		fmt.Printf("dropped %d scratch filing(s) from the last run\n", dropped)
+	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
 	// One condition for all five headers: /account is registered only when an

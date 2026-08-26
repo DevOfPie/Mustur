@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-119 record(s), by identifier.
+120 record(s), by identifier.
 
 ## Index
 
@@ -131,6 +131,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0117](#mus-d-0117) | Accounts are enforced on the deployment, in the only order that works | 2026-08-26 |
 | [MUS-D-0118](#mus-d-0118) | The tab bar pins on a phone and becomes a left rail on a wide screen | 2026-08-26 |
 | [MUS-D-0119](#mus-d-0119) | A jot may carry a picture, and the description travels rather than the picture | 2026-08-26 |
+| [MUS-D-0120](#mus-d-0120) | A scratch filing is not a record, so it costs no identifier | 2026-08-26 |
 
 ---
 
@@ -1904,3 +1905,19 @@ asked by: [MUS-F-0032](findings.md#mus-f-0032)
 built on: [MUS-D-0024](#mus-d-0024)
 
 The owner tried to report a layout defect with a screenshot and found the intake box takes text only, so they asked for images. The obvious implementation was the wrong one: records/ is committed and github.com/DevOfPie/Mustur is public, so a screenshot written beside the records would have published whatever was on the screen — agent output, record text, an email address — permanently and past any later deletion. Three options went to the owner and the answer was none of them: an agent's summary of what the image shows may be exported, as long as it carries nothing unnecessary, while the image itself stays private. That is a better shape than any offered. A reader with only the clone still learns what the picture showed, and nothing is published that did not need to be. The bytes live in an attachment table in the store, which never leaves the machine, and are shown only on a record's own page behind whatever gate is in front of the records. `mustur image read` hands one to an agent, which looks at it and writes the description into the record with `mustur amend`. What is not stored is as deliberate as what is. No filename: a filename is the sender's text and carries a date, a device and often the content, and nothing needs one. The media type is sniffed from the bytes rather than believed from the request, and SVG is refused outright — it is XML that can carry script and would run on this origin. Ten megabytes, four raster formats, served with nosniff and a closed content policy.
+
+---
+
+## MUS-D-0120
+
+**A scratch filing is not a record, so it costs no identifier**
+
+decision · 2026-08-26
+
+asked by: [IDW-F-0002](findings.md#idw-f-0002)
+
+and: [IDW-F-0003](findings.md#idw-f-0003)
+
+holds: [MUS-D-0024](#mus-d-0024)
+
+The owner tested the picture upload twice and it left IDW-F-0002 and IDW-F-0003 in the idea warehouse permanently, both of which say 'test' in their own titles. An identifier here never comes back and the log only ever grows, so the cost of checking that a box works was two entries in the records forever. That is the whole complaint, and the owner put it plainly: a test filing should not advance a counter. The obvious shape was a record with an expiry and it is the wrong one. The log is insert-only and the exported tree is the surface a reader checks without running the binary (MUS-D-0024). A record that later vanishes puts an exception under both, and an exception is what the next one argues from. So a scratch filing is not a record. It takes no identifier, never enters the log, never reaches the export, is never counted and cannot be cited — its id is deliberately unlike an identifier so that nothing can try. It carries a picture like any other jot, and the sweep takes the picture with the note rather than leaving it unreachable. It goes when the serving process starts, which is the owner's own 'or until a restart', and is swept at a day old while the process runs. The sweep first lived in store.Open, which meant every `mustur list` and `mustur get` wiped the pad — the first end-to-end run lost a filing to the very command that went looking for it. A serving process starting is the event that was meant.

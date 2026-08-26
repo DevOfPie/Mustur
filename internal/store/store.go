@@ -56,7 +56,8 @@ func Open(ctx context.Context, path string) (*Store, error) {
 		db.Close()
 		return nil, fmt.Errorf("migrate %s: %w", path, err)
 	}
-	return &Store{db: db, now: time.Now}, nil
+	s := &Store{db: db, now: time.Now}
+	return s, nil
 }
 
 // addMissingColumns is the whole of this repository's migration story.

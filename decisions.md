@@ -145,6 +145,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [Building the bar found what the code had already decided](#2026-08-26--building-the-bar-found-what-the-code-had-already-decided) | The stylesheet and the script were both written for a shell nobody built |
 | [A browser, and the two things it found](#2026-08-26--a-browser-and-the-two-things-it-found) | Measuring the wrong thing comes with confidence attached |
 | [A picture, and the thing about it that travels](#2026-08-26--a-picture-and-the-thing-about-it-that-travels) | The export is public; the description goes, the pixels stay |
+| [A place to put something that was never meant to be kept](#2026-08-26--a-place-to-put-something-that-was-never-meant-to-be-kept) | A test filing should not advance a counter |
 
 ---
 
@@ -2468,3 +2469,44 @@ That is the shape to keep noticing: a comment describing an intention the code
 next to it does not implement. `margin-top: auto` was the same thing, and so was
 `#out`'s scroll. Three this week, all found by something that ran rather than by
 reading.
+
+## 2026-08-26 — a place to put something that was never meant to be kept
+
+Testing the picture upload twice cost two permanent identifiers in the idea
+warehouse. `IDW-F-0002` and `IDW-F-0003` both say "test" in their own titles and
+both will be in the records forever, because an identifier here never comes back
+and the log only ever grows. The owner's framing was exact: **a test filing
+should not advance a counter.**
+
+### The obvious shape was the wrong one
+
+A record with an expiry. It is wrong because the log is insert-only and the
+exported tree is the surface a reader checks without running the binary
+(`MUS-D-0024`); a record that later vanishes puts an exception under both, and
+an exception is what the next one argues from.
+
+The clarification dissolved the problem rather than answering it. If the point
+is the counter, then a scratch filing simply **is not a record** — and nothing
+about insert-only is threatened by something that never enters the log. It takes
+no identifier, is never exported, is never counted, and cannot be cited: its id
+is deliberately unlike an identifier so that nothing can try.
+
+### The restart that was meant
+
+"Or until a restart" went into `store.Open` first, which meant every `mustur
+list` and every `mustur get` wiped the pad. The first end-to-end run lost a
+filing to the command that went looking for it — a unit test never saw it,
+because a unit test holds one store open. A serving process starting is the
+event the owner described, and that is where the sweep lives now.
+
+### And an upper-case habit that broke a sweep
+
+Attachments upper-cased the record id they were filed against, on the reasonable
+grounds that record identifiers are upper-case. A scratch id is not one. Stored
+shouting, it no longer matched the sweep's subquery, and the picture outlived the
+note it belonged to — caught by the test written in the same sitting.
+
+The store had been second-guessing the case of an identifier it was handed. It
+does not any more. Three bugs this week from a rule applied one step past where
+it was true: the filename that was stripped while EXIF was kept, the `9rem` cap
+that belonged to a different element, and this.
