@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-35 record(s), by identifier.
+36 record(s), by identifier.
 
 ## The queue
 
@@ -45,6 +45,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0032](#mus-f-0032) | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… | Fixed 2026-08-26 and deployed. The session view was a repair against its own stylesheet; the document surfaces were a choice, drawn in plan-ba6b90e7d9064d09 and answered by the owner (MUS-D-0118). Pinned below 60rem, a left rail above it, the rail replacing the bar rather than joining it. | fixed |
 | [MUS-F-0033](#mus-f-0033) | A long field value made the records page wider than the phone, and the tab bar went with it | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. | fixed |
 | [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
+| [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
 
 ---
 
@@ -652,4 +653,24 @@ The owner reported the lower half of the session view as a mess: the quiet timer
 | --- | --- |
 | Where | internal/web/sessions.go, internal/web/assets/session.js |
 | Evidence | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. |
+| Status | fixed |
+
+---
+
+## MUS-F-0035
+
+**The sub-agent box had no height cap, so it took the whole session view with it**
+
+finding · 2026-08-26
+
+reported with: [MUS-F-0032](#mus-f-0032)
+
+from: [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018)
+
+The owner described the session view as a mess: session-selection chips half covered by the strip below them, an output pane that scrolled a line at a time, and a lower section that had to be scrolled to before it could be found. Three symptoms, one cause. The .agents box is styled with padding, a background and a border and nothing else. A 9rem cap exists a few lines above it in the same stylesheet and belongs to the composer's textarea, which is how it came to be remembered as covering both. On the owner's own session — three sub-agents, each carrying its final message — the box measured 8,211px tall. It is a flex item in a column capped at the viewport, so everything else was squeezed around it. The rail collapsed from 46px to 17px, which pushed the chips out of their own row and under the strip beneath. The output pane was left a line or two tall. The composer was pushed past the bottom of the screen. Capped at 30dvh with its own scroll, and the chrome rows are flex:0 0 auto so nothing can take their height again — only the output pane flexes. Measured on the owner's session in both of the browsers they use.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. |
 | Status | fixed |

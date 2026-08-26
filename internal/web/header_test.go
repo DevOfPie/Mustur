@@ -255,3 +255,34 @@ func TestTheSessionDockIsLockedToTheBottom(t *testing.T) {
 		t.Error("nothing keeps --dock-h current, so the reservation is a guess")
 	}
 }
+
+// Nothing but the output pane may take room from the chrome rows.
+//
+// The sub-agent box had no cap and grew to 8,211px on a real session. It is a
+// flex item in a column capped at the viewport, so every other row was squeezed
+// around it: the rail collapsed to a third of its height and the session chips
+// spilled under the strip below, and the composer was pushed off the screen
+// (MUS-F-0035).
+func TestOnlyTheOutputPaneFlexes(t *testing.T) {
+	src, err := os.ReadFile("sessions.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	css := string(src)
+
+	at := strings.Index(css, ".agents {")
+	if at < 0 {
+		t.Fatal("no .agents rule")
+	}
+	rule := css[at : at+strings.Index(css[at:], "}")]
+	for _, want := range []string{"max-height", "overflow-y: auto"} {
+		if !strings.Contains(rule, want) {
+			t.Errorf("the sub-agent box is missing %q, so it can grow without limit:\n%s", want, rule)
+		}
+	}
+
+	// The rows that carry the session's chrome hold their own height.
+	if !strings.Contains(css, "header, .rail, .strip { flex: 0 0 auto; }") {
+		t.Error("the chrome rows can be shrunk, so anything that grows takes their height first")
+	}
+}

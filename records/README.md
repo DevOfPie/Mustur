@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 55 | [questions.md](questions.md) |
 | decision | 118 | [decisions.md](decisions.md) |
-| finding | 35 | [findings.md](findings.md) |
+| finding | 36 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -261,6 +261,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0032](findings.md#mus-f-0032) | finding | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… |
 | [MUS-F-0033](findings.md#mus-f-0033) | finding | A long field value made the records page wider than the phone, and the tab bar went with it |
 | [MUS-F-0034](findings.md#mus-f-0034) | finding | The session view's quiet timer and composer could be scrolled off the bottom of a phone |
+| [MUS-F-0035](findings.md#mus-f-0035) | finding | The sub-agent box had no height cap, so it took the whole session view with it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

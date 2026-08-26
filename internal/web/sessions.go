@@ -507,6 +507,11 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
          margin-inline: auto; display: flex; flex-direction: column;
          height: 100vh; height: 100dvh; }
+  /* The chrome rows keep their own height. A flex item shrinks by default, so
+     anything that grew — the sub-agent box did — took its room out of these
+     first, which is how the session chips ended up half-height and hidden
+     behind the row beneath them. Only #out flexes. */
+  header, .rail, .strip { flex: 0 0 auto; }
   header { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); white-space: nowrap; }
   header .pill { border: 1px solid var(--edge); border-radius: 999px;
@@ -585,8 +590,21 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   /* Sub-agents sit above the session's own output, because they are Mustur
      talking about the session rather than the session talking. Same tint as
      every other strip for the same reason. */
+  /* Bounded, and scrolling inside itself.
+     
+     It had no cap at all: three sub-agents carrying their final messages grew
+     this box to 8,211px on the owner's own session, which is not a row of
+     status — it is the page. Everything else in the column was squeezed to fit
+     around it. The rail collapsed to 17px so the session chips spilled under
+     the strip below, the output pane was left a line or two tall, and the
+     composer was pushed past the bottom of the screen (MUS-F-0035).
+     
+     A third of the screen, because these are a supporting detail above the
+     thing you came to read. dvh so a phone's URL bar is counted. */
   .agents { padding: .6rem 1rem; background: #8881;
-            border-bottom: 1.4px solid var(--edge); font-size: .85em; }
+            border-bottom: 1.4px solid var(--edge); font-size: .85em;
+            flex: 0 0 auto; max-height: 30dvh;
+            overflow-y: auto; overscroll-behavior: contain; }
   .agents > .count { opacity: .6; font-size: .9em; }
   .agent { display: flex; align-items: baseline; gap: .5rem; padding: .3rem 0;
            white-space: nowrap; }
