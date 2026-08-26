@@ -13,6 +13,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -107,6 +108,91 @@ func TestSessionsTabFollowsTheFlag(t *testing.T) {
 	for path, body := range off {
 		if strings.Contains(body, `href="/sessions"`) && path != "/compose" {
 			t.Errorf("%s offers a Sessions tab on a server not serving sessions", path)
+		}
+	}
+}
+
+// The shell reaches every surface that carries the bar.
+//
+// Six templates each held their own copy of these rules and had already
+// drifted: one used a 1px border where the rest used 1.4px, three made the page
+// a full-height column and three did not, and one had lost the rule that marks
+// the current tab. That is how the records surface came to ship a different bar
+// from everything else. One constant, asserted here to have arrived.
+func TestEveryBarSurfaceUsesTheSharedShell(t *testing.T) {
+	pages := tabbed(t, true, true)
+	for path, body := range pages {
+		for _, want := range []string{
+			"min-width: 60rem", // the rail
+			"margin-top: auto", // the bar holds the bottom edge
+			"position: sticky", // and stays there on a long page
+		} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s is missing %q; the shared shell did not reach it", path, want)
+			}
+		}
+	}
+}
+
+// No surface may grow its own copy of the bar again.
+//
+// This is the test that would have caught the original drift, and it reads the
+// source rather than the output because that is where a second copy would
+// appear. `nav` styling belongs in shell.go and nowhere else.
+func TestNoTemplateDeclaresItsOwnNavRules(t *testing.T) {
+	for _, file := range []string{
+		"records.go", "questions.go", "intake.go",
+		"accountpage.go", "sessions.go", "compose.go",
+	} {
+		src, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, line := range strings.Split(string(src), "\n") {
+			trimmed := strings.TrimSpace(line)
+			if strings.HasPrefix(trimmed, "nav ") || strings.HasPrefix(trimmed, "nav{") {
+				t.Errorf("%s:%d declares nav CSS: %q\n"+
+					"The bar and the rail live in shell.go; a second copy is how they drifted before.",
+					file, i+1, trimmed)
+			}
+		}
+	}
+}
+
+// The session view caps its own height and scrolls its output pane.
+//
+// Its stylesheet already said what it wanted — `#out{flex:1}` and
+// `nav{margin-top:auto}` describe a capped column — but `min-height` set a
+// floor with no ceiling and `#out` had no overflow, so the column grew with the
+// output and carried the bar and the composer off the screen (MUS-F-0032).
+func TestTheSessionShellIsCappedAndScrollsItsOutput(t *testing.T) {
+	src, err := os.ReadFile("sessions.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	css := string(src)
+	if !strings.Contains(css, "height: 100dvh") {
+		t.Error("the session shell has no height cap, so it will grow with its output")
+	}
+	if strings.Contains(css, "min-height: 100vh; }") {
+		t.Error("the session body still sets only a floor; a floor is what let it grow")
+	}
+	// Read the #out rule itself rather than the whole stylesheet. The first
+	// version of this looked for "overflow-y: auto" anywhere in the file and
+	// passed against the sub-agent box, which has carried that declaration all
+	// along — a true substring proving nothing about the pane under test.
+	start := strings.Index(css, "#out {")
+	if start < 0 {
+		t.Fatal("no #out rule in the session stylesheet")
+	}
+	end := strings.Index(css[start:], "}")
+	if end < 0 {
+		t.Fatal("the #out rule is unterminated")
+	}
+	rule := css[start : start+end]
+	for _, want := range []string{"min-height: 0", "overflow-y: auto"} {
+		if !strings.Contains(rule, want) {
+			t.Errorf("the #out rule is missing %q, so it expands instead of scrolling:\n%s", want, rule)
 		}
 	}
 }

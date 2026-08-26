@@ -401,11 +401,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   .said { margin: .8rem 1rem 0; padding: .6rem .8rem;
           border-left: 3px solid var(--edge); font-size: .9em; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap;
-        margin-top: auto; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body>

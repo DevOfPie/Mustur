@@ -324,6 +324,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8;
           --accent-soft: #6a8fd820; }
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0;
+         --shell-content: 40rem;
          max-width: 40rem; margin-inline: auto;
          display: flex; flex-direction: column; min-height: 100vh; }
   /* MUS-Q-0052: the account surface is reached from here rather than from
@@ -382,10 +383,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   .drop button { font-size: .85em; padding: .35rem .8rem; margin-left: auto; }
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body>

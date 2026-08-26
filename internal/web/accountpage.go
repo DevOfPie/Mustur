@@ -467,6 +467,7 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
   :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8;
           --accent-soft: #6a8fd820; }
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; padding: 0 0 1rem;
+         --shell-content: 40rem;
          max-width: 40rem; margin-inline: auto; }
   header { display: flex; align-items: baseline; gap: .6rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); }
@@ -513,9 +514,7 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
   .pair label { flex: 1; }
   #ceremony { margin: .6rem 0; padding: .7rem .8rem; border: 1px solid var(--edge);
               border-radius: .5rem; font-size: .9em; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); margin-top: 1.5rem; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
+` + shellCSS + `
 </style>
 </head>
 <body>

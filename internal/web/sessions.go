@@ -501,9 +501,12 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <style>
   :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8;
           --accent-soft: #6a8fd820; }
+  /* Capped, not floored. min-height let the column grow with the output and
+     carry the bar and the composer off the screen with it (MUS-F-0032); the
+     shell's own min-height is harmless beside a height that holds. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
          margin-inline: auto; display: flex; flex-direction: column;
-         min-height: 100vh; }
+         height: 100vh; height: 100dvh; }
   header { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); white-space: nowrap; }
   header .pill { border: 1px solid var(--edge); border-radius: 999px;
@@ -522,8 +525,13 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
            background: #8881; border-bottom: 1.4px solid var(--edge);
            font-size: .82em; opacity: .8; white-space: nowrap; }
   .strip .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-  #out { flex: 1; padding: .8rem 1rem; margin: 0; white-space: pre-wrap;
-         word-break: break-word; font-size: .9em; }
+  /* The only thing that scrolls. min-height:0 is what lets a flex child be
+     smaller than its content — without it the pane grows instead of
+     scrolling, which is the whole of the bug. */
+  #out { flex: 1; min-height: 0; overflow-y: auto;
+         padding: .8rem 1rem; margin: 0; white-space: pre-wrap;
+         word-break: break-word; font-size: .9em;
+         overscroll-behavior: contain; }
   #foot { padding: .4rem 1rem; background: #8881;
           border-top: 1.4px solid var(--edge); font-size: .82em; opacity: .75; }
   form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
@@ -570,11 +578,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .said { margin: 0 0 .4rem .2rem; padding-left: .6rem;
           border-left: 1.4px solid var(--edge); white-space: pre-wrap;
           word-break: break-word; opacity: .85; font-size: .92em; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap;
-        margin-top: auto; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body data-project="{{.Project}}">

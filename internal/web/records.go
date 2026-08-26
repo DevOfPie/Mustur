@@ -381,10 +381,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
            padding: .05rem .5rem; opacity: .75; }
   .badge.stale { border-color: #c2703a; opacity: 1; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); margin-top: 1.5rem; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body>

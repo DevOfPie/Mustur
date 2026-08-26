@@ -274,6 +274,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <style>
   :root { color-scheme: light dark; --edge: #8884; }
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; padding: 1rem;
+         --shell-content: 40rem;
          max-width: 40rem; margin-inline: auto; }
   h1 { font-size: 1rem; font-weight: 600; margin: 0 0 .75rem; opacity: .7; }
   textarea { width: 100%; min-height: 8rem; font: inherit; padding: .6rem;
@@ -324,11 +325,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: auto; }
   h1 { display: flex; align-items: baseline; }
-  nav { display: flex; border-top: 1px solid var(--edge); margin-top: 2rem;
-        white-space: nowrap; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body>

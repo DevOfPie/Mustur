@@ -32,6 +32,13 @@
     state.className = on ? "pill on" : "pill";
   }
 
+  // Follow the tail unless the reader has scrolled up to look at something.
+  //
+  // This measures #out rather than the page, and always did — but until
+  // MUS-F-0032 the pane had no overflow, so it never scrolled, scrollTop was
+  // always 0 and this always answered true. The script was written for the
+  // shell the stylesheet described and never built. Now that #out owns its own
+  // scroll track, it starts doing what it says.
   function atBottom() {
     return out.scrollHeight - out.scrollTop - out.clientHeight < 40;
   }
