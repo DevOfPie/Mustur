@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-32 record(s), by identifier.
+33 record(s), by identifier.
 
 ## The queue
 
@@ -42,6 +42,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
 | [MUS-F-0030](#mus-f-0030) | A session being piped makes the service unkillable, and systemd's stop times out holding the port |  | open |
 | [MUS-F-0031](#mus-f-0031) | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |  | open |
+| [MUS-F-0032](#mus-f-0032) | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… |  | unreviewed |
 
 ---
 
@@ -590,3 +591,25 @@ The owner watched a session from a laptop and reported it piping out unformatted
 | --- | --- |
 | Where | internal/session/stream.go, internal/web/assets/session.js |
 | Status | open |
+
+---
+
+## MUS-F-0032
+
+**The Bottom tabs either need to be locked to the height of the screen with the content scrolling…**
+
+finding · 2026-08-26
+
+Routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+The Bottom tabs either need to be locked to the height of the screen with the content scrolling behind them or moved to the top left of the screen on none mobile layouts.
+
+Just checked the phone, the lower tabs also aren't locked to screen height there, making them difficult to scroll to on the session tab since it constantly grows
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |

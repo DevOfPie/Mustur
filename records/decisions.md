@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-116 record(s), by identifier.
+117 record(s), by identifier.
 
 ## Index
 
@@ -128,6 +128,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0114](#mus-d-0114) | A test double that agrees with the bug is worse than no double | 2026-08-26 |
 | [MUS-D-0115](#mus-d-0115) | The browser is told nothing and the log is told everything | 2026-08-26 |
 | [MUS-D-0116](#mus-d-0116) | Columns are added to existing stores rather than assumed into them | 2026-08-26 |
+| [MUS-D-0117](#mus-d-0117) | Accounts are enforced on the deployment, in the only order that works | 2026-08-26 |
 
 ---
 
@@ -1853,3 +1854,21 @@ decision · 2026-08-26
 from: [MUS-F-0029](findings.md#mus-f-0029)
 
 CREATE TABLE IF NOT EXISTS builds a missing table and says nothing about one that already exists with the wrong shape, so a column added to schema.sql after a store was created never appears in it. MUS-F-0029 needed two such columns, and the store that needed them was the owner's live one. store.Open now adds missing columns on open, from a list in the source. Deliberately the smallest thing that works: columns are added, never dropped or retyped, and each carries a default so existing rows stay valid. Anything a column cannot express — a table split, a value that must be recomputed — is a decision rather than a migration, and does not belong in a helper. The record tables are not in the list and are not expected to be. They are insert-only and their shape is the export's contract; changing one is a decision, not a migration.
+
+---
+
+## MUS-D-0117
+
+**Accounts are enforced on the deployment, in the only order that works**
+
+decision · 2026-08-26
+
+enforces: [MUS-M-0011](milestones.md#mus-m-0011)
+
+needs: [MUS-M-0012](milestones.md#mus-m-0012)
+
+gated by: [MUS-F-0029](findings.md#mus-f-0029)
+
+and: [MUS-F-0030](findings.md#mus-f-0030)
+
+mustur.devofpie.com now runs with --accounts. A reader reads and only an owner reaches the surfaces that type into a running agent; an agent reaches the mandated tool call with a token and nothing else. Cloudflare Access is still in front of all of it, and taking it off remains a separate judgement (MUS-Q-0039). The order is the whole of it. Origin first, because a passkey binds to the origin it was registered on. Then the first owner, made on the machine, because a store that knows nobody has nobody to send an invitation. Then a passkey registered from a device and SEEN TO SIGN IN — not merely registered, which is the step MUS-F-0029 proves is not a formality: the first passkey registered here could never have signed in, and enforcing on top of it would have locked the owner out with no way back except the unit file. Then an agent token, because an MCP client carries no cookie and without one every session loses the tool call. Then the flag. Verified after the restart rather than assumed: an unauthenticated read redirects to sign-in, the session view and the composer redirect too, /signin and /healthz stay public, /mcp answers 403 without a token and 200 with, and the public hostname still answers 302 from Access. Sessions already signed in were not invalidated by the restart. One operational note, learned the hard way: stopping the service while a pane is being piped hangs for ninety seconds and holds the port (MUS-F-0030). Turning the pipe off first makes the stop immediate, and that is how this restart was done.

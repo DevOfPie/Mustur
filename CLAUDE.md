@@ -6,16 +6,18 @@ work is done, and [decisions.md](decisions.md) for why.
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
 yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
 everything through it is merged. 5b, accounts, and 5c, agent tokens, are built
-and not merged; nothing either adds is deployed.**
+and not merged, and both are **deployed and enforced** on this machine since
+2026-08-26.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
 nothing without a StrucGu checkout. On this machine the intake box, the decision
 queue, the records document and — since 2026-08-23 — the session view are
 published at `mustur.devofpie.com` behind Cloudflare Access; that is a
-deployment, not something a clone inherits. **Accounts are not published**: the
-running service passes neither `--origin` nor `--accounts`, so nothing from
-milestone 5b answers there. The session view is served only when `serve` is
+deployment, not something a clone inherits. **Since 2026-08-26 accounts are
+enforced there too**: the owner holds a passkey, an agent token exists, and
+`--accounts` is on, so a reader reads and only an owner reaches what types into
+a running agent. Access is still in front of all of it. The session view is served only when `serve` is
 given `--sessions`, because it types into a running agent's stdin: dropping the
 flag removes the surface and the tab the others offer to it, which is the knob
 to reach for if the Access policy ever widens. What is unconditionally here is
@@ -48,6 +50,10 @@ so `mustur account token` issues one carried in an `Authorization: Bearer`
 header. It opens `/mcp` and nothing else, is scoped to one project, and is
 revoked immediately rather than at the next restart. Without it, enforcement and
 the mandate could not both be on — measured, not reasoned.
+
+**A session on this machine now needs that token to make the mandated call.**
+`mustur account tokens` says which exist; a session refused with 403 on `/mcp`
+is missing one rather than looking at a stopped server.
 
 Nothing below 5c is built; do not describe any of it in the present tense.
 

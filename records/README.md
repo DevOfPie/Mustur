@@ -10,8 +10,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 55 | [questions.md](questions.md) |
-| decision | 116 | [decisions.md](decisions.md) |
-| finding | 32 | [findings.md](findings.md) |
+| decision | 117 | [decisions.md](decisions.md) |
+| finding | 33 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -225,6 +225,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0114](decisions.md#mus-d-0114) | decision | A test double that agrees with the bug is worse than no double |
 | [MUS-D-0115](decisions.md#mus-d-0115) | decision | The browser is told nothing and the log is told everything |
 | [MUS-D-0116](decisions.md#mus-d-0116) | decision | Columns are added to existing stores rather than assumed into them |
+| [MUS-D-0117](decisions.md#mus-d-0117) | decision | Accounts are enforced on the deployment, in the only order that works |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -256,6 +257,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0029](findings.md#mus-f-0029) | finding | No passkey from a password manager could ever sign in, because the backup flags were never stored |
 | [MUS-F-0030](findings.md#mus-f-0030) | finding | A session being piped makes the service unkillable, and systemd's stop times out holding the port |
 | [MUS-F-0031](findings.md#mus-f-0031) | finding | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |
+| [MUS-F-0032](findings.md#mus-f-0032) | finding | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
