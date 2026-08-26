@@ -96,7 +96,9 @@ left rail above it, the rail replacing the bar rather than joining it**
 (MUS-D-0118). The rail is the same `<nav>` every surface already ends with,
 moved by a media query, so one nav exists in the DOM at every width and these
 surfaces keep working with script blocked. Drawn before built, which is the
-thing MUS-F-0027 says this file keeps failing to do.
+thing MUS-F-0027 says this file keeps failing to do — **built and deployed
+2026-08-26**, and the shared chrome now lives in one place
+(`internal/web/shell.go`) rather than in six drifting copies.
 
 ## The constraints every surface inherits
 

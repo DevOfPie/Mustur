@@ -142,6 +142,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A fourth difference between the mandate and what milestone 1 scored](#2026-08-25--a-fourth-difference-between-the-mandate-and-what-milestone-1-scored) | The entry has now been wrong about its own completeness twice |
 | [A token's lifetime, handed back to the owner](#2026-08-25--a-tokens-lifetime-handed-back-to-the-owner) | An answered decision overridden by the party who asked it |
 | [The owner found the bug the whole suite agreed with](#2026-08-26--the-owner-found-the-bug-the-whole-suite-agreed-with) | No synced passkey could sign in; the test double shared the mistake |
+| [Building the bar found what the code had already decided](#2026-08-26--building-the-bar-found-what-the-code-had-already-decided) | The stylesheet and the script were both written for a shell nobody built |
 
 ---
 
@@ -2326,3 +2327,57 @@ One passkey, deleted rather than guessed at. The stored credential carried no
 flags, so no honest value could be backfilled for a security-relevant field —
 and leaving it in place would have made the authenticator refuse to create a
 replacement, since a registration excludes credentials the site already holds.
+
+## 2026-08-26 — building the bar found what the code had already decided
+
+The bar was drawn before it was built, which is the thing `docs/ui-surfaces.md`
+exists to make happen and has watched fail seven times. Building it turned up
+three things the drawing could not have.
+
+### Both halves were already written for a shell nobody built
+
+The session view's stylesheet said `#out { flex: 1 }` and
+`nav { margin-top: auto }` — an app shell with a scrolling pane and a bar on the
+bottom edge. It set `min-height: 100vh`, a floor with no ceiling, and gave
+`#out` no overflow, so the column grew with the output and carried the bar away.
+
+The script turned out to be the same story. `atBottom()` measures
+`out.scrollTop` against `out.scrollHeight` and always has — but a pane with no
+overflow never scrolls, so `scrollTop` stayed 0, the comparison always answered
+true, and the follow-the-tail logic was inert. **The plan named this as the
+half with real behaviour in it and estimated it wrong**: nothing needed writing,
+because it had already been written for the shell the CSS described. Both halves
+were waiting on three declarations.
+
+### The rail is positioned, not placed
+
+Grid was the tidier way to put a last-in-source `<nav>` into the first column,
+and it is wrong here. Making `body` a grid breaks the session view: `flex: 1`
+means nothing to a grid item, so the output pane stops filling the page and the
+composer loses the bottom edge. Taking the rail out of flow with
+`position: fixed` leaves every surface's internal layout exactly as it was,
+which is what a navigation change should cost.
+
+### The drift was worse than the count
+
+The plan said five templates carried their own copy of the bar. It was six, and
+they had already diverged: `intake` drew a 1px border where the rest drew
+1.4px, three surfaces made the page a full-height column and three did not, and
+`accountpage` had lost the rule that marks the current tab. That is the same
+drift that put a different bar on the records surface a day earlier.
+
+`shell.go` holds the shared half now, and `TestNoTemplateDeclaresItsOwnNavRules`
+reads the source rather than the output — because a second copy appears in the
+source, and that is the test that would have caught this the first time.
+
+### And one more test that passed for the wrong reason
+
+The assertion that `#out` scrolls looked for `overflow-y: auto` anywhere in
+`sessions.go` and matched the sub-agent box, which has carried that declaration
+all along. A true substring, proving nothing about the pane under test. It reads
+the `#out` rule itself now.
+
+That is the third time in three milestones. The habit is holding — each one was
+found by breaking the code and watching the test fail — but the rate is not
+falling, and the common shape is worth naming: **every one of them asserted
+something true about the file rather than about the thing.**
