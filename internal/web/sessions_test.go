@@ -362,6 +362,38 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 		}
 	}
 
+	// Identified in the list, read in the sheet (MUS-F-0038).
+	//
+	// The check above cannot tell the difference: it asks whether the final
+	// message is anywhere on the page, and it was just as true when the whole
+	// message was printed into the list and grew that box to 8,211px. So ask
+	// where it is, not whether it is.
+	row := between(body, `<button type="button" class="agent" data-id="a2">`, "</button>")
+	if row == "" {
+		t.Fatal("no row for the finished sub-agent, so nothing can open it")
+	}
+	if strings.Contains(row, "Nothing found.") {
+		t.Error("the row still carries the final message; that is the list doing the reading")
+	}
+	for _, want := range []string{"finished", "Explore"} {
+		if !strings.Contains(row, want) {
+			t.Errorf("the row does not identify the sub-agent: no %q", want)
+		}
+	}
+	if !strings.Contains(body, `<div class="say" data-for="a2">Nothing found.</div>`) {
+		t.Error("the final message is not where the sheet reads it from")
+	}
+	// And there is something for a row to open.
+	for _, want := range []string{`id="sheet"`, `role="dialog"`, `id="sheetread"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("no sheet to open: %q missing", want)
+		}
+	}
+	// A running sub-agent has said nothing, so it has nothing to read from.
+	if strings.Contains(body, `class="say" data-for="a1"`) {
+		t.Error("a running sub-agent was given a final message it has not sent")
+	}
+
 	// The rows are server-rendered. This surface carries one script and it is
 	// for the output stream; a sub-agent appearing is not worth a second.
 	if strings.Count(body, "<script") != 1 {
@@ -637,4 +669,18 @@ func TestMultiLineFromTheComposerReachesTheSession(t *testing.T) {
 	if !strings.Contains(received, "draft\nsecond") && !strings.Contains(received, "draft\r\nsecond") {
 		t.Errorf("the newline between lines did not survive: %q", received)
 	}
+}
+
+// between returns what sits between the first open and the next close, or "".
+func between(s, open, close string) string {
+	i := strings.Index(s, open)
+	if i < 0 {
+		return ""
+	}
+	rest := s[i+len(open):]
+	j := strings.Index(rest, close)
+	if j < 0 {
+		return ""
+	}
+	return rest[:j]
 }

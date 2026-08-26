@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-121 record(s), by identifier.
+122 record(s), by identifier.
 
 ## Index
 
@@ -133,6 +133,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0119](#mus-d-0119) | A jot may carry a picture, and the description travels rather than the picture | 2026-08-26 |
 | [MUS-D-0120](#mus-d-0120) | A scratch filing is not a record, so it costs no identifier | 2026-08-26 |
 | [MUS-D-0121](#mus-d-0121) | Destinations are a grouped list, and the kind is what tells two of them apart | 2026-08-26 |
+| [MUS-D-0122](#mus-d-0122) | A sub-agent's output is read in a sheet over the session, not in the list and not on its own page | 2026-08-26 |
 
 ---
 
@@ -1936,3 +1937,23 @@ asked by: [MUS-F-0036](findings.md#mus-f-0036)
 holds: [MUS-D-0041](#mus-d-0041)
 
 The owner asked why 'DevOfPie/Mustur' and 'Mustur' both appear as destinations and said the pair is confusing on its own. They are two different kinds of routing record: MUS-R-0001 is the repository — a remote, a checkout path, a contract file — and MUS-P-0001 is the project that contains it, which carries the MUS prefix. Filed to either, a jot comes out as MUS-F-####; only the cited destination differs, because a repository record names no prefix and falls back to the store's own. So today they are nearly the same choice, and the row gave no way to tell why there were two. Neither is removed. The distinction earns its keep the day a project has two repositories, or a jot is about the checkout rather than the work, and deleting a destination to tidy a control would be solving the wrong half. What was missing was the kind, so the kind is now the heading: Projects, then Repositories, then Machines, projects first because a jot usually belongs to one. The control itself is a list rather than a row of chips, which the owner asked to try. The chips were one line that scrolled sideways, on the reasoning that a clipped name is a wrong destination picked by accident, and they produced exactly that — MUS-F-0036, six choices in a row that could show four. A native select has no hidden end, becomes the system picker on a phone, takes type-ahead on a desktop, and is still a form control, so this surface still works with script blocked. Searching the list is noted for later rather than built: with six destinations a search box would be furniture.
+
+---
+
+## MUS-D-0122
+
+**A sub-agent's output is read in a sheet over the session, not in the list and not on its own page**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0056](questions.md#mus-q-0056)
+
+fixes: [MUS-F-0038](findings.md#mus-f-0038)
+
+Three shapes were drawn and put to the owner on MUS-Q-0056: its own page at /sessions/{project}/agent/{id}, a details element opening in place, or a sheet over the session. The recommendation was the page, on the grounds that it is the only shape with a URL you can send somebody. The owner chose the sheet, and the reason it is the better answer is the one the recommendation undersold: opening a page closes the socket. The byte offset the stream resumes from lives in the page's own script, so navigating away and back re-seeds from capture-pane rather than resuming — a cost paid on every open and every back, for an address nobody had asked to send anywhere.
+
+The sheet does not add a scripted surface. Six ship a script tag and the session view is one of them; it is also one of the only two that stop working without it, because it is a live terminal and cannot be server-rendered. So the count MUS-Q-0053 leaves open is untouched either way, and no seventh decision is being taken here. What the sheet adds is a second thing that page's client layer holds state for, which is a maintenance cost rather than a decision.
+
+Everything the sheet shows is read back out of the row it was opened from, rather than from the frame the socket last sent. That is one code path for the server's first paint and for every rebuild after it, and it means a tap before the first frame is answered the same as one after it — the rows are server-rendered, so the alternative would have left the first few seconds of every page load unable to answer a tap.
+
+Corrected in place: this first said the session view was one of two exceptions the composer's question and MUS-Q-0053 had named. It is one of six surfaces carrying script, and MUS-Q-0053 is the open question about what the rule counts rather than a decision granting an exception.

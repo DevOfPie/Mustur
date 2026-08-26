@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-55 record(s), by identifier.
+56 record(s), by identifier.
 
 ---
 
@@ -1252,3 +1252,25 @@ question · 2026-08-25
 | Answer | An optional --expires, defaulting to never. The clause the owner wrote is satisfied without making an ordinary Tuesday into an outage: a token issued for the deployment lasts until it is revoked, and a token for a one-off agent or somebody else's machine can be given a lifetime. The cost the owner accepted is that a token now has two ways to stop working, so 'why did this break' has two answers rather than one — which is why the listing names which. |
 | Answered | 2026-08-25 07:59 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0056
+
+**Where a sub-agent's output is read once the session only identifies it**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0038 |
+| Needed to proceed | yes |
+| Option | Its own page :: a URL you can send someone; costs the live tail position on every open :: /sessions/{project}/agent/{id}. The only shape with an address, and the only one where a page of prose gets a page to be read on. Leaving the session closes the socket — the byte offset it resumes from lives in the page's script, so coming back re-seeds from capture-pane rather than resuming. Nothing is lost and the agent is untouched; you land at the bottom of a fresh capture instead of exactly where you were. It is a thirteenth surface to keep. Recommended |
+| Option | Opens in place :: cheapest by a distance, but it is not really a viewer :: A details element, the same mechanism the records surface already uses for citations. No navigation, no new surface, no script, and the session keeps streaming while you read. What it is not is a viewer: long output reads in a box inside a box, and there is nothing to link to. |
+| Option | A sheet over the session :: keeps the socket and gives the output the screen; adds client state :: The session stays connected underneath and the output gets the whole screen. It does not change the scripted-surface count — the session view already carries script and cannot be server-rendered — but it adds a second thing that page's client layer holds state for, and there is still no URL. |
+| Asked by | whippy |
+| Answer | A sheet over the session |
+| Answered | 2026-08-26 11:56 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-08-26 11:57 |

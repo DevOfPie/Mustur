@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 55 | [questions.md](questions.md) |
-| decision | 121 | [decisions.md](decisions.md) |
+| question | 56 | [questions.md](questions.md) |
+| decision | 122 | [decisions.md](decisions.md) |
 | finding | 42 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -111,6 +111,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0053](questions.md#mus-q-0053) | question | The scripted-surface rule now counts six, not two |
 | [MUS-Q-0054](questions.md#mus-q-0054) | question | Milestone 6's records surface was built inside 5b |
 | [MUS-Q-0055](questions.md#mus-q-0055) | question | Your answer said a token has its own lifetime; I built it without one |
+| [MUS-Q-0056](questions.md#mus-q-0056) | question | Where a sub-agent's output is read once the session only identifies it |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -232,6 +233,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0119](decisions.md#mus-d-0119) | decision | A jot may carry a picture, and the description travels rather than the picture |
 | [MUS-D-0120](decisions.md#mus-d-0120) | decision | A scratch filing is not a record, so it costs no identifier |
 | [MUS-D-0121](decisions.md#mus-d-0121) | decision | Destinations are a grouped list, and the kind is what tells two of them apart |
+| [MUS-D-0122](decisions.md#mus-d-0122) | decision | A sub-agent's output is read in a sheet over the session, not in the list and not on its own page |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -269,7 +271,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0035](findings.md#mus-f-0035) | finding | The sub-agent box had no height cap, so it took the whole session view with it |
 | [MUS-F-0036](findings.md#mus-f-0036) | finding | The intake destination row hides its last choice behind a sideways scroll |
 | [MUS-F-0037](findings.md#mus-f-0037) | finding | A stored photo kept the metadata its camera wrote into it |
-| [MUS-F-0038](findings.md#mus-f-0038) | finding | Sub-Agents should only be identified in the main session and clicking on them should open a… |
+| [MUS-F-0038](findings.md#mus-f-0038) | finding | The session view printed a sub-agent's whole final message where its name belonged |
 | [MUS-F-0039](findings.md#mus-f-0039) | finding | Searching the destination list costs either the no-script promise or the name in the box |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |

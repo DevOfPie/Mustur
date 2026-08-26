@@ -121,9 +121,103 @@
       );
       row.appendChild(el("span", "pill" + (a.done ? " done" : ""), a.state));
       row.appendChild(el("span", "age", age(a.started, a.ended)));
+      row.appendChild(el("span", "more", "\u203a"));
       agentsBox.appendChild(row);
-      if (a.said) agentsBox.appendChild(el("p", "said", a.said));
+      // Out of view, not out of the page: the sheet reads from here, so it
+      // shows the same text whether or not a frame has arrived yet.
+      if (a.said) {
+        var say = el("div", "say", a.said);
+        say.setAttribute("data-for", a.id);
+        agentsBox.appendChild(say);
+      }
     }
+    // The rows were just thrown away and rebuilt, so an open sheet is now
+    // pointing at a button that no longer exists. Re-read it rather than close
+    // it: a sub-agent finishing while you are reading it should fill the sheet
+    // in, not shut it.
+    if (openID) fill(openID);
+  }
+
+  // The sheet.
+  //
+  // A sub-agent's output is read here instead of in the list, which is what
+  // MUS-F-0038 asked for; the owner chose it over giving each sub-agent its
+  // own page on MUS-Q-0056, so the socket is never dropped to read one.
+  //
+  // Everything it shows is read back out of the row it was opened from. That
+  // is one code path for the server's first paint and for every rebuild after
+  // it, and it means a tap before the first frame is answered the same as one
+  // after it.
+  var sheet = document.getElementById("sheet");
+  var openID = null;
+  var cameFrom = null;
+
+  function fill(id) {
+    var row = agentsBox && agentsBox.querySelector('.agent[data-id="' + id + '"]');
+    if (!row) return false;
+    var what = row.querySelector(".what");
+    var pill = row.querySelector(".pill");
+    var target = document.getElementById("sheetwhat");
+    target.textContent = what ? what.textContent : "";
+    target.className = what && what.classList.contains("untitled") ? "untitled" : "";
+    document.getElementById("sheetstate").textContent = pill ? pill.textContent : "";
+    var done = pill && pill.classList.contains("done");
+    document.getElementById("sheetstate").className = "pill" + (done ? " done" : "");
+    var ageTxt = row.querySelector(".age");
+    document.getElementById("sheetmeta").textContent =
+      (done ? "ran " : "running ") + (ageTxt ? ageTxt.textContent : "");
+
+    var say = agentsBox.querySelector('.say[data-for="' + id + '"]');
+    var read = document.getElementById("sheetread");
+    if (say) {
+      read.textContent = say.textContent;
+      read.className = "read";
+    } else {
+      // Nothing said yet. The owner asked for what it is doing and nothing
+      // else (MUS-Q-0056): a sub-agent is a call inside the CLI's own process,
+      // so there is no second pane to stream and inventing one would mean the
+      // hook carrying output, which milestone 4c deliberately did not build.
+      var state = pill ? pill.textContent : "";
+      read.textContent = done
+        ? "It finished without a final message."
+        : "Nothing said yet \u2014 it is " +
+          (state === "working" ? "between tool calls" : "in " + state) + ".";
+      read.className = "read quiet";
+    }
+    return true;
+  }
+
+  function openSheet(id, from) {
+    if (!sheet || !fill(id)) return;
+    openID = id;
+    cameFrom = from || null;
+    sheet.hidden = false;
+    document.getElementById("shut").focus();
+  }
+
+  function shutSheet() {
+    if (!sheet || sheet.hidden) return;
+    sheet.hidden = true;
+    openID = null;
+    // Back to the row it was opened from, so a keyboard is not dropped at the
+    // top of the page every time one is read.
+    if (cameFrom && document.contains(cameFrom)) cameFrom.focus();
+    cameFrom = null;
+  }
+
+  if (agentsBox) {
+    // Delegated, because drawAgents throws the rows away and rebuilds them.
+    agentsBox.addEventListener("click", function (e) {
+      var row = e.target.closest && e.target.closest(".agent");
+      if (row && row.dataset.id) openSheet(row.dataset.id, row);
+    });
+  }
+  if (sheet) {
+    document.getElementById("shut").addEventListener("click", shutSheet);
+    document.getElementById("veil").addEventListener("click", shutSheet);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") shutSheet();
+    });
   }
 
   function connect() {

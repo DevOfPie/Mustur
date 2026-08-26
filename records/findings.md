@@ -50,7 +50,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
 | [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. | fixed |
 | [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
-| [MUS-F-0038](#mus-f-0038) | Sub-Agents should only be identified in the main session and clicking on them should open a… |  | unreviewed |
+| [MUS-F-0038](#mus-f-0038) | The session view printed a sub-agent's whole final message where its name belonged | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. | fixed |
 | [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
 
 ---
@@ -767,21 +767,21 @@ The first real upload from the owner's phone arrived carrying EXIF, including th
 
 ## MUS-F-0038
 
-**Sub-Agents should only be identified in the main session and clicking on them should open a…**
+**The session view printed a sub-agent's whole final message where its name belonged**
 
 finding · 2026-08-26
 
-Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+answered by: [MUS-Q-0056](questions.md#mus-q-0056)
 
-Sub-Agents should only be identified in the main session and clicking on them should open a viewer for that sub-agent
+capped by: [MUS-F-0035](#mus-f-0035)
+
+Filed by the owner: sub-agents should only be identified in the main session, and clicking one should open a viewer for it. The session view printed each sub-agent's entire final message inline, which is what MUS-F-0035 capped at 30dvh a few hours earlier — and capping a thing ten times too big only moved the problem, leaving a 250px window onto a page of prose. The request separates two jobs the box was doing at once: identifying a sub-agent is three facts that fit on one line, reading what it said is a different act and wants the screen. Fixed by making each row a control carrying the identifier the hook has recorded since milestone 4c and the web layer had always dropped, and moving the output into a sheet over the session, chosen by the owner on MUS-Q-0056 over giving each sub-agent its own page.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
-| Routed to | Mustur (MUS-P-0001) |
-| Routing | chosen by the filer |
-| Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. |
+| Status | fixed |
 
 ---
 

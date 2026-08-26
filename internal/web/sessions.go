@@ -149,6 +149,9 @@ type sessionPage struct {
 // A subagentRow is one sub-agent as the page says it, with every value already
 // decided here rather than in the template.
 type subagentRow struct {
+	// ID addresses this sub-agent. The hook has recorded one since milestone
+	// 4c; nothing downstream could open a row without it reaching the page.
+	ID    string `json:"id"`
 	Title string `json:"title"` // what it was asked to do; empty when that could not be told
 	Type  string `json:"type"`
 	State string `json:"state"` // the tool in flight, "working", or "finished"
@@ -181,6 +184,7 @@ func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 	running := 0
 	for _, a := range live {
 		r := subagentRow{
+			ID:    a.ID,
 			Title: a.Task, Type: a.Type, For: since(a.For(now)), Said: a.Said,
 			Started: a.Started.Unix(),
 		}
@@ -590,33 +594,72 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   /* Sub-agents sit above the session's own output, because they are Mustur
      talking about the session rather than the session talking. Same tint as
      every other strip for the same reason. */
-  /* Bounded, and scrolling inside itself.
-     
-     It had no cap at all: three sub-agents carrying their final messages grew
-     this box to 8,211px on the owner's own session, which is not a row of
-     status — it is the page. Everything else in the column was squeezed to fit
-     around it. The rail collapsed to 17px so the session chips spilled under
-     the strip below, the output pane was left a line or two tall, and the
-     composer was pushed past the bottom of the screen (MUS-F-0035).
-     
-     A third of the screen, because these are a supporting detail above the
-     thing you came to read. dvh so a phone's URL bar is counted. */
+  /* One line each, and the cap is now a floor rather than the thing holding
+     this box down.
+
+     It carried every sub-agent's whole final message and had no cap at all:
+     three of them grew this box to 8,211px on the owner's own session, which
+     is not a row of status — it is the page. Everything else in the column was
+     squeezed around it: the rail collapsed to 17px so the session chips
+     spilled under the strip below, the output pane was left a line or two
+     tall, and the composer was pushed past the bottom of the screen
+     (MUS-F-0035). Capping it at a third of the screen stopped the squeezing
+     and left a 250px window onto a page of prose, which is why MUS-F-0038
+     asked for the reading to move somewhere else entirely.
+
+     The cap stays because a sub-agent with an unusually long task line should
+     not be able to do it again. dvh so a phone's URL bar is counted. */
   .agents { padding: .6rem 1rem; background: #8881;
             border-bottom: 1.4px solid var(--edge); font-size: .85em;
             flex: 0 0 auto; max-height: 30dvh;
             overflow-y: auto; overscroll-behavior: contain; }
   .agents > .count { opacity: .6; font-size: .9em; }
-  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .3rem 0;
-           white-space: nowrap; }
+  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .35rem 0;
+           white-space: nowrap; width: 100%; text-align: left; cursor: pointer;
+           background: none; border: 0; border-bottom: 1px solid var(--edge);
+           color: inherit; font: inherit; font-size: 1em; }
+  .agent:last-of-type { border-bottom: 0; }
+  .agent .more { opacity: .5; }
+  /* Never drawn. It is where the sheet reads a sub-agent's final message
+     from, so the sheet has something to show before the socket has sent a
+     frame — the first paint is the server's, and a tap should not have to wait
+     for a poll to answer it. hidden, so it has no layout box and cannot grow
+     this box the way the old inline paragraph did. */
+  .say { display: none; }
   .agent .what { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .agent .what.untitled { opacity: .55; font-style: italic; }
   .agent .pill { border: 1px solid var(--edge); border-radius: 999px;
                  padding: .05rem .5rem; font-size: .78em; }
   .agent .pill.done { border-color: var(--accent); background: var(--accent-soft); }
   .agent .age { opacity: .6; font-size: .82em; }
-  .said { margin: 0 0 .4rem .2rem; padding-left: .6rem;
-          border-left: 1.4px solid var(--edge); white-space: pre-wrap;
-          word-break: break-word; opacity: .85; font-size: .92em; }
+  /* A sub-agent's output is read here rather than in the list above, so the
+     list can go back to being a list. The owner chose this over giving each
+     sub-agent its own page on MUS-Q-0056: the session keeps streaming behind
+     it and the socket is never dropped.
+
+     Bottom-anchored and offset by the same variables the composer uses, so on
+     a wide screen it sits beside the rail rather than under it. */
+  .sheet { position: fixed; inset: 0; z-index: 20;
+           display: flex; flex-direction: column; justify-content: flex-end; }
+  .sheet[hidden] { display: none; }
+  .veil { position: absolute; inset: 0; background: #0007; }
+  .card { position: relative; margin-left: var(--shell-dock-left, 0px);
+          width: var(--shell-dock-width, 100%); max-height: 80dvh;
+          display: flex; flex-direction: column; background: var(--paper);
+          border-top: 1.4px solid var(--edge); }
+  .card > .top { display: flex; align-items: baseline; gap: .5rem;
+                 padding: .7rem 1rem; border-bottom: 1.4px solid var(--edge); }
+  .card > .top > strong { flex: 1; overflow: hidden; text-overflow: ellipsis;
+                          white-space: nowrap; }
+  .card > .top > .untitled { opacity: .55; font-style: italic; }
+  .card > .meta { padding: .5rem 1rem; opacity: .6; font-size: .85em;
+                  border-bottom: 1.4px solid var(--edge); }
+  .card > .read { padding: .9rem 1rem; overflow-y: auto;
+                  overscroll-behavior: contain; white-space: pre-wrap;
+                  word-break: break-word; }
+  .card > .read.quiet { opacity: .6; }
+  .shut { background: none; border: 0; color: inherit; font: inherit;
+          cursor: pointer; padding: 0 .3rem; opacity: .6; }
 ` + shellCSS + `
 </style>
 </head>
@@ -635,10 +678,19 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <div class="strip"><span class="grow" id="scrollback">connecting</span></div>
 <div class="agents"{{if not .Subagents}} hidden{{end}}>
   {{if .Subagents}}<div class="count">{{len .Subagents}} sub-agent{{if ne (len .Subagents) 1}}s{{end}}{{if .Running}} · {{.Running}} running{{end}}</div>
-  {{range .Subagents}}<div class="agent">
+  {{range .Subagents}}<button type="button" class="agent" data-id="{{.ID}}">
     {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
-    <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span>
-  </div>{{if .Said}}<p class="said">{{.Said}}</p>{{end}}{{end}}{{end}}
+    <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
+  </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{end}}{{end}}{{end}}
+</div>
+<div class="sheet" id="sheet" hidden>
+  <div class="veil" id="veil"></div>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="sheetwhat">
+    <div class="top"><strong id="sheetwhat"></strong><span class="pill" id="sheetstate"></span>
+      <button type="button" class="shut" id="shut" aria-label="Close">&times;</button></div>
+    <div class="meta" id="sheetmeta"></div>
+    <div class="read" id="sheetread"></div>
+  </div>
 </div>
 <pre id="out"></pre>
 <div class="dock">
