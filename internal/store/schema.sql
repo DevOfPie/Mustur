@@ -201,3 +201,30 @@ CREATE TABLE IF NOT EXISTS agent_token (
 );
 
 CREATE INDEX IF NOT EXISTS agent_token_by_project ON agent_token (project);
+
+-- An image attached to a record, held privately.
+--
+-- The bytes never reach `mustur export`. records/ is committed and this
+-- repository is public, so a screenshot written there would be a permanent
+-- publication of whatever was on the owner's screen — agent output, record
+-- text, an email address. What the export carries instead is an agent's
+-- summary of what the image showed, written into the record's own fields, which
+-- is the owner's decision: the description travels, the pixels do not.
+--
+-- Deliberately no filename column. A filename is the client's text and carries
+-- more than it looks like — a path, a date, a device, the content itself — and
+-- nothing here needs one. The identifier is the handle.
+CREATE TABLE IF NOT EXISTS attachment (
+  id         TEXT PRIMARY KEY,
+  record_id  TEXT NOT NULL,
+  -- Sniffed from the bytes, never taken from the request. A caller's
+  -- Content-Type is a claim about a file it also chose.
+  media_type TEXT NOT NULL,
+  bytes      BLOB NOT NULL,
+  size       INTEGER NOT NULL,
+  sha256     TEXT NOT NULL,
+  created    TEXT NOT NULL,
+  created_by TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS attachment_by_record ON attachment (record_id);

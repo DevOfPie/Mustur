@@ -22,6 +22,7 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -65,6 +66,10 @@ func (rr *Records) now() time.Time {
 func (rr *Records) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /records", rr.index)
 	mux.HandleFunc("GET /records/{id}", rr.one)
+	// The bytes of an attached image. On this surface deliberately: it is
+	// behind the same guard as the record the image belongs to, and it is the
+	// one place the picture is shown at all.
+	mux.HandleFunc("GET /records/image/{id}", rr.image)
 }
 
 // kinds is the order the document presents, which is the order the export
@@ -115,6 +120,11 @@ type recordView struct {
 	// Cites are identifiers found in the prose, which is where most of this
 	// tree's cross-references actually live.
 	Cites []citation
+	// Images are attachments held privately in the store. They are shown on
+	// this surface, which is behind the guard, and are never exported: the
+	// exported tree is committed to a public repository, so what travels is an
+	// agent's reading of the picture rather than the picture.
+	Images []imageView
 	// State is the verification, for a routing record. Empty for everything
 	// else: a decision cannot be stale in this sense.
 	State string
@@ -142,6 +152,14 @@ type recordsPage struct {
 	One     *recordView
 	Missing string
 	Checked string
+}
+
+// An imageView is one attached picture, named by identifier rather than by
+// filename — the filename was the sender's text and is not stored.
+type imageView struct {
+	ID   string
+	Kind string
+	Size string
 }
 
 // idInProse finds identifiers written in a record's text.
@@ -305,6 +323,16 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 	}
 	v := rr.view(rec, by)
 	v.State, v.Stale = rr.verify(rec)
+	// Only on a record's own page. The index lists hundreds and would fetch
+	// every picture at once for a reader who asked for none of them.
+	if shots, err := rr.Store.Attachments(r.Context(), id); err == nil {
+		for _, a := range shots {
+			v.Images = append(v.Images, imageView{
+				ID: a.ID, Kind: a.MediaType,
+				Size: fmt.Sprintf("%d KB", (a.Size+1023)/1024),
+			})
+		}
+	}
 	rr.render(w, recordsPage{Project: rr.Project, One: &v, Checked: rr.now().Format("15:04")})
 }
 
@@ -317,6 +345,26 @@ func less(a, b string) bool {
 		return a < b
 	}
 	return ident.Less(ia, ib)
+}
+
+// image serves one attached picture.
+//
+// The stored media type is used rather than a sniff of the response, and nosniff
+// plus a closed content policy say so to the browser: an image this refuses to
+// call a document must not be talked into behaving like one. Private caching
+// only — this is somebody's screenshot, not a static asset.
+func (rr *Records) image(w http.ResponseWriter, r *http.Request) {
+	a, data, err := rr.Store.Image(r.Context(), r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "no such image", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", a.MediaType)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; sandbox")
+	w.Header().Set("Cache-Control", "private, no-store")
+	w.Header().Set("Content-Disposition", "inline")
+	_, _ = w.Write(data)
 }
 
 func (rr *Records) render(w http.ResponseWriter, p recordsPage) {
@@ -382,6 +430,15 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   summary { cursor: pointer; opacity: .8; }
   details .inner { margin: .3rem 0 .5rem 1rem; padding-left: .6rem;
                    border-left: 2px solid var(--edge); }
+  /* Attached pictures. Shown here and nowhere else: this surface is behind
+     whatever gate is in front of the records, and the exported tree — which is
+     committed to a public repository — carries an agent's reading of the image
+     rather than the image. */
+  .shots { display: flex; flex-direction: column; gap: .5rem; margin: .6rem 0; }
+  .shots figure { margin: 0; }
+  .shots img { max-width: 100%; height: auto; display: block;
+               border: 1px solid var(--edge); border-radius: .4rem; }
+  .shots figcaption { font-size: .78em; opacity: .6; margin-top: .2rem; }
   .cites { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .4rem; }
   .badge { font-size: .78em; border: 1px solid var(--edge); border-radius: 999px;
            padding: .05rem .5rem; opacity: .75; }
@@ -431,6 +488,12 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   {{if .Body}}<p>{{.Body}}</p>{{end}}
   {{if .Data}}<div class="fields">
     {{range .Data}}<div><span class="k">{{.Key}}</span><span class="v">{{.Value}}</span></div>{{end}}
+  </div>{{end}}
+  {{if .Images}}<div class="shots">
+    {{range .Images}}<figure>
+      <a href="/records/image/{{.ID}}"><img src="/records/image/{{.ID}}" alt="attached to {{$.ID}}" loading="lazy"></a>
+      <figcaption>{{.Kind}} · {{.Size}} · held privately, never exported</figcaption>
+    </figure>{{end}}
   </div>{{end}}
   {{range .Refs}}{{if .Plain}}<div class="fields"><div><span class="k">{{.Key}}</span><span class="v">{{.ID}}</span></div></div>{{else}}<details>
     <summary>{{if .Key}}{{.Key}}: {{end}}{{.ID}}{{if .Known}} · {{.Kind}}{{end}}</summary>

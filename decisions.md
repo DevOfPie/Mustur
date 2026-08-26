@@ -144,6 +144,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The owner found the bug the whole suite agreed with](#2026-08-26--the-owner-found-the-bug-the-whole-suite-agreed-with) | No synced passkey could sign in; the test double shared the mistake |
 | [Building the bar found what the code had already decided](#2026-08-26--building-the-bar-found-what-the-code-had-already-decided) | The stylesheet and the script were both written for a shell nobody built |
 | [A browser, and the two things it found](#2026-08-26--a-browser-and-the-two-things-it-found) | Measuring the wrong thing comes with confidence attached |
+| [A picture, and the thing about it that travels](#2026-08-26--a-picture-and-the-thing-about-it-that-travels) | The export is public; the description goes, the pixels stay |
 
 ---
 
@@ -2426,3 +2427,44 @@ diagnosis, said plainly rather than dressed up as one (`MUS-F-0034`).
 pane that would not scroll, the field row that would not wrap, the flex child in
 each case expanding to its content because nothing said it could be smaller.
 Worth knowing as a shape rather than rediscovering three times.
+
+## 2026-08-26 — a picture, and the thing about it that travels
+
+The owner tried to report a layout defect with a screenshot, found the intake
+box takes text only, and asked for images.
+
+The obvious implementation was the wrong one. `records/` is committed and
+`github.com/DevOfPie/Mustur` is **public**, so a screenshot written beside the
+records would have published whatever was on the screen — agent output, record
+prose, an email address — permanently, and past any later deletion. That is a
+privacy decision wearing the costume of a storage decision, and it went to the
+owner as one.
+
+**The answer was none of the three options offered:** an agent's summary of what
+the image shows may be exported, as long as it carries nothing unnecessary,
+while the image itself stays private. A reader with only the clone still learns
+what the picture showed. Nothing is published that did not need to be. It is a
+better shape than any of the alternatives that were put up, which is the second
+time this week the owner has improved on the menu rather than picking from it.
+
+### What is deliberately not stored
+
+No filename. A filename is the sender's text and carries a date, a device and
+often the content of the picture; nothing here needs one, and the identifier is
+the handle. The media type is sniffed from the bytes rather than believed from
+the request, because a caller's `Content-Type` is a claim about a file the
+caller also chose. SVG is refused outright: it is XML that can carry script and
+would run on this origin the moment somebody opened it.
+
+### The comment that was not true yet
+
+The handler read the picture before writing the record, under a comment saying
+that a refused picture would not leave a jot behind claiming to have one. The
+validation was in `Attach`, which runs *after* the record exists, so every
+refused picture left a jot. The test written alongside it said so on the first
+run.
+
+That is the shape to keep noticing: a comment describing an intention the code
+next to it does not implement. `margin-top: auto` was the same thing, and so was
+`#out`'s scroll. Three this week, all found by something that ran rather than by
+reading.

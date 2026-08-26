@@ -6,8 +6,10 @@ package web
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -157,12 +159,33 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// A capture box on the public side of an ingress is the obvious place to
 	// post a gigabyte at. The limit is generous for a jot and finite, which is
 	// the whole requirement.
-	r.Body = http.MaxBytesReader(w, r.Body, MaxJot)
-	if err := r.ParseForm(); err != nil {
+	//
+	// An image raises the ceiling but does not remove it: MaxJot for the words,
+	// plus room for one picture and the multipart framing around it.
+	r.Body = http.MaxBytesReader(w, r.Body, MaxJot+store.MaxAttachment+(1<<16))
+	if err := r.ParseMultipartForm(1 << 20); err != nil && !errors.Is(err, http.ErrNotMultipart) {
 		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
 		return
 	}
 	text := r.PostFormValue("jot")
+	// The words keep their own limit. Raising the body cap to make room for a
+	// picture would otherwise have raised the ceiling on the text with it, and
+	// TestAnOversizedJotIsRefusedRatherThanStored said so immediately.
+	if len(text) > MaxJot {
+		render(w, page{
+			Error:   "that is longer than this box takes; it is for a line, not a document",
+			Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+		})
+		return
+	}
+
+	// Read the image before the record is written, so a picture this refuses
+	// does not leave a jot behind claiming to have one.
+	image, imageErr := readImage(r)
+	if imageErr != nil {
+		render(w, page{Error: imageErr.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		return
+	}
 	rec, to, err := intake.File(r.Context(), in.Store, intake.Request{
 		Project: in.Project,
 		Text:    text,
@@ -179,6 +202,17 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
 		return
 	}
+	if len(image) > 0 {
+		if _, err := in.Store.Attach(r.Context(), rec.ID, image, in.actor(r)); err != nil {
+			// The jot is already filed and is worth more than the picture. Say
+			// what happened rather than losing the words to a failed image.
+			render(w, page{
+				Error:   "filed " + rec.ID + ", but the image was not stored: " + err.Error(),
+				Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+			})
+			return
+		}
+	}
 	// The record is already in the store, so an export that fails has not lost
 	// the jot — but saying nothing would leave the exported tree quietly behind
 	// the store, which is the drift this repository has no gate for.
@@ -190,6 +224,42 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		template.URLQueryEscaper(rec.ID), template.URLQueryEscaper(to.Name),
 		template.URLQueryEscaper(to.Why), template.URLQueryEscaper(exported))
 	http.Redirect(w, r, q, http.StatusSeeOther)
+}
+
+// readImage takes the one picture a jot may carry.
+//
+// Nothing about the upload is trusted: not its name, which is never stored, not
+// its Content-Type, which the sender also chose, and not its length, which is
+// bounded by the reader rather than believed from a header. What comes back is
+// bytes, and store.Attach decides whether they are an image.
+func readImage(r *http.Request) ([]byte, error) {
+	if r.MultipartForm == nil {
+		return nil, nil
+	}
+	f, _, err := r.FormFile("image")
+	if errors.Is(err, http.ErrMissingFile) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+	}
+	defer f.Close()
+
+	// One byte past the limit is enough to know it is too big, and stops a
+	// large upload being read into memory in full only to be refused.
+	data, err := io.ReadAll(io.LimitReader(f, store.MaxAttachment+1))
+	if err != nil {
+		return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+	}
+	if len(data) > store.MaxAttachment {
+		return nil, store.ErrTooLarge
+	}
+	// Decided here, before the record is written. Leaving it to Attach meant a
+	// refused picture had already left a jot behind claiming to have one.
+	if _, err := store.ImageType(data); err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // actor is who filed a jot. Cloudflare Access puts the authenticated identity
@@ -307,6 +377,9 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   li { padding: .5rem 0; border-top: 1px solid var(--edge); }
   /* An identifier is the thing you want next: it goes to the record rather
      than sitting there as text you have to retype somewhere else. */
+  .pic { display: flex; flex-direction: column; gap: .3rem; margin-top: .6rem;
+         font-size: .88em; opacity: .8; }
+  .pic small { opacity: .7; font-size: .85em; }
   .rec { color: inherit; text-decoration: none; border-bottom: 1px solid var(--edge); }
   .rec:hover, .rec:focus-visible { border-bottom-color: var(--accent, currentColor); }
   li .to { opacity: .7; font-size: .85em; display: block; }
@@ -339,8 +412,12 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
-<form method="post" action="/intake">
+<form method="post" action="/intake" enctype="multipart/form-data">
   <textarea name="jot" autofocus placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
+  <label class="pic">A picture, if a picture says it faster
+    <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
+    <small>Held privately. The record carries what an agent reads in it, never the picture.</small>
+  </label>
   {{if .Destinations}}<div class="dests">
     <label><input type="radio" name="to" value="" checked> Route it for me</label>
     {{range .Destinations}}<label><input type="radio" name="to" value="{{.ID}}"> {{.Name}}</label>{{end}}

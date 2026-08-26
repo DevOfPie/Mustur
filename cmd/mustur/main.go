@@ -54,6 +54,7 @@ const usage = `mustur — records and routing for one project
                   list | grant                who Mustur knows, and what they may do
                   token --for LABEL [--expires D]  an agent's credential; printed once, never stored
                   tokens | revoke ID          which agents can reach the tool call
+  mustur image    list | read ID [--out F]   a jot's picture, held privately and never exported
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
@@ -112,6 +113,8 @@ func run(argv []string) error {
 		return cmdSession(args)
 	case "account":
 		return cmdAccount(args)
+	case "image":
+		return cmdImage(args)
 	case "audit":
 		return cmdAudit(args)
 	case "version", "--version", "-version":

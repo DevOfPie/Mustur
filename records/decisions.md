@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-118 record(s), by identifier.
+119 record(s), by identifier.
 
 ## Index
 
@@ -130,6 +130,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0116](#mus-d-0116) | Columns are added to existing stores rather than assumed into them | 2026-08-26 |
 | [MUS-D-0117](#mus-d-0117) | Accounts are enforced on the deployment, in the only order that works | 2026-08-26 |
 | [MUS-D-0118](#mus-d-0118) | The tab bar pins on a phone and becomes a left rail on a wide screen | 2026-08-26 |
+| [MUS-D-0119](#mus-d-0119) | A jot may carry a picture, and the description travels rather than the picture | 2026-08-26 |
 
 ---
 
@@ -1889,3 +1890,17 @@ holds: [MUS-D-0041](#mus-d-0041)
 pattern: [MUS-F-0027](findings.md#mus-f-0027)
 
 MUS-F-0032, answered. The bar is pinned to the viewport below 60rem and replaced by a left rail above it — one navigation per width, never two ways to the same four places on one screen. MUS-D-0041's four destinations are unchanged; only where they sit changes. The session view is a repair rather than a choice, and would have been done either way: its own stylesheet already sets min-height:100vh, #out{flex:1} and nav{margin-top:auto}, which is an app shell that never caps its height and whose output pane never scrolls. The margin-top:auto is the proof of an intent the other two lines defeat. Three things the drawing settled that a code change would have decided silently. The rail needs no second template: it is the same nav element every surface already ends with, moved into the first grid column by a media query, so one nav exists in the DOM at every width and the tab set cannot drift. The breakpoint is derived rather than picked — the content column is already 46rem and a 13rem rail beside it needs 59rem, so 60rem is the first round width at which the reading column survives the rail unchanged. And the shared shell CSS moves into one Go constant, because five templates each carry their own copy of the nav rules and have already drifted once, which is how the records surface ended up with a different bar from every other surface. Drawn before built, in plan-ba6b90e7d9064d09, which is what MUS-F-0027 says this repository keeps failing to do.
+
+---
+
+## MUS-D-0119
+
+**A jot may carry a picture, and the description travels rather than the picture**
+
+decision · 2026-08-26
+
+asked by: [MUS-F-0032](findings.md#mus-f-0032)
+
+built on: [MUS-D-0024](#mus-d-0024)
+
+The owner tried to report a layout defect with a screenshot and found the intake box takes text only, so they asked for images. The obvious implementation was the wrong one: records/ is committed and github.com/DevOfPie/Mustur is public, so a screenshot written beside the records would have published whatever was on the screen — agent output, record text, an email address — permanently and past any later deletion. Three options went to the owner and the answer was none of them: an agent's summary of what the image shows may be exported, as long as it carries nothing unnecessary, while the image itself stays private. That is a better shape than any offered. A reader with only the clone still learns what the picture showed, and nothing is published that did not need to be. The bytes live in an attachment table in the store, which never leaves the machine, and are shown only on a record's own page behind whatever gate is in front of the records. `mustur image read` hands one to an agent, which looks at it and writes the description into the record with `mustur amend`. What is not stored is as deliberate as what is. No filename: a filename is the sender's text and carries a date, a device and often the content, and nothing needs one. The media type is sniffed from the bytes rather than believed from the request, and SVG is refused outright — it is XML that can carry script and would run on this origin. Ten megabytes, four raster formats, served with nosniff and a closed content policy.
