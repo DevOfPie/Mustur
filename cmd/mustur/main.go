@@ -42,6 +42,7 @@ const usage = `mustur — records and routing for one project
   mustur rebuild  [--db PATH]                 re-derive the materialized latest from the log
   mustur add KIND --title T [...]             write one record into the store
   mustur amend ID --title T [...]             correct one, without losing what it said
+  mustur reroute ID --to DEST                re-file a mis-routed jot; the old one stays, superseded
   mustur ask      --title T [--blocks W]      raise a question the owner has to answer
                   [--option "L :: line :: detail"]  an answer they can pick, repeatable
                   [--needed]                  the work cannot proceed without the answer
@@ -102,6 +103,8 @@ func run(argv []string) error {
 		return cmdWrite(args, "create")
 	case "amend":
 		return cmdWrite(args, "amend")
+	case "reroute":
+		return cmdReroute(args)
 	case "ask":
 		return cmdAsk(args)
 	case "surfaced":

@@ -36,6 +36,21 @@ const (
 	FieldAnswer = "Answer"
 	// FieldAnswered is when they said it.
 	FieldAnswered = "Answered"
+	// FieldRelayed names who wrote an answer down and where the owner gave it,
+	// when those are not the same act.
+	//
+	// The rule is still that the asker may not answer: an agent that could
+	// close its own question could close the gate it is meant to be held by.
+	// What the owner allowed on MUS-Q-0059 is narrower — an agent may record an
+	// answer the owner gave somewhere else, and must say so. Empty means the
+	// answer was recorded by the hand that gave it, which is the only kind that
+	// needs no qualification.
+	//
+	// Nothing here can verify the claim. On a single-tenant machine nothing
+	// could. What it can do is make the claim explicit and attributed, so a
+	// reader knows to disbelieve it rather than reading a relayed answer as the
+	// owner having been here.
+	FieldRelayed = "Relayed"
 	// FieldSession identifies the session that raised the question, in whatever
 	// form that session has an identity. It is opaque here and always was: the
 	// seven questions written before milestone 4a carry a Claude Code session
@@ -270,6 +285,18 @@ func Answer(r *record.Record, answer, at string) {
 	Set(r, FieldStatus, StatusAnswered)
 	Set(r, FieldAnswer, answer)
 	Set(r, FieldAnswered, at)
+}
+
+// AnswerRelayed closes a question with an answer the owner gave elsewhere,
+// naming who wrote it down and where it was given.
+//
+// The queue used to keep questions the owner had already settled, because they
+// answered in a prompt or a plan and the only hand available to record it was
+// the one that had asked (MUS-F-0045). This is the narrow exception the owner
+// chose over answering everything twice.
+func AnswerRelayed(r *record.Record, answer, at, by, from string) {
+	Answer(r, answer, at)
+	Set(r, FieldRelayed, "written down by "+by+", from "+from)
 }
 
 // Withdraw closes a question that no longer wants an answer: overtaken by

@@ -136,7 +136,22 @@ Three rules bind every session in this repository:
   everything independent of the answer first, which is what
   [workflow.md](workflow.md) asks for anyway.
 
-  You may **withdraw** your own question. You may not **answer** it.
+  You may **withdraw** your own question. You may not **answer** it — but you
+  may **write down** an answer the owner gave somewhere else:
+
+  ```
+  mustur answer <ID> --from-owner "where they said it" --answer "…"
+  ```
+
+  It records who wrote it down and where it came from, so nobody reads a relay
+  as the owner having been here. An answer already recorded is not written over
+  without `--reanswer` ([MUS-D-0126](records/decisions.md#mus-d-0126)).
+
+  A jot that `Route it for me` put in the wrong place is corrected with
+  `mustur reroute <ID> --to <DEST>`: it files a new record at the right
+  destination and retires the old one, which keeps its identifier and still
+  resolves. The prefix is the routing, so moving a record and renaming it are
+  the same act ([MUS-D-0125](records/decisions.md#mus-d-0125)).
 
 ## Mustur
 

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-124 record(s), by identifier.
+126 record(s), by identifier.
 
 ## Index
 
@@ -136,6 +136,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0122](#mus-d-0122) | A sub-agent's output is read in a sheet over the session, not in the list and not on its own page | 2026-08-26 |
 | [MUS-D-0123](#mus-d-0123) | The sub-agent list lives in a drawer that is shut by default, and the session strip is a dropdown | 2026-08-26 |
 | [MUS-D-0124](#mus-d-0124) | A control whose presence depends on scripting is decided by the browser, not by our script | 2026-08-26 |
+| [MUS-D-0125](#mus-d-0125) | A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier | 2026-08-26 |
+| [MUS-D-0126](#mus-d-0126) | An agent may write down an answer the owner gave elsewhere, and must say where | 2026-08-26 |
 
 ---
 
@@ -2010,3 +2012,55 @@ The owner asked for it to appear only when scripting is disabled, having first a
 The reason to prefer it over a hidden attribute is not tidiness. Anything the server renders and the script removes has two states that must agree, and they are delivered separately: the markup is one response and the script is another. When they disagree — a stale page, a blocked asset, a script that never runs — the failure is a control appearing that nobody expected, which is what happened. noscript is resolved by the browser at parse time from a single fact it already knows, so there is no second state to keep in step.
 
 The general rule this leaves behind: if a control's presence depends on scripting, let the browser decide it, not our script. And a bare element selector is a rule about every element of that kind that will ever exist on the surface — the composer's form rule silently reshaped a form written months later, which is worth remembering before writing the next one.
+
+---
+
+## MUS-D-0125
+
+**A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0058](questions.md#mus-q-0058)
+
+fixes: [MUS-F-0044](findings.md#mus-f-0044)
+
+first used on: [IDW-F-0004](findings.md#idw-f-0004)
+
+The obvious correction — a --to flag on amend — is not available, and the reason is the whole design.
+
+The identifier is the routing. IDW-F-0004 is called IDW because it went to the idea inbox; the prefix is derived from the destination at the moment of filing. Moving a record and renaming it are therefore the same act, and identifiers are permanent.
+
+Asked which promise gives way (MUS-Q-0058), the owner chose neither. 'mustur reroute ID --to DEST' files a new record at the right destination and retires the old one in place: it keeps its identifier, still resolves, carries Superseded by, and stops making a claim. Every citation that already exists — in a commit message, a decision, a comment nobody can search — keeps working, and no prefix ever lies about where its record lives.
+
+The cost was chosen with open eyes: a stub is left in the wrong project's list, and its counter goes up rather than down.
+
+Two things the implementation had to get right. It files through intake rather than writing the record itself, so the destination, the prefix and the field shape all come from the code that files everything else. And it carries the old record's title, body, date and fields across, keeping only intake's routing decision — without that, rerouting re-derived the title from the body and reset the status, quietly undoing every amendment made since the jot was filed.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/reroute.go |
+
+---
+
+## MUS-D-0126
+
+**An agent may write down an answer the owner gave elsewhere, and must say where**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0059](questions.md#mus-q-0059)
+
+fixes: [MUS-F-0045](findings.md#mus-f-0045)
+
+The rule stands: the asker may withdraw its own question and may not answer it, because a gate that can be closed by the thing it is holding is not a gate. What the owner allowed on MUS-Q-0059 is narrower.
+
+'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. An unattributed relay would be worse than none, because it would read exactly like the owner having answered here. Nothing can verify the claim — on a single-tenant machine nothing could — so what it does instead is make the claim explicit, and disbelievable.
+
+This closes MUS-F-0045: a question answered in a prompt, a plan or a conversation no longer sits open in the queue until the owner answers it a second time.
+
+It also arrived with a hazard, which cost a record before it was caught. Nothing stopped an answer being written over an answer. MUS-Q-0056 had been answered by the owner through the queue; a relay written over it replaced their words, moved the timestamp four hours, and added a Relayed line claiming they had answered somewhere they had not. It was restored from the event log, which is the only reason this is a story rather than a loss. 'answer' now refuses a question that already carries one unless --reanswer is passed, and prints what is there. An answered question is the thing everything downstream was allowed to proceed on, and it should be hard to change by accident.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/questions.go, internal/question/question.go |

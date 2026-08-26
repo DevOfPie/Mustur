@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-50 record(s), by identifier.
+51 record(s), by identifier.
 
 ## The queue
 
@@ -13,7 +13,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
-| [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | fixed |
+| [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
@@ -57,9 +57,10 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
 | [MUS-F-0042](#mus-f-0042) | The quiet timer measured the age of the tab, not the silence of the session | A session left idle 1.5s reported quiet=0 before and >=1 after, over a real tmux session and a real socket. Mutation-checked: restoring 'quiet := 0' fails the test with the same reading the owner saw. | fixed |
 | [MUS-F-0043](#mus-f-0043) | A dead Mustur keeps its port for as long as its tmux pipe is running | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. | open |
-| [MUS-F-0044](#mus-f-0044) | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there is no way to correct that | amend exposes no routing flag. The prefix in an identifier is derived from the destination at intake, so re-routing and re-identifying are the same act. | blocked on MUS-Q-0058 |
-| [MUS-F-0045](#mus-f-0045) | A question answered somewhere other than Mustur stays open in Mustur | mustur answer refuses when the actor recording the answer is the actor who raised the question: 'MUS-Q-0057 was asked by whippy, and whippy cannot answer it.' | blocked on MUS-Q-0059 |
+| [MUS-F-0044](#mus-f-0044) | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that |  | fixed |
+| [MUS-F-0045](#mus-f-0045) | A question answered somewhere other than Mustur stayed open in Mustur |  | fixed |
 | [MUS-F-0046](#mus-f-0046) | A submit button nobody drew, hidden by script, stacked by a selector written for another form | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. | fixed |
+| [MUS-F-0047](#mus-f-0047) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | fixed |
 
 ---
 
@@ -131,6 +132,8 @@ Testing image on mobile
 
 finding · 2026-08-26
 
+Superseded by: [MUS-F-0047](#mus-f-0047)
+
 Filed by the owner: the drawer takes more space than it needs on a laptop, and being able to drag it wider would be nice when wanted.
 
 Built. A grip on the drawer's leading edge, above 60rem only — on a phone the drawer is already most of the screen and there is nothing to widen into. It is a button with a separator role rather than a decorated edge, so it is focusable and moves on the arrow keys: a drag handle that answers only a pointer is one that some people cannot move at all.
@@ -145,7 +148,8 @@ This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q
 | --- | --- |
 | Where | internal/web/sessions.go, internal/web/assets/session.js |
 | Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
-| Status | fixed |
+| Status | superseded |
+| Superseded by | MUS-F-0047 — it asks for a change to Mustur's own session view, which the idea inbox does not own |
 
 ---
 
@@ -923,51 +927,43 @@ The mechanism is not proven. The obvious explanation is fd inheritance, but tmux
 
 ## MUS-F-0044
 
-**IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there is no way to correct that**
+**IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that**
 
 finding · 2026-08-26
 
-about: [IDW-F-0004](#idw-f-0004)
-
-blocked by: [MUS-Q-0058](questions.md#mus-q-0058)
+fixed by: [MUS-D-0125](decisions.md#mus-d-0125)
 
 Filed by the owner: IDW-F-0004 should have been routed to Mustur and was not — correct this, and plan a route for corrections of an incorrect 'Route it for me' in future.
 
-The jot itself is a request to drag the sub-agent drawer wider, which is plainly Mustur's. Intake routed it to the idea inbox under 'no destination is obvious'.
+Both done. 'mustur reroute' exists, and IDW-F-0004 has been corrected with it: MUS-F-0047 now carries the request, and IDW-F-0004 stays in the idea inbox as a stub that still resolves and points at its replacement.
 
-The correction cannot be made with what exists. amend takes a title, a body, refs and fields, and no destination — and that is not an oversight. The identifier prefix is the routing: IDW-F-0004 is IDW because it went to the idea inbox. Changing where it lives means changing what it is called, and identifiers are permanent. So a correction route is not a flag, it is a decision about which of those two promises gives way. Raised as MUS-Q-0058.
-
-The work the jot asked for is built regardless; only its filing is in the wrong place.
+The correction could not be a flag on amend, because the identifier prefix is the routing — IDW-F-0004 is IDW because of where it went. The owner chose on MUS-Q-0058 that neither the routing nor the permanence gives way: a correction files a new record and retires the old one in place.
 
 | Field | Value |
 | --- | --- |
-| Where | cmd/mustur/amend.go, internal/intake |
-| Evidence | amend exposes no routing flag. The prefix in an identifier is derived from the destination at intake, so re-routing and re-identifying are the same act. |
-| Status | blocked on MUS-Q-0058 |
+| Where | cmd/mustur |
+| Status | fixed |
 
 ---
 
 ## MUS-F-0045
 
-**A question answered somewhere other than Mustur stays open in Mustur**
+**A question answered somewhere other than Mustur stayed open in Mustur**
 
 finding · 2026-08-26
 
-raised as: [MUS-Q-0059](questions.md#mus-q-0059)
+fixed by: [MUS-D-0126](decisions.md#mus-d-0126)
 
 Filed by the owner: decisions made elsewhere are not cleared from Mustur.
 
-The queue holds what has been asked and not answered here. When the owner answers in a prompt, in a plan's question form, or in conversation, the question stays open — because the store refuses to let the asker record the answer, by design: you may withdraw your own question and you may not answer it.
+Fixed. 'mustur answer --from-owner' lets an agent write down an answer the owner gave in a prompt, a plan or a conversation, naming where it was given, and marks the record Relayed so nobody reads it as the owner having answered here. The rule that the asker may not answer unqualified still stands.
 
-That rule is what makes an answered record mean something, so the fix is not to drop it. But the cost lands on the owner, who answers once where they are and then has to answer again where the record lives. Seen twice today: MUS-Q-0056 and MUS-Q-0057 were both answered in a plan, and MUS-Q-0057 could not be closed here at all.
-
-Raised as MUS-Q-0059, because every route out of it trades against the same rule.
+Four questions were closed with it immediately, three of which had been answered elsewhere hours earlier and were still sitting open: MUS-Q-0056, MUS-Q-0057, MUS-Q-0058 and MUS-Q-0059 — the last being the question that authorised the mechanism, closed by the mechanism.
 
 | Field | Value |
 | --- | --- |
-| Where | internal/question, cmd/mustur/answer.go |
-| Evidence | mustur answer refuses when the actor recording the answer is the actor who raised the question: 'MUS-Q-0057 was asked by whippy, and whippy cannot answer it.' |
-| Status | blocked on MUS-Q-0059 |
+| Where | cmd/mustur |
+| Status | fixed |
 
 ---
 
@@ -996,3 +992,34 @@ Fixed on the owner's instruction that the button should appear only with scripti
 | Where | internal/web/sessions.go |
 | Evidence | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. |
 | Status | fixed |
+
+---
+
+## MUS-F-0047
+
+**The sub-agent drawer can be dragged wider on a desktop screen**
+
+finding · 2026-08-26
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Corrects: [IDW-F-0004](#idw-f-0004)
+
+Filed by the owner: the drawer takes more space than it needs on a laptop, and being able to drag it wider would be nice when wanted.
+
+Built. A grip on the drawer's leading edge, above 60rem only — on a phone the drawer is already most of the screen and there is nothing to widen into. It is a button with a separator role rather than a decorated edge, so it is focusable and moves on the arrow keys: a drag handle that answers only a pointer is one that some people cannot move at all.
+
+Only --drawer-w is set. Everything that has to move with it already reads that variable — the drawer's width, and the min() the reading column and the composer share — so the composer narrows in step without the resize code knowing the composer exists.
+
+The width is remembered per browser; the drawer's open state deliberately is not (MUS-Q-0057). Those are different kinds of thing: shut by default is a statement about what is happening, and a width is how this screen suits this person. Re-dragging it every load would be the annoyance the request exists to remove. Stated as an assumption rather than asked, because it is one line either way.
+
+This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q-0058, because the identifier prefix is the routing and there is no way to change one without deciding what happens to the other.
+
+| Field | Value |
+| --- | --- |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
+| Status | fixed |
+| Corrects | IDW-F-0004 — it asks for a change to Mustur's own session view, which the idea inbox does not own |

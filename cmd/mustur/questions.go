@@ -174,6 +174,14 @@ func cmdAnswer(args []string) error {
 	withdraw := fs.Bool("withdraw", false, "close it without an answer: overtaken, or no longer worth asking")
 	at := fs.String("at", "", "when (default now)")
 	actor := fs.String("actor", defaultActor(), "who is recording the answer")
+	// The asker may not answer, and may write down an answer given elsewhere.
+	// The flag takes where, not a bare yes: an unattributed relay would be
+	// worse than none, because it would read exactly like the owner having
+	// answered here (MUS-Q-0059).
+	relay := fs.String("from-owner", "",
+		"record an answer the owner gave elsewhere, naming where they gave it")
+	again := fs.Bool("reanswer", false,
+		"write over an answer that is already recorded")
 	id, err := parseWithPositional(fs, args, "answer needs one identifier")
 	if err != nil {
 		return err
@@ -198,13 +206,35 @@ func cmdAnswer(args []string) error {
 		// Answering your own is not. The owner's rule: the raiser may withdraw,
 		// never answer, so the gate cannot be closed by the thing it is
 		// enforcing against.
-		if asker := question.AskedBy(*r); asker != "" && asker == *actor {
+		if asker := question.AskedBy(*r); asker != "" && asker == *actor && strings.TrimSpace(*relay) == "" {
 			return fmt.Errorf("%s was asked by %s, and %s cannot answer it.\n"+
 				"An answer comes from the owner, through /questions or from someone else's hand.\n"+
+				"If the owner answered somewhere else, write it down with --from-owner naming where.\n"+
 				"If it is overtaken rather than answered, close it with --withdraw.",
 				r.ID, asker, *actor)
 		}
-		question.Answer(r, *answer, when)
+		// Refusing to write over an answer that is already there.
+		//
+		// Nothing stopped this, and it cost a real record: MUS-Q-0056 had been
+		// answered by the owner through the queue, and a relay written over it
+		// replaced their words, moved the timestamp four hours, and added a
+		// Relayed line claiming they had answered somewhere they had not. It
+		// was restored from the log, which is the only reason this is a story
+		// rather than a loss.
+		//
+		// An answered question is the one thing in the store that should be
+		// hard to change by accident, because it is what everything downstream
+		// was allowed to proceed on.
+		if had, ok := r.Get(question.FieldAnswer); ok && strings.TrimSpace(had) != "" && !*again {
+			return fmt.Errorf("%s is already answered:\n  %s\n"+
+				"Writing over an answer replaces what the owner said. If that is really meant, pass --reanswer.",
+				r.ID, strings.TrimSpace(had))
+		}
+		if where := strings.TrimSpace(*relay); where != "" {
+			question.AnswerRelayed(r, *answer, when, *actor, where)
+		} else {
+			question.Answer(r, *answer, when)
+		}
 		dctx, cancel := context.WithTimeout(context.Background(), session.DeliverTimeout)
 		defer cancel()
 		question.Set(r, question.FieldDelivered,
