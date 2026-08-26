@@ -527,13 +527,32 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .strip .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   /* The only thing that scrolls. min-height:0 is what lets a flex child be
      smaller than its content — without it the pane grows instead of
-     scrolling, which is the whole of the bug. */
+     scrolling, which is the whole of the bug.
+
+     The bottom padding is the dock's own height, measured by the script and
+     written back as --dock-h: the output runs behind the dock, as the owner
+     asked, but its last lines still come to rest above it rather than under
+     it. The fallback is a sensible dock height for the moment before the
+     script has measured one. */
   #out { flex: 1; min-height: 0; overflow-y: auto;
-         padding: .8rem 1rem; margin: 0; white-space: pre-wrap;
+         padding: .8rem 1rem calc(var(--dock-h, 9rem) + .8rem);
+         margin: 0; white-space: pre-wrap;
          word-break: break-word; font-size: .9em;
          overscroll-behavior: contain; }
+
+  /* The quiet timer and the composer, locked to the bottom of the screen.
+
+     Fixed rather than last-in-a-column, because a column only holds its shape
+     while the shell's height is what the browser says it is — and the owner
+     watched the whole lower section walk off the bottom of a phone. Fixed
+     elements are anchored to the viewport and cannot be pushed anywhere. It
+     sits above the tab bar; where the bar becomes a rail there is nothing
+     below it, and --shell-dock-offset is 0. */
+  .dock { position: fixed; left: 0; right: 0; bottom: var(--shell-dock-offset, 0px);
+          z-index: 2; background: var(--paper);
+          border-top: 1.4px solid var(--edge); }
   #foot { padding: .4rem 1rem; background: #8881;
-          border-top: 1.4px solid var(--edge); font-size: .82em; opacity: .75; }
+          font-size: .82em; opacity: .75; }
   form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
          border-top: 1.4px solid var(--edge); }
   form .row { display: flex; gap: .5rem; align-items: flex-end; }
@@ -602,6 +621,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   </div>{{if .Said}}<p class="said">{{.Said}}</p>{{end}}{{end}}{{end}}
 </div>
 <pre id="out"></pre>
+<div class="dock">
 <div id="foot">quiet 0s</div>
 <form id="say">
   <div class="dest"><span class="grow" id="dest">Send to {{.Project}}</span><a href="/compose" id="compose-link">Compose…</a><span id="kept" hidden>draft kept</span></div>
@@ -612,6 +632,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
     <button type="submit">Send</button>
   </div>
 </form>
+</div>
 {{end}}
 <nav>
   <a href="/sessions" class="here">Sessions</a>

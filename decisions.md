@@ -143,6 +143,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [A token's lifetime, handed back to the owner](#2026-08-25--a-tokens-lifetime-handed-back-to-the-owner) | An answered decision overridden by the party who asked it |
 | [The owner found the bug the whole suite agreed with](#2026-08-26--the-owner-found-the-bug-the-whole-suite-agreed-with) | No synced passkey could sign in; the test double shared the mistake |
 | [Building the bar found what the code had already decided](#2026-08-26--building-the-bar-found-what-the-code-had-already-decided) | The stylesheet and the script were both written for a shell nobody built |
+| [A browser, and the two things it found](#2026-08-26--a-browser-and-the-two-things-it-found) | Measuring the wrong thing comes with confidence attached |
 
 ---
 
@@ -2381,3 +2382,47 @@ That is the third time in three milestones. The habit is holding — each one wa
 found by breaking the code and watching the test fail — but the rate is not
 falling, and the common shape is worth naming: **every one of them asserted
 something true about the file rather than about the thing.**
+
+## 2026-08-26 — a browser, and the two things it found
+
+Two CSS defects in a row reached the owner because nothing here could see a
+rendered page, and a third was about to be guessed at. A headless browser is
+installed now, and the difference was immediate.
+
+**It found the desktop overlap in one measurement.** The rail was `width: 13rem`
+with no `box-sizing`, so its real width was 13rem plus a rem of padding plus a
+border — about 14rem — over a column whose left margin was 13rem. The rail width
+and the gutter are named values now and the content's margin is computed from
+them, so the two cannot drift apart.
+
+**It found the records overflow the owner had described sideways.** They
+reported the records tab as wider than the others, with only three of four tabs
+reachable. The page was 601px wide on a 390px screen: a field row is a flex line
+whose value will not shrink below its content unless told it may, and
+`min-width: 0` is the telling. The bar is fixed to the viewport, but a page
+wider than the viewport is one a phone lets you pan, and the bar pans with it.
+`MUS-F-0033`.
+
+**And it caught the builder inventing a defect.** The first clearance
+measurement said the records page had text underneath the bar. It does not:
+Chromium keeps layout boxes for a *closed* `<details>` under
+`content-visibility: hidden`, so `getBoundingClientRect` reports content that is
+never painted. `checkVisibility()` says 35px of clearance. Measuring the wrong
+thing is not better than not measuring; it is worse, because it comes with
+confidence.
+
+### What it could not find
+
+The session view's lower half walking off a phone was not reproducible at any of
+five viewport sizes. The fix is not aimed at the cause, because the cause was
+never isolated — it is the shape the owner asked for: the quiet timer and the
+composer are a block fixed to the viewport, which has no flow position to be
+pushed out of, and the output runs behind them. Robustness in place of a
+diagnosis, said plainly rather than dressed up as one (`MUS-F-0034`).
+
+### The habit that is doing the work
+
+`min-width: 0` appears in all three of this week's layout fixes — the output
+pane that would not scroll, the field row that would not wrap, the flex child in
+each case expanding to its content because nothing said it could be smaller.
+Worth knowing as a shape rather than rediscovering three times.

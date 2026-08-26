@@ -38,7 +38,10 @@ const shellCSS = `
           --shell-rail: 13rem; --shell-gutter: 1rem;
           /* Tall enough for the bar; asserted against the rendered height in
              TestTheBarIsNotCoveringTheContent rather than eyeballed. */
-          --shell-bar: 3rem; }
+          --shell-bar: 3rem;
+          /* What sits below a docked bottom section: the bar, or nothing once
+             the bar has become a rail. */
+          --shell-dock-offset: var(--shell-bar); }
 
   /* A column as tall as the screen, with the bar on its bottom edge. Three
      surfaces already did this and three did not. */
@@ -92,7 +95,9 @@ const shellCSS = `
     nav a { flex: none; text-align: left; padding: .55rem .8rem;
             border-radius: .5rem; }
     nav a.here { background: var(--accent-soft, #8881); }
-    /* No bar, so no room reserved for one. */
+    /* No bar, so no room reserved for one and nothing under a docked
+       section. */
     body::after { display: none; }
+    :root { --shell-dock-offset: 0px; }
   }
 `

@@ -197,3 +197,50 @@ func TestTheSessionShellIsCappedAndScrollsItsOutput(t *testing.T) {
 		}
 	}
 }
+
+// The session view's lower half is locked to the bottom of the screen.
+//
+// The owner watched the quiet timer and the composer walk off the bottom of a
+// phone and had to scroll to find them. A column holds its shape only while the
+// browser agrees about how tall the viewport is; a fixed element is anchored to
+// it and cannot be pushed anywhere.
+func TestTheSessionDockIsLockedToTheBottom(t *testing.T) {
+	src, err := os.ReadFile("sessions.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	css := string(src)
+
+	// The quiet timer and the composer are one docked block, not two loose
+	// children at the end of a column.
+	if !strings.Contains(css, `<div class="dock">`) {
+		t.Error("the quiet timer and the composer are not docked together")
+	}
+	start := strings.Index(css, ".dock {")
+	if start < 0 {
+		t.Fatal("no .dock rule in the session stylesheet")
+	}
+	rule := css[start : start+strings.Index(css[start:], "}")]
+	for _, want := range []string{"position: fixed", "bottom:"} {
+		if !strings.Contains(rule, want) {
+			t.Errorf("the dock rule is missing %q, so it can be pushed off the screen:\n%s", want, rule)
+		}
+	}
+
+	// And the output keeps its tail above the dock rather than under it.
+	outAt := strings.Index(css, "#out {")
+	outRule := css[outAt : outAt+strings.Index(css[outAt:], "}")]
+	if !strings.Contains(outRule, "--dock-h") {
+		t.Errorf("#out does not reserve room for the dock, so its last lines sit under it:\n%s", outRule)
+	}
+
+	// The script is what measures it, because CSS cannot measure a sibling and
+	// the composer changes height as it is typed into.
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(js), "--dock-h") {
+		t.Error("nothing keeps --dock-h current, so the reservation is a guess")
+	}
+}

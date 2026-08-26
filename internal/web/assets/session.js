@@ -267,6 +267,21 @@
     var rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
     text.style.height = "auto";
     text.style.height = Math.min(text.scrollHeight, 9 * rem) + "px";
+    measureDock();
+  }
+
+  // The dock is locked to the bottom of the screen and the output runs behind
+  // it, so the output needs to know how tall it is or its last lines come to
+  // rest underneath. CSS cannot measure a sibling; this can, and the composer
+  // changes height as it is typed into.
+  function measureDock() {
+    var dock = document.querySelector(".dock");
+    if (!dock) return;
+    var stick = atBottom();
+    document.body.style.setProperty("--dock-h", dock.offsetHeight + "px");
+    // Keeping the tail in view: growing the dock shortens the visible output,
+    // which would otherwise silently scroll the newest line out of sight.
+    if (stick) out.scrollTop = out.scrollHeight;
   }
 
   function showKept() {
@@ -324,6 +339,14 @@
       grow();
       showKept();
     });
+  }
+
+  // Once at load, and again whenever the viewport changes shape — a phone's
+  // URL bar sliding away is a resize, and it moves the dock.
+  measureDock();
+  window.addEventListener("resize", measureDock);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", measureDock);
   }
 
   connect();

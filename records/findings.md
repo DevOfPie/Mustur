@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-33 record(s), by identifier.
+35 record(s), by identifier.
 
 ## The queue
 
@@ -43,6 +43,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0030](#mus-f-0030) | A session being piped makes the service unkillable, and systemd's stop times out holding the port |  | open |
 | [MUS-F-0031](#mus-f-0031) | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |  | open |
 | [MUS-F-0032](#mus-f-0032) | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… | Fixed 2026-08-26 and deployed. The session view was a repair against its own stylesheet; the document surfaces were a choice, drawn in plan-ba6b90e7d9064d09 and answered by the owner (MUS-D-0118). Pinned below 60rem, a left rail above it, the rail replacing the bar rather than joining it. | fixed |
+| [MUS-F-0033](#mus-f-0033) | A long field value made the records page wider than the phone, and the tab bar went with it | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. | fixed |
+| [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
 
 ---
 
@@ -615,3 +617,39 @@ Just checked the phone, the lower tabs also aren't locked to screen height there
 | Routed to | DevOfPie/Mustur (MUS-R-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0033
+
+**A long field value made the records page wider than the phone, and the tab bar went with it**
+
+finding · 2026-08-26
+
+found by: [MUS-F-0032](#mus-f-0032)
+
+The owner reported that the records tab was wider than the others on a phone, leaving only three of the four tabs reachable without scrolling sideways. Measured at 390px: the document was 601px wide. A field row is a flex line with a fixed 9rem key and a flexible value, and a flex child will not shrink below its content unless it is told it may — so a value with no break opportunities, which a work unit's 'Done means' has plenty of, pushed the row 211px past the screen. The tab bar is a consequence rather than the cause. It is fixed to the viewport, but a page wider than the viewport is a page a phone lets you pan, and the bar pans with the layout. Fixing the overflow fixes the bar. min-width:0 is the declaration that does the work; flex-wrap and overflow-wrap do nothing without it, which is the same thing that kept the session view's output pane from scrolling.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/records.go |
+| Evidence | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. |
+| Status | fixed |
+
+---
+
+## MUS-F-0034
+
+**The session view's quiet timer and composer could be scrolled off the bottom of a phone**
+
+finding · 2026-08-26
+
+reported with: [MUS-F-0032](#mus-f-0032)
+
+The owner reported the lower half of the session view as a mess: the quiet timer and the composer had to be scrolled to before they could be found, and the output pane was squeezed to about a line at a time. Their instruction was that the lower section should be locked to the bottom of the screen with the tmux output running behind it. The shell capped the page at 100dvh and let the output pane scroll inside it, which measures correctly at every viewport size tried here — five phone sizes, none of them reproducing the fault. A column only holds its shape while the browser agrees about how tall the viewport is, and that is the assumption the report contradicts. So the lower section stopped being the end of a column and became a docked block fixed to the viewport, which has no flow position to be pushed out of. The output runs behind it, as asked, and reserves its height so the newest line still comes to rest above it rather than under it. The height is measured by the script because the composer grows as it is typed into and CSS cannot measure a sibling. Not reproduced before it was fixed, which is worth writing down: the fix is the shape the owner asked for and is robust to the cause rather than aimed at it.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. |
+| Status | fixed |

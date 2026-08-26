@@ -369,9 +369,15 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   article h3 { font-size: .98rem; font-weight: 600; margin: .15rem 0 .3rem; }
   article p { margin: .3rem 0; font-size: .93em; }
   .fields { font-size: .86em; margin: .4rem 0 0; }
-  .fields div { display: flex; gap: .5rem; padding: .1rem 0; }
+  /* A field row wraps rather than widening the page. A long value — a work
+     unit's "Done means" runs to paragraphs — used to push the row past the
+     screen, and on a phone a page wider than the viewport takes the fixed tab
+     bar with it, so only three of the four tabs could be reached (MUS-F-0033).
+     min-width:0 is the declaration that lets a flex child be narrower than its
+     content; without it the two below do nothing. */
+  .fields div { display: flex; gap: .5rem; padding: .1rem 0; flex-wrap: wrap; }
   .fields .k { opacity: .55; flex: 0 0 9rem; }
-  .fields .v { flex: 1; }
+  .fields .v { flex: 1; min-width: 0; overflow-wrap: anywhere; }
   details { margin: .25rem 0; font-size: .88em; }
   summary { cursor: pointer; opacity: .8; }
   details .inner { margin: .3rem 0 .5rem 1rem; padding-left: .6rem;
