@@ -58,12 +58,6 @@
 # Cloudflare Access stays in front throughout and comes off on the owner's
 # judgement (MUS-Q-0039), not as a side effect of this flag.
 #
-# **`--placeholders 10` is temporary and is meant to come out.** It pads the
-# intake destination list with ten choices that are not real, so the owner can
-# judge whether a list that size wants searching before there is anything to
-# search. They are never stored, refuse to be filed to, and vanish with the
-# flag. If this is still here once the question is answered, that is the defect.
-#
 # **Stopping this unit hangs while a session is being piped** (MUS-F-0030): the
 # pipe reader blocks uninterruptibly, systemd's stop times out at 90s, and the
 # unreaped process holds the port the whole time. Turn the pipe off first —
@@ -81,7 +75,7 @@ After=network-online.target
 Type=simple
 # Loopback only. The tunnel is what publishes it, and `serve` refuses any
 # address that is not loopback for that reason.
-ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions --origin https://mustur.devofpie.com --accounts --placeholders 10
+ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions --origin https://mustur.devofpie.com --accounts
 # Not on-failure: systemd counts a SIGTERM as a clean exit, so on-failure left a
 # TERMed process dead with no restart scheduled and nothing watching. Access
 # answers 302 whether or not the origin is up, so the hostname check in

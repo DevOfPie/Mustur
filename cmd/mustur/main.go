@@ -422,10 +422,6 @@ func cmdServe(args []string) error {
 	// Without this the surface writes the store and nothing else, and the file
 	// the findings role is mapped at falls behind every jot filed from a phone.
 	exportTo := fs.String("export", "", "render the store into this directory after each filing; empty means do not")
-	// A question about a control, answered without paying for it in records.
-	// Ten more routing records would be ten permanent identifiers in the store
-	// to find out whether a list of sixteen wants searching.
-	placeholders := fs.Int("placeholders", 0, "pad the intake destination list with this many not-real choices, to judge its shape; never stored")
 	// Off by default, and deliberately not a detail.
 	//
 	// The session surface carries a composer that types into a running agent's
@@ -483,7 +479,6 @@ func cmdServe(args []string) error {
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
 		ShowSessions: *withSessions,
 		ShowAccount:  showAccount,
-		Placeholders: *placeholders,
 	}
 	questions := &web.Questions{
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
@@ -591,11 +586,6 @@ func cmdServe(args []string) error {
 	} else {
 		fmt.Printf("  compose    http://%s/compose   — the idea inbox only, with no session to send to\n", *addr)
 		fmt.Println("  sessions   not served; --sessions publishes the surfaces that type into a running agent")
-	}
-	if *placeholders > 0 {
-		// Said out loud, because a destination that is not real should never be
-		// a surprise to whoever is reading the box.
-		fmt.Printf("  intake     padded with %d placeholder destination(s); drop --placeholders to remove them\n", *placeholders)
 	}
 	switch {
 	case *origin == "":

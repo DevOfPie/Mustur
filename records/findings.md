@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-40 record(s), by identifier.
+42 record(s), by identifier.
 
 ## The queue
 
@@ -50,6 +50,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
 | [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. | fixed |
 | [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
+| [MUS-F-0038](#mus-f-0038) | Sub-Agents should only be identified in the main session and clicking on them should open a… |  | unreviewed |
+| [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
 
 ---
 
@@ -759,4 +761,42 @@ The first real upload from the owner's phone arrived carrying EXIF, including th
 | --- | --- |
 | Where | internal/store/attach.go |
 | Evidence | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. |
+| Status | open |
+
+---
+
+## MUS-F-0038
+
+**Sub-Agents should only be identified in the main session and clicking on them should open a…**
+
+finding · 2026-08-26
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Sub-Agents should only be identified in the main session and clicking on them should open a viewer for that sub-agent
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0039
+
+**Searching the destination list costs either the no-script promise or the name in the box**
+
+finding · 2026-08-26
+
+from: [MUS-D-0121](decisions.md#mus-d-0121)
+
+The owner asked for search if it were an easy add. It is not, and the reason is worth writing down before somebody tries it and discovers the cost halfway. The intake surface carries no script and never has. Filtering a list of options needs one, so a search box makes it the seventh scripted surface — and MUS-Q-0053 settled that the count is of script tags and that a seventh is a decision the owner takes, not a consequence of building something. That is the first route and it is a prompt, not a task. The script-free route is a datalist behind a text input, and it fails on something simpler than rendering: with `input list=`, the input's value is the option's value, so choosing 'Mustur' leaves MUS-P-0001 sitting in the box. Routing by display name instead would work only while no two destinations share one, which is a constraint on the routing records rather than on the control. A check of how the two browsers render a datalist popup was attempted and proved nothing — it read the values out of the DOM, which is what was put in, not what a browser draws. The popup is native chrome and is not in the page. Recorded because a measurement that answers the wrong question is worse than none. What the padding did answer: a native select does not grow with its list. Sixteen options rendered in the same 358px on a phone and 640px on a laptop as six did, in Chrome and Firefox both. The closed control is not the problem; the opened popup is, and that is what a search box would be for.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go |
+| Evidence | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. |
 | Status | open |
