@@ -340,20 +340,35 @@ func TestTheTabsCarryDrawingsAndKeepTheirWords(t *testing.T) {
 			t.Errorf("no rule for %s", ic)
 		}
 	}
-	// One size and one border, or they read as two sets — with exactly one
-	// deliberate exception, named here so it cannot quietly become two.
-	//
-	// The bubble is an ellipse: 22 wide and 15 tall, because a speech bubble in
-	// a square box is a rounded rectangle, which is what the first one was and
-	// what the owner sent back.
+	// One size and one border, and now no exceptions: the bubble's ellipse is a
+	// child sitting high inside the shared box rather than the box itself.
 	if !strings.Contains(css, "width: 22px; height: 22px") {
 		t.Error("the icons do not share one box size")
 	}
-	if !strings.Contains(css, "border-radius: 50%;\n      height: 15px") {
-		t.Error("the bubble is not the ellipse it is meant to be, or its override moved")
+	if strings.Contains(css, "nav .ic-in {") {
+		t.Error("the bubble overrides the shared box again")
 	}
-	if n := strings.Count(css, "height: 15px"); n != 1 {
-		t.Errorf("%d icons override the shared box height; the bubble is the only one that may", n)
+
+	// The layering is the thing that makes the bubble correct, so it is the
+	// thing worth holding. A filled tail drawn over an outlined bubble shows
+	// its top edge inside the outline — a wedge across the interior, which
+	// shipped twice. The order has to be tail, then an opaque bubble over it,
+	// then the dots.
+	tail := strings.Index(css, "nav .ic-in::before")
+	bubble := strings.Index(css, "nav .ic-in > b")
+	dots := strings.Index(css, "nav .ic-in::after")
+	if tail < 0 || bubble < 0 || dots < 0 {
+		t.Fatal("the bubble is not built from a tail, a bubble and dots")
+	}
+	if !(tail < bubble && bubble < dots) {
+		t.Error("the bubble's three parts are out of paint order; the tail will cut into it")
+	}
+	if !strings.Contains(css[bubble:dots], "background: Canvas") {
+		t.Error("the bubble is not opaque, so it cannot hide the half of the tail inside it")
+	}
+	// Centred by arithmetic. Guessing put the dots 1.85px off on a 22px icon.
+	if !strings.Contains(css[dots:], "left: 50%;\n      margin-left: -4.55px") {
+		t.Error("the dots are not centred against the group's own width")
 	}
 	if n := strings.Count(css, "1.7px solid currentColor"); n < 5 {
 		t.Errorf("%d borders at the shared width; the five do not match", n)
@@ -364,9 +379,16 @@ func TestTheTabsCarryDrawingsAndKeepTheirWords(t *testing.T) {
 	if end := strings.Index(nav, "@media"); end > 0 {
 		nav = nav[:end]
 	}
-	for _, banned := range []string{"#fff", "#000", "white", "black", "background: Canvas"} {
+	// Comments first, or this reads the prose rather than the rules — the
+	// comment beside these icons explains the #fff bug by name, and matching
+	// that is the test measuring the wrong thing again.
+	nav = stripComments(nav)
+	// Canvas is deliberately allowed: it is the same system colour the surface's
+	// own background resolves to, so it follows the theme. What is banned is a
+	// colour that does not.
+	for _, banned := range []string{"#fff", "#000", "white", "black"} {
 		if strings.Contains(nav, banned) {
-			t.Errorf("an icon carries %q rather than currentColor", banned)
+			t.Errorf("an icon carries %q, which does not follow the theme", banned)
 		}
 	}
 
@@ -387,7 +409,7 @@ func TestTheTabsCarryDrawingsAndKeepTheirWords(t *testing.T) {
 		for _, want := range []string{
 			`<i class="ic ic-sess"></i><span>Sessions</span>`,
 			`<i class="ic ic-dec">?</i><span>Decisions</span>`,
-			`<i class="ic ic-in"></i><span>Intake</span>`,
+			`<i class="ic ic-in"><b></b></i><span>Intake</span>`,
 			`<i class="ic ic-rec"></i><span>Records</span>`,
 		} {
 			if !strings.Contains(body, want) {
@@ -403,5 +425,25 @@ func TestTheTabsCarryDrawingsAndKeepTheirWords(t *testing.T) {
 		if strings.Contains(body, "<svg") {
 			t.Errorf("%s still ships an SVG icon", path)
 		}
+	}
+}
+
+// stripComments removes CSS block comments, so a rule can be searched without
+// its own explanation answering for it.
+func stripComments(css string) string {
+	var b strings.Builder
+	for {
+		at := strings.Index(css, "/*")
+		if at < 0 {
+			b.WriteString(css)
+			return b.String()
+		}
+		b.WriteString(css[:at])
+		rest := css[at+2:]
+		end := strings.Index(rest, "*/")
+		if end < 0 {
+			return b.String()
+		}
+		css = rest[end+2:]
 	}
 }

@@ -429,7 +429,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
   <a href="/questions" class="here" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenN}}<em class="cnt">{{.OpenN}}</em>{{end}}</a>
-  <a href="/intake" aria-label="Intake"><i class="ic ic-in"></i><span>Intake</span></a>
+  <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>

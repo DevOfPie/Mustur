@@ -435,7 +435,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
 <nav>
   <a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>
   <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span></a>
-  <a href="/intake" aria-label="Intake"><i class="ic ic-in"></i><span>Intake</span></a>
+  <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>

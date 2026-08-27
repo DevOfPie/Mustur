@@ -135,21 +135,36 @@ const shellCSS = `
      is the download glyph and an envelope is something that arrives; this page
      is the opposite of both — you write a thought and post it.
 
-     An ellipse with a tail, not a rounded rectangle. The first version was a
-     rounded box with one square corner standing in for a tail, and it read as
-     a box, because that is what it was. This has no straight edge anywhere,
-     which is the difference between a shape that suggests a bubble and one
-     that is one. The ellipse is the element's own border rather than a
-     pseudo-element, which leaves both pseudos for the tail and the dots and
-     keeps the markup one empty tag. */
-  nav .ic-in { border: 1.7px solid currentColor; border-radius: 50%;
-      height: 15px; margin-top: 2.5px; }
-  nav .ic-in::before { content: ""; position: absolute; left: 2.5px; top: 9.5px;
-      width: 0; height: 0; border-right: 5px solid transparent;
-      border-top: 6.5px solid currentColor; }
-  nav .ic-in::after { content: ""; position: absolute; left: 3.6px; top: 50%;
-      width: 1.9px; height: 1.9px; margin-top: -1px; border-radius: 50%;
-      background: currentColor;
+     An ellipse with a tail, and the layering is the whole trick.
+
+     A filled tail drawn over an outlined bubble always shows its top edge
+     inside the outline — a wedge cutting across the interior. Two versions
+     shipped with that before it was measured at six times size and became
+     obvious. So the order is: the tail paints first, the bubble paints over it
+     with an opaque fill and hides the half that is inside, and the dots paint
+     last on top of the fill. Nothing has to line up with a curve.
+
+     The fill is Canvas, which is the same system colour the surface's own
+     background resolves to, so it follows the theme. That is what an earlier
+     version got wrong by writing #fff, which is a white block on a dark page.
+
+     The bubble is a child rather than the element's own border, because the
+     element has to stay the shared 22px box and the ellipse has to sit high
+     inside it — a bubble filling the box leaves the tail nowhere to be, which
+     is how one version came out with no tail at all.
+
+     The dots are centred by arithmetic rather than by eye: the group is
+     1.9 + 7.2 wide, so it starts half of that left of centre. Guessing put
+     them 1.85px off on a 22px icon, which the owner saw. */
+  nav .ic-in::before { content: ""; position: absolute; left: 5.4px; top: 11px;
+      width: 0; height: 0; border-right: 4.4px solid transparent;
+      border-top: 8px solid currentColor; }
+  nav .ic-in > b { position: absolute; left: 1px; right: 1px; top: 1.5px;
+      height: 13px; box-sizing: border-box; background: Canvas;
+      border: 1.7px solid currentColor; border-radius: 50%; }
+  nav .ic-in::after { content: ""; position: absolute; left: 50%;
+      margin-left: -4.55px; top: 7.1px; width: 1.9px; height: 1.9px;
+      border-radius: 50%; background: currentColor;
       box-shadow: 3.6px 0 0 0 currentColor, 7.2px 0 0 0 currentColor; }
 
   /* Records: a document. */
