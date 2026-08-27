@@ -171,6 +171,30 @@ func HTML(screen string) string {
 	return out.String()
 }
 
+// Plain strips every escape sequence, leaving the text a reader would see.
+//
+// Used where something has to be recognised rather than rendered — a divider,
+// a caret, a status line. It shares parseCSI and skipEscape with HTML rather
+// than approximating them, because approximating them is what went wrong: a
+// hand-rolled version that scanned to the next "m" ate an OSC 8 hyperlink whole
+// and turned "PR #31" into a fragment of its own URL.
+func Plain(s string) string {
+	var out strings.Builder
+	for i := 0; i < len(s); {
+		if s[i] != 0x1b {
+			out.WriteByte(s[i])
+			i++
+			continue
+		}
+		if _, _, n := parseCSI(s[i:]); n > 0 {
+			i += n
+			continue
+		}
+		i += skipEscape(s[i:])
+	}
+	return out.String()
+}
+
 // apply folds one SGR sequence into the running state.
 func apply(s state, params []int) state {
 	if len(params) == 0 {

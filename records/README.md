@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 60 | [questions.md](questions.md) |
 | decision | 132 | [decisions.md](decisions.md) |
-| finding | 55 | [findings.md](findings.md) |
+| finding | 58 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -300,6 +300,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0049](findings.md#mus-f-0049) | finding | The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's |
 | [MUS-F-0050](findings.md#mus-f-0050) | finding | A noscript given display: contents shows its own markup as text to everyone with script |
 | [MUS-F-0051](findings.md#mus-f-0051) | finding | The quiet counter read tmux's session_activity, which is not when the session last did anything |
+| [MUS-F-0052](findings.md#mus-f-0052) | finding | Frames left nothing to scroll back through, because an agent pane has no scrollback at all |
+| [MUS-F-0053](findings.md#mus-f-0053) | finding | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable |
+| [MUS-F-0054](findings.md#mus-f-0054) | finding | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

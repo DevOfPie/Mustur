@@ -43,6 +43,7 @@ import (
 	"os/exec"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -57,6 +58,29 @@ const Prefix = "mustur/"
 // the only thing "Mustur started this" rests on. A session that does not carry
 // it is not ours however it is named.
 const OwnedOption = "@mustur_started"
+
+// PaneWidth and PaneHeight are the geometry Mustur gives a session it starts.
+//
+// A detached tmux session is 80x24, and an agent CLI runs on the alternate
+// screen — measured: alternate_on=1, history_size=0 — which means tmux keeps no
+// scrollback for it at all. Not a little: none. So on a default pane the whole
+// of what could ever be shown was twenty-four rows, and there was nothing to
+// scroll back through because there was nothing behind them.
+//
+// A tall pane is the answer, and it is nearly free. The CLI redraws its whole
+// conversation into whatever height it is given, and a capture costs what the
+// content costs rather than what the height is: measured on the same session,
+// 60 rows was 4.8KB, 200 rows was 6.9KB and 300 rows was 7.0KB, because the
+// difference is blank padding. The padding is trimmed before it is sent.
+//
+// The cost is real and worth naming: window-size is manual, so a person who
+// attaches to one of these with tmux gets a 300-row window in their terminal
+// rather than one sized to it. These are sessions Mustur starts and watches
+// through the browser, and that is the trade.
+const (
+	PaneWidth  = 100
+	PaneHeight = 300
+)
 
 // DeliverTimeout bounds a delivery. Without one, an unresponsive tmux holds an
 // answer unwritten for as long as it likes, and the answer is the part that
@@ -373,6 +397,28 @@ const waitingMark = "❯"
 // paneLines is how much of the bottom of the pane to read. The status line and
 // the input box are the last few rows; everything above is output.
 const paneLines = "-12"
+
+// Fit gives a session the geometry a browser can read, and is safe to call on
+// one that already has it.
+//
+// window-size manual is what makes the size ours rather than the last attached
+// client's; without it tmux resizes the window back to 80x24 the moment nobody
+// is attached, which is every moment for a session Mustur started.
+func (a *Adapter) Fit(ctx context.Context, project string) error {
+	name, err := NameFor(project)
+	if err != nil {
+		return err
+	}
+	if out, err := a.runner().Run(ctx, "tmux",
+		"set-option", "-t", name, "window-size", "manual"); err != nil {
+		return fmt.Errorf("tmux set-option window-size %s: %w: %s", name, err, strings.TrimSpace(out))
+	}
+	if out, err := a.runner().Run(ctx, "tmux", "resize-window", "-t", name,
+		"-x", strconv.Itoa(PaneWidth), "-y", strconv.Itoa(PaneHeight)); err != nil {
+		return fmt.Errorf("tmux resize-window %s: %w: %s", name, err, strings.TrimSpace(out))
+	}
+	return nil
+}
 
 // Capture reads the pane as tmux has already assembled it.
 //

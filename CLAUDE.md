@@ -30,7 +30,14 @@ It shows a running session's screen in a browser tab and notices when one ends
 — the screen tmux has already assembled, polled and re-rendered when it
 changes, rather than the pane's raw byte protocol appended to a log
 ([MUS-D-0132](records/decisions.md#mus-d-0132)). There is no pipe, no byte
-offset and no replay: a tab that reconnects is handed the screen as it stands. Every surface takes the width the rail leaves rather than a reading column
+offset and no replay: a tab that reconnects is handed the screen as it stands.
+Sessions Mustur starts are **100x300**, because an agent CLI runs on the
+alternate screen and tmux keeps no scrollback for one — a tall pane is the only
+place a transcript can live
+([MUS-F-0052](records/findings.md#mus-f-0052)). The CLI's own furniture — its
+input box, dividers and status line — comes off the screen before it is
+rendered, and what that furniture said is shown as a row of chips instead
+([MUS-F-0053](records/findings.md#mus-f-0053)). Every surface takes the width the rail leaves rather than a reading column
 ([MUS-D-0128](records/decisions.md#mus-d-0128)) — a page wanting a narrower
 measure asks for it by setting `--shell-content`. On a wide screen the account
 link sits as an icon at the foot of the rail rather than as a word in the

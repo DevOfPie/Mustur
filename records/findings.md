@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-55 record(s), by identifier.
+58 record(s), by identifier.
 
 ## The queue
 
@@ -65,6 +65,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0049](#mus-f-0049) | The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's | Zero escape codes on the page against a live agent session, in Chrome and Firefox, where the old stream left them as literal text. | fixed |
 | [MUS-F-0050](#mus-f-0050) | A noscript given display: contents shows its own markup as text to everyone with script | With scripting on, the strip's innerText contained the opening button tag in Chrome and Firefox; with the override removed it reads 'Demo Ring Sub-agents' and the noscript is not painted. With scripting off the button is still 34x21px beside the select in both. | fixed |
 | [MUS-F-0051](#mus-f-0051) | The quiet counter read tmux's session_activity, which is not when the session last did anything | tmux list-sessions -F '#{session_activity}\t#{window_activity}' on a live session: 1787792947 against 1787808369, with now at 1787808585. The surface went from 'quiet 4h' to 'quiet 5m' on the same session. | fixed |
+| [MUS-F-0052](#mus-f-0052) | Frames left nothing to scroll back through, because an agent pane has no scrollback at all | tmux display-message on both live sessions: alternate_on=1, history_size=0, history_limit=2000. After the resize, Demo renders 120 scrollable lines from its startup banner to its last output where it had 24. | fixed |
+| [MUS-F-0053](#mus-f-0053) | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable | Against both live sessions: the output carries no input box, divider or status line, and the row reads 'auto mode on · PR #31 · 1 agent · /rc failed · new task? /clear to save 118.3k tokens' — the owner's own list of what was worth keeping. A session with a dialogue open loses its status line and is still split correctly. | fixed |
+| [MUS-F-0054](#mus-f-0054) | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. | fixed |
 
 ---
 
@@ -1122,4 +1125,74 @@ The same field feeds MUS-D-0013's clause about the route row defaulting to the l
 | --- | --- |
 | Where | internal/session/session.go |
 | Evidence | tmux list-sessions -F '#{session_activity}\t#{window_activity}' on a live session: 1787792947 against 1787808369, with now at 1787808585. The surface went from 'quiet 4h' to 'quiet 5m' on the same session. |
+| Status | fixed |
+
+---
+
+## MUS-F-0052
+
+**Frames left nothing to scroll back through, because an agent pane has no scrollback at all**
+
+finding · 2026-08-27
+
+from: [MUS-D-0132](decisions.md#mus-d-0132)
+
+Reported by the owner as soon as frames shipped: the session could no longer be scrolled back.
+
+The frame was set to carry 120 lines of history above the visible screen, and that number was measured on the wrong thing. It came from a plain shell pane, where history exists. An agent CLI runs on the alternate screen — measured: alternate_on=1, history_size=0 — and tmux keeps no scrollback for one. Not a little: none. So capture-pane -S -120 returned twenty-four rows however deep it was asked to go, and had done since the first frame shipped.
+
+That was visible in the very first measurement, which reported the same twenty-four lines at every depth from 0 to 2000. It was read as 'this session has little history' and not chased.
+
+Fixed by making the pane tall rather than by reconstructing a transcript. The CLI redraws its whole conversation into whatever height it is given, and a capture costs what the content costs rather than what the height is: 60 rows was 4.8KB, 200 rows 6.9KB and 300 rows 7.0KB on the same session, because the difference is blank padding that gets trimmed. Sessions Mustur starts are now 100x300.
+
+The cost, named rather than discovered later: window-size is manual, so somebody attaching to one of these with tmux gets a 300-row window rather than one sized to their terminal.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go, internal/session/screen.go |
+| Evidence | tmux display-message on both live sessions: alternate_on=1, history_size=0, history_limit=2000. After the resize, Demo renders 120 scrollable lines from its startup banner to its last output where it had 24. |
+| Status | fixed |
+
+---
+
+## MUS-F-0053
+
+**The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable**
+
+finding · 2026-08-27
+
+with: [MUS-D-0132](decisions.md#mus-d-0132)
+
+Reported by the owner, with the lines quoted: a hint, a divider carrying the task's name, the input box, another divider, and a status line. None of it is transcript, all of it was in the output, and the parts worth having — the mode, a pull request, the agent count, a failing check, an update notice — were buried in it.
+
+Taken off the screen and shown as Mustur's own row of chips instead. The split anchors on the input caret, because that is the one thing every shape seen so far has: a session with a dialogue open loses its status line and its lower divider and still draws the caret. A pane with no recognisable caret is returned whole — showing everything is a much better failure than guessing which lines to delete.
+
+It also fixes a problem it did not set out to. A tall pane draws the transcript at the top and pins the input box to the bottom, so what is between them is a hundred rows of nothing. Taking the box off turns most of that into trailing blanks; what is left is collapsed, because two blank lines is a paragraph break and no transcript has ever meant a hundred.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/chrome.go |
+| Evidence | Against both live sessions: the output carries no input box, divider or status line, and the row reads 'auto mode on · PR #31 · 1 agent · /rc failed · new task? /clear to save 118.3k tokens' — the owner's own list of what was worth keeping. A session with a dialogue open loses its status line and is still split correctly. |
+| Status | fixed |
+
+---
+
+## MUS-F-0054
+
+**A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it**
+
+finding · 2026-08-27
+
+The status chip for a pull request read 'PR /DevOfPie/Mustur/pull/31' — a fragment of its own URL.
+
+The stripper written to recognise the CLI's furniture scanned from an escape to the next 'm', which is right for a colour and wrong for everything else. An OSC 8 hyperlink has no 'm' in it, so the CLI's link on 'PR #31' was eaten as far as the next colour code somewhere further along the line.
+
+The chip was the visible half. The invisible half was worse: the same stripper decides which lines are dividers, carets and status lines, so a mangled line stopped being recognised as furniture at all and a whole pane's worth stayed in the output.
+
+Fixed by deleting it. internal/ansi already parses these properly for rendering, and now exports Plain for the cases that need to recognise rather than render. Two implementations of the same thing, one of them approximate, was the defect.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/ansi/ansi.go, internal/session/screen.go |
+| Evidence | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. |
 | Status | fixed |

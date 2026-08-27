@@ -153,6 +153,21 @@ func TestTrimBlankDropsThePadding(t *testing.T) {
 	if got := trimBlank("prompt\u00a0        \nnext   "); got != "prompt\u00a0\nnext" {
 		t.Errorf("trailing padding survived: %q", got)
 	}
+	// Which end the padding lands on depends on what the CLI is drawing: a
+	// transcript leaves it below, a modal pinned to the bottom leaves it above.
+	if got := trimBlank("\n\n\n  content  \n\n"); got != "  content" {
+		t.Errorf("leading padding survived: %q", got)
+	}
+	// An interior blank is not padding — it is a paragraph break.
+	if got := trimBlank("one\n\ntwo"); got != "one\n\ntwo" {
+		t.Errorf("an interior blank was eaten: %q", got)
+	}
+	// A hundred of them is. A tall pane pins a dialogue to the bottom and
+	// leaves the space between it and the transcript empty, which no amount of
+	// trimming the ends can reach.
+	if got := trimBlank("top" + strings.Repeat("\n", 101) + "bottom"); got != "top\n\n\nbottom" {
+		t.Errorf("the gap did not collapse: %q", got)
+	}
 	if got := trimBlank("\n\n"); got != "" {
 		t.Errorf("an empty pane came back as %q", got)
 	}

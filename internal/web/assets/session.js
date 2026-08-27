@@ -93,6 +93,38 @@
     return out.scrollHeight - out.scrollTop - out.clientHeight < 40;
   }
 
+  // The CLI's status line, as a row of chips.
+  //
+  // It used to be four lines at the bottom of the output — an input box, two
+  // dividers and a status line — redrawn every frame and read by nobody. The
+  // server takes them off the screen and sends what they said; this draws it.
+  var chips = document.getElementById("chips");
+
+  function drawChips(st) {
+    if (!chips) return;
+    chips.textContent = "";
+    if (!st) {
+      chips.hidden = true;
+      return;
+    }
+    var add = function (text, cls) {
+      if (!text) return;
+      var el = document.createElement("span");
+      if (cls) el.className = cls;
+      el.textContent = text;
+      chips.appendChild(el);
+    };
+    add(st.mode, "mode");
+    (st.items || []).forEach(function (i) { add(i); });
+    add(st.note, "note");
+    add(st.update, "hint");
+    add(st.hint, "hint");
+    chips.hidden = !chips.firstChild;
+    // The row appears and disappears, and the composer is placed by a custom
+    // property rather than by flow, so its reservation has to be re-measured.
+    measureDock();
+  }
+
   // Paint a whole screen.
   //
   // Replaced rather than appended, which is the whole change: a repainting
@@ -488,11 +520,13 @@
         // the counter continues rather than restarting on every page load.
         if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
         if (typeof f.agent === "string") doing = f.agent;
+        drawChips(f.status);
         // Now that the real silence is known, the pill can be honest about it.
         refreshState();
       } else if (f.t === "screen") {
         paint(f.screen || "");
         if (typeof f.agent === "string") doing = f.agent;
+        drawChips(f.status);
         // A frame only arrives when the screen actually changed, so its arrival
         // is the activity. There is no replay to tell apart any more: the
         // server has no backlog to send.

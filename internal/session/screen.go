@@ -38,6 +38,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -76,6 +77,8 @@ type Frame struct {
 	HTML string
 	// Agent is what the pane says the CLI is doing, read from the same capture.
 	Agent Agent
+	// Status is what the CLI's own furniture said, once it was taken off.
+	Status Status
 	// At is when this screen was captured.
 	At time.Time
 	// Ended is set once, on the last frame, when the session is gone.
@@ -148,6 +151,13 @@ func (h *Hub) Watch(ctx context.Context, project string) (*Sub, Frame, error) {
 	}
 	if p == nil {
 		p = &pane{project: project, subs: map[chan Frame]struct{}{}, done: make(chan struct{})}
+		// Give it a height worth scrolling. Once per poller rather than per
+		// tick: it costs two tmux calls and the CLI redraws when it changes.
+		if err := h.Adapter.Fit(ctx, project); err != nil {
+			// Not fatal. A pane that could not be resized is a short pane, not
+			// an unreadable one.
+			log.Printf("session %s: %v", project, err)
+		}
 		// Seeded from tmux, or the first frame would say a session silent since
 		// Sunday had just this moment moved.
 		//
@@ -308,7 +318,16 @@ func (p *pane) read(ctx context.Context, a *Adapter, now time.Time) Frame {
 	if !first || p.changedAt.IsZero() {
 		p.changedAt = now
 	}
-	f := Frame{HTML: ansi.HTML(trimBlank(raw)), Agent: DoingIn(raw), At: now}
+	// The CLI's own furniture comes off before anything is rendered, so the
+	// output is what the session said and the hundred blank rows a tall pane
+	// leaves above the input box become trailing blanks that trim away.
+	body, st := SplitChrome(raw)
+	f := Frame{
+		HTML:   ansi.HTML(trimBlank(body)),
+		Status: st,
+		Agent:  DoingIn(raw),
+		At:     now,
+	}
 	p.last = f
 	p.broadcast(f)
 	p.mu.Unlock()
@@ -378,28 +397,50 @@ func trimBlank(raw string) string {
 	for end > 0 && strings.TrimSpace(stripSGR(lines[end-1])) == "" {
 		end--
 	}
-	kept := make([]string, 0, end)
-	for _, line := range lines[:end] {
-		kept = append(kept, strings.TrimRight(line, " \t"))
+	// And from the top. Which end the padding lands on depends on where the CLI
+	// anchors what it is drawing: a transcript grows downward and leaves the gap
+	// below, a modal is pinned to the bottom of the pane and leaves it above.
+	// Trimming one end only left a session with a dialogue open showing seven
+	// hundred pixels of nothing and its content at the very bottom.
+	start := 0
+	for start < end && strings.TrimSpace(stripSGR(lines[start])) == "" {
+		start++
+	}
+	// And collapse the middle. A tall pane draws the transcript at the top and
+	// pins whatever is anchored — an input box, a dialogue — to the bottom, so
+	// what is between them is a hundred rows of nothing. Trimming the ends
+	// cannot reach it, because it is not at an end.
+	//
+	// Two blank lines is a paragraph break and anything past that is padding.
+	// No transcript has ever meant a hundred of them.
+	kept := make([]string, 0, end-start)
+	blanks := 0
+	for _, line := range lines[start:end] {
+		line = strings.TrimRight(line, " \t")
+		if strings.TrimSpace(stripSGR(line)) == "" {
+			blanks++
+			if blanks > maxBlankRun {
+				continue
+			}
+		} else {
+			blanks = 0
+		}
+		kept = append(kept, line)
 	}
 	return strings.Join(kept, "\n")
 }
 
+// maxBlankRun is how many blank lines in a row survive. Two is a paragraph
+// break; more is the pane's own padding.
+const maxBlankRun = 2
+
 // stripSGR removes escape sequences so a line of pure colour codes counts as
-// blank. A padded line is not always empty: it can carry the pane's background.
-func stripSGR(line string) string {
-	var b strings.Builder
-	for i := 0; i < len(line); {
-		if line[i] != 0x1b {
-			b.WriteByte(line[i])
-			i++
-			continue
-		}
-		j := i + 1
-		for j < len(line) && line[j] != 'm' && line[j] != 0x07 {
-			j++
-		}
-		i = j + 1
-	}
-	return b.String()
-}
+// blank, and so the CLI's furniture can be recognised by what it says.
+//
+// It delegates rather than approximating. The version it replaces scanned to
+// the next "m", which is right for a colour and wrong for everything else: an
+// OSC 8 hyperlink has no "m" in it, so "PR #31" — which the CLI links — was
+// eaten as far as the next colour code and came out as a piece of its own URL.
+// That corrupted the status chips and, worse, the divider and caret detection
+// that decides which lines are furniture at all.
+func stripSGR(line string) string { return ansi.Plain(line) }

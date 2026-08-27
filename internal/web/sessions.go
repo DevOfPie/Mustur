@@ -316,14 +316,41 @@ type frame struct {
 	// empty for a pane nothing here can read. Empty is not idle — the surface
 	// falls back to counting silence, which is what it did before.
 	Agent string `json:"agent,omitempty"`
-	At    string `json:"at,omitempty"`
-	Error string `json:"error,omitempty"`
+	// Status is what the CLI's furniture said, taken off the bottom of the
+	// screen and shown as Mustur's own row instead of as four lines of the
+	// output nobody reads.
+	Status *statusRow `json:"status,omitempty"`
+	At     string     `json:"at,omitempty"`
+	Error  string     `json:"error,omitempty"`
 	// Sub-agent rows, pushed rather than waited for (MUS-Q-0029). The owner
 	// chose this over a reload, against the builder's recommendation, and it is
 	// the one place the client layer models something other than the terminal.
 	Agents  []subagentRow `json:"agents,omitempty"`
 	Running int           `json:"running,omitempty"`
 	None    bool          `json:"none,omitempty"`
+}
+
+// A statusRow is the CLI's status line, ready to render.
+//
+// Sent whole rather than as one string, so the surface decides what a mode
+// looks like next to a failing check. Empty fields are omitted, and a row with
+// nothing in it is not sent at all.
+type statusRow struct {
+	Mode   string   `json:"mode,omitempty"`
+	Items  []string `json:"items,omitempty"`
+	Note   string   `json:"note,omitempty"`
+	Hint   string   `json:"hint,omitempty"`
+	Update string   `json:"update,omitempty"`
+}
+
+func statusChips(st session.Status) *statusRow {
+	if st.Empty() {
+		return nil
+	}
+	return &statusRow{
+		Mode: st.Mode, Items: st.Items, Note: st.Note,
+		Hint: st.Hint, Update: st.Update,
+	}
 }
 
 func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
@@ -387,7 +414,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	// agent is doing — read out of the same capture rather than fetched again.
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
-		Screen: now.HTML, Agent: string(now.Agent),
+		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
 	}); err != nil {
 		return
 	}
@@ -455,7 +482,10 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 				_ = send(frame{T: "ended", At: f.ExitAt.Format("2006-01-02 15:04")})
 				return
 			}
-			if err := send(frame{T: "screen", Screen: f.HTML, Agent: string(f.Agent)}); err != nil {
+			if err := send(frame{
+				T: "screen", Screen: f.HTML,
+				Agent: string(f.Agent), Status: statusChips(f.Status),
+			}); err != nil {
 				return
 			}
 			resetIdle(idle, IdleTimeout)
@@ -578,6 +608,28 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      asked, but its last lines still come to rest above it rather than under
      it. The fallback is a sensible dock height for the moment before the
      script has measured one. */
+  /* What the CLI's status line said, as Mustur's own row.
+
+     The owner asked for the four lines of furniture at the bottom of the pane
+     to come out of the output and for the useful parts to be shown better.
+     These are those parts: the mode, whatever the CLI is tracking, a failing
+     check, and a hint or an update notice.
+
+     One row, and only when there is something in it. The strip removed on
+     MUS-D-0129 was removed for saying what the pill already said; this says
+     what nothing else does. */
+  .chips { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem;
+           padding: .4rem 1rem; border-bottom: 1.4px solid var(--edge);
+           font-size: .78em; flex: 0 0 auto; }
+  .chips[hidden] { display: none; }
+  .chips span { border: 1px solid var(--edge); border-radius: 999px;
+                padding: .05rem .5rem; opacity: .75; white-space: nowrap; }
+  .chips span.mode { border-color: var(--accent); background: var(--accent-soft);
+                     opacity: 1; }
+  /* A failing check is the one thing on this row worth interrupting for. */
+  .chips span.note { border-color: #c0392b; color: #c0392b; opacity: 1; }
+  .chips span.hint { border-style: dashed; }
+
   /* The pane, painted rather than accumulated.
      
      A monospaced face because this is a screen tmux laid out in columns, and a
@@ -853,6 +905,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <small>A session left running in a terminal is not here and will not appear.</small><br>
 <small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
 {{else}}
+<div class="chips" id="chips" hidden></div>
 <div class="drawer" id="drawer" hidden>
   <div class="veil" id="veil"></div>
   <aside class="panel" role="dialog" aria-label="Sub-agents">
