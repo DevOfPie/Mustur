@@ -531,11 +531,11 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
-  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
-  <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
-  <a href="/intake" class="here">Intake</a>
-  <a href="/records">Records</a>
-  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false"><circle cx="12" cy="8.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19.6a6.5 6.5 0 0 1 13 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a>{{end}}
+  {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
+  <a href="/intake" class="here" aria-label="Intake"><i class="ic ic-in"></i><span>Intake</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 </body>
 </html>

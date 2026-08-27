@@ -317,3 +317,80 @@ func TestOnlyTheOutputPaneFlexes(t *testing.T) {
 		t.Error("the live strip is back")
 	}
 }
+
+// The tabs are drawings in the bar and drawings with words in the rail, and
+// the word never leaves the page.
+//
+// Four constraints, each of which has already been got wrong once somewhere in
+// this codebase: nothing filled with a colour of its own (the first speech
+// bubble had a white tail, which is a white block on a dark page), one box size
+// and one border width across all five, the word present in the markup even
+// where the bar hides it, and every tab naming itself for anyone who cannot see
+// the drawing.
+func TestTheTabsCarryDrawingsAndKeepTheirWords(t *testing.T) {
+	src, err := os.ReadFile("shell.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	css := string(src)
+
+	// Five icons, drawn the same way.
+	for _, ic := range []string{"ic-sess", "ic-dec", "ic-in", "ic-rec", "ic-acc"} {
+		if !strings.Contains(css, "nav ."+ic) {
+			t.Errorf("no rule for %s", ic)
+		}
+	}
+	// One size and one border, or they read as two sets.
+	if !strings.Contains(css, "width: 22px; height: 22px") {
+		t.Error("the icons do not share one box size")
+	}
+	if n := strings.Count(css, "1.7px solid currentColor"); n < 5 {
+		t.Errorf("%d borders at the shared width; the five do not match", n)
+	}
+	// Nothing carries a colour of its own. currentColor inherits the theme;
+	// anything else needs a dark-mode branch nothing here has.
+	nav := css[strings.Index(css, "nav .ic {"):]
+	if end := strings.Index(nav, "@media"); end > 0 {
+		nav = nav[:end]
+	}
+	for _, banned := range []string{"#fff", "#000", "white", "black", "background: Canvas"} {
+		if strings.Contains(nav, banned) {
+			t.Errorf("an icon carries %q rather than currentColor", banned)
+		}
+	}
+
+	// The word is hidden in the bar and shown in the rail — hidden, not dropped.
+	if !strings.Contains(css, "nav a > span { display: none; }") {
+		t.Error("the bar does not hide the word")
+	}
+	wide := strings.Index(css, "@media (min-width: 60rem)")
+	if wide < 0 || !strings.Contains(css[wide:], "nav a > span { display: inline; }") {
+		t.Error("the rail does not bring the word back")
+	}
+
+	// And on every surface: the drawing, the word, and the name.
+	for path, body := range tabbed(t, true, true) {
+		if strings.Contains(body, "/compose") && !strings.Contains(body, "<nav>") {
+			continue
+		}
+		for _, want := range []string{
+			`<i class="ic ic-sess"></i><span>Sessions</span>`,
+			`<i class="ic ic-dec">?</i><span>Decisions</span>`,
+			`<i class="ic ic-in"></i><span>Intake</span>`,
+			`<i class="ic ic-rec"></i><span>Records</span>`,
+		} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s is missing %s", path, want)
+			}
+		}
+		for _, name := range []string{"Sessions", "Decisions", "Intake", "Records"} {
+			if !strings.Contains(body, `aria-label="`+name+`"`) {
+				t.Errorf("%s does not name its %s tab for a screen reader", path, name)
+			}
+		}
+		// No SVG survives anywhere: the account icon was the last one.
+		if strings.Contains(body, "<svg") {
+			t.Errorf("%s still ships an SVG icon", path)
+		}
+	}
+}

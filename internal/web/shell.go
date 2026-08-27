@@ -83,9 +83,81 @@ const shellCSS = `
      squeeze the four that name where you are. The account link stays in the
      header, in words. */
   nav a.me { display: none; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
+  nav a { flex: 1; padding: .7rem .25rem; font-size: .85em;
+          text-decoration: none; color: inherit; opacity: .6;
+          display: flex; align-items: center; justify-content: center; }
   nav a.here { opacity: 1; font-weight: 600; }
+  /* The bar carries the drawing and the rail carries both. The word is still
+     in the markup either way and every tab names itself in aria-label, so what
+     leaves the bar is the word on screen and not the word on the page. */
+  nav a > span { display: none; }
+  /* The count stays visible in the bar, where the word does not. How many
+     decisions are waiting is the one thing on this row worth reading at a
+     glance, and hiding it with the word would have been the drawing costing
+     something rather than replacing something. */
+  nav a .cnt { font-style: normal; font-size: .8em; font-weight: 600;
+               border: 1px solid var(--accent, currentColor); border-radius: 999px;
+               padding: 0 .3rem; margin-left: .3rem;
+               background: var(--accent-soft, #8881); }
+
+  /* The five icons.
+
+     Borders, radii and two pseudo-elements each. Not a style preference: the
+     tool the owner reviews these in refuses SVG in every block it has, and an
+     icon approved as a picture of something else is the wrong kind of
+     approval. It suits the binary too — nothing embedded, no viewBox to keep
+     in step with a stroke width, and currentColor on a border inherits the
+     theme for free.
+
+     One 22px box and one 1.7px border across all five, so they read as a set.
+     Nothing is filled with a colour of its own: the first speech bubble had a
+     white tail, which is a white block on a dark page. */
+  nav .ic { position: relative; box-sizing: border-box; flex: none;
+            width: 22px; height: 22px; display: block; }
+
+  /* Sessions: a prompt. */
+  nav .ic-sess::before { content: ""; position: absolute; left: 3px; top: 5.5px;
+      width: 7px; height: 7px; box-sizing: border-box;
+      border-right: 1.7px solid currentColor; border-bottom: 1.7px solid currentColor;
+      transform: rotate(-45deg); }
+  nav .ic-sess::after { content: ""; position: absolute; right: 2px; bottom: 4px;
+      width: 8px; height: 1.7px; background: currentColor; }
+
+  /* Decisions: a question in a circle. The character is the markup's, so the
+     glyph follows whatever the page is set in. */
+  nav .ic-dec { border: 1.7px solid currentColor; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; line-height: 1; }
+
+  /* Intake: a speech bubble with three dots.
+
+     Chosen over a tray, an envelope and every kind of arrow. A downward arrow
+     is the download glyph and an envelope is something that arrives; this page
+     is the opposite of both — you write a thought and post it. The dots are
+     what keep it from reading as a rounded square beside the document. */
+  nav .ic-in::before { content: ""; position: absolute; left: 2px; right: 2px;
+      top: 2.5px; bottom: 3.5px; box-sizing: border-box;
+      border: 1.7px solid currentColor; border-radius: 4px 4px 4px 0; }
+  nav .ic-in::after { content: ""; position: absolute; left: 6px; top: 50%;
+      width: 1.9px; height: 1.9px; margin-top: -1.7px; border-radius: 50%;
+      background: currentColor;
+      box-shadow: 3.6px 0 0 0 currentColor, 7.2px 0 0 0 currentColor; }
+
+  /* Records: a document. */
+  nav .ic-rec { border: 1.7px solid currentColor; border-radius: 2.5px; }
+  nav .ic-rec::before { content: ""; position: absolute; left: 3.5px; right: 3.5px;
+      top: 4px; height: 1.5px; background: currentColor; }
+  nav .ic-rec::after { content: ""; position: absolute; left: 3.5px; right: 6.5px;
+      top: 8.5px; height: 1.5px; background: currentColor;
+      box-shadow: 0 4px 0 0 currentColor; }
+
+  /* The account entry, redrawn the same way so all five match. */
+  nav .ic-acc::before { content: ""; position: absolute; left: 50%; top: 3px;
+      width: 7.5px; height: 7.5px; margin-left: -3.75px; box-sizing: border-box;
+      border: 1.7px solid currentColor; border-radius: 50%; }
+  nav .ic-acc::after { content: ""; position: absolute; left: 2.5px; right: 2.5px;
+      bottom: 2.5px; height: 7.5px; box-sizing: border-box;
+      border: 1.7px solid currentColor; border-bottom: 0; border-radius: 8px 8px 0 0; }
 
   /* Wide enough for both, so the bar becomes a rail and the bottom edge is
      free. 60rem is derived rather than picked, and it adds up exactly: a 13rem
@@ -119,8 +191,11 @@ const shellCSS = `
            margin: 0; padding: .75rem .5rem; gap: .15rem;
            overflow-y: auto;
            border-top: 0; border-right: 1.4px solid var(--edge); }
-    nav a { flex: none; text-align: left; padding: .55rem .8rem;
-            border-radius: .5rem; }
+    nav a { flex: none; padding: .55rem .8rem; border-radius: .5rem;
+            justify-content: flex-start; gap: .55rem; }
+    /* The rail has room for both, and the pairing is what makes the drawing
+       learnable on a phone where the word is gone. */
+    nav a > span { display: inline; }
     nav a.here { background: var(--accent-soft, #8881); }
     /* The account entry, at the foot of the rail.
 
@@ -132,8 +207,8 @@ const shellCSS = `
        glyph to sit alone and the bar does not — and because the owner asked for
        exactly that. The label is on the element rather than beside it, so a
        screen reader gets the word either way. */
-    nav a.me { display: flex; align-items: center; justify-content: center;
-               margin-top: auto; padding: .6rem; }
+    nav a.me { display: flex; align-items: center; justify-content: flex-start;
+               margin-top: auto; padding: .55rem .8rem; }
     /* The header link is the same destination said twice on a wide screen. */
     .acct { display: none; }
     /* No bar, so no room reserved for one and nothing under a docked

@@ -392,8 +392,13 @@ func TestTheAccountPageOffersTheWayBackToASession(t *testing.T) {
 		body, _ := io.ReadAll(res.Body)
 		res.Body.Close()
 		page := string(body)
-		if !strings.Contains(page, `<a href="/sessions">Sessions</a>`) {
+		if !strings.Contains(page, `<a href="/sessions" aria-label="Sessions">`) {
 			t.Errorf("%s has no way back to a session", path)
+		}
+		// The word is still in the markup even where the bar hides it, and the
+		// tab names itself for anyone who cannot see the drawing.
+		if !strings.Contains(page, `<span>Sessions</span>`) {
+			t.Errorf("%s dropped the word rather than hiding it", path)
 		}
 		// And the row is the same one every other surface has, in the same
 		// order, so the tabs do not move as you cross between them.

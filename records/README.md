@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 59 | [questions.md](questions.md) |
-| decision | 130 | [decisions.md](decisions.md) |
-| finding | 52 | [findings.md](findings.md) |
+| question | 60 | [questions.md](questions.md) |
+| decision | 131 | [decisions.md](decisions.md) |
+| finding | 53 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -116,6 +116,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0057](questions.md#mus-q-0057) | question | How the sub-agent drawer opens, what its badge counts, and where output is read |
 | [MUS-Q-0058](questions.md#mus-q-0058) | question | How a mis-routed jot is corrected, when the identifier is the routing |
 | [MUS-Q-0059](questions.md#mus-q-0059) | question | How a question answered somewhere other than Mustur gets closed in Mustur |
+| [MUS-Q-0060](questions.md#mus-q-0060) | question | How the session view should interpret the pane: frames, an emulator, or a stripped log |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -246,6 +247,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0128](decisions.md#mus-d-0128) | decision | Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it |
 | [MUS-D-0129](decisions.md#mus-d-0129) | decision | The session view's live strip is gone; the pill beside the project name already said it |
 | [MUS-D-0130](decisions.md#mus-d-0130) | decision | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be |
+| [MUS-D-0131](decisions.md#mus-d-0131) | decision | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -294,6 +296,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0046](findings.md#mus-f-0046) | finding | A submit button nobody drew, hidden by script, stacked by a selector written for another form |
 | [MUS-F-0047](findings.md#mus-f-0047) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
 | [MUS-F-0048](findings.md#mus-f-0048) | finding | The plan tool refuses SVG, so the tab icons are drawn in CSS instead |
+| [MUS-F-0049](findings.md#mus-f-0049) | finding | The session view discards tmux's rendering and re-derives it badly; the cause is ours, not the CLI's |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

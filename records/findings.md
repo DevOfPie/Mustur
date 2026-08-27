@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-52 record(s), by identifier.
+53 record(s), by identifier.
 
 ## The queue
 
@@ -44,7 +44,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
 | [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
 | [MUS-F-0030](#mus-f-0030) | A session being piped makes the service unkillable, and systemd's stop times out holding the port |  | open |
-| [MUS-F-0031](#mus-f-0031) | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |  | open |
+| [MUS-F-0031](#mus-f-0031) | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |  | open, superseded in framing by MUS-F-0049 |
 | [MUS-F-0032](#mus-f-0032) | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… | Fixed 2026-08-26 and deployed. The session view was a repair against its own stylesheet; the document surfaces were a choice, drawn in plan-ba6b90e7d9064d09 and answered by the owner (MUS-D-0118). Pinned below 60rem, a left rail above it, the rail replacing the bar rather than joining it. | fixed |
 | [MUS-F-0033](#mus-f-0033) | A long field value made the records page wider than the phone, and the tab bar went with it | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. | fixed |
 | [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
@@ -62,6 +62,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0046](#mus-f-0046) | A submit button nobody drew, hidden by script, stacked by a selector written for another form | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. | fixed |
 | [MUS-F-0047](#mus-f-0047) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | fixed |
 | [MUS-F-0048](#mus-f-0048) | The plan tool refuses SVG, so the tab icons are drawn in CSS instead | A custom-html block containing only <svg viewBox="0 0 24 24"><circle/></svg> is refused with the same message as a full icon set. Frames without svg in the same call were accepted. | worked around |
+| [MUS-F-0049](#mus-f-0049) | The session view discards tmux's rendering and re-derives it badly; the cause is ours, not the CLI's | Measured on a live Mustur-owned Claude Code session, one turn, both paths at once. What pipe-pane hands us: 6,590 bytes carrying 472 CSI sequences, of which 325 are cursor movement or erase — ESC[21;3H, ESC[H, ESC[1B, ESC[10G, ESC[K, ESC[?25l. A third of the byte stream is not text. What capture-pane -e hands us for the same pane: 1,428 bytes, 51 CSI sequences, and zero cursor moves — colour only. The same content, already assembled. | confirmed, blocked on MUS-Q-0060 |
 
 ---
 
@@ -667,18 +668,26 @@ Stopping the service to install a new binary left it in stop-sigkill for ten min
 
 **The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted**
 
-finding · 2026-08-26
+finding · 2026-08-27
 
 found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
 
 and: [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018)
 
-The owner watched a session from a laptop and reported it piping out unformatted text. Two separate causes, and they disagree with each other. The seed and the live stream are captured differently. The scrollback comes from `tmux capture-pane -p -J` with no `-e`, which strips every escape sequence, so it arrives as clean plain text. The live bytes come from `tmux pipe-pane`, which carries the pane raw. So the page reads properly until the first live byte and degrades from there — the same session rendering two ways depending on when you looked. What the raw stream carries, measured on the pane Mustur is piping: SGR colour (ESC[38;5;37m, ESC[39m), underline (ESC[4m), and OSC 8 hyperlinks (ESC]8;id=uzlkec;https://github.com/... ESC backslash). The client does `out.textContent += s` (internal/web/assets/session.js:41), so none of it is interpreted. The ESC itself is an invisible control character, which leaves the bracket codes and the hyperlink payload on screen as literal text. Underneath that is a larger mismatch. The pane runs an agent CLI, which is a full-screen TUI that repaints by moving the cursor. Appending its byte stream linearly stacks partial frames on top of each other; no amount of escape-stripping makes a repainting application read as a transcript. Stripping the codes would at least make the live stream match the seed, which is the cheap half of a fix and not the whole of one. Not urgent and not fixed here: the owner asked for it to be noted. The choice behind it — strip to match the seed, interpret the escapes in the browser, or render frames rather than a log — is a design decision rather than a repair.
+sharpened by: [MUS-F-0049](#mus-f-0049)
+
+The owner watched a session from a laptop and reported it piping out unformatted text.
+
+The seed and the live stream are captured differently. The scrollback comes from capture-pane -p -J with no -e, which strips every escape sequence, so it arrives as clean plain text. The live bytes come from pipe-pane, which carries the pane raw. So the page reads properly until the first live byte and degrades from there — the same session rendering two ways depending on when you looked. The client does out.textContent += s, so nothing is interpreted, and the ESC itself being invisible leaves the bracket codes on screen as literal text.
+
+This record first explained the deeper half as the CLI's nature: the pane runs a full-screen TUI that repaints, and no amount of escape-stripping makes a repainting application read as a transcript. True, and the wrong emphasis — the owner corrected it on MUS-F-0049. tmux is a terminal emulator and has already interpreted the stream into a screen; the defect is that Mustur discards that and re-derives it from the raw protocol. Measured afterwards: a third of what pipe-pane carries is cursor addressing, and the same pane through capture-pane -e is a fifth the size with no cursor moves at all.
+
+Framing matters here because it changes what happens next. 'The CLI repaints' invites tolerating it; 'we are throwing away the rendering and doing it worse' does not.
 
 | Field | Value |
 | --- | --- |
 | Where | internal/session/stream.go, internal/web/assets/session.js |
-| Status | open |
+| Status | open, superseded in framing by MUS-F-0049 |
 
 ---
 
@@ -1048,3 +1057,33 @@ The icons are now drawn in CSS: borders, radii and two pseudo-elements each. The
 | Where | the plan tool, and internal/web once the set is chosen |
 | Evidence | A custom-html block containing only <svg viewBox="0 0 24 24"><circle/></svg> is refused with the same message as a full icon set. Frames without svg in the same call were accepted. |
 | Status | worked around |
+
+---
+
+## MUS-F-0049
+
+**The session view discards tmux's rendering and re-derives it badly; the cause is ours, not the CLI's**
+
+finding · 2026-08-27
+
+sharpens: [MUS-F-0031](#mus-f-0031)
+
+blocked by: [MUS-Q-0060](questions.md#mus-q-0060)
+
+Filed by the owner: the session output is still broken, and the concern raised earlier was taken as a Claude issue when it is an issue with how the output is interpreted.
+
+Reviewed and confirmed, and the correction is the important half.
+
+MUS-F-0031 named the right mechanism and put the weight in the wrong place. It said the pane runs a full-screen TUI that repaints, and that no amount of escape-stripping makes a repainting application read as a transcript. Both true. But framing the cause as what the CLI is invites tolerating it, and the sharper statement is about what we do: tmux is a terminal emulator, it has already interpreted that stream into a screen, and Mustur throws that away to take the raw protocol and append it as if it were a log.
+
+The measurement settles it. A third of what pipe-pane carries is cursor addressing — ESC[21;3H, ESC[H, ESC[K — which is a protocol for painting a grid, not a transcript with decoration on it. Stripping the codes cannot work and not because the CLI is awkward: ESC[21;3H means the text after it overwrites row 21, so removing the code keeps the text and loses where it goes. The same pane read through capture-pane is a fifth the size with no cursor moves at all.
+
+The strongest evidence that this is ours rather than the CLI's: the correct interpretation is already in the codebase. The seed uses capture-pane and reads correctly. It is used for the first paint and abandoned for every byte after it, which is exactly why the page reads properly until the first live byte and degrades from there.
+
+Not repaired here. Moving from a byte stream to rendered frames changes what resume means — the byte offset a viewer reconnects at, the 256KB buffer of MUS-Q-0021, the gap message — so it is a decision rather than a fix, raised as MUS-Q-0060.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/stream.go, internal/web/assets/session.js |
+| Evidence | Measured on a live Mustur-owned Claude Code session, one turn, both paths at once. What pipe-pane hands us: 6,590 bytes carrying 472 CSI sequences, of which 325 are cursor movement or erase — ESC[21;3H, ESC[H, ESC[1B, ESC[10G, ESC[K, ESC[?25l. A third of the byte stream is not text. What capture-pane -e hands us for the same pane: 1,428 bytes, 51 CSI sequences, and zero cursor moves — colour only. The same content, already assembled. |
+| Status | confirmed, blocked on MUS-Q-0060 |

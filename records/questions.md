@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-59 record(s), by identifier.
+60 record(s), by identifier.
 
 ---
 
@@ -1342,3 +1342,21 @@ question · 2026-08-26
 | Answered | 2026-08-26 22:45 |
 | Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0060
+
+**How the session view should interpret the pane: frames, an emulator, or a stripped log**
+
+question · 2026-08-27
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0049 |
+| Needed to proceed | yes |
+| Option | Render frames from capture-pane :: correct for free; changes what resume means :: tmux has already done the emulation, so ask it for the screen instead of the protocol. The seed path already does exactly this and reads correctly. One poll per watched session sends about 1.4KB where the raw stream sent 6.6KB for the same turn, and the working and idle detection already reads the same pane, so it costs nothing new. What changes is the resume model: the byte offset a viewer reconnects at, the 256KB buffer from MUS-Q-0021 and the gap message all describe a stream, and a screen has none of those. Scrollback comes from capture-pane -S instead. Recommended |
+| Option | Emulate the terminal in Mustur :: keeps the stream and its resume model; a terminal emulator to own :: Run the raw bytes through a VT parser, keep a screen model, send diffs. Byte offsets, replay and the gap message all survive unchanged, and the output could be diffed rather than re-sent whole. The cost is a terminal emulator in the binary and in the tests — every escape sequence that arrives is one this project now has to be correct about, and tmux is already correct about all of them one process away. |
+| Option | Strip the escapes and keep the log :: the cheap half; the layout stays wrong :: Makes the live stream match the seed in character set, so the bracket codes stop appearing as literal text. It does not fix the problem: ESC[21;3H means the text after it overwrites row 21, so removing the code keeps the text and loses where it belongs. Frames would still stack on each other, just without the codes visible. Worth naming because it is what 'fix the formatting' sounds like it means. |
+| Asked by | whippy |

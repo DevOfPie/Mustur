@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-130 record(s), by identifier.
+131 record(s), by identifier.
 
 ## Index
 
@@ -142,6 +142,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0128](#mus-d-0128) | Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it | 2026-08-27 |
 | [MUS-D-0129](#mus-d-0129) | The session view's live strip is gone; the pill beside the project name already said it | 2026-08-27 |
 | [MUS-D-0130](#mus-d-0130) | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be | 2026-08-27 |
+| [MUS-D-0131](#mus-d-0131) | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS | 2026-08-27 |
 
 ---
 
@@ -2164,3 +2165,32 @@ One capture per socket tick, which is every two seconds and only while somebody 
 | --- | --- |
 | Where | internal/session/session.go, internal/web/sessions.go, internal/web/assets/session.js |
 | Evidence | Against a real Claude Code session in tmux: at the prompt after six minutes of silence the pill reads idle with no ring; a turn started by typing into it takes the pill to running with the ring turning; the turn ending returns it to idle with the counter reading 'quiet 1s' — one second, where the timer would have said running for three more minutes. Four unit cases cover mid-turn, waiting, an unrecognised pane and a failed capture. |
+
+---
+
+## MUS-D-0131
+
+**The four tabs are drawings in the bar and drawings with words in the rail, built in CSS**
+
+decision · 2026-08-27
+
+extends: [MUS-D-0127](#mus-d-0127)
+
+worked around: [MUS-F-0048](findings.md#mus-f-0048)
+
+Asked for by the owner: replace the text tabs on mobile with icons, and show icon then word on desktop. Chosen from drawings rather than descriptions, over three rounds.
+
+The set is stroked outlines on one 22px box with one 1.7px border, so the five read as a set. A prompt for Sessions, a question mark in a circle for Decisions, a speech bubble with three dots for Intake, a page with lines for Records, and a head and shoulders for the account entry at the foot of the rail.
+
+Drawn in CSS rather than SVG. That began as a constraint of the tool the owner reviews these in, which refuses svg in every block it has — confirmed by publishing a bare circle on its own and having it refused. It is the better build regardless: nothing embedded, no viewBox to keep in step with a stroke width, and currentColor on a border inherits the theme with no dark-mode branch.
+
+Intake took three rounds and both corrections were the owner's. The first drawing was an arrow into a tray with the head sitting in the tray's mouth, cramped. The second round offered seven, and the objection killed all of them at once rather than two: a downward arrow is the download glyph and an envelope is something that arrives, and this page is the opposite of both — you write a thought and post it. The third round went at it from six directions and the bubble was chosen, then rebuilt, because the first bubble was drawn with a skewed square tail filled white — which is a white block on a dark page, a bug rather than a matter of taste.
+
+The dots are not decoration. Side by side, a plain bubble in the bar reads as a rounded square next to the document icon; with three dots it reads as a message. In a bar with no words, that difference is the whole job.
+
+The word leaves the screen and not the page: every tab keeps its span, hidden below 60rem and shown in the rail, and every tab names itself in aria-label. The count of waiting decisions stays visible in the bar where the word does not — how many are waiting is the one thing on that row worth reading at a glance, and hiding it with the word would have made the drawing cost something rather than replace something.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/shell.go, and the six surfaces that carry a nav |
+| Evidence | Chrome and Firefox, light and dark. The bar at 390px: four cells of 98px, 22px icons, 45px tall, no word painted and all four still in the markup, five aria-labels, and no icon carrying a colour of its own in either theme. The rail at 1366px: four words painted, every icon on the same 21px left edge and every word on 52px, rows 40px, and the account entry sharing that edge at the foot. |
