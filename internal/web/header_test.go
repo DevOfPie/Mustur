@@ -11,6 +11,7 @@ package web
 
 import (
 	"context"
+	"github.com/DevOfPie/Mustur/internal/session"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -424,6 +425,31 @@ func TestTheTabsCarryDrawingsAndKeepTheirWords(t *testing.T) {
 		// No SVG survives anywhere: the account icon was the last one.
 		if strings.Contains(body, "<svg") {
 			t.Errorf("%s still ships an SVG icon", path)
+		}
+	}
+
+	// And the session surface, which this harness does not build.
+	//
+	// It was missed by exactly that gap: its Decisions tab carries a count, so
+	// the pass that rewrote the plain tabs did not match it, and the surface
+	// shipped with three drawings and one word. Every test here was green.
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	sess := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	sess.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	for _, want := range []string{
+		`<i class="ic ic-sess"></i><span>Sessions</span>`,
+		`<i class="ic ic-dec">?</i><span>Decisions</span>`,
+		`<i class="ic ic-in"><b></b></i><span>Intake</span>`,
+		`<i class="ic ic-rec"></i><span>Records</span>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the session surface is missing %s", want)
 		}
 	}
 }

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-131 record(s), by identifier.
+132 record(s), by identifier.
 
 ## Index
 
@@ -143,6 +143,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0129](#mus-d-0129) | The session view's live strip is gone; the pill beside the project name already said it | 2026-08-27 |
 | [MUS-D-0130](#mus-d-0130) | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be | 2026-08-27 |
 | [MUS-D-0131](#mus-d-0131) | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS | 2026-08-27 |
+| [MUS-D-0132](#mus-d-0132) | The session view renders frames from capture-pane, and the byte stream is gone | 2026-08-27 |
 
 ---
 
@@ -2196,3 +2197,34 @@ The word leaves the screen and not the page: every tab keeps its span, hidden be
 | --- | --- |
 | Where | internal/web/shell.go, and the six surfaces that carry a nav |
 | Evidence | Chrome and Firefox, light and dark. The bar at 390px: four cells of 98px, icons 22x22 with the bubble 22x15, 45px tall, no word painted and all four still in the markup, five aria-labels, and no icon carrying a colour of its own in either theme. The rail at 1366px: four words painted, every icon on the same 21px left edge and every word on 52px, rows 40px, and the account entry sharing that edge at the foot. |
+
+---
+
+## MUS-D-0132
+
+**The session view renders frames from capture-pane, and the byte stream is gone**
+
+decision · 2026-08-27
+
+answers: [MUS-Q-0060](questions.md#mus-q-0060)
+
+fixes: [MUS-F-0049](findings.md#mus-f-0049)
+
+and: [MUS-F-0031](findings.md#mus-f-0031)
+
+retires: [MUS-Q-0021](questions.md#mus-q-0021)
+
+The session view reads the screen tmux has already assembled, on a timer, and sends a frame when it changes. Chosen by the owner on MUS-Q-0060 after MUS-F-0049 established that the old model was interpreting a screen-painting protocol as a log.
+
+What went: pipe-pane, the 256KB buffer, the byte offset a viewer resumed from, the replay flag, the gap message, and the whole stream.go. A viewer that reconnects is sent the current screen, which is the whole of what resuming means when the unit is a frame. MUS-Q-0021's buffer answered a question this no longer asks.
+
+What arrived: internal/ansi, which turns the captured SGR into HTML. It renders what it understands and drops what it does not, because printing an escape is the defect being fixed, and every character of the pane is escaped on the way through — the pane's contents are somebody else's output and must never be markup. White and black fall through to the page's own colour rather than the terminal's, because a page that is light for one reader and dark for the next cannot use either extreme.
+
+Three things fall out of it. There is no pipe, which takes MUS-F-0030 and MUS-F-0043 with it — a service that could not be stopped while piping, and a dead Mustur that held its listening port for as long as its pipe ran. The agent's working state comes free, read from the capture the poller already has rather than from a second one every two seconds. And the test suite lost about forty seconds, because nothing waits on a pipe any more.
+
+What it costs: one capture per watched project per tick, about two and a half a second while somebody is looking and nothing when nobody is. Frames carry 120 lines of history — measured at about 7KB against 1.2KB for the visible screen alone and 42KB for the whole of it — and only when the screen has actually changed.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/ansi, internal/session/screen.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Against a live Claude Code session in Chrome and Firefox: zero escape codes on the page where the old stream left them as literal text, colour rendered as spans, box drawing intact, monospaced, no sideways overflow at 390px or 1366px, and no page errors. A turn started by typing into the pane took the pill from idle to running and back within 1.5s of it ending. |

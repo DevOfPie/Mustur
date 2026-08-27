@@ -10,8 +10,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 60 | [questions.md](questions.md) |
-| decision | 131 | [decisions.md](decisions.md) |
-| finding | 53 | [findings.md](findings.md) |
+| decision | 132 | [decisions.md](decisions.md) |
+| finding | 55 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -248,6 +248,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0129](decisions.md#mus-d-0129) | decision | The session view's live strip is gone; the pill beside the project name already said it |
 | [MUS-D-0130](decisions.md#mus-d-0130) | decision | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be |
 | [MUS-D-0131](decisions.md#mus-d-0131) | decision | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS |
+| [MUS-D-0132](decisions.md#mus-d-0132) | decision | The session view renders frames from capture-pane, and the byte stream is gone |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -277,8 +278,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0027](findings.md#mus-f-0027) | finding | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |
 | [MUS-F-0028](findings.md#mus-f-0028) | finding | Revoking a token does not close a stream already open under it |
 | [MUS-F-0029](findings.md#mus-f-0029) | finding | No passkey from a password manager could ever sign in, because the backup flags were never stored |
-| [MUS-F-0030](findings.md#mus-f-0030) | finding | A session being piped makes the service unkillable, and systemd's stop times out holding the port |
-| [MUS-F-0031](findings.md#mus-f-0031) | finding | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |
+| [MUS-F-0030](findings.md#mus-f-0030) | finding | A service piping a session could not be stopped, and held its port through the timeout |
+| [MUS-F-0031](findings.md#mus-f-0031) | finding | The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted |
 | [MUS-F-0032](findings.md#mus-f-0032) | finding | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… |
 | [MUS-F-0033](findings.md#mus-f-0033) | finding | A long field value made the records page wider than the phone, and the tab bar went with it |
 | [MUS-F-0034](findings.md#mus-f-0034) | finding | The session view's quiet timer and composer could be scrolled off the bottom of a phone |
@@ -290,13 +291,15 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0040](findings.md#mus-f-0040) | finding | The account page was the one surface with no way back to a session |
 | [MUS-F-0041](findings.md#mus-f-0041) | finding | The session page was the only surface that let itself be cached, so its markup could outlive its script |
 | [MUS-F-0042](findings.md#mus-f-0042) | finding | The quiet timer measured the age of the tab, in three separate ways |
-| [MUS-F-0043](findings.md#mus-f-0043) | finding | A dead Mustur keeps its port for as long as its tmux pipe is running |
+| [MUS-F-0043](findings.md#mus-f-0043) | finding | A dead Mustur kept its port for as long as its tmux pipe was running |
 | [MUS-F-0044](findings.md#mus-f-0044) | finding | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that |
 | [MUS-F-0045](findings.md#mus-f-0045) | finding | A question answered somewhere other than Mustur stayed open in Mustur |
 | [MUS-F-0046](findings.md#mus-f-0046) | finding | A submit button nobody drew, hidden by script, stacked by a selector written for another form |
 | [MUS-F-0047](findings.md#mus-f-0047) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
 | [MUS-F-0048](findings.md#mus-f-0048) | finding | The plan tool refuses SVG, so the tab icons are drawn in CSS instead |
-| [MUS-F-0049](findings.md#mus-f-0049) | finding | The session view discards tmux's rendering and re-derives it badly; the cause is ours, not the CLI's |
+| [MUS-F-0049](findings.md#mus-f-0049) | finding | The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's |
+| [MUS-F-0050](findings.md#mus-f-0050) | finding | A noscript given display: contents shows its own markup as text to everyone with script |
+| [MUS-F-0051](findings.md#mus-f-0051) | finding | The quiet counter read tmux's session_activity, which is not when the session last did anything |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

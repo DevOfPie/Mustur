@@ -26,8 +26,11 @@ holds open questions and refuses to let work be reported complete around one.
 It also starts agent sessions inside tmux, reports which are running, stops one,
 and types an answered decision back into the session that raised it — where the
 question named one with `--in`, which is the only way delivery has a target.
-It streams a running session's output to a browser tab and notices when one
-ends. Every surface takes the width the rail leaves rather than a reading column
+It shows a running session's screen in a browser tab and notices when one ends
+— the screen tmux has already assembled, polled and re-rendered when it
+changes, rather than the pane's raw byte protocol appended to a log
+([MUS-D-0132](records/decisions.md#mus-d-0132)). There is no pipe, no byte
+offset and no replay: a tab that reconnects is handed the screen as it stands. Every surface takes the width the rail leaves rather than a reading column
 ([MUS-D-0128](records/decisions.md#mus-d-0128)) — a page wanting a narrower
 measure asks for it by setting `--shell-content`. On a wide screen the account
 link sits as an icon at the foot of the rail rather than as a word in the

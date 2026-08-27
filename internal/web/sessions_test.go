@@ -457,7 +457,7 @@ func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
 
-	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	hub := &session.Hub{Adapter: a}
 	t.Cleanup(hub.Shutdown)
 	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
 	mux := http.NewServeMux()
@@ -629,7 +629,7 @@ func TestMultiLineFromTheComposerReachesTheSession(t *testing.T) {
 	// after it: t.Cleanup is last-in-first-out, and Shutdown waits on a reader
 	// whose pane is still alive, so stopping the session second hangs the test
 	// rather than failing it.
-	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	hub := &session.Hub{Adapter: a}
 	t.Cleanup(hub.Shutdown)
 
 	// Plain cat, and not `timeout N cat`: timeout puts the child in its own
@@ -772,6 +772,18 @@ func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
 		t.Error("the button is shipped hidden or given a handle for the script to grab")
 	}
 
+	// Nothing may set display on the noscript.
+	//
+	// It had display: contents, so the button would be a flex item of the row
+	// rather than the noscript being one. That override also cancels the rule
+	// every browser applies with scripting enabled — noscript { display: none }
+	// — and the contents of a noscript with scripting on are its own markup as
+	// text. The row rendered the literal opening button tag beside the
+	// dropdown, in every browser, for anyone with script.
+	if strings.Contains(body, ".pick noscript {") {
+		t.Error("the noscript's display is overridden, which shows its markup as text when scripting is on")
+	}
+
 	// And the script does not reach for it. If the server renders it, the
 	// server — or here, the browser's own noscript — decides whether it is
 	// there.
@@ -803,11 +815,10 @@ func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
 			t.Errorf("the picker row does not reset %q, so the composer's form rule reshapes it:\n%s", want, rule)
 		}
 	}
-	// And the noscript wrapper must not be the flex item, or the button is laid
-	// out under the select rather than beside it.
-	if !strings.Contains(body, ".pick noscript { display: contents; }") {
-		t.Error("the noscript is the flex item, so the button lands below the select")
-	}
+	// What actually puts the button beside the select is the row being a flex
+	// row, asserted above. An earlier version of this test demanded
+	// `display: contents` on the noscript as well, which is the thing that made
+	// its markup show as text — a test holding a defect in place.
 
 	// The query it submits has to land on the session it names, or the button
 	// is decoration for the one reader who needs it.
@@ -845,7 +856,7 @@ func TestTheHelloFrameSaysHowLongTheSessionHasBeenQuiet(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
 
-	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	hub := &session.Hub{Adapter: a}
 	t.Cleanup(hub.Shutdown)
 	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
 	mux := http.NewServeMux()
@@ -960,27 +971,26 @@ func TestTheDrawerHasAResizeHandleThatIsNotPointerOnly(t *testing.T) {
 	}
 }
 
-// The backlog says it is a replay, so the client does not count it as the
-// session speaking.
+// The first frame carries the screen, rendered, and no escape reaches the page.
 //
-// This is MUS-F-0042's other half, and the reason the surface still read
-// "quiet 0s" after the stream itself had been fixed. The hello frame carries
-// how long the session has really been silent; the very next frame is the
-// scrollback capture-pane handed over, and the client stamped it as activity —
-// overwriting the number it had just been given, on every page load.
-func TestTheBacklogIsMarkedAsReplay(t *testing.T) {
+// This is what replaced the backlog. There is no offset to resume from and no
+// replay to distinguish, because the unit is a whole screen: hello carries the
+// pane as it stands, and every frame after it carries the pane again
+// (MUS-Q-0060).
+func TestTheSocketSendsARenderedScreen(t *testing.T) {
 	if _, err := exec.LookPath("tmux"); err != nil {
 		t.Skip("no tmux on PATH; this test only means something against the real thing")
 	}
 	dir := t.TempDir()
 	a := &session.Adapter{HookDir: dir}
-	project := "zzReplay"
-	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'echo scrollback; sleep 8'"); err != nil {
+	project := "zzScreen"
+	if _, err := a.Start(context.Background(), project, t.TempDir(),
+		"sh -c 'printf \"\\033[31mred-and-angry\\033[0m\\n\"; sleep 12'"); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
 
-	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	hub := &session.Hub{Adapter: a}
 	t.Cleanup(hub.Shutdown)
 	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
 	mux := http.NewServeMux()
@@ -988,8 +998,7 @@ func TestTheBacklogIsMarkedAsReplay(t *testing.T) {
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 
-	// Let the pane print, so there is something to replay.
-	time.Sleep(1200 * time.Millisecond)
+	time.Sleep(900 * time.Millisecond)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -1002,25 +1011,31 @@ func TestTheBacklogIsMarkedAsReplay(t *testing.T) {
 	}
 	defer c.CloseNow()
 
-	sawBacklog := false
-	for i := 0; i < 6 && !sawBacklog; i++ {
-		_, b, err := c.Read(ctx)
-		if err != nil {
-			break
-		}
-		var f frame
-		if err := json.Unmarshal(b, &f); err != nil {
-			t.Fatal(err)
-		}
-		if f.T != "out" {
-			continue
-		}
-		sawBacklog = true
-		if !f.Replay {
-			t.Error("the backlog is not marked as replay, so the client counts it as the session speaking now")
-		}
+	_, b, err := c.Read(ctx)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if !sawBacklog {
-		t.Skip("no backlog arrived; nothing to assert about it")
+	var f frame
+	if err := json.Unmarshal(b, &f); err != nil {
+		t.Fatal(err)
+	}
+	if f.T != "hello" {
+		t.Fatalf("the first frame is %q, not hello", f.T)
+	}
+	if !strings.Contains(f.Screen, "red-and-angry") {
+		t.Errorf("hello carries no screen:\n%s", f.Screen)
+	}
+	// Rendered rather than raw. An escape on the page is the whole defect.
+	if strings.Contains(f.Screen, "\x1b") || strings.Contains(f.Screen, "[31m") {
+		t.Errorf("an escape survived into the frame:\n%q", f.Screen)
+	}
+	// The colour became markup rather than being dropped or printed.
+	if !strings.Contains(f.Screen, "<span style=\"color:") {
+		t.Errorf("the colour was lost rather than rendered:\n%s", f.Screen)
+	}
+	// And nothing about a stream is left in the protocol.
+	if strings.Contains(string(b), `"seq"`) || strings.Contains(string(b), `"replay"`) ||
+		strings.Contains(string(b), `"lostBytes"`) {
+		t.Errorf("the frame still describes a byte stream:\n%s", b)
 	}
 }

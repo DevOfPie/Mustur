@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-53 record(s), by identifier.
+55 record(s), by identifier.
 
 ## The queue
 
@@ -43,8 +43,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
 | [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
 | [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
-| [MUS-F-0030](#mus-f-0030) | A session being piped makes the service unkillable, and systemd's stop times out holding the port |  | open |
-| [MUS-F-0031](#mus-f-0031) | The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted |  | open, superseded in framing by MUS-F-0049 |
+| [MUS-F-0030](#mus-f-0030) | A service piping a session could not be stopped, and held its port through the timeout | Every deploy in this session had to run 'tmux pipe-pane' with no command first. The last one did not, and stopped cleanly. | fixed |
+| [MUS-F-0031](#mus-f-0031) | The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted | Both halves now come from the same capture, so there is no seam to degrade at. | fixed |
 | [MUS-F-0032](#mus-f-0032) | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… | Fixed 2026-08-26 and deployed. The session view was a repair against its own stylesheet; the document surfaces were a choice, drawn in plan-ba6b90e7d9064d09 and answered by the owner (MUS-D-0118). Pinned below 60rem, a left rail above it, the rail replacing the bar rather than joining it. | fixed |
 | [MUS-F-0033](#mus-f-0033) | A long field value made the records page wider than the phone, and the tab bar went with it | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. | fixed |
 | [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
@@ -56,13 +56,15 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0040](#mus-f-0040) | The account page was the one surface with no way back to a session | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. | fixed |
 | [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
 | [MUS-F-0042](#mus-f-0042) | The quiet timer measured the age of the tab, in three separate ways | On a session started 29s earlier and silent since, the first paint reads 'quiet 29s' and climbs, in Chrome and Firefox. Before: 'quiet 0s' on every load. Three tests: the first viewer is told the truth, the replayed scrollback does not reset it, and the backlog frame is marked as replay. | fixed |
-| [MUS-F-0043](#mus-f-0043) | A dead Mustur keeps its port for as long as its tmux pipe is running | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. | open |
+| [MUS-F-0043](#mus-f-0043) | A dead Mustur kept its port for as long as its tmux pipe was running | The last four test-server restarts of this session needed no pipe-pane teardown and the port was free immediately. | fixed |
 | [MUS-F-0044](#mus-f-0044) | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that |  | fixed |
 | [MUS-F-0045](#mus-f-0045) | A question answered somewhere other than Mustur stayed open in Mustur |  | fixed |
 | [MUS-F-0046](#mus-f-0046) | A submit button nobody drew, hidden by script, stacked by a selector written for another form | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. | fixed |
 | [MUS-F-0047](#mus-f-0047) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | fixed |
 | [MUS-F-0048](#mus-f-0048) | The plan tool refuses SVG, so the tab icons are drawn in CSS instead | A custom-html block containing only <svg viewBox="0 0 24 24"><circle/></svg> is refused with the same message as a full icon set. Frames without svg in the same call were accepted. | worked around |
-| [MUS-F-0049](#mus-f-0049) | The session view discards tmux's rendering and re-derives it badly; the cause is ours, not the CLI's | Measured on a live Mustur-owned Claude Code session, one turn, both paths at once. What pipe-pane hands us: 6,590 bytes carrying 472 CSI sequences, of which 325 are cursor movement or erase — ESC[21;3H, ESC[H, ESC[1B, ESC[10G, ESC[K, ESC[?25l. A third of the byte stream is not text. What capture-pane -e hands us for the same pane: 1,428 bytes, 51 CSI sequences, and zero cursor moves — colour only. The same content, already assembled. | confirmed, blocked on MUS-Q-0060 |
+| [MUS-F-0049](#mus-f-0049) | The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's | Zero escape codes on the page against a live agent session, in Chrome and Firefox, where the old stream left them as literal text. | fixed |
+| [MUS-F-0050](#mus-f-0050) | A noscript given display: contents shows its own markup as text to everyone with script | With scripting on, the strip's innerText contained the opening button tag in Chrome and Firefox; with the override removed it reads 'Demo Ring Sub-agents' and the noscript is not painted. With scripting off the button is still 34x21px beside the select in both. | fixed |
+| [MUS-F-0051](#mus-f-0051) | The quiet counter read tmux's session_activity, which is not when the session last did anything | tmux list-sessions -F '#{session_activity}\t#{window_activity}' on a live session: 1787792947 against 1787808369, with now at 1787808585. The surface went from 'quiet 4h' to 'quiet 5m' on the same session. | fixed |
 
 ---
 
@@ -649,45 +651,43 @@ The owner registered a passkey on a phone through Bitwarden, then tried to sign 
 
 ## MUS-F-0030
 
-**A session being piped makes the service unkillable, and systemd's stop times out holding the port**
+**A service piping a session could not be stopped, and held its port through the timeout**
 
-finding · 2026-08-26
+finding · 2026-08-27
 
-found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
-Stopping the service to install a new binary left it in stop-sigkill for ten minutes and took the site down. The main thread was a zombie; one thread remained in uninterruptible sleep on anon_pipe_read, and because the process was never reaped the kernel kept the listening socket on 7777 — ss showed it LISTEN, owned by the service's cgroup, attributed to no process, answering nothing. The blocked read is the session surface's: tmux pipe-pane writes a live pane's output into a pipe that Mustur reads, and nothing closes that pipe on shutdown. A read on a pipe with no writer, in D state, does not answer SIGTERM and does not answer SIGKILL either. Turning the pipe off with `tmux pipe-pane -t <pane>` released it instantly, which is what confirms the cause. It needs one live piped pane to happen, so it only bites a deployment actually serving sessions — which is this one, since 2026-08-23. The fix is for the server to close its pipe readers on shutdown rather than leaving them to the kernel; recorded rather than built, because it wants a deliberate shutdown path and this was found in the middle of an unrelated repair.
+Stopping the service while it was piping a session left the pipe reader blocked in uninterruptible sleep; systemd timed out holding port 7777 and the site was down for about ten minutes. Released by turning the pipe off by hand.
+
+Gone rather than fixed: there is no pipe any more. The session view polls capture-pane instead of holding pipe-pane open (MUS-D-0132), so there is nothing to block on and nothing to turn off before a deploy.
 
 | Field | Value |
 | --- | --- |
-| Where | internal/session, internal/web/sessions.go, cmd/mustur/main.go |
-| Status | open |
+| Where | internal/session |
+| Evidence | Every deploy in this session had to run 'tmux pipe-pane' with no command first. The last one did not, and stopped cleanly. |
+| Status | fixed |
 
 ---
 
 ## MUS-F-0031
 
-**The session view appends a redrawing terminal as if it were a log, so the live stream arrives unformatted**
+**The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted**
 
 finding · 2026-08-27
 
-found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
-
-and: [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018)
-
-sharpened by: [MUS-F-0049](#mus-f-0049)
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
 The owner watched a session from a laptop and reported it piping out unformatted text.
 
-The seed and the live stream are captured differently. The scrollback comes from capture-pane -p -J with no -e, which strips every escape sequence, so it arrives as clean plain text. The live bytes come from pipe-pane, which carries the pane raw. So the page reads properly until the first live byte and degrades from there — the same session rendering two ways depending on when you looked. The client does out.textContent += s, so nothing is interpreted, and the ESC itself being invisible leaves the bracket codes on screen as literal text.
+Two captures that disagreed: the seed came from capture-pane and read as clean text, the live bytes came from pipe-pane and carried the pane raw, so the page read properly until the first live byte and degraded from there.
 
-This record first explained the deeper half as the CLI's nature: the pane runs a full-screen TUI that repaints, and no amount of escape-stripping makes a repainting application read as a transcript. True, and the wrong emphasis — the owner corrected it on MUS-F-0049. tmux is a terminal emulator and has already interpreted the stream into a screen; the defect is that Mustur discards that and re-derives it from the raw protocol. Measured afterwards: a third of what pipe-pane carries is cursor addressing, and the same pane through capture-pane -e is a fifth the size with no cursor moves at all.
-
-Framing matters here because it changes what happens next. 'The CLI repaints' invites tolerating it; 'we are throwing away the rendering and doing it worse' does not.
+This record first explained the deeper half as the CLI's nature — a full-screen TUI that repaints — which is true and was the wrong emphasis. The owner corrected it on MUS-F-0049: tmux had already turned that stream into a screen and Mustur was discarding it. Fixed with the rest of it on MUS-D-0132.
 
 | Field | Value |
 | --- | --- |
-| Where | internal/session/stream.go, internal/web/assets/session.js |
-| Status | open, superseded in framing by MUS-F-0049 |
+| Where | internal/session/screen.go, internal/web/assets/session.js |
+| Evidence | Both halves now come from the same capture, so there is no seam to degrade at. |
+| Status | fixed |
 
 ---
 
@@ -917,23 +917,21 @@ The shape worth remembering is that a value can be threaded correctly through ev
 
 ## MUS-F-0043
 
-**A dead Mustur keeps its port for as long as its tmux pipe is running**
+**A dead Mustur kept its port for as long as its tmux pipe was running**
 
-finding · 2026-08-26
+finding · 2026-08-27
 
-same shape as: [MUS-F-0030](#mus-f-0030)
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
-Noticed while tearing down a test server. Its process was a zombie — [mustur] <defunct> — and 127.0.0.1:7972 was still bound, with ss showing a LISTEN socket it could name no owner for and both lsof and fuser finding nothing. The only thing left alive from that server was the child tmux had spawned for its pipe: sh -c cat > /tmp/mustur-Sheet-<pid>.fifo. Running 'tmux pipe-pane' with no command against that pane released the port immediately.
+Its process was a zombie and 127.0.0.1:7972 was still bound, with ss naming no owner and both lsof and fuser finding nothing. Turning the pipe off released it immediately. Reproduced four times while restarting a test server.
 
-So a Mustur that has exited can still be holding its listening socket for as long as its output pipe is running, which is why a restart reports 'address already in use' against a process that is already dead. That is the same shape as MUS-F-0030, where a piping service could not be stopped at all and the site was down for about ten minutes — and it has the same workaround, which is to turn the pipe off first.
-
-The mechanism is not proven. The obvious explanation is fd inheritance, but tmux spawns that child itself and is a long-running server of its own, so how the listening socket reaches it is exactly the thing that has not been established. Recorded as what was observed rather than as a diagnosis.
+Gone with the pipe (MUS-D-0132). The mechanism was never established and now does not need to be.
 
 | Field | Value |
 | --- | --- |
-| Where | cmd/mustur, internal/session |
-| Evidence | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. |
-| Status | open |
+| Where | internal/session |
+| Evidence | The last four test-server restarts of this session needed no pipe-pane teardown and the port was free immediately. |
+| Status | fixed |
 
 ---
 
@@ -1062,28 +1060,66 @@ The icons are now drawn in CSS: borders, radii and two pseudo-elements each. The
 
 ## MUS-F-0049
 
-**The session view discards tmux's rendering and re-derives it badly; the cause is ours, not the CLI's**
+**The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's**
 
 finding · 2026-08-27
 
-sharpens: [MUS-F-0031](#mus-f-0031)
-
-blocked by: [MUS-Q-0060](questions.md#mus-q-0060)
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
 Filed by the owner: the session output is still broken, and the concern raised earlier was taken as a Claude issue when it is an issue with how the output is interpreted.
 
-Reviewed and confirmed, and the correction is the important half.
+Confirmed by measurement and fixed. A third of what pipe-pane carried was cursor addressing — ESC[21;3H, ESC[H, ESC[K — a protocol for painting a grid rather than a transcript with decoration on it. The same pane through capture-pane was a fifth the size with no cursor moves at all. The strongest evidence that it was ours rather than the CLI's: the correct interpretation was already in the codebase, used for the first paint and abandoned for every byte after, which is exactly why the page read properly until the first live byte and degraded from there.
 
-MUS-F-0031 named the right mechanism and put the weight in the wrong place. It said the pane runs a full-screen TUI that repaints, and that no amount of escape-stripping makes a repainting application read as a transcript. Both true. But framing the cause as what the CLI is invites tolerating it, and the sharper statement is about what we do: tmux is a terminal emulator, it has already interpreted that stream into a screen, and Mustur throws that away to take the raw protocol and append it as if it were a log.
-
-The measurement settles it. A third of what pipe-pane carries is cursor addressing — ESC[21;3H, ESC[H, ESC[K — which is a protocol for painting a grid, not a transcript with decoration on it. Stripping the codes cannot work and not because the CLI is awkward: ESC[21;3H means the text after it overwrites row 21, so removing the code keeps the text and loses where it goes. The same pane read through capture-pane is a fifth the size with no cursor moves at all.
-
-The strongest evidence that this is ours rather than the CLI's: the correct interpretation is already in the codebase. The seed uses capture-pane and reads correctly. It is used for the first paint and abandoned for every byte after it, which is exactly why the page reads properly until the first live byte and degrades from there.
-
-Not repaired here. Moving from a byte stream to rendered frames changes what resume means — the byte offset a viewer reconnects at, the 256KB buffer of MUS-Q-0021, the gap message — so it is a decision rather than a fix, raised as MUS-Q-0060.
+The session view now asks tmux for the screen instead of the protocol (MUS-D-0132).
 
 | Field | Value |
 | --- | --- |
-| Where | internal/session/stream.go, internal/web/assets/session.js |
-| Evidence | Measured on a live Mustur-owned Claude Code session, one turn, both paths at once. What pipe-pane hands us: 6,590 bytes carrying 472 CSI sequences, of which 325 are cursor movement or erase — ESC[21;3H, ESC[H, ESC[1B, ESC[10G, ESC[K, ESC[?25l. A third of the byte stream is not text. What capture-pane -e hands us for the same pane: 1,428 bytes, 51 CSI sequences, and zero cursor moves — colour only. The same content, already assembled. |
-| Status | confirmed, blocked on MUS-Q-0060 |
+| Where | internal/ansi, internal/session/screen.go |
+| Evidence | Zero escape codes on the page against a live agent session, in Chrome and Firefox, where the old stream left them as literal text. |
+| Status | fixed |
+
+---
+
+## MUS-F-0050
+
+**A noscript given display: contents shows its own markup as text to everyone with script**
+
+finding · 2026-08-27
+
+Found by looking at a screenshot of the session view, not by a test. Beside the session dropdown, on every browser, for every reader with scripting on, the page rendered the literal string: an opening button tag, its attributes, the word Go, and a closing tag.
+
+The picker's submit button lives in a noscript so the browser decides whether it is there. To make the button a flex item of the row rather than the noscript being one, the noscript was given display: contents — and that override also cancels the rule every browser applies with scripting enabled, noscript { display: none }. The contents of a noscript with scripting on are its own markup, as text, so showing the element shows the tag.
+
+What actually put the button beside the select was the row being a flex row, which was fixed at the same time and did the whole job. The override was never needed.
+
+The test written for that button asserted the presence of display: contents, so it held the defect in place rather than catching it. It now asserts the opposite, and the browser check that measured 'no button with script on' was true and useless: there is no button element, because the markup is text.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | With scripting on, the strip's innerText contained the opening button tag in Chrome and Firefox; with the override removed it reads 'Demo Ring Sub-agents' and the noscript is not painted. With scripting off the button is still 34x21px beside the select in both. |
+| Status | fixed |
+
+---
+
+## MUS-F-0051
+
+**The quiet counter read tmux's session_activity, which is not when the session last did anything**
+
+finding · 2026-08-27
+
+same as: [MUS-F-0042](#mus-f-0042)
+
+Seen in a screenshot: a session typed into three minutes earlier reported 'quiet 4h'.
+
+session_activity and window_activity are not the same field. Measured on a live session at the same instant: session_activity was 4.3 hours stale and window_activity was three minutes old. session_activity tracks the session; what happens inside it moves the window.
+
+This is MUS-F-0042's fourth form, and it shipped through a green test. The test starts a session, waits, and asserts the first viewer is told a non-zero silence — and on a freshly created session the two fields are within a second of each other, so reading the wrong one passes. It took a four-hour-old session and a screenshot to tell them apart.
+
+The same field feeds MUS-D-0013's clause about the route row defaulting to the last active session, which was therefore ordering by when sessions were started rather than by when they last did anything.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go |
+| Evidence | tmux list-sessions -F '#{session_activity}\t#{window_activity}' on a live session: 1787792947 against 1787808369, with now at 1787808585. The surface went from 'quiet 4h' to 'quiet 5m' on the same session. |
+| Status | fixed |

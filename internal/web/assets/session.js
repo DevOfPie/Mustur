@@ -2,9 +2,13 @@
 // script at all, and that stays the rule — a live terminal is the one thing
 // that cannot be served as a page.
 //
-// What it does and nothing more: hold one socket, append output, remember the
-// byte offset it last saw, and reconnect from there. No framework, no build
-// step, no dependency. It is served from the binary.
+// What it does and nothing more: hold one socket, paint the screen the server
+// sends, and reconnect when it drops. No framework, no build step, no
+// dependency. It is served from the binary.
+//
+// It used to append bytes and remember a byte offset. It does not any more:
+// the server sends the pane as tmux has already assembled it, so a frame is a
+// whole screen and resuming is just being sent the current one (MUS-Q-0060).
 (function () {
   "use strict";
 
@@ -18,9 +22,8 @@
   var form = document.getElementById("say");
   var text = document.getElementById("text");
 
-  // The byte offset last seen. Reconnecting asks to resume from here, which is
-  // what makes a dropped connection lose nothing rather than start over.
-  var seq = 0;
+  // When the screen last changed. There is no offset to remember: the unit is
+  // a frame, and a reconnect is handed the screen as it stands.
   var lastOutput = Date.now();
   var ws = null;
   var retry = 0;
@@ -90,14 +93,30 @@
     return out.scrollHeight - out.scrollTop - out.clientHeight < 40;
   }
 
-  function append(s) {
+  // Paint a whole screen.
+  //
+  // Replaced rather than appended, which is the whole change: a repainting
+  // terminal stacked on itself was what made the old view unreadable. Nothing
+  // accumulates, so nothing needs trimming either.
+  //
+  // The HTML is the server's — every character of the pane was escaped there,
+  // and the only markup in it is the spans it wrote for colour.
+  function paint(html) {
     var stick = atBottom();
-    out.textContent += s;
-    // Trimming the DOM as well as the server buffer: a tab left open for a day
-    // should not hold a megabyte of text the server has already forgotten.
-    if (out.textContent.length > 262144) {
-      out.textContent = out.textContent.slice(-262144);
-    }
+    out.innerHTML = html;
+    if (stick) out.scrollTop = out.scrollHeight;
+  }
+
+  // Something Mustur has to say about the session, as opposed to something the
+  // session said. Appended under the screen rather than into it, because the
+  // screen is replaced wholesale and anything written into it would vanish on
+  // the next frame.
+  function note(msg) {
+    var stick = atBottom();
+    var p = document.createElement("p");
+    p.className = "note";
+    p.textContent = msg;
+    out.appendChild(p);
     if (stick) out.scrollTop = out.scrollHeight;
   }
 
@@ -439,7 +458,7 @@
     var proto = location.protocol === "https:" ? "wss:" : "ws:";
     var url =
       proto + "//" + location.host + "/sessions/" +
-      encodeURIComponent(project) + "/ws?from=" + seq;
+      encodeURIComponent(project) + "/ws";
 
     ws = new WebSocket(url);
 
@@ -462,40 +481,28 @@
         return;
       }
       if (f.t === "hello") {
-        if (typeof f.seq === "number") seq = f.seq;
-        // The server says how long the session has already been silent, so the
-        // counter continues rather than restarting at zero on every page load.
+        // The first frame carries the screen as it stands, so a reconnect
+        // paints immediately rather than waiting for the session to move.
+        if (typeof f.screen === "string") paint(f.screen);
+        // The server says how long the screen has already been unchanged, so
+        // the counter continues rather than restarting on every page load.
         if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
         if (typeof f.agent === "string") doing = f.agent;
         // Now that the real silence is known, the pill can be honest about it.
         refreshState();
-      } else if (f.t === "out") {
-        append(f.text || "");
-        if (typeof f.seq === "number") seq = f.seq;
-        // Replay is what the session said before this tab arrived. Counting it
-        // as activity is what made the quiet timer restart on every page load:
-        // the hello frame set the counter from the session's real silence and
-        // the backlog immediately overwrote it with now.
-        if (!f.replay) lastOutput = Date.now();
-      } else if (f.t === "doing") {
-        doing = f.agent || "";
+      } else if (f.t === "screen") {
+        paint(f.screen || "");
+        if (typeof f.agent === "string") doing = f.agent;
+        // A frame only arrives when the screen actually changed, so its arrival
+        // is the activity. There is no replay to tell apart any more: the
+        // server has no backlog to send.
+        lastOutput = Date.now();
         refreshState();
-      } else if (f.t === "gap") {
-        // Told what was missed rather than shown a hole where it was. A zero
-        // means the reader restarted while we were away and how much was
-        // produced in between is not knowable — saying "some" is honest where
-        // a number would not be.
-        var lost = f.lostBytes || 0;
-        append(
-          lost > 0
-            ? "\n[" + lost + " bytes of earlier output were not kept]\n"
-            : "\n[output produced while this tab was away was not kept]\n"
-        );
       } else if (f.t === "error") {
         // The server discarded a message and said so. The draft is put back,
         // because the alternative — which shipped — was the text vanishing and
         // a pill changing colour.
-        append("\n[not sent: " + (f.error || "unknown reason") + "]\n");
+        note("not sent: " + (f.error || "unknown reason"));
         if (text && !text.value && lastSent) {
           text.value = lastSent;
           writeDraft(lastSent);
@@ -646,7 +653,7 @@
       // has to say something. It used to return silently, which is the failure
       // the error channel was added to end.
       if (!ws || ws.readyState !== 1) {
-        if (!closed) append("\n[not sent: still reconnecting. What you wrote is kept.]\n");
+        if (!closed) note("not sent: still reconnecting. What you wrote is kept.");
         return;
       }
       if (closed) return;

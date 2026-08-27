@@ -302,23 +302,22 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 }
 
 type frame struct {
-	T     string `json:"t"`
-	Seq   int64  `json:"seq,omitempty"`
+	T string `json:"t"`
+	// Screen is the pane, rendered. It replaces the chunk of bytes this used
+	// to carry: the unit is now a whole screen, so there is no offset to
+	// resume from, no replay to distinguish and no gap to report (MUS-Q-0060).
+	Screen string `json:"screen,omitempty"`
+	// Text goes the other way: it is what the composer sends up. Nothing is
+	// sent down as text any more — a screen is not a chunk.
 	Text  string `json:"text,omitempty"`
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
-	Lost  int64  `json:"lostBytes,omitempty"`
 	// Agent is what the CLI's own pane says it is doing: working, waiting, or
 	// empty for a pane nothing here can read. Empty is not idle — the surface
 	// falls back to counting silence, which is what it did before.
 	Agent string `json:"agent,omitempty"`
-	// Replay marks output the session produced before this viewer arrived. It
-	// is the same text as any other chunk and it is not the session doing
-	// something now, so the quiet counter must not take it as activity — the
-	// mistake the stream itself made until MUS-F-0042, repeated one layer up.
-	Replay bool   `json:"replay,omitempty"`
-	At     string `json:"at,omitempty"`
-	Error  string `json:"error,omitempty"`
+	At    string `json:"at,omitempty"`
+	Error string `json:"error,omitempty"`
 	// Sub-agent rows, pushed rather than waited for (MUS-Q-0029). The owner
 	// chose this over a reload, against the builder's recommendation, and it is
 	// the one place the client layer models something other than the terminal.
@@ -336,13 +335,10 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	}
 	project := r.PathValue("project")
 
-	from := int64(0)
-	if v := r.URL.Query().Get("from"); v != "" {
-		fmt.Sscanf(v, "%d", &from)
-	}
-
 	ctx := r.Context()
-	sub, backlog, at, gap, err := s.Hub.Attach(ctx, project, from)
+	// No `from`. A viewer resuming is sent the screen as it stands, which is
+	// the whole of what resuming means when the unit is a frame.
+	sub, now, err := s.Hub.Watch(ctx, project)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -362,7 +358,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	conn, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// How long the session has been silent, from the stream rather than from
+	// How long the screen has been unchanged, from the poller rather than from
 	// this connection. Declared and left at zero, it made the browser start
 	// counting at whatever moment the tab attached, so the footer measured the
 	// age of the tab (MUS-F-0042). Rounded down to whole seconds, which is what
@@ -387,28 +383,13 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		return c.Write(wctx, websocket.MessageText, b)
 	}
 
-	doing := s.Adapter.Doing(conn, project)
-	if err := send(frame{T: "hello", Alive: true, Seq: at, Quiet: quiet, Agent: string(doing)}); err != nil {
+	// The first frame is the screen as it stands, and what the pane says the
+	// agent is doing — read out of the same capture rather than fetched again.
+	if err := send(frame{
+		T: "hello", Alive: true, Quiet: quiet,
+		Screen: now.HTML, Agent: string(now.Agent),
+	}); err != nil {
 		return
-	}
-	if gap {
-		// at is the oldest byte still held, so the loss is at-from. Written the
-		// other way round it reported a negative count, which the client
-		// rendered to the reader verbatim: "[-7988948 bytes … were not kept]".
-		// A viewer whose offset is ahead of this stream was reading a previous
-		// one, and how much it missed is not knowable — zero says so.
-		lost := at - from
-		if lost < 0 {
-			lost = 0
-		}
-		if err := send(frame{T: "gap", Lost: lost}); err != nil {
-			return
-		}
-	}
-	if len(backlog) > 0 {
-		if err := send(frame{T: "out", Seq: at + int64(len(backlog)), Text: string(backlog), Replay: true}); err != nil {
-			return
-		}
 	}
 
 	// Sub-agent rows go down the same socket, on a ticker rather than in the
@@ -440,15 +421,9 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			_ = c.Close(websocket.StatusNormalClosure, "idle")
 			return
 		case <-agents.C:
-			// What the pane says, on the tick that was already running. One
-			// capture-pane every couple of seconds, and only while somebody is
-			// watching — the socket loop is the whole of when this runs.
-			if now := s.Adapter.Doing(conn, project); now != doing {
-				doing = now
-				if err := send(frame{T: "doing", Agent: string(now)}); err != nil {
-					return
-				}
-			}
+			// The agent's state used to be captured here, on its own timer.
+			// The poller already has the pane in hand and reads it out of the
+			// same text, so this tick is back to being only about sub-agents.
 			if stamp := session.SubagentStamp(s.HookDir, project); stamp == lastStamp {
 				continue
 			} else {
@@ -472,15 +447,15 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			if err := send(frame{T: "agents", Agents: rows, Running: running, None: len(rows) == 0}); err != nil {
 				return
 			}
-		case u, ok := <-sub.C:
+		case f, ok := <-sub.C:
 			if !ok {
 				return
 			}
-			if u.Ended {
-				_ = send(frame{T: "ended", Seq: u.Seq, At: u.ExitAt.Format("2006-01-02 15:04")})
+			if f.Ended {
+				_ = send(frame{T: "ended", At: f.ExitAt.Format("2006-01-02 15:04")})
 				return
 			}
-			if err := send(frame{T: "out", Seq: u.Seq, Text: u.Text, Replay: u.Replay}); err != nil {
+			if err := send(frame{T: "screen", Screen: f.HTML, Agent: string(f.Agent)}); err != nil {
 				return
 			}
 			resetIdle(idle, IdleTimeout)
@@ -603,11 +578,24 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      asked, but its last lines still come to rest above it rather than under
      it. The fallback is a sensible dock height for the moment before the
      script has measured one. */
+  /* The pane, painted rather than accumulated.
+     
+     A monospaced face because this is a screen tmux laid out in columns, and a
+     proportional one would break every box it draws. white-space: pre-wrap
+     keeps its spacing while still wrapping a long line to the reader's width
+     rather than the pane's. */
   #out { flex: 1; min-height: 0; overflow-y: auto;
          padding: .8rem 1rem calc(var(--dock-h, 9rem) + .8rem);
          margin: 0; white-space: pre-wrap;
-         word-break: break-word; font-size: .9em;
+         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+         word-break: break-word; font-size: .82em; line-height: 1.35;
          overscroll-behavior: contain; }
+  /* Something Mustur says about the session, as opposed to something the
+     session said. Under the screen, because the screen is replaced whole and
+     anything written into it would go with the next frame. */
+  #out .note { margin: .6rem 0 0; padding: .3rem .6rem;
+               border-left: 2px solid var(--accent); opacity: .8;
+               font-family: system-ui, sans-serif; white-space: normal; }
 
   /* The quiet timer and the composer, locked to the bottom of the screen.
 
@@ -681,15 +669,19 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .pick { display: flex; flex-direction: row; align-items: center; gap: .3rem;
           padding: 0; flex: 1; min-width: 0; }
   .pick select { flex: 1; min-width: 0; font: inherit; font-size: .85em; }
-  /* display: contents on the noscript, or the button is not a flex item of
-     this row — the noscript wrapping it is, and the button lands underneath
-     the select instead of beside it. Measured with scripting off, which is the
-     only state either of them can be seen in: 34x26px on its own line, which
-     is the shape the owner objected to in the first place.
+  /* Nothing sets display on the noscript, and that is deliberate.
 
-     Small and quiet otherwise. flex: 0 0 auto, or it stretches to the row's
-     height and becomes the giant button. */
-  .pick noscript { display: contents; }
+     It had display: contents, to make the button a flex item of this row
+     rather than the noscript being one. That override also cancels the rule
+     every browser applies when scripting is enabled — noscript { display:
+     none } — so the element's contents were shown, and the contents of a
+     noscript with scripting on are its own markup as text. The row rendered
+     the literal string <button type="submit" class="go">Go</button> next to
+     the dropdown, which is what the owner would have seen.
+
+     Without the override the browser decides again: hidden with scripting on,
+     an ordinary inline element with it off. The row is a flex row either way,
+     which is what actually put the button beside the select. */
   .pick .go { flex: 0 0 auto; font: inherit; font-size: .75em; line-height: 1;
               padding: .2rem .45rem; border: 1px solid var(--edge);
               border-radius: .35rem; background: none; color: inherit;
@@ -898,7 +890,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 {{end}}
 <nav>
   <a href="/sessions" class="here" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>
-  <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}

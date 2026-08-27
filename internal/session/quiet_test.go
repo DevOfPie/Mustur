@@ -32,13 +32,13 @@ func TestAQuietSessionSaysSoToItsFirstViewer(t *testing.T) {
 	// Long enough that zero and the truth cannot be confused.
 	time.Sleep(3 * time.Second)
 
-	h := &Hub{Adapter: a, Dir: t.TempDir()}
+	h := &Hub{Adapter: a}
 	t.Cleanup(h.Shutdown)
 	if h.lastActive(ctx, project).IsZero() {
 		t.Fatal("tmux was not asked, or could not say, when this session last did anything")
 	}
 
-	sub, _, _, _, err := h.Attach(ctx, project, 0)
+	sub, _, err := h.Watch(ctx, project)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,12 +47,12 @@ func TestAQuietSessionSaysSoToItsFirstViewer(t *testing.T) {
 		t.Errorf("a session quiet for three seconds reports %v to its first viewer", got.Truncate(time.Second))
 	}
 
-	// And the seed does not get overwritten by the seed. capture-pane hands
-	// over scrollback the pane printed long ago; stamping it with now was the
-	// other half of the same defect.
-	time.Sleep(600 * time.Millisecond)
+	// And the first frame does not reset it. Somebody starting to watch is not
+	// the session doing something — the same mistake the capture-pane seed made
+	// when it was stamped with now.
+	time.Sleep(700 * time.Millisecond)
 	if got := sub.Quiet(time.Now()); got < time.Second {
-		t.Errorf("the replayed scrollback reset the counter: %v", got.Truncate(time.Second))
+		t.Errorf("attaching reset the counter: %v", got.Truncate(time.Second))
 	}
 }
 

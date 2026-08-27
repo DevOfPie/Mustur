@@ -75,7 +75,15 @@ type Session struct {
 	// Attached reports whether a terminal is attached right now. A session
 	// Mustur started is usually detached, and that is not a health signal.
 	Attached bool
-	// Activity is when the session last did anything, as tmux reports it.
+	// Activity is when the session's pane last produced output, as tmux
+	// reports it.
+	//
+	// window_activity, not session_activity. They are not the same thing and
+	// the difference is hours: measured on a live session, session_activity was
+	// 4.3 hours stale while window_activity was three minutes old, because
+	// session_activity tracks the session rather than what is happening inside
+	// it. Reading the wrong one made the quiet counter say a session that had
+	// just spoken had been silent since it started (MUS-F-0042, again).
 	//
 	// It exists so that "the route row defaults to the last active session" can
 	// be true. That clause is MUS-D-0013's and went unbuilt through milestone 5
@@ -242,7 +250,7 @@ func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
 // List returns every session Mustur started on this machine, and nothing else.
 func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 	out, err := a.runner().Run(ctx, "tmux", "list-sessions", "-F",
-		"#{session_name}\t#{session_windows}\t#{session_attached}\t#{"+OwnedOption+"}\t#{session_activity}")
+		"#{session_name}\t#{session_windows}\t#{session_attached}\t#{"+OwnedOption+"}\t#{window_activity}")
 	if err != nil {
 		// No server running is not an error: it is the honest answer that no
 		// session exists. Distinguished by the message tmux gives, because an
@@ -276,6 +284,9 @@ func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 		// handling: a session with no timestamp sorts last rather than becoming
 		// the default, so the failure mode is a stale-looking order and never a
 		// message sent somewhere unintended.
+		//
+		// In list-sessions, window_activity resolves against the session's
+		// active window. Every session Mustur starts has exactly one.
 		if len(parts) > 4 {
 			var epoch int64
 			if _, err := fmt.Sscanf(strings.TrimSpace(parts[4]), "%d", &epoch); err == nil && epoch > 0 {
@@ -363,6 +374,39 @@ const waitingMark = "❯"
 // the input box are the last few rows; everything above is output.
 const paneLines = "-12"
 
+// Capture reads the pane as tmux has already assembled it.
+//
+// -e keeps the colour, which is the only escape worth carrying: what
+// capture-pane hands back has no cursor movement in it at all, because tmux
+// has already applied it. -J unwraps lines the pane wrapped, so a long line
+// rewraps to the reader's own width rather than the pane's.
+func (a *Adapter) Capture(ctx context.Context, project, from string) (string, error) {
+	name, err := NameFor(project)
+	if err != nil {
+		return "", err
+	}
+	out, err := a.runner().Run(ctx, "tmux",
+		"capture-pane", "-p", "-e", "-J", "-S", from, "-t", name)
+	if err != nil {
+		return "", fmt.Errorf("tmux capture-pane %s: %w: %s", name, err, strings.TrimSpace(out))
+	}
+	return out, nil
+}
+
+// DoingIn reads what the agent is up to out of a pane that has already been
+// captured, so a caller holding one does not fetch it twice.
+func DoingIn(pane string) Agent {
+	// Working first: the input box is drawn during a turn as well, so looking
+	// for the caret first would call every working session idle.
+	if strings.Contains(pane, workingMark) {
+		return AgentWorking
+	}
+	if strings.Contains(pane, waitingMark) {
+		return AgentWaiting
+	}
+	return AgentUnknown
+}
+
 // Doing reads what the agent in this session is up to, from the pane itself.
 //
 // One CLI's strings, and it says so. Anything else falls through to
@@ -379,15 +423,7 @@ func (a *Adapter) Doing(ctx context.Context, project string) Agent {
 	if err != nil {
 		return AgentUnknown
 	}
-	// Working first: the input box is drawn during a turn as well, so looking
-	// for the caret first would call every working session idle.
-	if strings.Contains(out, workingMark) {
-		return AgentWorking
-	}
-	if strings.Contains(out, waitingMark) {
-		return AgentWaiting
-	}
-	return AgentUnknown
+	return DoingIn(out)
 }
 
 func (a *Adapter) Send(ctx context.Context, project, text string) error {
