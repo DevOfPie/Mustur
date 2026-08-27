@@ -308,6 +308,10 @@ type frame struct {
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
 	Lost  int64  `json:"lostBytes,omitempty"`
+	// Agent is what the CLI's own pane says it is doing: working, waiting, or
+	// empty for a pane nothing here can read. Empty is not idle — the surface
+	// falls back to counting silence, which is what it did before.
+	Agent string `json:"agent,omitempty"`
 	// Replay marks output the session produced before this viewer arrived. It
 	// is the same text as any other chunk and it is not the session doing
 	// something now, so the quiet counter must not take it as activity — the
@@ -383,7 +387,8 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		return c.Write(wctx, websocket.MessageText, b)
 	}
 
-	if err := send(frame{T: "hello", Alive: true, Seq: at, Quiet: quiet}); err != nil {
+	doing := s.Adapter.Doing(conn, project)
+	if err := send(frame{T: "hello", Alive: true, Seq: at, Quiet: quiet, Agent: string(doing)}); err != nil {
 		return
 	}
 	if gap {
@@ -435,6 +440,15 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			_ = c.Close(websocket.StatusNormalClosure, "idle")
 			return
 		case <-agents.C:
+			// What the pane says, on the tick that was already running. One
+			// capture-pane every couple of seconds, and only while somebody is
+			// watching — the socket loop is the whole of when this runs.
+			if now := s.Adapter.Doing(conn, project); now != doing {
+				doing = now
+				if err := send(frame{T: "doing", Agent: string(now)}); err != nil {
+					return
+				}
+			}
 			if stamp := session.SubagentStamp(s.HookDir, project); stamp == lastStamp {
 				continue
 			} else {

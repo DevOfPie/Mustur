@@ -332,6 +332,64 @@ func (a *Adapter) Alive(ctx context.Context, project string) (bool, error) {
 // tmux would otherwise read as a key name arrives as characters. Multi-line
 // text does not go through `-l` at all — see the paste branch below, and
 // MUS-D-0096 for why.
+// Agent is what the pane says the CLI is doing.
+type Agent string
+
+const (
+	// AgentUnknown means the pane could not be read, or shows something this
+	// does not recognise. It is not "idle": a surface that treated it as idle
+	// would be asserting something about every CLI nobody has looked at.
+	AgentUnknown Agent = ""
+	// AgentWorking means a turn is in flight.
+	AgentWorking Agent = "working"
+	// AgentWaiting means the CLI is sitting at its prompt.
+	AgentWaiting Agent = "waiting"
+)
+
+// workingMark is what Claude Code puts in its status line for exactly as long
+// as a turn is running, and takes away the moment it ends.
+//
+// The owner pointed at this: the CLI already says whether it is working, and a
+// timer counting silence is a guess standing in for a fact. A tool call that
+// prints nothing for two minutes is working; a session that finished four
+// seconds ago is not, and no amount of counting bytes can tell those apart.
+const workingMark = "esc to interrupt"
+
+// waitingMark is the input caret the same CLI draws when it wants a person.
+// Present while working too, which is why the two are checked in order.
+const waitingMark = "❯"
+
+// paneLines is how much of the bottom of the pane to read. The status line and
+// the input box are the last few rows; everything above is output.
+const paneLines = "-12"
+
+// Doing reads what the agent in this session is up to, from the pane itself.
+//
+// One CLI's strings, and it says so. Anything else falls through to
+// AgentUnknown and the surface goes back to counting silence — which is worse,
+// and is what every session had before this. Degrading to the old guess is the
+// right failure; asserting "idle" about a CLI nobody has read would not be.
+func (a *Adapter) Doing(ctx context.Context, project string) Agent {
+	name, err := NameFor(project)
+	if err != nil {
+		return AgentUnknown
+	}
+	out, err := a.runner().Run(ctx, "tmux",
+		"capture-pane", "-p", "-J", "-S", paneLines, "-t", name)
+	if err != nil {
+		return AgentUnknown
+	}
+	// Working first: the input box is drawn during a turn as well, so looking
+	// for the caret first would call every working session idle.
+	if strings.Contains(out, workingMark) {
+		return AgentWorking
+	}
+	if strings.Contains(out, waitingMark) {
+		return AgentWaiting
+	}
+	return AgentUnknown
+}
+
 func (a *Adapter) Send(ctx context.Context, project, text string) error {
 	name, err := NameFor(project)
 	if err != nil {

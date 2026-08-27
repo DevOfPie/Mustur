@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
 	"testing"
 	"time"
@@ -54,3 +55,80 @@ func TestAQuietSessionSaysSoToItsFirstViewer(t *testing.T) {
 		t.Errorf("the replayed scrollback reset the counter: %v", got.Truncate(time.Second))
 	}
 }
+
+// What the pane says it is doing, read from the pane.
+//
+// The owner pointed at this: the CLI already prints whether a turn is running,
+// and counting silence is a guess standing in for that fact. A tool call that
+// produces nothing for two minutes is working; a session that finished four
+// seconds ago is not; no amount of counting bytes tells those apart.
+//
+// One CLI's strings, deliberately. Anything else falls through to
+// AgentUnknown and the surface goes back to the timer — degrading to the old
+// guess is the right failure, where asserting "idle" about a CLI nobody has
+// read would not be.
+func TestDoingReadsThePane(t *testing.T) {
+	ctx := context.Background()
+	for _, c := range []struct {
+		name string
+		pane string
+		want Agent
+	}{
+		{
+			"mid-turn",
+			"✽ Osmosing… (3s · ↓ 136 tokens · thinking with high effort)\n" +
+				"❯ \n" +
+				"  ⏵⏵ auto mode on (shift+tab to cycle) · esc to interrupt · ← 1 agent",
+			AgentWorking,
+		},
+		{
+			// The input box is drawn during a turn as well, so looking for the
+			// caret first would call every working session idle. This is the
+			// case that ordering protects.
+			"waiting at the prompt",
+			"● 30\n✻ Cooked for 7s · done 1:09 AM\n" +
+				"❯ \n" +
+				"  ⏵⏵ auto mode on (shift+tab to cycle) · ← 1 agent",
+			AgentWaiting,
+		},
+		{
+			"something else entirely",
+			"$ tail -f /var/log/syslog\nAug 27 01:12:03 whippy-vm kernel: nothing to see",
+			AgentUnknown,
+		},
+		{"an empty pane", "", AgentUnknown},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			a := &Adapter{Run: paneRunner{out: c.pane}}
+			if got := a.Doing(ctx, "Whatever"); got != c.want {
+				t.Errorf("pane reads as %q, want %q", got, c.want)
+			}
+		})
+	}
+
+	// A tmux that will not answer says nothing, rather than saying idle.
+	a := &Adapter{Run: paneRunner{err: true}}
+	if got := a.Doing(ctx, "Whatever"); got != AgentUnknown {
+		t.Errorf("a failed capture reads as %q, want unknown", got)
+	}
+	// And a project name tmux would read as a target is refused before it is
+	// handed to tmux at all.
+	if got := a.Doing(ctx, "bad:name"); got != AgentUnknown {
+		t.Errorf("an unsafe project reads as %q, want unknown", got)
+	}
+}
+
+// paneRunner answers every command with one canned pane.
+type paneRunner struct {
+	out string
+	err bool
+}
+
+func (p paneRunner) Run(context.Context, string, ...string) (string, error) {
+	if p.err {
+		return "", errNoPane
+	}
+	return p.out, nil
+}
+
+var errNoPane = fmt.Errorf("no server running")

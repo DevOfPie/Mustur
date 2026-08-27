@@ -141,7 +141,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0127](#mus-d-0127) | On a wide screen the account link is an icon at the foot of the rail, not a word in the header | 2026-08-27 |
 | [MUS-D-0128](#mus-d-0128) | Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it | 2026-08-27 |
 | [MUS-D-0129](#mus-d-0129) | The session view's live strip is gone; the pill beside the project name already said it | 2026-08-27 |
-| [MUS-D-0130](#mus-d-0130) | The status pill says idle after three minutes of silence, and wears the turning ring only while running | 2026-08-27 |
+| [MUS-D-0130](#mus-d-0130) | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be | 2026-08-27 |
 
 ---
 
@@ -2142,7 +2142,7 @@ What is left is a header row and a picker row above the output, where there were
 
 ## MUS-D-0130
 
-**The status pill says idle after three minutes of silence, and wears the turning ring only while running**
+**Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be**
 
 decision · 2026-08-27
 
@@ -2150,17 +2150,17 @@ needs: [MUS-F-0042](findings.md#mus-f-0042)
 
 follows: [MUS-D-0129](#mus-d-0129)
 
-Asked for by the owner: a session idle for significant time should say so in its pill rather than claiming to be running, and the ring from the sub-agent button should turn on the pill while it is.
+The first version of this used a three-minute silence threshold. The owner pointed out that the CLI already says which it is: tmux carries the working line Claude Code prints, and a timer counting bytes is a guess standing in for a fact that is right there.
 
-Three minutes. An agent thinking hard goes quiet for tens of seconds; a session waiting for you goes quiet for as long as you leave it. The threshold has to sit well past the first without being so far past it that 'running' stays on something that has been waiting since breakfast. It is one number in one place if that turns out to be wrong.
+The guess is worse in both directions. A tool call that prints nothing for two minutes is working and would have been called idle; a session that finished four seconds ago is not working and would have been called running for another three minutes. Neither is knowable from the byte stream, and both are stated plainly at the bottom of the pane.
 
-The pill says which state, and the counter below says how long — 'idle', not 'idle 12m'. The strip removed on MUS-D-0129 was removed for saying what the pill already said, and repeating the counter in the pill would be the same mistake in the other direction.
+So Adapter.Doing captures the last dozen rows and reads them. 'esc to interrupt' appears in the status line for exactly as long as a turn is in flight; the input caret is drawn when the CLI wants a person. Working is checked first, because the input box is drawn during a turn as well and looking for the caret first would call every working session idle.
 
-The ring is tied to the same flag that gives the pill its accent, so it turns only while the session is actually producing output. Reconnecting, ended and idle are all states where a moving light would contradict the word beside it. The rule that strips the inner border now names a child rather than the sub-agent button, because the ring is worn by two things.
+It is one CLI's strings and it says so. Anything else reads as unknown, and unknown falls back to the silence timer rather than asserting idle — degrading to the old guess is the right failure, where making a claim about a CLI nobody has read would not be. The threshold stays for that path.
 
-This is only honest because the quiet counter became honest first. Until MUS-F-0042 was fully fixed, a session silent for days reported no silence at all, and a pill built on that would have said 'running' forever.
+One capture per socket tick, which is every two seconds and only while somebody is watching: the socket loop is the whole of when it runs. The ring on the pill follows the same flag, so it turns while a turn is in flight and stops when it ends.
 
 | Field | Value |
 | --- | --- |
-| Where | internal/web/sessions.go, internal/web/assets/session.js |
-| Evidence | With the clock wound forward four minutes the pill goes from 'running' with the ring turning to 'idle' with it stopped, while the counter below reads 'quiet 5m'. Chrome and Firefox. Under prefers-reduced-motion the ring is static in both states, as it already was on the sub-agent button. |
+| Where | internal/session/session.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Against a real Claude Code session in tmux: at the prompt after six minutes of silence the pill reads idle with no ring; a turn started by typing into it takes the pill to running with the ring turning; the turn ending returns it to idle with the counter reading 'quiet 1s' — one second, where the timer would have said running for three more minutes. Four unit cases cover mid-turn, waiting, an unrecognised pane and a failed capture. |

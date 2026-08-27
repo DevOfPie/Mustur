@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-51 record(s), by identifier.
+52 record(s), by identifier.
 
 ## The queue
 
@@ -61,6 +61,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0045](#mus-f-0045) | A question answered somewhere other than Mustur stayed open in Mustur |  | fixed |
 | [MUS-F-0046](#mus-f-0046) | A submit button nobody drew, hidden by script, stacked by a selector written for another form | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. | fixed |
 | [MUS-F-0047](#mus-f-0047) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | fixed |
+| [MUS-F-0048](#mus-f-0048) | The plan tool refuses SVG, so the tab icons are drawn in CSS instead | A custom-html block containing only <svg viewBox="0 0 24 24"><circle/></svg> is refused with the same message as a full icon set. Frames without svg in the same call were accepted. | worked around |
 
 ---
 
@@ -1025,3 +1026,25 @@ This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q
 | Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
 | Status | fixed |
 | Corrects | IDW-F-0004 — it asks for a change to Mustur's own session view, which the idea inbox does not own |
+
+---
+
+## MUS-F-0048
+
+**The plan tool refuses SVG, so the tab icons are drawn in CSS instead**
+
+finding · 2026-08-27
+
+Reported by the owner twice: first that there was no link to the icon plan, then that the icons should always show in it.
+
+Both attempts to publish a plan carrying the icons were rejected. The message names html, head, body, script and style tags; what it actually refuses is any svg element, in every block type the tool has — wireframes, custom HTML, all of them. Confirmed by publishing a single bare circle, which was refused on its own.
+
+The first response was to screenshot the icons and send them as files, and then not to publish a plan at all — which is the failure the trait about visual plans exists to prevent, at the last step.
+
+The icons are now drawn in CSS: borders, radii and two pseudo-elements each. They render in the plan, they render in the product, and they are the same drawing in both — which matters more than the medium, because approving a picture of something else is the wrong kind of confidence. It suits the binary too: nothing embedded, no viewBox to keep in step with a stroke width, and currentColor on a border inherits the theme exactly as it did before.
+
+| Field | Value |
+| --- | --- |
+| Where | the plan tool, and internal/web once the set is chosen |
+| Evidence | A custom-html block containing only <svg viewBox="0 0 24 24"><circle/></svg> is refused with the same message as a full icon set. Frames without svg in the same call were accepted. |
+| Status | worked around |

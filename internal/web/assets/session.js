@@ -28,6 +28,15 @@
 
   var stateRing = document.getElementById("statering");
 
+  // What the CLI's own pane says it is doing, when it can be read at all.
+  //
+  // The owner pointed out that the timer below is a guess standing in for a
+  // fact the CLI already prints: a tool call that produces nothing for two
+  // minutes is working, and a session that finished four seconds ago is not,
+  // and counting silence cannot tell those apart. So this wins when it is
+  // known, and the timer is what happens when it is not.
+  var doing = "";
+
   // How long a session has to be silent before the pill stops calling it
   // running.
   //
@@ -56,6 +65,15 @@
   // removed for exactly that reason.
   function refreshState() {
     if (!attached || closed) return;
+    if (doing === "working") {
+      setState("running", true);
+      return;
+    }
+    if (doing === "waiting") {
+      setState("idle", false);
+      return;
+    }
+    // Nothing here could read the pane, so fall back to counting silence.
     var quietFor = Math.floor((Date.now() - lastOutput) / 1000);
     var idle = quietFor >= IDLE_AFTER;
     setState(idle ? "idle" : "running", !idle);
@@ -448,6 +466,7 @@
         // The server says how long the session has already been silent, so the
         // counter continues rather than restarting at zero on every page load.
         if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
+        if (typeof f.agent === "string") doing = f.agent;
         // Now that the real silence is known, the pill can be honest about it.
         refreshState();
       } else if (f.t === "out") {
@@ -458,6 +477,9 @@
         // the hello frame set the counter from the session's real silence and
         // the backlog immediately overwrote it with now.
         if (!f.replay) lastOutput = Date.now();
+      } else if (f.t === "doing") {
+        doing = f.agent || "";
+        refreshState();
       } else if (f.t === "gap") {
         // Told what was missed rather than shown a hole where it was. A zero
         // means the reader restarted while we were away and how much was
@@ -498,6 +520,7 @@
 
     ws.onclose = function () {
       attached = false;
+      doing = "";
       if (closed) return;
       // A dropped connection is not a dropped session, and the label says so.
       setState("reconnecting", false);

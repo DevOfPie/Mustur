@@ -32,8 +32,11 @@ ends. Every surface takes the width the rail leaves rather than a reading column
 measure asks for it by setting `--shell-content`. On a wide screen the account
 link sits as an icon at the foot of the rail rather than as a word in the
 header ([MUS-D-0127](records/decisions.md#mus-d-0127)). The session's status
-pill says **idle** after three minutes of silence and wears a turning accent
-ring only while output is arriving
+pill reads **running** or **idle** from the CLI's own pane rather than from a
+clock — Claude Code says which in its status line, and a timer counting silence
+is a guess standing in for that. It wears a turning accent ring while a turn is
+in flight. A pane nothing here recognises falls back to a three-minute silence
+threshold rather than claiming to know
 ([MUS-D-0130](records/decisions.md#mus-d-0130)). You can reply from that tab: the box is multi-line and spell-checked, it
 holds one draft that survives a reload and follows you between sessions, and it
 sends what you wrote as a single message rather than a prompt per line —
