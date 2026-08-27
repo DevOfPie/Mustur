@@ -546,20 +546,11 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   /* Capped, not floored. min-height let the column grow with the output and
      carry the bar and the composer off the screen with it (MUS-F-0032); the
      shell's own min-height is harmless beside a height that holds. */
-  /* The reading column is for reading, and this is a terminal.
-
-     Every other surface caps itself at 40 or 46rem because a line of prose
-     past about 80 characters is harder to follow. None of that applies to a
-     pane of agent output beside a list of sub-agents: on a 1366px laptop the
-     cap left the terminal 736px wide with 406px of nothing beside it. So this
-     surface takes what the rail leaves.
-
-     Set as --shell-content rather than as a max-width, because the composer's
-     width and the drawer's push are both derived from it — overriding the
-     max-width alone would widen the terminal and leave the composer at 46rem
-     under it. */
+  /* The 46rem below applies under the breakpoint only; above it the shell's
+     own rule wins and gives this page the width the rail leaves, which is now
+     what every surface gets. It was set here first, for the terminal alone,
+     before the owner asked for the rest. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
-         --shell-content: calc(100vw - var(--shell-rail) - var(--shell-gutter) * 2);
          margin-inline: auto; display: flex; flex-direction: column;
          height: 100vh; height: 100dvh; }
   /* The chrome rows keep their own height. A flex item shrinks by default, so
@@ -572,6 +563,11 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   header .pill { border: 1px solid var(--edge); border-radius: 999px;
                  padding: .1rem .55rem; font-size: .78em; }
   header .pill.on { border-color: var(--accent); background: var(--accent-soft); }
+  /* The ring around the status pill is smaller than the one around the
+     sub-agent button, because the pill is smaller and a 190% square around it
+     would spill a long way past a short word. */
+  header .ring { padding: 1.2px; }
+  header .ring.live::before { width: 260%; }
   /* MUS-Q-0052: the account surface is reached from here rather than from
      a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
      actually serves it — a link that goes nowhere is the failure the bar
@@ -727,7 +723,11 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
             border-radius: 999px; background: var(--paper); color: inherit;
             font: inherit; font-size: .82em; cursor: pointer;
             white-space: nowrap; }
-  .ring.live .toggle { border-color: transparent; }
+  /* Whatever the ring is wrapped around loses its own border, or the rim and
+     the border sit a pixel apart and read as two rings. Written for the
+     sub-agent button and now also worn by the status pill, which is why it
+     names a child rather than that button. */
+  .ring.live > * { border-color: transparent; }
   .toggle[data-empty] { opacity: .5; }
   .badge { border: 1px solid var(--edge); border-radius: 999px;
            padding: 0 .4rem; font-size: .85em; }
@@ -830,7 +830,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 </head>
 <body data-project="{{.Project}}">
 <header><strong>{{if .Project}}{{.Project}}{{else}}Sessions{{end}}</strong>
-  <span class="pill" id="state">connecting</span>
+  <span class="ring" id="statering"><span class="pill" id="state">connecting</span></span>
   <span class="who">whippy-vm</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 {{if .Rows}}<div class="rail" id="rail">
   <form class="pick" method="get" action="/sessions">

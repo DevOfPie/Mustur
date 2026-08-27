@@ -36,6 +36,9 @@ const shellCSS = `
              13rem of content plus 1rem of padding plus a border, about 14rem
              wide, sitting on top of a column that started at 13rem. */
           --shell-rail: 13rem; --shell-gutter: 1rem;
+          /* Everything the rail and its gutters leave. One gutter each side of
+             the content, and the rail itself. */
+          --shell-full: calc(100vw - var(--shell-rail) - var(--shell-gutter) * 2);
           /* Tall enough for the bar; asserted against the rendered height in
              TestTheBarIsNotCoveringTheContent rather than eyeballed. */
           --shell-bar: 3rem;
@@ -90,12 +93,24 @@ const shellCSS = `
      already had. The narrower surfaces reach it at the same moment, which is a
      simpler promise than a breakpoint per page. */
   @media (min-width: 60rem) {
+    /* The width the rail leaves, on every surface.
+
+       It used to be a 46rem reading column, with two surfaces capping
+       themselves tighter at 40rem. That is the right instinct for prose and it
+       was applied to everything: on a 1366px laptop a page was 736px wide with
+       406px of nothing beside it, whatever was on it — a terminal, a table of
+       people, a queue of questions. The owner asked for the width, first on
+       the session view and then on the rest.
+
+       A page whose content wants a narrower measure can still say so by
+       setting --shell-content; the default is no longer to assume every page
+       is an essay. */
     body { margin-inline: calc(var(--shell-rail) + var(--shell-gutter)) auto;
-           max-width: var(--shell-content, 46rem);
+           max-width: var(--shell-content, var(--shell-full));
            /* Set here rather than on :root so --shell-content resolves to
               whatever this surface's reading column actually is. */
            --shell-dock-left: calc(var(--shell-rail) + var(--shell-gutter));
-           --shell-dock-width: var(--shell-content, 46rem); }
+           --shell-dock-width: var(--shell-content, var(--shell-full)); }
     /* border-box, or the padding and the border are added to the width and the
        rail sits on top of the first inch of every page. */
     nav  { position: fixed; left: 0; top: 0; bottom: 0;

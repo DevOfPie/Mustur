@@ -477,7 +477,6 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
   :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8;
           --accent-soft: #6a8fd820; }
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; padding: 0 0 1rem;
-         --shell-content: 40rem;
          max-width: 40rem; margin-inline: auto; }
   header { display: flex; align-items: baseline; gap: .6rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); }

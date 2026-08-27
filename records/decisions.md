@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-129 record(s), by identifier.
+130 record(s), by identifier.
 
 ## Index
 
@@ -139,8 +139,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0125](#mus-d-0125) | A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier | 2026-08-26 |
 | [MUS-D-0126](#mus-d-0126) | An agent may write down an answer the owner gave elsewhere, and must say where | 2026-08-26 |
 | [MUS-D-0127](#mus-d-0127) | On a wide screen the account link is an icon at the foot of the rail, not a word in the header | 2026-08-27 |
-| [MUS-D-0128](#mus-d-0128) | The session view takes the width the rail leaves; every other surface keeps its reading column | 2026-08-27 |
+| [MUS-D-0128](#mus-d-0128) | Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it | 2026-08-27 |
 | [MUS-D-0129](#mus-d-0129) | The session view's live strip is gone; the pill beside the project name already said it | 2026-08-27 |
+| [MUS-D-0130](#mus-d-0130) | The status pill says idle after three minutes of silence, and wears the turning ring only while running | 2026-08-27 |
 
 ---
 
@@ -2097,22 +2098,24 @@ Rendered twice and chosen by a media query, not rendered once and moved by scrip
 
 ## MUS-D-0128
 
-**The session view takes the width the rail leaves; every other surface keeps its reading column**
+**Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it**
 
 decision · 2026-08-27
 
-Reported by the owner: the desktop UI does not use the full screen width.
+Reported by the owner twice: first that the desktop UI did not use the full width, then that fixing it on the session view alone had left every other page the same.
 
-It did not, and for a good reason that does not apply here. Every surface caps itself at 40 or 46rem because a line of prose past about eighty characters is harder to follow. The session view is not prose: it is a pane of agent output beside a list of sub-agents, and on a 1366px laptop the cap left the terminal 736px wide with 406px of nothing beside it — which I had already measured while fitting the drawer into that emptiness, and read as free space rather than as the defect it was.
+The reading column was 46rem by default and 40rem on three surfaces, which is the right instinct for prose applied to everything. On a 1366px laptop that made every page 736px wide with 406px of nothing beside it, whatever was on it — a terminal, a table of people, a queue of questions, a form.
 
-Set as --shell-content rather than as a max-width, because the composer's width and the drawer's push are both derived from it. Overriding the max-width alone would have widened the terminal and left the composer at 46rem underneath it.
+The default is now --shell-full: what remains after the rail and a gutter each side. A surface whose content genuinely wants a narrower measure can still say so by setting --shell-content; what has changed is that narrow is no longer assumed.
 
-The reading surfaces are deliberately not changed. Whether they should be is a separate question about prose, not about this one.
+The value is a custom property rather than a max-width because the composer's width and the sub-agent drawer's push are both derived from it. Overriding max-width alone would widen a page and leave its docked parts at the old measure underneath.
+
+One surface needed more than the default. Intake carries its own padding and had no box-sizing, so the padding landed outside the cap and it was the only page reaching the right edge while the rest kept a gutter.
 
 | Field | Value |
 | --- | --- |
-| Where | internal/web/sessions.go |
-| Evidence | At 1366x768 the output pane goes from 736px to 1126px with 16px of margin, and the composer spans the same. Unchanged at 390px. Chrome and Firefox. |
+| Where | internal/web/shell.go, and the surfaces that capped themselves |
+| Evidence | At 1366x768 every surface now measures 1126px from 224 to 1350, with the rail ending at 208 and 16px spare on the right: sessions, records, decisions, intake and compose alike. Before: 736px on most and 640px on the three capped at 40rem. Chrome and Firefox. |
 
 ---
 
@@ -2134,3 +2137,30 @@ What is left is a header row and a picker row above the output, where there were
 | --- | --- |
 | Where | internal/web/sessions.go, internal/web/assets/session.js |
 | Evidence | No .strip rule and no element remains; the header pill reads running, reconnecting, or ended with the time. A test fails if the strip returns. |
+
+---
+
+## MUS-D-0130
+
+**The status pill says idle after three minutes of silence, and wears the turning ring only while running**
+
+decision · 2026-08-27
+
+needs: [MUS-F-0042](findings.md#mus-f-0042)
+
+follows: [MUS-D-0129](#mus-d-0129)
+
+Asked for by the owner: a session idle for significant time should say so in its pill rather than claiming to be running, and the ring from the sub-agent button should turn on the pill while it is.
+
+Three minutes. An agent thinking hard goes quiet for tens of seconds; a session waiting for you goes quiet for as long as you leave it. The threshold has to sit well past the first without being so far past it that 'running' stays on something that has been waiting since breakfast. It is one number in one place if that turns out to be wrong.
+
+The pill says which state, and the counter below says how long — 'idle', not 'idle 12m'. The strip removed on MUS-D-0129 was removed for saying what the pill already said, and repeating the counter in the pill would be the same mistake in the other direction.
+
+The ring is tied to the same flag that gives the pill its accent, so it turns only while the session is actually producing output. Reconnecting, ended and idle are all states where a moving light would contradict the word beside it. The rule that strips the inner border now names a child rather than the sub-agent button, because the ring is worn by two things.
+
+This is only honest because the quiet counter became honest first. Until MUS-F-0042 was fully fixed, a session silent for days reported no silence at all, and a pill built on that would have said 'running' forever.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | With the clock wound forward four minutes the pill goes from 'running' with the ring turning to 'idle' with it stopped, while the counter below reads 'quiet 5m'. Chrome and Firefox. Under prefers-reduced-motion the ring is static in both states, as it already was on the sub-agent button. |

@@ -26,9 +26,39 @@
   var retry = 0;
   var closed = false;
 
+  var stateRing = document.getElementById("statering");
+
+  // How long a session has to be silent before the pill stops calling it
+  // running.
+  //
+  // Three minutes. An agent thinking hard goes quiet for tens of seconds, and
+  // a session waiting for you goes quiet for as long as you leave it — so the
+  // threshold has to sit well past the first without being so far past it that
+  // "running" stays on a session that has been waiting since breakfast. It is
+  // one number in one place if that turns out to be wrong.
+  var IDLE_AFTER = 180;
+
+  // Whether the socket is up and the session has not ended. Only then does the
+  // pill have a choice to make between running and idle.
+  var attached = false;
+
   function setState(label, on) {
     state.textContent = label;
     state.className = on ? "pill on" : "pill";
+    // The ring turns only while something is actually happening. Reconnecting,
+    // ended and idle are all states where a moving light would be saying the
+    // opposite of the word beside it.
+    if (stateRing) stateRing.classList.toggle("live", !!on);
+  }
+
+  // The pill says running or idle; the counter below says how long. Deliberately
+  // not "idle 12m" — the strip that used to say what the pill already said was
+  // removed for exactly that reason.
+  function refreshState() {
+    if (!attached || closed) return;
+    var quietFor = Math.floor((Date.now() - lastOutput) / 1000);
+    var idle = quietFor >= IDLE_AFTER;
+    setState(idle ? "idle" : "running", !idle);
   }
 
   // Follow the tail unless the reader has scrolled up to look at something.
@@ -65,6 +95,7 @@
 
   setInterval(function () {
     if (foot && !closed) foot.textContent = quiet();
+    refreshState();
     // The ages move on their own, so the server does not send a frame to move
     // them.
     if (!closed) drawAgents();
@@ -396,7 +427,11 @@
 
     ws.onopen = function () {
       retry = 0;
-      setState("running", true);
+      attached = true;
+      // Before the hello frame arrives lastOutput is this moment, so a session
+      // that has been quiet for an hour would flash "running" for one tick.
+      // refreshState is called again as soon as hello lands.
+      refreshState();
       if (form) form.style.opacity = "1";
       if (text) text.disabled = false;
     };
@@ -413,6 +448,8 @@
         // The server says how long the session has already been silent, so the
         // counter continues rather than restarting at zero on every page load.
         if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
+        // Now that the real silence is known, the pill can be honest about it.
+        refreshState();
       } else if (f.t === "out") {
         append(f.text || "");
         if (typeof f.seq === "number") seq = f.seq;
@@ -448,6 +485,7 @@
         drawAgents();
       } else if (f.t === "ended") {
         closed = true;
+        attached = false;
         setState(f.at ? "ended " + f.at : "ended", false);
         if (foot) foot.textContent = "Nothing is running. Output is kept until you start another.";
         // The box stays writable: MUS-Q-0018 is that the composer is always
@@ -459,6 +497,7 @@
     };
 
     ws.onclose = function () {
+      attached = false;
       if (closed) return;
       // A dropped connection is not a dropped session, and the label says so.
       setState("reconnecting", false);

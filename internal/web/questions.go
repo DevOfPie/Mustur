@@ -324,7 +324,6 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8;
           --accent-soft: #6a8fd820; }
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0;
-         --shell-content: 40rem;
          max-width: 40rem; margin-inline: auto;
          display: flex; flex-direction: column; min-height: 100vh; }
   /* MUS-Q-0052: the account surface is reached from here rather than from

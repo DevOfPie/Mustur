@@ -27,11 +27,14 @@ It also starts agent sessions inside tmux, reports which are running, stops one,
 and types an answered decision back into the session that raised it — where the
 question named one with `--in`, which is the only way delivery has a target.
 It streams a running session's output to a browser tab and notices when one
-ends. That surface takes the width the rail leaves rather than the reading
-column every other page keeps
-([MUS-D-0128](records/decisions.md#mus-d-0128)), and on a wide screen the
-account link sits as an icon at the foot of the rail rather than as a word in
-the header ([MUS-D-0127](records/decisions.md#mus-d-0127)). You can reply from that tab: the box is multi-line and spell-checked, it
+ends. Every surface takes the width the rail leaves rather than a reading column
+([MUS-D-0128](records/decisions.md#mus-d-0128)) — a page wanting a narrower
+measure asks for it by setting `--shell-content`. On a wide screen the account
+link sits as an icon at the foot of the rail rather than as a word in the
+header ([MUS-D-0127](records/decisions.md#mus-d-0127)). The session's status
+pill says **idle** after three minutes of silence and wears a turning accent
+ring only while output is arriving
+([MUS-D-0130](records/decisions.md#mus-d-0130)). You can reply from that tab: the box is multi-line and spell-checked, it
 holds one draft that survives a reload and follows you between sessions, and it
 sends what you wrote as a single message rather than a prompt per line —
 measured by hand against one CLI, and the thing to re-check first if another

@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 59 | [questions.md](questions.md) |
-| decision | 129 | [decisions.md](decisions.md) |
+| decision | 130 | [decisions.md](decisions.md) |
 | finding | 51 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -243,8 +243,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0125](decisions.md#mus-d-0125) | decision | A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier |
 | [MUS-D-0126](decisions.md#mus-d-0126) | decision | An agent may write down an answer the owner gave elsewhere, and must say where |
 | [MUS-D-0127](decisions.md#mus-d-0127) | decision | On a wide screen the account link is an icon at the foot of the rail, not a word in the header |
-| [MUS-D-0128](decisions.md#mus-d-0128) | decision | The session view takes the width the rail leaves; every other surface keeps its reading column |
+| [MUS-D-0128](decisions.md#mus-d-0128) | decision | Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it |
 | [MUS-D-0129](decisions.md#mus-d-0129) | decision | The session view's live strip is gone; the pill beside the project name already said it |
+| [MUS-D-0130](decisions.md#mus-d-0130) | decision | The status pill says idle after three minutes of silence, and wears the turning ring only while running |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

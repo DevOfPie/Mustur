@@ -421,9 +421,11 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <title>Mustur — intake</title>
 <style>
   :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8; }
+  /* border-box, because this body carries its own padding and the shell caps
+     its width. Without it the padding lands outside the cap and this is the
+     one surface that reaches the right edge while the rest keep a gutter. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; padding: 1rem;
-         --shell-content: 40rem;
-         max-width: 40rem; margin-inline: auto; }
+         box-sizing: border-box; max-width: 40rem; margin-inline: auto; }
   h1 { font-size: 1rem; font-weight: 600; margin: 0 0 .75rem; opacity: .7; }
   textarea { width: 100%; min-height: 8rem; font: inherit; padding: .6rem;
              border: 1px solid var(--edge); border-radius: .5rem;
