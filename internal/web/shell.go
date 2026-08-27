@@ -133,13 +133,22 @@ const shellCSS = `
 
      Chosen over a tray, an envelope and every kind of arrow. A downward arrow
      is the download glyph and an envelope is something that arrives; this page
-     is the opposite of both — you write a thought and post it. The dots are
-     what keep it from reading as a rounded square beside the document. */
-  nav .ic-in::before { content: ""; position: absolute; left: 2px; right: 2px;
-      top: 2.5px; bottom: 3.5px; box-sizing: border-box;
-      border: 1.7px solid currentColor; border-radius: 4px 4px 4px 0; }
-  nav .ic-in::after { content: ""; position: absolute; left: 6px; top: 50%;
-      width: 1.9px; height: 1.9px; margin-top: -1.7px; border-radius: 50%;
+     is the opposite of both — you write a thought and post it.
+
+     An ellipse with a tail, not a rounded rectangle. The first version was a
+     rounded box with one square corner standing in for a tail, and it read as
+     a box, because that is what it was. This has no straight edge anywhere,
+     which is the difference between a shape that suggests a bubble and one
+     that is one. The ellipse is the element's own border rather than a
+     pseudo-element, which leaves both pseudos for the tail and the dots and
+     keeps the markup one empty tag. */
+  nav .ic-in { border: 1.7px solid currentColor; border-radius: 50%;
+      height: 15px; margin-top: 2.5px; }
+  nav .ic-in::before { content: ""; position: absolute; left: 2.5px; top: 9.5px;
+      width: 0; height: 0; border-right: 5px solid transparent;
+      border-top: 6.5px solid currentColor; }
+  nav .ic-in::after { content: ""; position: absolute; left: 3.6px; top: 50%;
+      width: 1.9px; height: 1.9px; margin-top: -1px; border-radius: 50%;
       background: currentColor;
       box-shadow: 3.6px 0 0 0 currentColor, 7.2px 0 0 0 currentColor; }
 

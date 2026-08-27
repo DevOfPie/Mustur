@@ -340,9 +340,20 @@ func TestTheTabsCarryDrawingsAndKeepTheirWords(t *testing.T) {
 			t.Errorf("no rule for %s", ic)
 		}
 	}
-	// One size and one border, or they read as two sets.
+	// One size and one border, or they read as two sets — with exactly one
+	// deliberate exception, named here so it cannot quietly become two.
+	//
+	// The bubble is an ellipse: 22 wide and 15 tall, because a speech bubble in
+	// a square box is a rounded rectangle, which is what the first one was and
+	// what the owner sent back.
 	if !strings.Contains(css, "width: 22px; height: 22px") {
 		t.Error("the icons do not share one box size")
+	}
+	if !strings.Contains(css, "border-radius: 50%;\n      height: 15px") {
+		t.Error("the bubble is not the ellipse it is meant to be, or its override moved")
+	}
+	if n := strings.Count(css, "height: 15px"); n != 1 {
+		t.Errorf("%d icons override the shared box height; the bubble is the only one that may", n)
 	}
 	if n := strings.Count(css, "1.7px solid currentColor"); n < 5 {
 		t.Errorf("%d borders at the shared width; the five do not match", n)
