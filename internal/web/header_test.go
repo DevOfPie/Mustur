@@ -75,13 +75,32 @@ func TestOneBarOnEverySurface(t *testing.T) {
 				t.Errorf("%s does not offer %s; MUS-D-0041 set four tabs", path, tab)
 			}
 		}
-		// And not a fifth. The account surface is a header link (MUS-Q-0052).
+		// The bar is still four. The account entry is in the nav markup, but it
+		// is the rail's own footer entry and the stylesheet keeps it out of the
+		// bar below the breakpoint — MUS-Q-0052 put the account link in the
+		// header, and the owner has since asked for it at the foot of the rail
+		// on a wide screen. The bar's four tabs are what that decision was
+		// protecting, and they are untouched.
 		if strings.Contains(body, `<nav>`) {
 			nav := body[strings.Index(body, "<nav>"):]
 			if end := strings.Index(nav, "</nav>"); end > 0 {
-				if strings.Contains(nav[:end], "/account") {
-					t.Errorf("%s has an Account tab; MUS-Q-0052 put it in the header", path)
+				inner := nav[:end]
+				if strings.Contains(inner, "/account") && !strings.Contains(inner, `class="me`) {
+					t.Errorf("%s has a plain Account tab; it belongs at the foot of the rail, not in the row of four", path)
 				}
+				if n := strings.Count(inner, `<a href="/`); n != 4 {
+					t.Errorf("%s has %d plain tabs, want the four from MUS-D-0041", path, n)
+				}
+			}
+		}
+		// And it is hidden in the bar, shown at the foot of the rail. Asserted
+		// on the stylesheet because there is no layout here to measure.
+		if strings.Contains(body, `class="me`) {
+			if !strings.Contains(body, "nav a.me { display: none; }") {
+				t.Errorf("%s puts the account entry in the bar as a fifth tab", path)
+			}
+			if !strings.Contains(body, "margin-top: auto") {
+				t.Errorf("%s does not sink the account entry to the foot of the rail", path)
 			}
 		}
 	}
@@ -288,8 +307,13 @@ func TestOnlyTheOutputPaneFlexes(t *testing.T) {
 		}
 	}
 
-	// The rows that carry the session's chrome hold their own height.
-	if !strings.Contains(css, "header, .rail, .strip { flex: 0 0 auto; }") {
+	// The rows that carry the session's chrome hold their own height. The strip
+	// that used to be one of them is gone: it said "live" across the full width
+	// while the pill beside the project name already said "running".
+	if !strings.Contains(css, "header, .rail { flex: 0 0 auto; }") {
 		t.Error("the chrome rows can be shrunk, so anything that grows takes their height first")
+	}
+	if strings.Contains(css, ".strip") {
+		t.Error("the live strip is back")
 	}
 }

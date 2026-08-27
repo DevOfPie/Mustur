@@ -76,6 +76,10 @@ const shellCSS = `
      than under it. */
   body::after { content: ""; display: block; flex: none;
                 height: var(--shell-bar); }
+  /* Below the breakpoint the nav is a bar of four, and a fifth entry would
+     squeeze the four that name where you are. The account link stays in the
+     header, in words. */
+  nav a.me { display: none; }
   nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
           text-decoration: none; color: inherit; opacity: .6; }
   nav a.here { opacity: 1; font-weight: 600; }
@@ -103,6 +107,20 @@ const shellCSS = `
     nav a { flex: none; text-align: left; padding: .55rem .8rem;
             border-radius: .5rem; }
     nav a.here { background: var(--accent-soft, #8881); }
+    /* The account entry, at the foot of the rail.
+
+       margin-top: auto is what puts it there: the rail is a column flex, so one
+       item claiming the free space above itself sinks to the bottom without a
+       position or a height being named anywhere.
+
+       It is an icon here and words in the bar, because the rail has room for a
+       glyph to sit alone and the bar does not — and because the owner asked for
+       exactly that. The label is on the element rather than beside it, so a
+       screen reader gets the word either way. */
+    nav a.me { display: flex; align-items: center; justify-content: center;
+               margin-top: auto; padding: .6rem; }
+    /* The header link is the same destination said twice on a wide screen. */
+    .acct { display: none; }
     /* No bar, so no room reserved for one and nothing under a docked
        section. */
     body::after { display: none; }

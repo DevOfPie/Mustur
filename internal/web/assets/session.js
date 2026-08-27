@@ -14,7 +14,6 @@
 
   var state = document.getElementById("state");
   var agentsBox = document.getElementById("dlist");
-  var scrollback = document.getElementById("scrollback");
   var foot = document.getElementById("foot");
   var form = document.getElementById("say");
   var text = document.getElementById("text");
@@ -414,11 +413,14 @@
         // The server says how long the session has already been silent, so the
         // counter continues rather than restarting at zero on every page load.
         if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
-        if (scrollback) scrollback.textContent = "live";
       } else if (f.t === "out") {
         append(f.text || "");
         if (typeof f.seq === "number") seq = f.seq;
-        lastOutput = Date.now();
+        // Replay is what the session said before this tab arrived. Counting it
+        // as activity is what made the quiet timer restart on every page load:
+        // the hello frame set the counter from the session's real silence and
+        // the backlog immediately overwrote it with now.
+        if (!f.replay) lastOutput = Date.now();
       } else if (f.t === "gap") {
         // Told what was missed rather than shown a hole where it was. A zero
         // means the reader restarted while we were away and how much was
@@ -446,8 +448,7 @@
         drawAgents();
       } else if (f.t === "ended") {
         closed = true;
-        setState("ended", false);
-        if (scrollback) scrollback.textContent = "session ended" + (f.at ? " " + f.at : "");
+        setState(f.at ? "ended " + f.at : "ended", false);
         if (foot) foot.textContent = "Nothing is running. Output is kept until you start another.";
         // The box stays writable: MUS-Q-0018 is that the composer is always
         // writable, and a dropped connection is exactly when someone is most
@@ -461,7 +462,6 @@
       if (closed) return;
       // A dropped connection is not a dropped session, and the label says so.
       setState("reconnecting", false);
-      if (scrollback) scrollback.textContent = "reconnecting — the session kept running";
       // The box stays writable while the socket comes back: MUS-Q-0018 is that
       // the composer is always writable, and a dropped connection is exactly
       // when someone is most likely to be mid-sentence. Milestone 5's own row

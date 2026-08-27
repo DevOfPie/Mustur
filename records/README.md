@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 59 | [questions.md](questions.md) |
-| decision | 126 | [decisions.md](decisions.md) |
+| decision | 129 | [decisions.md](decisions.md) |
 | finding | 51 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -242,6 +242,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0124](decisions.md#mus-d-0124) | decision | A control whose presence depends on scripting is decided by the browser, not by our script |
 | [MUS-D-0125](decisions.md#mus-d-0125) | decision | A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier |
 | [MUS-D-0126](decisions.md#mus-d-0126) | decision | An agent may write down an answer the owner gave elsewhere, and must say where |
+| [MUS-D-0127](decisions.md#mus-d-0127) | decision | On a wide screen the account link is an icon at the foot of the rail, not a word in the header |
+| [MUS-D-0128](decisions.md#mus-d-0128) | decision | The session view takes the width the rail leaves; every other surface keeps its reading column |
+| [MUS-D-0129](decisions.md#mus-d-0129) | decision | The session view's live strip is gone; the pill beside the project name already said it |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -283,7 +286,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0039](findings.md#mus-f-0039) | finding | Searching the destination list costs either the no-script promise or the name in the box |
 | [MUS-F-0040](findings.md#mus-f-0040) | finding | The account page was the one surface with no way back to a session |
 | [MUS-F-0041](findings.md#mus-f-0041) | finding | The session page was the only surface that let itself be cached, so its markup could outlive its script |
-| [MUS-F-0042](findings.md#mus-f-0042) | finding | The quiet timer measured the age of the tab, not the silence of the session |
+| [MUS-F-0042](findings.md#mus-f-0042) | finding | The quiet timer measured the age of the tab, in three separate ways |
 | [MUS-F-0043](findings.md#mus-f-0043) | finding | A dead Mustur keeps its port for as long as its tmux pipe is running |
 | [MUS-F-0044](findings.md#mus-f-0044) | finding | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that |
 | [MUS-F-0045](findings.md#mus-f-0045) | finding | A question answered somewhere other than Mustur stayed open in Mustur |

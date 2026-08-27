@@ -81,6 +81,11 @@ type Update struct {
 	Text string
 	// Seq is the byte offset immediately after this text.
 	Seq int64
+	// Replay marks text the pane produced before this reader opened — the
+	// scrollback capture-pane hands over at the start. It is output, and it is
+	// not the session doing something now, and a viewer's quiet counter has to
+	// know the difference.
+	Replay bool
 	// Ended is set once, when the session is gone.
 	Ended bool
 	// ExitAt is when the reader noticed, on an Ended update.
@@ -126,6 +131,24 @@ type Hub struct {
 
 	mu      sync.Mutex
 	streams map[string]*Stream
+}
+
+// lastActive asks tmux when this session last did anything. A zero time means
+// tmux could not say, and Quiet treats that as "no idea" rather than "just now".
+func (h *Hub) lastActive(ctx context.Context, project string) time.Time {
+	if h.Adapter == nil {
+		return time.Time{}
+	}
+	sessions, err := h.Adapter.List(ctx)
+	if err != nil {
+		return time.Time{}
+	}
+	for _, s := range sessions {
+		if s.Project == project {
+			return s.Activity
+		}
+	}
+	return time.Time{}
 }
 
 // Sub is one viewer's attachment to a session.
@@ -176,6 +199,20 @@ func (h *Hub) Attach(ctx context.Context, project string, from int64) (*Sub, []b
 	}
 	if s == nil {
 		s = &Stream{project: project, subs: map[chan Update]struct{}{}, done: make(chan struct{})}
+		// Seeded from tmux, because a reader that has just opened has seen no
+		// output and would otherwise report a session silent for three days as
+		// silent for none.
+		//
+		// lastAt is set when output is appended, which is the right answer for
+		// every moment after the first and no answer at all for the first —
+		// exactly the case the timer exists for. The fix for MUS-F-0042 wired
+		// the value through and left this: the test echoed immediately, so it
+		// measured the mechanism working and never the case it was for.
+		//
+		// tmux has known all along. session_activity is already read by List
+		// for the route row's default, so this costs one call per stream and no
+		// new knowledge.
+		s.lastAt = h.lastActive(ctx, project)
 		h.streams[project] = s
 		h.start(s)
 	}
@@ -296,15 +333,30 @@ func (s *Stream) since(from int64) (out []byte, at int64, gap bool) {
 	return append([]byte(nil), s.buf[from-oldest:]...), from, false
 }
 
-func (s *Stream) append(text []byte, at time.Time) {
+// append adds output the session has just produced.
+func (s *Stream) append(text []byte, at time.Time) { s.add(text, at) }
+
+// replay adds scrollback the pane produced before anybody was watching.
+//
+// It deliberately does not touch lastAt. The seed is history: capture-pane
+// hands over what the pane printed hours or days ago, and stamping it with now
+// told every viewer the session had just done something. On a session quiet
+// since Sunday, opening a tab reset the quiet timer to zero and it counted up
+// from there — which is the symptom MUS-F-0042 was filed about and the half of
+// it the first fix did not reach.
+func (s *Stream) replay(text []byte) { s.add(text, time.Time{}) }
+
+func (s *Stream) add(text []byte, at time.Time) {
 	s.mu.Lock()
 	s.buf = append(s.buf, text...)
 	if len(s.buf) > BufferBytes {
 		s.buf = append([]byte(nil), s.buf[len(s.buf)-BufferBytes:]...)
 	}
 	s.next += int64(len(text))
-	s.lastAt = at
-	u := Update{Text: string(text), Seq: s.next}
+	if !at.IsZero() {
+		s.lastAt = at
+	}
+	u := Update{Text: string(text), Seq: s.next, Replay: at.IsZero()}
 	s.broadcast(u)
 	s.mu.Unlock()
 }
@@ -408,7 +460,7 @@ func (h *Hub) start(s *Stream) {
 			"capture-pane", "-p", "-J", "-S", captureLines, "-t", name); err == nil {
 			if trimmed := strings.TrimRight(out, "\n \t"); trimmed != "" {
 				seeded := trimmed + "\n"
-				s.append([]byte(seeded), time.Now())
+				s.replay([]byte(seeded))
 				// The seed and the pipe overlap: anything the pane printed
 				// between capture-pane reading it and pipe-pane delivering it
 				// arrives twice. A review saw 6-11 duplicated lines on four of

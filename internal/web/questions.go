@@ -432,6 +432,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
   <a href="/intake">Intake</a>
   <a href="/records">Records</a>
+  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false"><circle cx="12" cy="8.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19.6a6.5 6.5 0 0 1 13 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a>{{end}}
 </nav>
 </body>
 </html>

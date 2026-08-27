@@ -308,8 +308,13 @@ type frame struct {
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
 	Lost  int64  `json:"lostBytes,omitempty"`
-	At    string `json:"at,omitempty"`
-	Error string `json:"error,omitempty"`
+	// Replay marks output the session produced before this viewer arrived. It
+	// is the same text as any other chunk and it is not the session doing
+	// something now, so the quiet counter must not take it as activity — the
+	// mistake the stream itself made until MUS-F-0042, repeated one layer up.
+	Replay bool   `json:"replay,omitempty"`
+	At     string `json:"at,omitempty"`
+	Error  string `json:"error,omitempty"`
 	// Sub-agent rows, pushed rather than waited for (MUS-Q-0029). The owner
 	// chose this over a reload, against the builder's recommendation, and it is
 	// the one place the client layer models something other than the terminal.
@@ -396,7 +401,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if len(backlog) > 0 {
-		if err := send(frame{T: "out", Seq: at + int64(len(backlog)), Text: string(backlog)}); err != nil {
+		if err := send(frame{T: "out", Seq: at + int64(len(backlog)), Text: string(backlog), Replay: true}); err != nil {
 			return
 		}
 	}
@@ -461,7 +466,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 				_ = send(frame{T: "ended", Seq: u.Seq, At: u.ExitAt.Format("2006-01-02 15:04")})
 				return
 			}
-			if err := send(frame{T: "out", Seq: u.Seq, Text: u.Text}); err != nil {
+			if err := send(frame{T: "out", Seq: u.Seq, Text: u.Text, Replay: u.Replay}); err != nil {
 				return
 			}
 			resetIdle(idle, IdleTimeout)
@@ -541,14 +546,27 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   /* Capped, not floored. min-height let the column grow with the output and
      carry the bar and the composer off the screen with it (MUS-F-0032); the
      shell's own min-height is harmless beside a height that holds. */
+  /* The reading column is for reading, and this is a terminal.
+
+     Every other surface caps itself at 40 or 46rem because a line of prose
+     past about 80 characters is harder to follow. None of that applies to a
+     pane of agent output beside a list of sub-agents: on a 1366px laptop the
+     cap left the terminal 736px wide with 406px of nothing beside it. So this
+     surface takes what the rail leaves.
+
+     Set as --shell-content rather than as a max-width, because the composer's
+     width and the drawer's push are both derived from it — overriding the
+     max-width alone would widen the terminal and leave the composer at 46rem
+     under it. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
+         --shell-content: calc(100vw - var(--shell-rail) - var(--shell-gutter) * 2);
          margin-inline: auto; display: flex; flex-direction: column;
          height: 100vh; height: 100dvh; }
   /* The chrome rows keep their own height. A flex item shrinks by default, so
      anything that grew — the sub-agent box did — took its room out of these
      first, which is how the session chips ended up half-height and hidden
      behind the row beneath them. Only #out flexes. */
-  header, .rail, .strip { flex: 0 0 auto; }
+  header, .rail { flex: 0 0 auto; }
   header { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); white-space: nowrap; }
   header .pill { border: 1px solid var(--edge); border-radius: 999px;
@@ -561,12 +579,11 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
-  /* Chrome and output are visually separate. Anything Mustur says about the
-     session sits on a tinted strip; anything the session said is plain text. */
-  .strip { display: flex; align-items: center; gap: .5rem; padding: .4rem 1rem;
-           background: #8881; border-bottom: 1.4px solid var(--edge);
-           font-size: .82em; opacity: .8; white-space: nowrap; }
-  .strip .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  /* The strip that used to sit here said "live" across the whole width, and
+     the pill in the header beside the project name already said "running".
+     Two places saying one thing, one of them a full-width band above the
+     output. The owner asked for it gone; what it alone carried — the time a
+     session ended — moved into the pill. */
   /* The only thing that scrolls. min-height:0 is what lets a flex child be
      smaller than its content — without it the pane grows instead of
      scrolling, which is the whole of the bug.
@@ -830,7 +847,6 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <small>A session left running in a terminal is not here and will not appear.</small><br>
 <small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
 {{else}}
-<div class="strip"><span class="grow" id="scrollback">connecting</span></div>
 <div class="drawer" id="drawer" hidden>
   <div class="veil" id="veil"></div>
   <aside class="panel" role="dialog" aria-label="Sub-agents">
@@ -871,6 +887,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake">Intake</a>
   <a href="/records">Records</a>
+  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false"><circle cx="12" cy="8.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19.6a6.5 6.5 0 0 1 13 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a>{{end}}
 </nav>
 {{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
 </body>

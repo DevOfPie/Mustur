@@ -878,16 +878,27 @@ func TestTheHelloFrameSaysHowLongTheSessionHasBeenQuiet(t *testing.T) {
 		return f
 	}
 
-	// The first viewer opens the reader, which is when the stream starts
-	// noticing output at all.
-	dial()
-	// Long enough that a counter starting now and a counter starting at the
-	// session's last byte cannot be confused for each other.
+	// Quiet before anybody is watching, which is the case this is for and the
+	// case the first version of this test did not cover.
+	//
+	// That version dialled once to open the reader, waited, and dialled again —
+	// so the stream had seen output and lastAt was set. It passed while the
+	// live surface still read "quiet 0s" on a session silent for days, because
+	// a reader that has just opened has seen nothing and lastAt was zero. The
+	// first viewer is the one who needs the answer.
 	time.Sleep(1500 * time.Millisecond)
 
+	first := dial()
+	if first.Quiet < 1 {
+		t.Errorf("the first viewer of a session idle for over a second is told quiet=%d; nothing seeded it from tmux", first.Quiet)
+	}
+
+	// And it keeps working once the reader is running, which is the half that
+	// already worked.
+	time.Sleep(1200 * time.Millisecond)
 	second := dial()
-	if second.Quiet < 1 {
-		t.Errorf("a session idle for over a second says quiet=%d; the timer is measuring the tab, not the session", second.Quiet)
+	if second.Quiet < first.Quiet {
+		t.Errorf("quiet went backwards, %d then %d", first.Quiet, second.Quiet)
 	}
 }
 
@@ -946,5 +957,70 @@ func TestTheDrawerHasAResizeHandleThatIsNotPointerOnly(t *testing.T) {
 	}
 	if !strings.Contains(body[wide:], "cursor: col-resize") {
 		t.Error("the handle does not read as draggable on a wide screen")
+	}
+}
+
+// The backlog says it is a replay, so the client does not count it as the
+// session speaking.
+//
+// This is MUS-F-0042's other half, and the reason the surface still read
+// "quiet 0s" after the stream itself had been fixed. The hello frame carries
+// how long the session has really been silent; the very next frame is the
+// scrollback capture-pane handed over, and the client stamped it as activity —
+// overwriting the number it had just been given, on every page load.
+func TestTheBacklogIsMarkedAsReplay(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzReplay"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'echo scrollback; sleep 8'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	// Let the pane print, so there is something to replay.
+	time.Sleep(1200 * time.Millisecond)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	sawBacklog := false
+	for i := 0; i < 6 && !sawBacklog; i++ {
+		_, b, err := c.Read(ctx)
+		if err != nil {
+			break
+		}
+		var f frame
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
+		if f.T != "out" {
+			continue
+		}
+		sawBacklog = true
+		if !f.Replay {
+			t.Error("the backlog is not marked as replay, so the client counts it as the session speaking now")
+		}
+	}
+	if !sawBacklog {
+		t.Skip("no backlog arrived; nothing to assert about it")
 	}
 }

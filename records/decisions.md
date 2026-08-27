@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-126 record(s), by identifier.
+129 record(s), by identifier.
 
 ## Index
 
@@ -138,6 +138,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0124](#mus-d-0124) | A control whose presence depends on scripting is decided by the browser, not by our script | 2026-08-26 |
 | [MUS-D-0125](#mus-d-0125) | A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier | 2026-08-26 |
 | [MUS-D-0126](#mus-d-0126) | An agent may write down an answer the owner gave elsewhere, and must say where | 2026-08-26 |
+| [MUS-D-0127](#mus-d-0127) | On a wide screen the account link is an icon at the foot of the rail, not a word in the header | 2026-08-27 |
+| [MUS-D-0128](#mus-d-0128) | The session view takes the width the rail leaves; every other surface keeps its reading column | 2026-08-27 |
+| [MUS-D-0129](#mus-d-0129) | The session view's live strip is gone; the pill beside the project name already said it | 2026-08-27 |
 
 ---
 
@@ -2064,3 +2067,70 @@ It also arrived with a hazard, which cost a record before it was caught. Nothing
 | Field | Value |
 | --- | --- |
 | Where | cmd/mustur/questions.go, internal/question/question.go |
+
+---
+
+## MUS-D-0127
+
+**On a wide screen the account link is an icon at the foot of the rail, not a word in the header**
+
+decision · 2026-08-27
+
+narrows: [MUS-Q-0052](questions.md#mus-q-0052)
+
+follows: [MUS-D-0124](#mus-d-0124)
+
+Asked for by the owner. MUS-Q-0052 put the account link in the header so the bar would stay four tabs, and that reasoning holds for the bar and not for the rail: below the breakpoint a fifth entry would squeeze the four that say where you are, and above it the rail is a column with a free bottom edge.
+
+So the same link is rendered twice and the stylesheet chooses — words in the header below 60rem, an icon at the foot of the rail above it. margin-top: auto is what sinks it, so nothing names a position or a height.
+
+An icon here and words there is not an inconsistency: the rail has room for a glyph to stand alone and the bar does not. The label is on the element rather than beside it, so it reads the same to a screen reader in both.
+
+Rendered twice and chosen by a media query, not rendered once and moved by script. A control the server draws and the script places is one that can be misplaced when the script is stale, which is MUS-D-0124's rule and the reason the picker's button lives in a noscript.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/shell.go, and the six surfaces that carry a nav |
+| Evidence | At 1366x768 the rail entry sits at y=720 of a 768px rail, 191x36, and the header link is not painted. At 390x844 the rail entry is not painted and the header link is. Chrome and Firefox. |
+
+---
+
+## MUS-D-0128
+
+**The session view takes the width the rail leaves; every other surface keeps its reading column**
+
+decision · 2026-08-27
+
+Reported by the owner: the desktop UI does not use the full screen width.
+
+It did not, and for a good reason that does not apply here. Every surface caps itself at 40 or 46rem because a line of prose past about eighty characters is harder to follow. The session view is not prose: it is a pane of agent output beside a list of sub-agents, and on a 1366px laptop the cap left the terminal 736px wide with 406px of nothing beside it — which I had already measured while fitting the drawer into that emptiness, and read as free space rather than as the defect it was.
+
+Set as --shell-content rather than as a max-width, because the composer's width and the drawer's push are both derived from it. Overriding the max-width alone would have widened the terminal and left the composer at 46rem underneath it.
+
+The reading surfaces are deliberately not changed. Whether they should be is a separate question about prose, not about this one.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | At 1366x768 the output pane goes from 736px to 1126px with 16px of margin, and the composer spans the same. Unchanged at 390px. Chrome and Firefox. |
+
+---
+
+## MUS-D-0129
+
+**The session view's live strip is gone; the pill beside the project name already said it**
+
+decision · 2026-08-27
+
+Reported by the owner as providing nothing useful.
+
+It was a full-width band above the output reading 'live', while the pill beside the project name in the same header read 'running'. Two places saying one thing, and the larger one saying the less precise version.
+
+The strip carried three other states — connecting, reconnecting, and session ended with a time. The pill already carried the first three. The time a session ended was the only thing the strip alone knew, and it has moved into the pill.
+
+What is left is a header row and a picker row above the output, where there were three.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | No .strip rule and no element remains; the header pill reads running, reconnecting, or ended with the time. A test fails if the strip returns. |

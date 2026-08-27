@@ -55,7 +55,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
 | [MUS-F-0040](#mus-f-0040) | The account page was the one surface with no way back to a session | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. | fixed |
 | [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
-| [MUS-F-0042](#mus-f-0042) | The quiet timer measured the age of the tab, not the silence of the session | A session left idle 1.5s reported quiet=0 before and >=1 after, over a real tmux session and a real socket. Mutation-checked: restoring 'quiet := 0' fails the test with the same reading the owner saw. | fixed |
+| [MUS-F-0042](#mus-f-0042) | The quiet timer measured the age of the tab, in three separate ways | On a session started 29s earlier and silent since, the first paint reads 'quiet 29s' and climbs, in Chrome and Firefox. Before: 'quiet 0s' on every load. Three tests: the first viewer is told the truth, the replayed scrollback does not reset it, and the backlog frame is marked as replay. | fixed |
 | [MUS-F-0043](#mus-f-0043) | A dead Mustur keeps its port for as long as its tmux pipe is running | Zombie process, port still LISTEN, no owner findable by ss, lsof or fuser; 'tmux pipe-pane' with no command freed it at once. Reproduced twice while restarting a test server on 7972. | open |
 | [MUS-F-0044](#mus-f-0044) | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that |  | fixed |
 | [MUS-F-0045](#mus-f-0045) | A question answered somewhere other than Mustur stayed open in Mustur |  | fixed |
@@ -883,22 +883,24 @@ The session view was the only surface in this binary that did not send Cache-Con
 
 ## MUS-F-0042
 
-**The quiet timer measured the age of the tab, not the silence of the session**
+**The quiet timer measured the age of the tab, in three separate ways**
 
-finding · 2026-08-26
+finding · 2026-08-27
 
-Filed by the owner: the session quiet timer only counts since the tab was opened, not since the session was idle.
+Filed by the owner, and reported still broken after the first fix. It had three causes and the first fix reached one.
 
-Stream.Quiet has existed since the stream did, documented, correct, and never called. The socket handler declared 'quiet := 0', never assigned it, and sent it in the hello frame — and because the field is omitempty, zero was not sent at all, so the client's 'if the server told me' branch never ran and it began counting from whenever the tab attached. Opening a second tab on a session that had been silent for an hour read 'quiet 0s'.
+One: the socket handler declared 'quiet := 0', never assigned it, and sent it. Fixed by calling Stream.Quiet, which had existed since the stream did and had never been called.
 
-This is the third defect this week of the same kind: a comment or a declaration describing an intention the code does not carry out. The variable named the right thing and held nothing.
+Two: Stream.lastAt is set when output is appended, so a reader that has just opened has seen nothing and reports zero. That is the case the timer exists for — the first viewer of a session quiet since Sunday — and the test written for the first fix echoed immediately, so it measured the mechanism working and never the case. Fixed by seeding lastAt from tmux's session_activity, which List already reads for the route row's default.
 
-Fixed by exposing Sub.Quiet — the viewer's own attachment already holds the stream — and computing the value the frame was always shaped to carry.
+Three: the scrollback capture-pane hands over at the start was appended as output with a timestamp of now, on the server and again on the client. So attaching to a silent session announced that it had just spoken, twice. Fixed by separating replay from output at both ends: Stream.replay leaves lastAt alone, Update and the socket frame carry a Replay flag, and the client does not treat a replayed chunk as activity.
+
+The shape worth remembering is that a value can be threaded correctly through every layer and still be wrong at the source, and that a test which sets up the happy case cannot tell you which.
 
 | Field | Value |
 | --- | --- |
-| Where | internal/web/sessions.go, internal/session/stream.go |
-| Evidence | A session left idle 1.5s reported quiet=0 before and >=1 after, over a real tmux session and a real socket. Mutation-checked: restoring 'quiet := 0' fails the test with the same reading the owner saw. |
+| Where | internal/session/stream.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | On a session started 29s earlier and silent since, the first paint reads 'quiet 29s' and climbs, in Chrome and Firefox. Before: 'quiet 0s' on every load. Three tests: the first viewer is told the truth, the replayed scrollback does not reset it, and the backlog frame is marked as replay. |
 | Status | fixed |
 
 ---
