@@ -32,6 +32,36 @@
 # On mustur.devofpie.com the gate went up before anything listened and the unit
 # is enabled; the rule is stated for the next host. docs/ingress.md carries the
 # order and the reason.
+#
+# **`--origin` since 2026-08-25, and deliberately without `--accounts`.** The
+# origin publishes the sign-in and invitation surfaces and enforces nothing: a
+# passkey is bound to the origin it was registered on, so somebody has to be
+# able to register one before the guard can be turned on without locking the
+# owner out of their own service. It must be the public origin exactly — the
+# hostname a browser sees — because the relying-party id derives from it and a
+# passkey registered under the wrong one is a passkey this server can never ask
+# for again.
+#
+# **`--accounts` since 2026-08-26**, and the order it was reached in matters:
+# origin first, then the first owner made on this machine, then a passkey
+# registered from a device and *seen to sign in*, then an agent token, then
+# this. Any other order locks the owner out, or cuts every agent off from the
+# mandated tool call — an MCP client carries no session cookie, so without a
+# token `/mcp` answers 403 to all of them (MUS-M-0012).
+#
+# The passkey step is not a formality. The first one registered here could never
+# have signed in: MUS-F-0029, backup flags that were never stored, which made
+# every synced credential manager's passkey register cleanly and fail forever.
+# Enforcing on top of that would have locked the owner out of their own service
+# with no way back except this file.
+#
+# Cloudflare Access stays in front throughout and comes off on the owner's
+# judgement (MUS-Q-0039), not as a side effect of this flag.
+#
+# **Stopping this unit hangs while a session is being piped** (MUS-F-0030): the
+# pipe reader blocks uninterruptibly, systemd's stop times out at 90s, and the
+# unreaped process holds the port the whole time. Turn the pipe off first —
+# `tmux pipe-pane -t <pane>` — and the stop is immediate.
 
 [Unit]
 Description=Mustur — records, routing and intake
@@ -45,7 +75,7 @@ After=network-online.target
 Type=simple
 # Loopback only. The tunnel is what publishes it, and `serve` refuses any
 # address that is not loopback for that reason.
-ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions
+ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions --origin https://mustur.devofpie.com --accounts
 # Not on-failure: systemd counts a SIGTERM as a clean exit, so on-failure left a
 # TERMed process dead with no restart scheduled and nothing watching. Access
 # answers 302 whether or not the origin is up, so the hostname check in

@@ -4,13 +4,16 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-28 record(s), by identifier.
+58 record(s), by identifier.
 
 ## The queue
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
+| [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
+| [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
+| [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
@@ -38,6 +41,33 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
 | [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
 | [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
+| [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
+| [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
+| [MUS-F-0030](#mus-f-0030) | A service piping a session could not be stopped, and held its port through the timeout | Every deploy in this session had to run 'tmux pipe-pane' with no command first. The last one did not, and stopped cleanly. | fixed |
+| [MUS-F-0031](#mus-f-0031) | The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted | Both halves now come from the same capture, so there is no seam to degrade at. | fixed |
+| [MUS-F-0032](#mus-f-0032) | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… | Fixed 2026-08-26 and deployed. The session view was a repair against its own stylesheet; the document surfaces were a choice, drawn in plan-ba6b90e7d9064d09 and answered by the owner (MUS-D-0118). Pinned below 60rem, a left rail above it, the rail replacing the bar rather than joining it. | fixed |
+| [MUS-F-0033](#mus-f-0033) | A long field value made the records page wider than the phone, and the tab bar went with it | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. | fixed |
+| [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
+| [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
+| [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. | fixed |
+| [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
+| [MUS-F-0038](#mus-f-0038) | The session view printed a sub-agent's whole final message where its name belonged | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. | fixed |
+| [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
+| [MUS-F-0040](#mus-f-0040) | The account page was the one surface with no way back to a session | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. | fixed |
+| [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
+| [MUS-F-0042](#mus-f-0042) | The quiet timer measured the age of the tab, in three separate ways | On a session started 29s earlier and silent since, the first paint reads 'quiet 29s' and climbs, in Chrome and Firefox. Before: 'quiet 0s' on every load. Three tests: the first viewer is told the truth, the replayed scrollback does not reset it, and the backlog frame is marked as replay. | fixed |
+| [MUS-F-0043](#mus-f-0043) | A dead Mustur kept its port for as long as its tmux pipe was running | The last four test-server restarts of this session needed no pipe-pane teardown and the port was free immediately. | fixed |
+| [MUS-F-0044](#mus-f-0044) | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that |  | fixed |
+| [MUS-F-0045](#mus-f-0045) | A question answered somewhere other than Mustur stayed open in Mustur |  | fixed |
+| [MUS-F-0046](#mus-f-0046) | A submit button nobody drew, hidden by script, stacked by a selector written for another form | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. | fixed |
+| [MUS-F-0047](#mus-f-0047) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | fixed |
+| [MUS-F-0048](#mus-f-0048) | The plan tool refuses SVG, so the tab icons are drawn in CSS instead | A custom-html block containing only <svg viewBox="0 0 24 24"><circle/></svg> is refused with the same message as a full icon set. Frames without svg in the same call were accepted. | worked around |
+| [MUS-F-0049](#mus-f-0049) | The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's | Zero escape codes on the page against a live agent session, in Chrome and Firefox, where the old stream left them as literal text. | fixed |
+| [MUS-F-0050](#mus-f-0050) | A noscript given display: contents shows its own markup as text to everyone with script | With scripting on, the strip's innerText contained the opening button tag in Chrome and Firefox; with the override removed it reads 'Demo Ring Sub-agents' and the noscript is not painted. With scripting off the button is still 34x21px beside the select in both. | fixed |
+| [MUS-F-0051](#mus-f-0051) | The quiet counter read tmux's session_activity, which is not when the session last did anything | tmux list-sessions -F '#{session_activity}\t#{window_activity}' on a live session: 1787792947 against 1787808369, with now at 1787808585. The surface went from 'quiet 4h' to 'quiet 5m' on the same session. | fixed |
+| [MUS-F-0052](#mus-f-0052) | Frames left nothing to scroll back through, because an agent pane has no scrollback at all | tmux display-message on both live sessions: alternate_on=1, history_size=0, history_limit=2000. After the resize, Demo renders 120 scrollable lines from its startup banner to its last output where it had 24. | fixed |
+| [MUS-F-0053](#mus-f-0053) | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable | Against both live sessions: the output carries no input box, divider or status line, and the row reads 'auto mode on · PR #31 · 1 agent · /rc failed · new task? /clear to save 118.3k tokens' — the owner's own list of what was worth keeping. A session with a dialogue open loses its status line and is still split correctly. | fixed |
+| [MUS-F-0054](#mus-f-0054) | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. | fixed |
 
 ---
 
@@ -58,6 +88,75 @@ Deploy check for the IDW prefix: this jot names no project and should land in th
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | the jot names Idea inbox |
 | Filed by | whippy |
+
+---
+
+## IDW-F-0002
+
+**Test image, dicard after verfication**
+
+finding · 2026-08-26
+
+routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Test image, dicard after verfication
+
+| Field | Value |
+| --- | --- |
+| Evidence | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. |
+| Status | verified |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## IDW-F-0003
+
+**Testing image on mobile**
+
+finding · 2026-08-26
+
+routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+found: [MUS-F-0037](#mus-f-0037)
+
+Testing image on mobile
+
+| Field | Value |
+| --- | --- |
+| Evidence | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. |
+| Status | verified |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## IDW-F-0004
+
+**The sub-agent drawer can be dragged wider on a desktop screen**
+
+finding · 2026-08-26
+
+Superseded by: [MUS-F-0047](#mus-f-0047)
+
+Filed by the owner: the drawer takes more space than it needs on a laptop, and being able to drag it wider would be nice when wanted.
+
+Built. A grip on the drawer's leading edge, above 60rem only — on a phone the drawer is already most of the screen and there is nothing to widen into. It is a button with a separator role rather than a decorated edge, so it is focusable and moves on the arrow keys: a drag handle that answers only a pointer is one that some people cannot move at all.
+
+Only --drawer-w is set. Everything that has to move with it already reads that variable — the drawer's width, and the min() the reading column and the composer share — so the composer narrows in step without the resize code knowing the composer exists.
+
+The width is remembered per browser; the drawer's open state deliberately is not (MUS-Q-0057). Those are different kinds of thing: shut by default is a statement about what is happening, and a width is how this screen suits this person. Re-dragging it every load would be the annoyance the request exists to remove. Stated as an assumption rather than asked, because it is one line either way.
+
+This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q-0058, because the identifier prefix is the routing and there is no way to change one without deciding what happens to the other.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
+| Status | superseded |
+| Superseded by | MUS-F-0047 — it asks for a change to Mustur's own session view, which the idea inbox does not own |
 
 ---
 
@@ -514,3 +613,586 @@ docs/ui-surfaces.md exists to stop a surface being designed in a Go template and
 | --- | --- |
 | Where | docs/ui-surfaces.md, and every milestone that added a surface |
 | Status | open |
+
+---
+
+## MUS-F-0028
+
+**Revoking a token does not close a stream already open under it**
+
+finding · 2026-08-25
+
+found in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+Revocation is enforced per request: ByToken reads the row rather than a cache, so the next call carrying a revoked token is refused on the running server with no restart. A standalone SSE stream opened before the revocation is not torn down, and was measured still open three seconds after. The impact is bounded rather than absent. That stream is server-to-client only, so no tool call can travel it and nothing can be read through it that was not already being sent; every new request is refused. But 'stops working immediately' is true of calls and not of an already-open connection, and the difference is worth writing down rather than discovering.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/guard.go, internal/account/token.go |
+| Status | open |
+
+---
+
+## MUS-F-0029
+
+**No passkey from a password manager could ever sign in, because the backup flags were never stored**
+
+finding · 2026-08-26
+
+found in: [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020)
+
+and: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+The owner registered a passkey on a phone through Bitwarden, then tried to sign in from a laptop and was told the passkey was not recognised. Registration had worked: the account existed, with one credential, sixteen-byte id and a seventy-seven byte ES256 key. Sign-in could never have worked. WebAuthn asks the relying party to notice if a credential's backup-eligible flag changes between registration and use, and go-webauthn enforces it at login. Mustur stored no flags at all, so the credential it rebuilt to check the assertion claimed BE=0 while the assertion carried BE=1, and the library refused with 'Backup Eligible flag inconsistency detected during login validation'. That is not an edge case. Every synced credential manager sets BE=1 — Bitwarden, iCloud Keychain, Google Password Manager, 1Password — so every passkey a person would realistically use could be registered and then never used. Only a credential welded to hardware, which sets BE=0, would have worked, and only because zero happened to match the flag that was never written. It shipped through a three-reviewer pass because the virtual authenticator written for milestone 5b modelled only the hardware case. The double agreed with the bug, which is worse than having no double: the suite was evidence pointing the wrong way. The diagnosis was also harder than it needed to be. The server tells a browser nothing about why a passkey was refused, which is right and deliberate; it also told the operator nothing, which was an omission rather than a decision. The reason had to be reconstructed from an empty ceremony table and the library's source.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/store/schema.sql, internal/account/account.go, internal/web/auth.go, internal/web/authenticator_test.go |
+| Status | fixed |
+
+---
+
+## MUS-F-0030
+
+**A service piping a session could not be stopped, and held its port through the timeout**
+
+finding · 2026-08-27
+
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+Stopping the service while it was piping a session left the pipe reader blocked in uninterruptible sleep; systemd timed out holding port 7777 and the site was down for about ten minutes. Released by turning the pipe off by hand.
+
+Gone rather than fixed: there is no pipe any more. The session view polls capture-pane instead of holding pipe-pane open (MUS-D-0132), so there is nothing to block on and nothing to turn off before a deploy.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session |
+| Evidence | Every deploy in this session had to run 'tmux pipe-pane' with no command first. The last one did not, and stopped cleanly. |
+| Status | fixed |
+
+---
+
+## MUS-F-0031
+
+**The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted**
+
+finding · 2026-08-27
+
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+The owner watched a session from a laptop and reported it piping out unformatted text.
+
+Two captures that disagreed: the seed came from capture-pane and read as clean text, the live bytes came from pipe-pane and carried the pane raw, so the page read properly until the first live byte and degraded from there.
+
+This record first explained the deeper half as the CLI's nature — a full-screen TUI that repaints — which is true and was the wrong emphasis. The owner corrected it on MUS-F-0049: tmux had already turned that stream into a screen and Mustur was discarding it. Fixed with the rest of it on MUS-D-0132.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/screen.go, internal/web/assets/session.js |
+| Evidence | Both halves now come from the same capture, so there is no seam to degrade at. |
+| Status | fixed |
+
+---
+
+## MUS-F-0032
+
+**The Bottom tabs either need to be locked to the height of the screen with the content scrolling…**
+
+finding · 2026-08-26
+
+routed to: [MUS-R-0001](routing.md#mus-r-0001)
+
+drawn: [MUS-D-0118](decisions.md#mus-d-0118)
+
+The Bottom tabs either need to be locked to the height of the screen with the content scrolling behind them or moved to the top left of the screen on none mobile layouts.
+
+Just checked the phone, the lower tabs also aren't locked to screen height there, making them difficult to scroll to on the session tab since it constantly grows
+
+| Field | Value |
+| --- | --- |
+| Evidence | Fixed 2026-08-26 and deployed. The session view was a repair against its own stylesheet; the document surfaces were a choice, drawn in plan-ba6b90e7d9064d09 and answered by the owner (MUS-D-0118). Pinned below 60rem, a left rail above it, the rail replacing the bar rather than joining it. |
+| Status | fixed |
+| Routed to | DevOfPie/Mustur (MUS-R-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0033
+
+**A long field value made the records page wider than the phone, and the tab bar went with it**
+
+finding · 2026-08-26
+
+found by: [MUS-F-0032](#mus-f-0032)
+
+The owner reported that the records tab was wider than the others on a phone, leaving only three of the four tabs reachable without scrolling sideways. Measured at 390px: the document was 601px wide. A field row is a flex line with a fixed 9rem key and a flexible value, and a flex child will not shrink below its content unless it is told it may — so a value with no break opportunities, which a work unit's 'Done means' has plenty of, pushed the row 211px past the screen. The tab bar is a consequence rather than the cause. It is fixed to the viewport, but a page wider than the viewport is a page a phone lets you pan, and the bar pans with the layout. Fixing the overflow fixes the bar. min-width:0 is the declaration that does the work; flex-wrap and overflow-wrap do nothing without it, which is the same thing that kept the session view's output pane from scrolling.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/records.go |
+| Evidence | 390px viewport, document 601px before and 390px after; measured in a headless browser rather than reasoned about. |
+| Status | fixed |
+
+---
+
+## MUS-F-0034
+
+**The session view's quiet timer and composer could be scrolled off the bottom of a phone**
+
+finding · 2026-08-26
+
+reported with: [MUS-F-0032](#mus-f-0032)
+
+The owner reported the lower half of the session view as a mess: the quiet timer and the composer had to be scrolled to before they could be found, and the output pane was squeezed to about a line at a time. Their instruction was that the lower section should be locked to the bottom of the screen with the tmux output running behind it. The shell capped the page at 100dvh and let the output pane scroll inside it, which measures correctly at every viewport size tried here — five phone sizes, none of them reproducing the fault. A column only holds its shape while the browser agrees about how tall the viewport is, and that is the assumption the report contradicts. So the lower section stopped being the end of a column and became a docked block fixed to the viewport, which has no flow position to be pushed out of. The output runs behind it, as asked, and reserves its height so the newest line still comes to rest above it rather than under it. The height is measured by the script because the composer grows as it is typed into and CSS cannot measure a sibling. Not reproduced before it was fixed, which is worth writing down: the fix is the shape the owner asked for and is robust to the cause rather than aimed at it.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. |
+| Status | fixed |
+
+---
+
+## MUS-F-0035
+
+**The sub-agent box had no height cap, so it took the whole session view with it**
+
+finding · 2026-08-26
+
+reported with: [MUS-F-0032](#mus-f-0032)
+
+from: [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018)
+
+The owner described the session view as a mess: session-selection chips half covered by the strip below them, an output pane that scrolled a line at a time, and a lower section that had to be scrolled to before it could be found. Three symptoms, one cause. The .agents box is styled with padding, a background and a border and nothing else. A 9rem cap exists a few lines above it in the same stylesheet and belongs to the composer's textarea, which is how it came to be remembered as covering both. On the owner's own session — three sub-agents, each carrying its final message — the box measured 8,211px tall. It is a flex item in a column capped at the viewport, so everything else was squeezed around it. The rail collapsed from 46px to 17px, which pushed the chips out of their own row and under the strip beneath. The output pane was left a line or two tall. The composer was pushed past the bottom of the screen. Capped at 30dvh with its own scroll, and the chrome rows are flex:0 0 auto so nothing can take their height again — only the output pane flexes. Measured on the owner's session in both of the browsers they use.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. |
+| Status | fixed |
+
+---
+
+## MUS-F-0036
+
+**The intake destination row hides its last choice behind a sideways scroll**
+
+finding · 2026-08-26
+
+seen in: [IDW-F-0002](#idw-f-0002)
+
+fixed by: [MUS-D-0121](decisions.md#mus-d-0121)
+
+Seen in the owner's own screenshot: the destination chips are cut off mid-row, so 'Idea inbox' is not visible. Measured on the same page — 741px of chips in a 640px row, so the last one is always off the edge and reaching it needs a horizontal swipe with nothing on screen suggesting there is more. It is the same at 1366, 1600 and 1920px, because the row is capped at the reading column rather than the window: at 1920 there is over a thousand pixels of empty space beside a row that still scrolls. The row was built to scroll deliberately — the comment beside it says one line that scrolls, never a block that wraps, because a clipped repository name is a wrong destination picked by accident. The implementation now produces the thing that comment exists to prevent: a destination nobody can see is a destination nobody picks, and the jot that revealed this went to the very chip that was hidden.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go |
+| Evidence | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. |
+| Status | fixed |
+
+---
+
+## MUS-F-0037
+
+**A stored photo kept the metadata its camera wrote into it**
+
+finding · 2026-08-26
+
+found in: [IDW-F-0003](#idw-f-0003)
+
+contradicts: [MUS-D-0119](decisions.md#mus-d-0119)
+
+The first real upload from the owner's phone arrived carrying EXIF, including the exact device build it was taken on. Nothing strips it, so it is sitting in the store and would be handed to anyone the record surface is opened to. This contradicts a decision taken in the same change. The sender's filename is deliberately not stored, on the reasoning that a filename carries a date, a device and often the content of the picture. EXIF carries all three more explicitly, and it was kept — the rule was written and then applied to the smaller of the two carriers. The exposure is bounded today: images never reach the export, and the record surface is behind the guard with one account on it. It stops being bounded at milestone 6, which is a second person reading these surfaces. The fix is to drop metadata as the bytes are stored rather than when they are served, so nothing that was never wanted is ever written down. For JPEG that is removing the APPn segments; PNG's text chunks are the same shape of problem.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/store/attach.go |
+| Evidence | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. |
+| Status | open |
+
+---
+
+## MUS-F-0038
+
+**The session view printed a sub-agent's whole final message where its name belonged**
+
+finding · 2026-08-26
+
+answered by: [MUS-Q-0056](questions.md#mus-q-0056)
+
+capped by: [MUS-F-0035](#mus-f-0035)
+
+Filed by the owner: sub-agents should only be identified in the main session, and clicking one should open a viewer for it. The session view printed each sub-agent's entire final message inline, which is what MUS-F-0035 capped at 30dvh a few hours earlier — and capping a thing ten times too big only moved the problem, leaving a 250px window onto a page of prose. The request separates two jobs the box was doing at once: identifying a sub-agent is three facts that fit on one line, reading what it said is a different act and wants the screen. Fixed by making each row a control carrying the identifier the hook has recorded since milestone 4c and the web layer had always dropped, and moving the output into a sheet over the session, chosen by the owner on MUS-Q-0056 over giving each sub-agent its own page.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. |
+| Status | fixed |
+
+---
+
+## MUS-F-0039
+
+**Searching the destination list costs either the no-script promise or the name in the box**
+
+finding · 2026-08-26
+
+from: [MUS-D-0121](decisions.md#mus-d-0121)
+
+The owner asked for search if it were an easy add. It is not, and the reason is worth writing down before somebody tries it and discovers the cost halfway. The intake surface carries no script and never has. Filtering a list of options needs one, so a search box makes it the seventh scripted surface — and MUS-Q-0053 settled that the count is of script tags and that a seventh is a decision the owner takes, not a consequence of building something. That is the first route and it is a prompt, not a task. The script-free route is a datalist behind a text input, and it fails on something simpler than rendering: with `input list=`, the input's value is the option's value, so choosing 'Mustur' leaves MUS-P-0001 sitting in the box. Routing by display name instead would work only while no two destinations share one, which is a constraint on the routing records rather than on the control. A check of how the two browsers render a datalist popup was attempted and proved nothing — it read the values out of the DOM, which is what was put in, not what a browser draws. The popup is native chrome and is not in the page. Recorded because a measurement that answers the wrong question is worse than none. What the padding did answer: a native select does not grow with its list. Sixteen options rendered in the same 358px on a phone and 640px on a laptop as six did, in Chrome and Firefox both. The closed control is not the problem; the opened popup is, and that is what a search box would be for.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go |
+| Evidence | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. |
+| Status | open |
+
+---
+
+## MUS-F-0040
+
+**The account page was the one surface with no way back to a session**
+
+finding · 2026-08-26
+
+Filed by the owner: can't move from the account page to the session screen.
+
+Every other surface carries the same four-tab nav. The account page carried three — Records, Decisions, Intake — and no Sessions tab at all, so an owner who reached their account from a running session had no way back to it but the browser's own history. The header link into the account page goes one way.
+
+It was not a missing condition but a missing field: Accounts had no ShowSessions at all, where every other surface takes one, so there was nothing to render the tab from even when the server was serving sessions. Fixed by carrying the flag and setting it in render() rather than at the two call sites, which is the same shape sessions.go uses and for the same reason — a page built without it renders a nav that is quietly wrong.
+
+Gated on the flag like everywhere else, because a build served without --sessions has no such surface and a dead tab is worse than an absent one (MUS-Q-0052).
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/accountpage.go, cmd/mustur/main.go |
+| Evidence | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. |
+| Status | fixed |
+
+---
+
+## MUS-F-0041
+
+**The session page was the only surface that let itself be cached, so its markup could outlive its script**
+
+finding · 2026-08-26
+
+broke: [MUS-F-0038](#mus-f-0038)
+
+Reported by the owner: clicking a sub-agent row on the deployed session view opened nothing, hours after MUS-F-0038 shipped the sheet that a row is supposed to open.
+
+The session view was the only surface in this binary that did not send Cache-Control on its page. Intake, compose, account, sign-in and records all send no-store; this one sent nothing at all, and the script beside it sends no-cache and is therefore revalidated on every load. So the two halves of a page that have to agree with each other were delivered under different rules, and a deploy could leave a reader holding markup from before it next to a script from after it. Rows drawn by the old markup carry no identifier attribute; the delegated handler looks for one, finds nothing, and does nothing — silently, which is why it presents as a dead control rather than an error.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. |
+| Status | fixed |
+
+---
+
+## MUS-F-0042
+
+**The quiet timer measured the age of the tab, in three separate ways**
+
+finding · 2026-08-27
+
+Filed by the owner, and reported still broken after the first fix. It had three causes and the first fix reached one.
+
+One: the socket handler declared 'quiet := 0', never assigned it, and sent it. Fixed by calling Stream.Quiet, which had existed since the stream did and had never been called.
+
+Two: Stream.lastAt is set when output is appended, so a reader that has just opened has seen nothing and reports zero. That is the case the timer exists for — the first viewer of a session quiet since Sunday — and the test written for the first fix echoed immediately, so it measured the mechanism working and never the case. Fixed by seeding lastAt from tmux's session_activity, which List already reads for the route row's default.
+
+Three: the scrollback capture-pane hands over at the start was appended as output with a timestamp of now, on the server and again on the client. So attaching to a silent session announced that it had just spoken, twice. Fixed by separating replay from output at both ends: Stream.replay leaves lastAt alone, Update and the socket frame carry a Replay flag, and the client does not treat a replayed chunk as activity.
+
+The shape worth remembering is that a value can be threaded correctly through every layer and still be wrong at the source, and that a test which sets up the happy case cannot tell you which.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/stream.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | On a session started 29s earlier and silent since, the first paint reads 'quiet 29s' and climbs, in Chrome and Firefox. Before: 'quiet 0s' on every load. Three tests: the first viewer is told the truth, the replayed scrollback does not reset it, and the backlog frame is marked as replay. |
+| Status | fixed |
+
+---
+
+## MUS-F-0043
+
+**A dead Mustur kept its port for as long as its tmux pipe was running**
+
+finding · 2026-08-27
+
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+Its process was a zombie and 127.0.0.1:7972 was still bound, with ss naming no owner and both lsof and fuser finding nothing. Turning the pipe off released it immediately. Reproduced four times while restarting a test server.
+
+Gone with the pipe (MUS-D-0132). The mechanism was never established and now does not need to be.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session |
+| Evidence | The last four test-server restarts of this session needed no pipe-pane teardown and the port was free immediately. |
+| Status | fixed |
+
+---
+
+## MUS-F-0044
+
+**IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that**
+
+finding · 2026-08-26
+
+fixed by: [MUS-D-0125](decisions.md#mus-d-0125)
+
+Filed by the owner: IDW-F-0004 should have been routed to Mustur and was not — correct this, and plan a route for corrections of an incorrect 'Route it for me' in future.
+
+Both done. 'mustur reroute' exists, and IDW-F-0004 has been corrected with it: MUS-F-0047 now carries the request, and IDW-F-0004 stays in the idea inbox as a stub that still resolves and points at its replacement.
+
+The correction could not be a flag on amend, because the identifier prefix is the routing — IDW-F-0004 is IDW because of where it went. The owner chose on MUS-Q-0058 that neither the routing nor the permanence gives way: a correction files a new record and retires the old one in place.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur |
+| Status | fixed |
+
+---
+
+## MUS-F-0045
+
+**A question answered somewhere other than Mustur stayed open in Mustur**
+
+finding · 2026-08-26
+
+fixed by: [MUS-D-0126](decisions.md#mus-d-0126)
+
+Filed by the owner: decisions made elsewhere are not cleared from Mustur.
+
+Fixed. 'mustur answer --from-owner' lets an agent write down an answer the owner gave in a prompt, a plan or a conversation, naming where it was given, and marks the record Relayed so nobody reads it as the owner having answered here. The rule that the asker may not answer unqualified still stands.
+
+Four questions were closed with it immediately, three of which had been answered elsewhere hours earlier and were still sitting open: MUS-Q-0056, MUS-Q-0057, MUS-Q-0058 and MUS-Q-0059 — the last being the question that authorised the mechanism, closed by the mechanism.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur |
+| Status | fixed |
+
+---
+
+## MUS-F-0046
+
+**A submit button nobody drew, hidden by script, stacked by a selector written for another form**
+
+finding · 2026-08-26
+
+seen through: [MUS-F-0041](#mus-f-0041)
+
+on: [MUS-D-0123](decisions.md#mus-d-0123)
+
+Reported by the owner: a Go button under the session dropdown, at full size, that had been on none of the wireframes. Two separate defects, and the second only visible because of the first.
+
+It was on no wireframe because it was added without being drawn. A GET form cannot build a path segment, so the picker posts a query to /sessions and the server turns it into a path; the button was there to submit it with scripting off. The reasoning was sound and it was still a control the approved drawings did not contain.
+
+It was visible because the first version drew it always and removed it from the script. A control the server draws and the script takes away is a control that can fail visible, and it did: the owner met a stale page carrying new markup beside old script. Clearing cookies made it go away, which is MUS-F-0041's cache mismatch rather than a fix for anything.
+
+It was under the dropdown rather than beside it, and full height, because of a bare element selector. form { display: flex; flex-direction: column; gap; padding } was written for the composer, and a bare element selector reshapes every form added after it. The picker set display and never mentioned direction or padding, so it inherited column: the row measured 215x69px with the select centred and the button stacked underneath it inside its own padding.
+
+Fixed on the owner's instruction that the button should appear only with scripting disabled. It lives in a noscript element rather than being hidden, so the browser decides at parse time and a page whose script is stale, blocked or missing still gets exactly the control it needs. The noscript is given display: contents so the button rather than the wrapper is the flex item, and .pick resets flex-direction and padding.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | Measured on the built binary in Chrome and Firefox at 390x844. With scripting on: 0 of 25 samples taken across the load saw a button, and none at rest. With scripting off: 34x21px against a 20px select, beside it rather than below, and submitting to /sessions/Sheet. Before the fix the same measurement read 34x26px, below=true, in a form measuring 215x69px with the select centred at left 91 of a box starting at 16. After: form 215x22, select at left 16, button at left 197, both on one line, and the strip back to 51px from 86px. |
+| Status | fixed |
+
+---
+
+## MUS-F-0047
+
+**The sub-agent drawer can be dragged wider on a desktop screen**
+
+finding · 2026-08-26
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Corrects: [IDW-F-0004](#idw-f-0004)
+
+Filed by the owner: the drawer takes more space than it needs on a laptop, and being able to drag it wider would be nice when wanted.
+
+Built. A grip on the drawer's leading edge, above 60rem only — on a phone the drawer is already most of the screen and there is nothing to widen into. It is a button with a separator role rather than a decorated edge, so it is focusable and moves on the arrow keys: a drag handle that answers only a pointer is one that some people cannot move at all.
+
+Only --drawer-w is set. Everything that has to move with it already reads that variable — the drawer's width, and the min() the reading column and the composer share — so the composer narrows in step without the resize code knowing the composer exists.
+
+The width is remembered per browser; the drawer's open state deliberately is not (MUS-Q-0057). Those are different kinds of thing: shut by default is a statement about what is happening, and a width is how this screen suits this person. Re-dragging it every load would be the annoyance the request exists to remove. Stated as an assumption rather than asked, because it is one line either way.
+
+This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q-0058, because the identifier prefix is the routing and there is no way to change one without deciding what happens to the other.
+
+| Field | Value |
+| --- | --- |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
+| Status | fixed |
+| Corrects | IDW-F-0004 — it asks for a change to Mustur's own session view, which the idea inbox does not own |
+
+---
+
+## MUS-F-0048
+
+**The plan tool refuses SVG, so the tab icons are drawn in CSS instead**
+
+finding · 2026-08-27
+
+Reported by the owner twice: first that there was no link to the icon plan, then that the icons should always show in it.
+
+Both attempts to publish a plan carrying the icons were rejected. The message names html, head, body, script and style tags; what it actually refuses is any svg element, in every block type the tool has — wireframes, custom HTML, all of them. Confirmed by publishing a single bare circle, which was refused on its own.
+
+The first response was to screenshot the icons and send them as files, and then not to publish a plan at all — which is the failure the trait about visual plans exists to prevent, at the last step.
+
+The icons are now drawn in CSS: borders, radii and two pseudo-elements each. They render in the plan, they render in the product, and they are the same drawing in both — which matters more than the medium, because approving a picture of something else is the wrong kind of confidence. It suits the binary too: nothing embedded, no viewBox to keep in step with a stroke width, and currentColor on a border inherits the theme exactly as it did before.
+
+| Field | Value |
+| --- | --- |
+| Where | the plan tool, and internal/web once the set is chosen |
+| Evidence | A custom-html block containing only <svg viewBox="0 0 24 24"><circle/></svg> is refused with the same message as a full icon set. Frames without svg in the same call were accepted. |
+| Status | worked around |
+
+---
+
+## MUS-F-0049
+
+**The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's**
+
+finding · 2026-08-27
+
+fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+Filed by the owner: the session output is still broken, and the concern raised earlier was taken as a Claude issue when it is an issue with how the output is interpreted.
+
+Confirmed by measurement and fixed. A third of what pipe-pane carried was cursor addressing — ESC[21;3H, ESC[H, ESC[K — a protocol for painting a grid rather than a transcript with decoration on it. The same pane through capture-pane was a fifth the size with no cursor moves at all. The strongest evidence that it was ours rather than the CLI's: the correct interpretation was already in the codebase, used for the first paint and abandoned for every byte after, which is exactly why the page read properly until the first live byte and degraded from there.
+
+The session view now asks tmux for the screen instead of the protocol (MUS-D-0132).
+
+| Field | Value |
+| --- | --- |
+| Where | internal/ansi, internal/session/screen.go |
+| Evidence | Zero escape codes on the page against a live agent session, in Chrome and Firefox, where the old stream left them as literal text. |
+| Status | fixed |
+
+---
+
+## MUS-F-0050
+
+**A noscript given display: contents shows its own markup as text to everyone with script**
+
+finding · 2026-08-27
+
+Found by looking at a screenshot of the session view, not by a test. Beside the session dropdown, on every browser, for every reader with scripting on, the page rendered the literal string: an opening button tag, its attributes, the word Go, and a closing tag.
+
+The picker's submit button lives in a noscript so the browser decides whether it is there. To make the button a flex item of the row rather than the noscript being one, the noscript was given display: contents — and that override also cancels the rule every browser applies with scripting enabled, noscript { display: none }. The contents of a noscript with scripting on are its own markup, as text, so showing the element shows the tag.
+
+What actually put the button beside the select was the row being a flex row, which was fixed at the same time and did the whole job. The override was never needed.
+
+The test written for that button asserted the presence of display: contents, so it held the defect in place rather than catching it. It now asserts the opposite, and the browser check that measured 'no button with script on' was true and useless: there is no button element, because the markup is text.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Evidence | With scripting on, the strip's innerText contained the opening button tag in Chrome and Firefox; with the override removed it reads 'Demo Ring Sub-agents' and the noscript is not painted. With scripting off the button is still 34x21px beside the select in both. |
+| Status | fixed |
+
+---
+
+## MUS-F-0051
+
+**The quiet counter read tmux's session_activity, which is not when the session last did anything**
+
+finding · 2026-08-27
+
+same as: [MUS-F-0042](#mus-f-0042)
+
+Seen in a screenshot: a session typed into three minutes earlier reported 'quiet 4h'.
+
+session_activity and window_activity are not the same field. Measured on a live session at the same instant: session_activity was 4.3 hours stale and window_activity was three minutes old. session_activity tracks the session; what happens inside it moves the window.
+
+This is MUS-F-0042's fourth form, and it shipped through a green test. The test starts a session, waits, and asserts the first viewer is told a non-zero silence — and on a freshly created session the two fields are within a second of each other, so reading the wrong one passes. It took a four-hour-old session and a screenshot to tell them apart.
+
+The same field feeds MUS-D-0013's clause about the route row defaulting to the last active session, which was therefore ordering by when sessions were started rather than by when they last did anything.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go |
+| Evidence | tmux list-sessions -F '#{session_activity}\t#{window_activity}' on a live session: 1787792947 against 1787808369, with now at 1787808585. The surface went from 'quiet 4h' to 'quiet 5m' on the same session. |
+| Status | fixed |
+
+---
+
+## MUS-F-0052
+
+**Frames left nothing to scroll back through, because an agent pane has no scrollback at all**
+
+finding · 2026-08-27
+
+from: [MUS-D-0132](decisions.md#mus-d-0132)
+
+Reported by the owner as soon as frames shipped: the session could no longer be scrolled back.
+
+The frame was set to carry 120 lines of history above the visible screen, and that number was measured on the wrong thing. It came from a plain shell pane, where history exists. An agent CLI runs on the alternate screen — measured: alternate_on=1, history_size=0 — and tmux keeps no scrollback for one. Not a little: none. So capture-pane -S -120 returned twenty-four rows however deep it was asked to go, and had done since the first frame shipped.
+
+That was visible in the very first measurement, which reported the same twenty-four lines at every depth from 0 to 2000. It was read as 'this session has little history' and not chased.
+
+Fixed by making the pane tall rather than by reconstructing a transcript. The CLI redraws its whole conversation into whatever height it is given, and a capture costs what the content costs rather than what the height is: 60 rows was 4.8KB, 200 rows 6.9KB and 300 rows 7.0KB on the same session, because the difference is blank padding that gets trimmed. Sessions Mustur starts are now 100x300.
+
+The cost, named rather than discovered later: window-size is manual, so somebody attaching to one of these with tmux gets a 300-row window rather than one sized to their terminal.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go, internal/session/screen.go |
+| Evidence | tmux display-message on both live sessions: alternate_on=1, history_size=0, history_limit=2000. After the resize, Demo renders 120 scrollable lines from its startup banner to its last output where it had 24. |
+| Status | fixed |
+
+---
+
+## MUS-F-0053
+
+**The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable**
+
+finding · 2026-08-27
+
+with: [MUS-D-0132](decisions.md#mus-d-0132)
+
+Reported by the owner, with the lines quoted: a hint, a divider carrying the task's name, the input box, another divider, and a status line. None of it is transcript, all of it was in the output, and the parts worth having — the mode, a pull request, the agent count, a failing check, an update notice — were buried in it.
+
+Taken off the screen and shown as Mustur's own row of chips instead. The split anchors on the input caret, because that is the one thing every shape seen so far has: a session with a dialogue open loses its status line and its lower divider and still draws the caret. A pane with no recognisable caret is returned whole — showing everything is a much better failure than guessing which lines to delete.
+
+It also fixes a problem it did not set out to. A tall pane draws the transcript at the top and pins the input box to the bottom, so what is between them is a hundred rows of nothing. Taking the box off turns most of that into trailing blanks; what is left is collapsed, because two blank lines is a paragraph break and no transcript has ever meant a hundred.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/chrome.go |
+| Evidence | Against both live sessions: the output carries no input box, divider or status line, and the row reads 'auto mode on · PR #31 · 1 agent · /rc failed · new task? /clear to save 118.3k tokens' — the owner's own list of what was worth keeping. A session with a dialogue open loses its status line and is still split correctly. |
+| Status | fixed |
+
+---
+
+## MUS-F-0054
+
+**A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it**
+
+finding · 2026-08-27
+
+The status chip for a pull request read 'PR /DevOfPie/Mustur/pull/31' — a fragment of its own URL.
+
+The stripper written to recognise the CLI's furniture scanned from an escape to the next 'm', which is right for a colour and wrong for everything else. An OSC 8 hyperlink has no 'm' in it, so the CLI's link on 'PR #31' was eaten as far as the next colour code somewhere further along the line.
+
+The chip was the visible half. The invisible half was worse: the same stripper decides which lines are dividers, carets and status lines, so a mangled line stopped being recognised as furniture at all and a whole pane's worth stayed in the output.
+
+Fixed by deleting it. internal/ansi already parses these properly for rendering, and now exports Plain for the cases that need to recognise rather than render. Two implementations of the same thing, one of them approximate, was the defect.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/ansi/ansi.go, internal/session/screen.go |
+| Evidence | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. |
+| Status | fixed |

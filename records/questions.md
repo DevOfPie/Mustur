@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-54 record(s), by identifier.
+60 record(s), by identifier.
 
 ---
 
@@ -1230,4 +1230,138 @@ question · 2026-08-25
 | Surfaced | 2026-08-25 07:08 |
 | Answer | It stands, and milestone 6 is that much shorter. Its row says its reading surface already exists; what remains is a second person signing in and reading from their own device. The decision having been announced rather than asked is recorded, not undone. |
 | Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0055
+
+**Your answer said a token has its own lifetime; I built it without one**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-M-0012 |
+| Option | Recommended — No expiry, and the clause is amended :: Revocation is the only stop; Plan.md's row loses the lifetime words :: An invitation expires because it is a link in transit and a session expires because a browser is borrowed. An agent token is configuration. A credential that stops working at 3am because a timer ran out, with nobody having decided that, is an outage rather than a control — and the agent it stops is the one that reads your records. Revocation is immediate and is a decision somebody takes. This asks you to drop half a clause you wrote, which is why it is a question rather than something I do quietly. |
+| Option | An optional --expires, defaulting to never :: The clause is satisfied and nothing changes unless you ask for it :: Cheap, honest, and lets a short-lived token exist for a one-off agent or somebody else's machine. It also adds a second way for a token to stop working, so 'why did this break' has two answers instead of one — which is the cost, and it is small. |
+| Option | A real default lifetime, say 90 days :: Every token expires unless renewed :: The strictest reading of your answer, and the ordinary industry shape. It means the deployment's own token stops on a date, and the failure mode is an agent that cannot read the records until somebody notices — on a machine you may not be sitting at. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 07:59 |
+| Answer | An optional --expires, defaulting to never. The clause the owner wrote is satisfied without making an ordinary Tuesday into an outage: a token issued for the deployment lasts until it is revoked, and a token for a one-off agent or somebody else's machine can be given a lifetime. The cost the owner accepted is that a token now has two ways to stop working, so 'why did this break' has two answers rather than one — which is why the listing names which. |
+| Answered | 2026-08-25 07:59 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0056
+
+**Where a sub-agent's output is read once the session only identifies it**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0038 |
+| Needed to proceed | yes |
+| Option | Its own page :: a URL you can send someone; costs the live tail position on every open :: /sessions/{project}/agent/{id}. The only shape with an address, and the only one where a page of prose gets a page to be read on. Leaving the session closes the socket — the byte offset it resumes from lives in the page's script, so coming back re-seeds from capture-pane rather than resuming. Nothing is lost and the agent is untouched; you land at the bottom of a fresh capture instead of exactly where you were. It is a thirteenth surface to keep. Recommended |
+| Option | Opens in place :: cheapest by a distance, but it is not really a viewer :: A details element, the same mechanism the records surface already uses for citations. No navigation, no new surface, no script, and the session keeps streaming while you read. What it is not is a viewer: long output reads in a box inside a box, and there is nothing to link to. |
+| Option | A sheet over the session :: keeps the socket and gives the output the screen; adds client state :: The session stays connected underneath and the output gets the whole screen. It does not change the scripted-surface count — the session view already carries script and cannot be server-rendered — but it adds a second thing that page's client layer holds state for, and there is still no URL. |
+| Asked by | whippy |
+| Answer | A sheet over the session |
+| Answered | 2026-08-26 11:56 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-08-26 11:57 |
+
+---
+
+## MUS-Q-0057
+
+**How the sub-agent drawer opens, what its badge counts, and where output is read**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0038 |
+| Option | Opens over, everywhere :: one behaviour, nothing reflows, cannot push the composer anywhere :: The drawer is the same object on a phone and a laptop and the layout underneath never moves. The composer is placed by --shell-dock-left and --shell-dock-width, the coupling behind two defects on this surface already; an overlay never touches it. What it costs is watching the terminal and the list at the same time. Recommended |
+| Option | Pushes on a laptop, opens over on a phone :: you can watch both at once; the dock has to narrow in step :: The reason to want a sidebar rather than a sheet is seeing the terminal beside the list. A phone cannot do it — a 280px drawer leaves about 110px of terminal at 390px — so one control ends up with two behaviours, and on the wide screen the composer must narrow with the drawer or run under it. |
+| Option | Badge counts running, falling back to the total :: never blank while there is something to open :: Counting only active sub-agents goes blank the moment they all finish, which is exactly when their reports are worth reading, and the drawer is shut so nothing else says they exist. Accent while any run, then a quiet count of how many are readable. Recommended |
+| Option | Output read inside the drawer, retiring the sheet :: one surface for sub-agents instead of two :: The sheet built yesterday would go. One place, one way back. It costs width — on a phone the drawer is about 320px where the sheet had the full 390px — and it throws away something measured and working. Keeping both means two layers over the terminal and Escape having to decide which it means. Recommended |
+| Asked by | whippy |
+| Surfaced | 2026-08-26 21:11 |
+| Answer | Pushes on a laptop and opens over on a phone; output is read inside the drawer, retiring the sheet; the badge counts running and falls back to the total, with a rotating accent ring on the whole Sub-agents button while anything runs; it does not persist across a reload; the session strip becomes a dropdown. |
+| Answered | 2026-08-26 22:45 |
+| Relayed | written down by whippy, from the question form on the published plan for the drawer |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0058
+
+**How a mis-routed jot is corrected, when the identifier is the routing**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0044 |
+| Needed to proceed | yes |
+| Option | A correction files a new record and retires the old :: keeps identifiers permanent; costs two records per correction :: IDW-F-0004 would be re-filed as a MUS finding, and IDW-F-0004 would stay, marked superseded and pointing at it. Nothing an identifier ever meant changes, which is the promise the whole store rests on. The cost is that every correction leaves a stub in the wrong project's list, and the idea inbox counter the scratch pad exists to protect goes up rather than down. Recommended |
+| Option | Routing becomes mutable and the identifier is reissued :: reads better afterwards; breaks the one rule everything else assumes :: The record keeps its content and gets a new identifier at the correct destination, and the old identifier stops resolving. Anything that cited it — a commit message, a decision, a comment in the code — is then pointing at nothing. That is the failure the permanence rule exists to prevent, and it would be reintroduced for the convenience of a tidy list. |
+| Option | Routing becomes mutable and the identifier does not change :: no stub and no broken citation; the prefix then lies :: IDW-F-0004 stays IDW-F-0004 and is routed to Mustur. Every citation keeps working and nothing is duplicated. What breaks is that the prefix stops meaning where the record lives, so an identifier can no longer be read — and every surface that groups by prefix would have to stop trusting it. |
+| Asked by | whippy |
+| Surfaced | 2026-08-26 22:44 |
+| Answer | A correction files a new record at the right destination and retires the old one, which keeps its identifier and points at its replacement. Identifiers stay permanent; the cost is a stub left in the wrong project's list. |
+| Answered | 2026-08-26 22:45 |
+| Relayed | written down by whippy, from a prompt in the session that raised it |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0059
+
+**How a question answered somewhere other than Mustur gets closed in Mustur**
+
+question · 2026-08-26
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0045 |
+| Option | An agent may record the owner's answer, attributed :: closes the queue; weakens the rule that only the owner answers :: 'mustur answer --from-owner' would let a session write down what the owner said in a prompt, a plan or a chat, stamped with who recorded it and that it was relayed rather than given here. The queue matches reality. The cost is that the one thing an agent currently cannot do becomes something it can do, and the record can no longer be read as proof the owner touched Mustur itself. Recommended |
+| Option | Only the owner closes it, from the queue :: the record stays trustworthy; the queue keeps filling up :: Exactly today's behaviour, which is what the finding is about. Every question answered in a prompt or a plan stays open here until the owner opens /questions and answers it a second time. It is honest and it is friction, and the friction lands on the one person whose time the whole system is meant to protect. |
+| Option | A question can be withdrawn as overtaken, by whoever raised it :: no new answering power; says less than an answer :: 'mustur answer --withdraw' already exists and an agent may already use it on its own question. Making 'overtaken by a decision taken elsewhere' an explicit withdrawal reason would clear the queue without anyone claiming to have recorded what the owner said. What is lost is the answer itself: the record would say the question stopped mattering, not what was decided. |
+| Asked by | whippy |
+| Surfaced | 2026-08-26 22:44 |
+| Answer | An agent may record the owner's answer, attributed. 'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. The asker still may not answer unqualified. |
+| Answered | 2026-08-26 22:45 |
+| Relayed | written down by whippy, from a prompt in the session that raised it |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0060
+
+**How the session view should interpret the pane: frames, an emulator, or a stripped log**
+
+question · 2026-08-27
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0049 |
+| Needed to proceed | yes |
+| Option | Render frames from capture-pane :: correct for free; changes what resume means :: tmux has already done the emulation, so ask it for the screen instead of the protocol. The seed path already does exactly this and reads correctly. One poll per watched session sends about 1.4KB where the raw stream sent 6.6KB for the same turn, and the working and idle detection already reads the same pane, so it costs nothing new. What changes is the resume model: the byte offset a viewer reconnects at, the 256KB buffer from MUS-Q-0021 and the gap message all describe a stream, and a screen has none of those. Scrollback comes from capture-pane -S instead. Recommended |
+| Option | Emulate the terminal in Mustur :: keeps the stream and its resume model; a terminal emulator to own :: Run the raw bytes through a VT parser, keep a screen model, send diffs. Byte offsets, replay and the gap message all survive unchanged, and the output could be diffed rather than re-sent whole. The cost is a terminal emulator in the binary and in the tests — every escape sequence that arrives is one this project now has to be correct about, and tmux is already correct about all of them one process away. |
+| Option | Strip the escapes and keep the log :: the cheap half; the layout stays wrong :: Makes the live stream match the seed in character set, so the bracket codes stop appearing as literal text. It does not fix the problem: ESC[21;3H means the text after it overwrites row 21, so removing the code keeps the text and loses where it belongs. Frames would still stack on each other, just without the codes visible. Worth naming because it is what 'fix the formatting' sounds like it means. |
+| Asked by | whippy |
+| Surfaced | 2026-08-27 01:57 |
+| Answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
+| Answered | 2026-08-27 01:57 |
+| Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |

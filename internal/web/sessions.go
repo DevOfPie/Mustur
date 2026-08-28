@@ -149,6 +149,9 @@ type sessionPage struct {
 // A subagentRow is one sub-agent as the page says it, with every value already
 // decided here rather than in the template.
 type subagentRow struct {
+	// ID addresses this sub-agent. The hook has recorded one since milestone
+	// 4c; nothing downstream could open a row without it reaching the page.
+	ID    string `json:"id"`
 	Title string `json:"title"` // what it was asked to do; empty when that could not be told
 	Type  string `json:"type"`
 	State string `json:"state"` // the tool in flight, "working", or "finished"
@@ -181,6 +184,7 @@ func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 	running := 0
 	for _, a := range live {
 		r := subagentRow{
+			ID:    a.ID,
 			Title: a.Task, Type: a.Type, For: since(a.For(now)), Said: a.Said,
 			Started: a.Started.Unix(),
 		}
@@ -241,6 +245,16 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, bool) {
 }
 
 func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
+	// Where the session picker submits.
+	//
+	// A GET form cannot build a path segment, so the dropdown posts a query
+	// here and this turns it into one. With script the change event navigates
+	// first and this is never reached; without it, this is the whole of how
+	// the picker works.
+	if pick := r.URL.Query().Get("p"); pick != "" {
+		http.Redirect(w, r, "/sessions/"+url.PathEscape(pick), http.StatusSeeOther)
+		return
+	}
 	rows, _ := s.rows(r.Context(), "")
 	if len(rows) > 0 {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(rows[0].Project), http.StatusSeeOther)
@@ -266,6 +280,21 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 	// Set here rather than at the call sites: a page built without it renders
 	// a header missing its only route to the account surface.
 	p.ShowAccount = s.ShowAccount
+	// Never cached, which every other surface here already says of itself and
+	// this one did not.
+	//
+	// This page is markup and a script that has to agree with it. The script
+	// is revalidated on every load; the page was not, so a deploy could leave
+	// a reader holding yesterday's markup beside today's script. That is not
+	// theoretical — it is how sub-agent rows came to be un-openable after
+	// MUS-F-0038 shipped: rows drawn before the change carry no identifier,
+	// and the delegated handler looking for one finds nothing to open
+	// (MUS-F-0041).
+	//
+	// no-store rather than no-cache because it also keeps the page out of the
+	// back/forward cache, which restores a whole live document — script state
+	// and all — from before the deploy.
+	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := sessionTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -273,20 +302,55 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 }
 
 type frame struct {
-	T     string `json:"t"`
-	Seq   int64  `json:"seq,omitempty"`
+	T string `json:"t"`
+	// Screen is the pane, rendered. It replaces the chunk of bytes this used
+	// to carry: the unit is now a whole screen, so there is no offset to
+	// resume from, no replay to distinguish and no gap to report (MUS-Q-0060).
+	Screen string `json:"screen,omitempty"`
+	// Text goes the other way: it is what the composer sends up. Nothing is
+	// sent down as text any more — a screen is not a chunk.
 	Text  string `json:"text,omitempty"`
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
-	Lost  int64  `json:"lostBytes,omitempty"`
-	At    string `json:"at,omitempty"`
-	Error string `json:"error,omitempty"`
+	// Agent is what the CLI's own pane says it is doing: working, waiting, or
+	// empty for a pane nothing here can read. Empty is not idle — the surface
+	// falls back to counting silence, which is what it did before.
+	Agent string `json:"agent,omitempty"`
+	// Status is what the CLI's furniture said, taken off the bottom of the
+	// screen and shown as Mustur's own row instead of as four lines of the
+	// output nobody reads.
+	Status *statusRow `json:"status,omitempty"`
+	At     string     `json:"at,omitempty"`
+	Error  string     `json:"error,omitempty"`
 	// Sub-agent rows, pushed rather than waited for (MUS-Q-0029). The owner
 	// chose this over a reload, against the builder's recommendation, and it is
 	// the one place the client layer models something other than the terminal.
 	Agents  []subagentRow `json:"agents,omitempty"`
 	Running int           `json:"running,omitempty"`
 	None    bool          `json:"none,omitempty"`
+}
+
+// A statusRow is the CLI's status line, ready to render.
+//
+// Sent whole rather than as one string, so the surface decides what a mode
+// looks like next to a failing check. Empty fields are omitted, and a row with
+// nothing in it is not sent at all.
+type statusRow struct {
+	Mode   string   `json:"mode,omitempty"`
+	Items  []string `json:"items,omitempty"`
+	Note   string   `json:"note,omitempty"`
+	Hint   string   `json:"hint,omitempty"`
+	Update string   `json:"update,omitempty"`
+}
+
+func statusChips(st session.Status) *statusRow {
+	if st.Empty() {
+		return nil
+	}
+	return &statusRow{
+		Mode: st.Mode, Items: st.Items, Note: st.Note,
+		Hint: st.Hint, Update: st.Update,
+	}
 }
 
 func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
@@ -298,13 +362,10 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	}
 	project := r.PathValue("project")
 
-	from := int64(0)
-	if v := r.URL.Query().Get("from"); v != "" {
-		fmt.Sscanf(v, "%d", &from)
-	}
-
 	ctx := r.Context()
-	sub, backlog, at, gap, err := s.Hub.Attach(ctx, project, from)
+	// No `from`. A viewer resuming is sent the screen as it stands, which is
+	// the whole of what resuming means when the unit is a frame.
+	sub, now, err := s.Hub.Watch(ctx, project)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -324,7 +385,15 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	conn, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	quiet := 0
+	// How long the screen has been unchanged, from the poller rather than from
+	// this connection. Declared and left at zero, it made the browser start
+	// counting at whatever moment the tab attached, so the footer measured the
+	// age of the tab (MUS-F-0042). Rounded down to whole seconds, which is what
+	// the client renders anyway.
+	quiet := int(sub.Quiet(s.now()).Seconds())
+	if quiet < 0 {
+		quiet = 0
+	}
 	// Both the reader loop and the input goroutine write frames now — the
 	// second only to report that a message was discarded — and a WebSocket
 	// permits one writer at a time.
@@ -341,27 +410,13 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		return c.Write(wctx, websocket.MessageText, b)
 	}
 
-	if err := send(frame{T: "hello", Alive: true, Seq: at, Quiet: quiet}); err != nil {
+	// The first frame is the screen as it stands, and what the pane says the
+	// agent is doing — read out of the same capture rather than fetched again.
+	if err := send(frame{
+		T: "hello", Alive: true, Quiet: quiet,
+		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
+	}); err != nil {
 		return
-	}
-	if gap {
-		// at is the oldest byte still held, so the loss is at-from. Written the
-		// other way round it reported a negative count, which the client
-		// rendered to the reader verbatim: "[-7988948 bytes … were not kept]".
-		// A viewer whose offset is ahead of this stream was reading a previous
-		// one, and how much it missed is not knowable — zero says so.
-		lost := at - from
-		if lost < 0 {
-			lost = 0
-		}
-		if err := send(frame{T: "gap", Lost: lost}); err != nil {
-			return
-		}
-	}
-	if len(backlog) > 0 {
-		if err := send(frame{T: "out", Seq: at + int64(len(backlog)), Text: string(backlog)}); err != nil {
-			return
-		}
 	}
 
 	// Sub-agent rows go down the same socket, on a ticker rather than in the
@@ -393,6 +448,9 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			_ = c.Close(websocket.StatusNormalClosure, "idle")
 			return
 		case <-agents.C:
+			// The agent's state used to be captured here, on its own timer.
+			// The poller already has the pane in hand and reads it out of the
+			// same text, so this tick is back to being only about sub-agents.
 			if stamp := session.SubagentStamp(s.HookDir, project); stamp == lastStamp {
 				continue
 			} else {
@@ -416,15 +474,18 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			if err := send(frame{T: "agents", Agents: rows, Running: running, None: len(rows) == 0}); err != nil {
 				return
 			}
-		case u, ok := <-sub.C:
+		case f, ok := <-sub.C:
 			if !ok {
 				return
 			}
-			if u.Ended {
-				_ = send(frame{T: "ended", Seq: u.Seq, At: u.ExitAt.Format("2006-01-02 15:04")})
+			if f.Ended {
+				_ = send(frame{T: "ended", At: f.ExitAt.Format("2006-01-02 15:04")})
 				return
 			}
-			if err := send(frame{T: "out", Seq: u.Seq, Text: u.Text}); err != nil {
+			if err := send(frame{
+				T: "screen", Screen: f.HTML,
+				Agent: string(f.Agent), Status: statusChips(f.Status),
+			}); err != nil {
 				return
 			}
 			resetIdle(idle, IdleTimeout)
@@ -501,14 +562,31 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <style>
   :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8;
           --accent-soft: #6a8fd820; }
+  /* Capped, not floored. min-height let the column grow with the output and
+     carry the bar and the composer off the screen with it (MUS-F-0032); the
+     shell's own min-height is harmless beside a height that holds. */
+  /* The 46rem below applies under the breakpoint only; above it the shell's
+     own rule wins and gives this page the width the rail leaves, which is now
+     what every surface gets. It was set here first, for the terminal alone,
+     before the owner asked for the rest. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
          margin-inline: auto; display: flex; flex-direction: column;
-         min-height: 100vh; }
+         height: 100vh; height: 100dvh; }
+  /* The chrome rows keep their own height. A flex item shrinks by default, so
+     anything that grew — the sub-agent box did — took its room out of these
+     first, which is how the session chips ended up half-height and hidden
+     behind the row beneath them. Only #out flexes. */
+  header, .rail { flex: 0 0 auto; }
   header { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); white-space: nowrap; }
   header .pill { border: 1px solid var(--edge); border-radius: 999px;
                  padding: .1rem .55rem; font-size: .78em; }
   header .pill.on { border-color: var(--accent); background: var(--accent-soft); }
+  /* The ring around the status pill is smaller than the one around the
+     sub-agent button, because the pill is smaller and a 190% square around it
+     would spill a long way past a short word. */
+  header .ring { padding: 1.2px; }
+  header .ring.live::before { width: 260%; }
   /* MUS-Q-0052: the account surface is reached from here rather than from
      a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
      actually serves it — a link that goes nowhere is the failure the bar
@@ -516,16 +594,76 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
-  /* Chrome and output are visually separate. Anything Mustur says about the
-     session sits on a tinted strip; anything the session said is plain text. */
-  .strip { display: flex; align-items: center; gap: .5rem; padding: .4rem 1rem;
-           background: #8881; border-bottom: 1.4px solid var(--edge);
-           font-size: .82em; opacity: .8; white-space: nowrap; }
-  .strip .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-  #out { flex: 1; padding: .8rem 1rem; margin: 0; white-space: pre-wrap;
-         word-break: break-word; font-size: .9em; }
+  /* The strip that used to sit here said "live" across the whole width, and
+     the pill in the header beside the project name already said "running".
+     Two places saying one thing, one of them a full-width band above the
+     output. The owner asked for it gone; what it alone carried — the time a
+     session ended — moved into the pill. */
+  /* The only thing that scrolls. min-height:0 is what lets a flex child be
+     smaller than its content — without it the pane grows instead of
+     scrolling, which is the whole of the bug.
+
+     The bottom padding is the dock's own height, measured by the script and
+     written back as --dock-h: the output runs behind the dock, as the owner
+     asked, but its last lines still come to rest above it rather than under
+     it. The fallback is a sensible dock height for the moment before the
+     script has measured one. */
+  /* What the CLI's status line said, as Mustur's own row.
+
+     The owner asked for the four lines of furniture at the bottom of the pane
+     to come out of the output and for the useful parts to be shown better.
+     These are those parts: the mode, whatever the CLI is tracking, a failing
+     check, and a hint or an update notice.
+
+     One row, and only when there is something in it. The strip removed on
+     MUS-D-0129 was removed for saying what the pill already said; this says
+     what nothing else does. */
+  .chips { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem;
+           padding: .4rem 1rem; border-bottom: 1.4px solid var(--edge);
+           font-size: .78em; flex: 0 0 auto; }
+  .chips[hidden] { display: none; }
+  .chips span { border: 1px solid var(--edge); border-radius: 999px;
+                padding: .05rem .5rem; opacity: .75; white-space: nowrap; }
+  .chips span.mode { border-color: var(--accent); background: var(--accent-soft);
+                     opacity: 1; }
+  /* A failing check is the one thing on this row worth interrupting for. */
+  .chips span.note { border-color: #c0392b; color: #c0392b; opacity: 1; }
+  .chips span.hint { border-style: dashed; }
+
+  /* The pane, painted rather than accumulated.
+     
+     A monospaced face because this is a screen tmux laid out in columns, and a
+     proportional one would break every box it draws. white-space: pre-wrap
+     keeps its spacing while still wrapping a long line to the reader's width
+     rather than the pane's. */
+  #out { flex: 1; min-height: 0; overflow-y: auto;
+         padding: .8rem 1rem calc(var(--dock-h, 9rem) + .8rem);
+         margin: 0; white-space: pre-wrap;
+         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+         word-break: break-word; font-size: .82em; line-height: 1.35;
+         overscroll-behavior: contain; }
+  /* Something Mustur says about the session, as opposed to something the
+     session said. Under the screen, because the screen is replaced whole and
+     anything written into it would go with the next frame. */
+  #out .note { margin: .6rem 0 0; padding: .3rem .6rem;
+               border-left: 2px solid var(--accent); opacity: .8;
+               font-family: system-ui, sans-serif; white-space: normal; }
+
+  /* The quiet timer and the composer, locked to the bottom of the screen.
+
+     Fixed rather than last-in-a-column, because a column only holds its shape
+     while the shell's height is what the browser says it is — and the owner
+     watched the whole lower section walk off the bottom of a phone. Fixed
+     elements are anchored to the viewport and cannot be pushed anywhere. It
+     sits above the tab bar; where the bar becomes a rail there is nothing
+     below it, and --shell-dock-offset is 0. */
+  .dock { position: fixed; bottom: var(--shell-dock-offset, 0px);
+          left: var(--shell-dock-left, 0px);
+          width: var(--shell-dock-width, 100%);
+          z-index: 2; background: var(--paper);
+          border-top: 1.4px solid var(--edge); }
   #foot { padding: .4rem 1rem; background: #8881;
-          border-top: 1.4px solid var(--edge); font-size: .82em; opacity: .75; }
+          font-size: .82em; opacity: .75; }
   form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
          border-top: 1.4px solid var(--edge); }
   form .row { display: flex; gap: .5rem; align-items: flex-end; }
@@ -545,59 +683,252 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
              max-height: 9rem; overflow-y: auto; line-height: 1.4; }
   button { font: inherit; padding: .55rem 1rem; border: 1px solid var(--accent);
            border-radius: .5rem; background: var(--accent-soft); color: inherit; }
-  .rail { display: flex; gap: .4rem; padding: .5rem 1rem; overflow-x: auto;
-          border-bottom: 1.4px solid var(--edge); white-space: nowrap; }
-  .rail a { flex: 0 0 auto; border: 1px solid var(--edge); border-radius: 999px;
-            padding: .2rem .7rem; font-size: .82em; text-decoration: none;
-            color: inherit; opacity: .65; }
-  .rail a.here { opacity: 1; border-color: var(--accent);
-                 background: var(--accent-soft); }
-  .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-  /* Sub-agents sit above the session's own output, because they are Mustur
-     talking about the session rather than the session talking. Same tint as
-     every other strip for the same reason. */
-  .agents { padding: .6rem 1rem; background: #8881;
-            border-bottom: 1.4px solid var(--edge); font-size: .85em; }
-  .agents > .count { opacity: .6; font-size: .9em; }
-  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .3rem 0;
-           white-space: nowrap; }
+  /* The session picker.
+
+     A dropdown rather than a row of chips. MUS-D-0121 answered the identical
+     problem on the intake row: a row that scrolls sideways hides its last
+     choice behind a swipe with nothing on screen saying so, and a jot went to
+     the very chip nobody could see. A native select has no off-screen end,
+     however many sessions there are.
+
+     The form is real, and its button lives in a noscript element.
+
+     A GET form cannot build a path segment, so the select posts a query to
+     /sessions and the server turns it into a path. With script the change
+     event navigates first and the button is not wanted; without it, the button
+     is the only way to submit.
+
+     noscript rather than hiding it, because the first version did hide it and
+     that was the defect. A control the server draws and the script removes is
+     a control that can fail visible, and it did: the owner met a stale page
+     carrying new markup beside old script, and found a full-size button under
+     the dropdown that had never been in the wireframes. Clearing cookies made
+     it go away, which is the same cache mismatch as MUS-F-0041 rather than a
+     fix for anything.
+
+     noscript has neither half of that problem. The browser decides, from
+     whether scripting is enabled, and it decides at parse time — so a page
+     whose script is stale, blocked, or never arrives still gets exactly the
+     control it needs and nothing else. */
+  .rail { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem;
+          border-bottom: 1.4px solid var(--edge); min-width: 0; }
+  /* flex-direction and padding are set here because they have to be undone,
+     not because a row needs declaring. The bare form rule above was written
+     for the composer (column, gap, its own padding) and a bare element
+     selector reshapes every form added afterwards. This one came out stacked
+     and centred inside 69px of nothing, which is exactly the giant button
+     under the dropdown the owner reported. */
+  .pick { display: flex; flex-direction: row; align-items: center; gap: .3rem;
+          padding: 0; flex: 1; min-width: 0; }
+  .pick select { flex: 1; min-width: 0; font: inherit; font-size: .85em; }
+  /* Nothing sets display on the noscript, and that is deliberate.
+
+     It had display: contents, to make the button a flex item of this row
+     rather than the noscript being one. That override also cancels the rule
+     every browser applies when scripting is enabled — noscript { display:
+     none } — so the element's contents were shown, and the contents of a
+     noscript with scripting on are its own markup as text. The row rendered
+     the literal string <button type="submit" class="go">Go</button> next to
+     the dropdown, which is what the owner would have seen.
+
+     Without the override the browser decides again: hidden with scripting on,
+     an ordinary inline element with it off. The row is a flex row either way,
+     which is what actually put the button beside the select. */
+  .pick .go { flex: 0 0 auto; font: inherit; font-size: .75em; line-height: 1;
+              padding: .2rem .45rem; border: 1px solid var(--edge);
+              border-radius: .35rem; background: none; color: inherit;
+              opacity: .6; cursor: pointer; }
+
+  /* The button that opens the drawer, and the ring that says something is
+     running.
+
+     A word rather than a glyph, because everything else on this surface is
+     words and a glyph said nothing about what was behind it.
+
+     The ring is a conic gradient with two bright points 180 degrees apart,
+     painted once and turned with the rotate property. Not an animated
+     gradient angle: that repaints the whole gradient every frame, where
+     rotating a pre-painted layer is composited and costs a phone almost
+     nothing — which is what makes it affordable on a page already streaming a
+     terminal over a socket. Constant speed, because a rotation that eases
+     reads as a stutter rather than as light travelling. No hard stops in the
+     gradient, or the seam becomes an edge sweeping round the rim. */
+  body { --drawer-w: 17rem; }
+  .ring { position: relative; flex: 0 0 auto; display: inline-flex;
+          padding: 1.4px; border-radius: 999px; overflow: hidden; }
+  /* Two layers of the same token rather than a new colour: --accent-soft is
+     12.5% alpha, which at one layer is too faint to read as a glow at all.
+     Nothing here needs tuning per theme — --accent is a single mid-blue that
+     carries on both, which is why there is no dark-mode branch. */
+  .ring.live { box-shadow: 0 0 .75rem var(--accent-soft),
+                           0 0 .25rem var(--accent-soft); }
+  .ring.live::before {
+      content: ""; position: absolute; left: 50%; top: 50%;
+      width: 190%; aspect-ratio: 1; translate: -50% -50%;
+      background: conic-gradient(from 0deg, transparent 0deg,
+                  var(--accent) 40deg, transparent 95deg, transparent 180deg,
+                  var(--accent) 220deg, transparent 275deg, transparent 360deg);
+      animation: turn 3s linear infinite; }
+  @keyframes turn { from { rotate: 0deg } to { rotate: 1turn } }
+  /* An indefinite rotation is exactly the motion this setting exists for. The
+     accent colour carries the state on its own, so holding still costs the
+     movement and no information. */
+  @media (prefers-reduced-motion: reduce) {
+    .ring.live::before { animation: none; }
+  }
+  .toggle { position: relative; display: inline-flex; align-items: center;
+            gap: .4rem; padding: .25rem .7rem; border: 1px solid var(--edge);
+            border-radius: 999px; background: var(--paper); color: inherit;
+            font: inherit; font-size: .82em; cursor: pointer;
+            white-space: nowrap; }
+  /* Whatever the ring is wrapped around loses its own border, or the rim and
+     the border sit a pixel apart and read as two rings. Written for the
+     sub-agent button and now also worn by the status pill, which is why it
+     names a child rather than that button. */
+  .ring.live > * { border-color: transparent; }
+  .toggle[data-empty] { opacity: .5; }
+  .badge { border: 1px solid var(--edge); border-radius: 999px;
+           padding: 0 .4rem; font-size: .85em; }
+  .ring.live .badge { border-color: var(--accent); background: var(--accent-soft); }
+
+  /* The drawer.
+
+     Shut by default, so the sub-agent list takes none of the screen until it
+     is asked for — it is what squeezed the rail to 17px, the terminal to a
+     line and the composer off the bottom of a phone (MUS-F-0035, MUS-F-0038).
+
+     On a phone it opens over the terminal: at 390px a 17rem drawer would leave
+     about 110px of it. On a wide screen it pushes instead, which is the whole
+     reason for a drawer rather than a sheet — the terminal and the list at
+     once. */
+  .drawer[hidden] { display: none; }
+  .drawer { position: fixed; inset: 0; z-index: 20; }
+  .veil { position: absolute; inset: 0; background: #0007; }
+  .panel { position: absolute; top: 0; right: 0; bottom: 0;
+           width: 86%; max-width: 22rem; box-sizing: border-box;
+           background: var(--paper); border-left: 1.4px solid var(--edge);
+           display: flex; flex-direction: column; }
+  .dhead { display: flex; align-items: center; gap: .5rem; padding: .7rem 1rem;
+           border-bottom: 1.4px solid var(--edge); flex: 0 0 auto; }
+  .dhead > strong { flex: 1; overflow: hidden; text-overflow: ellipsis;
+                    white-space: nowrap; }
+  .dhead > strong.untitled { opacity: .55; font-style: italic; }
+  .dhead .count { opacity: .6; font-size: .85em; white-space: nowrap; }
+  .back, .shut { background: none; border: 0; color: inherit; font: inherit;
+                 cursor: pointer; padding: 0 .3rem; opacity: .7; }
+  /* Its own scroller from the start, rather than after the measurement says
+     8,211px again. */
+  .dlist { flex: 1; min-height: 0; overflow-y: auto;
+           overscroll-behavior: contain; padding: .2rem 1rem; }
+  .dmeta { padding: .5rem 1rem; opacity: .6; font-size: .85em; flex: 0 0 auto;
+           border-bottom: 1.4px solid var(--edge); }
+  .dread { flex: 1; min-height: 0; overflow-y: auto;
+           overscroll-behavior: contain; padding: .9rem 1rem;
+           white-space: pre-wrap; word-break: break-word; }
+  .dread.quiet { opacity: .6; }
+  .agent { display: flex; align-items: baseline; gap: .5rem; padding: .5rem 0;
+           white-space: nowrap; width: 100%; text-align: left; cursor: pointer;
+           background: none; border: 0; border-bottom: 1px solid var(--edge);
+           color: inherit; font: inherit; font-size: .9em; }
+  .agent:last-of-type { border-bottom: 0; }
+  .agent .more { opacity: .5; }
   .agent .what { flex: 1; overflow: hidden; text-overflow: ellipsis; }
   .agent .what.untitled { opacity: .55; font-style: italic; }
   .agent .pill { border: 1px solid var(--edge); border-radius: 999px;
                  padding: .05rem .5rem; font-size: .78em; }
   .agent .pill.done { border-color: var(--accent); background: var(--accent-soft); }
   .agent .age { opacity: .6; font-size: .82em; }
-  .said { margin: 0 0 .4rem .2rem; padding-left: .6rem;
-          border-left: 1.4px solid var(--edge); white-space: pre-wrap;
-          word-break: break-word; opacity: .85; font-size: .92em; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap;
-        margin-top: auto; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+  /* Never drawn. Where the reading pane gets a sub-agent's final message from,
+     so a tap is answered before the socket has sent a frame — the first paint
+     is the server's. display:none, so it has no layout box. */
+  .say { display: none; }
+
+  /* Drag the drawer wider, on a wide screen only (IDW-F-0004).
+
+     The grip is a real control rather than a decorated edge: focusable, with
+     a separator role, and it moves on the arrow keys as well as the pointer.
+     A drag handle that only answers a mouse is a drag handle half the people
+     using it cannot reach.
+
+     It only exists above 60rem. On a phone the drawer is 86% of the screen and
+     there is nothing to widen it into. */
+  .grip { display: none; }
+
+  @media (min-width: 60rem) {
+    /* Only its own column, so the terminal beside it stays clickable. */
+    .drawer { inset: 0 0 0 auto; width: var(--drawer-w); }
+    .veil { display: none; }
+    .panel { width: var(--drawer-w); max-width: none; }
+    .grip { display: block; position: absolute; left: -3px; top: 0; bottom: 0;
+            width: 7px; cursor: col-resize; background: none; border: 0;
+            padding: 0; z-index: 1; }
+    .grip:hover, .grip:focus-visible { background: var(--accent-soft); }
+    .grip:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    /* While dragging, nothing else should be selecting text or handing the
+       pointer to the terminal underneath. */
+    body.dragging { user-select: none; cursor: col-resize; }
+    /* The push, and the reason it needs saying out loud.
+
+       The composer is placed by --shell-dock-left and --shell-dock-width
+       rather than by flow, so it does not narrow with the content and would
+       slide under the drawer. The reading column and the dock therefore take
+       the same expression.
+
+       min(), because the free space is usually already there: at 1366px the
+       reading column is 736px with 406px empty beside it, so a 17rem drawer
+       fits and nothing moves at all. It is only near 60rem, where that space
+       runs out, that either of them narrows. */
+    body.pushed { max-width: min(var(--shell-content, 46rem),
+                    calc(100vw - var(--shell-dock-left) - var(--drawer-w) - var(--shell-gutter)));
+                  --shell-dock-width: min(var(--shell-content, 46rem),
+                    calc(100vw - var(--shell-dock-left) - var(--drawer-w) - var(--shell-gutter))); }
+  }
+` + shellCSS + `
 </style>
 </head>
 <body data-project="{{.Project}}">
 <header><strong>{{if .Project}}{{.Project}}{{else}}Sessions{{end}}</strong>
-  <span class="pill" id="state">connecting</span>
+  <span class="ring" id="statering"><span class="pill" id="state">connecting</span></span>
   <span class="who">whippy-vm</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 {{if .Rows}}<div class="rail" id="rail">
-  {{range .Rows}}<a href="/sessions/{{.Project}}"{{if .Here}} class="here"{{end}}>{{.Project}}</a>{{end}}
+  <form class="pick" method="get" action="/sessions">
+    <select name="p" id="pick" aria-label="Session">
+      {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
+    </select><noscript><button type="submit" class="go">Go</button></noscript>
+  </form>
+  <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
+    aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
+    class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>
 </div>{{end}}
 {{if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
 <small>A session left running in a terminal is not here and will not appear.</small><br>
 <small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
 {{else}}
-<div class="strip"><span class="grow" id="scrollback">connecting</span></div>
-<div class="agents"{{if not .Subagents}} hidden{{end}}>
-  {{if .Subagents}}<div class="count">{{len .Subagents}} sub-agent{{if ne (len .Subagents) 1}}s{{end}}{{if .Running}} · {{.Running}} running{{end}}</div>
-  {{range .Subagents}}<div class="agent">
-    {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
-    <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span>
-  </div>{{if .Said}}<p class="said">{{.Said}}</p>{{end}}{{end}}{{end}}
+<div class="chips" id="chips" hidden></div>
+<div class="drawer" id="drawer" hidden>
+  <div class="veil" id="veil"></div>
+  <aside class="panel" role="dialog" aria-label="Sub-agents">
+    <button type="button" class="grip" id="grip" role="separator"
+      aria-orientation="vertical" aria-label="Resize the drawer"></button>
+    <div class="dhead">
+      <button type="button" class="back" id="back" hidden aria-label="Back to the list">&larr;</button>
+      <strong id="dtitle">Sub-agents</strong>
+      <small class="count" id="dcount">{{if .Subagents}}{{len .Subagents}}{{if .Running}} · {{.Running}} running{{end}}{{end}}</small>
+      <button type="button" class="shut" id="shut" aria-label="Close">&times;</button>
+    </div>
+    <div class="dmeta" id="dmeta" hidden></div>
+    <div class="dlist" id="dlist">
+      {{if .Subagents}}{{range .Subagents}}<button type="button" class="agent" data-id="{{.ID}}">
+      {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
+      <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
+    </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{end}}{{end}}{{else}}<p class="none">Nothing has been launched from this session.</p>{{end}}
+    </div>
+    <div class="dread" id="dread" hidden></div>
+  </aside>
 </div>
 <pre id="out"></pre>
+<div class="dock">
 <div id="foot">quiet 0s</div>
 <form id="say">
   <div class="dest"><span class="grow" id="dest">Send to {{.Project}}</span><a href="/compose" id="compose-link">Compose…</a><span id="kept" hidden>draft kept</span></div>
@@ -608,12 +939,14 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
     <button type="submit">Send</button>
   </div>
 </form>
+</div>
 {{end}}
 <nav>
-  <a href="/sessions" class="here">Sessions</a>
-  <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
-  <a href="/intake">Intake</a>
-  <a href="/records">Records</a>
+  <a href="/sessions" class="here" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
+  <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 {{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
 </body>

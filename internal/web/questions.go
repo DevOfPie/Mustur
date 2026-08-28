@@ -382,10 +382,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   .drop button { font-size: .85em; padding: .35rem .8rem; margin-left: auto; }
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body>
@@ -430,10 +427,11 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 {{end}}
 </main>
 <nav>
-  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
-  <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
-  <a href="/intake">Intake</a>
-  <a href="/records">Records</a>
+  {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
+  <a href="/questions" class="here" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenN}}<em class="cnt">{{.OpenN}}</em>{{end}}</a>
+  <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 </body>
 </html>

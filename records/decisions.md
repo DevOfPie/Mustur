@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-109 record(s), by identifier.
+132 record(s), by identifier.
 
 ## Index
 
@@ -121,6 +121,29 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0107](#mus-d-0107) | Sign-in stays usernameless, and the chooser is drawn rather than described | 2026-08-25 |
 | [MUS-D-0108](#mus-d-0108) | The surface count is twelve, and MUS-D-0072's eight is superseded | 2026-08-25 |
 | [MUS-D-0109](#mus-d-0109) | What the last four answers settled, and one correction to MUS-D-0107 | 2026-08-25 |
+| [MUS-D-0110](#mus-d-0110) | An agent's token is not an account, and its scope is what makes it safe | 2026-08-25 |
+| [MUS-D-0111](#mus-d-0111) | The guard lets a token past the tool call with no write check, and a test in another package holds that | 2026-08-25 |
+| [MUS-D-0112](#mus-d-0112) | A flag that changes nothing describes a credential that does not exist | 2026-08-25 |
+| [MUS-D-0113](#mus-d-0113) | A token's lifetime is optional and defaults to never | 2026-08-25 |
+| [MUS-D-0114](#mus-d-0114) | A test double that agrees with the bug is worse than no double | 2026-08-26 |
+| [MUS-D-0115](#mus-d-0115) | The browser is told nothing and the log is told everything | 2026-08-26 |
+| [MUS-D-0116](#mus-d-0116) | Columns are added to existing stores rather than assumed into them | 2026-08-26 |
+| [MUS-D-0117](#mus-d-0117) | Accounts are enforced on the deployment, in the only order that works | 2026-08-26 |
+| [MUS-D-0118](#mus-d-0118) | The tab bar pins on a phone and becomes a left rail on a wide screen | 2026-08-26 |
+| [MUS-D-0119](#mus-d-0119) | A jot may carry a picture, and the description travels rather than the picture | 2026-08-26 |
+| [MUS-D-0120](#mus-d-0120) | A scratch filing is not a record, so it costs no identifier | 2026-08-26 |
+| [MUS-D-0121](#mus-d-0121) | Destinations are a grouped list, and the kind is what tells two of them apart | 2026-08-26 |
+| [MUS-D-0122](#mus-d-0122) | A sub-agent's output is read in a sheet over the session, not in the list and not on its own page | 2026-08-26 |
+| [MUS-D-0123](#mus-d-0123) | The sub-agent list lives in a drawer that is shut by default, and the session strip is a dropdown | 2026-08-26 |
+| [MUS-D-0124](#mus-d-0124) | A control whose presence depends on scripting is decided by the browser, not by our script | 2026-08-26 |
+| [MUS-D-0125](#mus-d-0125) | A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier | 2026-08-26 |
+| [MUS-D-0126](#mus-d-0126) | An agent may write down an answer the owner gave elsewhere, and must say where | 2026-08-26 |
+| [MUS-D-0127](#mus-d-0127) | On a wide screen the account link is an icon at the foot of the rail, not a word in the header | 2026-08-27 |
+| [MUS-D-0128](#mus-d-0128) | Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it | 2026-08-27 |
+| [MUS-D-0129](#mus-d-0129) | The session view's live strip is gone; the pill beside the project name already said it | 2026-08-27 |
+| [MUS-D-0130](#mus-d-0130) | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be | 2026-08-27 |
+| [MUS-D-0131](#mus-d-0131) | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS | 2026-08-27 |
+| [MUS-D-0132](#mus-d-0132) | The session view renders frames from capture-pane, and the byte stream is gone | 2026-08-27 |
 
 ---
 
@@ -1756,3 +1779,452 @@ and also: [MUS-Q-0048](questions.md#mus-q-0048)
 and finally: [MUS-Q-0049](questions.md#mus-q-0049)
 
 MUS-D-0107 said the question about a usernameless sign-in was on the plan awaiting an answer. It had been answered: MUS-Q-0050, 'No — the system chooser already asks', so no address field is revealed and nothing further is owed. decisions.md is append-only, so this corrects it here rather than editing it. Three other answers had no record. MUS-Q-0044: keep all three surfaces the owner can start a message from, and say so, rather than folding them. MUS-Q-0048: the only-owner banner is cut, and the refusals say why at the moment they refuse. MUS-Q-0049: a question's timestamps are stamped from the clock and a past --at is refused, which is why no question can any more record an answer before its own creation.
+
+---
+
+## MUS-D-0110
+
+**An agent's token is not an account, and its scope is what makes it safe**
+
+decision · 2026-08-25
+
+raised by: [MUS-Q-0051](questions.md#mus-q-0051)
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+A passkey needs a browser, an authenticator and a gesture; an agent has none of the three and still has to reach the mandated tool call. The token it carries instead is deliberately not an account: no email, no passkey, no session, and the guard consults it on exactly one path. A token lives in a systemd unit or a process's environment, which is a materially weaker place than a device's secure element, so scope is what makes the weaker secret acceptable. Folding it into the account tables would have made a leaked token a way into the browser surfaces rather than into the one call it exists for. This argument is the builder's. MUS-Q-0051 chose a token over exempting the path and said nothing about scope; an earlier comment in the code cited the question for it, which is one party's reasoning wearing another's name.
+
+---
+
+## MUS-D-0111
+
+**The guard lets a token past the tool call with no write check, and a test in another package holds that**
+
+decision · 2026-08-25
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+An MCP call is a POST by method and a read by nature: the surface serves one tool and it reads. So the guard does not apply its write check to a request authenticated by an agent token, which is the only reason a reader-scoped token can call the tool at all. That is a real assumption about a different package. A comment saying so is a promise nobody checks, so internal/mcpsrv's TestToolIsReachableOverHTTP asserts exactly one tool named mustur_route and says why — a second tool fails there and names the guard as the thing to revisit. The first version of that comment cited a test called TestTheToolSurfaceIsReadOnly, which does not exist anywhere. A safety argument discharged against a test nobody can find is discharged against nothing, and two of three reviewers found it.
+
+---
+
+## MUS-D-0112
+
+**A flag that changes nothing describes a credential that does not exist**
+
+decision · 2026-08-25
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+`mustur account token` took a --role of owner or reader. The role was stored, printed in the listing, and consulted by no request path: measured, a reader token and an owner token reached exactly the same thing, because the surface a token opens serves one read-only tool. The flag is gone and every token is issued as a reader. A role here becomes meaningful the day the tool surface stops being read-only, which is the same day the decision above needs revisiting; until then, offering the choice advertised a weaker credential nobody could actually have. The same review found --project's help calling it 'the project the token may read', when a token reads nothing — it opens the tool call.
+
+---
+
+## MUS-D-0113
+
+**A token's lifetime is optional and defaults to never**
+
+decision · 2026-08-25
+
+answers: [MUS-Q-0055](questions.md#mus-q-0055)
+
+corrects: [MUS-D-0110](#mus-d-0110)
+
+built in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
+
+The owner's answer on MUS-Q-0051 said a token has 'its own lifetime and its own revocation'. The build had revocation and no lifetime, and the reasoning for that was written into decisions.md rather than put to the owner — which workflow.md names as a bug to report, not a conflict to resolve. A review found it, and it went back as MUS-Q-0055. The answer is the middle shape: --expires is optional and zero means never. An invitation expires because it is a link in transit and a session expires because a browser is borrowed; an agent token is configuration, and one that stops on a date nobody chose is an outage rather than a control. A lifetime is still worth having for a token minted for a single job or for somebody else's machine. A token therefore has two ways to stop, so the listing says which: revoked beats expired, because a revocation is a decision and an expiry is only a date arriving. ByToken tells a caller neither, for the same reason ErrNoInvite says nothing about why.
+
+---
+
+## MUS-D-0114
+
+**A test double that agrees with the bug is worse than no double**
+
+decision · 2026-08-26
+
+from: [MUS-F-0029](findings.md#mus-f-0029)
+
+MUS-F-0029 shipped past three reviewers and a mutation-checked suite. Nothing in the review was careless: the virtual authenticator was a correct client of the protocol, and every test it ran passed truthfully. It modelled a hardware key, whose backup-eligible flag is zero, and the server stored no flag, which also reads as zero. The two wrongs agreed, and agreement reads exactly like correctness. The lesson is not 'write more tests'. It is that a double is a claim about the world, and the claim here — that an authenticator looks like a YubiKey — was never examined, because it was made in passing while building something else. The authenticator now defaults to a synced credential, because that is what almost every passkey now is, and the hardware case is the named exception rather than the unexamined default. Both are tested, and dropping the stored flag fails the synced case while leaving the hardware one green — which is the shape of the original bug. The general rule this repository takes from it: when a double and the code under test share an assumption, the test proves the assumption is shared, not that it is right. The place to look is wherever the double was written by the same person, in the same sitting, as the thing it tests.
+
+---
+
+## MUS-D-0115
+
+**The browser is told nothing and the log is told everything**
+
+decision · 2026-08-26
+
+from: [MUS-F-0029](findings.md#mus-f-0029)
+
+A page that distinguished 'no such credential' from 'bad signature' would be an oracle for somebody probing, so every authentication failure gives a browser one sentence. That was a decision and it stands. Telling the operator nothing was not a decision. When the owner's passkey was refused there was no log line at all, and the cause had to be reconstructed from a ceremony table that happened to retain abandoned rows and from reading go-webauthn's source. The two audiences are different and the code had been treating them as one. Every refusal in the authentication path now logs the check that failed — go-webauthn carries it in the error's Details — while the browser keeps its single sentence. Reproduced against the bug it would have named: 'auth: signing in refused: Backup Eligible flag inconsistency detected during login validation'.
+
+---
+
+## MUS-D-0116
+
+**Columns are added to existing stores rather than assumed into them**
+
+decision · 2026-08-26
+
+from: [MUS-F-0029](findings.md#mus-f-0029)
+
+CREATE TABLE IF NOT EXISTS builds a missing table and says nothing about one that already exists with the wrong shape, so a column added to schema.sql after a store was created never appears in it. MUS-F-0029 needed two such columns, and the store that needed them was the owner's live one. store.Open now adds missing columns on open, from a list in the source. Deliberately the smallest thing that works: columns are added, never dropped or retyped, and each carries a default so existing rows stay valid. Anything a column cannot express — a table split, a value that must be recomputed — is a decision rather than a migration, and does not belong in a helper. The record tables are not in the list and are not expected to be. They are insert-only and their shape is the export's contract; changing one is a decision, not a migration.
+
+---
+
+## MUS-D-0117
+
+**Accounts are enforced on the deployment, in the only order that works**
+
+decision · 2026-08-26
+
+enforces: [MUS-M-0011](milestones.md#mus-m-0011)
+
+needs: [MUS-M-0012](milestones.md#mus-m-0012)
+
+gated by: [MUS-F-0029](findings.md#mus-f-0029)
+
+and: [MUS-F-0030](findings.md#mus-f-0030)
+
+mustur.devofpie.com now runs with --accounts. A reader reads and only an owner reaches the surfaces that type into a running agent; an agent reaches the mandated tool call with a token and nothing else. Cloudflare Access is still in front of all of it, and taking it off remains a separate judgement (MUS-Q-0039). The order is the whole of it. Origin first, because a passkey binds to the origin it was registered on. Then the first owner, made on the machine, because a store that knows nobody has nobody to send an invitation. Then a passkey registered from a device and SEEN TO SIGN IN — not merely registered, which is the step MUS-F-0029 proves is not a formality: the first passkey registered here could never have signed in, and enforcing on top of it would have locked the owner out with no way back except the unit file. Then an agent token, because an MCP client carries no cookie and without one every session loses the tool call. Then the flag. Verified after the restart rather than assumed: an unauthenticated read redirects to sign-in, the session view and the composer redirect too, /signin and /healthz stay public, /mcp answers 403 without a token and 200 with, and the public hostname still answers 302 from Access. Sessions already signed in were not invalidated by the restart. One operational note, learned the hard way: stopping the service while a pane is being piped hangs for ninety seconds and holds the port (MUS-F-0030). Turning the pipe off first makes the stop immediate, and that is how this restart was done.
+
+---
+
+## MUS-D-0118
+
+**The tab bar pins on a phone and becomes a left rail on a wide screen**
+
+decision · 2026-08-26
+
+answers: [MUS-F-0032](findings.md#mus-f-0032)
+
+holds: [MUS-D-0041](#mus-d-0041)
+
+pattern: [MUS-F-0027](findings.md#mus-f-0027)
+
+MUS-F-0032, answered. The bar is pinned to the viewport below 60rem and replaced by a left rail above it — one navigation per width, never two ways to the same four places on one screen. MUS-D-0041's four destinations are unchanged; only where they sit changes. The session view is a repair rather than a choice, and would have been done either way: its own stylesheet already sets min-height:100vh, #out{flex:1} and nav{margin-top:auto}, which is an app shell that never caps its height and whose output pane never scrolls. The margin-top:auto is the proof of an intent the other two lines defeat. Three things the drawing settled that a code change would have decided silently. The rail needs no second template: it is the same nav element every surface already ends with, moved into the first grid column by a media query, so one nav exists in the DOM at every width and the tab set cannot drift. The breakpoint is derived rather than picked — the content column is already 46rem and a 13rem rail beside it needs 59rem, so 60rem is the first round width at which the reading column survives the rail unchanged. And the shared shell CSS moves into one Go constant, because five templates each carry their own copy of the nav rules and have already drifted once, which is how the records surface ended up with a different bar from every other surface. Drawn before built, in plan-ba6b90e7d9064d09, which is what MUS-F-0027 says this repository keeps failing to do.
+
+---
+
+## MUS-D-0119
+
+**A jot may carry a picture, and the description travels rather than the picture**
+
+decision · 2026-08-26
+
+asked by: [MUS-F-0032](findings.md#mus-f-0032)
+
+built on: [MUS-D-0024](#mus-d-0024)
+
+The owner tried to report a layout defect with a screenshot and found the intake box takes text only, so they asked for images. The obvious implementation was the wrong one: records/ is committed and github.com/DevOfPie/Mustur is public, so a screenshot written beside the records would have published whatever was on the screen — agent output, record text, an email address — permanently and past any later deletion. Three options went to the owner and the answer was none of them: an agent's summary of what the image shows may be exported, as long as it carries nothing unnecessary, while the image itself stays private. That is a better shape than any offered. A reader with only the clone still learns what the picture showed, and nothing is published that did not need to be. The bytes live in an attachment table in the store, which never leaves the machine, and are shown only on a record's own page behind whatever gate is in front of the records. `mustur image read` hands one to an agent, which looks at it and writes the description into the record with `mustur amend`. What is not stored is as deliberate as what is. No filename: a filename is the sender's text and carries a date, a device and often the content, and nothing needs one. The media type is sniffed from the bytes rather than believed from the request, and SVG is refused outright — it is XML that can carry script and would run on this origin. Ten megabytes, four raster formats, served with nosniff and a closed content policy.
+
+---
+
+## MUS-D-0120
+
+**A scratch filing is not a record, so it costs no identifier**
+
+decision · 2026-08-26
+
+asked by: [IDW-F-0002](findings.md#idw-f-0002)
+
+and: [IDW-F-0003](findings.md#idw-f-0003)
+
+holds: [MUS-D-0024](#mus-d-0024)
+
+The owner tested the picture upload twice and it left IDW-F-0002 and IDW-F-0003 in the idea warehouse permanently, both of which say 'test' in their own titles. An identifier here never comes back and the log only ever grows, so the cost of checking that a box works was two entries in the records forever. That is the whole complaint, and the owner put it plainly: a test filing should not advance a counter. The obvious shape was a record with an expiry and it is the wrong one. The log is insert-only and the exported tree is the surface a reader checks without running the binary (MUS-D-0024). A record that later vanishes puts an exception under both, and an exception is what the next one argues from. So a scratch filing is not a record. It takes no identifier, never enters the log, never reaches the export, is never counted and cannot be cited — its id is deliberately unlike an identifier so that nothing can try. It carries a picture like any other jot, and the sweep takes the picture with the note rather than leaving it unreachable. It goes when the serving process starts, which is the owner's own 'or until a restart', and is swept at a day old while the process runs. The sweep first lived in store.Open, which meant every `mustur list` and `mustur get` wiped the pad — the first end-to-end run lost a filing to the very command that went looking for it. A serving process starting is the event that was meant.
+
+---
+
+## MUS-D-0121
+
+**Destinations are a grouped list, and the kind is what tells two of them apart**
+
+decision · 2026-08-26
+
+asked by: [MUS-F-0036](findings.md#mus-f-0036)
+
+holds: [MUS-D-0041](#mus-d-0041)
+
+The owner asked why 'DevOfPie/Mustur' and 'Mustur' both appear as destinations and said the pair is confusing on its own. They are two different kinds of routing record: MUS-R-0001 is the repository — a remote, a checkout path, a contract file — and MUS-P-0001 is the project that contains it, which carries the MUS prefix. Filed to either, a jot comes out as MUS-F-####; only the cited destination differs, because a repository record names no prefix and falls back to the store's own. So today they are nearly the same choice, and the row gave no way to tell why there were two. Neither is removed. The distinction earns its keep the day a project has two repositories, or a jot is about the checkout rather than the work, and deleting a destination to tidy a control would be solving the wrong half. What was missing was the kind, so the kind is now the heading: Projects, then Repositories, then Machines, projects first because a jot usually belongs to one. The control itself is a list rather than a row of chips, which the owner asked to try. The chips were one line that scrolled sideways, on the reasoning that a clipped name is a wrong destination picked by accident, and they produced exactly that — MUS-F-0036, six choices in a row that could show four. A native select has no hidden end, becomes the system picker on a phone, takes type-ahead on a desktop, and is still a form control, so this surface still works with script blocked. Searching the list is noted for later rather than built: with six destinations a search box would be furniture.
+
+---
+
+## MUS-D-0122
+
+**A sub-agent's output is read in a sheet over the session, not in the list and not on its own page**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0056](questions.md#mus-q-0056)
+
+fixes: [MUS-F-0038](findings.md#mus-f-0038)
+
+Three shapes were drawn and put to the owner on MUS-Q-0056: its own page at /sessions/{project}/agent/{id}, a details element opening in place, or a sheet over the session. The recommendation was the page, on the grounds that it is the only shape with a URL you can send somebody. The owner chose the sheet, and the reason it is the better answer is the one the recommendation undersold: opening a page closes the socket. The byte offset the stream resumes from lives in the page's own script, so navigating away and back re-seeds from capture-pane rather than resuming — a cost paid on every open and every back, for an address nobody had asked to send anywhere.
+
+The sheet does not add a scripted surface. Six ship a script tag and the session view is one of them; it is also one of the only two that stop working without it, because it is a live terminal and cannot be server-rendered. So the count MUS-Q-0053 leaves open is untouched either way, and no seventh decision is being taken here. What the sheet adds is a second thing that page's client layer holds state for, which is a maintenance cost rather than a decision.
+
+Everything the sheet shows is read back out of the row it was opened from, rather than from the frame the socket last sent. That is one code path for the server's first paint and for every rebuild after it, and it means a tap before the first frame is answered the same as one after it — the rows are server-rendered, so the alternative would have left the first few seconds of every page load unable to answer a tap.
+
+Corrected in place: this first said the session view was one of two exceptions the composer's question and MUS-Q-0053 had named. It is one of six surfaces carrying script, and MUS-Q-0053 is the open question about what the rule counts rather than a decision granting an exception.
+
+---
+
+## MUS-D-0123
+
+**The sub-agent list lives in a drawer that is shut by default, and the session strip is a dropdown**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0057](questions.md#mus-q-0057)
+
+fixes: [MUS-F-0038](findings.md#mus-f-0038)
+
+retires: [MUS-D-0122](#mus-d-0122)
+
+follows: [MUS-D-0121](#mus-d-0121)
+
+The sub-agent list moved off the session column and into a drawer that is shut on arrival, opened by a button pinned beside the session picker. Answered on MUS-Q-0057, every part chosen by the owner:
+
+The session strip became a dropdown. That is MUS-D-0121's answer to the identical problem on the intake row — a row that scrolls sideways hides its last choice behind a swipe with nothing on screen saying so — applied to the place the same defect had reappeared. The form is real: without script the button submits it and /sessions turns the query into a path.
+
+The drawer pushes on a laptop and opens over on a phone, against the recommendation of one behaviour everywhere. It buys what a sidebar is for over a sheet: the terminal and the list at once. The cost was named before it was built and had to be handled deliberately — the composer is placed by --shell-dock-left and --shell-dock-width rather than by flow, so it does not narrow with the content and would slide under the drawer. Both take the same min() expression, which turns out to mean nothing moves at all on a wide screen: at 1366px the reading column is 736px with 406px already empty beside it.
+
+Output is read inside the drawer rather than in the sheet built the day before, so there is one surface for sub-agents instead of two. That retires MUS-D-0122.
+
+The badge counts what is running and falls back to the total, because a count of only the active ones goes blank the moment they all finish — which is when their reports are worth reading, and with the drawer shut nothing else says they exist. While anything runs the whole button wears a rotating accent ring with two highlights on opposing sides: painted once and turned with the rotate property rather than by animating a gradient angle, which would repaint the whole gradient every frame. Constant speed, because a rotation that eases reads as a stutter. Removed rather than paused under prefers-reduced-motion, with the accent colour carrying the state on its own.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Measured against the owner's own Demo session log served under four sessions, in Chrome and Firefox at 390x844, 1000x800 and 1366x768. Shut on arrival with the old box gone entirely, the terminal holds 618-654px. At 1366 the drawer opens into space that was already empty: the composer stays 224..960 and the panel sits 1094..1366, so nothing moves. At 1000, where that space runs out, the reading column narrows from 736 to 488 and the composer narrows with it — dock 224..712 against a panel at 728, no overlap. On a phone it overlays with the veil painted. Crossing the breakpoint with it open behaves in both directions, and shutting it restores dock 224..960 and a 736px body. The ring: a conic gradient with two bright stops at 40deg and 220deg — exactly 180 apart, same accent colour, transparent stops either side of each so there is no hard edge — animated 'turn 3s linear infinite' on the rotate property, with a two-layer halo and nothing clipping it. Under prefers-reduced-motion the animation computes to none while the ring stays painted and the badge stays accent-coloured. A sub-agent starting mid-watch took the badge from the total 3 to the running 1, lit the ring and added a row without a reload. Reading a 7,267-character message inside the drawer at 390px: all of it, scrolling in 334px. Escape steps out of the reading pane first and closes the drawer second. |
+
+---
+
+## MUS-D-0124
+
+**A control whose presence depends on scripting is decided by the browser, not by our script**
+
+decision · 2026-08-26
+
+fixes: [MUS-F-0046](findings.md#mus-f-0046)
+
+amends: [MUS-D-0123](#mus-d-0123)
+
+The session picker's submit button is rendered inside a noscript element rather than rendered always and hidden by the script.
+
+The owner asked for it to appear only when scripting is disabled, having first asked for it to be small and beside the dropdown rather than large and beneath it. noscript delivers the first exactly and makes the second moot for anyone with script.
+
+The reason to prefer it over a hidden attribute is not tidiness. Anything the server renders and the script removes has two states that must agree, and they are delivered separately: the markup is one response and the script is another. When they disagree — a stale page, a blocked asset, a script that never runs — the failure is a control appearing that nobody expected, which is what happened. noscript is resolved by the browser at parse time from a single fact it already knows, so there is no second state to keep in step.
+
+The general rule this leaves behind: if a control's presence depends on scripting, let the browser decide it, not our script. And a bare element selector is a rule about every element of that kind that will ever exist on the surface — the composer's form rule silently reshaped a form written months later, which is worth remembering before writing the next one.
+
+---
+
+## MUS-D-0125
+
+**A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0058](questions.md#mus-q-0058)
+
+fixes: [MUS-F-0044](findings.md#mus-f-0044)
+
+first used on: [IDW-F-0004](findings.md#idw-f-0004)
+
+The obvious correction — a --to flag on amend — is not available, and the reason is the whole design.
+
+The identifier is the routing. IDW-F-0004 is called IDW because it went to the idea inbox; the prefix is derived from the destination at the moment of filing. Moving a record and renaming it are therefore the same act, and identifiers are permanent.
+
+Asked which promise gives way (MUS-Q-0058), the owner chose neither. 'mustur reroute ID --to DEST' files a new record at the right destination and retires the old one in place: it keeps its identifier, still resolves, carries Superseded by, and stops making a claim. Every citation that already exists — in a commit message, a decision, a comment nobody can search — keeps working, and no prefix ever lies about where its record lives.
+
+The cost was chosen with open eyes: a stub is left in the wrong project's list, and its counter goes up rather than down.
+
+Two things the implementation had to get right. It files through intake rather than writing the record itself, so the destination, the prefix and the field shape all come from the code that files everything else. And it carries the old record's title, body, date and fields across, keeping only intake's routing decision — without that, rerouting re-derived the title from the body and reset the status, quietly undoing every amendment made since the jot was filed.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/reroute.go |
+
+---
+
+## MUS-D-0126
+
+**An agent may write down an answer the owner gave elsewhere, and must say where**
+
+decision · 2026-08-26
+
+answers: [MUS-Q-0059](questions.md#mus-q-0059)
+
+fixes: [MUS-F-0045](findings.md#mus-f-0045)
+
+The rule stands: the asker may withdraw its own question and may not answer it, because a gate that can be closed by the thing it is holding is not a gate. What the owner allowed on MUS-Q-0059 is narrower.
+
+'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. An unattributed relay would be worse than none, because it would read exactly like the owner having answered here. Nothing can verify the claim — on a single-tenant machine nothing could — so what it does instead is make the claim explicit, and disbelievable.
+
+This closes MUS-F-0045: a question answered in a prompt, a plan or a conversation no longer sits open in the queue until the owner answers it a second time.
+
+It also arrived with a hazard, which cost a record before it was caught. Nothing stopped an answer being written over an answer. MUS-Q-0056 had been answered by the owner through the queue; a relay written over it replaced their words, moved the timestamp four hours, and added a Relayed line claiming they had answered somewhere they had not. It was restored from the event log, which is the only reason this is a story rather than a loss. 'answer' now refuses a question that already carries one unless --reanswer is passed, and prints what is there. An answered question is the thing everything downstream was allowed to proceed on, and it should be hard to change by accident.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/questions.go, internal/question/question.go |
+
+---
+
+## MUS-D-0127
+
+**On a wide screen the account link is an icon at the foot of the rail, not a word in the header**
+
+decision · 2026-08-27
+
+narrows: [MUS-Q-0052](questions.md#mus-q-0052)
+
+follows: [MUS-D-0124](#mus-d-0124)
+
+Asked for by the owner. MUS-Q-0052 put the account link in the header so the bar would stay four tabs, and that reasoning holds for the bar and not for the rail: below the breakpoint a fifth entry would squeeze the four that say where you are, and above it the rail is a column with a free bottom edge.
+
+So the same link is rendered twice and the stylesheet chooses — words in the header below 60rem, an icon at the foot of the rail above it. margin-top: auto is what sinks it, so nothing names a position or a height.
+
+An icon here and words there is not an inconsistency: the rail has room for a glyph to stand alone and the bar does not. The label is on the element rather than beside it, so it reads the same to a screen reader in both.
+
+Rendered twice and chosen by a media query, not rendered once and moved by script. A control the server draws and the script places is one that can be misplaced when the script is stale, which is MUS-D-0124's rule and the reason the picker's button lives in a noscript.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/shell.go, and the six surfaces that carry a nav |
+| Evidence | At 1366x768 the rail entry sits at y=720 of a 768px rail, 191x36, and the header link is not painted. At 390x844 the rail entry is not painted and the header link is. Chrome and Firefox. |
+
+---
+
+## MUS-D-0128
+
+**Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it**
+
+decision · 2026-08-27
+
+Reported by the owner twice: first that the desktop UI did not use the full width, then that fixing it on the session view alone had left every other page the same.
+
+The reading column was 46rem by default and 40rem on three surfaces, which is the right instinct for prose applied to everything. On a 1366px laptop that made every page 736px wide with 406px of nothing beside it, whatever was on it — a terminal, a table of people, a queue of questions, a form.
+
+The default is now --shell-full: what remains after the rail and a gutter each side. A surface whose content genuinely wants a narrower measure can still say so by setting --shell-content; what has changed is that narrow is no longer assumed.
+
+The value is a custom property rather than a max-width because the composer's width and the sub-agent drawer's push are both derived from it. Overriding max-width alone would widen a page and leave its docked parts at the old measure underneath.
+
+One surface needed more than the default. Intake carries its own padding and had no box-sizing, so the padding landed outside the cap and it was the only page reaching the right edge while the rest kept a gutter.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/shell.go, and the surfaces that capped themselves |
+| Evidence | At 1366x768 every surface now measures 1126px from 224 to 1350, with the rail ending at 208 and 16px spare on the right: sessions, records, decisions, intake and compose alike. Before: 736px on most and 640px on the three capped at 40rem. Chrome and Firefox. |
+
+---
+
+## MUS-D-0129
+
+**The session view's live strip is gone; the pill beside the project name already said it**
+
+decision · 2026-08-27
+
+Reported by the owner as providing nothing useful.
+
+It was a full-width band above the output reading 'live', while the pill beside the project name in the same header read 'running'. Two places saying one thing, and the larger one saying the less precise version.
+
+The strip carried three other states — connecting, reconnecting, and session ended with a time. The pill already carried the first three. The time a session ended was the only thing the strip alone knew, and it has moved into the pill.
+
+What is left is a header row and a picker row above the output, where there were three.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | No .strip rule and no element remains; the header pill reads running, reconnecting, or ended with the time. A test fails if the strip returns. |
+
+---
+
+## MUS-D-0130
+
+**Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be**
+
+decision · 2026-08-27
+
+needs: [MUS-F-0042](findings.md#mus-f-0042)
+
+follows: [MUS-D-0129](#mus-d-0129)
+
+The first version of this used a three-minute silence threshold. The owner pointed out that the CLI already says which it is: tmux carries the working line Claude Code prints, and a timer counting bytes is a guess standing in for a fact that is right there.
+
+The guess is worse in both directions. A tool call that prints nothing for two minutes is working and would have been called idle; a session that finished four seconds ago is not working and would have been called running for another three minutes. Neither is knowable from the byte stream, and both are stated plainly at the bottom of the pane.
+
+So Adapter.Doing captures the last dozen rows and reads them. 'esc to interrupt' appears in the status line for exactly as long as a turn is in flight; the input caret is drawn when the CLI wants a person. Working is checked first, because the input box is drawn during a turn as well and looking for the caret first would call every working session idle.
+
+It is one CLI's strings and it says so. Anything else reads as unknown, and unknown falls back to the silence timer rather than asserting idle — degrading to the old guess is the right failure, where making a claim about a CLI nobody has read would not be. The threshold stays for that path.
+
+One capture per socket tick, which is every two seconds and only while somebody is watching: the socket loop is the whole of when it runs. The ring on the pill follows the same flag, so it turns while a turn is in flight and stops when it ends.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Against a real Claude Code session in tmux: at the prompt after six minutes of silence the pill reads idle with no ring; a turn started by typing into it takes the pill to running with the ring turning; the turn ending returns it to idle with the counter reading 'quiet 1s' — one second, where the timer would have said running for three more minutes. Four unit cases cover mid-turn, waiting, an unrecognised pane and a failed capture. |
+
+---
+
+## MUS-D-0131
+
+**The four tabs are drawings in the bar and drawings with words in the rail, built in CSS**
+
+decision · 2026-08-27
+
+extends: [MUS-D-0127](#mus-d-0127)
+
+worked around: [MUS-F-0048](findings.md#mus-f-0048)
+
+Asked for by the owner: replace the text tabs on mobile with icons, and show icon then word on desktop. Chosen from drawings rather than descriptions, over four rounds.
+
+The set is stroked outlines on one 22px box with one 1.7px border, so the five read as a set. A prompt for Sessions, a question mark in a circle for Decisions, a speech bubble for Intake, a page with lines for Records, and a head and shoulders for the account entry at the foot of the rail. One deliberate exception to the shared box: the bubble is 22 wide and 15 tall, because a speech bubble drawn in a square is a rounded rectangle.
+
+Drawn in CSS rather than SVG. That began as a constraint of the tool the owner reviews these in, which refuses svg in every block it has — confirmed by publishing a bare circle on its own and having it refused. It is the better build regardless: nothing embedded, no viewBox to keep in step with a stroke width, and currentColor on a border inherits the theme with no dark-mode branch.
+
+Intake took every one of the four rounds and each correction was the owner's. First an arrow into a tray, with the head sitting in the tray's mouth. Then seven alternatives, and the objection killed all seven rather than two: a downward arrow is the download glyph and an envelope is something that arrives, where this page is the opposite of both — you write a thought and post it. Then six from different directions, of which the bubble was chosen and immediately sent back, because it was drawn with a skewed square tail filled white, which is a white block on a dark page. Then the bubble again, because a rounded rectangle with one square corner standing in for a tail still read as a box.
+
+It is now an ellipse with a tail and three dots: no straight edge anywhere, which is the difference between a shape that suggests a bubble and one that is a bubble. The ellipse is the element's own border rather than a pseudo-element, which leaves both pseudos for the tail and the dots and keeps the markup a single empty tag.
+
+The dots earn their place. Side by side, a plain rounded shape in the bar reads as a box beside the document icon; with three dots it reads as a message. In a bar with no words that difference is the whole job.
+
+The word leaves the screen and not the page: every tab keeps its span, hidden below 60rem and shown in the rail, and every tab names itself in aria-label. The count of waiting decisions stays visible in the bar where the word does not — how many are waiting is the one thing on that row worth reading at a glance.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/shell.go, and the six surfaces that carry a nav |
+| Evidence | Chrome and Firefox, light and dark. The bar at 390px: four cells of 98px, icons 22x22 with the bubble 22x15, 45px tall, no word painted and all four still in the markup, five aria-labels, and no icon carrying a colour of its own in either theme. The rail at 1366px: four words painted, every icon on the same 21px left edge and every word on 52px, rows 40px, and the account entry sharing that edge at the foot. |
+
+---
+
+## MUS-D-0132
+
+**The session view renders frames from capture-pane, and the byte stream is gone**
+
+decision · 2026-08-27
+
+answers: [MUS-Q-0060](questions.md#mus-q-0060)
+
+fixes: [MUS-F-0049](findings.md#mus-f-0049)
+
+and: [MUS-F-0031](findings.md#mus-f-0031)
+
+retires: [MUS-Q-0021](questions.md#mus-q-0021)
+
+The session view reads the screen tmux has already assembled, on a timer, and sends a frame when it changes. Chosen by the owner on MUS-Q-0060 after MUS-F-0049 established that the old model was interpreting a screen-painting protocol as a log.
+
+What went: pipe-pane, the 256KB buffer, the byte offset a viewer resumed from, the replay flag, the gap message, and the whole stream.go. A viewer that reconnects is sent the current screen, which is the whole of what resuming means when the unit is a frame. MUS-Q-0021's buffer answered a question this no longer asks.
+
+What arrived: internal/ansi, which turns the captured SGR into HTML. It renders what it understands and drops what it does not, because printing an escape is the defect being fixed, and every character of the pane is escaped on the way through — the pane's contents are somebody else's output and must never be markup. White and black fall through to the page's own colour rather than the terminal's, because a page that is light for one reader and dark for the next cannot use either extreme.
+
+Three things fall out of it. There is no pipe, which takes MUS-F-0030 and MUS-F-0043 with it — a service that could not be stopped while piping, and a dead Mustur that held its listening port for as long as its pipe ran. The agent's working state comes free, read from the capture the poller already has rather than from a second one every two seconds. And the test suite lost about forty seconds, because nothing waits on a pipe any more.
+
+What it costs: one capture per watched project per tick, about two and a half a second while somebody is looking and nothing when nobody is. Frames carry 120 lines of history — measured at about 7KB against 1.2KB for the visible screen alone and 42KB for the whole of it — and only when the screen has actually changed.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/ansi, internal/session/screen.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Evidence | Against a live Claude Code session in Chrome and Firefox: zero escape codes on the page where the old stream left them as literal text, colour rendered as spans, box drawing intact, monospaced, no sideways overflow at 390px or 1366px, and no page errors. A turn started by typing into the pane took the pill from idle to running and back within 1.5s of it ending. |

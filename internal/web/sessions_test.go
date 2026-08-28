@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -161,9 +162,15 @@ func TestThePageSaysWhenMusturDidNotStartTheSession(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer res.Body.Close()
-	b := make([]byte, 8192)
-	n, _ := res.Body.Read(b)
-	body := string(b[:n])
+	// The whole body, not the first 8KB of it. Reading a fixed window made this
+	// test a measure of how long the stylesheet above the message happened to
+	// be: adding the drawer's CSS pushed the message past 8192 bytes and this
+	// failed without anything about the page being wrong.
+	raw, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := string(raw)
 
 	for _, want := range []string{"did not start", "will not appear"} {
 		if !strings.Contains(body, want) {
@@ -325,8 +332,14 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 
-	// Nothing recorded yet: no strip at all, rather than an empty one.
-	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "sub-agent") {
+	// Nothing recorded yet: the badge is absent and the drawer's count is
+	// empty, rather than either of them reading zero.
+	//
+	// This used to search the whole page for the string "sub-agent", which made
+	// it a test of every word on the surface: a resize grip whose label
+	// mentioned sub-agents turned it red without anything about the page being
+	// wrong. Ask the two elements that carry the claim.
+	if body := getFrom(t, srv, "/sessions/Mustur"); !claimsNoSubagents(body) {
 		t.Error("a session that has launched nothing still claims sub-agents")
 	}
 
@@ -348,7 +361,7 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 
 	body := getFrom(t, srv, "/sessions/Mustur")
 	for _, want := range []string{
-		"2 sub-agents",      // both of them
+		"2",                 // both of them, on the badge and in the drawer's count
 		"1 running",         // and only one still going
 		"Contract reviewer", // the task it was launched with
 		"Grep",              // what it is doing now
@@ -360,6 +373,54 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 		if !strings.Contains(body, want) {
 			t.Errorf("the page does not show %q", want)
 		}
+	}
+
+	// Identified in the list, read in the sheet (MUS-F-0038).
+	//
+	// The check above cannot tell the difference: it asks whether the final
+	// message is anywhere on the page, and it was just as true when the whole
+	// message was printed into the list and grew that box to 8,211px. So ask
+	// where it is, not whether it is.
+	row := between(body, `<button type="button" class="agent" data-id="a2">`, "</button>")
+	if row == "" {
+		t.Fatal("no row for the finished sub-agent, so nothing can open it")
+	}
+	if strings.Contains(row, "Nothing found.") {
+		t.Error("the row still carries the final message; that is the list doing the reading")
+	}
+	for _, want := range []string{"finished", "Explore"} {
+		if !strings.Contains(row, want) {
+			t.Errorf("the row does not identify the sub-agent: no %q", want)
+		}
+	}
+	if !strings.Contains(body, `<div class="say" data-for="a2">Nothing found.</div>`) {
+		t.Error("the final message is not where the reading pane gets it from")
+	}
+	// And there is a drawer for a row to open into.
+	for _, want := range []string{`id="drawer"`, `role="dialog"`, `id="dread"`, `id="dlist"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("no drawer to open: %q missing", want)
+		}
+	}
+	// Shut on arrival. It is the whole point of moving the list off the page.
+	if !strings.Contains(body, `<div class="drawer" id="drawer" hidden>`) {
+		t.Error("the drawer is not shut on arrival")
+	}
+	// The rows are inside it, not in the column with the terminal.
+	list := between(body, `<div class="dlist" id="dlist">`, "</div>\n    <div class=\"dread\"")
+	if !strings.Contains(list, `data-id="a2"`) {
+		t.Error("the sub-agent rows are not inside the drawer")
+	}
+	// The badge says what is running, and the ring turns because one is.
+	if !strings.Contains(body, `class="ring live"`) {
+		t.Error("a running sub-agent does not light the ring")
+	}
+	if !strings.Contains(body, `class="badge" id="badge">1<`) {
+		t.Error("the badge does not count the running sub-agent")
+	}
+	// A running sub-agent has said nothing, so it has nothing to read from.
+	if strings.Contains(body, `class="say" data-for="a1"`) {
+		t.Error("a running sub-agent was given a final message it has not sent")
 	}
 
 	// The rows are server-rendered. This surface carries one script and it is
@@ -374,7 +435,7 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 // rows, rather than an error.
 func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
-	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "sub-agent") {
+	if body := getFrom(t, srv, "/sessions/Mustur"); !claimsNoSubagents(body) {
 		t.Error("a session with no hook directory claims sub-agents")
 	}
 }
@@ -396,7 +457,7 @@ func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
 
-	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	hub := &session.Hub{Adapter: a}
 	t.Cleanup(hub.Shutdown)
 	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
 	mux := http.NewServeMux()
@@ -568,7 +629,7 @@ func TestMultiLineFromTheComposerReachesTheSession(t *testing.T) {
 	// after it: t.Cleanup is last-in-first-out, and Shutdown waits on a reader
 	// whose pane is still alive, so stopping the session second hangs the test
 	// rather than failing it.
-	hub := &session.Hub{Adapter: a, Dir: t.TempDir()}
+	hub := &session.Hub{Adapter: a}
 	t.Cleanup(hub.Shutdown)
 
 	// Plain cat, and not `timeout N cat`: timeout puts the child in its own
@@ -636,5 +697,345 @@ func TestMultiLineFromTheComposerReachesTheSession(t *testing.T) {
 	}
 	if !strings.Contains(received, "draft\nsecond") && !strings.Contains(received, "draft\r\nsecond") {
 		t.Errorf("the newline between lines did not survive: %q", received)
+	}
+}
+
+// between returns what sits between the first open and the next close, or "".
+func between(s, open, close string) string {
+	i := strings.Index(s, open)
+	if i < 0 {
+		return ""
+	}
+	rest := s[i+len(open):]
+	j := strings.Index(rest, close)
+	if j < 0 {
+		return ""
+	}
+	return rest[:j]
+}
+
+// The page and the script beside it have to agree, so the page is never kept.
+//
+// This is the whole of MUS-F-0041. The script is revalidated on every load and
+// the page was not, so a deploy could leave a reader holding markup from before
+// it beside a script from after it — which is exactly how sub-agent rows became
+// un-openable: rows drawn by the old markup carry no identifier, and the
+// delegated handler looking for one silently finds nothing.
+//
+// no-store, not no-cache, because it also keeps the page out of the
+// back/forward cache. bfcache restores a whole live document, script state and
+// all, and a phone returning to a backgrounded tab is the common way to meet it.
+func TestTheSessionPageIsNeverCached(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	for _, path := range []string{"/sessions", "/sessions/Mustur"} {
+		res, err := srv.Client().Get(srv.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if got := res.Header.Get("Cache-Control"); !strings.Contains(got, "no-store") {
+			t.Errorf("%s says Cache-Control: %q; a cached page outlives the script it agrees with", path, got)
+		}
+	}
+}
+
+// The picker's button appears only with scripting off, and the browser is what
+// decides that.
+//
+// A GET form cannot build a path segment, so the select posts a query and
+// /sessions turns it into a path; with script the change event navigates first
+// and the button is not wanted, without it the button is the only way to
+// submit. The first version drew it always and hid it from the script, and that
+// was the defect: a control the server draws and the script removes can fail
+// visible, and it did — on a stale page carrying new markup beside old script,
+// at full size under the dropdown, having never been in the wireframes.
+//
+// noscript has neither half of that. It is resolved at parse time from whether
+// scripting is enabled, so a page whose script is stale, blocked or missing
+// still gets exactly the control it needs.
+func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	s := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	if !strings.Contains(body, `</select><noscript><button type="submit" class="go">Go</button></noscript>`) {
+		t.Error("the button is not inside a noscript beside the select")
+	}
+	// Not hidden, not conditional on anything the server knows: those are the
+	// two shapes that produced the defect.
+	if strings.Contains(body, `class="go" hidden`) || strings.Contains(body, `id="go"`) {
+		t.Error("the button is shipped hidden or given a handle for the script to grab")
+	}
+
+	// Nothing may set display on the noscript.
+	//
+	// It had display: contents, so the button would be a flex item of the row
+	// rather than the noscript being one. That override also cancels the rule
+	// every browser applies with scripting enabled — noscript { display: none }
+	// — and the contents of a noscript with scripting on are its own markup as
+	// text. The row rendered the literal opening button tag beside the
+	// dropdown, in every browser, for anyone with script.
+	if strings.Contains(body, ".pick noscript {") {
+		t.Error("the noscript's display is overridden, which shows its markup as text when scripting is on")
+	}
+
+	// And the script does not reach for it. If the server renders it, the
+	// server — or here, the browser's own noscript — decides whether it is
+	// there.
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, banned := range []string{`getElementById("go")`, "go.hidden", `querySelector(".go")`} {
+		if strings.Contains(string(js), banned) {
+			t.Errorf("the script still touches the button: %q", banned)
+		}
+	}
+
+	// The picker form has to undo the bare form rule written for the composer.
+	//
+	// That rule is a bare element selector — form { display: flex;
+	// flex-direction: column } with its own padding — so it reshapes every form
+	// added after it. This one inherited column and came out stacked and
+	// centred inside 69px of nothing, which is precisely the giant button under
+	// the dropdown that was reported. Overriding display alone is not enough,
+	// because .pick never mentioned direction or padding at all.
+	at := strings.Index(body, ".pick { display: flex;")
+	if at < 0 {
+		t.Fatal("no .pick rule")
+	}
+	rule := body[at : at+strings.Index(body[at:], "}")]
+	for _, want := range []string{"flex-direction: row", "padding: 0"} {
+		if !strings.Contains(rule, want) {
+			t.Errorf("the picker row does not reset %q, so the composer's form rule reshapes it:\n%s", want, rule)
+		}
+	}
+	// What actually puts the button beside the select is the row being a flex
+	// row, asserted above. An earlier version of this test demanded
+	// `display: contents` on the noscript as well, which is the thing that made
+	// its markup show as text — a test holding a defect in place.
+
+	// The query it submits has to land on the session it names, or the button
+	// is decoration for the one reader who needs it.
+	res, err := srv.Client().Get(srv.URL + "/sessions?p=Mustur")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.Request.URL.Path != "/sessions/Mustur" {
+		t.Errorf("?p= landed on %q, not the session it names", res.Request.URL.Path)
+	}
+}
+
+// The quiet timer measures the session, not the tab.
+//
+// The web layer declared a quiet counter, left it at zero and sent it — and
+// omitempty meant zero was not sent at all, so the browser's "if the server
+// told me" branch never ran and it started counting from whenever the tab
+// happened to attach. Opening a second tab on a session silent for an hour said
+// "quiet 0s" (MUS-F-0042). Stream.Quiet had existed since the stream did and
+// nothing reached it.
+//
+// So this attaches to a session that has been silent for a beat and asks what
+// the hello frame says. A second is enough: the defect reported zero forever,
+// not a value one tick out.
+func TestTheHelloFrameSaysHowLongTheSessionHasBeenQuiet(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzQuiet"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'echo working; sleep 5'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	dial := func() frame {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+			"/sessions/"+project+"/ws", &websocket.DialOptions{
+			HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer c.CloseNow()
+		_, b, err := c.Read(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var f frame
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
+		if f.T != "hello" {
+			t.Fatalf("first frame is %q, not the hello this reads", f.T)
+		}
+		return f
+	}
+
+	// Quiet before anybody is watching, which is the case this is for and the
+	// case the first version of this test did not cover.
+	//
+	// That version dialled once to open the reader, waited, and dialled again —
+	// so the stream had seen output and lastAt was set. It passed while the
+	// live surface still read "quiet 0s" on a session silent for days, because
+	// a reader that has just opened has seen nothing and lastAt was zero. The
+	// first viewer is the one who needs the answer.
+	time.Sleep(1500 * time.Millisecond)
+
+	first := dial()
+	if first.Quiet < 1 {
+		t.Errorf("the first viewer of a session idle for over a second is told quiet=%d; nothing seeded it from tmux", first.Quiet)
+	}
+
+	// And it keeps working once the reader is running, which is the half that
+	// already worked.
+	time.Sleep(1200 * time.Millisecond)
+	second := dial()
+	if second.Quiet < first.Quiet {
+		t.Errorf("quiet went backwards, %d then %d", first.Quiet, second.Quiet)
+	}
+}
+
+// claimsNoSubagents reports whether the strip and the drawer both say there are
+// none — the badge absent rather than zero, and the drawer's count empty.
+func claimsNoSubagents(body string) bool {
+	if !strings.Contains(body, `id="badge" hidden`) {
+		return false
+	}
+	if !strings.Contains(body, `<small class="count" id="dcount"></small>`) {
+		return false
+	}
+	// And no rows to open.
+	return !strings.Contains(body, `class="agent" data-id=`)
+}
+
+// The drawer can be dragged wider, and the handle is a control.
+//
+// IDW-F-0004, from the owner: the drawer can take more space on a laptop and
+// dragging it wider would be nice when wanted. The behaviour itself is measured
+// in a browser — a drag is not something markup can prove — so what this holds
+// is the part that quietly rots: that the handle stays reachable without a
+// pointer, and that it does not appear on a phone where there is nothing to
+// widen into.
+func TestTheDrawerHasAResizeHandleThatIsNotPointerOnly(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	s := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	// A button, so it is focusable and reachable by keyboard without anything
+	// being added to make it so. A div with a pointer handler is the shape this
+	// is deliberately not.
+	if !strings.Contains(body, `<button type="button" class="grip" id="grip" role="separator"`) {
+		t.Error("the resize handle is not a focusable control")
+	}
+	for _, want := range []string{`aria-orientation="vertical"`, `aria-label="Resize the drawer"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the handle does not say what it is: %q missing", want)
+		}
+	}
+
+	// Hidden by default and shown only above the breakpoint. On a phone the
+	// drawer is most of the screen already.
+	at := strings.Index(body, ".grip { display: none; }")
+	if at < 0 {
+		t.Error("the handle is not hidden below the breakpoint")
+	}
+	wide := strings.Index(body, "@media (min-width: 60rem)")
+	if wide < 0 || wide < at {
+		t.Error("the handle is not brought back inside the wide-screen block")
+	}
+	if !strings.Contains(body[wide:], "cursor: col-resize") {
+		t.Error("the handle does not read as draggable on a wide screen")
+	}
+}
+
+// The first frame carries the screen, rendered, and no escape reaches the page.
+//
+// This is what replaced the backlog. There is no offset to resume from and no
+// replay to distinguish, because the unit is a whole screen: hello carries the
+// pane as it stands, and every frame after it carries the pane again
+// (MUS-Q-0060).
+func TestTheSocketSendsARenderedScreen(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzScreen"
+	if _, err := a.Start(context.Background(), project, t.TempDir(),
+		"sh -c 'printf \"\\033[31mred-and-angry\\033[0m\\n\"; sleep 12'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	time.Sleep(900 * time.Millisecond)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	_, b, err := c.Read(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var f frame
+	if err := json.Unmarshal(b, &f); err != nil {
+		t.Fatal(err)
+	}
+	if f.T != "hello" {
+		t.Fatalf("the first frame is %q, not hello", f.T)
+	}
+	if !strings.Contains(f.Screen, "red-and-angry") {
+		t.Errorf("hello carries no screen:\n%s", f.Screen)
+	}
+	// Rendered rather than raw. An escape on the page is the whole defect.
+	if strings.Contains(f.Screen, "\x1b") || strings.Contains(f.Screen, "[31m") {
+		t.Errorf("an escape survived into the frame:\n%q", f.Screen)
+	}
+	// The colour became markup rather than being dropped or printed.
+	if !strings.Contains(f.Screen, "<span style=\"color:") {
+		t.Errorf("the colour was lost rather than rendered:\n%s", f.Screen)
+	}
+	// And nothing about a stream is left in the protocol.
+	if strings.Contains(string(b), `"seq"`) || strings.Contains(string(b), `"replay"`) ||
+		strings.Contains(string(b), `"lostBytes"`) {
+		t.Errorf("the frame still describes a byte stream:\n%s", b)
 	}
 }

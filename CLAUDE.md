@@ -5,17 +5,19 @@ work is done, and [decisions.md](decisions.md) for why.
 
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
 yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
-everything through it is merged. 5b, accounts, is built and reviewed and not
-merged; nothing it adds is deployed.**
+everything through it is merged. 5b, accounts, and 5c, agent tokens, are built
+and not merged, and both are **deployed and enforced** on this machine since
+2026-08-26.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
 nothing without a StrucGu checkout. On this machine the intake box, the decision
 queue, the records document and — since 2026-08-23 — the session view are
 published at `mustur.devofpie.com` behind Cloudflare Access; that is a
-deployment, not something a clone inherits. **Accounts are not published**: the
-running service passes neither `--origin` nor `--accounts`, so nothing from
-milestone 5b answers there. The session view is served only when `serve` is
+deployment, not something a clone inherits. **Since 2026-08-26 accounts are
+enforced there too**: the owner holds a passkey, an agent token exists, and
+`--accounts` is on, so a reader reads and only an owner reaches what types into
+a running agent. Access is still in front of all of it. The session view is served only when `serve` is
 given `--sessions`, because it types into a running agent's stdin: dropping the
 flag removes the surface and the tab the others offer to it, which is the knob
 to reach for if the Access policy ever widens. What is unconditionally here is
@@ -24,24 +26,66 @@ holds open questions and refuses to let work be reported complete around one.
 It also starts agent sessions inside tmux, reports which are running, stops one,
 and types an answered decision back into the session that raised it — where the
 question named one with `--in`, which is the only way delivery has a target.
-It streams a running session's output to a browser tab and notices when one
-ends. You can reply from that tab: the box is multi-line and spell-checked, it
+It shows a running session's screen in a browser tab and notices when one ends
+— the screen tmux has already assembled, polled and re-rendered when it
+changes, rather than the pane's raw byte protocol appended to a log
+([MUS-D-0132](records/decisions.md#mus-d-0132)). There is no pipe, no byte
+offset and no replay: a tab that reconnects is handed the screen as it stands.
+Sessions Mustur starts are **100x300**, because an agent CLI runs on the
+alternate screen and tmux keeps no scrollback for one — a tall pane is the only
+place a transcript can live
+([MUS-F-0052](records/findings.md#mus-f-0052)). The CLI's own furniture — its
+input box, dividers and status line — comes off the screen before it is
+rendered, and what that furniture said is shown as a row of chips instead
+([MUS-F-0053](records/findings.md#mus-f-0053)). Every surface takes the width the rail leaves rather than a reading column
+([MUS-D-0128](records/decisions.md#mus-d-0128)) — a page wanting a narrower
+measure asks for it by setting `--shell-content`. On a wide screen the account
+link sits as an icon at the foot of the rail rather than as a word in the
+header ([MUS-D-0127](records/decisions.md#mus-d-0127)). The session's status
+pill reads **running** or **idle** from the CLI's own pane rather than from a
+clock — Claude Code says which in its status line, and a timer counting silence
+is a guess standing in for that. It wears a turning accent ring while a turn is
+in flight. A pane nothing here recognises falls back to a three-minute silence
+threshold rather than claiming to know
+([MUS-D-0130](records/decisions.md#mus-d-0130)). You can reply from that tab: the box is multi-line and spell-checked, it
 holds one draft that survives a reload and follows you between sessions, and it
 sends what you wrote as a single message rather than a prompt per line —
 measured by hand against one CLI, and the thing to re-check first if another
-ever behaves oddly. It shows
-that session's sub-agents as their own rows too — what each was asked to do, how
-long it has run, the tool it is in, and its output once it finishes — and those
-rows appear only for sessions Mustur started, because the hook that reports them
-rides in on the command line Mustur builds.
+ever behaves oddly. That session's sub-agents live in a
+drawer that is **shut on arrival** — a button beside the session picker says
+how many there are and wears a turning accent ring while any is running, and
+opening it lists them one line each: what it was asked to do, how long it has
+run, the tool it is in. Opening a row reads what that sub-agent said in the same
+drawer. On a wide screen the drawer pushes the terminal rather than covering it and can
+be dragged wider by its leading edge, which remembers the width per browser; on
+a phone it opens over and there is no grip. Nothing about a sub-agent is ever printed into the
+session column: doing that grew one box to 8,211px and squeezed everything else
+off the screen ([MUS-F-0038](records/findings.md#mus-f-0038)). Those rows appear
+only for sessions Mustur started, because the hook that reports them rides in on
+the command line Mustur builds. The session picker is a dropdown for the same
+reason the intake destinations are
+([MUS-D-0121](records/decisions.md#mus-d-0121)): a row that scrolls sideways
+hides its last choice behind a swipe.
 **It does not restart anything** — an agent CLI that crashed wants a person, not
 a loop.
 
 Since milestone 5b it also knows who is asking: an invitation, a passkey, and a
 role per project that decides what somebody reaches. That is built and refuses
 correctly, and it is **off** — enforcement is a flag, because turning it on
-before the owner holds a passkey locks the owner out. Nothing below 5b is built;
-do not describe any of it in the present tense.
+before the owner holds a passkey locks the owner out.
+
+Milestone 5c is the credential an agent can hold. A passkey needs a browser and
+a gesture; an agent has neither and still has to reach the mandated tool call,
+so `mustur account token` issues one carried in an `Authorization: Bearer`
+header. It opens `/mcp` and nothing else, is scoped to one project, and is
+revoked immediately rather than at the next restart. Without it, enforcement and
+the mandate could not both be on — measured, not reasoned.
+
+**A session on this machine now needs that token to make the mandated call.**
+`mustur account tokens` says which exist; a session refused with 403 on `/mcp`
+is missing one rather than looking at a stopped server.
+
+Nothing below 5c is built; do not describe any of it in the present tense.
 
 **Six pages carry script**: the session view, the composer, and the four
 authentication surfaces — sign in, accept an invitation, account, and people.
@@ -112,7 +156,22 @@ Three rules bind every session in this repository:
   everything independent of the answer first, which is what
   [workflow.md](workflow.md) asks for anyway.
 
-  You may **withdraw** your own question. You may not **answer** it.
+  You may **withdraw** your own question. You may not **answer** it — but you
+  may **write down** an answer the owner gave somewhere else:
+
+  ```
+  mustur answer <ID> --from-owner "where they said it" --answer "…"
+  ```
+
+  It records who wrote it down and where it came from, so nobody reads a relay
+  as the owner having been here. An answer already recorded is not written over
+  without `--reanswer` ([MUS-D-0126](records/decisions.md#mus-d-0126)).
+
+  A jot that `Route it for me` put in the wrong place is corrected with
+  `mustur reroute <ID> --to <DEST>`: it files a new record at the right
+  destination and retires the old one, which keeps its identifier and still
+  resolves. The prefix is the routing, so moving a record and renaming it are
+  the same act ([MUS-D-0125](records/decisions.md#mus-d-0125)).
 
 ## Mustur
 
@@ -127,3 +186,9 @@ repository's records and routing live.
 If the tool is not there, say so and carry on. A server that is not running is
 not a licence to skip the call — it is a thing to report, in the same breath as
 whatever you were asked to do. Start it with `make serve`.
+
+There is a third state, since milestone 5c: the tool is there and **refuses**.
+A server running with `--accounts` answers `/mcp` with 403 to a caller carrying
+no token, so an agent needs one in its MCP configuration. Report that as itself
+rather than as absence — they are different problems and only one is fixed by
+starting the server. `mustur account token --for "..."` issues one.

@@ -6,8 +6,10 @@ package web
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -70,6 +72,12 @@ func (in *Intake) Handler() http.Handler {
 	return mux
 }
 
+// scratchTo is the destination that files nothing.
+//
+// Not a routing identifier and deliberately unlike one: nothing should be able
+// to cite a scratch filing, because there is nothing there to cite.
+const scratchTo = "scratch"
+
 // MaxJot is the largest body the capture path accepts.
 const MaxJot = 64 << 10
 
@@ -77,6 +85,40 @@ type destination struct {
 	ID   string
 	Name string
 	Kind string
+}
+
+// A destGroup is one kind of destination, with a heading a reader can use to
+// tell two similarly-named things apart.
+type destGroup struct {
+	Label string
+	Items []destination
+}
+
+// grouped orders the destinations by kind, projects first.
+//
+// A project is what a jot usually belongs to; a repository is a tree inside one
+// and a machine is where that tree sits. Presented flat they read as four equal
+// choices, two of which are the same thing at different altitudes — which is
+// exactly what the owner asked about.
+func grouped(all []destination) []destGroup {
+	order := []struct{ kind, label string }{
+		{"project", "Projects"},
+		{"repository", "Repositories"},
+		{"machine", "Machines"},
+	}
+	var out []destGroup
+	for _, o := range order {
+		g := destGroup{Label: o.label}
+		for _, d := range all {
+			if d.Kind == o.kind {
+				g.Items = append(g.Items, d)
+			}
+		}
+		if len(g.Items) > 0 {
+			out = append(out, g)
+		}
+	}
+	return out
 }
 
 type page struct {
@@ -88,9 +130,15 @@ type page struct {
 	Why          string
 	Error        string
 	Recent       []recentJot
-	Cutoff       string
-	Project      string
-	ShowAccount  bool
+	// Scratch filings, which are not records and have no identifier.
+	Scratch []store.Scratch
+	// Groups are the destinations, gathered by kind. The owner asked why
+	// "DevOfPie/Mustur" and "Mustur" both appear: they are a repository and the
+	// project that contains it, which the flat row gave no way to tell.
+	Groups      []destGroup
+	Cutoff      string
+	Project     string
+	ShowAccount bool
 	// ShowSessions renders the Sessions tab. Off unless the server is actually
 	// serving that surface: a tab that goes nowhere is an unbuilt capability
 	// described as existing, which is what MUS-D-0041's bar exists to avoid.
@@ -143,12 +191,20 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		p.Error = err.Error()
 	} else {
 		p.Destinations = choices
+		p.Groups = grouped(choices)
 	}
 	recent, err := in.recent(r.Context())
 	if err != nil {
 		p.Error = err.Error()
 	}
 	p.Recent = recent
+	// Swept as the page is drawn rather than on a timer: this surface is the
+	// only thing that reads them, so nothing accumulates unseen.
+	if _, err := in.Store.SweepScratch(r.Context(), in.now().Add(-store.ScratchLife)); err == nil {
+		if left, err := in.Store.Scratches(r.Context()); err == nil {
+			p.Scratch = left
+		}
+	}
 	p.OpenQuestions = OpenCount(r.Context(), in.Store)
 	render(w, p)
 }
@@ -157,12 +213,57 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// A capture box on the public side of an ingress is the obvious place to
 	// post a gigabyte at. The limit is generous for a jot and finite, which is
 	// the whole requirement.
-	r.Body = http.MaxBytesReader(w, r.Body, MaxJot)
-	if err := r.ParseForm(); err != nil {
+	//
+	// An image raises the ceiling but does not remove it: MaxJot for the words,
+	// plus room for one picture and the multipart framing around it.
+	r.Body = http.MaxBytesReader(w, r.Body, MaxJot+store.MaxAttachment+(1<<16))
+	if err := r.ParseMultipartForm(1 << 20); err != nil && !errors.Is(err, http.ErrNotMultipart) {
 		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
 		return
 	}
 	text := r.PostFormValue("jot")
+	// The words keep their own limit. Raising the body cap to make room for a
+	// picture would otherwise have raised the ceiling on the text with it, and
+	// TestAnOversizedJotIsRefusedRatherThanStored said so immediately.
+	if len(text) > MaxJot {
+		render(w, page{
+			Error:   "that is longer than this box takes; it is for a line, not a document",
+			Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+		})
+		return
+	}
+
+	// Read the image before the record is written, so a picture this refuses
+	// does not leave a jot behind claiming to have one.
+	image, imageErr := readImage(r)
+	if imageErr != nil {
+		render(w, page{Error: imageErr.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		return
+	}
+	// Scratch: filed beside the records rather than among them. It takes no
+	// identifier and never enters the log, which is the whole point — testing
+	// the box twice cost two permanent identifiers in the idea warehouse.
+	if r.PostFormValue("to") == scratchTo {
+		sc, err := in.Store.Scratched(r.Context(), text, in.actor(r))
+		if err != nil {
+			render(w, page{Error: err.Error(), Project: in.Project, Jot: text,
+				ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+			return
+		}
+		if len(image) > 0 {
+			// Attached to the scratch row's own id, so the sweep takes the
+			// picture with the note rather than leaving it unreachable.
+			if _, err := in.Store.Attach(r.Context(), sc.ID, image, in.actor(r)); err != nil {
+				render(w, page{Error: "kept the note, but not the image: " + err.Error(),
+					Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+				return
+			}
+		}
+		http.Redirect(w, r, "/intake?warn="+template.URLQueryEscaper(
+			"filed to scratch: no identifier, not exported, gone on restart"), http.StatusSeeOther)
+		return
+	}
+
 	rec, to, err := intake.File(r.Context(), in.Store, intake.Request{
 		Project: in.Project,
 		Text:    text,
@@ -179,6 +280,17 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
 		return
 	}
+	if len(image) > 0 {
+		if _, err := in.Store.Attach(r.Context(), rec.ID, image, in.actor(r)); err != nil {
+			// The jot is already filed and is worth more than the picture. Say
+			// what happened rather than losing the words to a failed image.
+			render(w, page{
+				Error:   "filed " + rec.ID + ", but the image was not stored: " + err.Error(),
+				Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+			})
+			return
+		}
+	}
 	// The record is already in the store, so an export that fails has not lost
 	// the jot — but saying nothing would leave the exported tree quietly behind
 	// the store, which is the drift this repository has no gate for.
@@ -190,6 +302,42 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		template.URLQueryEscaper(rec.ID), template.URLQueryEscaper(to.Name),
 		template.URLQueryEscaper(to.Why), template.URLQueryEscaper(exported))
 	http.Redirect(w, r, q, http.StatusSeeOther)
+}
+
+// readImage takes the one picture a jot may carry.
+//
+// Nothing about the upload is trusted: not its name, which is never stored, not
+// its Content-Type, which the sender also chose, and not its length, which is
+// bounded by the reader rather than believed from a header. What comes back is
+// bytes, and store.Attach decides whether they are an image.
+func readImage(r *http.Request) ([]byte, error) {
+	if r.MultipartForm == nil {
+		return nil, nil
+	}
+	f, _, err := r.FormFile("image")
+	if errors.Is(err, http.ErrMissingFile) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+	}
+	defer f.Close()
+
+	// One byte past the limit is enough to know it is too big, and stops a
+	// large upload being read into memory in full only to be refused.
+	data, err := io.ReadAll(io.LimitReader(f, store.MaxAttachment+1))
+	if err != nil {
+		return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+	}
+	if len(data) > store.MaxAttachment {
+		return nil, store.ErrTooLarge
+	}
+	// Decided here, before the record is written. Leaving it to Attach meant a
+	// refused picture had already left a jot behind claiming to have one.
+	if _, err := store.ImageType(data); err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // actor is who filed a jot. Cloudflare Access puts the authenticated identity
@@ -272,9 +420,12 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mustur — intake</title>
 <style>
-  :root { color-scheme: light dark; --edge: #8884; }
+  :root { color-scheme: light dark; --edge: #8884; --accent: #6a8fd8; }
+  /* border-box, because this body carries its own padding and the shell caps
+     its width. Without it the padding lands outside the cap and this is the
+     one surface that reaches the right edge while the rest keep a gutter. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; padding: 1rem;
-         max-width: 40rem; margin-inline: auto; }
+         box-sizing: border-box; max-width: 40rem; margin-inline: auto; }
   h1 { font-size: 1rem; font-weight: 600; margin: 0 0 .75rem; opacity: .7; }
   textarea { width: 100%; min-height: 8rem; font: inherit; padding: .6rem;
              border: 1px solid var(--edge); border-radius: .5rem;
@@ -304,15 +455,37 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .why { opacity: .7; font-size: .9em; }
   ul { list-style: none; padding: 0; margin: 1.5rem 0 0; }
   li { padding: .5rem 0; border-top: 1px solid var(--edge); }
+  /* An identifier is the thing you want next: it goes to the record rather
+     than sitting there as text you have to retype somewhere else. */
+  /* A scratch filing looks like what it is: no identifier to follow, and a
+     standing note that it is going. */
+  .scratch li { opacity: .75; }
+  .tmp { font-size: .78em; border: 1px solid var(--edge); border-radius: 999px;
+         padding: .05rem .5rem; margin-right: .4rem; opacity: .8; }
+  .pic { display: flex; flex-direction: column; gap: .3rem; margin-top: .6rem;
+         font-size: .88em; opacity: .8; }
+  .pic small { opacity: .7; font-size: .85em; }
+  .rec { color: inherit; text-decoration: none; border-bottom: 1px solid var(--edge); }
+  .rec:hover, .rec:focus-visible { border-bottom-color: var(--accent, currentColor); }
   li .to { opacity: .7; font-size: .85em; display: block; }
   .none { opacity: .6; font-size: .9em; margin-top: 1.5rem; }
-  /* One line that scrolls, never a block that wraps. Each choice sizes to its
-     own text: a clipped repository name is a wrong destination picked by
-     accident. */
-  .dests { display: flex; gap: .4rem; margin-top: .6rem; overflow-x: auto;
-           white-space: nowrap; padding-bottom: .25rem; }
-  .dests label { flex: 0 0 auto; border: 1px solid var(--edge);
-                 border-radius: 999px; padding: .35rem .7rem; font-size: .9em; }
+  /* A list rather than a row of chips.
+
+     The chips were one line that scrolled sideways, on the reasoning that a
+     clipped repository name is a wrong destination picked by accident. They
+     produced exactly that: 741px of choices in a 640px row, so the last one —
+     the idea inbox — sat off the edge with nothing saying it was there
+     (MUS-F-0036). Adding scratch made a sixth.
+
+     A native select has no hidden end, groups its options by kind so two
+     similarly-named destinations can be told apart, becomes the system picker
+     on a phone, and takes type-ahead on a desktop for free. It is still a form
+     control, so this surface still works with script blocked. */
+  .to { display: flex; flex-direction: column; gap: .25rem; margin-top: .6rem; }
+  .to span { font-size: .85em; opacity: .6; }
+  .to select { font: inherit; font-size: .95em; padding: .5rem;
+               border: 1px solid var(--edge); border-radius: .5rem;
+               background: transparent; color: inherit; width: 100%; }
   /* The bar MUS-D-0041 chose, carrying the surfaces that exist. Without it the
      only route from here to the queue was the banner, which renders when
      something is open — so the queue was reachable from intake exactly when it
@@ -324,36 +497,45 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: auto; }
   h1 { display: flex; align-items: baseline; }
-  nav { display: flex; border-top: 1px solid var(--edge); margin-top: 2rem;
-        white-space: nowrap; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body>
 <h1>Mustur — {{.Project}}{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</h1>
 {{if .OpenQuestions}}<p class="waiting"><a href="/questions">{{.OpenQuestions}} decision{{if ne .OpenQuestions 1}}s{{end}} waiting on you</a></p>{{end}}
 {{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
-{{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .Routed}} → {{.Routed}}{{end}}<br>
+{{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
-<form method="post" action="/intake">
+<form method="post" action="/intake" enctype="multipart/form-data">
   <textarea name="jot" autofocus placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
-  {{if .Destinations}}<div class="dests">
-    <label><input type="radio" name="to" value="" checked> Route it for me</label>
-    {{range .Destinations}}<label><input type="radio" name="to" value="{{.ID}}"> {{.Name}}</label>{{end}}
-  </div>{{end}}
+  <label class="pic">A picture, if a picture says it faster
+    <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
+    <small>Held privately. The record carries what an agent reads in it, never the picture.</small>
+  </label>
+  <label class="to"><span>Where</span>
+    <select name="to">
+      <option value="" selected>Route it for me</option>
+      {{range .Groups}}<optgroup label="{{.Label}}">
+        {{range .Items}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+      </optgroup>{{end}}
+      <option value="scratch">Scratch &mdash; not kept, not counted</option>
+    </select>
+  </label>
   <button type="submit">File it</button>
 </form>
+{{if .Scratch}}<ul class="scratch">
+{{range .Scratch}}<li><span class="tmp">scratch</span> {{.Text}}<span class="to">goes on restart</span></li>{{end}}
+</ul>{{end}}
 {{if .Recent}}<ul>
-{{range .Recent}}<li><code>{{.ID}}</code> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
+{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
-  {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
-  <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
-  <a href="/intake" class="here">Intake</a>
-  <a href="/records">Records</a>
+  {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
+  <a href="/intake" class="here" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 </body>
 </html>

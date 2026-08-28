@@ -52,7 +52,77 @@ func Open(ctx context.Context, path string) (*Store, error) {
 		db.Close()
 		return nil, fmt.Errorf("apply schema to %s: %w", path, err)
 	}
-	return &Store{db: db, now: time.Now}, nil
+	if err := addMissingColumns(ctx, db); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("migrate %s: %w", path, err)
+	}
+	s := &Store{db: db, now: time.Now}
+	return s, nil
+}
+
+// addMissingColumns is the whole of this repository's migration story.
+//
+// `CREATE TABLE IF NOT EXISTS` builds a table that is missing and then says
+// nothing about one that exists with the wrong shape, so a column added to
+// schema.sql after a store was created never appears in it. That is not a
+// theoretical gap: MUS-F-0029 was a column this file did not have, and the
+// store that needed it was the owner's live one.
+//
+// Deliberately the smallest thing that works. Columns are added, never dropped
+// or retyped, and every addition carries a default so existing rows stay valid.
+// Anything a column cannot express — a table split, a value that has to be
+// recomputed — is a bigger decision than a helper should take on its own.
+//
+// The record tables are not listed here and are not expected to be. They are
+// insert-only and their shape is the export's contract; changing one is a
+// decision, not a migration.
+func addMissingColumns(ctx context.Context, db *sql.DB) error {
+	wanted := []struct{ table, column, spec string }{
+		// MUS-F-0029: without these, every synced passkey registers and then
+		// fails to sign in, because WebAuthn asks the relying party to notice a
+		// change in backup eligibility and an unstored flag reads as false.
+		{"credential", "backup_eligible", "INTEGER NOT NULL DEFAULT 0"},
+		{"credential", "backup_state", "INTEGER NOT NULL DEFAULT 0"},
+		// MUS-Q-0055: a token's optional lifetime.
+		{"agent_token", "expires", "TEXT"},
+	}
+	for _, w := range wanted {
+		has, err := hasColumn(ctx, db, w.table, w.column)
+		if err != nil {
+			return err
+		}
+		if has {
+			continue
+		}
+		// Table names and column specs are literals above, never input.
+		if _, err := db.ExecContext(ctx,
+			"ALTER TABLE "+w.table+" ADD COLUMN "+w.column+" "+w.spec); err != nil {
+			return fmt.Errorf("add %s.%s: %w", w.table, w.column, err)
+		}
+	}
+	return nil
+}
+
+func hasColumn(ctx context.Context, db *sql.DB, table, column string) (bool, error) {
+	rows, err := db.QueryContext(ctx, "PRAGMA table_info("+table+")")
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var cid int
+		var name, typ string
+		var notNull int
+		var dflt sql.NullString
+		var pk int
+		if err := rows.Scan(&cid, &name, &typ, &notNull, &dflt, &pk); err != nil {
+			return false, err
+		}
+		if name == column {
+			return true, nil
+		}
+	}
+	return false, rows.Err()
 }
 
 // DB exposes the handle so accounts can live in the same file.

@@ -134,6 +134,18 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [The count that nobody drew](#the-count-that-nobody-drew) | Two reviewers, two wrong replacements, one structural cause |
 | [Four surfaces built before they were drawn, and the pattern has a number now](#four-surfaces-built-before-they-were-drawn-and-the-pattern-has-a-number-now) | Seven instances, a rising rate, and MUS-F-0027 |
 | [What the review caught in the code](#what-the-review-caught-in-the-code) | Three fixed, one disputed with the measurement |
+| [A token is not an account, and that is the point](#a-token-is-not-an-account-and-that-is-the-point) | Scope is what makes a weaker secret acceptable |
+| [No expiry, deliberately](#no-expiry-deliberately) | A credential that stops at 3am is an outage, not a control |
+| [The guard trusts one thing about the tool surface](#the-guard-trusts-one-thing-about-the-tool-surface) | Why a second MCP tool fails a test in another package |
+| [The id is hex because it is typed at a shell](#the-id-is-hex-because-it-is-typed-at-a-shell) | About one id in 64 would have been unrevokable |
+| [A test that passed for the wrong reason, again](#a-test-that-passed-for-the-wrong-reason-again) | Twice in two milestones; mutation found both |
+| [A fourth difference between the mandate and what milestone 1 scored](#2026-08-25--a-fourth-difference-between-the-mandate-and-what-milestone-1-scored) | The entry has now been wrong about its own completeness twice |
+| [A token's lifetime, handed back to the owner](#2026-08-25--a-tokens-lifetime-handed-back-to-the-owner) | An answered decision overridden by the party who asked it |
+| [The owner found the bug the whole suite agreed with](#2026-08-26--the-owner-found-the-bug-the-whole-suite-agreed-with) | No synced passkey could sign in; the test double shared the mistake |
+| [Building the bar found what the code had already decided](#2026-08-26--building-the-bar-found-what-the-code-had-already-decided) | The stylesheet and the script were both written for a shell nobody built |
+| [A browser, and the two things it found](#2026-08-26--a-browser-and-the-two-things-it-found) | Measuring the wrong thing comes with confidence attached |
+| [A picture, and the thing about it that travels](#2026-08-26--a-picture-and-the-thing-about-it-that-travels) | The export is public; the description goes, the pixels stay |
+| [A place to put something that was never meant to be kept](#2026-08-26--a-place-to-put-something-that-was-never-meant-to-be-kept) | A test filing should not advance a counter |
 
 ---
 
@@ -2116,3 +2128,385 @@ with no pragma anywhere in the tree, a grant to a nonexistent account fails with
 pragma was added anyway, so the guarantee belongs to this schema rather than to a
 driver default, and the test stays — the property is worth pinning wherever it
 comes from.
+
+## 2026-08-25 — the credential an agent can hold
+
+### A token is not an account, and that is the point
+
+A passkey needs a browser, an authenticator and a gesture. An agent has none of
+the three and still has to reach the mandated tool call, so milestone 5c gives it
+a token carried in an `Authorization: Bearer` header.
+
+The temptation was to make it an account with a funny credential. It is not one:
+no email, no passkey, no session, and the guard consults it on exactly one path.
+That is not tidiness. A token lives in a systemd unit or a process's
+environment, which is a materially weaker place than a device's secure element,
+and **scope is what makes the weaker secret acceptable**. An agent token opens
+`/mcp` for one project and cannot read a record, open a session, or sign in.
+Folding it into `account` would have made a leaked token a way into the browser
+surfaces instead of into the one call it exists for.
+
+### No expiry, deliberately
+
+An invitation expires because it is a one-time link in transit. A session
+expires because a browser is borrowed. An agent token is **configuration**, and
+a credential that stops working at 3am without anybody having decided that is an
+outage, not a security control. Revocation is the control, it is a row read on
+every call rather than a cache, and it takes effect on the running server —
+measured, not assumed.
+
+Revocation is a timestamp rather than a delete, so a listing can still say the
+token existed and when it stopped. A row that vanished cannot tell anybody
+investigating anything.
+
+### The guard trusts one thing about the tool surface
+
+An agent token is let past `/mcp` with **no write check**, because an MCP call is
+a POST by method and a read by nature — the surface serves one tool and it
+reads. That is a real assumption, and a comment saying so is a promise nobody
+checks. `internal/mcpsrv`'s own test asserts exactly one tool named
+`mustur_route` and now says why, so a second tool fails there and names the
+guard as the thing to revisit.
+
+### The id is hex because it is typed at a shell
+
+The first version made ids base64url, like every other secret here. One in
+sixty-four would have begun with `-`, which `flag` parses as a flag — so
+`mustur account revoke <id>` would have failed on the exact id the tool itself
+had just printed. Found by issuing one and reading the output, which is the
+cheapest test there is and the one most easily skipped.
+
+The first version of this paragraph said **one in thirty-two**, and a review
+caught it: the alphabet is 64 symbols, not 32. Measured afterwards over 200,000
+draws — 3,072 leading hyphens, 1 in 65.1. The entry congratulating itself for
+finding a bug by running the code had a number in it that nobody had counted,
+which is `workflow.md`'s own gate failing inside the entry that celebrates
+having met it.
+
+### A test that passed for the wrong reason, again
+
+The scope test — "a token opens the tool call and nothing else" — passed while
+asserting nothing. Its client followed the guard's `303` to `/signin`, landed on
+a public page, and reported `200`; the test looked for "not 200" and was
+satisfied by a redirect it had already followed. It now follows no redirects and
+asserts `303` or `403`, and both negative tests here were checked by breaking
+the code to see them fail.
+
+That is the second time in two milestones. The first was 5b's cross-account
+ceremony test, refused by the library rather than by the check under test. Both
+were found by mutation, neither by reading, and the habit is now the point:
+**a negative test is not evidence until it has been seen to fail.**
+
+## 2026-08-25 — a fourth difference between the mandate and what milestone 1 scored
+
+`Three things differ from what was scored, and the entry exists to name all
+three` — and that entry's own history is that an earlier draft named two and a
+review found the third. A review has now found a fourth, which makes the pattern
+more interesting than the item.
+
+**The tool call can require a credential.** Milestone 1's fixture registered a
+stub over stdio, where the client launches the server and the tool is therefore
+always present. What ships is HTTP on loopback — difference 3 — and since
+milestone 5c that transport can be gated: with `--accounts` on, `/mcp` refuses a
+caller carrying no token. An agent honouring the clause at the bottom of
+`CLAUDE.md` now needs a secret in its MCP configuration under one supported flag
+setting, which the disproof never measured.
+
+It bites only under `--accounts`, which is off by default and which
+`deploy/mustur.service` does not pass, so nothing running today contradicts the
+original entry. The claim is that the enumeration is incomplete for the shipped
+binary, not that the deployment falsifies it.
+
+**And a third state the instruction does not name.** `CLAUDE.md` tells a session
+what to do when the tool "is not there": say so and carry on. Under `--accounts`
+with no token the tool *is* there and answers 403 — neither absent nor working.
+That sentence now names the third case, because a session meeting it would
+otherwise report the one thing that is not true.
+
+So the count is four, and the more useful record is that this entry has been
+wrong about its own completeness twice, both times found by somebody who did not
+write it.
+
+## 2026-08-25 — a token's lifetime, handed back to the owner
+
+The owner's answer on `MUS-Q-0051` said a token has "its own lifetime and its
+own revocation". I built revocation, built no lifetime, and wrote the argument
+for that into this file under a heading that congratulated itself for it.
+
+`workflow.md` is explicit: Plan.md wins on *what*, and a conflict between it and
+the build "is a bug — report it, do not pick." I picked, and a review caught it.
+
+The argument was not wrong. An invitation expires because it is a link in
+transit; a session expires because a browser is borrowed; an agent token is
+configuration, and a credential that stops at 3am because a timer ran out, with
+nobody having decided so, is an outage rather than a control — and the agent it
+stops is the one that reads these records.
+
+But it is an argument to *put*, not to record and proceed on. Asked as
+`MUS-Q-0055`, and the answer was the middle shape neither of us had written
+down: **`--expires` is optional and zero means never.** The deployment's token
+lasts until revoked; a token for a single job or somebody else's machine can be
+given a lifetime. The cost, accepted rather than hidden, is that a token now has
+two ways to stop working — so the listing names which one, revoked beating
+expired because a revocation is a decision and an expiry is a date arriving.
+
+`ByToken` tells a caller neither, for the same reason `ErrNoInvite` says nothing
+about why.
+
+**The shape of the mistake is what matters.** This was not a decision taken
+without asking; it was an *answered* one overridden by the party who had asked
+it, and the override was written down carefully enough to look like diligence.
+The tell was a heading that argued rather than recorded. When an entry here
+starts persuading, the thing it is persuading about probably belongs in a
+prompt.
+
+## 2026-08-26 — the owner found the bug the whole suite agreed with
+
+The owner registered a passkey on a phone, through Bitwarden, then tried to sign
+in from a laptop and was told the passkey was not recognised.
+
+Registration had worked — the account existed with one credential, a sixteen-byte
+id and a seventy-seven byte ES256 key. **Sign-in could never have worked**, for
+that credential or any other like it.
+
+### What was wrong
+
+WebAuthn asks a relying party to notice if a credential's backup-eligible flag
+changes between registration and use. `go-webauthn` enforces it at login.
+Mustur stored no flags at all, so the credential it rebuilt to check the
+assertion claimed `BE=0` against an assertion carrying `BE=1`, and the library
+refused: *Backup Eligible flag inconsistency detected during login validation*.
+
+Every synced credential manager sets `BE=1` — Bitwarden, iCloud Keychain,
+Google Password Manager, 1Password. So **every passkey a person would
+realistically use could be registered and then never used.** Only a credential
+welded to hardware would have worked, and only because its `BE=0` happened to
+match a flag that was never written.
+
+### Why three reviewers and a mutation-checked suite missed it
+
+The virtual authenticator built for milestone 5b modelled a hardware key. Its
+`BE=0` agreed with the server's missing flag, and agreement reads exactly like
+correctness. Nothing in the review was careless; the double was a correct client
+of the protocol and every test it ran passed truthfully.
+
+**A double is a claim about the world**, and this one — that an authenticator
+looks like a YubiKey — was never examined, because it was made in passing while
+building something else. It is now a synced credential by default, with the
+hardware case named as the exception, and both are tested. Dropping the stored
+flag fails the synced case and leaves the hardware one green, which is the shape
+of the original bug.
+
+The rule worth keeping: when a double and the code under test share an
+assumption, the test proves the assumption is *shared*, not that it is *right*.
+Look wherever the double was written by the same hand, in the same sitting, as
+the thing it tests.
+
+### And the diagnosis was harder than it needed to be
+
+A page that distinguished "no such credential" from "bad signature" would be an
+oracle, so a browser gets one sentence. That was a decision and it stands.
+
+Telling the *operator* nothing was not a decision, it was an omission. There was
+no log line at all, and the cause had to be reconstructed from a ceremony table
+that happened to retain abandoned rows and from reading the library's source.
+Two different audiences had been treated as one. Every refusal in the
+authentication path now logs the check that failed while the browser keeps its
+single sentence.
+
+### The store had to be migrated, which it had never needed before
+
+`CREATE TABLE IF NOT EXISTS` builds a missing table and says nothing about one
+that exists with the wrong shape. Two columns had to reach a store that already
+existed, and that store was the owner's live one. `store.Open` now adds missing
+columns from a list in the source — added, never dropped or retyped, each with a
+default. The record tables are not in that list and are not expected to be:
+their shape is the export's contract, and changing one is a decision rather than
+a migration.
+
+### What it cost the owner
+
+One passkey, deleted rather than guessed at. The stored credential carried no
+flags, so no honest value could be backfilled for a security-relevant field —
+and leaving it in place would have made the authenticator refuse to create a
+replacement, since a registration excludes credentials the site already holds.
+
+## 2026-08-26 — building the bar found what the code had already decided
+
+The bar was drawn before it was built, which is the thing `docs/ui-surfaces.md`
+exists to make happen and has watched fail seven times. Building it turned up
+three things the drawing could not have.
+
+### Both halves were already written for a shell nobody built
+
+The session view's stylesheet said `#out { flex: 1 }` and
+`nav { margin-top: auto }` — an app shell with a scrolling pane and a bar on the
+bottom edge. It set `min-height: 100vh`, a floor with no ceiling, and gave
+`#out` no overflow, so the column grew with the output and carried the bar away.
+
+The script turned out to be the same story. `atBottom()` measures
+`out.scrollTop` against `out.scrollHeight` and always has — but a pane with no
+overflow never scrolls, so `scrollTop` stayed 0, the comparison always answered
+true, and the follow-the-tail logic was inert. **The plan named this as the
+half with real behaviour in it and estimated it wrong**: nothing needed writing,
+because it had already been written for the shell the CSS described. Both halves
+were waiting on three declarations.
+
+### The rail is positioned, not placed
+
+Grid was the tidier way to put a last-in-source `<nav>` into the first column,
+and it is wrong here. Making `body` a grid breaks the session view: `flex: 1`
+means nothing to a grid item, so the output pane stops filling the page and the
+composer loses the bottom edge. Taking the rail out of flow with
+`position: fixed` leaves every surface's internal layout exactly as it was,
+which is what a navigation change should cost.
+
+### The drift was worse than the count
+
+The plan said five templates carried their own copy of the bar. It was six, and
+they had already diverged: `intake` drew a 1px border where the rest drew
+1.4px, three surfaces made the page a full-height column and three did not, and
+`accountpage` had lost the rule that marks the current tab. That is the same
+drift that put a different bar on the records surface a day earlier.
+
+`shell.go` holds the shared half now, and `TestNoTemplateDeclaresItsOwnNavRules`
+reads the source rather than the output — because a second copy appears in the
+source, and that is the test that would have caught this the first time.
+
+### And one more test that passed for the wrong reason
+
+The assertion that `#out` scrolls looked for `overflow-y: auto` anywhere in
+`sessions.go` and matched the sub-agent box, which has carried that declaration
+all along. A true substring, proving nothing about the pane under test. It reads
+the `#out` rule itself now.
+
+That is the third time in three milestones. The habit is holding — each one was
+found by breaking the code and watching the test fail — but the rate is not
+falling, and the common shape is worth naming: **every one of them asserted
+something true about the file rather than about the thing.**
+
+## 2026-08-26 — a browser, and the two things it found
+
+Two CSS defects in a row reached the owner because nothing here could see a
+rendered page, and a third was about to be guessed at. A headless browser is
+installed now, and the difference was immediate.
+
+**It found the desktop overlap in one measurement.** The rail was `width: 13rem`
+with no `box-sizing`, so its real width was 13rem plus a rem of padding plus a
+border — about 14rem — over a column whose left margin was 13rem. The rail width
+and the gutter are named values now and the content's margin is computed from
+them, so the two cannot drift apart.
+
+**It found the records overflow the owner had described sideways.** They
+reported the records tab as wider than the others, with only three of four tabs
+reachable. The page was 601px wide on a 390px screen: a field row is a flex line
+whose value will not shrink below its content unless told it may, and
+`min-width: 0` is the telling. The bar is fixed to the viewport, but a page
+wider than the viewport is one a phone lets you pan, and the bar pans with it.
+`MUS-F-0033`.
+
+**And it caught the builder inventing a defect.** The first clearance
+measurement said the records page had text underneath the bar. It does not:
+Chromium keeps layout boxes for a *closed* `<details>` under
+`content-visibility: hidden`, so `getBoundingClientRect` reports content that is
+never painted. `checkVisibility()` says 35px of clearance. Measuring the wrong
+thing is not better than not measuring; it is worse, because it comes with
+confidence.
+
+### What it could not find
+
+The session view's lower half walking off a phone was not reproducible at any of
+five viewport sizes. The fix is not aimed at the cause, because the cause was
+never isolated — it is the shape the owner asked for: the quiet timer and the
+composer are a block fixed to the viewport, which has no flow position to be
+pushed out of, and the output runs behind them. Robustness in place of a
+diagnosis, said plainly rather than dressed up as one (`MUS-F-0034`).
+
+### The habit that is doing the work
+
+`min-width: 0` appears in all three of this week's layout fixes — the output
+pane that would not scroll, the field row that would not wrap, the flex child in
+each case expanding to its content because nothing said it could be smaller.
+Worth knowing as a shape rather than rediscovering three times.
+
+## 2026-08-26 — a picture, and the thing about it that travels
+
+The owner tried to report a layout defect with a screenshot, found the intake
+box takes text only, and asked for images.
+
+The obvious implementation was the wrong one. `records/` is committed and
+`github.com/DevOfPie/Mustur` is **public**, so a screenshot written beside the
+records would have published whatever was on the screen — agent output, record
+prose, an email address — permanently, and past any later deletion. That is a
+privacy decision wearing the costume of a storage decision, and it went to the
+owner as one.
+
+**The answer was none of the three options offered:** an agent's summary of what
+the image shows may be exported, as long as it carries nothing unnecessary,
+while the image itself stays private. A reader with only the clone still learns
+what the picture showed. Nothing is published that did not need to be. It is a
+better shape than any of the alternatives that were put up, which is the second
+time this week the owner has improved on the menu rather than picking from it.
+
+### What is deliberately not stored
+
+No filename. A filename is the sender's text and carries a date, a device and
+often the content of the picture; nothing here needs one, and the identifier is
+the handle. The media type is sniffed from the bytes rather than believed from
+the request, because a caller's `Content-Type` is a claim about a file the
+caller also chose. SVG is refused outright: it is XML that can carry script and
+would run on this origin the moment somebody opened it.
+
+### The comment that was not true yet
+
+The handler read the picture before writing the record, under a comment saying
+that a refused picture would not leave a jot behind claiming to have one. The
+validation was in `Attach`, which runs *after* the record exists, so every
+refused picture left a jot. The test written alongside it said so on the first
+run.
+
+That is the shape to keep noticing: a comment describing an intention the code
+next to it does not implement. `margin-top: auto` was the same thing, and so was
+`#out`'s scroll. Three this week, all found by something that ran rather than by
+reading.
+
+## 2026-08-26 — a place to put something that was never meant to be kept
+
+Testing the picture upload twice cost two permanent identifiers in the idea
+warehouse. `IDW-F-0002` and `IDW-F-0003` both say "test" in their own titles and
+both will be in the records forever, because an identifier here never comes back
+and the log only ever grows. The owner's framing was exact: **a test filing
+should not advance a counter.**
+
+### The obvious shape was the wrong one
+
+A record with an expiry. It is wrong because the log is insert-only and the
+exported tree is the surface a reader checks without running the binary
+(`MUS-D-0024`); a record that later vanishes puts an exception under both, and
+an exception is what the next one argues from.
+
+The clarification dissolved the problem rather than answering it. If the point
+is the counter, then a scratch filing simply **is not a record** — and nothing
+about insert-only is threatened by something that never enters the log. It takes
+no identifier, is never exported, is never counted, and cannot be cited: its id
+is deliberately unlike an identifier so that nothing can try.
+
+### The restart that was meant
+
+"Or until a restart" went into `store.Open` first, which meant every `mustur
+list` and every `mustur get` wiped the pad. The first end-to-end run lost a
+filing to the command that went looking for it — a unit test never saw it,
+because a unit test holds one store open. A serving process starting is the
+event the owner described, and that is where the sweep lives now.
+
+### And an upper-case habit that broke a sweep
+
+Attachments upper-cased the record id they were filed against, on the reasonable
+grounds that record identifiers are upper-case. A scratch id is not one. Stored
+shouting, it no longer matched the sweep's subquery, and the picture outlived the
+note it belonged to — caught by the test written in the same sitting.
+
+The store had been second-guessing the case of an identifier it was handed. It
+does not any more. Three bugs this week from a rule applied one step past where
+it was true: the filename that was stripped while EXIF was kept, the `9rem` cap
+that belonged to a different element, and this.

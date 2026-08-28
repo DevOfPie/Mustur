@@ -84,6 +84,22 @@ decision queue is built from its artboard, the composer since milestone 5, and
 the records document since 5b — which arrived inside another milestone's branch
 and is [MUS-Q-0054](../records/questions.md#mus-q-0054).
 
+**The tab bar is not locked to the viewport**, on any surface. The owner filed
+MUS-F-0032 from a phone: on the session view, output arrives forever and carries
+the bar down with it, so the thing you navigate by recedes as you watch. The
+session view is a repair — its own CSS sets `min-height:100vh`, `#out{flex:1}`
+and `nav{margin-top:auto}`, which is an app shell that never caps its height.
+What the document surfaces should do is a choice, and it is drawn in
+[plan-ba6b90e7d9064d09](https://plan.agent-native.com/plans/plan-ba6b90e7d9064d09)
+rather than decided in code, and the owner answered it: **pinned below 60rem, a
+left rail above it, the rail replacing the bar rather than joining it**
+(MUS-D-0118). The rail is the same `<nav>` every surface already ends with,
+moved by a media query, so one nav exists in the DOM at every width and these
+surfaces keep working with script blocked. Drawn before built, which is the
+thing MUS-F-0027 says this file keeps failing to do — **built and deployed
+2026-08-26**, and the shared chrome now lives in one place
+(`internal/web/shell.go`) rather than in six drifting copies.
+
 ## The constraints every surface inherits
 
 | Constraint | Where it comes from |

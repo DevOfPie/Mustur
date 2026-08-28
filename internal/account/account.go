@@ -110,6 +110,14 @@ type Credential struct {
 	Label     string
 	Created   time.Time
 	LastUsed  time.Time
+	// BackupEligible says the credential can be synced between devices, and is
+	// fixed for its lifetime. It has to be stored and handed back at sign-in:
+	// WebAuthn requires the relying party to notice if it changes, and a
+	// credential reconstructed without it is refused against every synced
+	// passkey there is (MUS-F-0029).
+	BackupEligible bool
+	// BackupState says it currently is backed up, and moves over time.
+	BackupState bool
 }
 
 // An Invitation is a one-time way to become an account with a role.
@@ -318,9 +326,11 @@ func (s *Store) AddCredential(ctx context.Context, accountID string, c Credentia
 		label = "passkey"
 	}
 	_, err := s.db.ExecContext(ctx,
-		`INSERT INTO credential (cred_id, account_id, public_key, sign_count, label, created)
-		 VALUES (?, ?, ?, ?, ?, ?)`,
-		c.ID, accountID, c.PublicKey, c.SignCount, label, s.now().UTC().Format(stamp))
+		`INSERT INTO credential (cred_id, account_id, public_key, sign_count, label, created,
+		                         backup_eligible, backup_state)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		c.ID, accountID, c.PublicKey, c.SignCount, label, s.now().UTC().Format(stamp),
+		c.BackupEligible, c.BackupState)
 	if err != nil {
 		return fmt.Errorf("store credential: %w", err)
 	}
@@ -330,7 +340,8 @@ func (s *Store) AddCredential(ctx context.Context, accountID string, c Credentia
 // Credentials lists an account's passkeys.
 func (s *Store) Credentials(ctx context.Context, accountID string) ([]Credential, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT cred_id, public_key, sign_count, label, created, COALESCE(last_used, '')
+		`SELECT cred_id, public_key, sign_count, label, created, COALESCE(last_used, ''),
+		        backup_eligible, backup_state
 		 FROM credential WHERE account_id = ? ORDER BY created`, accountID)
 	if err != nil {
 		return nil, err
@@ -340,7 +351,8 @@ func (s *Store) Credentials(ctx context.Context, accountID string) ([]Credential
 	for rows.Next() {
 		var c Credential
 		var created, last string
-		if err := rows.Scan(&c.ID, &c.PublicKey, &c.SignCount, &c.Label, &created, &last); err != nil {
+		if err := rows.Scan(&c.ID, &c.PublicKey, &c.SignCount, &c.Label, &created, &last,
+			&c.BackupEligible, &c.BackupState); err != nil {
 			return nil, err
 		}
 		c.Created, _ = time.Parse(stamp, created)
@@ -361,10 +373,12 @@ func (s *Store) ByCredential(ctx context.Context, credID []byte) (Account, Crede
 	var created, disabled, credCreated string
 	err := s.db.QueryRowContext(ctx,
 		`SELECT a.id, a.email, a.created, COALESCE(a.disabled, ''),
-		        c.cred_id, c.public_key, c.sign_count, c.label, c.created
+		        c.cred_id, c.public_key, c.sign_count, c.label, c.created,
+		        c.backup_eligible, c.backup_state
 		 FROM credential c JOIN account a ON a.id = c.account_id
 		 WHERE c.cred_id = ?`, credID).
-		Scan(&a.ID, &a.Email, &created, &disabled, &c.ID, &c.PublicKey, &c.SignCount, &c.Label, &credCreated)
+		Scan(&a.ID, &a.Email, &created, &disabled, &c.ID, &c.PublicKey, &c.SignCount, &c.Label, &credCreated,
+			&c.BackupEligible, &c.BackupState)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Account{}, Credential{}, ErrNoAccount
 	}
@@ -385,10 +399,16 @@ func (s *Store) ByCredential(ctx context.Context, credID []byte) (Account, Crede
 // The counter is the one anti-cloning signal WebAuthn offers, and plenty of
 // authenticators never increment it. It is stored so the check can be made
 // where it means something, and its absence is not treated as an attack.
-func (s *Store) UsedCredential(ctx context.Context, credID []byte, signCount uint32) error {
+// UsedCredential records a successful sign-in.
+//
+// backupState is written every time because it moves: a passkey can be backed
+// up after it was made, or restored onto a new device. BackupEligible is not
+// written, because it is fixed at registration and a change in it is the thing
+// WebAuthn wants noticed rather than absorbed.
+func (s *Store) UsedCredential(ctx context.Context, credID []byte, signCount uint32, backupState bool) error {
 	_, err := s.db.ExecContext(ctx,
-		`UPDATE credential SET sign_count = ?, last_used = ? WHERE cred_id = ?`,
-		signCount, s.now().UTC().Format(stamp), credID)
+		`UPDATE credential SET sign_count = ?, last_used = ?, backup_state = ? WHERE cred_id = ?`,
+		signCount, s.now().UTC().Format(stamp), backupState, credID)
 	return err
 }
 

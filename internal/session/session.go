@@ -43,6 +43,7 @@ import (
 	"os/exec"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -57,6 +58,29 @@ const Prefix = "mustur/"
 // the only thing "Mustur started this" rests on. A session that does not carry
 // it is not ours however it is named.
 const OwnedOption = "@mustur_started"
+
+// PaneWidth and PaneHeight are the geometry Mustur gives a session it starts.
+//
+// A detached tmux session is 80x24, and an agent CLI runs on the alternate
+// screen — measured: alternate_on=1, history_size=0 — which means tmux keeps no
+// scrollback for it at all. Not a little: none. So on a default pane the whole
+// of what could ever be shown was twenty-four rows, and there was nothing to
+// scroll back through because there was nothing behind them.
+//
+// A tall pane is the answer, and it is nearly free. The CLI redraws its whole
+// conversation into whatever height it is given, and a capture costs what the
+// content costs rather than what the height is: measured on the same session,
+// 60 rows was 4.8KB, 200 rows was 6.9KB and 300 rows was 7.0KB, because the
+// difference is blank padding. The padding is trimmed before it is sent.
+//
+// The cost is real and worth naming: window-size is manual, so a person who
+// attaches to one of these with tmux gets a 300-row window in their terminal
+// rather than one sized to it. These are sessions Mustur starts and watches
+// through the browser, and that is the trade.
+const (
+	PaneWidth  = 100
+	PaneHeight = 300
+)
 
 // DeliverTimeout bounds a delivery. Without one, an unresponsive tmux holds an
 // answer unwritten for as long as it likes, and the answer is the part that
@@ -75,7 +99,15 @@ type Session struct {
 	// Attached reports whether a terminal is attached right now. A session
 	// Mustur started is usually detached, and that is not a health signal.
 	Attached bool
-	// Activity is when the session last did anything, as tmux reports it.
+	// Activity is when the session's pane last produced output, as tmux
+	// reports it.
+	//
+	// window_activity, not session_activity. They are not the same thing and
+	// the difference is hours: measured on a live session, session_activity was
+	// 4.3 hours stale while window_activity was three minutes old, because
+	// session_activity tracks the session rather than what is happening inside
+	// it. Reading the wrong one made the quiet counter say a session that had
+	// just spoken had been silent since it started (MUS-F-0042, again).
 	//
 	// It exists so that "the route row defaults to the last active session" can
 	// be true. That clause is MUS-D-0013's and went unbuilt through milestone 5
@@ -242,7 +274,7 @@ func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
 // List returns every session Mustur started on this machine, and nothing else.
 func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 	out, err := a.runner().Run(ctx, "tmux", "list-sessions", "-F",
-		"#{session_name}\t#{session_windows}\t#{session_attached}\t#{"+OwnedOption+"}\t#{session_activity}")
+		"#{session_name}\t#{session_windows}\t#{session_attached}\t#{"+OwnedOption+"}\t#{window_activity}")
 	if err != nil {
 		// No server running is not an error: it is the honest answer that no
 		// session exists. Distinguished by the message tmux gives, because an
@@ -276,6 +308,9 @@ func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 		// handling: a session with no timestamp sorts last rather than becoming
 		// the default, so the failure mode is a stale-looking order and never a
 		// message sent somewhere unintended.
+		//
+		// In list-sessions, window_activity resolves against the session's
+		// active window. Every session Mustur starts has exactly one.
 		if len(parts) > 4 {
 			var epoch int64
 			if _, err := fmt.Sscanf(strings.TrimSpace(parts[4]), "%d", &epoch); err == nil && epoch > 0 {
@@ -332,6 +367,111 @@ func (a *Adapter) Alive(ctx context.Context, project string) (bool, error) {
 // tmux would otherwise read as a key name arrives as characters. Multi-line
 // text does not go through `-l` at all — see the paste branch below, and
 // MUS-D-0096 for why.
+// Agent is what the pane says the CLI is doing.
+type Agent string
+
+const (
+	// AgentUnknown means the pane could not be read, or shows something this
+	// does not recognise. It is not "idle": a surface that treated it as idle
+	// would be asserting something about every CLI nobody has looked at.
+	AgentUnknown Agent = ""
+	// AgentWorking means a turn is in flight.
+	AgentWorking Agent = "working"
+	// AgentWaiting means the CLI is sitting at its prompt.
+	AgentWaiting Agent = "waiting"
+)
+
+// workingMark is what Claude Code puts in its status line for exactly as long
+// as a turn is running, and takes away the moment it ends.
+//
+// The owner pointed at this: the CLI already says whether it is working, and a
+// timer counting silence is a guess standing in for a fact. A tool call that
+// prints nothing for two minutes is working; a session that finished four
+// seconds ago is not, and no amount of counting bytes can tell those apart.
+const workingMark = "esc to interrupt"
+
+// waitingMark is the input caret the same CLI draws when it wants a person.
+// Present while working too, which is why the two are checked in order.
+const waitingMark = "❯"
+
+// paneLines is how much of the bottom of the pane to read. The status line and
+// the input box are the last few rows; everything above is output.
+const paneLines = "-12"
+
+// Fit gives a session the geometry a browser can read, and is safe to call on
+// one that already has it.
+//
+// window-size manual is what makes the size ours rather than the last attached
+// client's; without it tmux resizes the window back to 80x24 the moment nobody
+// is attached, which is every moment for a session Mustur started.
+func (a *Adapter) Fit(ctx context.Context, project string) error {
+	name, err := NameFor(project)
+	if err != nil {
+		return err
+	}
+	if out, err := a.runner().Run(ctx, "tmux",
+		"set-option", "-t", name, "window-size", "manual"); err != nil {
+		return fmt.Errorf("tmux set-option window-size %s: %w: %s", name, err, strings.TrimSpace(out))
+	}
+	if out, err := a.runner().Run(ctx, "tmux", "resize-window", "-t", name,
+		"-x", strconv.Itoa(PaneWidth), "-y", strconv.Itoa(PaneHeight)); err != nil {
+		return fmt.Errorf("tmux resize-window %s: %w: %s", name, err, strings.TrimSpace(out))
+	}
+	return nil
+}
+
+// Capture reads the pane as tmux has already assembled it.
+//
+// -e keeps the colour, which is the only escape worth carrying: what
+// capture-pane hands back has no cursor movement in it at all, because tmux
+// has already applied it. -J unwraps lines the pane wrapped, so a long line
+// rewraps to the reader's own width rather than the pane's.
+func (a *Adapter) Capture(ctx context.Context, project, from string) (string, error) {
+	name, err := NameFor(project)
+	if err != nil {
+		return "", err
+	}
+	out, err := a.runner().Run(ctx, "tmux",
+		"capture-pane", "-p", "-e", "-J", "-S", from, "-t", name)
+	if err != nil {
+		return "", fmt.Errorf("tmux capture-pane %s: %w: %s", name, err, strings.TrimSpace(out))
+	}
+	return out, nil
+}
+
+// DoingIn reads what the agent is up to out of a pane that has already been
+// captured, so a caller holding one does not fetch it twice.
+func DoingIn(pane string) Agent {
+	// Working first: the input box is drawn during a turn as well, so looking
+	// for the caret first would call every working session idle.
+	if strings.Contains(pane, workingMark) {
+		return AgentWorking
+	}
+	if strings.Contains(pane, waitingMark) {
+		return AgentWaiting
+	}
+	return AgentUnknown
+}
+
+// Doing reads what the agent in this session is up to, from the pane itself.
+//
+// One CLI's strings, and it says so. Anything else falls through to
+// AgentUnknown and the surface goes back to counting silence — which is worse,
+// and is what every session had before this. Degrading to the old guess is the
+// right failure; asserting "idle" about a CLI nobody has read would not be.
+func (a *Adapter) Doing(ctx context.Context, project string) Agent {
+	name, err := NameFor(project)
+	if err != nil {
+		return AgentUnknown
+	}
+	out, err := a.runner().Run(ctx, "tmux",
+		"capture-pane", "-p", "-J", "-S", paneLines, "-t", name)
+	if err != nil {
+		return AgentUnknown
+	}
+	return DoingIn(out)
+}
+
 func (a *Adapter) Send(ctx context.Context, project, text string) error {
 	name, err := NameFor(project)
 	if err != nil {

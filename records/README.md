@@ -9,11 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 54 | [questions.md](questions.md) |
-| decision | 109 | [decisions.md](decisions.md) |
-| finding | 28 | [findings.md](findings.md) |
+| question | 60 | [questions.md](questions.md) |
+| decision | 132 | [decisions.md](decisions.md) |
+| finding | 58 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 20 | [work-units/index.md](work-units/index.md) |
+| work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -21,6 +21,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Identifier | Kind | Title |
 | --- | --- | --- |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
+| [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
+| [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
+| [IDW-F-0004](findings.md#idw-f-0004) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
 | [MUS-M-0001](milestones.md#mus-m-0001) | milestone | The delivery bet is tested |
 | [MUS-M-0002](milestones.md#mus-m-0002) | milestone | Records and routing, behind one call |
 | [MUS-M-0003](milestones.md#mus-m-0003) | milestone | The audit StrucGu never shipped |
@@ -53,6 +56,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018) | work-unit | Sub-agents are visible |
 | [MUS-W-0019](work-units/MUS-W-0019.md#mus-w-0019) | work-unit | Composition |
 | [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020) | work-unit | Accounts of Mustur's own |
+| [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -107,6 +111,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0052](questions.md#mus-q-0052) | question | MUS-D-0041 set four tabs; accounts want a fifth |
 | [MUS-Q-0053](questions.md#mus-q-0053) | question | The scripted-surface rule now counts six, not two |
 | [MUS-Q-0054](questions.md#mus-q-0054) | question | Milestone 6's records surface was built inside 5b |
+| [MUS-Q-0055](questions.md#mus-q-0055) | question | Your answer said a token has its own lifetime; I built it without one |
+| [MUS-Q-0056](questions.md#mus-q-0056) | question | Where a sub-agent's output is read once the session only identifies it |
+| [MUS-Q-0057](questions.md#mus-q-0057) | question | How the sub-agent drawer opens, what its badge counts, and where output is read |
+| [MUS-Q-0058](questions.md#mus-q-0058) | question | How a mis-routed jot is corrected, when the identifier is the routing |
+| [MUS-Q-0059](questions.md#mus-q-0059) | question | How a question answered somewhere other than Mustur gets closed in Mustur |
+| [MUS-Q-0060](questions.md#mus-q-0060) | question | How the session view should interpret the pane: frames, an emulator, or a stripped log |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -216,6 +226,29 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0107](decisions.md#mus-d-0107) | decision | Sign-in stays usernameless, and the chooser is drawn rather than described |
 | [MUS-D-0108](decisions.md#mus-d-0108) | decision | The surface count is twelve, and MUS-D-0072's eight is superseded |
 | [MUS-D-0109](decisions.md#mus-d-0109) | decision | What the last four answers settled, and one correction to MUS-D-0107 |
+| [MUS-D-0110](decisions.md#mus-d-0110) | decision | An agent's token is not an account, and its scope is what makes it safe |
+| [MUS-D-0111](decisions.md#mus-d-0111) | decision | The guard lets a token past the tool call with no write check, and a test in another package holds that |
+| [MUS-D-0112](decisions.md#mus-d-0112) | decision | A flag that changes nothing describes a credential that does not exist |
+| [MUS-D-0113](decisions.md#mus-d-0113) | decision | A token's lifetime is optional and defaults to never |
+| [MUS-D-0114](decisions.md#mus-d-0114) | decision | A test double that agrees with the bug is worse than no double |
+| [MUS-D-0115](decisions.md#mus-d-0115) | decision | The browser is told nothing and the log is told everything |
+| [MUS-D-0116](decisions.md#mus-d-0116) | decision | Columns are added to existing stores rather than assumed into them |
+| [MUS-D-0117](decisions.md#mus-d-0117) | decision | Accounts are enforced on the deployment, in the only order that works |
+| [MUS-D-0118](decisions.md#mus-d-0118) | decision | The tab bar pins on a phone and becomes a left rail on a wide screen |
+| [MUS-D-0119](decisions.md#mus-d-0119) | decision | A jot may carry a picture, and the description travels rather than the picture |
+| [MUS-D-0120](decisions.md#mus-d-0120) | decision | A scratch filing is not a record, so it costs no identifier |
+| [MUS-D-0121](decisions.md#mus-d-0121) | decision | Destinations are a grouped list, and the kind is what tells two of them apart |
+| [MUS-D-0122](decisions.md#mus-d-0122) | decision | A sub-agent's output is read in a sheet over the session, not in the list and not on its own page |
+| [MUS-D-0123](decisions.md#mus-d-0123) | decision | The sub-agent list lives in a drawer that is shut by default, and the session strip is a dropdown |
+| [MUS-D-0124](decisions.md#mus-d-0124) | decision | A control whose presence depends on scripting is decided by the browser, not by our script |
+| [MUS-D-0125](decisions.md#mus-d-0125) | decision | A mis-routed record is corrected by filing a new one and retiring the old, which keeps its identifier |
+| [MUS-D-0126](decisions.md#mus-d-0126) | decision | An agent may write down an answer the owner gave elsewhere, and must say where |
+| [MUS-D-0127](decisions.md#mus-d-0127) | decision | On a wide screen the account link is an icon at the foot of the rail, not a word in the header |
+| [MUS-D-0128](decisions.md#mus-d-0128) | decision | Every surface takes the width the rail leaves; a page that wants a narrower measure asks for it |
+| [MUS-D-0129](decisions.md#mus-d-0129) | decision | The session view's live strip is gone; the pill beside the project name already said it |
+| [MUS-D-0130](decisions.md#mus-d-0130) | decision | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be |
+| [MUS-D-0131](decisions.md#mus-d-0131) | decision | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS |
+| [MUS-D-0132](decisions.md#mus-d-0132) | decision | The session view renders frames from capture-pane, and the byte stream is gone |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -243,6 +276,33 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0025](findings.md#mus-f-0025) | finding | Test |
 | [MUS-F-0026](findings.md#mus-f-0026) | finding | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |
 | [MUS-F-0027](findings.md#mus-f-0027) | finding | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |
+| [MUS-F-0028](findings.md#mus-f-0028) | finding | Revoking a token does not close a stream already open under it |
+| [MUS-F-0029](findings.md#mus-f-0029) | finding | No passkey from a password manager could ever sign in, because the backup flags were never stored |
+| [MUS-F-0030](findings.md#mus-f-0030) | finding | A service piping a session could not be stopped, and held its port through the timeout |
+| [MUS-F-0031](findings.md#mus-f-0031) | finding | The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted |
+| [MUS-F-0032](findings.md#mus-f-0032) | finding | The Bottom tabs either need to be locked to the height of the screen with the content scrolling… |
+| [MUS-F-0033](findings.md#mus-f-0033) | finding | A long field value made the records page wider than the phone, and the tab bar went with it |
+| [MUS-F-0034](findings.md#mus-f-0034) | finding | The session view's quiet timer and composer could be scrolled off the bottom of a phone |
+| [MUS-F-0035](findings.md#mus-f-0035) | finding | The sub-agent box had no height cap, so it took the whole session view with it |
+| [MUS-F-0036](findings.md#mus-f-0036) | finding | The intake destination row hides its last choice behind a sideways scroll |
+| [MUS-F-0037](findings.md#mus-f-0037) | finding | A stored photo kept the metadata its camera wrote into it |
+| [MUS-F-0038](findings.md#mus-f-0038) | finding | The session view printed a sub-agent's whole final message where its name belonged |
+| [MUS-F-0039](findings.md#mus-f-0039) | finding | Searching the destination list costs either the no-script promise or the name in the box |
+| [MUS-F-0040](findings.md#mus-f-0040) | finding | The account page was the one surface with no way back to a session |
+| [MUS-F-0041](findings.md#mus-f-0041) | finding | The session page was the only surface that let itself be cached, so its markup could outlive its script |
+| [MUS-F-0042](findings.md#mus-f-0042) | finding | The quiet timer measured the age of the tab, in three separate ways |
+| [MUS-F-0043](findings.md#mus-f-0043) | finding | A dead Mustur kept its port for as long as its tmux pipe was running |
+| [MUS-F-0044](findings.md#mus-f-0044) | finding | IDW-F-0004 was routed to the idea inbox when it belonged to Mustur, and there was no way to correct that |
+| [MUS-F-0045](findings.md#mus-f-0045) | finding | A question answered somewhere other than Mustur stayed open in Mustur |
+| [MUS-F-0046](findings.md#mus-f-0046) | finding | A submit button nobody drew, hidden by script, stacked by a selector written for another form |
+| [MUS-F-0047](findings.md#mus-f-0047) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
+| [MUS-F-0048](findings.md#mus-f-0048) | finding | The plan tool refuses SVG, so the tab icons are drawn in CSS instead |
+| [MUS-F-0049](findings.md#mus-f-0049) | finding | The session view discarded tmux's rendering and re-derived it badly; the cause was ours, not the CLI's |
+| [MUS-F-0050](findings.md#mus-f-0050) | finding | A noscript given display: contents shows its own markup as text to everyone with script |
+| [MUS-F-0051](findings.md#mus-f-0051) | finding | The quiet counter read tmux's session_activity, which is not when the session last did anything |
+| [MUS-F-0052](findings.md#mus-f-0052) | finding | Frames left nothing to scroll back through, because an agent pane has no scrollback at all |
+| [MUS-F-0053](findings.md#mus-f-0053) | finding | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable |
+| [MUS-F-0054](findings.md#mus-f-0054) | finding | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

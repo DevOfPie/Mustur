@@ -89,7 +89,12 @@ type Accounts struct {
 	Records *store.Store
 	// Project is the project whose roles this install manages.
 	Project string
-	Now     func() time.Time
+	// ShowSessions says whether this server serves the session surface, so the
+	// nav can offer it. Without this the account page was the one surface with
+	// no way back to a running session (MUS-F-0040) — the header link goes one
+	// way, and the four-tab row every other page carries was three tabs here.
+	ShowSessions bool
+	Now          func() time.Time
 }
 
 func (a *Accounts) now() time.Time {
@@ -158,6 +163,8 @@ type accountPage struct {
 	// page announces it any more — the controls refuse and say why at the
 	// moment they refuse (MUS-Q-0048) — but the handlers still need to know.
 	LastOwner bool
+	// ShowSessions renders the nav's first tab, which every other surface has.
+	ShowSessions bool
 }
 
 // A roleRow is one project an account may do something in, written out with its
@@ -245,6 +252,9 @@ func (a *Accounts) people(w http.ResponseWriter, r *http.Request) {
 
 // render fills in everything the page shows about whoever is asking.
 func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.Account, p accountPage) {
+	// Set here rather than at the call sites: a page built without it renders a
+	// nav with no way back to a running session, which is what MUS-F-0040 was.
+	p.ShowSessions = a.ShowSessions
 	ctx := r.Context()
 	p.Email = acct.Email
 	p.Project = a.Project
@@ -513,9 +523,7 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
   .pair label { flex: 1; }
   #ceremony { margin: .6rem 0; padding: .7rem .8rem; border: 1px solid var(--edge);
               border-radius: .5rem; font-size: .9em; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); margin-top: 1.5rem; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
+` + shellCSS + `
 </style>
 </head>
 <body>
@@ -598,9 +606,11 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
 {{end}}
 
 <nav>
-  <a href="/records">Records</a>
-  <a href="/questions">Decisions</a>
-  <a href="/intake">Intake</a>
+  {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span></a>
+  <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a class="me here" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>
 </nav>
 <script src="/assets/auth.js"></script>
 <script src="/assets/account.js"></script>

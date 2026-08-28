@@ -412,3 +412,66 @@ func TestTheCeremonyScriptLoadsOnlyWhereThereIsOne(t *testing.T) {
 		t.Error("the invitation-failure page loads a ceremony it has no button for")
 	}
 }
+
+// Both kinds of passkey, because the difference between them is what broke.
+//
+// A synced credential — Bitwarden, iCloud Keychain, Google Password Manager,
+// 1Password — sets the backup-eligible flag. WebAuthn asks the relying party to
+// notice if that flag ever changes, so the server must store it at registration
+// and hand it back at sign-in. Mustur stored nothing, so the credential it
+// rebuilt claimed BE=0 against an assertion carrying BE=1, and go-webauthn
+// refused every login (MUS-F-0029).
+//
+// It shipped because the virtual authenticator modelled only a hardware key,
+// whose BE=0 agreed with the missing flag. The owner found it on a phone, which
+// is the only place it could have been found.
+func TestBothASyncedAndAHardwarePasskeyCanSignIn(t *testing.T) {
+	for _, kind := range []struct {
+		name string
+		make func(*testing.T) *authenticator
+	}{
+		{"synced", newAuthenticator},
+		{"hardware", newHardwareAuthenticator},
+	} {
+		t.Run(kind.name, func(t *testing.T) {
+			srv, accounts, _ := ceremonial(t)
+			ctx := context.Background()
+			email := kind.name + "@example.com"
+			secret, err := accounts.Invite(ctx, email, "MUS", account.Reader, "test")
+			if err != nil {
+				t.Fatal(err)
+			}
+			key := kind.make(t)
+			c := browser(t)
+			register(t, c, srv, key, secret)
+
+			acct, ok := accounts.AccountByEmail(ctx, email)
+			if !ok {
+				t.Fatal("registration made no account")
+			}
+			// What was stored is what the authenticator said about itself.
+			creds, err := accounts.Credentials(ctx, acct.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(creds) != 1 {
+				t.Fatalf("%d credentials", len(creds))
+			}
+			if creds[0].BackupEligible != (kind.name == "synced") {
+				t.Errorf("a %s passkey stored BackupEligible=%v", kind.name, creds[0].BackupEligible)
+			}
+
+			// And it signs in, which is the half that was broken.
+			if code, out := send(t, c, srv, "/signout", nil); code != http.StatusSeeOther && code != http.StatusOK {
+				t.Fatalf("signing out returned %d: %s", code, out)
+			}
+			code, begin := send(t, c, srv, "/signin/begin", nil)
+			if code != http.StatusOK {
+				t.Fatalf("beginning sign-in returned %d", code)
+			}
+			if code, out := send(t, c, srv, "/signin/finish", key.get(t, srv.URL, begin, []byte(acct.ID))); code != http.StatusOK {
+				t.Fatalf("a %s passkey could not sign in: %d %s", kind.name, code, out)
+			}
+		})
+	}
+}

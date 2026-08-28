@@ -401,11 +401,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   .said { margin: .8rem 1rem 0; padding: .6rem .8rem;
           border-left: 3px solid var(--edge); font-size: .9em; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-  nav { display: flex; border-top: 1.4px solid var(--edge); white-space: nowrap;
-        margin-top: auto; }
-  nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
-          text-decoration: none; color: inherit; opacity: .6; }
-  nav a.here { opacity: 1; font-weight: 600; }
+` + shellCSS + `
 </style>
 </head>
 <body>
@@ -437,10 +433,11 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
 </form>
 {{end}}
 <nav>
-  <a href="/sessions">Sessions</a>
-  <a href="/questions">Decisions</a>
-  <a href="/intake">Intake</a>
-  <a href="/records">Records</a>
+  <a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span></a>
+  <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 {{if not .None}}<script src="/assets/compose.js"></script>{{end}}
 </body>
