@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-61 record(s), by identifier.
+62 record(s), by identifier.
 
 ## The queue
 
@@ -71,6 +71,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0055](#mus-f-0055) | amend replaces a record whole, and the command that exists to correct records has been quietly gutting them | A finding created with a body, one citation and two fields, amended with --title alone, comes back as a bare title: exit 0, output the identifier. Across record_event, 15 amends dropped content and 8 records were still missing citations today; MUS-M-0010 went 630 characters of body to zero and back over four amends. | fixed |
 | [MUS-F-0056](#mus-f-0056) | reroute refused to correct a jot for the first minute after it was filed, and said something false about why | A jot filed through the intake surface and rerouted immediately: 'already routed there'. The same reroute with only --actor changed succeeded, which isolates the cause to the duplicate window's body-and-actor match. With the fix, the same-actor reroute inside the window succeeds. Reverting it fails the test with 'a deliberate filing was handed back the original'. | fixed |
 | [MUS-F-0057](#mus-f-0057) | A rerouted jot left its picture behind on the stub nobody reads | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' | fixed |
+| [MUS-F-0058](#mus-f-0058) | reroute took any record with a body, so a project record could be superseded by a jot in the idea inbox | Against a seeded store: reroute on MUS-P-0001 filed IDW-F-0001 carrying the project's description and left MUS-P-0001 with Status superseded and Superseded by IDW-F-0001. With the guard, all three of the project, repository and machine records are refused and a real jot still reroutes with its picture. Removing the guard fails the test on all three. | fixed |
 
 ---
 
@@ -1320,4 +1321,28 @@ Found while checking whether reroute carried everything across. It carries the t
 | --- | --- |
 | Where | internal/store/attach.go, cmd/mustur/reroute.go |
 | Evidence | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' |
+| Status | fixed |
+
+---
+
+## MUS-F-0058
+
+**reroute took any record with a body, so a project record could be superseded by a jot in the idea inbox**
+
+finding · 2026-08-28
+
+`mustur reroute MUS-P-0001 --to MUS-P-0002` succeeded. It filed the project record's description as a fresh finding in the idea inbox, and marked MUS-P-0001 — the record that defines this store's own prefix, its repository and its machine — as `superseded`, pointing at that finding. The same went through for the repository and machine records.
+
+Nothing about the command intends that. Its help says it re-files a mis-routed jot, its own comment opens with 'correcting a jot that Route it for me put in the wrong place', and every line of its design is about jots. It had two guards — the record must exist, and it must have a body — and a project record passes both.
+
+Fixed by asking the question the command is actually asking. `Routed to` is a field `intake.File` writes and nothing else does, so its presence is exactly 'this was routed, and can therefore be re-routed'. A record intake never filed is refused, and told why in the command's own terms rather than with a type name.
+
+A second, smaller thing found in the same pass, and recorded here because it is the same shape: `mustur ask --option "no separators here"` was accepted. An option is a label, one line on what it costs, and the paragraph behind it; a label alone hands the owner a word and leaves them to reconstruct the rest, which is the bare question this repository's contract asks nobody to send, one level down. The neighbouring flag already refuses malformed input — `--data` will not take a value that is not key=value — so the boundary was inconsistent with itself rather than lenient by design. A label with nothing behind it is now refused, and two parts are still enough.
+
+Both were found by running the commands over their edges rather than reading them, which is the second time today that reading said a command was careful and running it said otherwise.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/reroute.go, cmd/mustur/questions.go |
+| Evidence | Against a seeded store: reroute on MUS-P-0001 filed IDW-F-0001 carrying the project's description and left MUS-P-0001 with Status superseded and Superseded by IDW-F-0001. With the guard, all three of the project, repository and machine records are refused and a real jot still reroutes with its picture. Removing the guard fails the test on all three. |
 | Status | fixed |

@@ -34,6 +34,14 @@ func (v *values) Set(s string) error {
 	if strings.TrimSpace(s) == "" {
 		return fmt.Errorf("an empty option is not an answer anyone can pick")
 	}
+	// A label on its own is the bare question the contract asks nobody to send,
+	// one level down: the owner is handed a word and left to work out what it
+	// costs. --data refuses a value that is not key=value at this same boundary
+	// (MUS-F-0058).
+	if !strings.Contains(s, question.OptionSep) {
+		return fmt.Errorf("%q is a label with nothing behind it: an option is "+
+			"\"Label :: one line on what it costs :: the paragraph behind it\"", s)
+	}
 	*v = append(*v, s)
 	return nil
 }
