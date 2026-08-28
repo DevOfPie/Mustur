@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-26 record(s), by identifier.
+28 record(s), by identifier.
 
 ## The queue
 
@@ -36,6 +36,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0023](#mus-f-0023) | Test for Mustur 2c |  | unreviewed |
 | [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… | Filed from a phone by the owner while proving milestone 2c's last clause. | fixed |
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
+| [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
+| [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
 
 ---
 
@@ -471,3 +473,44 @@ Test
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | no destination is obvious |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0026
+
+**Registration never required a discoverable passkey, so an account could hold one nobody could sign in with**
+
+finding · 2026-08-25
+
+Noticed by: [MUS-R-0001](routing.md#mus-r-0001)
+
+Sign-in asks the browser for any credential scoped to this site and lets the person choose from what it offers. BeginRegistration set no AuthenticatorSelection, so residentKey was unset and the authenticator decided. A credential created non-discoverable is one this server can never ask for by name: the account exists, holds a passkey, and cannot be signed in with. Modern platform authenticators usually make passkeys discoverable anyway, which is why nothing had failed yet — the defect was that it was theirs to decide rather than ours to require.
+
+| Field | Value |
+| --- | --- |
+| Status | fixed |
+| Fix | residentKey required and userVerification preferred. A test asserts the registration options carry residentKey required and that the credential is registered under the account's address, so the system chooser lists something legible rather than an unlabelled entry. Verified to fail with the requirement removed. |
+| Found by | a review comment on plan-b1277e4f36f24da3 asking how somebody with several passkeys controls which account they sign in to. The question was about the drawing; the answer went looking at the code. |
+
+---
+
+## MUS-F-0027
+
+**Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next**
+
+finding · 2026-08-25
+
+instances: [MUS-D-0056](decisions.md#mus-d-0056)
+
+asked before: [MUS-Q-0010](questions.md#mus-q-0010)
+
+and: [MUS-Q-0034](questions.md#mus-q-0034)
+
+remediated: [MUS-Q-0043](questions.md#mus-q-0043)
+
+docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards. It has now failed seven times. Intake at 2c, the decision queue at 3, the composer at 5 — each recorded, each followed by another. Milestone 5b then built four at once with no plan at all, which is more instances in one milestone than in the three before it combined. What makes this a finding rather than four is the shape: every instance was recorded, two owner answers were given on the same subject (MUS-Q-0010, MUS-Q-0034), and the rate went up. A record that is read after the fact is not a safeguard, and the remedy is not another paragraph in the file that already says this. The 5b surfaces were drawn afterwards under MUS-Q-0043 and rebuilt from the drawings, which is remediation of the instance and not of the pattern.
+
+| Field | Value |
+| --- | --- |
+| Where | docs/ui-surfaces.md, and every milestone that added a surface |
+| Status | open |

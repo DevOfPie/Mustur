@@ -50,6 +50,11 @@ var composeJS string
 
 // Compose serves the composer.
 type Compose struct {
+	// ShowAccount renders the header link to the account surface, which is
+	// served only when an origin is configured. Off means the link is absent
+	// rather than dead (MUS-Q-0052).
+	ShowAccount bool
+
 	// Adapter lists the sessions a message can be sent to. Nil means none can
 	// be, and the page says so rather than pretending.
 	Adapter *session.Adapter
@@ -109,6 +114,10 @@ type composeTarget struct {
 
 type composePage struct {
 	Targets []composeTarget
+	// ShowAccount renders the header link to the account surface, which is
+	// served only when an origin is configured. Off means the link is absent
+	// rather than dead (MUS-Q-0052).
+	ShowAccount bool
 	// None is true when there is nowhere at all to send, which is a different
 	// page rather than a form that cannot be submitted.
 	None  bool
@@ -333,6 +342,7 @@ func (c *Compose) render(w http.ResponseWriter, p composePage) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	// A capture surface a browser caches is one that shows a stale draft.
 	w.Header().Set("Cache-Control", "no-store")
+	p.ShowAccount = c.ShowAccount
 	if err := composeTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -350,6 +360,12 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
          margin-inline: auto; display: flex; flex-direction: column;
          min-height: 100vh; }
+  /* MUS-Q-0052: the account surface is reached from here rather than from
+     a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
+     actually serves it — a link that goes nowhere is the failure the bar
+     itself was written to avoid. */
+  .acct { font-size: .82em; opacity: .6; text-decoration: none;
+          color: inherit; margin-left: auto; }
   header { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem;
            border-bottom: 1.4px solid var(--edge); white-space: nowrap; }
   header a { color: inherit; text-decoration: none; opacity: .7; }
@@ -394,7 +410,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
 </head>
 <body>
 <header><a href="/sessions" aria-label="Back">←</a><strong>Compose</strong>
-  <span class="kept" id="kept" hidden>draft kept</span></header>
+  <span class="kept" id="kept" hidden>draft kept</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 {{if .Sent}}<p class="said">{{.Sent}}</p>{{end}}
 {{if .Error}}<p class="said">Not sent: {{.Error}}</p>{{end}}
 {{if .Gone}}<p class="said">{{.Gone}} is no longer a destination, so nothing is chosen for you. Pick one below.</p>{{end}}
@@ -424,6 +440,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   <a href="/sessions">Sessions</a>
   <a href="/questions">Decisions</a>
   <a href="/intake">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 {{if not .None}}<script src="/assets/compose.js"></script>{{end}}
 </body>

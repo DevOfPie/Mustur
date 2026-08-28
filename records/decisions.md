@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-102 record(s), by identifier.
+109 record(s), by identifier.
 
 ## Index
 
@@ -114,6 +114,13 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0100](#mus-d-0100) | MUS-D-0013's fold clause is declined, and the records stop saying it is built | 2026-08-24 |
 | [MUS-D-0101](#mus-d-0101) | A question's lifecycle times come from the clock | 2026-08-24 |
 | [MUS-D-0102](#mus-d-0102) | The composer is served whether or not sessions are | 2026-08-24 |
+| [MUS-D-0103](#mus-d-0103) | Mustur grows its own accounts, and Access stays in front while they are built | 2026-08-24 |
+| [MUS-D-0104](#mus-d-0104) | The credential is a passkey, and losing the device is not losing the account | 2026-08-24 |
+| [MUS-D-0105](#mus-d-0105) | WebAuthn verification uses a maintained library rather than this repository's own crypto | 2026-08-24 |
+| [MUS-D-0106](#mus-d-0106) | The authentication surfaces, after their first review | 2026-08-25 |
+| [MUS-D-0107](#mus-d-0107) | Sign-in stays usernameless, and the chooser is drawn rather than described | 2026-08-25 |
+| [MUS-D-0108](#mus-d-0108) | The surface count is twelve, and MUS-D-0072's eight is superseded | 2026-08-25 |
+| [MUS-D-0109](#mus-d-0109) | What the last four answers settled, and one correction to MUS-D-0107 | 2026-08-25 |
 
 ---
 
@@ -1649,3 +1656,103 @@ decision · 2026-08-24
 answers: [MUS-Q-0038](questions.md#mus-q-0038)
 
 The composer was registered behind --sessions on the reasoning that it can type into a running agent. It also files jots, so with the flag off — the default, and the live service's posture until 2026-08-23 — the idea-inbox route the owner asked for was unreachable: a capture surface depending on a security switch. It is now always served, and offers sessions only when sessions are served, so with the flag off it has one destination and nothing it offers can reach an agent. The gating had been taken without asking and recorded only in a code comment.
+
+---
+
+## MUS-D-0103
+
+**Mustur grows its own accounts, and Access stays in front while they are built**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0039](questions.md#mus-q-0039)
+
+and placed by: [MUS-Q-0040](questions.md#mus-q-0040)
+
+Access is the only authorisation Mustur has: the identity header is read for attribution and never for a decision, so anyone the policy admits reaches the composer and the session view, both of which type into a running agent's stdin. The builder proposed gating on that header — read-only unless named — and the owner asked for accounts instead, on the grounds that proper sign-in makes the app easier to use and to share. The objection recorded and answered: taking Access off makes Mustur itself face the internet and own sessions, credential storage and every abuse path, on a service that types into an agent. The owner's answer keeps Access enabled until Mustur is mostly complete, so the window in which new authentication code is the only thing between a stranger and an agent is one the owner opens deliberately, later, and not a consequence of building this.
+
+---
+
+## MUS-D-0104
+
+**The credential is a passkey, and losing the device is not losing the account**
+
+decision · 2026-08-24
+
+answers: [MUS-Q-0041](questions.md#mus-q-0041)
+
+A password would bring hashing, rate limiting, lockout, reset by email and a breach story; an emailed link would put an inbox on the critical path to an agent. A passkey brings none of those and brings device loss instead, which the owner named in the same breath: it still needs to be resettable when someone moves devices and loses the old key. So recovery is part of the milestone rather than a later addition. An account may hold more than one passkey, so a second device is the ordinary recovery; where none is left, an invite reissued by someone who already has an owner role on the project restores it, and for the last owner standing the recovery is a command on the machine itself — which is the trust root anyway, since anyone who can run it can already read the store.
+
+---
+
+## MUS-D-0105
+
+**WebAuthn verification uses a maintained library rather than this repository's own crypto**
+
+decision · 2026-08-24
+
+Registering and asserting a passkey means parsing CBOR attestation objects, checking a relying-party hash, verifying an ES256 or RS256 signature and tracking a signature counter. This repository's dependency list is short and stays short on purpose, and this is the case where that stance loses: hand-rolled authentication crypto is the classic way to ship a hole that no test in the tree would show. go-webauthn/webauthn is the maintained implementation and it is pure Go, so the static binary and the modernc SQLite driver are unaffected.
+
+---
+
+## MUS-D-0106
+
+**The authentication surfaces, after their first review**
+
+decision · 2026-08-25
+
+answers: [MUS-Q-0045](questions.md#mus-q-0045)
+
+and: [MUS-Q-0046](questions.md#mus-q-0046)
+
+and inline: [MUS-Q-0047](questions.md#mus-q-0047)
+
+drawn under: [MUS-Q-0043](questions.md#mus-q-0043)
+
+Twelve comments on plan-b1277e4f36f24da3, and five of them were the same instruction: take the explanatory prose out of the wireframes. What survives is the line telling somebody with no account where one comes from, and the line naming the command that makes the first owner — both do work rather than narrate. What went is every sentence reassuring the reader about passkeys. The account surface splits in two, a reader sees only themselves, and adding a passkey happens in place rather than on a page, which takes the count of scripted surfaces from three to four and is recorded here rather than absorbed. Three fixes came from the drawing being wrong rather than wordy: a one-time invitation link was shown truncated with no way to copy it, which for a secret that is never stored again is a secret destroyed; the people rows overlapped on a phone; and a role dropdown did nothing until a separate Set button was pressed, which the owner named as bad and is now a save on change. One thing was cut that had argued for itself: the banner warning the only owner that some controls would refuse. The refusals remain, so the change is that somebody meets the rule by meeting it.
+
+---
+
+## MUS-D-0107
+
+**Sign-in stays usernameless, and the chooser is drawn rather than described**
+
+decision · 2026-08-25
+
+from: [MUS-F-0026](findings.md#mus-f-0026)
+
+A review asked for an address field on sign-in, so that somebody holding several passkeys can control which account they reach. They already can: the browser is asked for any passkey scoped to this site and the operating system lists what it holds, labelled by the address each was registered under. Mustur cannot style that sheet and never sees the list, which is why nothing is typed. The canvas now draws it rather than asserting it. Typing an address first would tell a stranger whether an address has an account here unless every address produced an identical prompt, and would put a keyboard in front of the one flow that had none — so the field is not built, and the question is on the plan with a middle option: one button by default, with a way out that reveals a field. The comment was right about something else, which is MUS-F-0026: registration never required a discoverable credential.
+
+---
+
+## MUS-D-0108
+
+**The surface count is twelve, and MUS-D-0072's eight is superseded**
+
+decision · 2026-08-25
+
+supersedes: [MUS-D-0072](#mus-d-0072)
+
+pattern: [MUS-F-0027](findings.md#mus-f-0027)
+
+MUS-D-0072 recorded that v1 has eight surfaces. docs/ui-surfaces.md now says twelve and no record carried the change, which a review found. Seven to eight got its own decision; eight to twelve got none, because the four that arrived — sign in, accept an invitation, account, people — were built before anyone counted them. The count is twelve. Surface 8 is a running session's output, named at 4b by trying to build against nothing. Surfaces 9 to 12 are the authentication pages, and MUS-F-0027 is the pattern that produced all four at once. This supersedes the number in MUS-D-0072 and nothing else in it.
+
+---
+
+## MUS-D-0109
+
+**What the last four answers settled, and one correction to MUS-D-0107**
+
+decision · 2026-08-25
+
+corrects: [MUS-D-0107](#mus-d-0107)
+
+answers: [MUS-Q-0050](questions.md#mus-q-0050)
+
+and: [MUS-Q-0044](questions.md#mus-q-0044)
+
+and also: [MUS-Q-0048](questions.md#mus-q-0048)
+
+and finally: [MUS-Q-0049](questions.md#mus-q-0049)
+
+MUS-D-0107 said the question about a usernameless sign-in was on the plan awaiting an answer. It had been answered: MUS-Q-0050, 'No — the system chooser already asks', so no address field is revealed and nothing further is owed. decisions.md is append-only, so this corrects it here rather than editing it. Three other answers had no record. MUS-Q-0044: keep all three surfaces the owner can start a message from, and say so, rather than folding them. MUS-Q-0048: the only-owner banner is cut, and the refusals say why at the moment they refuse. MUS-Q-0049: a question's timestamps are stamped from the clock and a past --at is refused, which is why no question can any more record an answer before its own creation.

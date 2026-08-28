@@ -394,12 +394,14 @@ func TestOnlyBuiltSurfacesGetATab(t *testing.T) {
 	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
 	body := getFrom(t, srv, "/questions")
 
-	for _, built := range []string{"/intake", "/sessions"} {
+	for _, built := range []string{"/intake", "/sessions", "/records"} {
 		if !strings.Contains(body, `href="`+built+`"`) {
 			t.Errorf("no tab for %s, which is built", built)
 		}
 	}
-	for _, unbuilt := range []string{"/records"} {
+	// Records arrived at milestone 5b and moved from the list below to the one
+	// above, which is what this test is shaped to survive.
+	for _, unbuilt := range []string{"/routing", "/audit"} {
 		if strings.Contains(body, `href="`+unbuilt+`"`) {
 			t.Errorf("a tab points at %s, which is not built", unbuilt)
 		}

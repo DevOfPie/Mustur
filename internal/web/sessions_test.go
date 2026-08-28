@@ -240,7 +240,9 @@ func TestAPageWithNoSessionCarriesNoScript(t *testing.T) {
 // templates at once. Sessions arrived at 4b and only its own page grew, leaving
 // two, two and three tabs in one binary.
 func TestEverySurfaceCarriesTheSameBar(t *testing.T) {
-	tabs := []string{`href="/sessions"`, `href="/questions"`, `href="/intake"`}
+	// Four, which is MUS-D-0041's number: the owner chose four against a
+	// recommendation of three, and Records was the one that did not exist yet.
+	tabs := []string{`href="/sessions"`, `href="/questions"`, `href="/intake"`, `href="/records"`}
 
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	st, err := store.Open(context.Background(), filepath.Join(t.TempDir(), "test.db"))
@@ -296,8 +298,8 @@ func TestASurfaceThatIsNotServedGetsNoTab(t *testing.T) {
 		if strings.Contains(body, `href="/sessions"`) {
 			t.Errorf("%s offers a tab to a surface this server does not serve", path)
 		}
-		// The other two are unaffected by the switch.
-		for _, tab := range []string{`href="/questions"`, `href="/intake"`} {
+		// The others are unaffected by the switch.
+		for _, tab := range []string{`href="/questions"`, `href="/intake"`, `href="/records"`} {
 			if !strings.Contains(body, tab) {
 				t.Errorf("%s lost %s when sessions were turned off", path, tab)
 			}

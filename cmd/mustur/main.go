@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/account"
 	"github.com/DevOfPie/Mustur/internal/audit"
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
@@ -49,6 +50,8 @@ const usage = `mustur — records and routing for one project
   mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones
   mustur session  start P --dir D --cmd C     start a session Mustur owns, inside tmux
                   list | stop P               there is no send: see cmd/mustur/sessions.go
+  mustur account  invite --email E [--role R]  a one-time link; printed once, never stored
+                  list | grant                who Mustur knows, and what they may do
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
   mustur version
 
@@ -105,6 +108,8 @@ func run(argv []string) error {
 		return cmdQuestions(args)
 	case "session":
 		return cmdSession(args)
+	case "account":
+		return cmdAccount(args)
 	case "audit":
 		return cmdAudit(args)
 	case "version", "--version", "-version":
@@ -424,6 +429,14 @@ func cmdServe(args []string) error {
 	// the other surfaces does not offer a tab to them: a tab that goes nowhere
 	// is an unbuilt capability described as existing.
 	withSessions := fs.Bool("sessions", false, "serve the session surface and let the composer reach sessions; both type into a running agent")
+	// The site as a browser sees it. A passkey is bound to it, which is what
+	// makes one unphishable — and what makes a wrong value fail silently, by
+	// making every registered passkey unusable rather than by erroring.
+	origin := fs.String("origin", "", "the site as a browser sees it, e.g. https://mustur.devofpie.com; required to sign in")
+	// Off by default, and for the same reason --sessions is: turning
+	// enforcement on before anybody holds a passkey locks the owner out of
+	// their own running service. Turned on once somebody can get in.
+	withAccounts := fs.Bool("accounts", false, "require a signed-in account, and enforce its role")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -441,13 +454,20 @@ func cmdServe(args []string) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", mcpsrv.Handler(s))
+	// One condition for all five headers: /account is registered only when an
+	// origin is configured, so the link exists exactly when the surface does.
+	// MUS-Q-0052 chose a header link over a fifth tab, and a link that goes
+	// nowhere is the failure the bar was written to avoid.
+	showAccount := *origin != ""
 	intake := &web.Intake{
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
 		ShowSessions: *withSessions,
+		ShowAccount:  showAccount,
 	}
 	questions := &web.Questions{
 		Store: s, Project: *project, Actor: defaultActor(), ExportTo: *exportTo,
 		ShowSessions: *withSessions,
+		ShowAccount:  showAccount,
 		// An answer typed from a phone is carried into the session that raised
 		// it, if that session is still alive and Mustur started it.
 		Sessions: &session.Adapter{},
@@ -465,7 +485,11 @@ func cmdServe(args []string) error {
 	// will ever read.
 	defer hub.Shutdown()
 	if *withSessions {
-		sessions := &web.Sessions{Hub: hub, Adapter: adapter, Store: s, Actor: defaultActor(), HookDir: hookDir}
+		sessions := &web.Sessions{
+			Hub: hub, Adapter: adapter, Store: s,
+			Actor: defaultActor(), HookDir: hookDir,
+			ShowAccount: showAccount,
+		}
 		sessions.Routes(mux)
 	}
 	// The composer is served whatever the flag says, and offers sessions only
@@ -480,28 +504,71 @@ func cmdServe(args []string) error {
 	compose := &web.Compose{
 		Store: s, Project: *project,
 		Actor: defaultActor(), ExportTo: *exportTo,
+		ShowAccount: showAccount,
 	}
 	if *withSessions {
 		compose.Adapter = adapter
 	}
 	compose.Routes(mux)
+
+	// The records document, which is the fourth tab and milestone 6's subject.
+	// Served unconditionally: it reads what the store already holds, and it is
+	// the one surface that is useful before anything else is configured.
+	records := &web.Records{
+		Store: s, Project: *project,
+		ShowSessions: *withSessions, ShowAccount: showAccount,
+	}
+	records.Routes(mux)
+
+	// Sign-in is served whenever an origin is configured, whether or not
+	// enforcement is on: somebody has to be able to register a passkey before
+	// the guard can be turned on without locking everybody out.
+	accounts := account.New(s.DB())
+	var handler http.Handler = mux
+	if *origin != "" {
+		auth := &web.Auth{
+			Accounts: accounts,
+			Origin:   *origin,
+			Secure:   strings.HasPrefix(*origin, "https://"),
+			// The record store, so an invitation names the project rather than
+			// showing a tag the invited person has never seen.
+			Records: s,
+		}
+		auth.Routes(mux)
+		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project, Records: s}
+		manage.Routes(mux)
+		if *withAccounts {
+			guard := &web.Guard{Auth: auth, Project: *project}
+			handler = guard.Wrap(mux)
+		}
+	} else if *withAccounts {
+		return fmt.Errorf("--accounts needs --origin: a passkey is bound to the site it was registered on")
+	}
 	mux.Handle("/", intake.Handler())
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
 	})
 	srv := &http.Server{
 		Addr:              *addr,
-		Handler:           mux,
+		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
-	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
-		version, n, *db, *addr, *addr, *addr)
+	fmt.Printf("mustur %s serving %d record(s) from %s\n  tool call  http://%s/mcp\n  records    http://%s/records\n  intake     http://%s/intake\n  decisions  http://%s/questions\n",
+		version, n, *db, *addr, *addr, *addr, *addr)
 	if *withSessions {
 		fmt.Printf("  sessions   http://%s/sessions  — this one can type into a running agent\n", *addr)
 		fmt.Printf("  compose    http://%s/compose   — and so can this one\n", *addr)
 	} else {
 		fmt.Printf("  compose    http://%s/compose   — the idea inbox only, with no session to send to\n", *addr)
 		fmt.Println("  sessions   not served; --sessions publishes the surfaces that type into a running agent")
+	}
+	switch {
+	case *origin == "":
+		fmt.Println("  accounts   no --origin, so nobody can sign in; whatever is in front is the only gate")
+	case *withAccounts:
+		fmt.Printf("  accounts   enforced, as %s\n", *origin)
+	default:
+		fmt.Printf("  accounts   sign-in served at %s/signin, and NOT enforced; --accounts enforces it\n", *origin)
 	}
 	return srv.ListenAndServe()
 }

@@ -53,6 +53,10 @@ type Questions struct {
 	Actor   string
 	Now     func() time.Time
 
+	// ShowAccount renders the header link to the account surface, which is
+	// served only when an origin is configured. Off means the link is absent
+	// rather than dead (MUS-Q-0052).
+	ShowAccount bool
 	// ShowSessions says whether this server serves the session surface, which
 	// decides whether the bar offers a tab to it. Off by default: the session
 	// surface carries a composer that types into a running agent's stdin, so
@@ -131,6 +135,7 @@ type queuePage struct {
 	Error    string
 	// ShowSessions renders the Sessions tab. See the note on intake's page.
 	ShowSessions bool
+	ShowAccount  bool
 }
 
 func (q *Questions) open(ctx context.Context) ([]queued, error) {
@@ -170,6 +175,7 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 	}
 	page := queuePage{
 		ShowSessions: q.ShowSessions,
+		ShowAccount:  q.ShowAccount,
 		Project:      q.Project,
 		Open:         openQs,
 		OpenN:        len(openQs),
@@ -320,7 +326,14 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0;
          max-width: 40rem; margin-inline: auto;
          display: flex; flex-direction: column; min-height: 100vh; }
-  header { padding: .75rem 1rem; border-bottom: 1.4px solid var(--edge);
+  /* MUS-Q-0052: the account surface is reached from here rather than from
+     a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
+     actually serves it — a link that goes nowhere is the failure the bar
+     itself was written to avoid. */
+  .acct { font-size: .82em; opacity: .6; text-decoration: none;
+          color: inherit; margin-left: auto; }
+  header { display: flex; align-items: baseline; gap: .6rem;
+           padding: .75rem 1rem; border-bottom: 1.4px solid var(--edge);
            display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
   header strong { font-size: 1rem; }
   header .n { margin-left: auto; opacity: .65; font-size: .85em; }
@@ -376,7 +389,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 </style>
 </head>
 <body>
-<header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span></header>
+<header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
 {{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.</p>{{end}}
@@ -420,6 +433,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions" class="here">Decisions{{if .OpenN}} · {{.OpenN}}{{end}}</a>
   <a href="/intake">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 </body>
 </html>

@@ -65,6 +65,11 @@ const IdleTimeout = 30 * time.Minute
 
 // Sessions serves the session surface.
 type Sessions struct {
+	// ShowAccount renders the header link to the account surface, which is
+	// served only when an origin is configured. Off means the link is absent
+	// rather than dead (MUS-Q-0052).
+	ShowAccount bool
+
 	Hub     *session.Hub
 	Adapter *session.Adapter
 	// Store is read only for the count the Decisions tab carries. Nil means the
@@ -129,7 +134,11 @@ type sessionRow struct {
 }
 
 type sessionPage struct {
-	Project       string
+	Project string
+	// ShowAccount renders the header link to the account surface, which is
+	// served only when an origin is configured. Off means the link is absent
+	// rather than dead (MUS-Q-0052).
+	ShowAccount   bool
 	Rows          []sessionRow
 	Subagents     []subagentRow
 	Running       int
@@ -254,6 +263,9 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 	if s.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), s.Store)
 	}
+	// Set here rather than at the call sites: a page built without it renders
+	// a header missing its only route to the account surface.
+	p.ShowAccount = s.ShowAccount
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := sessionTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -497,6 +509,12 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   header .pill { border: 1px solid var(--edge); border-radius: 999px;
                  padding: .1rem .55rem; font-size: .78em; }
   header .pill.on { border-color: var(--accent); background: var(--accent-soft); }
+  /* MUS-Q-0052: the account surface is reached from here rather than from
+     a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
+     actually serves it — a link that goes nowhere is the failure the bar
+     itself was written to avoid. */
+  .acct { font-size: .82em; opacity: .6; text-decoration: none;
+          color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
   /* Chrome and output are visually separate. Anything Mustur says about the
      session sits on a tinted strip; anything the session said is plain text. */
@@ -562,7 +580,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <body data-project="{{.Project}}">
 <header><strong>{{if .Project}}{{.Project}}{{else}}Sessions{{end}}</strong>
   <span class="pill" id="state">connecting</span>
-  <span class="who">whippy-vm</span></header>
+  <span class="who">whippy-vm</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 {{if .Rows}}<div class="rail" id="rail">
   {{range .Rows}}<a href="/sessions/{{.Project}}"{{if .Here}} class="here"{{end}}>{{.Project}}</a>{{end}}
 </div>{{end}}
@@ -595,6 +613,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <a href="/sessions" class="here">Sessions</a>
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 {{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
 </body>

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-38 record(s), by identifier.
+54 record(s), by identifier.
 
 ---
 
@@ -869,4 +869,365 @@ The composer files jots as well as typing into sessions, and the builder registe
 | Surfaced | 2026-08-24 19:54 |
 | Answer | Serve it always, and offer only the idea inbox when sessions are off. |
 | Answered | 2026-08-24 19:54 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0039
+
+**Should Mustur have its own accounts rather than relying on Cloudflare Access?**
+
+question · 2026-08-24
+
+Access is the only authorisation Mustur has: the identity header is read for attribution and never for a decision, so anyone the policy admits reaches every surface including the two that type into a running agent's stdin. Milestone 6 puts a second person through that gate. The builder recommended gating on the identity header instead; the owner asked for something larger.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | milestone 6, and what the stack table's Identity row says |
+| Needed to proceed | yes |
+| Option | Accounts instead of Access, with Access kept until Mustur is mostly complete :: The end state is self-contained, and the risky window is the owner's to open :: Mustur owns identity end to end. Access stays in front while it is built, so a bug in new authentication code is not immediately a stranger at an agent's keyboard, and comes off when the owner judges it ready. |
+| Option | Accounts behind Access permanently :: Two gates forever :: Per-user identity and roles, with an unauthenticated stranger never reaching the origin. Inviting someone means adding them in two places, which is the friction being removed. |
+| Option | Neither yet, make Access cheaper :: No new attack surface at all :: Lengthen the Access session and add the second person's email to the policy. Accounts become a milestone later, with evidence rather than a guess. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Aim for accounts instead of Access. Access stays enabled until Mustur is mostly complete, since it should not negatively affect anything behind it. |
+| Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0040
+
+**Where does authentication land in the plan?**
+
+question · 2026-08-24
+
+Authentication is not in Plan.md. The stack table's Identity row says Cloudflare Access at the edge, and milestone 6's own sentence says a second person signs in through Access.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 6 proceeds as written |
+| Needed to proceed | yes |
+| Option | Its own milestone, before 6 :: Milestone 6 waits, because a second person signing in is what it would prove :: Authentication becomes a numbered milestone with its own done-when, and the Identity row changes with it. |
+| Option | Fold it into 6 :: Fewer moving parts on the plan :: Milestone 6 grows and its sentence is rewritten, turning a milestone about reading into one mostly about authentication. |
+| Option | Its own milestone, after 6 :: Nothing is blocked :: Milestone 6 ships on Access, and the second person is invited twice. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Its own milestone, before 6. |
+| Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0041
+
+**What is the credential?**
+
+question · 2026-08-24
+
+The three shapes differ less in difficulty than in what has to be defended. A password brings hashing, rate limiting, lockout, reset by email and a breach story; a passkey brings none of those and brings device loss instead; an emailed link puts the inbox on the path to an agent.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what the sign-in surface is and what can go wrong with it |
+| Needed to proceed | yes |
+| Option | Passkey :: Nothing to remember and nothing to leak :: Face or fingerprint on the phone. No password store, no reset flow, no lockout — the three places auth code usually goes wrong do not exist. Needs a recovery path when a device is lost. |
+| Option | Emailed sign-in link :: No device dependency :: A lost phone is not a lockout. It puts the inbox on the critical path to an agent, and a forwarded link is a session. |
+| Option | Password :: Works on any browser :: Familiar, and the option that needs every piece of machinery the other two avoid. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Passkey, which still needs to be resettable in case someone moves devices and loses access to the old key. |
+| Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0042
+
+**Who gets an account, and does an account see everything?**
+
+question · 2026-08-24
+
+Milestone 6 wants a second person who reads. Today an identity that gets in reaches the composer and the session view, both of which type into a running agent.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a reader can be invited without inviting a writer |
+| Needed to proceed | yes |
+| Option | Invite-only, roles per project :: A person can read one project and not another :: Roles attach to a project rather than to the install. Right if Mustur holds several projects with different audiences, and more to build and keep correct with one project in it. |
+| Option | Invite-only, two roles :: Owner reaches everything, reader reads :: The read-only shape milestone 6 wanted, done in Mustur rather than at the edge. |
+| Option | Invite-only, everyone equal :: Simplest :: Anyone invited reaches everything, so a reader cannot be invited without inviting a writer. |
+| Asked by | whippy |
+| Surfaced | 2026-08-24 21:38 |
+| Answer | Invite-only, roles per project. |
+| Answered | 2026-08-24 21:38 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0043
+
+**Four authentication pages were built with no wireframe. What happens to them?**
+
+question · 2026-08-25
+
+/signin, /invite/{token}, /account/passkey and /account were written straight into Go templates. They are not among the eight surfaces docs/ui-surfaces.md lists, so they are a new surface class rather than existing drawings that were routed around — but that file carries a standing instruction to publish a plan for every remaining surface before any more are built, and this is the fourth time a surface has been built the way it exists to prevent. The owner has answered the same question twice, on MUS-Q-0010 and MUS-Q-0034, and was asked rather than assumed a third time.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether milestone 5b's surfaces stand as built |
+| Needed to proceed | yes |
+| Option | Draw them, then rebuild :: Recommended · the order the owner has settled twice :: Artboards published for all four as new surfaces, reviewed, and the pages rebuilt from what is approved. What exists becomes a baseline to argue with, as intake was. Costs a round trip and a rebuild of work that functions. |
+| Option | Draw them, keep what works :: Documented and reviewable, without undoing working pages :: The built pages change only where drawing and code disagree. Accepts that code led design for these four, which is the thing the instruction exists to stop. |
+| Option | Leave them undrawn, record it :: Retires a rule enforced three times :: The pages stand, the file records that a fourth set was built without a plan, and the instruction narrows to the surfaces it covers. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:05 |
+| Answer | Draw them, then rebuild. |
+| Answered | 2026-08-25 04:05 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0044
+
+**How much design do the authentication pages actually need?**
+
+question · 2026-08-25
+
+Three of the four are a sentence and a button: sign in, accept an invitation, add a passkey. The fourth has real content and destructive controls — passkeys, roles, disabling somebody. The awkward states are the interesting part either way: nobody signed in, an invitation that cannot be used, the last passkey, the only owner.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what is published for review |
+| Option | Wireframe like the others :: Screens rather than prose :: Full artboards at the same fidelity as the composer and records screens, annotated for the states that matter. |
+| Option | Only the account page :: Draw what has choices in it :: The three ceremony pages are described; a drawing of one button would say nothing a sentence does not. |
+| Option | Just the states, in prose :: Cheapest :: A written brief naming each page, what it must never get wrong, and the awkward states — which is what surfaces 1 to 8 had before anyone drew them. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:05 |
+| Answer | Wireframe like the others. |
+| Answered | 2026-08-25 04:05 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0045
+
+**Is the account surface one screen or two?**
+
+question · 2026-08-25
+
+The drawing stacked your own passkeys and, for an owner, everybody else's roles on one screen. An owner scrolled past their own two passkeys to reach the people list, and a review found the people rows overlapping on a phone.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what a reader can reach, and how crowded the owner's view is |
+| Option | Split: yours, and everybody's :: Two screens :: /account is your roles and your passkeys. People and invitations is a second screen only an owner can reach. A reader never sees it and cannot navigate to it. |
+| Option | One screen :: Everything in one place :: Honest about how little there is, until somebody has twenty accounts. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:28 |
+| Answer | Split: yours, and everybody's. |
+| Answered | 2026-08-25 04:28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0046
+
+**Should a reader see who else has access?**
+
+question · 2026-08-25
+
+A reader currently sees themselves and nothing else. The alternative is that anybody with a role can see the list of people without being able to change it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | what an invited reader learns about the people around them |
+| Option | No, only themselves :: A reader learns nothing about the shape of the team :: They were given an account to read records, and the list of addresses is not that. |
+| Option | Yes, read-only :: Everybody sees who has access :: Useful in a shared project, and it means inviting one reader tells them every other address. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:28 |
+| Answer | No — only themselves. |
+| Answered | 2026-08-25 04:28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0047
+
+**Does adding a passkey deserve its own page?**
+
+question · 2026-08-25
+
+The first drawing gave the ceremony a page: a heading, a sentence and one button. A review called it a page for one button. Opening it in place on the account screen removes the page and gives that screen the browser credentials API, which takes the count of scripted surfaces from three to four.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | how many surfaces carry script |
+| Option | In place, on the account screen :: One fewer page, one more script :: The button opens the ceremony where you already are. Everything else on that page still works without script. |
+| Option | Its own page :: The account page stays script-free :: A whole page whose content is a heading and a button. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 04:28 |
+| Answer | In place. It does not need a whole screen for it. |
+| Answered | 2026-08-25 04:28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0048
+
+**Should the only-owner refusals be announced before they happen?**
+
+question · 2026-08-25
+
+The first drawing warned the only owner that some controls would refuse. A review cut it as prose with no use. The refusals themselves remain, so the question is only whether somebody meets the rule before pressing the control or by pressing it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether a control explains itself before or after it refuses |
+| Option | Nothing, as cut :: One fewer paragraph :: The control refuses and explains itself at that moment. |
+| Option | A word on the control :: No banner, and no surprise :: The Disable button reads as unavailable for the only owner, with the reason on it. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 05:45 |
+| Answer | Nothing, as cut. |
+| Answered | 2026-08-25 05:45 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0049
+
+**What happens to an invitation link after it is copied?**
+
+question · 2026-08-25
+
+It is shown once and never stored, so there is nothing to come back for. It currently stays on the page until you navigate away.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | how long a one-time secret sits on a screen |
+| Option | Stays until you leave the page :: On screen while you paste it somewhere :: You can copy it twice, and it is gone the moment you go anywhere. |
+| Option | Hidden after copying :: Tap to reveal again :: Guards against a shoulder rather than anything technical, since the page is already behind sign-in. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 05:45 |
+| Answer | Stays until you leave the page. |
+| Answered | 2026-08-25 05:45 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0050
+
+**Should sign-in ask for an address before offering passkeys?**
+
+question · 2026-08-25
+
+A review asked for one, so that somebody holding several passkeys can control which account they reach. The builder disagreed once, on the mechanism: the browser is asked for any passkey scoped to this site and the operating system lists what it holds, labelled by the address each was registered under, so the choice already exists and Mustur neither styles that sheet nor sees the list. The canvas now draws it. The cost of a field is that typing an address tells a stranger whether it has an account here, unless every address produces an identical prompt.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | whether the sign-in surface has a field on it |
+| Option | No, the system chooser already asks :: Recommended · nothing typed, nothing disclosed :: One button. The chooser lists every passkey for this site by address and the person picks. |
+| Option | Yes, address first :: Familiar, and it works where a chooser confuses :: A field, then only that address's passkeys. Reintroduces account enumeration unless every address looks the same. |
+| Option | Chooser by default, address as a way out :: An escape hatch :: One button, plus a link revealing the field when the chooser shows the wrong thing. Two paths to keep correct. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 05:56 |
+| Answer | No — the system chooser already asks. |
+| Answered | 2026-08-25 05:56 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0051
+
+**What authenticates the mandated tool call once the guard is on**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-M-0011 |
+| Needed to proceed | yes |
+| Option | Recommended — Public inside the guard :: /mcp joins the short public list; identity stays at the edge, where it already is :: Cloudflare Access is in front of the origin and nothing reaches /mcp without passing it. The guard's job is telling a reader from an owner among people with browsers; an agent CLI is neither. This keeps milestone 1's mandate working and writes down, in public(), that one endpoint is deliberately not gated by accounts. The cost is that if Access ever comes off, /mcp is open until something else covers it — which is exactly the judgement MUS-Q-0039 reserves to you. |
+| Option | A bearer token per agent :: Mustur issues a token an agent carries in a header; a second credential kind, with its own lifetime and its own revocation :: The honest answer if Mustur is ever to stand alone. It is also a second thing to lose, rotate and store, and every agent session's command line grows a secret. It would be its own milestone rather than a fix inside this one. |
+| Option | Leave it refused, and write it down :: --accounts and the MCP mandate become mutually exclusive, stated in both files :: Costs nothing to build and is the truthful description of what exists today. It also means the flag this milestone was built to enable can never be turned on while any agent needs the tool call, which is every session. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | A bearer token per agent. Mustur issues a token an agent carries in a header, with its own lifetime and its own revocation — not the public exemption the builder recommended. The owner took the answer that lets Mustur stand alone rather than the one that keeps leaning on Access. It is its own milestone: until it exists, --accounts and the mandated tool call cannot both be on, and --accounts stays off. |
+| Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0052
+
+**MUS-D-0041 set four tabs; accounts want a fifth**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-M-0011 |
+| Option | Recommended — Five tabs, Account last :: The bar grows by one on every surface; your decision is amended rather than worked around :: Four tabs was decided against a recommendation of three, so the bar has already been argued once. Account is where a passkey is added and where People is reached, and it is the only surface with no other way in. Five fits a phone. This asks you to move your own line rather than to accept a fifth thing smuggled in beside it. |
+| Option | Four tabs, and a header link :: The bar stays as you set it; Account is reached from a small link in each page header :: Keeps MUS-D-0041 untouched and costs a header on six surfaces. A header link is easier to miss than a tab, which matters for the surface holding the button that recovers a lost device. |
+| Option | Four tabs, and Account by URL only :: Nothing in the bar changes; you reach /account by typing it :: Cheapest and worst. It is the shape that just produced a People screen nobody could reach. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | Four tabs, and a header link. MUS-D-0041 stands untouched; the account surface is reached from a small link in each page header rather than from a fifth tab. The Account tab the builder added to the records page comes out. |
+| Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0053
+
+**The scripted-surface rule now counts six, not two**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-M-0011 |
+| Option | Recommended — Count script tags, and the number is six :: The rule keeps its plain meaning and the count is corrected everywhere :: A surface either ships script or it does not, and that is checkable by grep — which is what made the drift visible at all. Six is honest: composer, session output, sign in, accept an invitation, account, people. The rule's teeth stay, since a seventh still needs you. |
+| Option | Count what cannot work without script, and the number is two :: The rule is reframed to mean surfaces that break with script blocked :: Arguably what the rule always meant: the composer's form posts, the account page's forms post, and only the session view and the ceremony genuinely require a client layer. It also makes the count uncheckable without judging each surface, and judgement is what let it drift. |
+| Option | Retire the rule :: Script is no longer the thing being rationed :: The rule was written when nothing had script and it has now been amended twice. Retiring it is defensible and loses the brake that has, twice, made a builder come and ask you. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | Count script tags, and the number is six. A surface either ships script or it does not, which is checkable by grep — and that is what made the drift visible at all. The rule keeps its teeth: a seventh is a new decision again. |
+| Answered | 2026-08-25 07:09 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0054
+
+**Milestone 6's records surface was built inside 5b**
+
+question · 2026-08-25
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-M-0011 |
+| Option | Recommended — It stands, and milestone 6 is that much shorter :: Nothing moves; 6's row is amended to say its surface already exists :: The records document was owed by MUS-D-0041 as the fourth tab and was built here to fill it. It works and is tested. The cost is that the decision was announced in a commit message rather than asked, which is the failure this repository keeps making, and accepting it rewards that. |
+| Option | Split it into its own pull request before 5b merges :: The commit is cherry-picked onto its own branch and reviewed as milestone 6's own work :: Restores one topic per pull request and gives the surface the review it did not get. Costs a rebase of eight commits and delays 5b behind it. |
+| Option | Revert it from this branch :: The records surface is removed here and rebuilt at milestone 6 :: The strictest reading, and it throws away working, tested code to make a point about process. It also leaves the fourth tab unfilled again. |
+| Asked by | whippy |
+| Surfaced | 2026-08-25 07:08 |
+| Answer | It stands, and milestone 6 is that much shorter. Its row says its reading surface already exists; what remains is a second person signing in and reading from their own device. The decision having been announced rather than asked is recorded, not undone. |
+| Answered | 2026-08-25 07:09 |
 | Delivered | not delivered: the question names no session |

@@ -29,6 +29,10 @@ type Intake struct {
 	Actor   string
 	Now     func() time.Time
 
+	// ShowAccount renders the header link to the account surface, which is
+	// served only when an origin is configured. Off means the link is absent
+	// rather than dead (MUS-Q-0052).
+	ShowAccount bool
 	// ShowSessions says whether this server serves the session surface, which
 	// decides whether the bar offers a tab to it. Off by default: the session
 	// surface carries a composer that types into a running agent's stdin, so
@@ -86,6 +90,7 @@ type page struct {
 	Recent       []recentJot
 	Cutoff       string
 	Project      string
+	ShowAccount  bool
 	// ShowSessions renders the Sessions tab. Off unless the server is actually
 	// serving that surface: a tab that goes nowhere is an unbuilt capability
 	// described as existing, which is what MUS-D-0041's bar exists to avoid.
@@ -126,6 +131,7 @@ func (in *Intake) now() time.Time {
 func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	p := page{
 		ShowSessions: in.ShowSessions,
+		ShowAccount:  in.ShowAccount,
 		Filed:        r.URL.Query().Get("filed"),
 		Routed:       r.URL.Query().Get("routed"),
 		Why:          r.URL.Query().Get("why"),
@@ -153,7 +159,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// the whole requirement.
 	r.Body = http.MaxBytesReader(w, r.Body, MaxJot)
 	if err := r.ParseForm(); err != nil {
-		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions})
+		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
 		return
 	}
 	text := r.PostFormValue("jot")
@@ -170,7 +176,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		// failure this surface cannot have, above code that dropped it: the
 		// page had no field for it and the textarea came back empty. On a
 		// phone that is a thumb-typed paragraph gone.
-		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions})
+		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
 		return
 	}
 	// The record is already in the store, so an export that fails has not lost
@@ -311,6 +317,13 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
      only route from here to the queue was the banner, which renders when
      something is open — so the queue was reachable from intake exactly when it
      had nothing to say. The owner found that by loading the site. */
+  /* MUS-Q-0052: the account surface is reached from here rather than from
+     a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
+     actually serves it — a link that goes nowhere is the failure the bar
+     itself was written to avoid. */
+  .acct { font-size: .82em; opacity: .6; text-decoration: none;
+          color: inherit; margin-left: auto; }
+  h1 { display: flex; align-items: baseline; }
   nav { display: flex; border-top: 1px solid var(--edge); margin-top: 2rem;
         white-space: nowrap; }
   nav a { flex: 1; padding: .7rem .25rem; text-align: center; font-size: .85em;
@@ -319,7 +332,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 </style>
 </head>
 <body>
-<h1>Mustur — {{.Project}}</h1>
+<h1>Mustur — {{.Project}}{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</h1>
 {{if .OpenQuestions}}<p class="waiting"><a href="/questions">{{.OpenQuestions}} decision{{if ne .OpenQuestions 1}}s{{end}} waiting on you</a></p>{{end}}
 {{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
 {{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .Routed}} → {{.Routed}}{{end}}<br>
@@ -340,6 +353,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   {{if .ShowSessions}}<a href="/sessions">Sessions</a>{{end}}
   <a href="/questions">Decisions{{if .OpenQuestions}} · {{.OpenQuestions}}{{end}}</a>
   <a href="/intake" class="here">Intake</a>
+  <a href="/records">Records</a>
 </nav>
 </body>
 </html>
