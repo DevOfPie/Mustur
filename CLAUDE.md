@@ -169,6 +169,11 @@ Three rules bind every session in this repository:
   as the owner having been here. An answer already recorded is not written over
   without `--reanswer` ([MUS-D-0126](records/decisions.md#mus-d-0126)).
 
+  `mustur amend` keeps what you do not pass — including the record's date, which
+  `--at` used to restamp with the date of the correction. Removing a field or a
+  citation is `--drop KEY`, and `--replace` states a record afresh for the rare
+  time that is wanted ([MUS-D-0134](records/decisions.md#mus-d-0134)).
+
   A jot that `Route it for me` put in the wrong place is corrected with
   `mustur reroute <ID> --to <DEST>`: it files a new record at the right
   destination and retires the old one, which keeps its identifier and still

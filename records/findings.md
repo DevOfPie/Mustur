@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-58 record(s), by identifier.
+59 record(s), by identifier.
 
 ## The queue
 
@@ -68,6 +68,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0052](#mus-f-0052) | Frames left nothing to scroll back through, because an agent pane has no scrollback at all | tmux display-message on both live sessions: alternate_on=1, history_size=0, history_limit=2000. After the resize, Demo renders 120 scrollable lines from its startup banner to its last output where it had 24. | fixed |
 | [MUS-F-0053](#mus-f-0053) | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable | Against both live sessions: the output carries no input box, divider or status line, and the row reads 'auto mode on · PR #31 · 1 agent · /rc failed · new task? /clear to save 118.3k tokens' — the owner's own list of what was worth keeping. A session with a dialogue open loses its status line and is still split correctly. | fixed |
 | [MUS-F-0054](#mus-f-0054) | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. | fixed |
+| [MUS-F-0055](#mus-f-0055) | amend replaces a record whole, and the command that exists to correct records has been quietly gutting them | A finding created with a body, one citation and two fields, amended with --title alone, comes back as a bare title: exit 0, output the identifier. Across record_event, 15 amends dropped content and 8 records were still missing citations today; MUS-M-0010 went 630 characters of body to zero and back over four amends. | fixed |
 
 ---
 
@@ -674,6 +675,8 @@ finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
+found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
+
 Stopping the service while it was piping a session left the pipe reader blocked in uninterruptible sleep; systemd timed out holding port 7777 and the site was down for about ten minutes. Released by turning the pipe off by hand.
 
 Gone rather than fixed: there is no pipe any more. The session view polls capture-pane instead of holding pipe-pane open (MUS-D-0132), so there is nothing to block on and nothing to turn off before a deploy.
@@ -693,6 +696,12 @@ Gone rather than fixed: there is no pipe any more. The session view polls captur
 finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+sharpened by: [MUS-F-0049](#mus-f-0049)
+
+found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
+
+and: [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018)
 
 The owner watched a session from a laptop and reported it piping out unformatted text.
 
@@ -948,6 +957,8 @@ finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
+same shape as: [MUS-F-0030](#mus-f-0030)
+
 Its process was a zombie and 127.0.0.1:7972 was still bound, with ss naming no owner and both lsof and fuser finding nothing. Turning the pipe off released it immediately. Reproduced four times while restarting a test server.
 
 Gone with the pipe (MUS-D-0132). The mechanism was never established and now does not need to be.
@@ -967,6 +978,10 @@ Gone with the pipe (MUS-D-0132). The mechanism was never established and now doe
 finding · 2026-08-26
 
 fixed by: [MUS-D-0125](decisions.md#mus-d-0125)
+
+about: [IDW-F-0004](#idw-f-0004)
+
+blocked by: [MUS-Q-0058](questions.md#mus-q-0058)
 
 Filed by the owner: IDW-F-0004 should have been routed to Mustur and was not — correct this, and plan a route for corrections of an incorrect 'Route it for me' in future.
 
@@ -988,6 +1003,8 @@ The correction could not be a flag on amend, because the identifier prefix is th
 finding · 2026-08-26
 
 fixed by: [MUS-D-0126](decisions.md#mus-d-0126)
+
+raised as: [MUS-Q-0059](questions.md#mus-q-0059)
 
 Filed by the owner: decisions made elsewhere are not cleared from Mustur.
 
@@ -1090,6 +1107,10 @@ The icons are now drawn in CSS: borders, radii and two pseudo-elements each. The
 finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+sharpens: [MUS-F-0031](#mus-f-0031)
+
+blocked by: [MUS-Q-0060](questions.md#mus-q-0060)
 
 Filed by the owner: the session output is still broken, and the concern raised earlier was taken as a Claude issue when it is an issue with how the output is interpreted.
 
@@ -1217,4 +1238,38 @@ Fixed by deleting it. internal/ansi already parses these properly for rendering,
 | --- | --- |
 | Where | internal/ansi/ansi.go, internal/session/screen.go |
 | Evidence | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. |
+| Status | fixed |
+
+---
+
+## MUS-F-0055
+
+**amend replaces a record whole, and the command that exists to correct records has been quietly gutting them**
+
+finding · 2026-08-28
+
+answered by: [MUS-Q-0063](questions.md#mus-q-0063)
+
+`mustur amend ID --title "..."` — changing nothing but the title — returned the identifier, exited 0, and left a record with no body, no citations and no fields. Everything the caller did not restate was gone, and nothing in the output said so.
+
+It was deliberate, which is the part worth keeping. The code carried its own argument: an amendment states the record afresh, because carrying fields forward silently would make `amend --title` keep data the writer never saw, and the log holds the earlier version anyway. Both halves are true. It still lost to the evidence — the reasoning was about a writer who might be surprised by what survived, and the actual writers were surprised by what did not.
+
+The help line read `correct one, without losing what it said`. There is a reading on which that was true: the log is insert-only, so nothing is unrecoverable. It is not the reading somebody types the command under.
+
+Found by looking for the least-tested code rather than by anything failing. `cmd/mustur` was at 2.8% statement coverage, the lowest in the tree by a factor of sixteen, and it is the half the owner actually types.
+
+The damage was already here. Fifteen amendments across this store dropped content. Most were deliberate — a jot's intake scaffolding coming off at triage, a field reworked into the body — but eight records were still missing citations two days later, including MUS-F-0031 and MUS-F-0049, which are the same defect and had stopped pointing at each other. MUS-M-0010 lost its entire 630-character body to one amendment and took three more to rebuild it; nobody wrote that down at the time.
+
+The eight were repaired, and the method is the point: each amendment was rebuilt from the record's own stored payload and re-sent with the missing citations added. Retyping the content by hand is how it was lost, so no part of the repair retyped anything.
+
+Fixed by merging, which the owner chose on MUS-Q-0063. What is passed replaces its counterpart; what is not passed survives; `--drop` removes one on purpose and `--replace` still states a record afresh for the rare time that is wanted. A field passed again keeps the place it already had, because fields render in order and a correction that shuffles them is a diff nobody asked for. Citations are identified by both halves rather than by their key, because a record can be found in two work units and cite them under the same word.
+
+It also closes a smaller trap in the same command. `--at` defaults to today, so every correction restamped the record's date with the date of the correction — which moved three records' dates earlier today before it was noticed. An amendment that keeps what it did not mention keeps the date too.
+
+This record was itself amended with the new behaviour, passing only a body and a status, and its evidence and citations survived unmentioned.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/main.go |
+| Evidence | A finding created with a body, one citation and two fields, amended with --title alone, comes back as a bare title: exit 0, output the identifier. Across record_event, 15 amends dropped content and 8 records were still missing citations today; MUS-M-0010 went 630 characters of body to zero and back over four amends. |
 | Status | fixed |

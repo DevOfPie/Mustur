@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-133 record(s), by identifier.
+134 record(s), by identifier.
 
 ## Index
 
@@ -145,6 +145,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0131](#mus-d-0131) | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS | 2026-08-27 |
 | [MUS-D-0132](#mus-d-0132) | The session view renders frames from capture-pane, and the byte stream is gone | 2026-08-27 |
 | [MUS-D-0133](#mus-d-0133) | A built surface names the path it serves, and the gate reads that line rather than trusting it | 2026-08-28 |
+| [MUS-D-0134](#mus-d-0134) | An amendment keeps what it does not mention, and removing something is a thing you type | 2026-08-28 |
 
 ---
 
@@ -1745,6 +1746,8 @@ decision · 2026-08-25
 
 from: [MUS-F-0026](findings.md#mus-f-0026)
 
+from: [MUS-F-0027](findings.md#mus-f-0027)
+
 A review asked for an address field on sign-in, so that somebody holding several passkeys can control which account they reach. They already can: the browser is asked for any passkey scoped to this site and the operating system lists what it holds, labelled by the address each was registered under. Mustur cannot style that sheet and never sees the list, which is why nothing is typed. The canvas now draws it rather than asserting it. Typing an address first would tell a stranger whether an address has an account here unless every address produced an identical prompt, and would put a keyboard in front of the one flow that had none — so the field is not built, and the question is on the plan with a middle option: one button by default, with a way out that reveals a field. The comment was right about something else, which is MUS-F-0026: registration never required a discoverable credential.
 
 ---
@@ -2012,6 +2015,8 @@ fixes: [MUS-F-0046](findings.md#mus-f-0046)
 
 amends: [MUS-D-0123](#mus-d-0123)
 
+fixes: [MUS-F-0044](findings.md#mus-f-0044)
+
 The session picker's submit button is rendered inside a noscript element rather than rendered always and hidden by the script.
 
 The owner asked for it to appear only when scripting is disabled, having first asked for it to be small and beside the dropdown rather than large and beneath it. noscript delivers the first exactly and makes the second moot for anyone with script.
@@ -2255,3 +2260,31 @@ The cost is the one worth stating plainly, because it is the reason this had not
 | Field | Value |
 | --- | --- |
 | Where | internal/web/surfaces_test.go, Makefile, docs/ui-surfaces.md |
+
+---
+
+## MUS-D-0134
+
+**An amendment keeps what it does not mention, and removing something is a thing you type**
+
+decision · 2026-08-28
+
+answers: [MUS-Q-0063](questions.md#mus-q-0063)
+
+fixes: [MUS-F-0055](findings.md#mus-f-0055)
+
+over: [MUS-D-0126](#mus-d-0126)
+
+`amend` used to state a record afresh: anything the caller did not restate was dropped. The reasoning was written into the code and is not silly — carrying fields forward silently would make `amend --title` keep data the writer never saw, and the log holds every earlier version anyway. It lost to what actually happened. The worry was about a writer surprised by what survived; the writers were surprised by what did not, fifteen times (MUS-F-0055).
+
+Merge, then, chosen by the owner on MUS-Q-0063 over three alternatives. What is passed replaces its counterpart. What is not passed survives. `--drop KEY` removes a field by name or a citation by its label or its identifier, and `--replace` still states a record afresh for the rare time that is wanted.
+
+The alternative closest to this tree's habits was to refuse — the shape MUS-D-0126 gave `--reanswer`. It was not taken, and the reason generalises: a guard that fires on every ordinary correction teaches everybody to pass the override without reading it, at which point the guard is decoration and the trap is back. A default that is safe needs nobody to remember anything.
+
+Two details that are not incidental. A field passed again keeps the position it already had, because fields render in order and a correction that reorders them is a diff nobody asked for. And a citation is identified by its label *and* its target, not by its label alone, because a record can be found in two work units and cite both under the same word — keying on the label would silently collapse them.
+
+It also closes a smaller trap in the same command: `--at` defaulted to today, so every correction restamped the record with the date of the correction rather than the date its content was true. An amendment that keeps what it did not mention keeps the date too.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/main.go, cmd/mustur/merge_test.go |

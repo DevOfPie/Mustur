@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-62 record(s), by identifier.
+63 record(s), by identifier.
 
 ---
 
@@ -1407,5 +1407,28 @@ question · 2026-08-28
 | Surfaced | 2026-08-28 08:51 |
 | Answer | Leave it. The closed control is not the problem and the list is four long; revisit when the opened popup is actually unpleasant. |
 | Answered | 2026-08-28 08:52 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0063
+
+**Should amend keep what the caller did not restate, or refuse to drop it?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0055 — amend replaces a record whole, and has already gutted records in this store |
+| Option | Recommended :: Merge, with an explicit --drop :: What is passed replaces that part and nothing else; a field or citation left out survives. Removing one becomes `--drop Status`, which is a thing you type on purpose. This makes the safe outcome the default and the destructive one explicit, which is the same principle as --reanswer applied one level down. It also matches what the word means everywhere else — `git commit --amend` keeps the tree. The cost is that amend stops being a way to rewrite a record from scratch; that becomes --replace, for the rare time you want it. |
+| Option | Refuse unless --replace :: Amend fails when it would drop content the caller did not restate :: Closest to the existing precedent: MUS-D-0126 made an answer refuse to overwrite without --reanswer, and this is the same guard at a bigger scale. The failure mode is that the refusal fires on every ordinary correction, so everybody learns to type --replace without reading it — at which point the guard is decoration and the trap is back. |
+| Option | Warn and proceed :: Print what is about to be dropped, then drop it :: Cheapest to build and it keeps every existing call working unchanged. It also relies on somebody reading output that appears when the command has already succeeded, which is the thing that did not happen the fifteen times this already occurred. |
+| Option | Leave it, and gate the damage instead :: Keep amend as it is, and add a check that fails when a record loses a citation :: Treats the loss as something to detect rather than prevent. It would have caught all eight of the records repaired today, and it catches nothing at the moment of the mistake — the record is still gutted, and the gate tells you afterwards. |
+| Asked by | whippy |
+| Surfaced | 2026-08-28 23:04 |
+| Answer | Merge, with an explicit --drop. What is passed replaces that part and nothing else; anything omitted survives. Removing a field or citation becomes --drop KEY, typed on purpose. |
+| Answered | 2026-08-28 23:04 |
 | Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |

@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 62 | [questions.md](questions.md) |
-| decision | 133 | [decisions.md](decisions.md) |
-| finding | 58 | [findings.md](findings.md) |
+| question | 63 | [questions.md](questions.md) |
+| decision | 134 | [decisions.md](decisions.md) |
+| finding | 59 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -119,6 +119,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0060](questions.md#mus-q-0060) | question | How the session view should interpret the pane: frames, an emulator, or a stripped log |
 | [MUS-Q-0061](questions.md#mus-q-0061) | question | Should a surface built before it is drawn be stopped by the gate rather than recorded after it? |
 | [MUS-Q-0062](questions.md#mus-q-0062) | question | Is searching the intake destination list worth what either route costs? |
+| [MUS-Q-0063](questions.md#mus-q-0063) | question | Should amend keep what the caller did not restate, or refuse to drop it? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -252,6 +253,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0131](decisions.md#mus-d-0131) | decision | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS |
 | [MUS-D-0132](decisions.md#mus-d-0132) | decision | The session view renders frames from capture-pane, and the byte stream is gone |
 | [MUS-D-0133](decisions.md#mus-d-0133) | decision | A built surface names the path it serves, and the gate reads that line rather than trusting it |
+| [MUS-D-0134](decisions.md#mus-d-0134) | decision | An amendment keeps what it does not mention, and removing something is a thing you type |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -306,6 +308,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0052](findings.md#mus-f-0052) | finding | Frames left nothing to scroll back through, because an agent pane has no scrollback at all |
 | [MUS-F-0053](findings.md#mus-f-0053) | finding | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable |
 | [MUS-F-0054](findings.md#mus-f-0054) | finding | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it |
+| [MUS-F-0055](findings.md#mus-f-0055) | finding | amend replaces a record whole, and the command that exists to correct records has been quietly gutting them |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
