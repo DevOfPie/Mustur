@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-63 record(s), by identifier.
+65 record(s), by identifier.
 
 ## The queue
 
@@ -73,6 +73,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0057](#mus-f-0057) | A rerouted jot left its picture behind on the stub nobody reads | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' | fixed |
 | [MUS-F-0058](#mus-f-0058) | reroute took any record with a body, so a project record could be superseded by a jot in the idea inbox | Against a seeded store: reroute on MUS-P-0001 filed IDW-F-0001 carrying the project's description and left MUS-P-0001 with Status superseded and Superseded by IDW-F-0001. With the guard, all three of the project, repository and machine records are refused and a real jot still reroutes with its picture. Removing the guard fails the test on all three. | fixed |
 | [MUS-F-0059](#mus-f-0059) | An invitation was issued to something that is not an address, and reported as sent | `account invite --email not-an-address` exited 0 and printed a usable-looking link; account list showed it pending. With the check, Invite refuses it and still accepts first.last+tag@sub.example.co.uk, someone@localhost and x@y. Removing the check fails the test with 'an invitation was issued to something nobody could receive'. | fixed |
+| [MUS-F-0060](#mus-f-0060) | The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken | `make audit` went from '26 ok, 1 finding' to '27 ok, 0 finding' with no change to any record. A heading carrying inline code, and a link to its GitHub anchor, is now OK where it was a finding; reverting the split fails that test with the anchor named. | fixed |
+| [MUS-F-0061](#mus-f-0061) | The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. | fixed |
 
 ---
 
@@ -1370,4 +1372,50 @@ Two other things in the same pass looked wrong and were not, which is worth reco
 | --- | --- |
 | Where | internal/account/account.go |
 | Evidence | `account invite --email not-an-address` exited 0 and printed a usable-looking link; account list showed it pending. With the check, Invite refuses it and still accepts first.last+tag@sub.example.co.uk, someone@localhost and x@y. Removing the check fails the test with 'an invitation was issued to something nobody could receive'. |
+| Status | fixed |
+
+---
+
+## MUS-F-0060
+
+**The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken**
+
+finding · 2026-08-28
+
+`mustur audit` reported one finding against this repository, and had been reporting it for as long as the heading has existed: `decisions.md -> ../decisions.md#there-is-no-session-send (no such heading)`. The heading is there. It reads `### There is no ` followed by `session send` in backticks, and GitHub's anchor for it drops the backtick characters and keeps what they wrapped — which is what the link says and what this repository's own link gate agrees with. `make check-links` resolved all 1,252 links, including that one.
+
+The checker blanks inline code before it reads headings. That is right for links, where a target inside backticks is a sample and not a link, and wrong for headings, where the words inside backticks are part of the anchor. It derived `there-is-no` and could not match.
+
+Fixed by splitting the two. Fenced blocks still come out before headings are read, because a `#` line inside a fence is a line of code — that half has its own test now, since it is what the fix could have broken. Inline spans come out only for links.
+
+The damage is not the false line. It is that an audit with a standing false finding teaches its reader to skim past findings, and this one is the tool the repository exists to run against itself.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/audit/markdown.go |
+| Evidence | `make audit` went from '26 ok, 1 finding' to '27 ok, 0 finding' with no change to any record. A heading carrying inline code, and a link to its GitHub anchor, is now OK where it was a finding; reverting the split fails that test with the anchor named. |
+| Status | fixed |
+
+---
+
+## MUS-F-0061
+
+**The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree**
+
+finding · 2026-08-28
+
+`make check` has been printing `SKIP: TestConformsToTheCatalogFixtures` all day, and every day an agent has worked here. The harness looks for a StrucGu checkout beside the audited tree, and read 'beside' as the parent of the directory it was handed. Agent work happens in a git worktree under `.claude/worktrees/<name>`, so it looked in `.claude/worktrees` and found nothing. A checkout has been sitting at `~/repos/DevOfPie/StrucGu` the whole time.
+
+The skip is loud — it prints NO CONFORMANCE EVIDENCE IN THIS RUN, which is the one thing this got right, and is why this was findable at all rather than a silent pass. But a gate that announces its own absence on every run is still a gate that never runs, and the announcement had become part of the expected output.
+
+What it was not measuring: 37 fixture trees and 344 expected states, the numbers Plan.md records for milestone 2b. Those now run from a worktree and match.
+
+Fixed by letting 'beside' walk up. The first ancestor with a StrucGu holding modules wins, which is the same answer as before for an ordinary checkout and the right one from any depth of worktree. A catalog is recognised by holding modules rather than by its name, so a directory that merely shares the name is not mistaken for one — and with none anywhere the old sibling path is still what the error names, because it is the obvious place to put one.
+
+Found by running `make audit` by hand after noticing the skip line had been in every gate run today.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/audit/catalog_path.go, cmd/mustur/main.go, internal/audit/live_test.go |
+| Evidence | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. |
 | Status | fixed |

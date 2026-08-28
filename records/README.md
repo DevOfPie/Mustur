@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 63 | [questions.md](questions.md) |
 | decision | 134 | [decisions.md](decisions.md) |
-| finding | 63 | [findings.md](findings.md) |
+| finding | 65 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -313,6 +313,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0057](findings.md#mus-f-0057) | finding | A rerouted jot left its picture behind on the stub nobody reads |
 | [MUS-F-0058](findings.md#mus-f-0058) | finding | reroute took any record with a body, so a project record could be superseded by a jot in the idea inbox |
 | [MUS-F-0059](findings.md#mus-f-0059) | finding | An invitation was issued to something that is not an address, and reported as sent |
+| [MUS-F-0060](findings.md#mus-f-0060) | finding | The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken |
+| [MUS-F-0061](findings.md#mus-f-0061) | finding | The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

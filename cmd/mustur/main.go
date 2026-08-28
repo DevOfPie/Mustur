@@ -148,11 +148,10 @@ func defaultCatalog(root string) string {
 	if p := os.Getenv("MUSTUR_STRUCGU"); p != "" {
 		return p
 	}
-	abs, err := filepath.Abs(root)
-	if err != nil {
-		return "../StrucGu"
-	}
-	return filepath.Join(filepath.Dir(abs), "StrucGu")
+	// Beside the audited tree, or above it: agent work happens in a worktree
+	// under .claude/worktrees, whose parent holds no checkout of anything
+	// (MUS-F-0061).
+	return audit.CatalogBeside(root)
 }
 
 // fields collects repeated k=v flags in the order they were given. Order is

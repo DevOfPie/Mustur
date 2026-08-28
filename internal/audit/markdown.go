@@ -31,6 +31,25 @@ var (
 // Lines are kept, blanked rather than deleted, so a reported line number still
 // means what it says.
 func stripCode(text string) string {
+	lines := strings.Split(stripFences(text), "\n")
+	for i, line := range lines {
+		lines[i] = stripInlineCode(line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// stripFences blanks fenced blocks and leaves everything else, including the
+// contents of inline code spans.
+//
+// Headings want this rather than stripCode. A `#` line inside a fence is not a
+// heading, so fences still have to go — but the words inside backticks are part
+// of a heading's anchor. GitHub drops the backtick characters and keeps what
+// they wrapped, so `### There is no ` + "`session send`" + ` anchors at
+// there-is-no-session-send. Blanking the span first made the audit derive
+// there-is-no and report a correct link as pointing at no such heading, which
+// is a false finding on this repository's own decisions.md
+// (MUS-F-0060).
+func stripFences(text string) string {
 	lines := strings.Split(text, "\n")
 	inFence := false
 	for i, line := range lines {
@@ -41,9 +60,7 @@ func stripCode(text string) string {
 		}
 		if inFence {
 			lines[i] = ""
-			continue
 		}
-		lines[i] = stripInlineCode(line)
 	}
 	return strings.Join(lines, "\n")
 }
@@ -75,7 +92,7 @@ func stripInlineCode(line string) string {
 // whitespace stripped.
 func headings(text string) []string {
 	var out []string
-	for _, m := range headingLine.FindAllStringSubmatch(stripCode(text), -1) {
+	for _, m := range headingLine.FindAllStringSubmatch(stripFences(text), -1) {
 		out = append(out, strings.TrimSpace(m[1]))
 	}
 	return out
