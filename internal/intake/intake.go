@@ -234,6 +234,16 @@ type Request struct {
 	// does not say.
 	To  string
 	Now time.Time
+	// Deliberate says this filing is somebody's decision rather than a browser
+	// repeating itself, and turns the duplicate window off.
+	//
+	// The window exists for a phone on a flaky connection sending the same POST
+	// three times. A correction re-files a record's own body on purpose, so it
+	// matches its own original exactly — and was handed that original back and
+	// told it was already routed there, which was false and unfixable for the
+	// first minute after filing. That is the minute in which somebody notices
+	// the routing was wrong (MUS-F-0056).
+	Deliberate bool
 }
 
 // File writes a jot into the store as a finding and returns the record.
@@ -249,7 +259,7 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 	}
 	if existing, err := recentlyFiled(ctx, s, trimmed, actor, now); err != nil {
 		return record.Record{}, Destination{}, err
-	} else if existing != nil {
+	} else if existing != nil && !req.Deliberate {
 		// A retry of the same POST, which is what a phone on a flaky
 		// connection actually sends. Post-redirect-get protects a reload after
 		// the redirect and nothing at all before it, so the same jot arrived

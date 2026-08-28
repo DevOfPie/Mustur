@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 63 | [questions.md](questions.md) |
 | decision | 134 | [decisions.md](decisions.md) |
-| finding | 59 | [findings.md](findings.md) |
+| finding | 61 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -309,6 +309,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0053](findings.md#mus-f-0053) | finding | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable |
 | [MUS-F-0054](findings.md#mus-f-0054) | finding | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it |
 | [MUS-F-0055](findings.md#mus-f-0055) | finding | amend replaces a record whole, and the command that exists to correct records has been quietly gutting them |
+| [MUS-F-0056](findings.md#mus-f-0056) | finding | reroute refused to correct a jot for the first minute after it was filed, and said something false about why |
+| [MUS-F-0057](findings.md#mus-f-0057) | finding | A rerouted jot left its picture behind on the stub nobody reads |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

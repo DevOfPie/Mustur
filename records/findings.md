@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-59 record(s), by identifier.
+61 record(s), by identifier.
 
 ## The queue
 
@@ -69,6 +69,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0053](#mus-f-0053) | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable | Against both live sessions: the output carries no input box, divider or status line, and the row reads 'auto mode on · PR #31 · 1 agent · /rc failed · new task? /clear to save 118.3k tokens' — the owner's own list of what was worth keeping. A session with a dialogue open loses its status line and is still split correctly. | fixed |
 | [MUS-F-0054](#mus-f-0054) | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. | fixed |
 | [MUS-F-0055](#mus-f-0055) | amend replaces a record whole, and the command that exists to correct records has been quietly gutting them | A finding created with a body, one citation and two fields, amended with --title alone, comes back as a bare title: exit 0, output the identifier. Across record_event, 15 amends dropped content and 8 records were still missing citations today; MUS-M-0010 went 630 characters of body to zero and back over four amends. | fixed |
+| [MUS-F-0056](#mus-f-0056) | reroute refused to correct a jot for the first minute after it was filed, and said something false about why | A jot filed through the intake surface and rerouted immediately: 'already routed there'. The same reroute with only --actor changed succeeded, which isolates the cause to the duplicate window's body-and-actor match. With the fix, the same-actor reroute inside the window succeeds. Reverting it fails the test with 'a deliberate filing was handed back the original'. | fixed |
+| [MUS-F-0057](#mus-f-0057) | A rerouted jot left its picture behind on the stub nobody reads | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' | fixed |
 
 ---
 
@@ -1272,4 +1274,50 @@ This record was itself amended with the new behaviour, passing only a body and a
 | --- | --- |
 | Where | cmd/mustur/main.go |
 | Evidence | A finding created with a body, one citation and two fields, amended with --title alone, comes back as a bare title: exit 0, output the identifier. Across record_event, 15 amends dropped content and 8 records were still missing citations today; MUS-M-0010 went 630 characters of body to zero and back over four amends. |
+| Status | fixed |
+
+---
+
+## MUS-F-0056
+
+**reroute refused to correct a jot for the first minute after it was filed, and said something false about why**
+
+finding · 2026-08-28
+
+`mustur reroute IDW-F-0001 --to MUS-P-0001` answered `IDW-F-0001 is already routed there`. It was not routed there — it was in the idea inbox, which is why it was being rerouted.
+
+reroute files the correction through `intake.File`, deliberately, so that the destination is resolved and the prefix chosen by exactly the code that files everything else. `intake.File` opens with a duplicate check: the same body by the same actor inside a one-minute window is a browser repeating itself, and it is handed the record it already made. That check exists for a real thing — a phone on a flaky connection sent the same POST three times and made three records.
+
+A correction re-files a record's own body, so it matches its own original exactly and always trips the check. `File` returned the original, reroute compared identifiers, found them equal, and reported the one thing that could not be true. The window is sixty seconds, which is exactly the window in which somebody notices their jot went to the wrong place.
+
+Fixed by letting a filing say it means it. `intake.Request` gains `Deliberate`, which turns the window off, and reroute sets it. The retry protection is untouched for everything that did not ask, and a test holds both halves — a repeat inside the window is still collapsed, a deliberate one still gets its own record.
+
+Found by testing the command rather than reading it. The reading said reroute was careful, and it is: it carries the title, the body, the date, the fields and the citations across by hand, with a comment explaining each. None of that runs when the first call hands back the record you started with.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/intake/intake.go, cmd/mustur/reroute.go |
+| Evidence | A jot filed through the intake surface and rerouted immediately: 'already routed there'. The same reroute with only --actor changed succeeded, which isolates the cause to the duplicate window's body-and-actor match. With the fix, the same-actor reroute inside the window succeeds. Reverting it fails the test with 'a deliberate filing was handed back the original'. |
+| Status | fixed |
+
+---
+
+## MUS-F-0057
+
+**A rerouted jot left its picture behind on the stub nobody reads**
+
+finding · 2026-08-28
+
+A correction files a new record at the right destination and retires the old one in place, still resolving, pointing at its replacement. Attachments are keyed by record identifier and nothing moved them, so a jot filed from a phone with a photograph came out of a reroute with the photograph attached to the retired stub. The record anybody now reads has no picture; the one that has it makes no claim.
+
+Bounded, because the durable half was always the description an agent writes from the picture into the record's own fields, and reroute does carry the fields across. But the bytes are the evidence, and 'the picture is still there, on the other one' is not something a reader can be expected to work out.
+
+Fixed by moving them with the record. Moved rather than copied: the stub makes no claim any more, and a second copy of a 2.4 MB photograph is the wrong price for a correction. Moving from a record that has none is not an error, because a jot without a picture is the ordinary case.
+
+Found while checking whether reroute carried everything across. It carries the title, body, date, fields and citations by hand, each with a comment — attachments were simply not in the list, because they are not part of the record shape.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/store/attach.go, cmd/mustur/reroute.go |
+| Evidence | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' |
 | Status | fixed |

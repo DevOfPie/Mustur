@@ -216,3 +216,55 @@ func TestAGIFAndAWebPArePassedThroughUntouched(t *testing.T) {
 		}
 	}
 }
+
+// A picture goes with the record, not with the stub it left behind.
+//
+// A correction files a new record and retires the old one. The bytes stayed on
+// the retired one, so a jot filed from a phone with a photograph came out of a
+// reroute with its evidence attached to the record nobody reads (MUS-F-0057).
+func TestAPictureMovesToTheRecordThatReplacesItsOwn(t *testing.T) {
+	ctx := context.Background()
+	s, err := Open(ctx, filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+
+	a, err := s.Attach(ctx, "IDW-F-0001", sample(t, "png"), "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	moved, err := s.MoveAttachments(ctx, "IDW-F-0001", "MUS-F-0009")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if moved != 1 {
+		t.Errorf("%d picture(s) moved, want 1", moved)
+	}
+
+	left, err := s.Attachments(ctx, "IDW-F-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(left) != 0 {
+		t.Errorf("%d picture(s) stayed on the stub", len(left))
+	}
+	got, err := s.Attachments(ctx, "MUS-F-0009")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].ID != a.ID {
+		t.Errorf("the record that carries the jot has %d picture(s)", len(got))
+	}
+
+	// Moving from a record with none is not an error; a reroute of a jot that
+	// never had a picture is the ordinary case.
+	none, err := s.MoveAttachments(ctx, "MUS-F-0404", "MUS-F-0009")
+	if err != nil {
+		t.Fatalf("moving nothing failed: %v", err)
+	}
+	if none != 0 {
+		t.Errorf("%d picture(s) moved from a record with none", none)
+	}
+}

@@ -421,3 +421,54 @@ func TestAnExplicitDestinationCarriesItsPrefix(t *testing.T) {
 		t.Errorf("filed as %s, want the idea inbox's prefix", r.ID)
 	}
 }
+
+// A correction is not a browser repeating itself.
+//
+// The duplicate window exists for a phone on a flaky connection sending the
+// same POST three times. A reroute re-files a record's own body on purpose, so
+// it matches its own original exactly — and was handed that original back, and
+// told it was already routed there. False, and unfixable for the first minute
+// after filing, which is the minute somebody notices the routing was wrong
+// (MUS-F-0056).
+func TestADeliberateFilingIsNotTakenForADuplicate(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	for _, r := range routing() {
+		if r.Kind == "decision" {
+			continue
+		}
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	now := time.Now()
+	const text = "the same words, filed twice on purpose"
+	first, _, err := File(ctx, s, Request{Project: "MUS", Text: text, Actor: "pie", Now: now})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The window still protects a retry, which is the half a fix could break.
+	again, _, err := File(ctx, s, Request{Project: "MUS", Text: text, Actor: "pie", Now: now})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.ID != first.ID {
+		t.Errorf("a retry inside the window became a second record: %s then %s", first.ID, again.ID)
+	}
+
+	// And a filing that says it means it gets its own record.
+	meant, _, err := File(ctx, s, Request{
+		Project: "MUS", Text: text, Actor: "pie", Now: now, Deliberate: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if meant.ID == first.ID {
+		t.Errorf("a deliberate filing was handed back the original, %s", meant.ID)
+	}
+}
