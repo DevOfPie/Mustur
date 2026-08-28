@@ -393,3 +393,47 @@ func TestARoleNeedsAnAccountThatExists(t *testing.T) {
 		t.Error("granted a role to an account id that does not exist")
 	}
 }
+
+// An invitation to something that is not an address goes nowhere and says it
+// went. `mustur account invite --email not-an-address` was accepted, printed a
+// link, and listed a pending invitation nobody could ever accept (MUS-F-0059).
+//
+// The rule is the least that can be checked without refusing a real address, so
+// the cases that must still pass are the point of this test as much as the
+// cases that must not.
+func TestAnInvitationNeedsAnAddressSomebodyCouldBeReachedAt(t *testing.T) {
+	for _, ok := range []string{
+		"a@b.com",
+		"first.last+tag@sub.example.co.uk",
+		"someone@localhost",
+		"x@y",
+		"UPPER@Example.COM",
+	} {
+		if !addressable(strings.ToLower(ok)) {
+			t.Errorf("%q is a real address and was refused", ok)
+		}
+	}
+	for _, bad := range []string{
+		"not-an-address",
+		"@b.com",
+		"a@",
+		"",
+		"two@at@signs.com",
+		"has a space@b.com",
+	} {
+		if addressable(bad) {
+			t.Errorf("%q was accepted as an address", bad)
+		}
+	}
+
+	// And through the door somebody actually walks in by. Invite trims and
+	// lowercases first, so surrounding whitespace is not what is being
+	// refused here — the thing between the spaces is.
+	s, ctx := open(t)
+	if _, err := s.Invite(ctx, "  not-an-address  ", "MUS", Reader, "test"); err == nil {
+		t.Error("an invitation was issued to something nobody could receive")
+	}
+	if _, err := s.Invite(ctx, "  Someone@Example.com  ", "MUS", Reader, "test"); err != nil {
+		t.Errorf("a real address surrounded by spaces was refused: %v", err)
+	}
+}

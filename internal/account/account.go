@@ -178,6 +178,9 @@ func (s *Store) Invite(ctx context.Context, email, project string, role Role, by
 	if email == "" || project == "" {
 		return "", errors.New("an invitation needs an email and a project")
 	}
+	if !addressable(email) {
+		return "", fmt.Errorf("%q is not an address anybody could be reached at", email)
+	}
 	if !role.Valid() {
 		return "", fmt.Errorf("%q is not a role", role)
 	}
@@ -209,6 +212,22 @@ func (s *Store) Invite(ctx context.Context, email, project string, role Role, by
 		return "", fmt.Errorf("write invitation: %w", err)
 	}
 	return secret, nil
+}
+
+// addressable is the least this can check without refusing a real address.
+//
+// One @, something either side, and no spaces. Not RFC 5322 — an address with
+// a plus, a dot, a hyphen, an unusual top level or none at all still passes,
+// because refusing somebody's real address is a worse failure than accepting a
+// typo. What it catches is the typo that goes nowhere: an invitation was issued
+// to "not-an-address" and reported as sent, and nothing said otherwise until
+// somebody noticed nobody had arrived (MUS-F-0059).
+func addressable(email string) bool {
+	if strings.ContainsAny(email, " \t\r\n") {
+		return false
+	}
+	at := strings.Index(email, "@")
+	return at > 0 && at == strings.LastIndex(email, "@") && at < len(email)-1
 }
 
 // Invitation reads what a secret would grant, without spending it. The sign-in

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-62 record(s), by identifier.
+63 record(s), by identifier.
 
 ## The queue
 
@@ -72,6 +72,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0056](#mus-f-0056) | reroute refused to correct a jot for the first minute after it was filed, and said something false about why | A jot filed through the intake surface and rerouted immediately: 'already routed there'. The same reroute with only --actor changed succeeded, which isolates the cause to the duplicate window's body-and-actor match. With the fix, the same-actor reroute inside the window succeeds. Reverting it fails the test with 'a deliberate filing was handed back the original'. | fixed |
 | [MUS-F-0057](#mus-f-0057) | A rerouted jot left its picture behind on the stub nobody reads | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' | fixed |
 | [MUS-F-0058](#mus-f-0058) | reroute took any record with a body, so a project record could be superseded by a jot in the idea inbox | Against a seeded store: reroute on MUS-P-0001 filed IDW-F-0001 carrying the project's description and left MUS-P-0001 with Status superseded and Superseded by IDW-F-0001. With the guard, all three of the project, repository and machine records are refused and a real jot still reroutes with its picture. Removing the guard fails the test on all three. | fixed |
+| [MUS-F-0059](#mus-f-0059) | An invitation was issued to something that is not an address, and reported as sent | `account invite --email not-an-address` exited 0 and printed a usable-looking link; account list showed it pending. With the check, Invite refuses it and still accepts first.last+tag@sub.example.co.uk, someone@localhost and x@y. Removing the check fails the test with 'an invitation was issued to something nobody could receive'. | fixed |
 
 ---
 
@@ -1345,4 +1346,28 @@ Both were found by running the commands over their edges rather than reading the
 | --- | --- |
 | Where | cmd/mustur/reroute.go, cmd/mustur/questions.go |
 | Evidence | Against a seeded store: reroute on MUS-P-0001 filed IDW-F-0001 carrying the project's description and left MUS-P-0001 with Status superseded and Superseded by IDW-F-0001. With the guard, all three of the project, repository and machine records are refused and a real jot still reroutes with its picture. Removing the guard fails the test on all three. |
+| Status | fixed |
+
+---
+
+## MUS-F-0059
+
+**An invitation was issued to something that is not an address, and reported as sent**
+
+finding · 2026-08-28
+
+`mustur account invite --email not-an-address` succeeded: it printed a link, said 'invited not-an-address as reader on MUS', and left a pending invitation in `account list` that nobody could ever accept. Nothing said otherwise. The failure is silent and delayed — you find out because the person never arrives, and the list shows a typo you may not look at for a day, which is how long an invitation lives.
+
+It sits on milestone 6's path. That milestone is a second person signing in, and inviting them is the first thing anybody does; typing an address by hand into a terminal is exactly where a typo comes from.
+
+Fixed at `account.Invite` rather than in the command, so the account page's invite form gets the same refusal — there is no reason for the two doors to disagree about what an address is.
+
+The rule is deliberately the least that can be checked: one @, something either side, no whitespace. Not RFC 5322. An address with a plus, a dot, a hyphen, an unusual top level or no dot at all still passes, because refusing somebody's real address is a worse failure than accepting a typo — the tests name the addresses that must keep working as carefully as the ones that must not.
+
+Two other things in the same pass looked wrong and were not, which is worth recording so nobody re-opens them. Inviting the same address twice lists two pending invitations: that is correct — a secret is never stored and an invitation that goes missing is reissued rather than looked up. And redeeming a second invitation does not make a second account: `Redeem` looks the account up by address and only creates one when there is no row, so both links land on the same person.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/account/account.go |
+| Evidence | `account invite --email not-an-address` exited 0 and printed a usable-looking link; account list showed it pending. With the check, Invite refuses it and still accepts first.last+tag@sub.example.co.uk, someone@localhost and x@y. Removing the check fails the test with 'an invitation was issued to something nobody could receive'. |
 | Status | fixed |
