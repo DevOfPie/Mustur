@@ -247,6 +247,8 @@ Any other kind is unknown: report it, carrying the table above.
 Plan.md              scope contract: vision, scope table, milestones, limits
 decisions.md         append-only: why any of this is the way it is
 queue.md             append a line; out-of-scope ideas go here
-docs/ui-surfaces.md  the surfaces needing design, and what each must do
+docs/ui-surfaces.md  the surfaces needing design, and what each must do —
+                     a built one names the path it serves and `make surfaces`
+                     refuses a page no surface names
 strucgu.yaml         which files play which StrucGu roles
 ```

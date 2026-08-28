@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-132 record(s), by identifier.
+133 record(s), by identifier.
 
 ## Index
 
@@ -144,6 +144,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0130](#mus-d-0130) | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be | 2026-08-27 |
 | [MUS-D-0131](#mus-d-0131) | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS | 2026-08-27 |
 | [MUS-D-0132](#mus-d-0132) | The session view renders frames from capture-pane, and the byte stream is gone | 2026-08-27 |
+| [MUS-D-0133](#mus-d-0133) | A built surface names the path it serves, and the gate reads that line rather than trusting it | 2026-08-28 |
 
 ---
 
@@ -2228,3 +2229,29 @@ What it costs: one capture per watched project per tick, about two and a half a 
 | --- | --- |
 | Where | internal/ansi, internal/session/screen.go, internal/web/sessions.go, internal/web/assets/session.js |
 | Evidence | Against a live Claude Code session in Chrome and Firefox: zero escape codes on the page where the old stream left them as literal text, colour rendered as spans, box drawing intact, monospaced, no sideways overflow at 390px or 1366px, and no page errors. A turn started by typing into the pane took the pill from idle to running and back within 1.5s of it ending. |
+
+---
+
+## MUS-D-0133
+
+**A built surface names the path it serves, and the gate reads that line rather than trusting it**
+
+decision · 2026-08-28
+
+answers: [MUS-Q-0061](questions.md#mus-q-0061)
+
+gates: [MUS-F-0027](findings.md#mus-f-0027)
+
+docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards. It asked for that in prose and was ignored seven times, twice after the owner had answered on the same subject, with the rate going up rather than down (MUS-F-0027). Its own diagnosis was that a record read after the fact is not a safeguard. The owner's answer was to make the gate enforce it (MUS-Q-0061).
+
+Each built surface now carries a **Serves** line naming its path, and `make surfaces` reads two things that can disagree: the routes internal/web actually registers, and the paths that file claims. A page served with no surface naming it fails, and so does a surface naming a path nothing serves — without the second half the gate is satisfied by writing a path down, which is the original failure wearing the opposite costume.
+
+The routes are read with go/ast rather than a regular expression, because a pattern over source also finds a string in a comment or a fixture. A GET is a page; a POST is something a surface does. Three exclusions are named with their reasons — a script, a socket, and image bytes — and each has to match at least one live route, so an exclusion that stops matching fails as stale rather than sitting there as a hole in the shape of a rule.
+
+What it cannot see, written down rather than left to be discovered: a surface is recognised by an explicit GET method, so a page mounted method-less — as cmd/mustur/main.go mounts the intake fallback, /mcp and /healthz — is invisible to it, as is anything served outside internal/web.
+
+The cost is the one worth stating plainly, because it is the reason this had not been built: it will block a commit at an inconvenient moment, and somebody will want to add a surface faster than they can draw one.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/surfaces_test.go, Makefile, docs/ui-surfaces.md |

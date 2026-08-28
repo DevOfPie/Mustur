@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 60 | [questions.md](questions.md) |
-| decision | 132 | [decisions.md](decisions.md) |
+| question | 62 | [questions.md](questions.md) |
+| decision | 133 | [decisions.md](decisions.md) |
 | finding | 58 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -117,6 +117,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0058](questions.md#mus-q-0058) | question | How a mis-routed jot is corrected, when the identifier is the routing |
 | [MUS-Q-0059](questions.md#mus-q-0059) | question | How a question answered somewhere other than Mustur gets closed in Mustur |
 | [MUS-Q-0060](questions.md#mus-q-0060) | question | How the session view should interpret the pane: frames, an emulator, or a stripped log |
+| [MUS-Q-0061](questions.md#mus-q-0061) | question | Should a surface built before it is drawn be stopped by the gate rather than recorded after it? |
+| [MUS-Q-0062](questions.md#mus-q-0062) | question | Is searching the intake destination list worth what either route costs? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -249,6 +251,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0130](decisions.md#mus-d-0130) | decision | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be |
 | [MUS-D-0131](decisions.md#mus-d-0131) | decision | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS |
 | [MUS-D-0132](decisions.md#mus-d-0132) | decision | The session view renders frames from capture-pane, and the byte stream is gone |
+| [MUS-D-0133](decisions.md#mus-d-0133) | decision | A built surface names the path it serves, and the gate reads that line rather than trusting it |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

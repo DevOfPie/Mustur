@@ -44,6 +44,16 @@ blank page.
 published visual plan, never as ASCII in a document or a prompt. This file is the
 brief; the design is the answer to it.
 
+**A built surface names the path it serves**, on a `**Serves**` line under its
+heading. That line is not documentation — `make surfaces` reads it, reads the
+routes the web package actually registers, and fails when a page is served that
+no surface here names. Seven surfaces were built before they were drawn while
+this file asked in prose for the opposite
+([MUS-F-0027](../records/findings.md#mus-f-0027)); the owner's answer was that
+the gate should enforce it rather than the file request it
+([MUS-Q-0061](../records/questions.md#mus-q-0061)). A surface not yet built has
+no such line, which is why six and seven have none.
+
 **There are twelve.** This file listed seven until milestone 4b needed the one
 it had never named — a running session's *output*, which is not the session
 list. Surface 8 below is that gap, found by trying to build against nothing, and
@@ -114,6 +124,8 @@ thing MUS-F-0027 says this file keeps failing to do — **built and deployed
 
 ### 1. Composer
 
+**Serves** `/compose`
+
 The reason the phone matters. Multi-line, editable before sending, spell-checked
 by the browser, and reachable off the home network without a terminal.
 
@@ -152,6 +164,8 @@ blocked; the script keeps the draft and nothing else.
 
 ### 2. Session list
 
+**Serves** `/sessions`
+
 Every session Mustur owns, across every machine. Which project, which machine,
 running or idle, and what it last said.
 
@@ -160,6 +174,8 @@ appear** — that is the likeliest week-one surprise and the interface should no
 let the owner form the wrong model.
 
 ### 3. Records
+
+**Serves** `/records`, `/records/{id}`
 
 Milestones, findings, decisions, investigations and work units, in
 [StrucGu's roles](../strucgu.yaml). Every record addressable by identifier with a
@@ -175,6 +191,8 @@ and cross-referential, so the graph reading was real; what it cost is in
 [decisions.md](../decisions.md#records-read-as-a-document).
 
 ### 4. Decision queue
+
+**Serves** `/questions`
 
 **Built at milestone 3 from this brief, then rebuilt from the plan's artboard**
 after the owner's answer on MUS-Q-0010. What the drawing settled and the brief
@@ -214,6 +232,8 @@ holds up a milestone from one that holds up a sentence.
 
 ### 5. Intake
 
+**Serves** `/intake`, and `/` where it is the front door
+
 **Built at milestone 2c, without a visual plan**, and published at
 `mustur.devofpie.com` behind Cloudflare Access at 2c's end. What exists is one
 textarea, one button and a list of what was filed in the last hour. It is the
@@ -243,6 +263,8 @@ are waived and why — a waiver that is invisible is a check that silently stopp
 running.
 
 ### 8. Session output
+
+**Serves** `/sessions/{project}`
 
 A running session's output, streamed to a browser tab. **Not the session list:**
 that says which sessions exist, this is what one of them is saying.
@@ -289,6 +311,8 @@ listed it as open again. Nothing on this surface is open.
 
 ### 9. Sign in
 
+**Serves** `/signin`
+
 One button. A passkey needs nothing typed, so there is no address field, no
 password field and no forgotten-password path — none of them exist to be
 forgotten.
@@ -300,6 +324,8 @@ invitation and the machine makes the first owner.
 
 ### 10. Accept an invitation
 
+**Serves** `/invite/{token}`
+
 Who is being invited, to what, and with which role, before anything is created.
 Accepting is one action because the invitation carries the role it grants.
 
@@ -308,6 +334,8 @@ already spent and never existed — anything finer is an oracle for somebody
 guessing tokens.
 
 ### 11. Account
+
+**Serves** `/account`
 
 Your roles and your passkeys, and nothing about anybody else — the owner settled
 that directly on
@@ -336,6 +364,8 @@ pre-announced the second was cut in review, so both are now met at the control
 rather than before it.
 
 ### 12. People and invitations
+
+**Serves** `/account/people`
 
 Owners only, and a second screen rather than the bottom of the account page
 ([MUS-Q-0045](../records/questions.md#mus-q-0045)) — which is also where the

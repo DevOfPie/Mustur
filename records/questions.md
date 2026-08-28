@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-60 record(s), by identifier.
+62 record(s), by identifier.
 
 ---
 
@@ -1364,4 +1364,48 @@ question · 2026-08-27
 | Answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
 | Answered | 2026-08-27 01:57 |
 | Relayed | written down by whippy, from a prompt in the session that raised it |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0061
+
+**Should a surface built before it is drawn be stopped by the gate rather than recorded after it?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0027, which has now recorded the same pattern seven times without the rate going down |
+| Option | Recommended :: Build the gate :: docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards, and it has failed seven times — twice after an owner answer on the same subject, and the rate went up rather than down. This repository already refuses to report work complete around an unsurfaced question, and that rule holds because make check enforces it rather than because a file asks. The same shape here: make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. The cost is real and worth saying plainly — it is a gate that will block a commit at an inconvenient moment, and somebody will want to add a surface faster than they can draw it. |
+| Option | Leave it recorded :: The finding stands as a warning and the next surface is caught by review or not at all :: The honest version of doing nothing. It costs nothing now and the record is accurate, but the finding's own diagnosis is that a record read after the fact is not a safeguard — so choosing this is choosing to accept the eighth instance, not to prevent it. |
+| Option | Something narrower :: Gate only the surfaces that carry script :: A script tag is already a decision the owner takes rather than a consequence of building something, and MUS-Q-0053 left what the rule counts open. Gating that smaller set is cheaper to build and harder to argue with, and it would have caught two of the seven rather than all of them. |
+| Asked by | whippy |
+| Surfaced | 2026-08-28 08:51 |
+| Answer | Build the gate. make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. |
+| Answered | 2026-08-28 08:52 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0062
+
+**Is searching the intake destination list worth what either route costs?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0039 — asked for if it were an easy add, and it is not |
+| Option | Recommended :: Leave it :: The measurement says the control is not the problem. Sixteen destinations render in the same 358px on a phone and 640px on a laptop as six do, in Chrome and Firefox both — a native select does not grow with its list. What a search box would be for is the opened popup, which is native chrome and not in the page, so nothing here can measure or style it. Revisit when the list is long enough that the popup is actually unpleasant, which it is not at four. |
+| Option | Make it the seventh scripted surface :: A filter box on intake, and a new precedent :: Filtering a list of options needs script, and intake has never carried any. MUS-Q-0053 settled that the count is of script tags and that a seventh is a decision taken rather than a consequence of building something — so this is that decision, not a side effect of it. |
+| Option | Datalist, and route by display name :: Script-free, and it costs the name in the box :: With `input list=`, the input's value is the option's value, so choosing Mustur leaves MUS-P-0001 sitting in the box. Routing by display name instead would fix that and would work only while no two destinations share a name — which is a constraint on the routing records rather than on the control, and one nothing currently enforces. |
+| Asked by | whippy |
+| Surfaced | 2026-08-28 08:51 |
+| Answer | Leave it. The closed control is not the problem and the list is four long; revisit when the opened popup is actually unpleasant. |
+| Answered | 2026-08-28 08:52 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |

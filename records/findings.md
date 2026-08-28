@@ -40,7 +40,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… | Filed from a phone by the owner while proving milestone 2c's last clause. | fixed |
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
 | [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
-| [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
+| [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next | make surfaces fails on a route no surface names, on a surface naming a route nothing registers, and on an exclusion that has stopped matching anything. All three measured by breaking them one at a time. | gated |
 | [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it | A held request under a live token, revoked while running: it ends. With the cancellation removed the same test reports the stream outliving its token after two seconds, which is the defect as found. A token nobody revoked holds its stream across many ticks, which is the half a recheck could quietly break. | fixed |
 | [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
 | [MUS-F-0030](#mus-f-0030) | A service piping a session could not be stopped, and held its port through the timeout | Every deploy in this session had to run 'tmux pipe-pane' with no command first. The last one did not, and stopped cleanly. | fixed |
@@ -609,12 +609,19 @@ and: [MUS-Q-0034](questions.md#mus-q-0034)
 
 remediated: [MUS-Q-0043](questions.md#mus-q-0043)
 
+gated by: [MUS-D-0133](decisions.md#mus-d-0133)
+
 docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards. It has now failed seven times. Intake at 2c, the decision queue at 3, the composer at 5 — each recorded, each followed by another. Milestone 5b then built four at once with no plan at all, which is more instances in one milestone than in the three before it combined. What makes this a finding rather than four is the shape: every instance was recorded, two owner answers were given on the same subject (MUS-Q-0010, MUS-Q-0034), and the rate went up. A record that is read after the fact is not a safeguard, and the remedy is not another paragraph in the file that already says this. The 5b surfaces were drawn afterwards under MUS-Q-0043 and rebuilt from the drawings, which is remediation of the instance and not of the pattern.
+
+The pattern is now gated rather than described (MUS-D-0133). Each built surface names the path it serves and `make surfaces` refuses a page that no surface names — and a surface that names a page nothing serves, because without that half the gate is satisfied by writing a path down. An eighth instance fails at the commit instead of being recorded after it.
+
+Kept open in spirit even so: the gate catches a surface that was never briefed. It cannot tell a brief from a drawing, so a surface listed in the file and built without ever reaching the owner as a published plan still passes. That is the smaller half of the pattern and nothing mechanical here reaches it.
 
 | Field | Value |
 | --- | --- |
 | Where | docs/ui-surfaces.md, and every milestone that added a surface |
-| Status | open |
+| Evidence | make surfaces fails on a route no surface names, on a surface naming a route nothing registers, and on an exclusion that has stopped matching anything. All three measured by breaking them one at a time. |
+| Status | gated |
 
 ---
 
