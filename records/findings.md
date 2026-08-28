@@ -10,7 +10,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
-| [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
+| [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
 | [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
@@ -81,10 +81,12 @@ Routed to: [MUS-P-0002](routing.md#mus-p-0002)
 
 Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox under IDW rather than MUS.
 
+It did, and the record is the evidence: this identifier is IDW-F-0001 and its routing is MUS-P-0002. The jot was asking one question and its own filing answered it. Closed rather than left unreviewed, which it had been for five days on a check that passed the moment it was written.
+
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. |
+| Status | verified |
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | the jot names Idea inbox |
 | Filed by | whippy |
@@ -620,7 +622,7 @@ docs/ui-surfaces.md exists to stop a surface being designed in a Go template and
 
 **Revoking a token does not close a stream already open under it**
 
-finding · 2026-08-28
+finding · 2026-08-25
 
 found in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
 
@@ -803,7 +805,7 @@ Seen in the owner's own screenshot: the destination chips are cut off mid-row, s
 
 **A stored photo kept the metadata its camera wrote into it**
 
-finding · 2026-08-28
+finding · 2026-08-26
 
 found in: [IDW-F-0003](#idw-f-0003)
 
