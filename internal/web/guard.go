@@ -25,8 +25,10 @@ package web
 // (MUS-Q-0051).
 
 import (
+	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/DevOfPie/Mustur/internal/account"
 )
@@ -115,6 +117,56 @@ func (g *Guard) agent(r *http.Request) (account.Token, bool) {
 	return t, true
 }
 
+// TokenRecheck is how often a running request's credential is asked about
+// again.
+//
+// A variable so a test can shorten it. Two seconds is chosen against what
+// revocation promises rather than against load: `mustur account revoke` says a
+// token stops working immediately, and a person who has just revoked one waits
+// at a terminal to see it. The cost is one indexed read of a single row in a
+// local file, and only while a request is still running — which, for everything
+// but the stream this exists for, is no time at all.
+var TokenRecheck = 2 * time.Second
+
+// watch cancels a request that outlives its token.
+//
+// The guard reads a credential once, which is the whole truth for a call that
+// answers and stops. It is not the truth for a stream. MCP's server-to-client
+// channel is a GET that stays open, and revoking its token left one running —
+// measured still open three seconds afterwards (MUS-F-0028). Enforcement was
+// per request, and one request had no end.
+//
+// So the question is asked again for as long as the request lasts, and the
+// request's own context is cancelled the first time the answer changes. The
+// handler under this is the SDK's streamable HTTP handler, which watches that
+// context; cancelling it is what closes the connection. Nothing here writes to
+// the response, because by then the handler owns it.
+//
+// The secret is re-read from the header rather than remembered, and the check
+// is ByToken rather than a narrower query, so revoked and expired stay one
+// rule with one implementation. A stopped goroutine is the ordinary case: a
+// POST returns before the first tick.
+func (g *Guard) watch(r *http.Request) (*http.Request, func()) {
+	ctx, cancel := context.WithCancel(r.Context())
+	secret := r.Header.Get("Authorization")[7:]
+	go func() {
+		tick := time.NewTicker(TokenRecheck)
+		defer tick.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-tick.C:
+				if _, err := g.Auth.Accounts.ByToken(ctx, secret); err != nil {
+					cancel()
+					return
+				}
+			}
+		}
+	}()
+	return r.WithContext(ctx), cancel
+}
+
 // writes reports whether a request would change something, or reach a surface
 // that types into a running agent.
 //
@@ -154,7 +206,9 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 				// earlier version of this comment cited a test that did not
 				// exist, which is a safety argument discharged against nothing.
 				_ = g.Auth.Accounts.UsedToken(r.Context(), t.ID)
-				next.ServeHTTP(w, r)
+				watched, stop := g.watch(r)
+				defer stop()
+				next.ServeHTTP(w, watched)
 				return
 			}
 			// No usable token: fall through, so an owner can still exercise it

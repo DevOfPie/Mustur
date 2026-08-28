@@ -6,8 +6,8 @@ work is done, and [decisions.md](decisions.md) for why.
 **Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
 yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
 everything through it is merged. 5b, accounts, and 5c, agent tokens, are built
-and not merged, and both are **deployed and enforced** on this machine since
-2026-08-26.**
+and merged as of 2026-08-28, and both are **deployed and enforced** on this
+machine since 2026-08-26.**
 The `mustur` binary can hold this repository's records and routing, serve them
 over MCP, audit them, and take a jot through an intake box — on a fresh clone it
 holds nothing until `make seed`, serves nothing until `make serve`, and audits
@@ -78,7 +78,9 @@ Milestone 5c is the credential an agent can hold. A passkey needs a browser and
 a gesture; an agent has neither and still has to reach the mandated tool call,
 so `mustur account token` issues one carried in an `Authorization: Bearer`
 header. It opens `/mcp` and nothing else, is scoped to one project, and is
-revoked immediately rather than at the next restart. Without it, enforcement and
+revoked immediately rather than at the next restart — including a stream
+already open under it, which used to outlive its own credential
+([MUS-F-0028](records/findings.md#mus-f-0028)). Without it, enforcement and
 the mandate could not both be on — measured, not reasoned.
 
 **A session on this machine now needs that token to make the mandated call.**

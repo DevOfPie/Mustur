@@ -41,7 +41,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
 | [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
 | [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
-| [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
+| [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it | A held request under a live token, revoked while running: it ends. With the cancellation removed the same test reports the stream outliving its token after two seconds, which is the defect as found. A token nobody revoked holds its stream across many ticks, which is the half a recheck could quietly break. | fixed |
 | [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
 | [MUS-F-0030](#mus-f-0030) | A service piping a session could not be stopped, and held its port through the timeout | Every deploy in this session had to run 'tmux pipe-pane' with no command first. The last one did not, and stopped cleanly. | fixed |
 | [MUS-F-0031](#mus-f-0031) | The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted | Both halves now come from the same capture, so there is no seam to degrade at. | fixed |
@@ -50,7 +50,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
 | [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
 | [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. | fixed |
-| [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
+| [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A JPEG with an Exif segment spliced in after the SOI goes into the store and comes back out with no Exif block and a decodable image. The GIF and WebP cases are asserted as passing through untouched, so the limit is measured rather than assumed. | fixed |
 | [MUS-F-0038](#mus-f-0038) | The session view printed a sub-agent's whole final message where its name belonged | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. | fixed |
 | [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
 | [MUS-F-0040](#mus-f-0040) | The account page was the one surface with no way back to a session | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. | fixed |
@@ -620,16 +620,21 @@ docs/ui-surfaces.md exists to stop a surface being designed in a Go template and
 
 **Revoking a token does not close a stream already open under it**
 
-finding · 2026-08-25
+finding · 2026-08-28
 
 found in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
 
 Revocation is enforced per request: ByToken reads the row rather than a cache, so the next call carrying a revoked token is refused on the running server with no restart. A standalone SSE stream opened before the revocation is not torn down, and was measured still open three seconds after. The impact is bounded rather than absent. That stream is server-to-client only, so no tool call can travel it and nothing can be read through it that was not already being sent; every new request is refused. But 'stops working immediately' is true of calls and not of an already-open connection, and the difference is worth writing down rather than discovering.
 
+Fixed by asking the question for as long as the request lasts. The guard read the credential once, which is the whole truth for a call that answers and stops and no truth at all for one that does not end. It now re-reads it on a ticker while the request is still running and cancels the request's own context the first time the answer changes; the SDK's streamable handler watches that context, so cancelling it is what closes the connection.
+
+Two things chosen rather than fallen into. The recheck calls ByToken rather than a narrower query, so revoked and expired stay one rule with one implementation instead of two that drift. And the interval is two seconds, picked against what revocation promises rather than against load — a person who has just revoked a token is watching a terminal — at a cost of one indexed read of a single row in a local file, and only while a request is still running. For everything but the stream this exists for, that is no time at all: a POST returns before the first tick.
+
 | Field | Value |
 | --- | --- |
-| Where | internal/web/guard.go, internal/account/token.go |
-| Status | open |
+| Where | internal/web/guard.go |
+| Evidence | A held request under a live token, revoked while running: it ends. With the cancellation removed the same test reports the stream outliving its token after two seconds, which is the defect as found. A token nobody revoked holds its stream across many ticks, which is the half a recheck could quietly break. |
+| Status | fixed |
 
 ---
 
@@ -798,19 +803,23 @@ Seen in the owner's own screenshot: the destination chips are cut off mid-row, s
 
 **A stored photo kept the metadata its camera wrote into it**
 
-finding · 2026-08-26
+finding · 2026-08-28
 
 found in: [IDW-F-0003](#idw-f-0003)
 
 contradicts: [MUS-D-0119](decisions.md#mus-d-0119)
 
-The first real upload from the owner's phone arrived carrying EXIF, including the exact device build it was taken on. Nothing strips it, so it is sitting in the store and would be handed to anyone the record surface is opened to. This contradicts a decision taken in the same change. The sender's filename is deliberately not stored, on the reasoning that a filename carries a date, a device and often the content of the picture. EXIF carries all three more explicitly, and it was kept — the rule was written and then applied to the smaller of the two carriers. The exposure is bounded today: images never reach the export, and the record surface is behind the guard with one account on it. It stops being bounded at milestone 6, which is a second person reading these surfaces. The fix is to drop metadata as the bytes are stored rather than when they are served, so nothing that was never wanted is ever written down. For JPEG that is removing the APPn segments; PNG's text chunks are the same shape of problem.
+The first real upload from the owner's phone arrived carrying EXIF, including the exact device build it was taken on. Nothing stripped it, so it sat in the store and would have been handed to anyone the record surface was opened to. This contradicted a decision taken in the same change. The sender's filename is deliberately not stored, on the reasoning that a filename carries a date, a device and often the content of the picture. EXIF carries all three more explicitly, and it was kept — the rule was written and then applied to the smaller of the two carriers.
+
+Fixed as the bytes are stored rather than as they are served, so a thing nobody wanted is never written down at all: the APPn application segments and the comment segment come off a JPEG, and the text, time and colour-profile chunks off a PNG. Byte surgery rather than a re-encode, because decoding and re-encoding would lose quality on somebody's evidence in order to remove a header. GIF and WebP carry their own metadata and are deliberately left alone rather than half-handled — an unstripped format named as such is a smaller lie than one silently believed to be clean.
+
+Recorded late. The fix shipped with the change that found it and this record was left saying open for two days, which is its own small instance of the thing the queue exists to stop.
 
 | Field | Value |
 | --- | --- |
 | Where | internal/store/attach.go |
-| Evidence | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. |
-| Status | open |
+| Evidence | A JPEG with an Exif segment spliced in after the SOI goes into the store and comes back out with no Exif block and a decodable image. The GIF and WebP cases are asserted as passing through untouched, so the limit is measured rather than assumed. |
+| Status | fixed |
 
 ---
 
