@@ -117,6 +117,26 @@ func slug(heading string) string {
 	return strings.ReplaceAll(kept.String(), " ", "-")
 }
 
+// Anchors returns every anchor a markdown document offers, in GitHub's scheme.
+//
+// Exported because it is the one implementation of this rule. `check-links.sh`
+// derived anchors itself and the two disagreed: this one refused a correct
+// anchor by stripping a heading's backticks (MUS-F-0060), and the script
+// accepted one that does not exist by reading a `#` inside a fence as a heading
+// (MUS-F-0062). The owner chose one implementation on MUS-Q-0064, and this is
+// it; the script asks for these rather than working them out again.
+//
+// Order is the document's, and a repeated heading appears as many times as it
+// is written. Neither matters to a membership test, and both matter to anybody
+// reading the output.
+func Anchors(text string) []string {
+	var out []string
+	for _, h := range headings(text) {
+		out = append(out, slug(h))
+	}
+	return out
+}
+
 // slugs returns every anchor a file offers.
 func slugs(text string) map[string]bool {
 	out := map[string]bool{}

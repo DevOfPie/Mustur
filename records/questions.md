@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-63 record(s), by identifier.
+64 record(s), by identifier.
 
 ---
 
@@ -1430,5 +1430,27 @@ question · 2026-08-28
 | Surfaced | 2026-08-28 23:04 |
 | Answer | Merge, with an explicit --drop. What is passed replaces that part and nothing else; anything omitted survives. Removing a field or citation becomes --drop KEY, typed on purpose. |
 | Answered | 2026-08-28 23:04 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0064
+
+**Should there be one implementation of GitHub's anchor rule, or two?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0062 — the two disagreed today, in opposite directions |
+| Option | Recommended :: One, in Go, with the script calling it :: `scripts/check-links.sh` and `internal/audit/markdown.go` both derive a heading's anchor, and today one refused a correct one while the other accepted an anchor that does not exist. MUS-F-0054 recorded this exact shape — two implementations of one thing, one of them approximate — and was fixed by deleting the second. Doing that here means the script asks the binary, and the rule has one place to be wrong. The cost is real: `make check` already builds Go for four of its nine gates, but the link gate stops being runnable on a machine that cannot build this tree, which is a property it has today. |
+| Option | Keep two, and test them against each other :: A shared fixture both must agree on :: Keeps the shell gate independent of the Go build, which is worth something for a checkout somebody is only reading. Instead of merging them, a table of headings and their real GitHub anchors lives in one place and both are run against it, so they can still be wrong but not wrong differently. More machinery than one implementation, and it does not stop both being wrong the same way. |
+| Option | Leave it :: They agree now, and drift is a problem for the day it happens :: Cheapest, and honest about the fact that both were fixed today. It also accepts that the next divergence is found the way this one was — by somebody running the gates by hand and wondering. |
+| Asked by | whippy |
+| Surfaced | 2026-08-29 00:23 |
+| Answer | One implementation, in Go, with the script calling it. The rule gets one place to be wrong; the link gate stops being runnable without building the tree, which is the accepted cost. |
+| Answered | 2026-08-29 00:23 |
 | Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |

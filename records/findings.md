@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-65 record(s), by identifier.
+66 record(s), by identifier.
 
 ## The queue
 
@@ -75,6 +75,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0059](#mus-f-0059) | An invitation was issued to something that is not an address, and reported as sent | `account invite --email not-an-address` exited 0 and printed a usable-looking link; account list showed it pending. With the check, Invite refuses it and still accepts first.last+tag@sub.example.co.uk, someone@localhost and x@y. Removing the check fails the test with 'an invitation was issued to something nobody could receive'. | fixed |
 | [MUS-F-0060](#mus-f-0060) | The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken | `make audit` went from '26 ok, 1 finding' to '27 ok, 0 finding' with no change to any record. A heading carrying inline code, and a link to its GitHub anchor, is now OK where it was a finding; reverting the split fails that test with the anchor named. | fixed |
 | [MUS-F-0061](#mus-f-0061) | The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. | fixed |
+| [MUS-F-0062](#mus-f-0062) | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. | fixed |
 
 ---
 
@@ -1418,4 +1419,32 @@ Found by running `make audit` by hand after noticing the skip line had been in e
 | --- | --- |
 | Where | internal/audit/catalog_path.go, cmd/mustur/main.go, internal/audit/live_test.go |
 | Evidence | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. |
+| Status | fixed |
+
+---
+
+## MUS-F-0062
+
+**The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged**
+
+finding · 2026-08-28
+
+same shape as: [MUS-F-0054](#mus-f-0054)
+
+found beside: [MUS-F-0060](#mus-f-0060)
+
+Two false passes in `scripts/check-links.sh`, found by asking what else the gates were not checking after the conformance harness turned out never to have run (MUS-F-0061).
+
+**A `#` inside a code fence counted as a heading.** The script read headings with a bare grep and no fence tracking, so it offered anchors GitHub does not. A document containing a shell block with a `# comment` in it made a link to that comment's slug resolve. Measured: a probe file with exactly that shape reported '1261 links resolve' before the fix and failed after it, naming the anchor.
+
+**And a file nobody had staged was invisible.** The enumeration was `git ls-files '*.md'`, which is tracked files only. The same probe, present on disk and not staged, passed the gate untouched — the gate did not look at it. The neighbouring shellcheck gate in the same Makefile already uses `git ls-files -c -o --exclude-standard` and carries a comment saying why: a run before `git add` passed over four new scripts and CI failed on all four. The lesson was written down beside this and not applied to it.
+
+Neither was hiding anything today: no tracked markdown here has a heading-shaped line inside a fence, and the count did not move. That is why they are recorded as measured rather than as caught — a gate that cannot currently be fooled by accident is still a gate that can be fooled.
+
+The thing underneath both is worth more than either. This tree has **two implementations of GitHub's anchor rule** — this script and `internal/audit/markdown.go` — and today they were wrong in opposite directions: the audit refused a correct anchor because it stripped a heading's backticks, and this accepted an anchor that does not exist. MUS-F-0054 recorded the same shape and was fixed by deleting the second implementation. Whether to do that here is MUS-Q-0064, because the shell gate's independence from the Go build is a property somebody may want to keep.
+
+| Field | Value |
+| --- | --- |
+| Where | scripts/check-links.sh |
+| Evidence | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. |
 | Status | fixed |

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-134 record(s), by identifier.
+135 record(s), by identifier.
 
 ## Index
 
@@ -146,6 +146,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0132](#mus-d-0132) | The session view renders frames from capture-pane, and the byte stream is gone | 2026-08-27 |
 | [MUS-D-0133](#mus-d-0133) | A built surface names the path it serves, and the gate reads that line rather than trusting it | 2026-08-28 |
 | [MUS-D-0134](#mus-d-0134) | An amendment keeps what it does not mention, and removing something is a thing you type | 2026-08-28 |
+| [MUS-D-0135](#mus-d-0135) | GitHub's anchor rule has one implementation, and the shell gate asks for it | 2026-08-29 |
 
 ---
 
@@ -2288,3 +2289,33 @@ It also closes a smaller trap in the same command: `--at` defaulted to today, so
 | Field | Value |
 | --- | --- |
 | Where | cmd/mustur/main.go, cmd/mustur/merge_test.go |
+
+---
+
+## MUS-D-0135
+
+**GitHub's anchor rule has one implementation, and the shell gate asks for it**
+
+decision · 2026-08-29
+
+answers: [MUS-Q-0064](questions.md#mus-q-0064)
+
+fixes: [MUS-F-0062](findings.md#mus-f-0062)
+
+and: [MUS-F-0060](findings.md#mus-f-0060)
+
+same shape as: [MUS-F-0054](findings.md#mus-f-0054)
+
+`scripts/check-links.sh` worked out a heading's anchor for itself, and so did `internal/audit/markdown.go`. On the same day they were wrong in opposite directions: the audit refused a correct anchor because it stripped a heading's backticks before reading it (MUS-F-0060), and the script accepted an anchor that does not exist because it read a `#` inside a code fence as a heading (MUS-F-0062). Both are the same defect MUS-F-0054 already recorded — two implementations of one thing, one of them approximate — and that one was fixed by deleting the second.
+
+So: one implementation, in Go, chosen by the owner on MUS-Q-0064. `audit.Anchors` is the rule, `mustur anchors FILE...` exposes it, and the script asks rather than deriving.
+
+The cost was named before it was paid and is not small: this gate now needs a tree that builds. It used to run on a checkout somebody was only reading. Four of the nine gates already build Go, so `make check` is unchanged — but `check-links.sh` on its own is no longer a shell script somebody can run anywhere.
+
+Two details that keep it honest. The anchors are read once for every file the commit will contain rather than once per link, because there are thousands of links and a process each would make the gate unusable. And a link pointing at a document that enumeration did not cover — one that is ignored, or outside the tree — is read on demand rather than treated as having no headings, which would be the gate reporting on a file it never opened.
+
+The alternative not taken was a shared fixture both implementations are run against. It keeps the shell gate independent, and it does not stop both being wrong in the same way — which is the failure a single implementation also has, at a fraction of the machinery.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/audit/markdown.go, cmd/mustur/anchors.go, scripts/check-links.sh |

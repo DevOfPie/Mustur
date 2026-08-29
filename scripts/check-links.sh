@@ -23,20 +23,52 @@ cd "$(dirname "$0")/.." || exit 1
 fails=0
 checked=0
 
-# Heading slugs for a file, one per line, in GitHub's scheme: lowercase, drop
-# everything that is not alphanumeric/space/hyphen/underscore, then replace each
-# space with a hyphen.
+# Tracked *and* newly added, which `git ls-files` alone is not.
 #
-# Each space individually — runs are NOT collapsed. "2026-07-29 — Phase 1" loses
-# its em-dash to the punctuation strip and keeps both surrounding spaces, so the
-# real anchor is "2026-07-29--phase-1" with two hyphens. Collapsing here made this
-# script reject twenty correct anchors the first time it ran against them.
-slugs() {
-  grep -oE '^#{1,6} +.*' "$1" 2>/dev/null |
-    sed -E 's/^#+ +//' |
-    tr '[:upper:]' '[:lower:]' |
-    sed -E 's/[^a-z0-9 _-]//g' |
-    tr ' ' '-'
+# The shellcheck gate learned this and said why: a gate run before `git add`
+# passed over four new scripts and CI failed on all four. The same hole was left
+# open here for markdown — a new document with a broken link is invisible until
+# somebody stages it, which is after the gate they ran it for (MUS-F-0062).
+tracked_markdown() {
+  git ls-files -c -o --exclude-standard '*.md'
+}
+
+# Anchors come from the binary, not from here (MUS-Q-0064).
+#
+# This script used to work them out itself, and the two implementations
+# disagreed in opposite directions on the same day: the audit refused a correct
+# anchor by stripping a heading's backticks (MUS-F-0060), and this accepted one
+# that does not exist by reading a `#` inside a code fence as a heading
+# (MUS-F-0062). The owner chose one implementation, in Go.
+#
+# The cost is named rather than discovered: this gate now needs a tree that
+# builds. It used to run on a checkout somebody was only reading.
+#
+# Read once for every file the commit will contain, because the alternative is
+# a process per link and there are thousands. Keyed by absolute path so a link
+# that arrived by a relative route still matches.
+declare -A ANCHORS SEEN
+
+while IFS= read -r f; do
+  SEEN["$(realpath "$f")"]=1
+done < <(tracked_markdown)
+
+while IFS=$'\t' read -r f a; do
+  ANCHORS["$f"]+="$a"$'\n'
+done < <(tracked_markdown | xargs go run ./cmd/mustur anchors)
+
+# A link may point at a document the enumeration did not cover — one that is
+# ignored, or outside it. Those are read on demand rather than reported as
+# having no headings, which would be this gate lying about a file it never
+# opened.
+anchors_for() {
+  local abs
+  abs=$(realpath "$1")
+  if [ -n "${SEEN[$abs]+set}" ]; then
+    printf '%s' "${ANCHORS[$abs]-}"
+    return
+  fi
+  go run ./cmd/mustur anchors "$1" | cut -f2
 }
 
 while IFS= read -r file; do
@@ -78,12 +110,12 @@ while IFS= read -r file; do
     # writers upstream of it take SIGPIPE, and `pipefail` then reports 141 for a
     # pipeline that succeeded. That failed roughly one anchor in five, a
     # different one each run.
-    if ! grep -qxF "$anchor" <<<"$(slugs "$target")"; then
+    if ! grep -qxF "$anchor" <<<"$(anchors_for "$target")"; then
       printf '  FAIL  %s -> %s (no such heading)\n' "$file" "$link"
       fails=$((fails + 1))
     fi
   done < <(grep -oE '\]\([^)]*\)' "$file" | sed -E 's/^\]\(//; s/\)$//')
-done < <(git ls-files '*.md')
+done < <(tracked_markdown)
 
 if [ "$fails" -eq 0 ]; then
   printf '  ok    %d links resolve\n' "$checked"
@@ -106,7 +138,7 @@ fi
 # counted as conforming and its M54 amendment rendered nowhere. A scan that can
 # only see the malformation it has already seen is not a scan.
 # shellcheck disable=SC2016  # $0 and $1 are awk's fields, not the shell's
-tables=$(git ls-files '*.md' | xargs awk '
+tables=$(tracked_markdown | xargs awk '
 function cells(s,   t, n) {
   gsub(/\\\|/, "\001", s)             # \| is content, not a delimiter
   sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s)

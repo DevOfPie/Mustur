@@ -105,6 +105,8 @@ func run(argv []string) error {
 		return cmdWrite(args, "create")
 	case "amend":
 		return cmdWrite(args, "amend")
+	case "anchors":
+		return cmdAnchors(args)
 	case "reroute":
 		return cmdReroute(args)
 	case "ask":
