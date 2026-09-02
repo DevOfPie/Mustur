@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-64 record(s), by identifier.
+65 record(s), by identifier.
 
 ---
 
@@ -1453,4 +1453,27 @@ question · 2026-08-28
 | Answer | One implementation, in Go, with the script calling it. The rule gets one place to be wrong; the link gate stops being runnable without building the tree, which is the accepted cost. |
 | Answered | 2026-08-29 00:23 |
 | Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0065
+
+**Where does the agent's token live, given that the tracked .mcp.json shadows every configuration that has one?**
+
+question · 2026-09-02
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | the mandated tool call, in every session started anywhere but this one worktree |
+| Needed to proceed | yes |
+| Option | Recommended :: Take mustur out of .mcp.json and keep it at user scope :: The tracked entry cannot work any more — it carries no credential, and since enforcement it can only refuse. It also shadows the one that would work: measured, project scope beats user scope, so the user-scope entry now sitting in ~/.claude.json is inert while that file exists. Removing it leaves one configuration, on this machine, holding one secret, with no environment plumbing at all. The cost is that a fresh clone no longer learns from the repository that there is a server to point at — which is documentation, and can be a sentence in workflow.md instead of a config that refuses. |
+| Option | Keep it tracked, carrying ${MUSTUR_TOKEN} :: The repository keeps the pointer and the secret stays out of it :: Measured working: Claude Code expands the variable and connects. It covers the main checkout and every worktree, present and future, from one file, and it is the shape a second person on a second machine would want. The cost is environment plumbing in every place a session starts — a shell profile, the Remote Control systemd user service, anything launched by cron — and today found two defects that were exactly 'works in one launch context, not another'. A clone with the variable unset fails honestly (403 naming the header) but loses the OAuth offer, which never worked against Mustur anyway. |
+| Option | Per-directory local scope, changing nothing in the repository :: Works today, refuses in every worktree made after :: Local scope beats project scope, so this works without touching a public file — but it is keyed to one directory. Every worktree an agent creates from here on would fall back to the tracked entry and refuse. That is the shape of MUS-F-0061, found today: a gate that silently did not run because 'beside the tree' meant beside the worktree. |
+| Asked by | whippy |
+| Surfaced | 2026-09-02 23:57 |
+| Answer | Take mustur out of .mcp.json and keep it at user scope. One config, one secret, no environment plumbing; the repository documents the server in prose instead of carrying a configuration that can only refuse. Revoke the old token too. |
+| Answered | 2026-09-02 23:57 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-09-02 |
 | Delivered | not delivered: the question names no session |

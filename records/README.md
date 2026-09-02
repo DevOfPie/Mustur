@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 64 | [questions.md](questions.md) |
+| question | 65 | [questions.md](questions.md) |
 | decision | 135 | [decisions.md](decisions.md) |
-| finding | 66 | [findings.md](findings.md) |
+| finding | 67 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -121,6 +121,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0062](questions.md#mus-q-0062) | question | Is searching the intake destination list worth what either route costs? |
 | [MUS-Q-0063](questions.md#mus-q-0063) | question | Should amend keep what the caller did not restate, or refuse to drop it? |
 | [MUS-Q-0064](questions.md#mus-q-0064) | question | Should there be one implementation of GitHub's anchor rule, or two? |
+| [MUS-Q-0065](questions.md#mus-q-0065) | question | Where does the agent's token live, given that the tracked .mcp.json shadows every configuration that has one? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -318,6 +319,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0060](findings.md#mus-f-0060) | finding | The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken |
 | [MUS-F-0061](findings.md#mus-f-0061) | finding | The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree |
 | [MUS-F-0062](findings.md#mus-f-0062) | finding | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged |
+| [MUS-F-0063](findings.md#mus-f-0063) | finding | A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
