@@ -251,6 +251,24 @@ func (s *Store) Attachments(ctx context.Context, recordID string) ([]Attachment,
 	return out, rows.Err()
 }
 
+// MoveAttachments hands a record's pictures to the record that replaces it.
+//
+// A correction files a new record and retires the old one as a stub. The bytes
+// stayed behind on the stub, so a jot filed from a phone with a photograph came
+// out of a reroute with the photograph attached to the record nobody reads
+// (MUS-F-0057). Moved rather than copied: the stub makes no claim any more, and
+// a second copy of a 2.4 MB photograph is the wrong price for a correction.
+func (s *Store) MoveAttachments(ctx context.Context, from, to string) (int, error) {
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE attachment SET record_id = ? WHERE record_id = ?`,
+		strings.TrimSpace(to), strings.TrimSpace(from))
+	if err != nil {
+		return 0, fmt.Errorf("move attachments: %w", err)
+	}
+	n, err := res.RowsAffected()
+	return int(n), err
+}
+
 // Forget removes an image, leaving the record and its description.
 //
 // Records are insert-only and an attachment is not a record: it is a private

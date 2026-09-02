@@ -67,6 +67,19 @@ func cmdReroute(args []string) error {
 	if strings.TrimSpace(old.Body) == "" {
 		return fmt.Errorf("%s has no body to re-file; amend it rather than rerouting it", old.ID)
 	}
+	// This corrects a jot, and a jot is a record intake filed: "Routed to" is
+	// written by intake.File and by nothing else, so its presence is exactly
+	// the question being asked.
+	//
+	// Without it, reroute took anything with a body. A project record went
+	// through: its description was filed as a fresh finding in the idea inbox
+	// and the record defining the store's own prefix was marked superseded by
+	// it. Nothing in the command's purpose covered that, and nothing in the
+	// command stopped it (MUS-F-0058).
+	if _, routed := old.Get("Routed to"); !routed {
+		return fmt.Errorf("%s was not filed through the intake box, so it has no routing to correct. "+
+			"reroute is for a jot that \"Route it for me\" put in the wrong place", old.ID)
+	}
 
 	// Filed through intake rather than written here, so the destination is
 	// resolved, the prefix is chosen and the fields are shaped by exactly the
@@ -78,6 +91,11 @@ func cmdReroute(args []string) error {
 		Actor:   *actor,
 		Now:     time.Now(),
 		To:      *to,
+		// A correction re-files the record's own body, so it matches its own
+		// original exactly. Without this it is handed the original back and
+		// told it is already routed there, for the first minute after filing —
+		// which is the minute somebody notices the routing was wrong.
+		Deliberate: true,
 	})
 	if err != nil {
 		return err
@@ -135,8 +153,19 @@ func cmdReroute(args []string) error {
 		return err
 	}
 
+	// The pictures go with the record, not with the stub. A jot filed from a
+	// phone carries its evidence in the attachment, and leaving it behind means
+	// the record anybody reads has none.
+	moved, err := s.MoveAttachments(ctx, old.ID, fresh.ID)
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("%s now carries it, routed to %s.\n%s stays, superseded and still resolving.\n",
 		fresh.ID, dest.Name, old.ID)
+	if moved > 0 {
+		fmt.Printf("%d picture(s) moved across.\n", moved)
+	}
 	return nil
 }
 

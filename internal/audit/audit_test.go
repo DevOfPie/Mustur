@@ -124,6 +124,36 @@ func TestEachCheckDetectsItsOwnViolation(t *testing.T) {
 	}
 }
 
+// A heading's anchor keeps the words its backticks wrapped.
+//
+// GitHub drops the backtick characters and keeps what they surrounded, so
+// "### There is no `session send`" anchors at there-is-no-session-send. The
+// checker blanked inline code before reading headings — right for links, where
+// a target inside code is not a link, and wrong here: it derived there-is-no
+// and reported a correct link as pointing at no such heading. It was doing that
+// against this repository's own decisions.md, which has exactly one such
+// heading, so the audit had a standing false finding (MUS-F-0060).
+func TestAHeadingKeepsTheWordsInsideItsBackticks(t *testing.T) {
+	files := satisfying()
+	files["doc.md"] += "\n## There is no `session send`\n\n" +
+		"Back to [it](#there-is-no-session-send).\n"
+	rep := run(t, build(t, files))
+	if got := state(t, rep, "D-05"); got.State != OK {
+		t.Fatalf("D-05 = %s (%s); a heading lost the words inside its backticks", got.State, got.Detail)
+	}
+}
+
+// And the other half, which the fix could have broken: a fenced block is still
+// not a source of headings. A `#` line inside one is a line of code.
+func TestAHashInsideAFenceIsNotAHeading(t *testing.T) {
+	files := satisfying()
+	files["doc.md"] += "\n```sh\n# not a heading\n```\n\nTo [it](#not-a-heading).\n"
+	rep := run(t, build(t, files))
+	if got := state(t, rep, "D-05"); got.State == OK {
+		t.Fatal("a heading was read out of a fenced block")
+	}
+}
+
 // An anchor whose heading held an em dash between two spaces keeps both spaces
 // through the punctuation strip, so its real anchor carries two hyphens.
 // Collapsing runs is the obvious implementation and it rejects correct anchors.

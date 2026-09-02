@@ -41,7 +41,9 @@ const usage = `mustur — records and routing for one project
   mustur get ID   [--db PATH]                 one record in full (either order)
   mustur rebuild  [--db PATH]                 re-derive the materialized latest from the log
   mustur add KIND --title T [...]             write one record into the store
-  mustur amend ID --title T [...]             correct one, without losing what it said
+  mustur amend ID [--title T] [...]          correct one; what you do not pass survives
+                  [--drop KEY]                remove a field by name, or a citation by name or ID
+                  [--replace]                 state it afresh instead, dropping the rest
   mustur reroute ID --to DEST                re-file a mis-routed jot; the old one stays, superseded
   mustur ask      --title T [--blocks W]      raise a question the owner has to answer
                   [--option "L :: line :: detail"]  an answer they can pick, repeatable
@@ -103,6 +105,8 @@ func run(argv []string) error {
 		return cmdWrite(args, "create")
 	case "amend":
 		return cmdWrite(args, "amend")
+	case "anchors":
+		return cmdAnchors(args)
 	case "reroute":
 		return cmdReroute(args)
 	case "ask":
@@ -146,11 +150,10 @@ func defaultCatalog(root string) string {
 	if p := os.Getenv("MUSTUR_STRUCGU"); p != "" {
 		return p
 	}
-	abs, err := filepath.Abs(root)
-	if err != nil {
-		return "../StrucGu"
-	}
-	return filepath.Join(filepath.Dir(abs), "StrucGu")
+	// Beside the audited tree, or above it: agent work happens in a worktree
+	// under .claude/worktrees, whose parent holds no checkout of anything
+	// (MUS-F-0061).
+	return audit.CatalogBeside(root)
 }
 
 // fields collects repeated k=v flags in the order they were given. Order is
@@ -169,6 +172,105 @@ func (f *fields) Set(v string) error {
 	return nil
 }
 
+// names is a repeatable bare argument, which --drop is and --data is not.
+type names []string
+
+func (n *names) String() string { return strings.Join(*n, ", ") }
+
+func (n *names) Set(v string) error {
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return fmt.Errorf("--drop needs a field name or an identifier")
+	}
+	*n = append(*n, v)
+	return nil
+}
+
+// merge is what an amendment does to the record it amends.
+//
+// Everything the caller did not mention survives. What they did mention
+// replaces its counterpart, and --drop removes one on purpose.
+//
+// This used to be a wholesale replacement, on the reasoning that carrying
+// fields forward silently would make `amend --title` keep data the writer never
+// saw, and that the log holds the earlier version anyway. Both halves are true
+// and it lost to the evidence: fifteen amendments in this store dropped content
+// nobody meant to drop, eight records were still missing citations two days
+// later, and one milestone lost its whole body and took three more amendments
+// to rebuild (MUS-F-0055). The owner chose merge on MUS-Q-0063 — safe by
+// default, destructive on request, which is --reanswer's principle one level
+// down.
+func merge(old, in record.Record, set map[string]bool, drop names) record.Record {
+	out := in
+	if !set["title"] {
+		out.Title = old.Title
+	}
+	if !set["body"] {
+		out.Body = old.Body
+	}
+	if !set["at"] {
+		out.At = old.At
+	}
+
+	dropped := map[string]bool{}
+	for _, d := range drop {
+		dropped[strings.ToLower(strings.TrimSpace(d))] = true
+	}
+	gone := func(key, value string) bool {
+		return dropped[strings.ToLower(strings.TrimSpace(key))] ||
+			dropped[strings.ToLower(strings.TrimSpace(value))]
+	}
+
+	// A field is identified by its key: passing Status again replaces it, in
+	// the place it already had. Fields are rendered in order, so a correction
+	// that shuffles them is a diff nobody asked for.
+	incoming := map[string]record.Field{}
+	for _, f := range in.Data {
+		incoming[strings.ToLower(strings.TrimSpace(f.Key))] = f
+	}
+	used := map[string]bool{}
+	var data []record.Field
+	for _, f := range old.Data {
+		key := strings.ToLower(strings.TrimSpace(f.Key))
+		if now, ok := incoming[key]; ok {
+			f = now
+			used[key] = true
+		}
+		if gone(f.Key, f.Value) {
+			continue
+		}
+		data = append(data, f)
+	}
+	for _, f := range in.Data {
+		if used[strings.ToLower(strings.TrimSpace(f.Key))] || gone(f.Key, f.Value) {
+			continue
+		}
+		data = append(data, f)
+	}
+	out.Data = data
+
+	// A citation is identified by both halves, because a key repeats: a record
+	// can be found in two work units and cite them under the same word.
+	seen := map[[2]string]bool{}
+	var refs []record.Field
+	add := func(f record.Field) {
+		k := [2]string{strings.ToLower(strings.TrimSpace(f.Key)), strings.TrimSpace(f.Value)}
+		if seen[k] || gone(f.Key, f.Value) {
+			return
+		}
+		seen[k] = true
+		refs = append(refs, f)
+	}
+	for _, f := range old.Refs {
+		add(f)
+	}
+	for _, f := range in.Refs {
+		add(f)
+	}
+	out.Refs = refs
+	return out
+}
+
 // cmdWrite is `add` and `amend`. One function, because the difference between
 // them is one word passed to the store — and the store is what refuses a create
 // over an existing identifier or an amendment of one that is not there. A
@@ -184,6 +286,13 @@ func cmdWrite(args []string, op string) error {
 	var data, refs fields
 	fs.Var(&data, "data", "a k=value field, repeatable and rendered in order")
 	fs.Var(&refs, "ref", "a k=IDENTIFIER citation, repeatable")
+	var drop names
+	replace := fs.Bool("replace", false,
+		"amend: state the record afresh, dropping everything not restated")
+	if op == "amend" {
+		fs.Var(&drop, "drop",
+			"amend: remove a field by its name, or a citation by its name or identifier")
+	}
 	complaint := "add needs one kind: " + strings.Join(kindNames(), ", ")
 	if op == "amend" {
 		complaint = "amend needs one identifier"
@@ -192,10 +301,22 @@ func cmdWrite(args []string, op string) error {
 	if err != nil {
 		return err
 	}
-	if strings.TrimSpace(*title) == "" {
+	// Passed and empty is not the same as absent, and merging is the whole
+	// reason the difference now matters.
+	set := map[string]bool{}
+	fs.Visit(func(f *flag.Flag) { set[f.Name] = true })
+
+	merging := op == "amend" && !*replace
+	if strings.TrimSpace(*title) == "" && (!merging || set["title"]) {
 		return fmt.Errorf("%s needs a --title: a record with no claim is a row, not a record", op)
 	}
-	if *at == "" {
+	if len(drop) > 0 && !merging {
+		return fmt.Errorf("--drop and --replace are opposites: --replace already drops everything not restated")
+	}
+	// An amendment that keeps what it did not mention keeps the date too. The
+	// old default stamped today onto every correction, which moved three
+	// records' dates before anyone noticed (MUS-F-0055).
+	if *at == "" && !merging {
 		*at = time.Now().Format("2006-01-02")
 	}
 
@@ -227,9 +348,12 @@ func cmdWrite(args []string, op string) error {
 			return err
 		}
 		r.ID, r.Kind = existing.ID, existing.Kind
-		// An amendment states the record afresh. Carrying the old fields
-		// forward silently would make `amend --title` quietly keep data the
-		// writer never saw, and the log holds the earlier version anyway.
+		if merging {
+			r = merge(existing, r, set, drop)
+			r.ID, r.Kind = existing.ID, existing.Kind
+		} else if r.At == "" {
+			r.At = time.Now().Format("2006-01-02")
+		}
 	}
 	if err := s.Append(ctx, r, op, *actor); err != nil {
 		return err

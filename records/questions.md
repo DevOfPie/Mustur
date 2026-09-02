@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-60 record(s), by identifier.
+64 record(s), by identifier.
 
 ---
 
@@ -1364,4 +1364,93 @@ question · 2026-08-27
 | Answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
 | Answered | 2026-08-27 01:57 |
 | Relayed | written down by whippy, from a prompt in the session that raised it |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0061
+
+**Should a surface built before it is drawn be stopped by the gate rather than recorded after it?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0027, which has now recorded the same pattern seven times without the rate going down |
+| Option | Recommended :: Build the gate :: docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards, and it has failed seven times — twice after an owner answer on the same subject, and the rate went up rather than down. This repository already refuses to report work complete around an unsurfaced question, and that rule holds because make check enforces it rather than because a file asks. The same shape here: make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. The cost is real and worth saying plainly — it is a gate that will block a commit at an inconvenient moment, and somebody will want to add a surface faster than they can draw it. |
+| Option | Leave it recorded :: The finding stands as a warning and the next surface is caught by review or not at all :: The honest version of doing nothing. It costs nothing now and the record is accurate, but the finding's own diagnosis is that a record read after the fact is not a safeguard — so choosing this is choosing to accept the eighth instance, not to prevent it. |
+| Option | Something narrower :: Gate only the surfaces that carry script :: A script tag is already a decision the owner takes rather than a consequence of building something, and MUS-Q-0053 left what the rule counts open. Gating that smaller set is cheaper to build and harder to argue with, and it would have caught two of the seven rather than all of them. |
+| Asked by | whippy |
+| Surfaced | 2026-08-28 08:51 |
+| Answer | Build the gate. make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. |
+| Answered | 2026-08-28 08:52 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0062
+
+**Is searching the intake destination list worth what either route costs?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0039 — asked for if it were an easy add, and it is not |
+| Option | Recommended :: Leave it :: The measurement says the control is not the problem. Sixteen destinations render in the same 358px on a phone and 640px on a laptop as six do, in Chrome and Firefox both — a native select does not grow with its list. What a search box would be for is the opened popup, which is native chrome and not in the page, so nothing here can measure or style it. Revisit when the list is long enough that the popup is actually unpleasant, which it is not at four. |
+| Option | Make it the seventh scripted surface :: A filter box on intake, and a new precedent :: Filtering a list of options needs script, and intake has never carried any. MUS-Q-0053 settled that the count is of script tags and that a seventh is a decision taken rather than a consequence of building something — so this is that decision, not a side effect of it. |
+| Option | Datalist, and route by display name :: Script-free, and it costs the name in the box :: With `input list=`, the input's value is the option's value, so choosing Mustur leaves MUS-P-0001 sitting in the box. Routing by display name instead would fix that and would work only while no two destinations share a name — which is a constraint on the routing records rather than on the control, and one nothing currently enforces. |
+| Asked by | whippy |
+| Surfaced | 2026-08-28 08:51 |
+| Answer | Leave it. The closed control is not the problem and the list is four long; revisit when the opened popup is actually unpleasant. |
+| Answered | 2026-08-28 08:52 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0063
+
+**Should amend keep what the caller did not restate, or refuse to drop it?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0055 — amend replaces a record whole, and has already gutted records in this store |
+| Option | Recommended :: Merge, with an explicit --drop :: What is passed replaces that part and nothing else; a field or citation left out survives. Removing one becomes `--drop Status`, which is a thing you type on purpose. This makes the safe outcome the default and the destructive one explicit, which is the same principle as --reanswer applied one level down. It also matches what the word means everywhere else — `git commit --amend` keeps the tree. The cost is that amend stops being a way to rewrite a record from scratch; that becomes --replace, for the rare time you want it. |
+| Option | Refuse unless --replace :: Amend fails when it would drop content the caller did not restate :: Closest to the existing precedent: MUS-D-0126 made an answer refuse to overwrite without --reanswer, and this is the same guard at a bigger scale. The failure mode is that the refusal fires on every ordinary correction, so everybody learns to type --replace without reading it — at which point the guard is decoration and the trap is back. |
+| Option | Warn and proceed :: Print what is about to be dropped, then drop it :: Cheapest to build and it keeps every existing call working unchanged. It also relies on somebody reading output that appears when the command has already succeeded, which is the thing that did not happen the fifteen times this already occurred. |
+| Option | Leave it, and gate the damage instead :: Keep amend as it is, and add a check that fails when a record loses a citation :: Treats the loss as something to detect rather than prevent. It would have caught all eight of the records repaired today, and it catches nothing at the moment of the mistake — the record is still gutted, and the gate tells you afterwards. |
+| Asked by | whippy |
+| Surfaced | 2026-08-28 23:04 |
+| Answer | Merge, with an explicit --drop. What is passed replaces that part and nothing else; anything omitted survives. Removing a field or citation becomes --drop KEY, typed on purpose. |
+| Answered | 2026-08-28 23:04 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0064
+
+**Should there be one implementation of GitHub's anchor rule, or two?**
+
+question · 2026-08-28
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0062 — the two disagreed today, in opposite directions |
+| Option | Recommended :: One, in Go, with the script calling it :: `scripts/check-links.sh` and `internal/audit/markdown.go` both derive a heading's anchor, and today one refused a correct one while the other accepted an anchor that does not exist. MUS-F-0054 recorded this exact shape — two implementations of one thing, one of them approximate — and was fixed by deleting the second. Doing that here means the script asks the binary, and the rule has one place to be wrong. The cost is real: `make check` already builds Go for four of its nine gates, but the link gate stops being runnable on a machine that cannot build this tree, which is a property it has today. |
+| Option | Keep two, and test them against each other :: A shared fixture both must agree on :: Keeps the shell gate independent of the Go build, which is worth something for a checkout somebody is only reading. Instead of merging them, a table of headings and their real GitHub anchors lives in one place and both are run against it, so they can still be wrong but not wrong differently. More machinery than one implementation, and it does not stop both being wrong the same way. |
+| Option | Leave it :: They agree now, and drift is a problem for the day it happens :: Cheapest, and honest about the fact that both were fixed today. It also accepts that the next divergence is found the way this one was — by somebody running the gates by hand and wondering. |
+| Asked by | whippy |
+| Surfaced | 2026-08-29 00:23 |
+| Answer | One implementation, in Go, with the script calling it. The rule gets one place to be wrong; the link gate stops being runnable without building the tree, which is the accepted cost. |
+| Answered | 2026-08-29 00:23 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |

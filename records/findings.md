@@ -4,13 +4,13 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-58 record(s), by identifier.
+66 record(s), by identifier.
 
 ## The queue
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
-| [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |  | unreviewed |
+| [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
 | [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
@@ -40,8 +40,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… | Filed from a phone by the owner while proving milestone 2c's last clause. | fixed |
 | [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
 | [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
-| [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next |  | open |
-| [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it |  | open |
+| [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next | make surfaces fails on a route no surface names, on a surface naming a route nothing registers, and on an exclusion that has stopped matching anything. All three measured by breaking them one at a time. | gated |
+| [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it | A held request under a live token, revoked while running: it ends. With the cancellation removed the same test reports the stream outliving its token after two seconds, which is the defect as found. A token nobody revoked holds its stream across many ticks, which is the half a recheck could quietly break. | fixed |
 | [MUS-F-0029](#mus-f-0029) | No passkey from a password manager could ever sign in, because the backup flags were never stored |  | fixed |
 | [MUS-F-0030](#mus-f-0030) | A service piping a session could not be stopped, and held its port through the timeout | Every deploy in this session had to run 'tmux pipe-pane' with no command first. The last one did not, and stopped cleanly. | fixed |
 | [MUS-F-0031](#mus-f-0031) | The session view appended a redrawing terminal as if it were a log, so the live stream arrived unformatted | Both halves now come from the same capture, so there is no seam to degrade at. | fixed |
@@ -50,9 +50,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0034](#mus-f-0034) | The session view's quiet timer and composer could be scrolled off the bottom of a phone | Dock anchored to the bottom edge at 390x844, 390x667, 360x640, 360x560, 390x480 and 1200x800, with the output's reserved space exceeding the dock's height at each. | fixed |
 | [MUS-F-0035](#mus-f-0035) | The sub-agent box had no height cap, so it took the whole session view with it | Before: .agents 8211px, .rail 17px, chips spilling. After: .agents capped at 295px (412x915) and 251px (1366x768), .rail 46px with every chip inside it, output 441px and 386px, nothing overlapping anything. Chromium and Firefox, at 412x915, 1366x768 and 360x640. | fixed |
 | [MUS-F-0036](#mus-f-0036) | The intake destination row hides its last choice behind a sideways scroll | 741px of chips in a 640px row at 1366, 1600, 1920 and 390px wide; the page itself did not overflow. Fixed 2026-08-26 by replacing the row with a grouped list, at the owner's request. A native select has no hidden end: 6 options at 358px on a phone and 640px on a laptop, no sideways scroll in either Chrome or Firefox, the default and the scratch pad unchanged. It also answers the question that came with it — 'DevOfPie/Mustur' and 'Mustur' now sit under Repositories and Projects, so the pair reads as a tree inside a project rather than as two equal choices. | fixed |
-| [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. | open |
+| [MUS-F-0037](#mus-f-0037) | A stored photo kept the metadata its camera wrote into it | A JPEG with an Exif segment spliced in after the SOI goes into the store and comes back out with no Exif block and a decodable image. The GIF and WebP cases are asserted as passing through untouched, so the limit is measured rather than assumed. | fixed |
 | [MUS-F-0038](#mus-f-0038) | The session view printed a sub-agent's whole final message where its name belonged | Measured against the owner's own Demo session — its real hook log, 100 events and a 7,565-byte one, served to Chrome and Firefox at 390x844 and 1366x768. The sub-agent box went from 8,211px to 143px (3 rows), none of the output painted in the list; the output pane got 521px back on a phone and the rail returned to 46px from the 17px it had collapsed to. The sheet opens on a tap carrying all 7,267 characters and scrolling inside itself, lines up exactly with the composer (0+390 on a phone, 224+736 on a laptop, so it sits beside the rail rather than under it), closes on Escape and on the veil, and hands focus back to the row it was opened from. A sub-agent that has not spoken says what it is in rather than showing an empty page; one that ended without a message says that instead. A row arriving while the sheet was open rebuilt the list and the sheet held its place — checked by appending to the hook log mid-read, since the ticker sends nothing while the log is unchanged. | fixed |
-| [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | open |
+| [MUS-F-0039](#mus-f-0039) | Searching the destination list costs either the no-script promise or the name in the box | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. | not now |
 | [MUS-F-0040](#mus-f-0040) | The account page was the one surface with no way back to a session | The nav had three links where every other surface has four, and Accounts carried no ShowSessions field. Two tests: both account screens offer the tab and lead with it in the same order as elsewhere, and a build without --sessions offers no tab rather than a dead one. | fixed |
 | [MUS-F-0041](#mus-f-0041) | The session page was the only surface that let itself be cached, so its markup could outlive its script | internal/web/sessions.go render() set Content-Type and nothing else; every sibling surface sets no-store. Against the deployed binary, a real mouse click at the centre of a row — not element.click(), which skips hit-testing — opened the sheet in Chrome and Firefox at 390x844 and 1366x768, with the row under the pointer and no page errors. So the code as deployed works and something about the delivered page did not. Fixed by sending Cache-Control: no-store from render(). no-store rather than no-cache because it also keeps the page out of the back/forward cache, which restores a whole live document including script state, and is what a phone returning to a backgrounded tab meets. Not proven to be the cause the owner hit: their browser's cache state could not be reproduced here. A hard refresh would confirm it. | fixed |
 | [MUS-F-0042](#mus-f-0042) | The quiet timer measured the age of the tab, in three separate ways | On a session started 29s earlier and silent since, the first paint reads 'quiet 29s' and climbs, in Chrome and Firefox. Before: 'quiet 0s' on every load. Three tests: the first viewer is told the truth, the replayed scrollback does not reset it, and the backlog frame is marked as replay. | fixed |
@@ -68,6 +68,14 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0052](#mus-f-0052) | Frames left nothing to scroll back through, because an agent pane has no scrollback at all | tmux display-message on both live sessions: alternate_on=1, history_size=0, history_limit=2000. After the resize, Demo renders 120 scrollable lines from its startup banner to its last output where it had 24. | fixed |
 | [MUS-F-0053](#mus-f-0053) | The CLI's own furniture was four lines of every screen, and the useful part of it was unreadable | Against both live sessions: the output carries no input box, divider or status line, and the row reads 'auto mode on · PR #31 · 1 agent · /rc failed · new task? /clear to save 118.3k tokens' — the owner's own list of what was worth keeping. A session with a dialogue open loses its status line and is still split correctly. | fixed |
 | [MUS-F-0054](#mus-f-0054) | A hand-rolled escape stripper ate a hyperlink and broke the parsing that depended on it | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. | fixed |
+| [MUS-F-0055](#mus-f-0055) | amend replaces a record whole, and the command that exists to correct records has been quietly gutting them | A finding created with a body, one citation and two fields, amended with --title alone, comes back as a bare title: exit 0, output the identifier. Across record_event, 15 amends dropped content and 8 records were still missing citations today; MUS-M-0010 went 630 characters of body to zero and back over four amends. | fixed |
+| [MUS-F-0056](#mus-f-0056) | reroute refused to correct a jot for the first minute after it was filed, and said something false about why | A jot filed through the intake surface and rerouted immediately: 'already routed there'. The same reroute with only --actor changed succeeded, which isolates the cause to the duplicate window's body-and-actor match. With the fix, the same-actor reroute inside the window succeeds. Reverting it fails the test with 'a deliberate filing was handed back the original'. | fixed |
+| [MUS-F-0057](#mus-f-0057) | A rerouted jot left its picture behind on the stub nobody reads | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' | fixed |
+| [MUS-F-0058](#mus-f-0058) | reroute took any record with a body, so a project record could be superseded by a jot in the idea inbox | Against a seeded store: reroute on MUS-P-0001 filed IDW-F-0001 carrying the project's description and left MUS-P-0001 with Status superseded and Superseded by IDW-F-0001. With the guard, all three of the project, repository and machine records are refused and a real jot still reroutes with its picture. Removing the guard fails the test on all three. | fixed |
+| [MUS-F-0059](#mus-f-0059) | An invitation was issued to something that is not an address, and reported as sent | `account invite --email not-an-address` exited 0 and printed a usable-looking link; account list showed it pending. With the check, Invite refuses it and still accepts first.last+tag@sub.example.co.uk, someone@localhost and x@y. Removing the check fails the test with 'an invitation was issued to something nobody could receive'. | fixed |
+| [MUS-F-0060](#mus-f-0060) | The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken | `make audit` went from '26 ok, 1 finding' to '27 ok, 0 finding' with no change to any record. A heading carrying inline code, and a link to its GitHub anchor, is now OK where it was a finding; reverting the split fails that test with the anchor named. | fixed |
+| [MUS-F-0061](#mus-f-0061) | The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. | fixed |
+| [MUS-F-0062](#mus-f-0062) | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. | fixed |
 
 ---
 
@@ -81,10 +89,12 @@ Routed to: [MUS-P-0002](routing.md#mus-p-0002)
 
 Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox under IDW rather than MUS.
 
+It did, and the record is the evidence: this identifier is IDW-F-0001 and its routing is MUS-P-0002. The jot was asking one question and its own filing answered it. Closed rather than left unreviewed, which it had been for five days on a check that passed the moment it was written.
+
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. |
+| Status | verified |
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | the jot names Idea inbox |
 | Filed by | whippy |
@@ -607,12 +617,19 @@ and: [MUS-Q-0034](questions.md#mus-q-0034)
 
 remediated: [MUS-Q-0043](questions.md#mus-q-0043)
 
+gated by: [MUS-D-0133](decisions.md#mus-d-0133)
+
 docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards. It has now failed seven times. Intake at 2c, the decision queue at 3, the composer at 5 — each recorded, each followed by another. Milestone 5b then built four at once with no plan at all, which is more instances in one milestone than in the three before it combined. What makes this a finding rather than four is the shape: every instance was recorded, two owner answers were given on the same subject (MUS-Q-0010, MUS-Q-0034), and the rate went up. A record that is read after the fact is not a safeguard, and the remedy is not another paragraph in the file that already says this. The 5b surfaces were drawn afterwards under MUS-Q-0043 and rebuilt from the drawings, which is remediation of the instance and not of the pattern.
+
+The pattern is now gated rather than described (MUS-D-0133). Each built surface names the path it serves and `make surfaces` refuses a page that no surface names — and a surface that names a page nothing serves, because without that half the gate is satisfied by writing a path down. An eighth instance fails at the commit instead of being recorded after it.
+
+Kept open in spirit even so: the gate catches a surface that was never briefed. It cannot tell a brief from a drawing, so a surface listed in the file and built without ever reaching the owner as a published plan still passes. That is the smaller half of the pattern and nothing mechanical here reaches it.
 
 | Field | Value |
 | --- | --- |
 | Where | docs/ui-surfaces.md, and every milestone that added a surface |
-| Status | open |
+| Evidence | make surfaces fails on a route no surface names, on a surface naming a route nothing registers, and on an exclusion that has stopped matching anything. All three measured by breaking them one at a time. |
+| Status | gated |
 
 ---
 
@@ -626,10 +643,15 @@ found in: [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021)
 
 Revocation is enforced per request: ByToken reads the row rather than a cache, so the next call carrying a revoked token is refused on the running server with no restart. A standalone SSE stream opened before the revocation is not torn down, and was measured still open three seconds after. The impact is bounded rather than absent. That stream is server-to-client only, so no tool call can travel it and nothing can be read through it that was not already being sent; every new request is refused. But 'stops working immediately' is true of calls and not of an already-open connection, and the difference is worth writing down rather than discovering.
 
+Fixed by asking the question for as long as the request lasts. The guard read the credential once, which is the whole truth for a call that answers and stops and no truth at all for one that does not end. It now re-reads it on a ticker while the request is still running and cancels the request's own context the first time the answer changes; the SDK's streamable handler watches that context, so cancelling it is what closes the connection.
+
+Two things chosen rather than fallen into. The recheck calls ByToken rather than a narrower query, so revoked and expired stay one rule with one implementation instead of two that drift. And the interval is two seconds, picked against what revocation promises rather than against load — a person who has just revoked a token is watching a terminal — at a cost of one indexed read of a single row in a local file, and only while a request is still running. For everything but the stream this exists for, that is no time at all: a POST returns before the first tick.
+
 | Field | Value |
 | --- | --- |
-| Where | internal/web/guard.go, internal/account/token.go |
-| Status | open |
+| Where | internal/web/guard.go |
+| Evidence | A held request under a live token, revoked while running: it ends. With the cancellation removed the same test reports the stream outliving its token after two seconds, which is the defect as found. A token nobody revoked holds its stream across many ticks, which is the half a recheck could quietly break. |
+| Status | fixed |
 
 ---
 
@@ -660,6 +682,8 @@ finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
+found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
+
 Stopping the service while it was piping a session left the pipe reader blocked in uninterruptible sleep; systemd timed out holding port 7777 and the site was down for about ten minutes. Released by turning the pipe off by hand.
 
 Gone rather than fixed: there is no pipe any more. The session view polls capture-pane instead of holding pipe-pane open (MUS-D-0132), so there is nothing to block on and nothing to turn off before a deploy.
@@ -679,6 +703,12 @@ Gone rather than fixed: there is no pipe any more. The session view polls captur
 finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+sharpened by: [MUS-F-0049](#mus-f-0049)
+
+found in: [MUS-W-0017](work-units/MUS-W-0017.md#mus-w-0017)
+
+and: [MUS-W-0018](work-units/MUS-W-0018.md#mus-w-0018)
 
 The owner watched a session from a laptop and reported it piping out unformatted text.
 
@@ -804,13 +834,17 @@ found in: [IDW-F-0003](#idw-f-0003)
 
 contradicts: [MUS-D-0119](decisions.md#mus-d-0119)
 
-The first real upload from the owner's phone arrived carrying EXIF, including the exact device build it was taken on. Nothing strips it, so it is sitting in the store and would be handed to anyone the record surface is opened to. This contradicts a decision taken in the same change. The sender's filename is deliberately not stored, on the reasoning that a filename carries a date, a device and often the content of the picture. EXIF carries all three more explicitly, and it was kept — the rule was written and then applied to the smaller of the two carriers. The exposure is bounded today: images never reach the export, and the record surface is behind the guard with one account on it. It stops being bounded at milestone 6, which is a second person reading these surfaces. The fix is to drop metadata as the bytes are stored rather than when they are served, so nothing that was never wanted is ever written down. For JPEG that is removing the APPn segments; PNG's text chunks are the same shape of problem.
+The first real upload from the owner's phone arrived carrying EXIF, including the exact device build it was taken on. Nothing stripped it, so it sat in the store and would have been handed to anyone the record surface was opened to. This contradicted a decision taken in the same change. The sender's filename is deliberately not stored, on the reasoning that a filename carries a date, a device and often the content of the picture. EXIF carries all three more explicitly, and it was kept — the rule was written and then applied to the smaller of the two carriers.
+
+Fixed as the bytes are stored rather than as they are served, so a thing nobody wanted is never written down at all: the APPn application segments and the comment segment come off a JPEG, and the text, time and colour-profile chunks off a PNG. Byte surgery rather than a re-encode, because decoding and re-encoding would lose quality on somebody's evidence in order to remove a header. GIF and WebP carry their own metadata and are deliberately left alone rather than half-handled — an unstripped format named as such is a smaller lie than one silently believed to be clean.
+
+Recorded late. The fix shipped with the change that found it and this record was left saying open for two days, which is its own small instance of the thing the queue exists to stop.
 
 | Field | Value |
 | --- | --- |
 | Where | internal/store/attach.go |
-| Evidence | A 2.4 MB JPEG from the owner's phone, stored with an Exif block naming the device build. Read straight back out of the store with the metadata intact. |
-| Status | open |
+| Evidence | A JPEG with an Exif segment spliced in after the SOI goes into the store and comes back out with no Exif block and a decodable image. The GIF and WebP cases are asserted as passing through untouched, so the limit is measured rather than assumed. |
+| Status | fixed |
 
 ---
 
@@ -842,13 +876,17 @@ finding · 2026-08-26
 
 from: [MUS-D-0121](decisions.md#mus-d-0121)
 
+answered by: [MUS-Q-0062](questions.md#mus-q-0062)
+
 The owner asked for search if it were an easy add. It is not, and the reason is worth writing down before somebody tries it and discovers the cost halfway. The intake surface carries no script and never has. Filtering a list of options needs one, so a search box makes it the seventh scripted surface — and MUS-Q-0053 settled that the count is of script tags and that a seventh is a decision the owner takes, not a consequence of building something. That is the first route and it is a prompt, not a task. The script-free route is a datalist behind a text input, and it fails on something simpler than rendering: with `input list=`, the input's value is the option's value, so choosing 'Mustur' leaves MUS-P-0001 sitting in the box. Routing by display name instead would work only while no two destinations share one, which is a constraint on the routing records rather than on the control. A check of how the two browsers render a datalist popup was attempted and proved nothing — it read the values out of the DOM, which is what was put in, not what a browser draws. The popup is native chrome and is not in the page. Recorded because a measurement that answers the wrong question is worse than none. What the padding did answer: a native select does not grow with its list. Sixteen options rendered in the same 358px on a phone and 640px on a laptop as six did, in Chrome and Firefox both. The closed control is not the problem; the opened popup is, and that is what a search box would be for.
+
+Put to the owner with both routes costed, and their answer was to leave it (MUS-Q-0062): the closed control is not the problem and the list is four long. Not closed as wrong — closed as not worth either price yet. What would reopen it is the list growing long enough that the opened popup is actually unpleasant, which is a thing to notice rather than a number to wait for.
 
 | Field | Value |
 | --- | --- |
 | Where | internal/web/intake.go |
 | Evidence | Sixteen options measured at 358px and 640px, unchanged from six, in Chromium and Firefox at 390x844 and 1366x768. Intake carries zero script tags today. |
-| Status | open |
+| Status | not now |
 
 ---
 
@@ -926,6 +964,8 @@ finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
 
+same shape as: [MUS-F-0030](#mus-f-0030)
+
 Its process was a zombie and 127.0.0.1:7972 was still bound, with ss naming no owner and both lsof and fuser finding nothing. Turning the pipe off released it immediately. Reproduced four times while restarting a test server.
 
 Gone with the pipe (MUS-D-0132). The mechanism was never established and now does not need to be.
@@ -945,6 +985,10 @@ Gone with the pipe (MUS-D-0132). The mechanism was never established and now doe
 finding · 2026-08-26
 
 fixed by: [MUS-D-0125](decisions.md#mus-d-0125)
+
+about: [IDW-F-0004](#idw-f-0004)
+
+blocked by: [MUS-Q-0058](questions.md#mus-q-0058)
 
 Filed by the owner: IDW-F-0004 should have been routed to Mustur and was not — correct this, and plan a route for corrections of an incorrect 'Route it for me' in future.
 
@@ -966,6 +1010,8 @@ The correction could not be a flag on amend, because the identifier prefix is th
 finding · 2026-08-26
 
 fixed by: [MUS-D-0126](decisions.md#mus-d-0126)
+
+raised as: [MUS-Q-0059](questions.md#mus-q-0059)
 
 Filed by the owner: decisions made elsewhere are not cleared from Mustur.
 
@@ -1068,6 +1114,10 @@ The icons are now drawn in CSS: borders, radii and two pseudo-elements each. The
 finding · 2026-08-27
 
 fixed by: [MUS-D-0132](decisions.md#mus-d-0132)
+
+sharpens: [MUS-F-0031](#mus-f-0031)
+
+blocked by: [MUS-Q-0060](questions.md#mus-q-0060)
 
 Filed by the owner: the session output is still broken, and the concern raised earlier was taken as a Claude issue when it is an issue with how the output is interpreted.
 
@@ -1195,4 +1245,206 @@ Fixed by deleting it. internal/ansi already parses these properly for rendering,
 | --- | --- |
 | Where | internal/ansi/ansi.go, internal/session/screen.go |
 | Evidence | The chip went from 'PR /DevOfPie/Mustur/pull/31' to 'PR #31' against the live session. A test feeds a real OSC 8 sequence through the splitter and checks both the item and that the status line was recognised at all. |
+| Status | fixed |
+
+---
+
+## MUS-F-0055
+
+**amend replaces a record whole, and the command that exists to correct records has been quietly gutting them**
+
+finding · 2026-08-28
+
+answered by: [MUS-Q-0063](questions.md#mus-q-0063)
+
+`mustur amend ID --title "..."` — changing nothing but the title — returned the identifier, exited 0, and left a record with no body, no citations and no fields. Everything the caller did not restate was gone, and nothing in the output said so.
+
+It was deliberate, which is the part worth keeping. The code carried its own argument: an amendment states the record afresh, because carrying fields forward silently would make `amend --title` keep data the writer never saw, and the log holds the earlier version anyway. Both halves are true. It still lost to the evidence — the reasoning was about a writer who might be surprised by what survived, and the actual writers were surprised by what did not.
+
+The help line read `correct one, without losing what it said`. There is a reading on which that was true: the log is insert-only, so nothing is unrecoverable. It is not the reading somebody types the command under.
+
+Found by looking for the least-tested code rather than by anything failing. `cmd/mustur` was at 2.8% statement coverage, the lowest in the tree by a factor of sixteen, and it is the half the owner actually types.
+
+The damage was already here. Fifteen amendments across this store dropped content. Most were deliberate — a jot's intake scaffolding coming off at triage, a field reworked into the body — but eight records were still missing citations two days later, including MUS-F-0031 and MUS-F-0049, which are the same defect and had stopped pointing at each other. MUS-M-0010 lost its entire 630-character body to one amendment and took three more to rebuild it; nobody wrote that down at the time.
+
+The eight were repaired, and the method is the point: each amendment was rebuilt from the record's own stored payload and re-sent with the missing citations added. Retyping the content by hand is how it was lost, so no part of the repair retyped anything.
+
+Fixed by merging, which the owner chose on MUS-Q-0063. What is passed replaces its counterpart; what is not passed survives; `--drop` removes one on purpose and `--replace` still states a record afresh for the rare time that is wanted. A field passed again keeps the place it already had, because fields render in order and a correction that shuffles them is a diff nobody asked for. Citations are identified by both halves rather than by their key, because a record can be found in two work units and cite them under the same word.
+
+It also closes a smaller trap in the same command. `--at` defaults to today, so every correction restamped the record's date with the date of the correction — which moved three records' dates earlier today before it was noticed. An amendment that keeps what it did not mention keeps the date too.
+
+This record was itself amended with the new behaviour, passing only a body and a status, and its evidence and citations survived unmentioned.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/main.go |
+| Evidence | A finding created with a body, one citation and two fields, amended with --title alone, comes back as a bare title: exit 0, output the identifier. Across record_event, 15 amends dropped content and 8 records were still missing citations today; MUS-M-0010 went 630 characters of body to zero and back over four amends. |
+| Status | fixed |
+
+---
+
+## MUS-F-0056
+
+**reroute refused to correct a jot for the first minute after it was filed, and said something false about why**
+
+finding · 2026-08-28
+
+`mustur reroute IDW-F-0001 --to MUS-P-0001` answered `IDW-F-0001 is already routed there`. It was not routed there — it was in the idea inbox, which is why it was being rerouted.
+
+reroute files the correction through `intake.File`, deliberately, so that the destination is resolved and the prefix chosen by exactly the code that files everything else. `intake.File` opens with a duplicate check: the same body by the same actor inside a one-minute window is a browser repeating itself, and it is handed the record it already made. That check exists for a real thing — a phone on a flaky connection sent the same POST three times and made three records.
+
+A correction re-files a record's own body, so it matches its own original exactly and always trips the check. `File` returned the original, reroute compared identifiers, found them equal, and reported the one thing that could not be true. The window is sixty seconds, which is exactly the window in which somebody notices their jot went to the wrong place.
+
+Fixed by letting a filing say it means it. `intake.Request` gains `Deliberate`, which turns the window off, and reroute sets it. The retry protection is untouched for everything that did not ask, and a test holds both halves — a repeat inside the window is still collapsed, a deliberate one still gets its own record.
+
+Found by testing the command rather than reading it. The reading said reroute was careful, and it is: it carries the title, the body, the date, the fields and the citations across by hand, with a comment explaining each. None of that runs when the first call hands back the record you started with.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/intake/intake.go, cmd/mustur/reroute.go |
+| Evidence | A jot filed through the intake surface and rerouted immediately: 'already routed there'. The same reroute with only --actor changed succeeded, which isolates the cause to the duplicate window's body-and-actor match. With the fix, the same-actor reroute inside the window succeeds. Reverting it fails the test with 'a deliberate filing was handed back the original'. |
+| Status | fixed |
+
+---
+
+## MUS-F-0057
+
+**A rerouted jot left its picture behind on the stub nobody reads**
+
+finding · 2026-08-28
+
+A correction files a new record at the right destination and retires the old one in place, still resolving, pointing at its replacement. Attachments are keyed by record identifier and nothing moved them, so a jot filed from a phone with a photograph came out of a reroute with the photograph attached to the retired stub. The record anybody now reads has no picture; the one that has it makes no claim.
+
+Bounded, because the durable half was always the description an agent writes from the picture into the record's own fields, and reroute does carry the fields across. But the bytes are the evidence, and 'the picture is still there, on the other one' is not something a reader can be expected to work out.
+
+Fixed by moving them with the record. Moved rather than copied: the stub makes no claim any more, and a second copy of a 2.4 MB photograph is the wrong price for a correction. Moving from a record that has none is not an error, because a jot without a picture is the ordinary case.
+
+Found while checking whether reroute carried everything across. It carries the title, body, date, fields and citations by hand, each with a comment — attachments were simply not in the list, because they are not part of the record shape.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/store/attach.go, cmd/mustur/reroute.go |
+| Evidence | A jot filed with a PNG through the intake surface, then rerouted: before the fix 'mustur image list' still showed the picture on IDW-F-0001 while MUS-F-0014 carried the jot. After it, the picture is on MUS-F-0014 and the command says '1 picture(s) moved across.' |
+| Status | fixed |
+
+---
+
+## MUS-F-0058
+
+**reroute took any record with a body, so a project record could be superseded by a jot in the idea inbox**
+
+finding · 2026-08-28
+
+`mustur reroute MUS-P-0001 --to MUS-P-0002` succeeded. It filed the project record's description as a fresh finding in the idea inbox, and marked MUS-P-0001 — the record that defines this store's own prefix, its repository and its machine — as `superseded`, pointing at that finding. The same went through for the repository and machine records.
+
+Nothing about the command intends that. Its help says it re-files a mis-routed jot, its own comment opens with 'correcting a jot that Route it for me put in the wrong place', and every line of its design is about jots. It had two guards — the record must exist, and it must have a body — and a project record passes both.
+
+Fixed by asking the question the command is actually asking. `Routed to` is a field `intake.File` writes and nothing else does, so its presence is exactly 'this was routed, and can therefore be re-routed'. A record intake never filed is refused, and told why in the command's own terms rather than with a type name.
+
+A second, smaller thing found in the same pass, and recorded here because it is the same shape: `mustur ask --option "no separators here"` was accepted. An option is a label, one line on what it costs, and the paragraph behind it; a label alone hands the owner a word and leaves them to reconstruct the rest, which is the bare question this repository's contract asks nobody to send, one level down. The neighbouring flag already refuses malformed input — `--data` will not take a value that is not key=value — so the boundary was inconsistent with itself rather than lenient by design. A label with nothing behind it is now refused, and two parts are still enough.
+
+Both were found by running the commands over their edges rather than reading them, which is the second time today that reading said a command was careful and running it said otherwise.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/reroute.go, cmd/mustur/questions.go |
+| Evidence | Against a seeded store: reroute on MUS-P-0001 filed IDW-F-0001 carrying the project's description and left MUS-P-0001 with Status superseded and Superseded by IDW-F-0001. With the guard, all three of the project, repository and machine records are refused and a real jot still reroutes with its picture. Removing the guard fails the test on all three. |
+| Status | fixed |
+
+---
+
+## MUS-F-0059
+
+**An invitation was issued to something that is not an address, and reported as sent**
+
+finding · 2026-08-28
+
+`mustur account invite --email not-an-address` succeeded: it printed a link, said 'invited not-an-address as reader on MUS', and left a pending invitation in `account list` that nobody could ever accept. Nothing said otherwise. The failure is silent and delayed — you find out because the person never arrives, and the list shows a typo you may not look at for a day, which is how long an invitation lives.
+
+It sits on milestone 6's path. That milestone is a second person signing in, and inviting them is the first thing anybody does; typing an address by hand into a terminal is exactly where a typo comes from.
+
+Fixed at `account.Invite` rather than in the command, so the account page's invite form gets the same refusal — there is no reason for the two doors to disagree about what an address is.
+
+The rule is deliberately the least that can be checked: one @, something either side, no whitespace. Not RFC 5322. An address with a plus, a dot, a hyphen, an unusual top level or no dot at all still passes, because refusing somebody's real address is a worse failure than accepting a typo — the tests name the addresses that must keep working as carefully as the ones that must not.
+
+Two other things in the same pass looked wrong and were not, which is worth recording so nobody re-opens them. Inviting the same address twice lists two pending invitations: that is correct — a secret is never stored and an invitation that goes missing is reissued rather than looked up. And redeeming a second invitation does not make a second account: `Redeem` looks the account up by address and only creates one when there is no row, so both links land on the same person.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/account/account.go |
+| Evidence | `account invite --email not-an-address` exited 0 and printed a usable-looking link; account list showed it pending. With the check, Invite refuses it and still accepts first.last+tag@sub.example.co.uk, someone@localhost and x@y. Removing the check fails the test with 'an invitation was issued to something nobody could receive'. |
+| Status | fixed |
+
+---
+
+## MUS-F-0060
+
+**The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken**
+
+finding · 2026-08-28
+
+`mustur audit` reported one finding against this repository, and had been reporting it for as long as the heading has existed: `decisions.md -> ../decisions.md#there-is-no-session-send (no such heading)`. The heading is there. It reads `### There is no ` followed by `session send` in backticks, and GitHub's anchor for it drops the backtick characters and keeps what they wrapped — which is what the link says and what this repository's own link gate agrees with. `make check-links` resolved all 1,252 links, including that one.
+
+The checker blanks inline code before it reads headings. That is right for links, where a target inside backticks is a sample and not a link, and wrong for headings, where the words inside backticks are part of the anchor. It derived `there-is-no` and could not match.
+
+Fixed by splitting the two. Fenced blocks still come out before headings are read, because a `#` line inside a fence is a line of code — that half has its own test now, since it is what the fix could have broken. Inline spans come out only for links.
+
+The damage is not the false line. It is that an audit with a standing false finding teaches its reader to skim past findings, and this one is the tool the repository exists to run against itself.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/audit/markdown.go |
+| Evidence | `make audit` went from '26 ok, 1 finding' to '27 ok, 0 finding' with no change to any record. A heading carrying inline code, and a link to its GitHub anchor, is now OK where it was a finding; reverting the split fails that test with the anchor named. |
+| Status | fixed |
+
+---
+
+## MUS-F-0061
+
+**The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree**
+
+finding · 2026-08-28
+
+`make check` has been printing `SKIP: TestConformsToTheCatalogFixtures` all day, and every day an agent has worked here. The harness looks for a StrucGu checkout beside the audited tree, and read 'beside' as the parent of the directory it was handed. Agent work happens in a git worktree under `.claude/worktrees/<name>`, so it looked in `.claude/worktrees` and found nothing. A checkout has been sitting at `~/repos/DevOfPie/StrucGu` the whole time.
+
+The skip is loud — it prints NO CONFORMANCE EVIDENCE IN THIS RUN, which is the one thing this got right, and is why this was findable at all rather than a silent pass. But a gate that announces its own absence on every run is still a gate that never runs, and the announcement had become part of the expected output.
+
+What it was not measuring: 37 fixture trees and 344 expected states, the numbers Plan.md records for milestone 2b. Those now run from a worktree and match.
+
+Fixed by letting 'beside' walk up. The first ancestor with a StrucGu holding modules wins, which is the same answer as before for an ordinary checkout and the right one from any depth of worktree. A catalog is recognised by holding modules rather than by its name, so a directory that merely shares the name is not mistaken for one — and with none anywhere the old sibling path is still what the error names, because it is the obvious place to put one.
+
+Found by running `make audit` by hand after noticing the skip line had been in every gate run today.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/audit/catalog_path.go, cmd/mustur/main.go, internal/audit/live_test.go |
+| Evidence | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. |
+| Status | fixed |
+
+---
+
+## MUS-F-0062
+
+**The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged**
+
+finding · 2026-08-28
+
+same shape as: [MUS-F-0054](#mus-f-0054)
+
+found beside: [MUS-F-0060](#mus-f-0060)
+
+Two false passes in `scripts/check-links.sh`, found by asking what else the gates were not checking after the conformance harness turned out never to have run (MUS-F-0061).
+
+**A `#` inside a code fence counted as a heading.** The script read headings with a bare grep and no fence tracking, so it offered anchors GitHub does not. A document containing a shell block with a `# comment` in it made a link to that comment's slug resolve. Measured: a probe file with exactly that shape reported '1261 links resolve' before the fix and failed after it, naming the anchor.
+
+**And a file nobody had staged was invisible.** The enumeration was `git ls-files '*.md'`, which is tracked files only. The same probe, present on disk and not staged, passed the gate untouched — the gate did not look at it. The neighbouring shellcheck gate in the same Makefile already uses `git ls-files -c -o --exclude-standard` and carries a comment saying why: a run before `git add` passed over four new scripts and CI failed on all four. The lesson was written down beside this and not applied to it.
+
+Neither was hiding anything today: no tracked markdown here has a heading-shaped line inside a fence, and the count did not move. That is why they are recorded as measured rather than as caught — a gate that cannot currently be fooled by accident is still a gate that can be fooled.
+
+The thing underneath both is worth more than either. This tree has **two implementations of GitHub's anchor rule** — this script and `internal/audit/markdown.go` — and today they were wrong in opposite directions: the audit refused a correct anchor because it stripped a heading's backticks, and this accepted an anchor that does not exist. MUS-F-0054 recorded the same shape and was fixed by deleting the second implementation. Whether to do that here is MUS-Q-0064, because the shell gate's independence from the Go build is a property somebody may want to keep.
+
+| Field | Value |
+| --- | --- |
+| Where | scripts/check-links.sh |
+| Evidence | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. |
 | Status | fixed |

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-132 record(s), by identifier.
+135 record(s), by identifier.
 
 ## Index
 
@@ -144,6 +144,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0130](#mus-d-0130) | Running or idle is read from the CLI's own pane, and the silence timer is what happens when it cannot be | 2026-08-27 |
 | [MUS-D-0131](#mus-d-0131) | The four tabs are drawings in the bar and drawings with words in the rail, built in CSS | 2026-08-27 |
 | [MUS-D-0132](#mus-d-0132) | The session view renders frames from capture-pane, and the byte stream is gone | 2026-08-27 |
+| [MUS-D-0133](#mus-d-0133) | A built surface names the path it serves, and the gate reads that line rather than trusting it | 2026-08-28 |
+| [MUS-D-0134](#mus-d-0134) | An amendment keeps what it does not mention, and removing something is a thing you type | 2026-08-28 |
+| [MUS-D-0135](#mus-d-0135) | GitHub's anchor rule has one implementation, and the shell gate asks for it | 2026-08-29 |
 
 ---
 
@@ -1744,6 +1747,8 @@ decision · 2026-08-25
 
 from: [MUS-F-0026](findings.md#mus-f-0026)
 
+from: [MUS-F-0027](findings.md#mus-f-0027)
+
 A review asked for an address field on sign-in, so that somebody holding several passkeys can control which account they reach. They already can: the browser is asked for any passkey scoped to this site and the operating system lists what it holds, labelled by the address each was registered under. Mustur cannot style that sheet and never sees the list, which is why nothing is typed. The canvas now draws it rather than asserting it. Typing an address first would tell a stranger whether an address has an account here unless every address produced an identical prompt, and would put a keyboard in front of the one flow that had none — so the field is not built, and the question is on the plan with a middle option: one button by default, with a way out that reveals a field. The comment was right about something else, which is MUS-F-0026: registration never required a discoverable credential.
 
 ---
@@ -2011,6 +2016,8 @@ fixes: [MUS-F-0046](findings.md#mus-f-0046)
 
 amends: [MUS-D-0123](#mus-d-0123)
 
+fixes: [MUS-F-0044](findings.md#mus-f-0044)
+
 The session picker's submit button is rendered inside a noscript element rather than rendered always and hidden by the script.
 
 The owner asked for it to appear only when scripting is disabled, having first asked for it to be small and beside the dropdown rather than large and beneath it. noscript delivers the first exactly and makes the second moot for anyone with script.
@@ -2228,3 +2235,87 @@ What it costs: one capture per watched project per tick, about two and a half a 
 | --- | --- |
 | Where | internal/ansi, internal/session/screen.go, internal/web/sessions.go, internal/web/assets/session.js |
 | Evidence | Against a live Claude Code session in Chrome and Firefox: zero escape codes on the page where the old stream left them as literal text, colour rendered as spans, box drawing intact, monospaced, no sideways overflow at 390px or 1366px, and no page errors. A turn started by typing into the pane took the pill from idle to running and back within 1.5s of it ending. |
+
+---
+
+## MUS-D-0133
+
+**A built surface names the path it serves, and the gate reads that line rather than trusting it**
+
+decision · 2026-08-28
+
+answers: [MUS-Q-0061](questions.md#mus-q-0061)
+
+gates: [MUS-F-0027](findings.md#mus-f-0027)
+
+docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards. It asked for that in prose and was ignored seven times, twice after the owner had answered on the same subject, with the rate going up rather than down (MUS-F-0027). Its own diagnosis was that a record read after the fact is not a safeguard. The owner's answer was to make the gate enforce it (MUS-Q-0061).
+
+Each built surface now carries a **Serves** line naming its path, and `make surfaces` reads two things that can disagree: the routes internal/web actually registers, and the paths that file claims. A page served with no surface naming it fails, and so does a surface naming a path nothing serves — without the second half the gate is satisfied by writing a path down, which is the original failure wearing the opposite costume.
+
+The routes are read with go/ast rather than a regular expression, because a pattern over source also finds a string in a comment or a fixture. A GET is a page; a POST is something a surface does. Three exclusions are named with their reasons — a script, a socket, and image bytes — and each has to match at least one live route, so an exclusion that stops matching fails as stale rather than sitting there as a hole in the shape of a rule.
+
+What it cannot see, written down rather than left to be discovered: a surface is recognised by an explicit GET method, so a page mounted method-less — as cmd/mustur/main.go mounts the intake fallback, /mcp and /healthz — is invisible to it, as is anything served outside internal/web.
+
+The cost is the one worth stating plainly, because it is the reason this had not been built: it will block a commit at an inconvenient moment, and somebody will want to add a surface faster than they can draw one.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/surfaces_test.go, Makefile, docs/ui-surfaces.md |
+
+---
+
+## MUS-D-0134
+
+**An amendment keeps what it does not mention, and removing something is a thing you type**
+
+decision · 2026-08-28
+
+answers: [MUS-Q-0063](questions.md#mus-q-0063)
+
+fixes: [MUS-F-0055](findings.md#mus-f-0055)
+
+over: [MUS-D-0126](#mus-d-0126)
+
+`amend` used to state a record afresh: anything the caller did not restate was dropped. The reasoning was written into the code and is not silly — carrying fields forward silently would make `amend --title` keep data the writer never saw, and the log holds every earlier version anyway. It lost to what actually happened. The worry was about a writer surprised by what survived; the writers were surprised by what did not, fifteen times (MUS-F-0055).
+
+Merge, then, chosen by the owner on MUS-Q-0063 over three alternatives. What is passed replaces its counterpart. What is not passed survives. `--drop KEY` removes a field by name or a citation by its label or its identifier, and `--replace` still states a record afresh for the rare time that is wanted.
+
+The alternative closest to this tree's habits was to refuse — the shape MUS-D-0126 gave `--reanswer`. It was not taken, and the reason generalises: a guard that fires on every ordinary correction teaches everybody to pass the override without reading it, at which point the guard is decoration and the trap is back. A default that is safe needs nobody to remember anything.
+
+Two details that are not incidental. A field passed again keeps the position it already had, because fields render in order and a correction that reorders them is a diff nobody asked for. And a citation is identified by its label *and* its target, not by its label alone, because a record can be found in two work units and cite both under the same word — keying on the label would silently collapse them.
+
+It also closes a smaller trap in the same command: `--at` defaulted to today, so every correction restamped the record with the date of the correction rather than the date its content was true. An amendment that keeps what it did not mention keeps the date too.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/main.go, cmd/mustur/merge_test.go |
+
+---
+
+## MUS-D-0135
+
+**GitHub's anchor rule has one implementation, and the shell gate asks for it**
+
+decision · 2026-08-29
+
+answers: [MUS-Q-0064](questions.md#mus-q-0064)
+
+fixes: [MUS-F-0062](findings.md#mus-f-0062)
+
+and: [MUS-F-0060](findings.md#mus-f-0060)
+
+same shape as: [MUS-F-0054](findings.md#mus-f-0054)
+
+`scripts/check-links.sh` worked out a heading's anchor for itself, and so did `internal/audit/markdown.go`. On the same day they were wrong in opposite directions: the audit refused a correct anchor because it stripped a heading's backticks before reading it (MUS-F-0060), and the script accepted an anchor that does not exist because it read a `#` inside a code fence as a heading (MUS-F-0062). Both are the same defect MUS-F-0054 already recorded — two implementations of one thing, one of them approximate — and that one was fixed by deleting the second.
+
+So: one implementation, in Go, chosen by the owner on MUS-Q-0064. `audit.Anchors` is the rule, `mustur anchors FILE...` exposes it, and the script asks rather than deriving.
+
+The cost was named before it was paid and is not small: this gate now needs a tree that builds. It used to run on a checkout somebody was only reading. Four of the nine gates already build Go, so `make check` is unchanged — but `check-links.sh` on its own is no longer a shell script somebody can run anywhere.
+
+Two details that keep it honest. The anchors are read once for every file the commit will contain rather than once per link, because there are thousands of links and a process each would make the gate unusable. And a link pointing at a document that enumeration did not cover — one that is ignored, or outside the tree — is read on demand rather than treated as having no headings, which would be the gate reporting on a file it never opened.
+
+The alternative not taken was a shared fixture both implementations are run against. It keeps the shell gate independent, and it does not stop both being wrong in the same way — which is the failure a single implementation also has, at a fraction of the machinery.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/audit/markdown.go, cmd/mustur/anchors.go, scripts/check-links.sh |

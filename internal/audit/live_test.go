@@ -21,11 +21,7 @@ func catalogPath(t *testing.T) string {
 	t.Helper()
 	path := os.Getenv("MUSTUR_STRUCGU")
 	if path == "" {
-		root, err := filepath.Abs("../..")
-		if err != nil {
-			t.Fatal(err)
-		}
-		path = filepath.Join(filepath.Dir(root), "StrucGu")
+		path = CatalogBeside("../..")
 	}
 	if _, err := os.Stat(filepath.Join(path, "modules")); err != nil {
 		t.Skipf("NO CONFORMANCE EVIDENCE IN THIS RUN: no StrucGu catalog at %s. "+

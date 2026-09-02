@@ -7,9 +7,9 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
-        questions build serve seed export audit install install-service workflow-proposals help
+        questions surfaces build serve seed export audit install install-service workflow-proposals help
 
-check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions ## Every commit gate this tree can enforce mechanically
+check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces ## Every commit gate this tree can enforce mechanically
 
 check-links: ## Tracked markdown: links and anchors resolve, table rows match their headers
 	@scripts/check-links.sh
@@ -38,6 +38,22 @@ conformance: ## How many of StrucGu's fixture states this checker matched, out l
 	@out=$$(go test ./internal/audit/ -run TestConformsToTheCatalogFixtures -v 2>&1); \
 	  status=$$?; \
 	  echo "$$out" | grep -E "fixture trees|SKIP|FAIL" || true; \
+	  exit $$status
+
+# docs/ui-surfaces.md asked in prose for a surface to be drawn before it was
+# built, and was ignored seven times — twice after the owner had answered on the
+# same subject (MUS-F-0027). The owner's answer was that the gate should enforce
+# it rather than the file request it (MUS-Q-0061). Same shape as `questions`
+# below: the rule holds because this refuses, not because a file asks.
+surfaces: ## Every page served is a surface docs/ui-surfaces.md briefed first
+	@out=$$(go test ./internal/web/ -count=1 \
+	  -run 'TestEveryServedPageIsABriefedSurface|TestEveryBriefedPathIsActuallyServed' 2>&1); \
+	  status=$$?; \
+	  if [ $$status -eq 0 ]; then \
+	    echo "  ok    $$(grep -c '^\*\*Serves\*\*' docs/ui-surfaces.md) surface(s) name the path they serve"; \
+	  else \
+	    echo "$$out"; \
+	  fi; \
 	  exit $$status
 
 # Reads records/, not the store. The store is machine-local, so a store-backed
