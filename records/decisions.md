@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-136 record(s), by identifier.
+137 record(s), by identifier.
 
 ## Index
 
@@ -148,6 +148,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0134](#mus-d-0134) | An amendment keeps what it does not mention, and removing something is a thing you type | 2026-08-28 |
 | [MUS-D-0135](#mus-d-0135) | GitHub's anchor rule has one implementation, and the shell gate asks for it | 2026-08-29 |
 | [MUS-D-0136](#mus-d-0136) | A pull request diff shows the code and two documents; the rest of the markdown folds away | 2026-09-03 |
+| [MUS-D-0137](#mus-d-0137) | An answer keeps its choice and gains a note | 2026-09-03 |
 
 ---
 
@@ -2345,3 +2346,29 @@ One consequence to know before it surprises somebody: the exemptions are anchore
 | --- | --- |
 | Where | .gitattributes |
 | Evidence | `git check-attr linguist-generated` over eleven files: false for CLAUDE.md and README.md, true for decisions.md, Plan.md, workflow.md, queue.md, docs/ui-surfaces.md, ci/README.md and the records tree. |
+
+---
+
+## MUS-D-0137
+
+**An answer keeps its choice and gains a note**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0068](questions.md#mus-q-0068)
+
+supersedes one clause of: [MUS-D-0055](#mus-d-0055)
+
+raised by: [MUS-F-0071](findings.md#mus-f-0071)
+
+MUS-D-0055 made an answer a choice between options and put free text beneath them, beating a choice when both were sent. The reasoning for the override still holds: the owner wanting to say something the list does not contain is the case a list is worst at. What it did not anticipate is the owner wanting to say something *about* an option — and the only way through the surface was to retype the option's label into the box and append the remark, after which the record said what was typed and never which option it named.
+
+The owner chose to keep the choice. A chosen option is still the answer, verbatim and matchable back to the option it names; the box beside it becomes a note on that choice, kept in its own field. Free text with no choice is unchanged and is still the answer itself, which is the clause of MUS-D-0055 that this leaves standing.
+
+A session waiting on the answer is told both, joined into one sentence: an agent handed only the label would act on an option the owner had qualified.
+
+The two alternatives were weighed and refused. Folding the note into the answer string is the smallest change and destroys the property that made options worth having. Prefilling the box with the chosen label fixes the retyping the owner named and not the thing underneath it — the record still ends up saying only what was written.
+
+| Field | Value |
+| --- | --- |
+| Stored as | Answer keeps the option's label; Note holds the remark. No note is written when there is none, so a plain answer renders exactly as it did |

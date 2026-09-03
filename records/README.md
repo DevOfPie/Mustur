@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 67 | [questions.md](questions.md) |
-| decision | 136 | [decisions.md](decisions.md) |
-| finding | 75 | [findings.md](findings.md) |
+| question | 68 | [questions.md](questions.md) |
+| decision | 137 | [decisions.md](decisions.md) |
+| finding | 77 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -125,6 +125,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0065](questions.md#mus-q-0065) | question | Where does the agent's token live, given that the tracked .mcp.json shadows every configuration that has one? |
 | [MUS-Q-0066](questions.md#mus-q-0066) | question | Which markdown should a pull request diff show by default? |
 | [MUS-Q-0067](questions.md#mus-q-0067) | question | Enter sends in the session box. A phone keyboard has no shift, so what does it do there? |
+| [MUS-Q-0068](questions.md#mus-q-0068) | question | A note alongside a chosen option means changing MUS-D-0055, which says free text beats the choice |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -261,6 +262,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0134](decisions.md#mus-d-0134) | decision | An amendment keeps what it does not mention, and removing something is a thing you type |
 | [MUS-D-0135](decisions.md#mus-d-0135) | decision | GitHub's anchor rule has one implementation, and the shell gate asks for it |
 | [MUS-D-0136](decisions.md#mus-d-0136) | decision | A pull request diff shows the code and two documents; the rest of the markdown folds away |
+| [MUS-D-0137](decisions.md#mus-d-0137) | decision | An answer keeps its choice and gains a note |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -331,6 +333,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0068](findings.md#mus-f-0068) | finding | The spinner makes the status text hard to read at certain positions |
 | [MUS-F-0069](findings.md#mus-f-0069) | finding | The decision prompt in the session came up but the ui didn't update to show that a decision was… |
 | [MUS-F-0070](findings.md#mus-f-0070) | finding | The session didn't resume after the decision was submitted |
+| [MUS-F-0071](findings.md#mus-f-0071) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
+| [MUS-F-0072](findings.md#mus-f-0072) | finding | The recommended option for decisions should have an icon on the main bar not text in the… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-75 record(s), by identifier.
+77 record(s), by identifier.
 
 ## The queue
 
@@ -14,7 +14,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
 | [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
-| [IDW-F-0005](#idw-f-0005) | The Decision screen should allow additional text on an option selection, often I want to choose… |  | unreviewed |
+| [IDW-F-0005](#idw-f-0005) | The Decision screen should allow additional text on an option selection, often I want to choose… |  | superseded |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  | overtaken |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | open |
@@ -82,9 +82,11 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0065](#mus-f-0065) | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. | fixed |
 | [MUS-F-0066](#mus-f-0066) | Two branches open at once conflict in records/, because each exports the whole store rather than its own change | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. | open |
 | [MUS-F-0067](#mus-f-0067) | The session input should send on enter and add a newline on shift+enter | TestEnterSendsOnlyWhereThereIsAShiftKeyToHold in internal/web/sessions_test.go: the handler consults the media query at the keystroke, lets Shift+Enter and an IME's Enter through, keeps the modifier shortcut, and the rendered /sessions/Mustur still carries an unconditional Send button. Asserted rather than measured: that the query is true on the owner's desktop and false on their phone rests on the pointer and hover specification, not on a hands-on check of either device. | fixed |
-| [MUS-F-0068](#mus-f-0068) | The spinner makes the status text hard to read at certain positions |  | unreviewed |
-| [MUS-F-0069](#mus-f-0069) | The decision prompt in the session came up but the ui didn't update to show that a decision was… |  | unreviewed |
-| [MUS-F-0070](#mus-f-0070) | The session didn't resume after the decision was submitted |  | unreviewed |
+| [MUS-F-0068](#mus-f-0068) | The spinner makes the status text hard to read at certain positions | TestTheTurningRingDoesNotPaintOverTheStatusPill asserts both properties on the served stylesheet and that the running state no longer takes --accent-soft alone. The cause was read off the rules rather than measured in a browser: an absolutely positioned pseudo-element paints above an unpositioned sibling box, and #6a8fd820 is 12.5% alpha. | fixed |
+| [MUS-F-0069](#mus-f-0069) | The decision prompt in the session came up but the ui didn't update to show that a decision was… | TestTheHelloFrameCarriesTheDecisionCount opens a real socket against a real tmux session with one open question in the store and reads 1 off the first frame. TestTheDecisionCountRidesTheSocket holds the client half: it finds the Decisions tab, handles the count before the frame kinds, and removes the badge rather than emptying it at zero. TestNoStoreMeansNoCountRatherThanZero holds the nil-store case. | fixed |
+| [MUS-F-0070](#mus-f-0070) | The session didn't resume after the decision was submitted | TestTheAnswererIsToldWhereTheAnswerWent posts an answer to a question naming no session, on a server that could have delivered, and finds 'not delivered' and its reason on the page the owner lands on. TestADeliveredAnswerSaysWhereItWentToo holds the other half against a live sender. MUS-Q-0067's own record carries the Delivered line this was read from. | fixed |
+| [MUS-F-0071](#mus-f-0071) | The Decision screen should allow additional text on an option selection, often I want to choose… | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. | fixed |
+| [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… |  | unreviewed |
 
 ---
 
@@ -187,15 +189,18 @@ finding · 2026-09-03
 
 Routed to: [MUS-P-0002](routing.md#mus-p-0002)
 
+Superseded by: [MUS-F-0071](#mus-f-0071)
+
 The Decision screen should allow additional text on an option selection, often I want to choose an option but add additional notes to it and I can't do that without choosing other and typing the selected option plus the additional text
 
 | Field | Value |
 | --- | --- |
 | Evidence |  |
-| Status | unreviewed |
+| Status | superseded |
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | no destination is obvious |
 | Filed by | dev@killerofpie.com |
+| Superseded by | MUS-F-0071 — routed to Idea inbox (MUS-P-0002) when it belonged to Mustur |
 
 ---
 
@@ -1659,15 +1664,22 @@ finding · 2026-09-03
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
-The spinner makes the status text hard to read at certain positions
+The spinner makes the status text hard to read at certain positions.
+
+The turning ring is a conic gradient with two bright arms 180 degrees apart, painted once into a `::before` and rotated. It is a *ring* because the thing it wraps sits on top of it and covers everything but a 1.2px rim. The status pill did neither of the two things that requires.
+
+It was not positioned, and an absolutely positioned pseudo-element paints above an unpositioned box whatever the DOM order — so the arms swept across the word rather than around it, which is why it was legible at some angles and not others. And it had no background of its own: its running state is `--accent-soft`, which is 12.5% alpha, so the gradient came through the fill as well as over it.
+
+The sub-agent toggle beside it has `position: relative` and `background: var(--paper)` and never had the fault. That is why this showed up on one control and not both, and why the fix is the toggle's own two properties rather than a new idea: the pill is stacked above the gradient and given the page as its fill, with the running tint layered over that rather than replacing it.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | TestTheTurningRingDoesNotPaintOverTheStatusPill asserts both properties on the served stylesheet and that the running state no longer takes --accent-soft alone. The cause was read off the rules rather than measured in a browser: an absolutely positioned pseudo-element paints above an unpositioned sibling box, and #6a8fd820 is 12.5% alpha. |
+| Status | fixed |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go |
 
 ---
 
@@ -1679,15 +1691,26 @@ finding · 2026-09-03
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
-The decision prompt in the session came up but the ui didn't update to show that a decision was waiting
+the shape it follows: [MUS-D-0092](decisions.md#mus-d-0092)
+
+The decision prompt in the session came up but the ui didn't update to show that a decision was waiting.
+
+The count in the tab bar is server-rendered: every surface asks `OpenCount` once, while it is building the page. That is right for the four surfaces you arrive at and leave, and wrong for the one you leave open — a session tab outlives its own render by hours, so the badge kept saying what was true when the tab was opened. A question raised while somebody was watching a session was invisible until they reloaded.
+
+The socket was already there and already carrying something that is not the terminal: MUS-D-0092 pushes sub-agent rows down it, chosen by the owner over a page reload. The count now rides the same socket — on the `hello` frame, and again whenever it moves. MUS-D-0092's closing sentence, *'this is the one thing the surface's client layer models that is not the terminal'*, is now two, which is worth saying rather than leaving a reader to notice.
+
+Ten seconds rather than the sub-agent ticker's two. `OpenCount` lists every record in the store and filters, where the sub-agent poll stats one file and usually stops there; running that per viewer every two seconds for a number that moves a few times a day is the wrong trade. Frames are sent only when the count changes, so a quiet session costs one list every ten seconds and no traffic.
+
+The field is a pointer. Falling to zero is the update that matters most — a decision answered while you watch should clear the badge — and `omitempty` on a plain int would have swallowed exactly that frame. A server with no store sends no count at all rather than a zero, so it cannot clear a badge it never counted.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | TestTheHelloFrameCarriesTheDecisionCount opens a real socket against a real tmux session with one open question in the store and reads 1 off the first frame. TestTheDecisionCountRidesTheSocket holds the client half: it finds the Decisions tab, handles the count before the frame kinds, and removes the badge rather than emptying it at zero. TestNoStoreMeansNoCountRatherThanZero holds the nil-store case. |
+| Status | fixed |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
 
 ---
 
@@ -1699,7 +1722,66 @@ finding · 2026-09-03
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
-The session didn't resume after the decision was submitted
+the rule this does not change: [MUS-D-0065](decisions.md#mus-d-0065)
+
+The session didn't resume after the decision was submitted.
+
+Two things, and only one of them is a defect.
+
+**The answer had nowhere to go.** `mustur ask --in <project>` names the Mustur-owned session an answer should be typed back into, and without it the answer is recorded and delivered nowhere. That is MUS-D-0065 working as written — an undelivered answer is still an answer — and it is the ordinary case, because a session running in a terminal is invisible to Mustur and there is nothing to name. The question behind this episode, MUS-Q-0067, carries `Delivered: not delivered: the question names no session`. Nothing was broken; nothing was ever going to type into anything.
+
+**Nobody said so.** `session.Deliver` returns that sentence, the record keeps it, and the record is the one place the person who has just answered is not looking. They pressed Answer, watched a session, and waited for something that was never coming.
+
+Fixed at the surface, not at the rule. The delivery's own sentence is carried through the redirect and rendered beside the confirmation, so answering says either *typed into mustur/Mustur* or *not delivered: the question names no session*. The wording is the record's, unaltered — one sentence, written once, shown in both places.
+
+A server started without `--sessions` says nothing, deliberately. There is no Sessions tab on that deployment either, so nobody is waiting for a session to resume, and a delivery notice on every answer would be noise about a capability that surface does not offer.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestTheAnswererIsToldWhereTheAnswerWent posts an answer to a question naming no session, on a server that could have delivered, and finds 'not delivered' and its reason on the page the owner lands on. TestADeliveredAnswerSaysWhereItWentToo holds the other half against a live sender. MUS-Q-0067's own record carries the Delivered line this was read from. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/questions.go |
+
+---
+
+## MUS-F-0071
+
+**The Decision screen should allow additional text on an option selection, often I want to choose…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Corrects: [IDW-F-0005](#idw-f-0005)
+
+settled by: [MUS-Q-0068](questions.md#mus-q-0068)
+
+The Decision screen should allow additional text on an option selection, often I want to choose an option but add additional notes to it and I can't do that without choosing other and typing the selected option plus the additional text
+
+| Field | Value |
+| --- | --- |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Evidence | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. |
+| Status | fixed |
+| Filed by | dev@killerofpie.com |
+| Corrects | IDW-F-0005 — routed to Idea inbox (MUS-P-0002) when it belonged to Mustur |
+| Where | internal/question/question.go, internal/web/questions.go |
+
+---
+
+## MUS-F-0072
+
+**The recommended option for decisions should have an icon on the main bar not text in the…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The recommended option for decisions should have an icon on the main bar not text in the description
 
 | Field | Value |
 | --- | --- |

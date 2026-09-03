@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-67 record(s), by identifier.
+68 record(s), by identifier.
 
 ---
 
@@ -1520,3 +1520,24 @@ question · 2026-09-03
 | Answered | 2026-09-03 02:20 |
 | Delivered | not delivered: the question names no session |
 | Surfaced | 2026-09-03 02:25 |
+
+---
+
+## MUS-Q-0068
+
+**A note alongside a chosen option means changing MUS-D-0055, which says free text beats the choice**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0071 |
+| Option | The note is its own field; the answer stays the option :: MUS-D-0055 keeps its sentence and gains a second one :: Recommended. The chosen option is still the answer, verbatim, and the box beneath becomes a note attached to it rather than a replacement for it. The record carries both -- Answer and Note -- so a reader can still tell which option was picked, and what gets typed into a waiting session is the option followed by the note. Nothing about the existing shape changes for an answer with no note. The cost is a new field on the record and a second thing for the delivery text to carry. |
+| Option | The note is folded into the answer string :: one field, and no way to tell the option from the remark :: The chosen label and the free text are joined into a single Answer. It is the smallest change -- no new field, no change to delivery -- and it destroys the one property that made options worth having: an answer that is a verbatim option label can be matched back to the option it chose, and 'Label -- and also do X' cannot. Every reader after this has to parse a sentence to learn what was picked. |
+| Option | Nothing changes but the form; the box prefills with the chosen label :: no record change at all, and the choice is still lost :: Picking an option types its label into the free-text box, so adding a remark means editing rather than retyping. MUS-D-0055 stands untouched, because free text still beats the choice. It fixes the retyping the owner named and not the thing underneath it: once the text is edited the record no longer says an option was chosen, only what was written. |
+| Asked by | whippy |
+| Answer | The note is its own field; the answer stays the option |
+| Answered | 2026-09-03 03:04 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-03 03:05 |
