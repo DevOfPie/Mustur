@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 66 | [questions.md](questions.md) |
 | decision | 136 | [decisions.md](decisions.md) |
-| finding | 68 | [findings.md](findings.md) |
+| finding | 69 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -323,6 +323,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0062](findings.md#mus-f-0062) | finding | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged |
 | [MUS-F-0063](findings.md#mus-f-0063) | finding | A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked |
 | [MUS-F-0064](findings.md#mus-f-0064) | finding | I added added a user and they are not showing in the people list, as soon as the invite is… |
+| [MUS-F-0065](findings.md#mus-f-0065) | finding | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

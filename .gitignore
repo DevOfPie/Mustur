@@ -6,3 +6,10 @@
 
 # Build output.
 /mustur
+
+# Claude Code's own directory, which is the machine's rather than the
+# repository's: settings somebody set for themselves, and the worktrees agents
+# work in. The worktrees are the sharp end — each is a checkout of this
+# repository living inside it, so `git add -A` in the main checkout stages the
+# whole tree twice ([MUS-F-0065](records/findings.md#mus-f-0065)).
+/.claude/

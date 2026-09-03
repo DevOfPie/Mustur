@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-68 record(s), by identifier.
+69 record(s), by identifier.
 
 ## The queue
 
@@ -78,6 +78,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0062](#mus-f-0062) | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. | fixed |
 | [MUS-F-0063](#mus-f-0063) | A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked | A token at user scope: 'Needs authentication', with `claude mcp get mustur` reporting 'Scope: Project config'. The same token at local scope: 'Connected'. Over the wire with the token, initialize, tools/list and a mustur_route call all answer 200 and return this repository's routing, which is the mandated call working. | fixed |
 | [MUS-F-0064](#mus-f-0064) | I added added a user and they are not showing in the people list, as soon as the invite is… | Against the rendered page at 1366x900 and 390x844: an invitation appears immediately as its address, an 'invited' pill, the role and the expiry, with no forms on the row; after Redeem the same address is an ordinary row with its role select and Disable button, appearing once. Removing the Pending lookup fails the test with 'an invited person is not on the screen'. | fixed |
+| [MUS-F-0065](#mus-f-0065) | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. | fixed |
 
 ---
 
@@ -1538,3 +1539,27 @@ The test that existed invited somebody and then checked the store for a pending 
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Where | internal/web/accountpage.go |
+
+---
+
+## MUS-F-0065
+
+**Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed**
+
+finding · 2026-09-03
+
+`git status` in the main checkout reported `?? .claude/`, and `git add -A` there would have staged it. That directory holds Claude Code's local settings and, under `worktrees/`, the git worktrees agents work in — each one a checkout of this repository living inside this repository. Staging it commits the whole tree a second time.
+
+It had not fired yet because nothing has run `git add -A` in the main checkout while a worktree existed. That is timing rather than safety: every agent session here creates a worktree at that path, so the hazard is present whenever anybody is working.
+
+Half of it was already covered and that is what hid the rest. A global ignore on this machine, `~/.config/git/ignore`, carries `**/.claude/settings.local.json` — so the settings file was invisible and the worktrees were not. A first attempt to measure this created only the settings file, saw a clean status, and would have concluded the rule was unnecessary. The measurement that answers the question creates something under `worktrees/`.
+
+That global rule is also the reason a repository-local one is still wanted rather than redundant: it is this machine's, and a clone anywhere else carries none of it.
+
+Fixed with `/.claude/`, anchored to the root because that is the only place the directory belongs. Nothing under it has ever been tracked, so ignoring it changes no history.
+
+| Field | Value |
+| --- | --- |
+| Where | .gitignore |
+| Evidence | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. |
+| Status | fixed |
