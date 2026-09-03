@@ -88,7 +88,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0071](#mus-f-0071) | The Decision screen should allow additional text on an option selection, often I want to choose… | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. | fixed |
 | [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… |  | unreviewed |
 | [MUS-F-0073](#mus-f-0073) | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. | fixed |
-| [MUS-F-0074](#mus-f-0074) | A question reaches the owner on two surfaces and can be answered differently on each, with nothing reconciling them | record_event for MUS-Q-0069: create by whippy 03:41:11, amend by dev@killerofpie.com 03:45:21 recording 'The tail is generated from the store'. The AskUserQuestion prompt raised at the same time returned 'Pointer + a gate (Recommended)'. mustur answer refuses a second answer without --reanswer, so the Mustur one stands by arriving first. | open |
+| [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | open |
 
 ---
 
@@ -1829,7 +1829,7 @@ Recorded rather than fixed: how the file catches up, and whether it is written b
 
 ## MUS-F-0074
 
-**A question reaches the owner on two surfaces and can be answered differently on each, with nothing reconciling them**
+**An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it**
 
 finding · 2026-09-03
 
@@ -1837,16 +1837,24 @@ the rule that makes the first answer stick: [MUS-D-0126](decisions.md#mus-d-0126
 
 the question it happened to: [MUS-Q-0069](questions.md#mus-q-0069)
 
-MUS-Q-0069 was answered twice within thirteen seconds. In Mustur at 03:45:21 the owner chose *the tail is generated from the store*; in the prompt that the contract also requires, at the same moment, they chose *it becomes the pointer, and a gate stops it drifting again*. Both are the owner's. Neither is a mistake. They are incompatible.
+the rule the relay was written under: [MUS-D-0126](decisions.md#mus-d-0126)
 
-The contract asks for both surfaces on purpose — `mustur ask` records the question and `mustur surfaced` proves it reached a prompt — and nothing anywhere says which answer wins when the two disagree. The store simply keeps the first one to arrive: an agent writing down the prompt's answer afterwards is refused with *already answered*, and would need `--reanswer` to overwrite what the owner said through Mustur (MUS-D-0126). So the surface that answers fastest silently wins, and the agent finds out only if it happens to compare.
+what to do about the nine: [MUS-Q-0070](questions.md#mus-q-0070)
 
-This is not new, it is newly visible. MUS-Q-0067 was answered in both places too — 'the send button should always be present, phone input return should use newline' through Mustur, and an option label through the prompt. Those happened to agree, so nothing surfaced. MUS-Q-0068 the same. This is the first time they diverged, and only because the prompt's options and Mustur's were phrased differently enough for two readings to be reasonable.
+**This record first claimed the wrong thing, and the wrong claim is kept here because it is how the real one was found.** It said MUS-Q-0069 had been answered twice within thirteen seconds — once in Mustur, once in the prompt — and that the contract's two surfaces had no rule for which wins. The owner corrected it: they answered in Mustur and nowhere else. Nobody answered the prompt.
 
-Recorded rather than fixed: whether one surface becomes authoritative, whether an answered question stops being answerable elsewhere, or whether a second answer is recorded beside the first as a correction, is a design decision and belongs to the owner.
+So the prompt returned a value the owner never chose, and the agent read it as the owner speaking.
+
+Every `AskUserQuestion` call in this session — five of them — returned the **first** option, which was in each case the one labelled Recommended. On MUS-Q-0067 and MUS-Q-0068 that happened to agree with what the owner had already said in Mustur, so nothing looked wrong. On MUS-Q-0069 it did not: the owner chose *the tail is generated from the store* and the prompt returned *it becomes the pointer, and a gate stops it drifting again*. That divergence is the only reason this was noticed at all.
+
+**Nothing false was written today, and only by luck.** Twice this session an agent ran `mustur answer --from-owner "AskUserQuestion prompt…"` to write the prompt's value down as the owner's. Both were refused, because the store already held the owner's real answer and MUS-D-0126 does not overwrite one without `--reanswer`. That refusal is the whole of the defence, and it only works when the owner has already answered somewhere else first.
+
+**It has not always been refused.** Ten questions in this store carry a `Relayed` field, nine of them attributing the answer to a prompt: MUS-Q-0058 through MUS-Q-0066. Each was written by an agent, each closed a question, and each drove behaviour that shipped. Whether the owner made those choices is not knowable from this store — the record says an agent wrote down what a prompt returned, which is exactly what it says on a prompt that returned a default. That is MUS-Q-0070.
+
+What this does not say: that those nine are wrong. Only that the record cannot tell the difference, and that MUS-D-0126 was written to make sure nobody ever had to guess.
 
 | Field | Value |
 | --- | --- |
-| Where | cmd/mustur/questions.go, internal/web/questions.go |
+| Where | the relay path, and every question closed through it |
 | Status | open |
-| Evidence | record_event for MUS-Q-0069: create by whippy 03:41:11, amend by dev@killerofpie.com 03:45:21 recording 'The tail is generated from the store'. The AskUserQuestion prompt raised at the same time returned 'Pointer + a gate (Recommended)'. mustur answer refuses a second answer without --reanswer, so the Mustur one stands by arriving first. |
+| Evidence | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. |

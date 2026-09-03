@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 69 | [questions.md](questions.md) |
+| question | 70 | [questions.md](questions.md) |
 | decision | 138 | [decisions.md](decisions.md) |
 | finding | 79 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -127,6 +127,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0067](questions.md#mus-q-0067) | question | Enter sends in the session box. A phone keyboard has no shift, so what does it do there? |
 | [MUS-Q-0068](questions.md#mus-q-0068) | question | A note alongside a chosen option means changing MUS-D-0055, which says free text beats the choice |
 | [MUS-Q-0069](questions.md#mus-q-0069) | question | decisions.md is seventeen decisions behind the store. Does it catch up, hand back, or start being generated? |
+| [MUS-Q-0070](questions.md#mus-q-0070) | question | Nine questions were closed with an answer relayed from a prompt. Do they stand? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -338,7 +339,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0071](findings.md#mus-f-0071) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
 | [MUS-F-0072](findings.md#mus-f-0072) | finding | The recommended option for decisions should have an icon on the main bar not text in the… |
 | [MUS-F-0073](findings.md#mus-f-0073) | finding | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it |
-| [MUS-F-0074](findings.md#mus-f-0074) | finding | A question reaches the owner on two surfaces and can be answered differently on each, with nothing reconciling them |
+| [MUS-F-0074](findings.md#mus-f-0074) | finding | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

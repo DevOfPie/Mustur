@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-69 record(s), by identifier.
+70 record(s), by identifier.
 
 ---
 
@@ -1563,3 +1563,21 @@ question · 2026-09-03
 | Answered | 2026-09-03 03:45 |
 | Delivered | not delivered: the question names no session |
 | Surfaced | 2026-09-03 03:45 |
+
+---
+
+## MUS-Q-0070
+
+**Nine questions were closed with an answer relayed from a prompt. Do they stand?**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0074 |
+| Option | Review the nine in one pass, and say which are wrong :: one screen, not nine conversations :: Recommended. MUS-Q-0058 through MUS-Q-0066 are listed with their answers in one place; the owner reads them and names any that are not what they would have chosen. Those reopen and the work built on them is revisited; the rest are marked confirmed, so the record says the owner has been here rather than that an agent wrote something down. It is one pass over ten short answers rather than nine separate questions, and it ends with the store able to tell the two provenances apart. |
+| Option | They stand until something contradicts one :: nothing is re-asked, and the record keeps saying an agent wrote it down :: All nine are already built, reviewed and in some cases reviewed twice, and a decision that was badly wrong would likely have surfaced as a defect by now. Nothing is re-opened and no time is spent on answers that were probably right. The cost is that a wrong one hides in shipped behaviour with a record saying the owner chose it, and MUS-D-0136's 'the owner exempted two' is the shape that would never surface on its own. |
+| Option | Reopen all nine :: the safest and the most expensive :: Every relayed answer is treated as unanswered until the owner says otherwise, and the gate blocks on them. It is the only option that makes no assumption about which were right. It also stops work on anything downstream of nine decisions, several of which are load-bearing, for as long as they sit open. |
+| Asked by | whippy |
+| Surfaced | 2026-09-03 03:56 |
