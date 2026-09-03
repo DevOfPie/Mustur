@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-65 record(s), by identifier.
+66 record(s), by identifier.
 
 ---
 
@@ -1476,4 +1476,26 @@ question · 2026-09-02
 | Answer | Take mustur out of .mcp.json and keep it at user scope. One config, one secret, no environment plumbing; the repository documents the server in prose instead of carrying a configuration that can only refuse. Revoke the old token too. |
 | Answered | 2026-09-02 23:57 |
 | Relayed | written down by whippy, from the prompt in this session, 2026-09-02 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0066
+
+**Which markdown should a pull request diff show by default?**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | nothing; the owner asked for the noise in a review to go |
+| Option | Only the generated export :: records/** collapses, every hand-written file stays :: The narrowest claim that is defensible on its own terms — records/ is rendered by `make export` from an insert-only log, so a diff of it is a diff of a rendering. It leaves the contract prose in front of a reviewer, which is where a change most needs to be noticed. |
+| Option | All of it, with two exemptions :: Every *.md collapses except CLAUDE.md and README.md :: What the owner chose. The two exempted are how somebody arriving works out what this is. The cost is named rather than discovered: decisions.md, Plan.md and workflow.md are hand-written and now collapse with the rest, so a change to the contract is one click away rather than in front of the reviewer. Nothing is hidden irreversibly — the file is committed, exported and gated exactly as before. |
+| Option | The generated export and docs/ :: records/** and docs/** collapse, the root files stay :: A middle reading, keeping every file at the top level visible while the long-form investigations and the export fold away. |
+| Asked by | whippy |
+| Surfaced | 2026-09-03 00:19 |
+| Answer | All of it, with two exemptions: every *.md collapses in the diff except CLAUDE.md and README.md, which still show. |
+| Answered | 2026-09-03 00:19 |
+| Relayed | written down by whippy, from the prompt in this session, 2026-09-03 |
 | Delivered | not delivered: the question names no session |

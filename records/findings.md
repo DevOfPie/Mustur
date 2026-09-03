@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-67 record(s), by identifier.
+70 record(s), by identifier.
 
 ## The queue
 
@@ -14,31 +14,31 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
 | [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
-| [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  |  |
+| [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  | overtaken |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
-| [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | unreviewed |
-| [MUS-F-0004](#mus-f-0004) | The export and this repository's contract files hold the same records twice |  | unreviewed |
-| [MUS-F-0005](#mus-f-0005) | A seeded record's summary can drift from the prose it links to |  | unreviewed |
+| [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | open |
+| [MUS-F-0004](#mus-f-0004) | The export and this repository's contract files hold the same records twice |  | open |
+| [MUS-F-0005](#mus-f-0005) | A seeded record's summary can drift from the prose it links to |  | open |
 | [MUS-F-0006](#mus-f-0006) | The Go toolchain CI uses is whatever the runner image carries |  | resolved 2026-08-20: the proposal was applied |
-| [MUS-F-0007](#mus-f-0007) | There is no way to add a record except by editing the bootstrap |  | unreviewed |
-| [MUS-F-0008](#mus-f-0008) | A commit removed lines from the decision log | DL-03 against commit 9e3940e, on the audit's first run | unreviewed |
-| [MUS-F-0009](#mus-f-0009) | Two standing rules disagree about where a superseding pointer goes | workflow.md's standing rules, read against each other | unreviewed |
-| [MUS-F-0010](#mus-f-0010) | Nothing checks that the mandate still says what milestone 1 scored | no gate matches the clause's opening words | unreviewed |
-| [MUS-F-0011](#mus-f-0011) | No gate detects the export drifting from the store | the verify-records target passes no store | unreviewed |
-| [MUS-F-0012](#mus-f-0012) | ci/proposed/README.md says a new check needs no owner | commit 40af879, applied by the owner | unreviewed |
-| [MUS-F-0013](#mus-f-0013) | Four of StrucGu's five roles are record kinds, and nobody has asked for the fifth | the record kinds in internal/ident, against StrucGu's module list | unreviewed |
+| [MUS-F-0007](#mus-f-0007) | There is no way to add a record except by editing the bootstrap |  | fixed |
+| [MUS-F-0008](#mus-f-0008) | A commit removed lines from the decision log | DL-03 against commit 9e3940e, on the audit's first run | noted |
+| [MUS-F-0009](#mus-f-0009) | Two standing rules disagree about where a superseding pointer goes | workflow.md's standing rules, read against each other | open |
+| [MUS-F-0010](#mus-f-0010) | Nothing checks that the mandate still says what milestone 1 scored | no gate matches the clause's opening words | open |
+| [MUS-F-0011](#mus-f-0011) | No gate detects the export drifting from the store | the verify-records target passes no store | open |
+| [MUS-F-0012](#mus-f-0012) | ci/proposed/README.md says a new check needs no owner | commit 40af879, applied by the owner | fixed |
+| [MUS-F-0013](#mus-f-0013) | Four of StrucGu's five roles are record kinds, and nobody has asked for the fifth | the record kinds in internal/ident, against StrucGu's module list | overtaken |
 | [MUS-F-0014](#mus-f-0014) | mustur serve is not a service, so a public hostname would 502 | no unit for mustur on this machine; the tunnel beside it runs as linkctrl-tunnel.service | resolved 2026-08-21 |
 | [MUS-F-0015](#mus-f-0015) | Nothing off the home network can reach the intake box yet | cloudflared runs with TUNNEL_TOKEN and no local config.yml, read 2026-08-20 | resolved 2026-08-21 |
 | [MUS-F-0016](#mus-f-0016) | A decision entry described routing behaviour that had not been built | two independent reviewers reproduced it against copies of the live store | fixed 2026-08-20 |
 | [MUS-F-0017](#mus-f-0017) | Two filings at once could be issued the same identifier | reproduced by a reviewer with twelve concurrent POSTs; the regression test fails against the two-call version | fixed 2026-08-20 |
 | [MUS-F-0018](#mus-f-0018) | A jot reaches the store, not the file the findings role is mapped at | strucgu.yaml maps findings at records/findings.md; the POST path never exports | resolved 2026-08-21 |
-| [MUS-F-0019](#mus-f-0019) | The destination row cannot preselect the guess without a client script | Plan.md's stack table: server-rendered HTML, no per-project client state | unreviewed |
+| [MUS-F-0019](#mus-f-0019) | The destination row cannot preselect the guess without a client script | Plan.md's stack table: server-rendered HTML, no per-project client state | overtaken |
 | [MUS-F-0020](#mus-f-0020) | A shallow clone made the history check pass for the wrong reason | CI run 32437277197 reported 28 ok, 0 waived where a full clone reports 27 ok, 1 waived | fixed 2026-08-21 |
 | [MUS-F-0021](#mus-f-0021) | The public hostname has no Access application in front of it | GET / returned 502 with no location or cf-access headers, read 2026-08-21 | resolved 2026-08-21 |
-| [MUS-F-0022](#mus-f-0022) | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |  | unreviewed |
-| [MUS-F-0023](#mus-f-0023) | Test for Mustur 2c |  | unreviewed |
+| [MUS-F-0022](#mus-f-0022) | mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the… |  | verified |
+| [MUS-F-0023](#mus-f-0023) | Test for Mustur 2c |  | verified |
 | [MUS-F-0024](#mus-f-0024) | Mustur intake screen, the file button has no hover or press interaction so you cannot tell if… | Filed from a phone by the owner while proving milestone 2c's last clause. | fixed |
-| [MUS-F-0025](#mus-f-0025) | Test |  | unreviewed |
+| [MUS-F-0025](#mus-f-0025) | Test |  | verified |
 | [MUS-F-0026](#mus-f-0026) | Registration never required a discoverable passkey, so an account could hold one nobody could sign in with |  | fixed |
 | [MUS-F-0027](#mus-f-0027) | Seven surfaces have now been built before they were drawn, and recording each one has not stopped the next | make surfaces fails on a route no surface names, on a surface naming a route nothing registers, and on an exclusion that has stopped matching anything. All three measured by breaking them one at a time. | gated |
 | [MUS-F-0028](#mus-f-0028) | Revoking a token does not close a stream already open under it | A held request under a live token, revoked while running: it ends. With the cancellation removed the same test reports the stream outliving its token after two seconds, which is the defect as found. A token nobody revoked holds its stream across many ticks, which is the half a recheck could quietly break. | fixed |
@@ -77,6 +77,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0061](#mus-f-0061) | The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. | fixed |
 | [MUS-F-0062](#mus-f-0062) | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. | fixed |
 | [MUS-F-0063](#mus-f-0063) | A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked | A token at user scope: 'Needs authentication', with `claude mcp get mustur` reporting 'Scope: Project config'. The same token at local scope: 'Connected'. Over the wire with the token, initialize, tools/list and a mustur_route call all answer 200 and return this repository's routing, which is the mandated call working. | fixed |
+| [MUS-F-0064](#mus-f-0064) | I added added a user and they are not showing in the people list, as soon as the invite is… | Against the rendered page at 1366x900 and 390x844: an invitation appears immediately as its address, an 'invited' pill, the role and the expiry, with no forms on the row; after Redeem the same address is an ordinary row with its role select and Disable button, appearing once. Removing the Pending lookup fails the test with 'an invited person is not on the screen'. | fixed |
+| [MUS-F-0065](#mus-f-0065) | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. | fixed |
+| [MUS-F-0066](#mus-f-0066) | Two branches open at once conflict in records/, because each exports the whole store rather than its own change | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. | open |
 
 ---
 
@@ -179,10 +182,13 @@ finding · 2026-08-19
 
 queue.md is a jot log with no evidence or review column, and the repository declares the findings-queue module against it. Reshaping it into the specified table and keeping the jot log are both defensible; the choice is owed before the audit at milestone 2b reports it.
 
+Overtaken by where the role went. `strucgu.yaml` maps findings-queue to `records/findings.md`, not to queue.md — the role moved to the export, which is the shape the module specifies, and queue.md went back to being a jot log that declares nothing. The audit reports 27 ok and no findings against this tree, so the failure this predicted cannot happen from here.
+
 | Field | Value |
 | --- | --- |
 | Noticed by | whippy |
 | Source | [queue.md](../queue.md) |
+| Status | overtaken |
 
 ---
 
@@ -215,7 +221,8 @@ Anthropic's paused metering change, support article 15036540, would move headles
 | Field | Value |
 | --- | --- |
 | Noticed by | whippy |
-| Status | unreviewed |
+| Status | open |
+| Checked | 2026-09-03 — still true |
 
 ---
 
@@ -230,7 +237,8 @@ records/ now carries the same decisions and findings as decisions.md and queue.m
 | Field | Value |
 | --- | --- |
 | Noticed by | whippy |
-| Status | unreviewed |
+| Status | open |
+| Checked | 2026-09-03 — still true |
 
 ---
 
@@ -245,7 +253,8 @@ Each seeded record carries one line summarising a rationale that lives in a cont
 | Field | Value |
 | --- | --- |
 | Noticed by | whippy |
-| Status | unreviewed |
+| Status | open |
+| Checked | 2026-09-03 — still true |
 
 ---
 
@@ -272,12 +281,14 @@ make check needs Go once milestone 2 lands, and the Makefile cannot pin a toolch
 
 finding · 2026-08-20
 
-Every decision taken since milestone 2 has reached the store by being added to the seed and re-exported from a scratch database. The seed refuses a store that already holds records, so the live store cannot take them at all: a bootstrap is being used as an import, which is exactly what it was built to refuse.
+Every decision taken since milestone 2 had reached the store by being added to the seed and re-exported from a scratch database. The seed refuses a store that already holds records, so the live store could not take them at all: a bootstrap was being used as an import, which is exactly what it was built to refuse.
+
+Fixed. `mustur add KIND --title ...` writes one record into the store, and `mustur amend` corrects one — every record written since, including this correction, went in that way. The seed is a bootstrap again and still refuses a store that holds anything.
 
 | Field | Value |
 | --- | --- |
 | Noticed by | whippy |
-| Status | unreviewed |
+| Status | fixed |
 
 ---
 
@@ -289,10 +300,12 @@ finding · 2026-08-20
 
 An entry written earlier in the same milestone was rewritten in place rather than corrected by a later one. The branch was unmerged at the time, so nothing shipped had been edited, and the merged history carries the deletion anyway.
 
+Nothing to do, and kept for the reason it was written: the rule it broke is 'never edit an entry', and an instance of breaking it is worth more standing here than corrected away. No later commit has repeated it.
+
 | Field | Value |
 | --- | --- |
 | Evidence | DL-03 against commit 9e3940e, on the audit's first run |
-| Status | unreviewed |
+| Status | noted |
 
 ---
 
@@ -307,7 +320,8 @@ workflow.md says superseded decisions stay with a pointer, and that an entry is 
 | Field | Value |
 | --- | --- |
 | Evidence | workflow.md's standing rules, read against each other |
-| Status | unreviewed |
+| Status | open |
+| Checked | 2026-09-03 — still true |
 
 ---
 
@@ -322,7 +336,8 @@ The clause in CLAUDE.md is prose a person edits, and no test, script or gate com
 | Field | Value |
 | --- | --- |
 | Evidence | no gate matches the clause's opening words |
-| Status | unreviewed |
+| Status | open |
+| Checked | 2026-09-03 — still true |
 
 ---
 
@@ -337,7 +352,8 @@ The committed check runs mustur verify without a store, and CI has none to compa
 | Field | Value |
 | --- | --- |
 | Evidence | the verify-records target passes no store |
-| Status | unreviewed |
+| Status | open |
+| Checked | 2026-09-03 — still true |
 
 ---
 
@@ -347,12 +363,14 @@ The committed check runs mustur verify without a store, and CI has none to compa
 
 finding · 2026-08-20
 
-Milestone 2's Go checks needed a workflow change the agent's token cannot push, and milestone 2b's catalog checkout needs another. That row has now been falsified twice.
+Milestone 2's Go checks needed a workflow change the agent's token cannot push, and milestone 2b's catalog checkout needed another. That row had been falsified twice.
+
+Fixed in the file itself. `ci/proposed/README.md` now names both falsifications and states the weaker rule that survives them: what a check *does* is a make target and needs nobody; what a check *needs from the runner* is a proposal, and that is the owner's to apply. The claim that was wrong is not deleted — it is written down as having been wrong.
 
 | Field | Value |
 | --- | --- |
 | Evidence | commit 40af879, applied by the owner |
-| Status | unreviewed |
+| Status | fixed |
 
 ---
 
@@ -364,10 +382,12 @@ finding · 2026-08-20
 
 triage-rule describes a document rather than a set of records. Whether Mustur should hold a triage rule as a record at all is unasked.
 
+Asked and answered, in the file that had to carry the answer. `strucgu.yaml` adopts all five modules and records why the fifth is different: `triage_doc` stays at workflow.md because it is a rule rather than a set of records, so there is nothing for a record kind to hold. The count and the reasoning are both there rather than in a comment somewhere else.
+
 | Field | Value |
 | --- | --- |
 | Evidence | the record kinds in internal/ident, against StrucGu's module list |
-| Status | unreviewed |
+| Status | overtaken |
 
 ---
 
@@ -463,12 +483,14 @@ Intake writes to the database. records/findings.md only changes when someone run
 
 finding · 2026-08-21
 
-The approved artboard shows the routing guess already selected among the destination chips, which requires the page to re-guess as the text is typed. The surface is server-rendered with no client framework, so what ships is a row whose first option is Route it for me, selected, with the guess applied on submit. The ordinary case is identical — ignore the row and the guess files it — but the affordance differs from the drawing, and the constraint wins over the artboard.
+The approved artboard showed the routing guess already selected among the destination chips, which requires the page to re-guess as the text is typed. The surface is server-rendered with no client framework, so what shipped is a row whose first option is 'Route it for me', selected, with the guess applied on submit. The ordinary case is identical — ignore the row and the guess files it — but the affordance differs from the drawing.
+
+Settled by a later decision rather than by closing the gap. MUS-D-0121 made the destinations a dropdown, for a reason that has nothing to do with this one: a row that scrolls sideways hides its last choice behind a swipe. 'Route it for me' is that dropdown's first and selected option, so the affordance the artboard drew is gone by choice rather than by limitation, and the surface still carries no script.
 
 | Field | Value |
 | --- | --- |
 | Evidence | Plan.md's stack table: server-rendered HTML, no per-project client state |
-| Status | unreviewed |
+| Status | overtaken |
 
 ---
 
@@ -513,12 +535,14 @@ finding · 2026-08-21
 
 Routed to: [MUS-R-0001](routing.md#mus-r-0001)
 
-mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the running service rather than the command line
+mustur.devofpie.com is live behind Cloudflare Access, and this jot was filed through the running service rather than the command line.
+
+Verified by its own existence: this record is in the store, and it got there through the deployed intake box. Plan.md cites it as milestone 2c's evidence.
 
 | Field | Value |
 | --- | --- |
 | Evidence |  |
-| Status | unreviewed |
+| Status | verified |
 | Routed to | DevOfPie/Mustur (MUS-R-0001) |
 | Routing | the jot names DevOfPie/Mustur |
 | Filed by | whippy |
@@ -533,12 +557,14 @@ finding · 2026-08-22
 
 Routed to: [MUS-R-0001](routing.md#mus-r-0001)
 
-Test for Mustur 2c
+Test for Mustur 2c.
+
+A deploy check filed from the owner's phone, through Access, naming Mustur — and it routed to DevOfPie/Mustur, which is the clause it was testing. Plan.md cites it as 2c's evidence. Closed rather than left unreviewed on a check that passed the moment it was filed.
 
 | Field | Value |
 | --- | --- |
 | Evidence |  |
-| Status | unreviewed |
+| Status | verified |
 | Routed to | DevOfPie/Mustur (MUS-R-0001) |
 | Routing | the jot names DevOfPie/Mustur |
 | Filed by | dev@killerofpie.com |
@@ -574,12 +600,14 @@ finding · 2026-08-22
 
 Routed to: [MUS-P-0002](routing.md#mus-p-0002)
 
-Test
+Test.
+
+The other half of the same deploy check: a jot naming no project, filed from the owner's phone, which went to the idea inbox — the clause's own default case. Plan.md cites it as 2c's evidence.
 
 | Field | Value |
 | --- | --- |
 | Evidence |  |
-| Status | unreviewed |
+| Status | verified |
 | Routed to | Idea inbox (MUS-P-0002) |
 | Routing | no destination is obvious |
 | Filed by | dev@killerofpie.com |
@@ -1477,3 +1505,88 @@ One detail worth keeping, because it delayed the diagnosis: removing the file fr
 | Where | .mcp.json, CLAUDE.md |
 | Evidence | A token at user scope: 'Needs authentication', with `claude mcp get mustur` reporting 'Scope: Project config'. The same token at local scope: 'Connected'. Over the wire with the token, initialize, tools/list and a mustur_route call all answer 200 and return this repository's routing, which is the mandated call working. |
 | Status | fixed |
+
+---
+
+## MUS-F-0064
+
+**I added added a user and they are not showing in the people list, as soon as the invite is…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+same shape as: [MUS-F-0062](#mus-f-0062)
+
+and: [MUS-F-0059](#mus-f-0059)
+
+I added added a user and they are not showing in the people list, as soon as the invite is created they should show as invited then change once they setup their account to a normal row.
+
+True, and the cause is that the screen was built from one table. `Store.Accounts` reads `account`; an invitation nobody has accepted is a row in `invite`. So an invited person was invisible there until they redeemed — and the screen said nobody was waiting a minute after somebody was invited, which invites the obvious repair of inviting them again.
+
+The CLI never had this. `mustur account list` prints pending invitations and carries a comment saying exactly why: so that nobody reads 'nobody yet' a minute after sending one and sends another. The reasoning was written down beside one surface and never applied to the other — the same shape as MUS-F-0062, where a lesson about enumerating files sat in the Makefile beside the gate that had not learned it.
+
+Fixed as asked: an invitation appears the moment it is made, marked invited and carrying the role it grants and when it runs out; accepting turns it into an ordinary row. Nothing keeps those two in step, which is the point — redeeming marks the invitation used, so it leaves `Pending` in the same act that makes `Accounts` return the person.
+
+Two details the screen has to get right and now does. An invited row carries no controls, because there is no account to act on and a role or disable form would post an empty identifier. And a person appears once however many invitations they hold: a lost link is reissued rather than looked up (MUS-F-0059), so several pending invitations to one address is ordinary and must not become several rows.
+
+The test that existed invited somebody and then checked the store for a pending invitation. It passed throughout, because it never looked at the page — which is the third time in this repository a test has asserted something true about the data rather than about the thing the owner was looking at.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Against the rendered page at 1366x900 and 390x844: an invitation appears immediately as its address, an 'invited' pill, the role and the expiry, with no forms on the row; after Redeem the same address is an ordinary row with its role select and Disable button, appearing once. Removing the Pending lookup fails the test with 'an invited person is not on the screen'. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/accountpage.go |
+
+---
+
+## MUS-F-0065
+
+**Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed**
+
+finding · 2026-09-03
+
+`git status` in the main checkout reported `?? .claude/`, and `git add -A` there would have staged it. That directory holds Claude Code's local settings and, under `worktrees/`, the git worktrees agents work in — each one a checkout of this repository living inside this repository. Staging it commits the whole tree a second time.
+
+It had not fired yet because nothing has run `git add -A` in the main checkout while a worktree existed. That is timing rather than safety: every agent session here creates a worktree at that path, so the hazard is present whenever anybody is working.
+
+Half of it was already covered and that is what hid the rest. A global ignore on this machine, `~/.config/git/ignore`, carries `**/.claude/settings.local.json` — so the settings file was invisible and the worktrees were not. A first attempt to measure this created only the settings file, saw a clean status, and would have concluded the rule was unnecessary. The measurement that answers the question creates something under `worktrees/`.
+
+That global rule is also the reason a repository-local one is still wanted rather than redundant: it is this machine's, and a clone anywhere else carries none of it.
+
+Fixed with `/.claude/`, anchored to the root because that is the only place the directory belongs. Nothing under it has ever been tracked, so ignoring it changes no history.
+
+| Field | Value |
+| --- | --- |
+| Where | .gitignore |
+| Evidence | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. |
+| Status | fixed |
+
+---
+
+## MUS-F-0066
+
+**Two branches open at once conflict in records/, because each exports the whole store rather than its own change**
+
+finding · 2026-09-03
+
+adjacent to: [MUS-F-0004](#mus-f-0004)
+
+`make export` renders every record in the store. A branch that runs it therefore commits the state of the whole store at that moment, including records whose code lives on some other branch. Two branches open at once each carry the other's records, at different vintages, in the same generated files — and git cannot reconcile two renderings of a thing it does not know is generated.
+
+Measured rather than predicted. Merging the three open branches into main in sequence: the first is clean and the second conflicts on `records/README.md`, `records/findings.md` and `records/questions.md`. Reversing the order changes which branch conflicts and not whether one does. The owner already hit this once and reported it as 'the PR stack for #30 and #31 has conflicts'; it was read then as a stack problem and it is not one.
+
+There is nothing to resolve by hand, which is the one comfort. records/ is generated from an insert-only log, so the correct content of a conflicted file is whatever `make export` produces on the merged base — resolving is running the command, not reading the diff. That is how the conflict this record was written on was settled.
+
+Two things make it smaller rather than fix it. Branches can be stacked so each is based on the last, which removes the divergence between them — done for the two most recent, and it took the change this record rides on from 240 insertions to 35. And a branch can re-export after the branch below it merges, which is an ordinary commit rather than a rewrite, so it needs no force-push.
+
+What would remove it is not committing the export at all, and that is a decision the repository has taken the other way on purpose: records/ is the reviewable half, and a store nobody can read in a clone is not a record. MUS-F-0004 holds the adjacent question of the export duplicating the contract files. This is recorded rather than solved because the fix is a scope decision the owner has already answered once.
+
+| Field | Value |
+| --- | --- |
+| Where | Makefile, records/ |
+| Evidence | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. |
+| Status | open |
