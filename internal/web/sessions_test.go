@@ -1039,3 +1039,42 @@ func TestTheSocketSendsARenderedScreen(t *testing.T) {
 		t.Errorf("the frame still describes a byte stream:\n%s", b)
 	}
 }
+
+// Enter sends, and a phone keeps its newline.
+//
+// MUS-F-0067 asked for Enter to send and Shift+Enter to break the line.
+// MUS-Q-0067 settled what that means where there is no shift key: on a touch
+// screen Enter stays a newline and the Send button is the submit, because a
+// soft keyboard has no modifier and Enter-sends-everywhere would take
+// multi-line off the surface this box exists for.
+func TestEnterSendsOnlyWhereThereIsAShiftKeyToHold(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	js := getFrom(t, srv, "/assets/session.js")
+
+	if !strings.Contains(js, `"(hover: hover) and (pointer: fine)"`) {
+		t.Fatal("nothing asks whether a physical keyboard is present, so Enter behaves the same on a phone as on a desktop")
+	}
+	// Read at each keystroke, not cached: a tablet that gains a keyboard
+	// should change with it.
+	if !strings.Contains(js, "deskKeys.matches") {
+		t.Error("the query result is not read at the keystroke")
+	}
+	if !strings.Contains(js, "e.shiftKey") {
+		t.Error("Shift+Enter is not let through, so a desktop cannot write a second line")
+	}
+	// The modifier shortcut predates this and still works everywhere, which is
+	// the only way to send from a touch screen without reaching for the button.
+	if !strings.Contains(js, "e.metaKey || e.ctrlKey") {
+		t.Error("Cmd/Ctrl+Enter no longer sends")
+	}
+	// An IME candidate is chosen with Enter. Sending on it eats the word.
+	if !strings.Contains(js, "e.isComposing") {
+		t.Error("an IME's Enter would send a half-typed word")
+	}
+	// The button is not conditional on anything: a control that comes and goes
+	// with a media query is a control nobody trusts.
+	body := getFrom(t, srv, "/sessions/Mustur")
+	if !strings.Contains(body, `<button type="submit">Send</button>`) {
+		t.Error("the Send button is gone or conditional; the owner's answer was that it is always present")
+	}
+}

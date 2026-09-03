@@ -51,7 +51,10 @@ threshold rather than claiming to know
 holds one draft that survives a reload and follows you between sessions, and it
 sends what you wrote as a single message rather than a prompt per line —
 measured by hand against one CLI, and the thing to re-check first if another
-ever behaves oddly. That session's sub-agents live in a
+ever behaves oddly. Enter sends where a physical keyboard is likely and
+Shift+Enter breaks the line; on a touch screen Enter stays a newline and the
+Send button, which is on every device, is the submit
+([MUS-Q-0067](records/questions.md#mus-q-0067)). That session's sub-agents live in a
 drawer that is **shut on arrival** — a button beside the session picker says
 how many there are and wears a turning accent ring while any is running, and
 opening it lists them one line each: what it was asked to do, how long it has

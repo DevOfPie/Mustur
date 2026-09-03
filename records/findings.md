@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-70 record(s), by identifier.
+75 record(s), by identifier.
 
 ## The queue
 
@@ -14,6 +14,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
 | [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
+| [IDW-F-0005](#idw-f-0005) | The Decision screen should allow additional text on an option selection, often I want to choose… |  | unreviewed |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  | overtaken |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | open |
@@ -80,6 +81,10 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0064](#mus-f-0064) | I added added a user and they are not showing in the people list, as soon as the invite is… | Against the rendered page at 1366x900 and 390x844: an invitation appears immediately as its address, an 'invited' pill, the role and the expiry, with no forms on the row; after Redeem the same address is an ordinary row with its role select and Disable button, appearing once. Removing the Pending lookup fails the test with 'an invited person is not on the screen'. | fixed |
 | [MUS-F-0065](#mus-f-0065) | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. | fixed |
 | [MUS-F-0066](#mus-f-0066) | Two branches open at once conflict in records/, because each exports the whole store rather than its own change | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. | open |
+| [MUS-F-0067](#mus-f-0067) | The session input should send on enter and add a newline on shift+enter | TestEnterSendsOnlyWhereThereIsAShiftKeyToHold in internal/web/sessions_test.go: the handler consults the media query at the keystroke, lets Shift+Enter and an IME's Enter through, keeps the modifier shortcut, and the rendered /sessions/Mustur still carries an unconditional Send button. Asserted rather than measured: that the query is true on the owner's desktop and false on their phone rests on the pointer and hover specification, not on a hands-on check of either device. | fixed |
+| [MUS-F-0068](#mus-f-0068) | The spinner makes the status text hard to read at certain positions |  | unreviewed |
+| [MUS-F-0069](#mus-f-0069) | The decision prompt in the session came up but the ui didn't update to show that a decision was… |  | unreviewed |
+| [MUS-F-0070](#mus-f-0070) | The session didn't resume after the decision was submitted |  | unreviewed |
 
 ---
 
@@ -171,6 +176,26 @@ This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q
 | Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
 | Status | superseded |
 | Superseded by | MUS-F-0047 — it asks for a change to Mustur's own session view, which the idea inbox does not own |
+
+---
+
+## IDW-F-0005
+
+**The Decision screen should allow additional text on an option selection, often I want to choose…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+The Decision screen should allow additional text on an option selection, often I want to choose an option but add additional notes to it and I can't do that without choosing other and typing the selected option plus the additional text
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |
 
 ---
 
@@ -1590,3 +1615,96 @@ What would remove it is not committing the export at all, and that is a decision
 | Where | Makefile, records/ |
 | Evidence | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. |
 | Status | open |
+
+---
+
+## MUS-F-0067
+
+**The session input should send on enter and add a newline on shift+enter**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+settled by: [MUS-Q-0067](questions.md#mus-q-0067)
+
+The session input should send on enter and add a newline on shift+enter.
+
+It did the opposite. The handler in `internal/web/assets/session.js` treated Enter as a newline and sent on Cmd/Ctrl+Enter, with a comment saying why: this is a composer and not a chat box, so the Send button is the phone's submit and the modifier is the desktop's shortcut. That reasoning is sound for the phone and wrong for the desktop, where every composer this one will be compared against sends on Enter.
+
+Flipping it outright would have taken multi-line off the phone, which is the surface the box exists for: a soft keyboard has no shift, so Shift+Enter is a shortcut only a physical keyboard can reach. [MUS-Q-0067](questions.md#mus-q-0067) put that to the owner, who settled it: the Send button is always present, and a phone's return key stays a newline.
+
+So Enter sends where a physical keyboard is likely and makes a newline where it is not. `(hover: hover) and (pointer: fine)` is the closest a browser gets to asking, and it is read at each keystroke rather than cached, so a tablet that gains a keyboard changes with it. Cmd/Ctrl+Enter still sends on any device, which is the only way to send from a touch screen without reaching for the button. An IME's Enter is let through, because there it chooses a candidate rather than ending a sentence.
+
+The Send button is untouched and unconditional on every device. A control that appears and disappears with a media query is a control nobody trusts, and on the desktop it is now the second route to the same thing rather than the only one.
+
+The composer at `/compose` is deliberately not changed. MUS-D-0013 makes it the surface that takes the thought first, and a long thought typed into a box that submits on Enter is a thought lost.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestEnterSendsOnlyWhereThereIsAShiftKeyToHold in internal/web/sessions_test.go: the handler consults the media query at the keystroke, lets Shift+Enter and an IME's Enter through, keeps the modifier shortcut, and the rendered /sessions/Mustur still carries an unconditional Send button. Asserted rather than measured: that the query is true on the owner's desktop and false on their phone rests on the pointer and hover specification, not on a hands-on check of either device. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/assets/session.js |
+
+---
+
+## MUS-F-0068
+
+**The spinner makes the status text hard to read at certain positions**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The spinner makes the status text hard to read at certain positions
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0069
+
+**The decision prompt in the session came up but the ui didn't update to show that a decision was…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The decision prompt in the session came up but the ui didn't update to show that a decision was waiting
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0070
+
+**The session didn't resume after the decision was submitted**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The session didn't resume after the decision was submitted
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |

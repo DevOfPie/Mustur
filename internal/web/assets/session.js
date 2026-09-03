@@ -663,14 +663,34 @@
       grow();
       showKept();
     });
-    // Enter is a newline, because this is a composer and not a chat box. The
-    // Send button is the phone's submit, and the keyboard shortcut is for the
-    // desktop where a modifier is at hand.
+    // Enter sends where there is a shift key to hold, and makes a newline where
+    // there is not (MUS-Q-0067). A soft keyboard has no shift, so Enter-sends
+    // everywhere would take multi-line off the phone entirely -- which is the
+    // surface this box exists for. The query is the closest a browser gets to
+    // asking whether a physical keyboard is present; it is read at each
+    // keystroke rather than cached, so a tablet that gains one changes with it.
+    //
+    // The Send button stays on every device either way. It is the phone's
+    // submit and the desktop's second route to the same thing, and a control
+    // that comes and goes with a media query is a control nobody trusts.
+    var deskKeys = window.matchMedia
+      ? window.matchMedia("(hover: hover) and (pointer: fine)")
+      : null;
     text.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      if (e.key !== "Enter") return;
+      // Composing in an IME: Enter is choosing a candidate, not sending.
+      if (e.isComposing || e.keyCode === 229) return;
+      // The modifier still sends anywhere, including the touch screen where
+      // plain Enter deliberately does not.
+      if (e.metaKey || e.ctrlKey) {
         e.preventDefault();
         if (form) form.dispatchEvent(new Event("submit", { cancelable: true }));
+        return;
       }
+      if (e.shiftKey || e.altKey) return;
+      if (!deskKeys || !deskKeys.matches) return;
+      e.preventDefault();
+      if (form) form.dispatchEvent(new Event("submit", { cancelable: true }));
     });
   }
 

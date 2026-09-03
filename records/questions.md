@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-66 record(s), by identifier.
+67 record(s), by identifier.
 
 ---
 
@@ -1499,3 +1499,24 @@ question · 2026-09-03
 | Answered | 2026-09-03 00:19 |
 | Relayed | written down by whippy, from the prompt in this session, 2026-09-03 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0067
+
+**Enter sends in the session box. A phone keyboard has no shift, so what does it do there?**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0067 |
+| Option | Enter sends only where a physical keyboard is likely :: the phone keeps Send and its return key still makes a newline :: Recommended. A media query for a fine pointer and hover decides it, which is what every chat composer on the web does: on a desktop Enter sends and Shift+Enter breaks the line; on a touch screen Enter stays a newline and the Send button is the submit, as it already is. enterkeyhint is set to match so the soft keyboard's key is labelled for what it will do. The cost is that the same box behaves differently on two devices, and the rule for which is a guess about the hardware rather than a fact about it -- a tablet with a keyboard attached reads as touch and keeps the button. |
+| Option | Enter sends everywhere, and a phone loses multi-line :: one rule, no detection, no exceptions :: The handler does not care what is typing into it. Shift+Enter makes a newline for anyone who has a shift key and nobody else does, so a multi-line reply cannot be written on a phone at all -- it would have to be written in the composer, which is a different screen with a different draft flow, or not at all. That is a real loss on the surface the owner uses most, in exchange for a rule that can be stated in one line and never surprises. |
+| Option | Enter sends everywhere, and the phone gets its own newline control :: multi-line survives on a phone at the cost of a button nobody drew :: Same single rule as above, plus a small control beside Send that inserts a line break, shown only where Shift+Enter is unavailable. It keeps both capabilities on every device. It also puts a piece of furniture on the session view that no artboard has, which is the exact pattern MUS-F-0027 exists to record, and it would need drawing before it is built. |
+| Asked by | whippy |
+| Answer | The send button should always be present, phone input return should use newline |
+| Answered | 2026-09-03 02:20 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-03 02:25 |
