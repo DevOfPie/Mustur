@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-70 record(s), by identifier.
+71 record(s), by identifier.
 
 ---
 
@@ -1308,7 +1308,7 @@ question · 2026-08-26
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0044 |
 | Needed to proceed | yes |
 | Option | A correction files a new record and retires the old :: keeps identifiers permanent; costs two records per correction :: IDW-F-0004 would be re-filed as a MUS finding, and IDW-F-0004 would stay, marked superseded and pointing at it. Nothing an identifier ever meant changes, which is the promise the whole store rests on. The cost is that every correction leaves a stub in the wrong project's list, and the idea inbox counter the scratch pad exists to protect goes up rather than down. Recommended |
@@ -1320,6 +1320,8 @@ question · 2026-08-26
 | Unconfirmed answer | A correction files a new record at the right destination and retires the old one, which keeps its identifier and points at its replacement. Identifiers stay permanent; the cost is a stub left in the wrong project's list. |
 | Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
 | Originally recorded | 2026-08-26 22:45, written down by whippy, from a prompt in the session that raised it |
+| Answer | A correction files a new record and retires the old |
+| Answered | 2026-09-03 04:16 |
 
 ---
 
@@ -1343,6 +1345,7 @@ question · 2026-08-26
 | Unconfirmed answer | An agent may record the owner's answer, attributed. 'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. The asker still may not answer unqualified. |
 | Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
 | Originally recorded | 2026-08-26 22:45, written down by whippy, from a prompt in the session that raised it |
+| Cut off | "This was previously answered as 'An agent may record..." — what the box held when Enter submitted it (MUS-F-0076). Kept because it is the start of what the owner meant to say, not because it is an answer. |
 
 ---
 
@@ -1366,6 +1369,8 @@ question · 2026-08-27
 | Unconfirmed answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
 | Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
 | Originally recorded | 2026-08-27 01:57, written down by whippy, from a prompt in the session that raised it |
+| Answered | 2026-09-03 04:23 |
+| Reopened | Withdrawn at 04:23 by a one-press button that did not say what it did (MUS-F-0077). Nothing was recorded to recover; the question itself is what came back. |
 
 ---
 
@@ -1590,3 +1595,21 @@ question · 2026-09-03
 | Answer | Reopen all nine |
 | Answered | 2026-09-03 04:04 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0071
+
+**Disabling Answer until an option is chosen retires the clause that lets text answer on its own**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0075 |
+| Option | Make the options required, natively :: the browser refuses the submit, no script, and text-only answers on an optioned question end :: Recommended. The radio group gets the HTML required attribute, so a browser will not submit the form until one is chosen and says so itself. It is exactly the behaviour asked for, it costs no script, and this surface stays server-rendered. What it retires is real: MUS-D-0055's surviving clause, reaffirmed in MUS-D-0137 two hours ago, says free text with no choice is still the answer -- the case a list of options is worst at. After this, a question that offers options can only be answered by picking one, and saying something the list does not contain means picking the nearest and writing why in the note. |
+| Option | Leave it; the accident it guards against is already gone :: no change, and the button still looks pressable when nothing is chosen :: The server already refuses a submit with neither an option nor text, and the box that submitted on Enter mid-sentence is now a textarea (MUS-F-0076), so the way this actually went wrong cannot happen again. What remains is cosmetic: a button that looks pressable and tells you afterwards. Nothing is retired and nothing is built. The cost is that the owner asked for something and the answer is that the underlying accident was a different bug. |
+| Option | Disable it with script, keyed on either an option or text :: keeps text-only answers, at the price of a seventh scripted surface :: A few lines watch the radios and the box and enable Answer when either has content, which is the only version that does not retire MUS-D-0055's clause. It makes /questions the seventh page shipping a script tag, on a surface whose whole design is that it works without one, and MUS-Q-0053 is already open on what that rule counts. It also degrades badly: with script blocked the button is enabled, which is today's behaviour, so the guard is exactly absent for the reader who most needs the form to be plain. |
+| Asked by | whippy |
+| Surfaced | 2026-09-03 04:28 |

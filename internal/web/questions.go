@@ -205,6 +205,15 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 	}
 	id := strings.TrimSpace(r.PostFormValue("id"))
 	withdraw := r.PostFormValue("withdraw") != ""
+	// Withdrawing closes a question with no answer, and the button said only
+	// "Withdraw" — the owner pressed it not knowing what it did and lost
+	// MUS-Q-0060 (MUS-F-0077). The tick beside it is what says so, and it is a
+	// checkbox rather than a confirmation page because this surface has no
+	// script and a second page would be a second surface.
+	if withdraw && r.PostFormValue("sure") == "" {
+		q.redirect(w, r, "", "Withdraw closes a question with no answer. Tick the box beside it if that is what you meant.")
+		return
+	}
 	// A chosen option answers the question. Free text beside it is a note on
 	// that choice; free text with no choice is the answer itself, which is
 	// MUS-D-0055's case for what the list does not contain.
@@ -397,17 +406,30 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   .opt details > summary { cursor: pointer; padding: .5rem 0; opacity: .6;
                            font-size: .85em; }
   .opt details p { margin: 0 0 .7rem; font-size: .92em; }
-  input[type=text] { width: 100%; font: inherit; padding: .6rem;
-             border: 1px solid var(--edge); border-radius: .5rem;
+  /* A textarea rather than a text input, because Enter in a single-line input
+     submits the form: the owner pressed it mid-sentence while writing a note
+     and the half they had typed was recorded as the answer (MUS-F-0076). Here
+     Enter is a newline and the Answer button is the only way out, which is the
+     same lesson MUS-F-0067 taught the session composer arriving at the second
+     surface. It grows a little rather than scrolling, because a note about a
+     choice is a sentence or two. */
+  textarea { width: 100%; font: inherit; padding: .6rem; min-height: 4.2rem;
+             border: 1px solid var(--edge); border-radius: .5rem; resize: vertical;
              background: transparent; color: inherit; box-sizing: border-box; }
   button { font: inherit; padding: .65rem 1.2rem; border: 1px solid var(--edge);
            border-radius: .5rem; background: transparent; color: inherit; }
   /* Answering is one tap, above the bar rather than inside it. */
   button.primary { width: 100%; margin-top: .8rem; border-color: var(--accent);
                    background: var(--accent-soft); }
-  .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem; }
+  .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem;
+          flex-wrap: wrap; }
   .id { opacity: .5; font-size: .78em; }
-  .drop button { font-size: .85em; padding: .35rem .8rem; margin-left: auto; }
+  .drop button { font-size: .85em; padding: .35rem .8rem; }
+  /* The tick sits between the identifier and the button, and takes the space
+     the button used to push itself over with, so the button cannot be reached
+     without passing the sentence that says what it does. */
+  .sure { margin-left: auto; display: flex; align-items: center; gap: .4rem;
+          font-size: .8em; opacity: .75; }
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
 ` + shellCSS + `
@@ -441,11 +463,13 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
     {{if .Detail}}<details><summary>more</summary><p>{{.Detail}}</p></details>{{end}}
   </div>
   {{end}}
-  <input type="text" name="answer" autocomplete="off"
-         placeholder="{{if $q.Options}}A note on your choice, or something else entirely{{else}}Your answer{{end}}">
+  <textarea name="answer" rows="2" spellcheck="true" autocapitalize="sentences"
+            autocomplete="off"
+            placeholder="{{if $q.Options}}A note on your choice, or something else entirely{{else}}Your answer{{end}}"></textarea>
   <button class="primary" type="submit">Answer</button>
   <div class="drop">
     <span class="id">{{$q.ID}}</span>
+    <label class="sure"><input type="checkbox" name="sure" value="1">close it with no answer</label>
     <button type="submit" name="withdraw" value="1">Withdraw</button>
   </div>
 </form>

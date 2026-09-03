@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-79 record(s), by identifier.
+82 record(s), by identifier.
 
 ## The queue
 
@@ -89,6 +89,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… |  | unreviewed |
 | [MUS-F-0073](#mus-f-0073) | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. | fixed |
 | [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | acted on; the underlying channel is not fixed |
+| [MUS-F-0075](#mus-f-0075) | The Mustur Decisions should have the answer button disabled until an option has been chosen |  | with the owner on MUS-Q-0071 |
+| [MUS-F-0076](#mus-f-0076) | The decision queue's answer box submitted on Enter, so a note stopped where the owner's thumb did | MUS-Q-0059's recorded answer, 'This was previously answered as \'An agent may record...', is truncated mid-clause. TestTheAnswerBoxIsMultiLineSoEnterCannotSubmitIt holds that the served page carries a textarea and no single-line answer input. | fixed |
+| [MUS-F-0077](#mus-f-0077) | Withdraw closed a question on one press, and said nothing about what it was | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. | fixed |
 
 ---
 
@@ -1862,3 +1865,78 @@ What this does not say: that those nine are wrong. Only that the record cannot t
 | Evidence | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. |
 | What was done | MUS-Q-0070: the owner reopened all nine (MUS-D-0139). Each is open, marked needed, and holds its relayed answer as 'Unconfirmed answer'. make check is red until they are answered. |
 | Not fixed by any of this | The prompt still returns what it returns. Nothing in this repository can detect it; what this repository can do is stop treating that return as the owner's word, which is now what MUS-D-0139 and the reopened records say. |
+
+---
+
+## MUS-F-0075
+
+**The Mustur Decisions should have the answer button disabled until an option has been chosen**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+asked as: [MUS-Q-0071](questions.md#mus-q-0071)
+
+The Mustur Decisions should have the answer button disabled until an option has been chosen
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | with the owner on MUS-Q-0071 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Why it is not simply built | It retires MUS-D-0055's surviving clause, that free text with no choice is still the answer, which MUS-D-0137 reaffirmed two hours before this jot was filed. A conflict between two of the owner's own decisions is named rather than picked. |
+
+---
+
+## MUS-F-0076
+
+**The decision queue's answer box submitted on Enter, so a note stopped where the owner's thumb did**
+
+finding · 2026-09-03
+
+the same class, reported this morning: [MUS-F-0067](#mus-f-0067)
+
+what made the box a note box: [MUS-D-0137](decisions.md#mus-d-0137)
+
+The owner was part-way through writing a note on MUS-Q-0059 when Enter went in by accident. The box was `<input type="text">`, and Enter in a single-line input submits the form it is in — so what had been typed so far was recorded as the answer and the question closed. `This was previously answered as 'An agent may record…` is what MUS-Q-0059 holds: a sentence cut mid-clause with the quote still open.
+
+The box had been a note box for about an hour. MUS-D-0137 turned the free-text field beside the options into a remark attached to a chosen answer, which is exactly the change that makes a longer sentence likely — and it was made without touching the control, so a field now meant for prose was still a control that submits on Enter.
+
+Fixed by making it a `textarea`. Enter is a newline and the Answer button is the only way out. That is the same lesson MUS-F-0067 taught the session composer this morning, arriving at the second surface within the day: the fix was applied where it was reported and the class of defect was not looked for anywhere else.
+
+MUS-Q-0059 is reopened, with what was captured kept on the record. MUS-Q-0058 was answered in the same minute and reads as a complete sentence, so it is left alone and named to the owner rather than reopened on a guess.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/questions.go |
+| Status | fixed |
+| Evidence | MUS-Q-0059's recorded answer, 'This was previously answered as \'An agent may record...', is truncated mid-clause. TestTheAnswerBoxIsMultiLineSoEnterCannotSubmitIt holds that the served page carries a textarea and no single-line answer input. |
+
+---
+
+## MUS-F-0077
+
+**Withdraw closed a question on one press, and said nothing about what it was**
+
+finding · 2026-09-03
+
+the question it cost: [MUS-Q-0060](questions.md#mus-q-0060)
+
+The owner pressed Withdraw on MUS-Q-0060 not knowing what it did. It closed the question with no answer, in one press, with no confirmation and no way back through the surface.
+
+The button said `Withdraw`. Nothing beside it said that withdrawing is for a question that no longer wants an answer — overtaken by events, or settled elsewhere — and that it closes without one. Read cold, next to an Answer button, it reads like a way out of the form.
+
+It also sat at `margin-left: auto`, pushed to the far edge of the row, which is where a phone's thumb rests.
+
+Fixed with a tick beside it reading *close it with no answer*, which the handler now requires: an unticked Withdraw is refused and the question is untouched. A checkbox rather than a confirmation page, because this surface carries no script and a second page would be a second surface. The tick takes the space the button used to push itself over with, so the button cannot be reached without passing the sentence that says what it does.
+
+MUS-Q-0060 is reopened. Nothing was lost — a withdrawal records no answer, so there was nothing to recover except the question itself.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/questions.go |
+| Status | fixed |
+| Evidence | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. |

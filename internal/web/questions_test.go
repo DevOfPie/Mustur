@@ -160,12 +160,16 @@ func TestEmptyAnswerIsRefusedAndTheQuestionStaysOpen(t *testing.T) {
 	}
 }
 
+// The tick is carried here too. Withdrawing without it is refused, which
+// TestWithdrawNeedsTheTickBesideIt holds; this test is about what a deliberate
+// withdrawal does, and it needs the same form the surface sends.
 func TestWithdrawClosesWithoutAnAnswer(t *testing.T) {
 	srv, s := serveQuestions(t, openQuestion("MUS-Q-0001", "Own the session, or attach?"))
 
 	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
 		"id":       {"MUS-Q-0001"},
 		"withdraw": {"1"},
+		"sure":     {"1"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -677,3 +681,80 @@ type liveSender struct{}
 
 func (liveSender) Alive(context.Context, string) (bool, error) { return true, nil }
 func (liveSender) Send(context.Context, string, string) error  { return nil }
+
+// The answer box cannot submit on Enter.
+//
+// MUS-F-0076: it was a single-line input, and Enter in one submits the form.
+// The owner pressed it mid-sentence while writing a note and the half they had
+// typed was recorded as the answer. A textarea takes Enter as a newline, so the
+// Answer button is the only way out.
+func TestTheAnswerBoxIsMultiLineSoEnterCannotSubmitIt(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, `<textarea name="answer"`) {
+		t.Error("the answer box is not a textarea, so Enter still submits mid-sentence")
+	}
+	if strings.Contains(body, `<input type="text" name="answer"`) {
+		t.Error("the single-line input is still there")
+	}
+	// It is the same box that carries a note, so it is spell-checked like the
+	// other place prose is written.
+	if !strings.Contains(body, `spellcheck="true"`) {
+		t.Error("the box is not spell-checked")
+	}
+}
+
+// Withdraw says what it does before it does it.
+//
+// MUS-F-0077: the button said only "Withdraw" and closed the question with no
+// answer on one press. The owner pressed it not knowing, and MUS-Q-0060 closed.
+func TestWithdrawNeedsTheTickBesideIt(t *testing.T) {
+	srv, s := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
+
+	body := getFrom(t, srv, "/questions")
+	if !strings.Contains(body, `name="sure"`) {
+		t.Fatal("nothing beside the button says what it does")
+	}
+	if !strings.Contains(body, "close it with no answer") {
+		t.Error("the tick does not say what withdrawing is")
+	}
+
+	// Unticked: refused, and the question is untouched.
+	res, err := srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "withdraw": {"1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := io.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !question.IsOpen(got) {
+		t.Fatalf("an unticked withdraw closed the question: status %q", question.Status(got))
+	}
+	if !strings.Contains(string(page), "Tick the box") {
+		t.Errorf("the refusal does not say how to withdraw on purpose:\n%s", string(page))
+	}
+
+	// Ticked: it withdraws, because saying no to the owner twice is not the point.
+	res, err = srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "withdraw": {"1"}, "sure": {"1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	got, err = s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if question.Status(got) != question.StatusWithdrawn {
+		t.Errorf("a ticked withdraw did not withdraw: status %q", question.Status(got))
+	}
+}
