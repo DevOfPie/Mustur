@@ -199,3 +199,19 @@ A server running with `--accounts` answers `/mcp` with 403 to a caller carrying
 no token, so an agent needs one in its MCP configuration. Report that as itself
 rather than as absence — they are different problems and only one is fixed by
 starting the server. `mustur account token --for "..."` issues one.
+
+**The server is configured per machine, not in this repository.** There is no
+`.mcp.json` here, deliberately: a checked-in one can carry no credential, and it
+would be preferred over the configuration that has one — project scope beats
+user scope, so the working entry is the one that gets ignored. Issue a token and
+put it at user scope:
+
+```
+mustur account token --for "claude-code on <machine>"
+claude mcp add --scope user --transport http mustur \
+  http://127.0.0.1:7777/mcp --header "Authorization: Bearer <the token>"
+```
+
+The secret is printed once and never stored; an invitation that goes missing is
+reissued rather than looked up, and so is this
+([MUS-Q-0065](records/questions.md#mus-q-0065)).
