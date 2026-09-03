@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-135 record(s), by identifier.
+136 record(s), by identifier.
 
 ## Index
 
@@ -147,6 +147,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0133](#mus-d-0133) | A built surface names the path it serves, and the gate reads that line rather than trusting it | 2026-08-28 |
 | [MUS-D-0134](#mus-d-0134) | An amendment keeps what it does not mention, and removing something is a thing you type | 2026-08-28 |
 | [MUS-D-0135](#mus-d-0135) | GitHub's anchor rule has one implementation, and the shell gate asks for it | 2026-08-29 |
+| [MUS-D-0136](#mus-d-0136) | A pull request diff shows the code and two documents; the rest of the markdown folds away | 2026-09-03 |
 
 ---
 
@@ -2319,3 +2320,28 @@ The alternative not taken was a shared fixture both implementations are run agai
 | Field | Value |
 | --- | --- |
 | Where | internal/audit/markdown.go, cmd/mustur/anchors.go, scripts/check-links.sh |
+
+---
+
+## MUS-D-0136
+
+**A pull request diff shows the code and two documents; the rest of the markdown folds away**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0066](questions.md#mus-q-0066)
+
+Markdown dominates a change here and most of it is not prose somebody wrote for that change. `records/` is rendered from the store by `make export`, so a diff of it is a diff of a rendering whose source of truth is the insert-only log. In one recent change it was 487 lines against 47 of hand-written prose and 1,329 of code, and it is the first thing a reviewer scrolls past.
+
+`.gitattributes` now marks `*.md` as `linguist-generated`, which collapses a file in the pull request diff — hidden by default, one click to expand. The owner exempted two: CLAUDE.md and README.md, which are how somebody arriving works out what this is (MUS-Q-0066). Later rules win in that file, so the exemptions are written after the rule they carve out of.
+
+The cost is named rather than left to be discovered. decisions.md, Plan.md and workflow.md are hand-written, and they fold away with the rest — a change to the contract is now one click from a reviewer rather than in front of them. That was put to the owner as the risk of this option and chosen anyway. Nothing is hidden irreversibly: the files are committed, exported and gated exactly as before, and `make check` reads them rather than the diff.
+
+It also drops this markdown from the repository's language statistics, which is the more honest figure for a tree whose code is Go. What has not been checked is whether the same mark affects GitHub code search; the collapse and the statistics are the two effects this is relied on for.
+
+One consequence to know before it surprises somebody: the exemptions are anchored to the root, so `ci/README.md` and `records/README.md` fold away with everything else. The second is generated; the first is a small hand-written file about the CI gate, and unfolding it is one line here.
+
+| Field | Value |
+| --- | --- |
+| Where | .gitattributes |
+| Evidence | `git check-attr linguist-generated` over eleven files: false for CLAUDE.md and README.md, true for decisions.md, Plan.md, workflow.md, queue.md, docs/ui-surfaces.md, ci/README.md and the records tree. |

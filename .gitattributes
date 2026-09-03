@@ -1,0 +1,21 @@
+# What a reviewer sees first.
+#
+# Markdown here is mostly not prose somebody wrote for this change. records/ is
+# rendered from the store by `make export`, so a diff of it is a diff of a
+# rendering — the reviewable form of records whose source of truth is the
+# insert-only log. In one recent change it was 487 lines against 47 of
+# hand-written prose and 1,329 of code, and it is the first thing a reviewer
+# scrolls past.
+#
+# `linguist-generated=true` collapses a file in the pull request diff. It is
+# hidden by default and expanded with one click; nothing is removed, and the
+# file is still committed, still exported, still checked by `make check`. It
+# also drops these files from the repository's language statistics, which is
+# the more honest figure for a tree whose code is Go.
+#
+# Two are exempt, because they are how somebody arriving works out what this is
+# ([MUS-D-0136](records/decisions.md#mus-d-0136)). Later rules win, so the
+# exemptions follow the rule they carve out of.
+*.md            linguist-generated=true
+/CLAUDE.md      linguist-generated=false
+/README.md      linguist-generated=false
