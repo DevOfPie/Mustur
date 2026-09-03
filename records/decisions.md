@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-137 record(s), by identifier.
+138 record(s), by identifier.
 
 ## Index
 
@@ -149,6 +149,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0135](#mus-d-0135) | GitHub's anchor rule has one implementation, and the shell gate asks for it | 2026-08-29 |
 | [MUS-D-0136](#mus-d-0136) | A pull request diff shows the code and two documents; the rest of the markdown folds away | 2026-09-03 |
 | [MUS-D-0137](#mus-d-0137) | An answer keeps its choice and gains a note | 2026-09-03 |
+| [MUS-D-0138](#mus-d-0138) | The decision log's tail is generated, and the marker carries its own boundary | 2026-09-03 |
 
 ---
 
@@ -2372,3 +2373,32 @@ The two alternatives were weighed and refused. Folding the note into the answer 
 | Field | Value |
 | --- | --- |
 | Stored as | Answer keeps the option's label; Note holds the remark. No note is written when there is none, so a plain answer renders exactly as it did |
+
+---
+
+## MUS-D-0138
+
+**The decision log's tail is generated, and the marker carries its own boundary**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0069](questions.md#mus-q-0069)
+
+raised by: [MUS-F-0073](findings.md#mus-f-0073)
+
+decisions.md fell seventeen decisions behind the store — MUS-D-0121 through MUS-D-0137 — and every gate passed throughout, because nothing compares the two (MUS-F-0073). The owner found it by looking for a decision and not finding it.
+
+Three ways out were offered: hand the file over to a pointer and add a gate, backfill seventeen essays, or generate the tail. The owner chose to generate it.
+
+So the file keeps its prose, its index and its append-only rule down to a marker, and everything below the marker is rendered from the store by `make export`. The two halves read differently on purpose: above is an argument with its corrections and retractions inside it, written when a decision earns one; below is the decision as the store holds it. A decision that deserves an essay still gets one written above.
+
+**The marker carries the boundary**, `<!-- mustur:generated from=MUS-D-0121 -->`, rather than the code holding a constant. The hand-written half stopped where it stopped for reasons that are in the document, and a number in Go would be a second place to keep them in step. A file with no marker, or a marker naming no boundary, is refused with the file untouched — the alternative is guessing where the prose ends, and guessing wrong deletes it.
+
+**It is not part of `export.Write`, and the flag is off by default.** Write owns a directory it may prune; this edits one file it must not otherwise touch. The running service exports `records/` from a systemd unit whose filesystem is read-only everywhere else, so `--decisions` is passed by the Makefile and by nothing else. A daemon that could write the checkout's root is a different thing from a daemon that renders its own export directory.
+
+Nothing yet fails when the file is stale. `make export` is what keeps it current, which is the standing `records/` has had since MUS-F-0011 — this file now sits under that open finding rather than beside it.
+
+| Field | Value |
+| --- | --- |
+| Marker | <!-- mustur:generated from=MUS-D-0121 --> in decisions.md; everything below it is replaced on every export |
+| Run by | make export, which passes --decisions decisions.md; the service does not |

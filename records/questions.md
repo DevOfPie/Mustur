@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-68 record(s), by identifier.
+69 record(s), by identifier.
 
 ---
 
@@ -1541,3 +1541,25 @@ question · 2026-09-03
 | Answered | 2026-09-03 03:04 |
 | Delivered | not delivered: the question names no session |
 | Surfaced | 2026-09-03 03:05 |
+
+---
+
+## MUS-Q-0069
+
+**decisions.md is seventeen decisions behind the store. Does it catch up, hand back, or start being generated?**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0073 |
+| Needed to proceed | yes |
+| Option | It becomes the pointer, and a gate stops it drifting again :: the essays stay for decisions that earn one; everything else lives in the store :: Recommended. One dated section appends to decisions.md saying that from MUS-D-0121 the log of record is the store, exported to records/decisions.md, with the index gaining a row per decision so the file is still the map. The file keeps its append-only rule and its voice: an entry is written when a decision earns an essay -- a correction, a retraction, an argument worth keeping -- and not because a record exists. A gate compares the store's decision list against the file and fails when one is named nowhere, so this cannot happen a third time. The cost is that the reasoning for most decisions is one hop away, in a document that reads as records rather than as prose. |
+| Option | Seventeen essays are written now :: the file is whole again, by a hand that was not there for most of it :: decisions.md catches up in full: a dated section per decision, in the existing voice, with index rows. A reader following CLAUDE.md finds everything where it says. The cost is that the essays would be reconstructed from the store records rather than written at the time -- the corrections and the retractions that make the existing entries worth reading are exactly what cannot be recovered afterwards -- and it re-establishes the double write MUS-F-0004 named, which is what stopped happening in the first place. Nothing prevents the next seventeen going the same way unless a gate goes in too. |
+| Option | The tail is generated from the store :: no drift and no double write, at the cost of the file being partly written by a program :: make export appends new decisions to decisions.md in the record shape, below everything written by hand. The file is never behind again and nobody writes anything twice. The cost is that an append-only document a person edits becomes one a program edits, its two halves read differently, and a merge conflict in it stops being a thing to think about and becomes a thing to re-run -- which is MUS-F-0066 arriving in a file that is not currently generated. |
+| Asked by | whippy |
+| Answer | The tail is generated from the store |
+| Answered | 2026-09-03 03:45 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-03 03:45 |

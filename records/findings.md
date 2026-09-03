@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-77 record(s), by identifier.
+79 record(s), by identifier.
 
 ## The queue
 
@@ -87,6 +87,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0070](#mus-f-0070) | The session didn't resume after the decision was submitted | TestTheAnswererIsToldWhereTheAnswerWent posts an answer to a question naming no session, on a server that could have delivered, and finds 'not delivered' and its reason on the page the owner lands on. TestADeliveredAnswerSaysWhereItWentToo holds the other half against a live sender. MUS-Q-0067's own record carries the Delivered line this was read from. | fixed |
 | [MUS-F-0071](#mus-f-0071) | The Decision screen should allow additional text on an option selection, often I want to choose… | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. | fixed |
 | [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… |  | unreviewed |
+| [MUS-F-0073](#mus-f-0073) | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. | fixed |
+| [MUS-F-0074](#mus-f-0074) | A question reaches the owner on two surfaces and can be answered differently on each, with nothing reconciling them | record_event for MUS-Q-0069: create by whippy 03:41:11, amend by dev@killerofpie.com 03:45:21 recording 'The tail is generated from the store'. The AskUserQuestion prompt raised at the same time returned 'Pointer + a gate (Recommended)'. mustur answer refuses a second answer without --reanswer, so the Mustur one stands by arriving first. | open |
 
 ---
 
@@ -1790,3 +1792,61 @@ The recommended option for decisions should have an icon on the main bar not tex
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0073
+
+**decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it**
+
+finding · 2026-09-03
+
+the same shape at the other document: [MUS-F-0011](#mus-f-0011)
+
+the duplication this resolves by attrition: [MUS-F-0004](#mus-f-0004)
+
+settled by: [MUS-Q-0069](questions.md#mus-q-0069)
+
+the gate that still does not exist: [MUS-F-0011](#mus-f-0011)
+
+CLAUDE.md tells every reader to read [decisions.md](../decisions.md) for *why*. Its last entry is dated 2026-08-26 and covers MUS-D-0120. Seventeen decisions since — MUS-D-0121 through MUS-D-0137 — exist only in the store and in `records/decisions.md`, which is the export.
+
+The owner found this by looking for a decision and not finding it, which is the only way it could have been found. `make check` has passed on every commit through all seventeen: the question gate reads `records/questions.md`, the link gate resolves anchors, and nothing anywhere compares the store's decisions to the file the contract names as the reasoning. This is MUS-F-0011's shape — no gate detects the export drifting from the store — arriving at the other document.
+
+It is also MUS-F-0004 growing teeth. That finding recorded the export and the contract files holding the same records twice and left the question of which is authoritative open; what happened in practice is that one of them quietly stopped being written, and the one that stopped is the one a reader is pointed at.
+
+The two are not the same artifact, which is why this is not simply a backfill. The entries in `decisions.md` are essays — a dated section, a narrative, corrections and retractions inside it — and a store decision is a claim with its reasoning attached. Seventeen essays written now by someone who was not there for most of them would be a different thing wearing the same shape.
+
+Recorded rather than fixed: how the file catches up, and whether it is written by hand from here on, is the owner's on MUS-Q-0069.
+
+| Field | Value |
+| --- | --- |
+| Where | decisions.md, internal/export/tail.go |
+| Status | fixed |
+| Evidence | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. |
+
+---
+
+## MUS-F-0074
+
+**A question reaches the owner on two surfaces and can be answered differently on each, with nothing reconciling them**
+
+finding · 2026-09-03
+
+the rule that makes the first answer stick: [MUS-D-0126](decisions.md#mus-d-0126)
+
+the question it happened to: [MUS-Q-0069](questions.md#mus-q-0069)
+
+MUS-Q-0069 was answered twice within thirteen seconds. In Mustur at 03:45:21 the owner chose *the tail is generated from the store*; in the prompt that the contract also requires, at the same moment, they chose *it becomes the pointer, and a gate stops it drifting again*. Both are the owner's. Neither is a mistake. They are incompatible.
+
+The contract asks for both surfaces on purpose — `mustur ask` records the question and `mustur surfaced` proves it reached a prompt — and nothing anywhere says which answer wins when the two disagree. The store simply keeps the first one to arrive: an agent writing down the prompt's answer afterwards is refused with *already answered*, and would need `--reanswer` to overwrite what the owner said through Mustur (MUS-D-0126). So the surface that answers fastest silently wins, and the agent finds out only if it happens to compare.
+
+This is not new, it is newly visible. MUS-Q-0067 was answered in both places too — 'the send button should always be present, phone input return should use newline' through Mustur, and an option label through the prompt. Those happened to agree, so nothing surfaced. MUS-Q-0068 the same. This is the first time they diverged, and only because the prompt's options and Mustur's were phrased differently enough for two readings to be reasonable.
+
+Recorded rather than fixed: whether one surface becomes authoritative, whether an answered question stops being answerable elsewhere, or whether a second answer is recorded beside the first as a correction, is a design decision and belongs to the owner.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/questions.go, internal/web/questions.go |
+| Status | open |
+| Evidence | record_event for MUS-Q-0069: create by whippy 03:41:11, amend by dev@killerofpie.com 03:45:21 recording 'The tail is generated from the store'. The AskUserQuestion prompt raised at the same time returned 'Pointer + a gate (Recommended)'. mustur answer refuses a second answer without --reanswer, so the Mustur one stands by arriving first. |
