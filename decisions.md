@@ -2991,3 +2991,30 @@ MUS-Q-0057 is not among them. Its answer was relayed from a question form on a p
 | --- | --- |
 | Reopened | MUS-Q-0058, MUS-Q-0059, MUS-Q-0060, MUS-Q-0061, MUS-Q-0062, MUS-Q-0063, MUS-Q-0064, MUS-Q-0065, MUS-Q-0066 |
 | Kept on each | Unconfirmed answer, Unconfirmed because, Originally recorded |
+
+### MUS-D-0140
+
+**The Answer button dims in CSS, so nothing is retired and no script arrives**
+
+decision · 2026-09-03
+
+answers: MUS-Q-0071
+
+raised by: MUS-F-0075
+
+the clause it does not retire: MUS-D-0055
+
+MUS-Q-0071 offered three ways to make Answer unavailable until there is something to answer with, and the owner took none of them: *can we enable the button for a chosen option or text in the box?* That is option three's behaviour without option three's price, and it turns out to cost nothing at all.
+
+`:has()` asks the form whether any radio is checked; `:placeholder-shown` asks whether the box is empty. Both are live, both are CSS, and each question is its own form so the rule scopes to one question rather than to the page. A question offering no options has no radio to check and so turns on text alone, which is what it should do.
+
+So MUS-D-0055's surviving clause stands — text with no choice still answers a question that offers options — and the decision queue is still a page with no script on it. Neither of the costs the menu asked the owner to accept is paid.
+
+**It is an affordance and not a guard, and the record should say so rather than let a reader assume otherwise.** `pointer-events: none` stops a pointer and not a keyboard, and a browser without `:has()` applies none of it and gets the button as it was. The refusal that actually holds is the server's, which has been there since the surface was built and is unchanged. Withdraw is untouched on purpose: closing a question with no answer is the one thing that has to work when nothing is chosen.
+
+This is the third time the owner has improved on the menu rather than picking from it.
+
+| Field | Value |
+| --- | --- |
+| How | form:not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown))) button.primary |
+| What still refuses | the server, unchanged; this is what the button looks like, not what the form accepts |

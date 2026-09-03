@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-82 record(s), by identifier.
+84 record(s), by identifier.
 
 ## The queue
 
@@ -88,10 +88,12 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0071](#mus-f-0071) | The Decision screen should allow additional text on an option selection, often I want to choose… | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. | fixed |
 | [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… |  | unreviewed |
 | [MUS-F-0073](#mus-f-0073) | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. | fixed |
-| [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | acted on; the underlying channel is not fixed |
-| [MUS-F-0075](#mus-f-0075) | The Mustur Decisions should have the answer button disabled until an option has been chosen |  | with the owner on MUS-Q-0071 |
+| [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | closed by MUS-Q-0070's answers; the channel is still what it is |
+| [MUS-F-0075](#mus-f-0075) | The Mustur Decisions should have the answer button disabled until an option has been chosen | TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith holds that the served page asks both questions in CSS, carries no script tag, and does not dim Withdraw. | fixed |
 | [MUS-F-0076](#mus-f-0076) | The decision queue's answer box submitted on Enter, so a note stopped where the owner's thumb did | MUS-Q-0059's recorded answer, 'This was previously answered as \'An agent may record...', is truncated mid-clause. TestTheAnswerBoxIsMultiLineSoEnterCannotSubmitIt holds that the served page carries a textarea and no single-line answer input. | fixed |
 | [MUS-F-0077](#mus-f-0077) | Withdraw closed a question on one press, and said nothing about what it was | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. | fixed |
+| [MUS-F-0078](#mus-f-0078) | Allow viewers to vote for answers to decisions but only owners can make final choice |  | triaged; parked against MUS-M-0008 |
+| [MUS-F-0079](#mus-f-0079) | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. | recorded; the three affected records now say what was meant |
 
 ---
 
@@ -1861,10 +1863,12 @@ What this does not say: that those nine are wrong. Only that the record cannot t
 | Field | Value |
 | --- | --- |
 | Where | the relay path, and every question closed through it |
-| Status | acted on; the underlying channel is not fixed |
+| Status | closed by MUS-Q-0070's answers; the channel is still what it is |
 | Evidence | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. |
 | What was done | MUS-Q-0070: the owner reopened all nine (MUS-D-0139). Each is open, marked needed, and holds its relayed answer as 'Unconfirmed answer'. make check is red until they are answered. |
 | Not fixed by any of this | The prompt still returns what it returns. Nothing in this repository can detect it; what this repository can do is stop treating that return as the owner's word, which is now what MUS-D-0139 and the reopened records say. |
+| Outcome | All nine were answered again by the owner in Mustur on 2026-09-03 and all nine confirmed the earlier answer. Nothing that shipped was built on a decision the owner had not made. What the reopening proved is that the relays happened to be right, not that relaying was safe. |
+| What the owner said on MUS-Q-0059 | That the previous selection was correct, that this may have caused the recent issues, and that they will aim to answer only through Mustur. |
 
 ---
 
@@ -1878,12 +1882,14 @@ Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
 asked as: [MUS-Q-0071](questions.md#mus-q-0071)
 
+settled by: [MUS-D-0140](decisions.md#mus-d-0140)
+
 The Mustur Decisions should have the answer button disabled until an option has been chosen
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | with the owner on MUS-Q-0071 |
+| Evidence | TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith holds that the served page asks both questions in CSS, carries no script tag, and does not dim Withdraw. |
+| Status | fixed |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -1940,3 +1946,65 @@ MUS-Q-0060 is reopened. Nothing was lost — a withdrawal records no answer, so 
 | Where | internal/web/questions.go |
 | Status | fixed |
 | Evidence | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. |
+
+---
+
+## MUS-F-0078
+
+**Allow viewers to vote for answers to decisions but only owners can make final choice**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+where it belongs: [MUS-M-0008](milestones.md#mus-m-0008)
+
+the clause it must not touch: [MUS-D-0055](decisions.md#mus-d-0055)
+
+the adjacent question: [MUS-Q-0046](questions.md#mus-q-0046)
+
+Allow viewers to vote for answers to decisions but only owners can make final choice.
+
+Triaged rather than built: this is a milestone, not a fix, and it belongs to MUS-M-0008 — *a second person* — which is the milestone where somebody who is not the owner reads a project from their own device. Voting is that milestone growing a second verb.
+
+**What already exists.** Accounts, invitations and a role per project shipped in 5b, and the guard refuses a reader's POST to `/questions` today. So the two halves this needs — knowing who is asking, and refusing them the decision — are built and enforced.
+
+**What it needs.** A vote is a new thing in the store: an account, a question, an option, and when. It is not an answer and must not be storable as one, because MUS-D-0055 makes an answer the owner's choice between options and a tally is not a choice. The queue then has to render counts beside each option, and the owner's Answer button has to stay exactly what it is.
+
+**The question inside it.** Whether a vote is attributable — whether the owner sees who voted for what, and whether a voter sees anyone else's. MUS-Q-0046 already asked the adjacent one, should a reader see who else has access, and the answer to that constrains this. A tally that names its voters and one that does not are different products.
+
+**Why it is parked and not asked.** Nothing in flight depends on it, and the owner has just cleared a queue of ten. It becomes a question when it becomes work: whether MUS-M-0008 absorbs it or it earns a milestone of its own is the shape of that question, and this record is what it will cite.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | triaged; parked against MUS-M-0008 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Scale | a milestone, not a fix: a new record kind in the store, a role-aware surface, and a question about attribution |
+| Already built | accounts, invitations and a role per project since 5b; a reader's POST to /questions is already refused |
+
+---
+
+## MUS-F-0079
+
+**Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice**
+
+finding · 2026-09-03
+
+the property it defeats: [MUS-D-0055](decisions.md#mus-d-0055)
+
+MUS-Q-0061, MUS-Q-0062 and MUS-Q-0063 each wrote their first option as `Recommended :: <the actual label> :: <the paragraph>`. The contract asks for the *line* to be prefixed with Recommended, not for the label to be the word — and the label is what a chosen option records as the answer.
+
+So all three came back from the owner reading `Answer: Recommended`. What was chosen is recoverable only by opening the question and finding which option was listed first, which is exactly the property MUS-D-0055 exists to preserve: an answer that is a verbatim option label can be matched back to the option it names. `Recommended` names nothing.
+
+The three resolve to *build the gate*, *leave it* and *merge with an explicit --drop*, each matching the answer that had previously been relayed, and each is now written onto its record as `What Recommended meant`. Nothing is wrong in the outcome; the record was briefly unreadable without a lookup.
+
+Recorded rather than gated. Nothing checks an option's shape when it is written, and a check that refused the word `Recommended` as a label would be a rule about prose. The three affected records carry the resolution; the contract already says what to do and this is the note that it was not done.
+
+| Field | Value |
+| --- | --- |
+| Where | MUS-Q-0061, MUS-Q-0062, MUS-Q-0063 |
+| Status | recorded; the three affected records now say what was meant |
+| Evidence | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. |

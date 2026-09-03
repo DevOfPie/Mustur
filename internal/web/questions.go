@@ -421,6 +421,26 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   /* Answering is one tap, above the bar rather than inside it. */
   button.primary { width: 100%; margin-top: .8rem; border-color: var(--accent);
                    background: var(--accent-soft); }
+  /* The owner asked for Answer to be unavailable until there is something to
+     answer with -- a chosen option, or text in the box (MUS-Q-0071). The three
+     options put to them all cost something: making the radios required retires
+     MUS-D-0055's clause that text alone can answer, and a script makes this the
+     seventh scripted surface. Neither is needed. :has() asks the form whether
+     anything is checked and :placeholder-shown asks whether the box is empty,
+     both live, both CSS.
+
+     Each question is its own form, so this scopes to one question rather than
+     to the page. A question with no options has no radio to check, so it turns
+     on text alone, which is what it should do.
+
+     It is an affordance, not a guard. pointer-events: none stops a pointer and
+     not a keyboard, and a browser without :has() applies none of this and gets
+     today's button. The refusal that actually holds is the server's, which has
+     always been there and stays. Withdraw is deliberately untouched: closing a
+     question with no answer is the one thing that must work when nothing is
+     chosen. */
+  form:not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown)))
+    button.primary { opacity: .45; pointer-events: none; }
   .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem;
           flex-wrap: wrap; }
   .id { opacity: .5; font-size: .78em; }

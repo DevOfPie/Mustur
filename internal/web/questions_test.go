@@ -758,3 +758,30 @@ func TestWithdrawNeedsTheTickBesideIt(t *testing.T) {
 		t.Errorf("a ticked withdraw did not withdraw: status %q", question.Status(got))
 	}
 }
+
+// Answer reads as unavailable until there is something to answer with.
+//
+// MUS-Q-0071. Done in CSS rather than with script or a required attribute:
+// the first would make this the seventh scripted surface and the second would
+// retire MUS-D-0055's clause that text alone can answer a question that offers
+// options.
+func TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, "input[type=radio]:checked") {
+		t.Error("nothing asks whether an option is chosen")
+	}
+	if !strings.Contains(body, "textarea:not(:placeholder-shown)") {
+		t.Error("nothing asks whether the box has text, so text alone would not enable it")
+	}
+	// Still no script on this surface: that is the whole reason for the CSS.
+	if strings.Contains(body, "<script") {
+		t.Error("the decision queue now carries a script")
+	}
+	// Withdraw has to work when nothing is chosen -- that is what it is for.
+	if strings.Contains(body, "button { opacity: .45") {
+		t.Error("the rule is not scoped to the primary button, so Withdraw is dimmed too")
+	}
+}
