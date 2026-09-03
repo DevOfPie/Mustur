@@ -496,3 +496,96 @@ func TestAnEmptyQueueSaysSo(t *testing.T) {
 		t.Error("an empty queue does not say it is empty")
 	}
 }
+
+// The person answering learns what became of the answer.
+//
+// MUS-F-0070: the owner answered a question that named no session, waited for a
+// session to resume, and nothing had ever been going to type into one. Deliver
+// already returned the sentence and it went only into the record, which is the
+// one place the person who just answered was not looking. MUS-D-0065 stands --
+// an undelivered answer is still an answer -- and saying so is not the same as
+// refusing it.
+func TestTheAnswererIsToldWhereTheAnswerWent(t *testing.T) {
+	// No FieldProject: a question raised outside a session Mustur started,
+	// which is the common case and the one that surprised the owner. Sessions
+	// is set, because the surprise needs a server that could have delivered --
+	// with the flag off there is no Sessions tab either and nobody is waiting
+	// for a session to resume.
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if err := s.Append(ctx, openQuestion("MUS-Q-0001", "Where does the audit run?"), "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", Sessions: liveSender{}, ShowSessions: true}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "answer": {"CI, with a real catalog"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The client follows the redirect, so this is the page the owner lands on.
+	if !strings.Contains(string(body), "Answered <code>MUS-Q-0001</code>") {
+		t.Fatal("the queue does not confirm the answer at all")
+	}
+	if !strings.Contains(string(body), "not delivered") {
+		t.Errorf("the page says nothing about delivery, so an answer that reached no session looks like one that did:\n%s", string(body))
+	}
+	if !strings.Contains(string(body), "names no session") {
+		t.Error("the reason is not carried back, only the fact")
+	}
+}
+
+// And a delivery that worked says so, rather than saying nothing.
+func TestADeliveredAnswerSaysWhereItWentToo(t *testing.T) {
+	rec := openQuestion("MUS-Q-0001", "Where does the audit run?")
+	rec.Data = append(rec.Data, record.Field{Key: question.FieldProject, Value: "Mustur"})
+
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if err := s.Append(ctx, rec, "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", Sessions: liveSender{}}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "answer": {"CI, with a real catalog"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), "typed into") {
+		t.Errorf("a delivered answer does not say so:\n%s", string(body))
+	}
+}
+
+// A sender whose session is alive and takes what it is given.
+type liveSender struct{}
+
+func (liveSender) Alive(context.Context, string) (bool, error) { return true, nil }
+func (liveSender) Send(context.Context, string, string) error  { return nil }

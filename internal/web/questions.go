@@ -132,7 +132,14 @@ type queuePage struct {
 	Open     []queued
 	OpenN    int
 	Answered string
-	Error    string
+	// What became of the answer once it was written: the same sentence the
+	// record keeps, shown to the person who just answered (MUS-F-0070). An
+	// answer to a question that named no session is recorded and delivered
+	// nowhere, which is correct and was invisible -- the owner answered, waited
+	// for a session to resume, and nothing had ever been going to type into
+	// one.
+	Delivered string
+	Error     string
 	// ShowSessions renders the Sessions tab. See the note on intake's page.
 	ShowSessions bool
 	ShowAccount  bool
@@ -180,6 +187,7 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		Open:         openQs,
 		OpenN:        len(openQs),
 		Answered:     r.URL.Query().Get("answered"),
+		Delivered:    r.URL.Query().Get("sent"),
 		Error:        r.URL.Query().Get("error"),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -236,6 +244,7 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	at := q.now().Format("2006-01-02 15:04")
+	var sent string
 	if withdraw {
 		question.Withdraw(&rec, at)
 	} else {
@@ -249,8 +258,8 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		// fails; the answer is written with the reason.
 		if q.Sessions != nil {
 			dctx, cancel := context.WithTimeout(ctx, q.deliverTimeout())
-			question.Set(&rec, question.FieldDelivered,
-				session.Deliver(dctx, q.Sessions, question.ProjectOf(rec), rec.ID, text))
+			sent = session.Deliver(dctx, q.Sessions, question.ProjectOf(rec), rec.ID, text)
+			question.Set(&rec, question.FieldDelivered, sent)
 			cancel()
 		}
 	}
@@ -259,7 +268,7 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q.export(ctx)
-	q.redirect(w, r, rec.ID, "")
+	q.redirectSent(w, r, rec.ID, sent, "")
 }
 
 // export renders the store after an answer. A failure is not surfaced to the
@@ -277,12 +286,22 @@ func (q *Questions) export(ctx context.Context) {
 }
 
 func (q *Questions) redirect(w http.ResponseWriter, r *http.Request, answered, problem string) {
+	q.redirectSent(w, r, answered, "", problem)
+}
+
+// redirectSent carries the delivery's own sentence back to the page, so the
+// person who answered learns what happened to the answer at the moment they
+// answered rather than by opening the record later.
+func (q *Questions) redirectSent(w http.ResponseWriter, r *http.Request, answered, sent, problem string) {
 	u := "/questions"
 	switch {
 	case problem != "":
 		u += "?error=" + template.URLQueryEscaper(problem)
 	case answered != "":
 		u += "?answered=" + template.URLQueryEscaper(answered)
+		if sent != "" {
+			u += "&sent=" + template.URLQueryEscaper(sent)
+		}
 	}
 	http.Redirect(w, r, u, http.StatusSeeOther)
 }
@@ -389,7 +408,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
-{{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.</p>{{end}}
+{{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
 {{if .Open}}
 {{range $i, $q := .Open}}
 {{if $i}}<hr>{{end}}
