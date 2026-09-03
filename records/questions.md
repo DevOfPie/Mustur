@@ -1308,7 +1308,7 @@ question · 2026-08-26
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | MUS-F-0044 |
 | Needed to proceed | yes |
 | Option | A correction files a new record and retires the old :: keeps identifiers permanent; costs two records per correction :: IDW-F-0004 would be re-filed as a MUS finding, and IDW-F-0004 would stay, marked superseded and pointing at it. Nothing an identifier ever meant changes, which is the promise the whole store rests on. The cost is that every correction leaves a stub in the wrong project's list, and the idea inbox counter the scratch pad exists to protect goes up rather than down. Recommended |
@@ -1316,10 +1316,10 @@ question · 2026-08-26
 | Option | Routing becomes mutable and the identifier does not change :: no stub and no broken citation; the prefix then lies :: IDW-F-0004 stays IDW-F-0004 and is routed to Mustur. Every citation keeps working and nothing is duplicated. What breaks is that the prefix stops meaning where the record lives, so an identifier can no longer be read — and every surface that groups by prefix would have to stop trusting it. |
 | Asked by | whippy |
 | Surfaced | 2026-08-26 22:44 |
-| Answer | A correction files a new record at the right destination and retires the old one, which keeps its identifier and points at its replacement. Identifiers stay permanent; the cost is a stub left in the wrong project's list. |
-| Answered | 2026-08-26 22:45 |
-| Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |
+| Unconfirmed answer | A correction files a new record at the right destination and retires the old one, which keeps its identifier and points at its replacement. Identifiers stay permanent; the cost is a stub left in the wrong project's list. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-08-26 22:45, written down by whippy, from a prompt in the session that raised it |
 
 ---
 
@@ -1331,17 +1331,18 @@ question · 2026-08-26
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | MUS-F-0045 |
 | Option | An agent may record the owner's answer, attributed :: closes the queue; weakens the rule that only the owner answers :: 'mustur answer --from-owner' would let a session write down what the owner said in a prompt, a plan or a chat, stamped with who recorded it and that it was relayed rather than given here. The queue matches reality. The cost is that the one thing an agent currently cannot do becomes something it can do, and the record can no longer be read as proof the owner touched Mustur itself. Recommended |
 | Option | Only the owner closes it, from the queue :: the record stays trustworthy; the queue keeps filling up :: Exactly today's behaviour, which is what the finding is about. Every question answered in a prompt or a plan stays open here until the owner opens /questions and answers it a second time. It is honest and it is friction, and the friction lands on the one person whose time the whole system is meant to protect. |
 | Option | A question can be withdrawn as overtaken, by whoever raised it :: no new answering power; says less than an answer :: 'mustur answer --withdraw' already exists and an agent may already use it on its own question. Making 'overtaken by a decision taken elsewhere' an explicit withdrawal reason would clear the queue without anyone claiming to have recorded what the owner said. What is lost is the answer itself: the record would say the question stopped mattering, not what was decided. |
 | Asked by | whippy |
 | Surfaced | 2026-08-26 22:44 |
-| Answer | An agent may record the owner's answer, attributed. 'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. The asker still may not answer unqualified. |
-| Answered | 2026-08-26 22:45 |
-| Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |
+| Needed to proceed | yes |
+| Unconfirmed answer | An agent may record the owner's answer, attributed. 'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. The asker still may not answer unqualified. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-08-26 22:45, written down by whippy, from a prompt in the session that raised it |
 
 ---
 
@@ -1353,7 +1354,7 @@ question · 2026-08-27
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | MUS-F-0049 |
 | Needed to proceed | yes |
 | Option | Render frames from capture-pane :: correct for free; changes what resume means :: tmux has already done the emulation, so ask it for the screen instead of the protocol. The seed path already does exactly this and reads correctly. One poll per watched session sends about 1.4KB where the raw stream sent 6.6KB for the same turn, and the working and idle detection already reads the same pane, so it costs nothing new. What changes is the resume model: the byte offset a viewer reconnects at, the 256KB buffer from MUS-Q-0021 and the gap message all describe a stream, and a screen has none of those. Scrollback comes from capture-pane -S instead. Recommended |
@@ -1361,10 +1362,10 @@ question · 2026-08-27
 | Option | Strip the escapes and keep the log :: the cheap half; the layout stays wrong :: Makes the live stream match the seed in character set, so the bracket codes stop appearing as literal text. It does not fix the problem: ESC[21;3H means the text after it overwrites row 21, so removing the code keeps the text and loses where it belongs. Frames would still stack on each other, just without the codes visible. Worth naming because it is what 'fix the formatting' sounds like it means. |
 | Asked by | whippy |
 | Surfaced | 2026-08-27 01:57 |
-| Answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
-| Answered | 2026-08-27 01:57 |
-| Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |
+| Unconfirmed answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-08-27 01:57, written down by whippy, from a prompt in the session that raised it |
 
 ---
 
@@ -1376,17 +1377,18 @@ question · 2026-08-28
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | MUS-F-0027, which has now recorded the same pattern seven times without the rate going down |
 | Option | Recommended :: Build the gate :: docs/ui-surfaces.md exists to stop a surface being designed in a Go template and shown to the owner afterwards, and it has failed seven times — twice after an owner answer on the same subject, and the rate went up rather than down. This repository already refuses to report work complete around an unsurfaced question, and that rule holds because make check enforces it rather than because a file asks. The same shape here: make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. The cost is real and worth saying plainly — it is a gate that will block a commit at an inconvenient moment, and somebody will want to add a surface faster than they can draw it. |
 | Option | Leave it recorded :: The finding stands as a warning and the next surface is caught by review or not at all :: The honest version of doing nothing. It costs nothing now and the record is accurate, but the finding's own diagnosis is that a record read after the fact is not a safeguard — so choosing this is choosing to accept the eighth instance, not to prevent it. |
 | Option | Something narrower :: Gate only the surfaces that carry script :: A script tag is already a decision the owner takes rather than a consequence of building something, and MUS-Q-0053 left what the rule counts open. Gating that smaller set is cheaper to build and harder to argue with, and it would have caught two of the seven rather than all of them. |
 | Asked by | whippy |
 | Surfaced | 2026-08-28 08:51 |
-| Answer | Build the gate. make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. |
-| Answered | 2026-08-28 08:52 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Needed to proceed | yes |
+| Unconfirmed answer | Build the gate. make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-08-28 08:52, written down by whippy, from the prompt in this session, 2026-08-28 |
 
 ---
 
@@ -1398,17 +1400,18 @@ question · 2026-08-28
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | MUS-F-0039 — asked for if it were an easy add, and it is not |
 | Option | Recommended :: Leave it :: The measurement says the control is not the problem. Sixteen destinations render in the same 358px on a phone and 640px on a laptop as six do, in Chrome and Firefox both — a native select does not grow with its list. What a search box would be for is the opened popup, which is native chrome and not in the page, so nothing here can measure or style it. Revisit when the list is long enough that the popup is actually unpleasant, which it is not at four. |
 | Option | Make it the seventh scripted surface :: A filter box on intake, and a new precedent :: Filtering a list of options needs script, and intake has never carried any. MUS-Q-0053 settled that the count is of script tags and that a seventh is a decision taken rather than a consequence of building something — so this is that decision, not a side effect of it. |
 | Option | Datalist, and route by display name :: Script-free, and it costs the name in the box :: With `input list=`, the input's value is the option's value, so choosing Mustur leaves MUS-P-0001 sitting in the box. Routing by display name instead would fix that and would work only while no two destinations share a name — which is a constraint on the routing records rather than on the control, and one nothing currently enforces. |
 | Asked by | whippy |
 | Surfaced | 2026-08-28 08:51 |
-| Answer | Leave it. The closed control is not the problem and the list is four long; revisit when the opened popup is actually unpleasant. |
-| Answered | 2026-08-28 08:52 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Needed to proceed | yes |
+| Unconfirmed answer | Leave it. The closed control is not the problem and the list is four long; revisit when the opened popup is actually unpleasant. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-08-28 08:52, written down by whippy, from the prompt in this session, 2026-08-28 |
 
 ---
 
@@ -1420,7 +1423,7 @@ question · 2026-08-28
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | MUS-F-0055 — amend replaces a record whole, and has already gutted records in this store |
 | Option | Recommended :: Merge, with an explicit --drop :: What is passed replaces that part and nothing else; a field or citation left out survives. Removing one becomes `--drop Status`, which is a thing you type on purpose. This makes the safe outcome the default and the destructive one explicit, which is the same principle as --reanswer applied one level down. It also matches what the word means everywhere else — `git commit --amend` keeps the tree. The cost is that amend stops being a way to rewrite a record from scratch; that becomes --replace, for the rare time you want it. |
 | Option | Refuse unless --replace :: Amend fails when it would drop content the caller did not restate :: Closest to the existing precedent: MUS-D-0126 made an answer refuse to overwrite without --reanswer, and this is the same guard at a bigger scale. The failure mode is that the refusal fires on every ordinary correction, so everybody learns to type --replace without reading it — at which point the guard is decoration and the trap is back. |
@@ -1428,10 +1431,11 @@ question · 2026-08-28
 | Option | Leave it, and gate the damage instead :: Keep amend as it is, and add a check that fails when a record loses a citation :: Treats the loss as something to detect rather than prevent. It would have caught all eight of the records repaired today, and it catches nothing at the moment of the mistake — the record is still gutted, and the gate tells you afterwards. |
 | Asked by | whippy |
 | Surfaced | 2026-08-28 23:04 |
-| Answer | Merge, with an explicit --drop. What is passed replaces that part and nothing else; anything omitted survives. Removing a field or citation becomes --drop KEY, typed on purpose. |
-| Answered | 2026-08-28 23:04 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Needed to proceed | yes |
+| Unconfirmed answer | Merge, with an explicit --drop. What is passed replaces that part and nothing else; anything omitted survives. Removing a field or citation becomes --drop KEY, typed on purpose. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-08-28 23:04, written down by whippy, from the prompt in this session, 2026-08-28 |
 
 ---
 
@@ -1443,17 +1447,18 @@ question · 2026-08-28
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | MUS-F-0062 — the two disagreed today, in opposite directions |
 | Option | Recommended :: One, in Go, with the script calling it :: `scripts/check-links.sh` and `internal/audit/markdown.go` both derive a heading's anchor, and today one refused a correct one while the other accepted an anchor that does not exist. MUS-F-0054 recorded this exact shape — two implementations of one thing, one of them approximate — and was fixed by deleting the second. Doing that here means the script asks the binary, and the rule has one place to be wrong. The cost is real: `make check` already builds Go for four of its nine gates, but the link gate stops being runnable on a machine that cannot build this tree, which is a property it has today. |
 | Option | Keep two, and test them against each other :: A shared fixture both must agree on :: Keeps the shell gate independent of the Go build, which is worth something for a checkout somebody is only reading. Instead of merging them, a table of headings and their real GitHub anchors lives in one place and both are run against it, so they can still be wrong but not wrong differently. More machinery than one implementation, and it does not stop both being wrong the same way. |
 | Option | Leave it :: They agree now, and drift is a problem for the day it happens :: Cheapest, and honest about the fact that both were fixed today. It also accepts that the next divergence is found the way this one was — by somebody running the gates by hand and wondering. |
 | Asked by | whippy |
 | Surfaced | 2026-08-29 00:23 |
-| Answer | One implementation, in Go, with the script calling it. The rule gets one place to be wrong; the link gate stops being runnable without building the tree, which is the accepted cost. |
-| Answered | 2026-08-29 00:23 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Needed to proceed | yes |
+| Unconfirmed answer | One implementation, in Go, with the script calling it. The rule gets one place to be wrong; the link gate stops being runnable without building the tree, which is the accepted cost. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-08-29 00:23, written down by whippy, from the prompt in this session, 2026-08-28 |
 
 ---
 
@@ -1465,7 +1470,7 @@ question · 2026-09-02
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | the mandated tool call, in every session started anywhere but this one worktree |
 | Needed to proceed | yes |
 | Option | Recommended :: Take mustur out of .mcp.json and keep it at user scope :: The tracked entry cannot work any more — it carries no credential, and since enforcement it can only refuse. It also shadows the one that would work: measured, project scope beats user scope, so the user-scope entry now sitting in ~/.claude.json is inert while that file exists. Removing it leaves one configuration, on this machine, holding one secret, with no environment plumbing at all. The cost is that a fresh clone no longer learns from the repository that there is a server to point at — which is documentation, and can be a sentence in workflow.md instead of a config that refuses. |
@@ -1473,10 +1478,10 @@ question · 2026-09-02
 | Option | Per-directory local scope, changing nothing in the repository :: Works today, refuses in every worktree made after :: Local scope beats project scope, so this works without touching a public file — but it is keyed to one directory. Every worktree an agent creates from here on would fall back to the tracked entry and refuse. That is the shape of MUS-F-0061, found today: a gate that silently did not run because 'beside the tree' meant beside the worktree. |
 | Asked by | whippy |
 | Surfaced | 2026-09-02 23:57 |
-| Answer | Take mustur out of .mcp.json and keep it at user scope. One config, one secret, no environment plumbing; the repository documents the server in prose instead of carrying a configuration that can only refuse. Revoke the old token too. |
-| Answered | 2026-09-02 23:57 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-09-02 |
 | Delivered | not delivered: the question names no session |
+| Unconfirmed answer | Take mustur out of .mcp.json and keep it at user scope. One config, one secret, no environment plumbing; the repository documents the server in prose instead of carrying a configuration that can only refuse. Revoke the old token too. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-09-02 23:57, written down by whippy, from the prompt in this session, 2026-09-02 |
 
 ---
 
@@ -1488,17 +1493,18 @@ question · 2026-09-03
 
 | Field | Value |
 | --- | --- |
-| Status | answered |
+| Status | open |
 | Blocks | nothing; the owner asked for the noise in a review to go |
 | Option | Only the generated export :: records/** collapses, every hand-written file stays :: The narrowest claim that is defensible on its own terms — records/ is rendered by `make export` from an insert-only log, so a diff of it is a diff of a rendering. It leaves the contract prose in front of a reviewer, which is where a change most needs to be noticed. |
 | Option | All of it, with two exemptions :: Every *.md collapses except CLAUDE.md and README.md :: What the owner chose. The two exempted are how somebody arriving works out what this is. The cost is named rather than discovered: decisions.md, Plan.md and workflow.md are hand-written and now collapse with the rest, so a change to the contract is one click away rather than in front of the reviewer. Nothing is hidden irreversibly — the file is committed, exported and gated exactly as before. |
 | Option | The generated export and docs/ :: records/** and docs/** collapse, the root files stay :: A middle reading, keeping every file at the top level visible while the long-form investigations and the export fold away. |
 | Asked by | whippy |
 | Surfaced | 2026-09-03 00:19 |
-| Answer | All of it, with two exemptions: every *.md collapses in the diff except CLAUDE.md and README.md, which still show. |
-| Answered | 2026-09-03 00:19 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-09-03 |
 | Delivered | not delivered: the question names no session |
+| Needed to proceed | yes |
+| Unconfirmed answer | All of it, with two exemptions: every *.md collapses in the diff except CLAUDE.md and README.md, which still show. |
+| Unconfirmed because | Reopened on MUS-Q-0070. The answer kept above was relayed from a prompt, and MUS-F-0074 found this session's prompts returning an option the owner had not chosen. Whether the owner made this choice is not knowable from the record, so it is unconfirmed rather than wrong. Answering it again in Mustur is what closes it. |
+| Originally recorded | 2026-09-03 00:19, written down by whippy, from the prompt in this session, 2026-09-03 |
 
 ---
 
@@ -1574,10 +1580,13 @@ question · 2026-09-03
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0074 |
 | Option | Review the nine in one pass, and say which are wrong :: one screen, not nine conversations :: Recommended. MUS-Q-0058 through MUS-Q-0066 are listed with their answers in one place; the owner reads them and names any that are not what they would have chosen. Those reopen and the work built on them is revisited; the rest are marked confirmed, so the record says the owner has been here rather than that an agent wrote something down. It is one pass over ten short answers rather than nine separate questions, and it ends with the store able to tell the two provenances apart. |
 | Option | They stand until something contradicts one :: nothing is re-asked, and the record keeps saying an agent wrote it down :: All nine are already built, reviewed and in some cases reviewed twice, and a decision that was badly wrong would likely have surfaced as a defect by now. Nothing is re-opened and no time is spent on answers that were probably right. The cost is that a wrong one hides in shipped behaviour with a record saying the owner chose it, and MUS-D-0136's 'the owner exempted two' is the shape that would never surface on its own. |
 | Option | Reopen all nine :: the safest and the most expensive :: Every relayed answer is treated as unanswered until the owner says otherwise, and the gate blocks on them. It is the only option that makes no assumption about which were right. It also stops work on anything downstream of nine decisions, several of which are load-bearing, for as long as they sit open. |
 | Asked by | whippy |
 | Surfaced | 2026-09-03 03:56 |
+| Answer | Reopen all nine |
+| Answered | 2026-09-03 04:04 |
+| Delivered | not delivered: the question names no session |

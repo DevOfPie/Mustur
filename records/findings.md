@@ -88,7 +88,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0071](#mus-f-0071) | The Decision screen should allow additional text on an option selection, often I want to choose… | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. | fixed |
 | [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… |  | unreviewed |
 | [MUS-F-0073](#mus-f-0073) | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. | fixed |
-| [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | open |
+| [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | acted on; the underlying channel is not fixed |
 
 ---
 
@@ -1841,6 +1841,8 @@ the rule the relay was written under: [MUS-D-0126](decisions.md#mus-d-0126)
 
 what to do about the nine: [MUS-Q-0070](questions.md#mus-q-0070)
 
+what the owner decided: [MUS-D-0139](decisions.md#mus-d-0139)
+
 **This record first claimed the wrong thing, and the wrong claim is kept here because it is how the real one was found.** It said MUS-Q-0069 had been answered twice within thirteen seconds — once in Mustur, once in the prompt — and that the contract's two surfaces had no rule for which wins. The owner corrected it: they answered in Mustur and nowhere else. Nobody answered the prompt.
 
 So the prompt returned a value the owner never chose, and the agent read it as the owner speaking.
@@ -1856,5 +1858,7 @@ What this does not say: that those nine are wrong. Only that the record cannot t
 | Field | Value |
 | --- | --- |
 | Where | the relay path, and every question closed through it |
-| Status | open |
+| Status | acted on; the underlying channel is not fixed |
 | Evidence | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. |
+| What was done | MUS-Q-0070: the owner reopened all nine (MUS-D-0139). Each is open, marked needed, and holds its relayed answer as 'Unconfirmed answer'. make check is red until they are answered. |
+| Not fixed by any of this | The prompt still returns what it returns. Nothing in this repository can detect it; what this repository can do is stop treating that return as the owner's word, which is now what MUS-D-0139 and the reopened records say. |

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-138 record(s), by identifier.
+139 record(s), by identifier.
 
 ## Index
 
@@ -150,6 +150,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0136](#mus-d-0136) | A pull request diff shows the code and two documents; the rest of the markdown folds away | 2026-09-03 |
 | [MUS-D-0137](#mus-d-0137) | An answer keeps its choice and gains a note | 2026-09-03 |
 | [MUS-D-0138](#mus-d-0138) | The decision log's tail is generated, and the marker carries its own boundary | 2026-09-03 |
+| [MUS-D-0139](#mus-d-0139) | Nine questions closed on a prompt's word are reopened, and the gate holds them open | 2026-09-03 |
 
 ---
 
@@ -2402,3 +2403,32 @@ Nothing yet fails when the file is stale. `make export` is what keeps it current
 | --- | --- |
 | Marker | <!-- mustur:generated from=MUS-D-0121 --> in decisions.md; everything below it is replaced on every export |
 | Run by | make export, which passes --decisions decisions.md; the service does not |
+
+---
+
+## MUS-D-0139
+
+**Nine questions closed on a prompt's word are reopened, and the gate holds them open**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0070](questions.md#mus-q-0070)
+
+raised by: [MUS-F-0074](findings.md#mus-f-0074)
+
+the rule the relays were written under: [MUS-D-0126](#mus-d-0126)
+
+MUS-F-0074 found the prompt returning an option the owner had not chosen: five calls in one session, each returning the first and recommended option, and the owner confirmed they had answered none of them. Ten questions in this store carry a `Relayed` field; nine of them — MUS-Q-0058 through MUS-Q-0066 — cite a prompt as where the owner gave the answer. Each closed a question. Each drove behaviour that shipped.
+
+Three ways forward were offered: review the nine in one pass, let them stand until something contradicts one, or reopen all nine. The owner chose to reopen all nine, which was named as the safest and the most expensive.
+
+So each of the nine is open again and marked as one the work cannot proceed without, which is what puts it in front of `make check` rather than leaving it to be waited out. The gate is red until the owner answers them, deliberately: that is the difference between reopening a question and noting that it might be wrong.
+
+**Nothing was deleted and nothing was reversed.** The relayed text is kept verbatim on each record as `Unconfirmed answer`, beside when it was recorded and by whom, so a reader can see what was acted on. No code was changed and no shipped behaviour was rolled back — a decision that turns out to have been right will be answered the same way, and one that does not is a defect with a record already pointing at it.
+
+MUS-Q-0057 is not among them. Its answer was relayed from a question form on a published plan rather than from a prompt, which is a surface the owner used directly.
+
+| Field | Value |
+| --- | --- |
+| Reopened | MUS-Q-0058, MUS-Q-0059, MUS-Q-0060, MUS-Q-0061, MUS-Q-0062, MUS-Q-0063, MUS-Q-0064, MUS-Q-0065, MUS-Q-0066 |
+| Kept on each | Unconfirmed answer, Unconfirmed because, Originally recorded |

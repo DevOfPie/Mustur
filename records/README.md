@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 70 | [questions.md](questions.md) |
-| decision | 138 | [decisions.md](decisions.md) |
+| decision | 139 | [decisions.md](decisions.md) |
 | finding | 79 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -266,6 +266,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0136](decisions.md#mus-d-0136) | decision | A pull request diff shows the code and two documents; the rest of the markdown folds away |
 | [MUS-D-0137](decisions.md#mus-d-0137) | decision | An answer keeps its choice and gains a note |
 | [MUS-D-0138](decisions.md#mus-d-0138) | decision | The decision log's tail is generated, and the marker carries its own boundary |
+| [MUS-D-0139](decisions.md#mus-d-0139) | decision | Nine questions closed on a prompt's word are reopened, and the gate holds them open |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
