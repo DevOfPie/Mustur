@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-66 record(s), by identifier.
+67 record(s), by identifier.
 
 ## The queue
 
@@ -76,6 +76,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0060](#mus-f-0060) | The audit read a heading's backticks off before deriving its anchor, and reported a correct link as broken | `make audit` went from '26 ok, 1 finding' to '27 ok, 0 finding' with no change to any record. A heading carrying inline code, and a link to its GitHub anchor, is now OK where it was a finding; reverting the split fails that test with the anchor named. | fixed |
 | [MUS-F-0061](#mus-f-0061) | The conformance harness skipped on every agent run, because 'beside the audited tree' meant beside the worktree | From this worktree, `make conformance` now reports '37 fixture trees, 344 expected states compared' where it printed SKIP, and `make audit` finds the catalog with no MUSTUR_STRUCGU set. A unit test builds a worktree-shaped tree three levels deep and checks the catalog is found from both the repository and the worktree. | fixed |
 | [MUS-F-0062](#mus-f-0062) | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. | fixed |
+| [MUS-F-0063](#mus-f-0063) | A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked | A token at user scope: 'Needs authentication', with `claude mcp get mustur` reporting 'Scope: Project config'. The same token at local scope: 'Connected'. Over the wire with the token, initialize, tools/list and a mustur_route call all answer 200 and return this repository's routing, which is the mandated call working. | fixed |
 
 ---
 
@@ -1447,4 +1448,32 @@ The thing underneath both is worth more than either. This tree has **two impleme
 | --- | --- |
 | Where | scripts/check-links.sh |
 | Evidence | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. |
+| Status | fixed |
+
+---
+
+## MUS-F-0063
+
+**A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked**
+
+finding · 2026-09-02
+
+answered by: [MUS-Q-0065](questions.md#mus-q-0065)
+
+same family as: [MUS-F-0061](#mus-f-0061)
+
+Since enforcement, every session in this repository has reported `mustur_route` as refusing. The cause was not the server and not a missing token: `.mcp.json` at the root named the server with no credential, and **project scope beats user scope**, so a working entry in `~/.claude.json` was ignored while that file existed. Measured, not read: with a token at user scope the client still reported 'Needs authentication' and `claude mcp get mustur` named the project config as the one in effect. The same token at local scope connected immediately, which isolates it to precedence rather than to the credential.
+
+The file could never have worked. A credential in it would be published — this repository is public — so the entry was a configuration that had to refuse, sitting in front of one that did not.
+
+It also offered a wrong repair. With no `Authorization` header the client falls back to OAuth and offers to start a flow against a server that implements none, so the suggested fix leads nowhere. Setting the header disables that fallback, and the refusal then names the header and the 403 instead.
+
+Removed on MUS-Q-0065, with the configuration documented in prose in CLAUDE.md instead. The alternative measured and not taken was keeping the file and having it carry `${MUSTUR_TOKEN}`: Claude Code expands the variable and connects, and it covers every worktree from one file, but the variable then has to be exported in every place a session starts — a shell profile, the Remote Control unit, anything under cron. Two defects found on 2026-08-28 were exactly 'works in one launch context and not another', which is what settled it.
+
+One detail worth keeping, because it delayed the diagnosis: removing the file from a worktree does not remove it from the session. Claude Code walks up, and a worktree under `.claude/worktrees/` finds the main checkout's copy — so the deletion takes effect when it merges and the checkout is updated, not when the worktree is edited. Same family as MUS-F-0061.
+
+| Field | Value |
+| --- | --- |
+| Where | .mcp.json, CLAUDE.md |
+| Evidence | A token at user scope: 'Needs authentication', with `claude mcp get mustur` reporting 'Scope: Project config'. The same token at local scope: 'Connected'. Over the wire with the token, initialize, tools/list and a mustur_route call all answer 200 and return this repository's routing, which is the mandated call working. |
 | Status | fixed |
