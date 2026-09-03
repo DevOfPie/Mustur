@@ -36,6 +36,19 @@ const (
 	FieldAnswer = "Answer"
 	// FieldAnswered is when they said it.
 	FieldAnswered = "Answered"
+	// FieldNote is what the owner added to a chosen option.
+	//
+	// MUS-D-0055 made an answer a choice between options and put free text
+	// beneath them, beating a choice when both were sent. That left no way to
+	// pick an option and say something about it: the owner had to retype the
+	// option's label into the box and append the remark, which lost the fact
+	// that an option was chosen at all (MUS-F-0071). The choice stays the
+	// answer, verbatim and matchable back to the option it names, and the
+	// remark lives here beside it.
+	//
+	// A note with no choice is not a thing: free text on its own is still the
+	// answer, which is MUS-D-0055's case for what the list does not contain.
+	FieldNote = "Note"
 	// FieldRelayed names who wrote an answer down and where the owner gave it,
 	// when those are not the same act.
 	//
@@ -285,6 +298,32 @@ func Answer(r *record.Record, answer, at string) {
 	Set(r, FieldStatus, StatusAnswered)
 	Set(r, FieldAnswer, answer)
 	Set(r, FieldAnswered, at)
+}
+
+// AnswerWithNote is Answer plus a remark the owner attached to their choice.
+// An empty note writes no field, so a plain answer looks exactly as it did.
+func AnswerWithNote(r *record.Record, answer, note, at string) {
+	Answer(r, answer, at)
+	if strings.TrimSpace(note) != "" {
+		Set(r, FieldNote, strings.TrimSpace(note))
+	}
+}
+
+// Said is the answer as a sentence: the chosen option, and the note the owner
+// attached to it. What a waiting session is told, and what a reader sees when
+// only one string will fit.
+func Said(answer, note string) string {
+	note = strings.TrimSpace(note)
+	if note == "" {
+		return answer
+	}
+	return answer + " \u2014 " + note
+}
+
+// NoteOf is the remark attached to the answer, if there is one.
+func NoteOf(r record.Record) string {
+	v, _ := r.Get(FieldNote)
+	return v
 }
 
 // AnswerRelayed closes a question with an answer the owner gave elsewhere,

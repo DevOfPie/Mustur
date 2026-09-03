@@ -294,15 +294,49 @@ func TestChoosingAnOptionAnswersTheQuestion(t *testing.T) {
 	}
 }
 
-// Free text beats a chosen option: the owner wanting to say something the list
-// does not contain is the case a list of options is worst at.
-func TestFreeTextOverridesAChosenOption(t *testing.T) {
+// Free text beside a chosen option is a note on that choice.
+//
+// This test held the opposite until MUS-Q-0068: MUS-D-0055 put free text
+// beneath the options and let it beat a choice, so picking an option and adding
+// a remark meant retyping the label into the box, and the record then said only
+// what was typed. The owner asked for both (MUS-F-0071) and chose to keep the
+// choice as the answer. The clause that survives is the one below it: text with
+// no choice is still the answer itself.
+func TestANoteRidesAlongsideTheChosenOption(t *testing.T) {
 	srv, s := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
 		"Check StrucGu out in CI :: Recommended :: detail"))
 
 	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
 		"id":     {"MUS-Q-0001"},
 		"option": {"Check StrucGu out in CI"},
+		"answer": {"but only once the catalog is pinned"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	got, err := s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Verbatim, so it can still be matched back to the option it names.
+	if ans, _ := got.Get(question.FieldAnswer); ans != "Check StrucGu out in CI" {
+		t.Errorf("answer = %q, want the chosen option unchanged", ans)
+	}
+	if note := question.NoteOf(got); note != "but only once the catalog is pinned" {
+		t.Errorf("note = %q, want the remark kept beside the choice", note)
+	}
+}
+
+// And text with no choice is the answer, which is MUS-D-0055's case for what
+// the list does not contain. That half is unchanged.
+func TestFreeTextWithNoChoiceIsStillTheAnswer(t *testing.T) {
+	srv, s := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
+		"id":     {"MUS-Q-0001"},
 		"answer": {"Neither. Ask me again after milestone 4."},
 	})
 	if err != nil {
@@ -317,6 +351,60 @@ func TestFreeTextOverridesAChosenOption(t *testing.T) {
 	if ans, _ := got.Get(question.FieldAnswer); ans != "Neither. Ask me again after milestone 4." {
 		t.Errorf("answer = %q, want the typed text", ans)
 	}
+	// No choice was made, so there is nothing for a note to be a note on.
+	if note := question.NoteOf(got); note != "" {
+		t.Errorf("note = %q, want none: the text was the answer", note)
+	}
+}
+
+// A waiting session is told the choice and the note, not the choice alone.
+func TestTheNoteTravelsWithTheAnswerIntoTheSession(t *testing.T) {
+	rec := withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail")
+	rec.Data = append(rec.Data, record.Field{Key: question.FieldProject, Value: "Mustur"})
+
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if err := s.Append(ctx, rec, "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	spy := &recordingSender{}
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", Sessions: spy}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
+		"id":     {"MUS-Q-0001"},
+		"option": {"Check StrucGu out in CI"},
+		"answer": {"but only once the catalog is pinned"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	if !strings.Contains(spy.sent, "Check StrucGu out in CI") {
+		t.Errorf("the session was not told the choice: %q", spy.sent)
+	}
+	if !strings.Contains(spy.sent, "but only once the catalog is pinned") {
+		t.Errorf("the session was told the choice and not the note, so it would act on an option the owner qualified: %q", spy.sent)
+	}
+}
+
+// A sender that keeps what it was handed.
+type recordingSender struct{ sent string }
+
+func (recordingSender) Alive(context.Context, string) (bool, error) { return true, nil }
+func (r *recordingSender) Send(_ context.Context, _, text string) error {
+	r.sent = text
+	return nil
 }
 
 // The surface marks the recommended option. The first build computed the flag

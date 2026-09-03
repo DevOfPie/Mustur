@@ -205,11 +205,17 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 	}
 	id := strings.TrimSpace(r.PostFormValue("id"))
 	withdraw := r.PostFormValue("withdraw") != ""
-	// A chosen option answers the question; free text answers one that offered
-	// none, and overrides a choice when the owner wants to say something else.
-	text := strings.TrimSpace(r.PostFormValue("answer"))
+	// A chosen option answers the question. Free text beside it is a note on
+	// that choice; free text with no choice is the answer itself, which is
+	// MUS-D-0055's case for what the list does not contain.
+	//
+	// It used to override the choice, so picking an option and adding a remark
+	// meant retyping the option's label into the box -- and the record then
+	// said only what was typed, never which option it named (MUS-F-0071).
+	text := strings.TrimSpace(r.PostFormValue("option"))
+	note := strings.TrimSpace(r.PostFormValue("answer"))
 	if text == "" {
-		text = strings.TrimSpace(r.PostFormValue("option"))
+		text, note = note, ""
 	}
 	if id == "" {
 		q.redirect(w, r, "", "no question named")
@@ -248,7 +254,7 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 	if withdraw {
 		question.Withdraw(&rec, at)
 	} else {
-		question.Answer(&rec, text, at)
+		question.AnswerWithNote(&rec, text, note, at)
 		// Carried back before the record is written, so what happened to the
 		// delivery is part of the same event rather than a second one that
 		// could fail on its own.
@@ -258,7 +264,10 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		// fails; the answer is written with the reason.
 		if q.Sessions != nil {
 			dctx, cancel := context.WithTimeout(ctx, q.deliverTimeout())
-			sent = session.Deliver(dctx, q.Sessions, question.ProjectOf(rec), rec.ID, text)
+			// The note travels with the choice: an agent told only the label
+			// would act on an option the owner qualified.
+			sent = session.Deliver(dctx, q.Sessions, question.ProjectOf(rec), rec.ID,
+				question.Said(text, note))
 			question.Set(&rec, question.FieldDelivered, sent)
 			cancel()
 		}
@@ -433,7 +442,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   </div>
   {{end}}
   <input type="text" name="answer" autocomplete="off"
-         placeholder="{{if $q.Options}}Or say something else{{else}}Your answer{{end}}">
+         placeholder="{{if $q.Options}}A note on your choice, or something else entirely{{else}}Your answer{{end}}">
   <button class="primary" type="submit">Answer</button>
   <div class="drop">
     <span class="id">{{$q.ID}}</span>
