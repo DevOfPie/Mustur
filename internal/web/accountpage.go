@@ -140,6 +140,14 @@ type personRow struct {
 	Passkeys int
 	Disabled bool
 	Self     bool
+	// Invited says this is an invitation rather than an account. It has no
+	// identifier, because nothing has been created yet — so the row carries no
+	// controls: a role select and a disable button would post an empty id.
+	Invited bool
+	// Expires is when the invitation stops working, on an invited row only.
+	// An invitation lives a day, and "invited" without it reads as a state
+	// somebody is in rather than one that runs out.
+	Expires string
 }
 
 type accountPage struct {
@@ -290,15 +298,44 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 	}
 
 	if p.Owner {
+		seen := map[string]bool{}
 		people, err := a.Store.Accounts(ctx)
 		if err == nil {
 			for _, person := range people {
 				role, _ := a.Store.RoleFor(ctx, person.ID, a.Project)
 				creds, _ := a.Store.Credentials(ctx, person.ID)
+				seen[person.Email] = true
 				p.People = append(p.People, personRow{
 					Email: person.Email, ID: person.ID,
 					Role: string(role), Passkeys: len(creds),
 					Disabled: person.Disabled, Self: person.ID == acct.ID,
+				})
+			}
+		}
+		// An invitation issued and not yet accepted.
+		//
+		// Without this the screen says nobody is there a minute after inviting
+		// somebody, and the obvious repair is to invite them again. The CLI's
+		// own list already avoids that and says so in a comment; the reasoning
+		// was written down beside one surface and never applied to the other
+		// (MUS-F-0064).
+		//
+		// A row disappears from here by becoming an account: redeeming marks
+		// the invitation used, so Pending stops returning it in the same act
+		// that makes Accounts return the person. There is no state to keep in
+		// step.
+		if pending, err := a.Store.Pending(ctx); err == nil {
+			for _, inv := range pending {
+				// Scoped to this project, because the screen is. And once per
+				// address: a lost invitation is reissued rather than looked up
+				// (MUS-F-0059), so the same person can hold several.
+				if inv.Project != a.Project || seen[inv.Email] {
+					continue
+				}
+				seen[inv.Email] = true
+				p.People = append(p.People, personRow{
+					Email: inv.Email, Role: string(inv.Role), Invited: true,
+					Expires: inv.Expires.Format("2006-01-02 15:04"),
 				})
 			}
 		}
@@ -494,6 +531,11 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
      wrapped into itself on a phone, which a review saw as overlapping text. */
   li.person { display: flex; flex-direction: column; gap: .35rem; }
   li.person .controls { display: flex; gap: .5rem; align-items: center; }
+  /* An invitation is a person who is not here yet: named the same, dimmer, and
+     carrying no controls, because there is no account to act on. */
+  li.person.invited > span:first-child { opacity: .75; }
+  li.person .tag { border: 1px solid var(--accent); border-radius: 999px;
+                   padding: 0 .4rem; color: var(--accent); }
   p { margin: .4rem 1rem; }
   .said { margin: .8rem 1rem; padding: .6rem .8rem;
           border-left: 3px solid var(--edge); font-size: .9em; }
@@ -554,8 +596,12 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
 </form>
 
 <h2>People</h2>
-<ul>{{range .People}}<li class="person">
+<ul>{{range .People}}<li class="person{{if .Invited}} invited{{end}}">
   <span>{{.Email}}{{if .Self}} <small>(you)</small>{{end}}{{if .Disabled}} <small>disabled</small>{{end}}</span>
+{{if .Invited}}
+  <small><span class="tag">invited</span> {{.Role}} · not yet accepted, expires {{.Expires}}</small>
+  <span class="controls"></span>
+{{else}}
   <small>{{if .Role}}{{.Role}}{{else}}no role here{{end}} · {{.Passkeys}} passkey(s)</small>
   <span class="controls">
     <form class="inline" method="post" action="/account/role">
@@ -569,6 +615,7 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
       <button type="submit">{{if .Disabled}}Enable{{else}}Disable{{end}}</button>
     </form>
   </span>
+{{end}}
 </li>{{end}}</ul>
 
 {{else}}

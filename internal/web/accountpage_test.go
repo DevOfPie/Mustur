@@ -443,3 +443,95 @@ func TestTheAccountPageHidesSessionsWhenThereIsNoSuchSurface(t *testing.T) {
 		t.Error("a build with no session surface still offers a tab to it")
 	}
 }
+
+// Somebody invited is on the people screen from the moment they are invited.
+//
+// The owner filed this: they added a user and the list did not show them
+// (MUS-F-0064). The screen was built from the account table, and an invitation
+// nobody has accepted is a row in the invite table — so the page said nobody
+// was there a minute after inviting somebody, and the obvious repair is to
+// invite them again. The CLI's own list already avoided that, in a comment
+// saying why; the reasoning was written beside one surface and never applied to
+// the other.
+//
+// The test that existed invited somebody and then checked the *store* for a
+// pending invitation. It passed throughout, because it never looked at the page.
+func TestAnInvitedPersonIsOnThePeopleScreenBeforeTheyAccept(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, _ := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
+
+	secret, err := accounts.Invite(ctx, "invited@example.com", "MUS", account.Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	page := body(t, owner, srv.URL+"/account/people")
+	if !strings.Contains(page, "invited@example.com") {
+		t.Fatalf("an invited person is not on the screen:\n%s", page)
+	}
+	if !strings.Contains(page, "invited") {
+		t.Error("the row does not say they have not accepted yet")
+	}
+	// No controls on that row: there is no account to act on, and a role or
+	// disable form would post an empty identifier.
+	row := page[strings.Index(page, "invited@example.com"):]
+	if end := strings.Index(row, "</li>"); end > 0 {
+		row = row[:end]
+	}
+	if strings.Contains(row, "/account/role") || strings.Contains(row, "/account/disable") {
+		t.Errorf("an invitation carries controls for an account that does not exist:\n%s", row)
+	}
+
+	// And accepting turns it into an ordinary row, in the same act: redeeming
+	// marks the invitation used, so it leaves Pending exactly as the person
+	// enters Accounts.
+	if _, _, err := accounts.Redeem(ctx, secret, ""); err != nil {
+		t.Fatal(err)
+	}
+	page = body(t, owner, srv.URL+"/account/people")
+	if !strings.Contains(page, "invited@example.com") {
+		t.Fatal("the person vanished when they accepted")
+	}
+	row = page[strings.Index(page, "invited@example.com"):]
+	if end := strings.Index(row, "</li>"); end > 0 {
+		row = row[:end]
+	}
+	if strings.Contains(row, "not yet accepted") {
+		t.Errorf("they accepted and the row still says they have not:\n%s", row)
+	}
+	if !strings.Contains(row, "/account/role") {
+		t.Errorf("an accepted person has no controls:\n%s", row)
+	}
+	// Once, not twice. A lost invitation is reissued rather than looked up, so
+	// somebody can hold several and must still appear as one person.
+	if n := strings.Count(page, "invited@example.com"); n != 1 {
+		t.Errorf("they appear %d times", n)
+	}
+}
+
+// An invitation to another project is not on this project's screen, and a
+// second invitation to the same person does not double them.
+func TestThePeopleScreenIsAboutThisProject(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, _ := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
+
+	for _, in := range []struct{ email, project string }{
+		{"here@example.com", "MUS"},
+		{"here@example.com", "MUS"}, // reissued, as a lost link would be
+		{"elsewhere@example.com", "OTHER"},
+	} {
+		if _, err := accounts.Invite(ctx, in.email, in.project, account.Reader, "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	page := body(t, owner, srv.URL+"/account/people")
+	if n := strings.Count(page, "here@example.com"); n != 1 {
+		t.Errorf("somebody invited twice appears %d times", n)
+	}
+	if strings.Contains(page, "elsewhere@example.com") {
+		t.Error("an invitation to another project is on this project's screen")
+	}
+}
