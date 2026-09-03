@@ -97,8 +97,8 @@ build: ## The binary, in this directory
 seed: ## Put what already exists into an empty store
 	@go run ./cmd/mustur seed
 
-export: ## Render the store into records/
-	@go run ./cmd/mustur export --out records
+export: ## Render the store into records/ and the generated tail of decisions.md
+	@go run ./cmd/mustur export --out records --decisions decisions.md
 
 serve: ## Serve the one tool call on loopback
 	@go run ./cmd/mustur serve

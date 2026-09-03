@@ -479,6 +479,10 @@ func cmdExport(args []string) error {
 	fs := flag.NewFlagSet("export", flag.ContinueOnError)
 	db := dbFlag(fs)
 	out := fs.String("out", "records", "directory to render into")
+	// Off unless asked for. The running service exports records/ from a unit
+	// whose filesystem is read-only everywhere else, so the flag that writes
+	// into the checkout's root is passed by the Makefile and by nothing else.
+	decisions := fs.String("decisions", "", "also rewrite the generated tail of this hand-written decision log")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -498,6 +502,12 @@ func cmdExport(args []string) error {
 		return err
 	}
 	fmt.Printf("exported %d record(s) to %s\n", len(records), *out)
+	if *decisions != "" {
+		if err := export.Tail(*decisions, records); err != nil {
+			return err
+		}
+		fmt.Printf("rewrote the generated tail of %s\n", *decisions)
+	}
 	return nil
 }
 
