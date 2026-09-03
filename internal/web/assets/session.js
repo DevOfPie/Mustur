@@ -54,6 +54,36 @@
   // pill have a choice to make between running and idle.
   var attached = false;
 
+  // How many decisions are waiting, in the bar this page shares with every
+  // other surface.
+  //
+  // The bar is server-rendered once and this page outlives that render by
+  // hours -- a question raised while somebody is watching a session left the
+  // badge saying what was true when the tab opened (MUS-F-0069). The count is
+  // pushed down the socket that is already open rather than polled by a second
+  // request, which is the shape the owner chose for sub-agent rows on
+  // MUS-Q-0029; this is the second thing the client layer models that is not
+  // the terminal, where MUS-D-0092 recorded it as the only one.
+  //
+  // The element is absent rather than empty when nothing is waiting, because
+  // that is how the server renders it and one shape is easier to style than
+  // two.
+  function setWaiting(n) {
+    var link = document.querySelector('nav a[href="/questions"]');
+    if (!link) return;
+    var cnt = link.querySelector(".cnt");
+    if (!n) {
+      if (cnt && cnt.parentNode) cnt.parentNode.removeChild(cnt);
+      return;
+    }
+    if (!cnt) {
+      cnt = document.createElement("em");
+      cnt.className = "cnt";
+      link.appendChild(cnt);
+    }
+    cnt.textContent = String(n);
+  }
+
   function setState(label, on) {
     state.textContent = label;
     state.className = on ? "pill on" : "pill";
@@ -512,6 +542,10 @@
       } catch (e) {
         return;
       }
+      // The badge, on every frame that carries one. A count is sent when the
+      // socket opens and again whenever it moves, so it is handled before the
+      // frame kinds rather than repeated inside three of them.
+      if (typeof f.waiting === "number") setWaiting(f.waiting);
       if (f.t === "hello") {
         // The first frame carries the screen as it stands, so a reconnect
         // paints immediately rather than waiting for the session to move.

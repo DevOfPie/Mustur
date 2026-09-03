@@ -59,6 +59,15 @@ const InputEvery = 250 * time.Millisecond
 // finish and be replaced between ticks.
 const AgentsEvery = 2 * time.Second
 
+// How often a connected tab is told how many decisions are waiting.
+//
+// Slower than the sub-agent tick on purpose: OpenCount lists every record in
+// the store and filters, where the sub-agent poll stats one file and usually
+// stops there. Ten seconds is the latency on a badge, not on the terminal, and
+// the alternative measured worse -- that list ran per viewer every two seconds
+// for a number that changes a few times a day.
+const WaitingEvery = 10 * time.Second
+
 // IdleTimeout closes a socket nobody is using. A tab left open on a phone in a
 // drawer should not hold a writable channel into an agent for a week.
 const IdleTimeout = 30 * time.Minute
@@ -328,6 +337,13 @@ type frame struct {
 	Agents  []subagentRow `json:"agents,omitempty"`
 	Running int           `json:"running,omitempty"`
 	None    bool          `json:"none,omitempty"`
+	// How many decisions are open, for the tab bar's count (MUS-F-0069). The
+	// bar is rendered once by the server and this page outlives that render by
+	// hours, so a question raised while somebody watches a session used to
+	// leave the badge saying what was true when the tab opened. A pointer
+	// rather than an int: dropping to zero is the update that matters most and
+	// omitempty would swallow it.
+	Waiting *int `json:"waiting,omitempty"`
 }
 
 // A statusRow is the CLI's status line, ready to render.
@@ -412,9 +428,16 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 
 	// The first frame is the screen as it stands, and what the pane says the
 	// agent is doing — read out of the same capture rather than fetched again.
+	// Guarded the way render is: a Sessions with no store still serves the
+	// terminal, and the badge is simply not a thing it can count.
+	waitingNow := 0
+	if s.Store != nil {
+		waitingNow = OpenCount(conn, s.Store)
+	}
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
 		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
+		Waiting: waitingIf(s.Store != nil, &waitingNow),
 	}); err != nil {
 		return
 	}
@@ -435,6 +458,13 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	idle := time.NewTimer(IdleTimeout)
 	defer idle.Stop()
 
+	// The count in the tab bar, kept current for as long as the tab is open.
+	// Sent only when it moves, so a session nobody has raised a question from
+	// costs one list every ten seconds and no frames.
+	waiting := time.NewTicker(WaitingEvery)
+	defer waiting.Stop()
+	lastWaiting := waitingNow
+
 	go s.readInput(conn, cancel, c, project, s.actor(r), idle, send)
 
 	for {
@@ -447,6 +477,18 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			// and reconnects if anyone is still looking.
 			_ = c.Close(websocket.StatusNormalClosure, "idle")
 			return
+		case <-waiting.C:
+			if s.Store == nil {
+				continue
+			}
+			n := OpenCount(conn, s.Store)
+			if n == lastWaiting {
+				continue
+			}
+			lastWaiting = n
+			if err := send(frame{T: "waiting", Waiting: &n}); err != nil {
+				return
+			}
 		case <-agents.C:
 			// The agent's state used to be captured here, on its own timer.
 			// The poller already has the pane in hand and reads it out of the
@@ -491,6 +533,16 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			resetIdle(idle, IdleTimeout)
 		}
 	}
+}
+
+// waitingIf keeps the frame honest about a count nobody took: a zero sent by a
+// server with no store is indistinguishable from a zero that was counted, and
+// the client would clear a badge the page had rendered correctly.
+func waitingIf(ok bool, n *int) *int {
+	if !ok {
+		return nil
+	}
+	return n
 }
 
 // resetIdle restarts the timer, draining it first so a reset that races the

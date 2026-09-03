@@ -1106,3 +1106,95 @@ func TestTheTurningRingDoesNotPaintOverTheStatusPill(t *testing.T) {
 	}
 }
 
+// A decision raised while somebody is watching a session reaches the bar.
+//
+// MUS-F-0069: the tab bar is rendered once by the server and a session tab
+// outlives that render by hours, so the count said what was true when the tab
+// opened. The count now rides the socket that is already there, the way
+// sub-agent rows do (MUS-D-0092).
+func TestTheDecisionCountRidesTheSocket(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(js), `nav a[href="/questions"]`) {
+		t.Fatal("the client never finds the Decisions tab, so nothing can update its count")
+	}
+	// Handled before the frame kinds, so hello and the later updates share one
+	// path rather than three copies of it.
+	if !strings.Contains(string(js), `typeof f.waiting === "number"`) {
+		t.Error("the client ignores the count the server sends")
+	}
+	// Absent, not empty: that is how the server renders nothing waiting.
+	if !strings.Contains(string(js), "removeChild(cnt)") {
+		t.Error("a count falling to zero leaves the badge on screen")
+	}
+}
+
+// And the server actually sends it, on the first frame.
+func TestTheHelloFrameCarriesTheDecisionCount(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzWaiting"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 5'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	ctx0 := context.Background()
+	st, err := store.Open(ctx0, filepath.Join(t.TempDir(), "waiting.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	// One question, open and therefore waiting.
+	if err := st.Append(ctx0, openQuestion("MUS-Q-9001", "does the badge move"), "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir, Store: st}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+	_, b, err := c.Read(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var f frame
+	if err := json.Unmarshal(b, &f); err != nil {
+		t.Fatal(err)
+	}
+	if f.T != "hello" {
+		t.Fatalf("first frame is %q, not hello", f.T)
+	}
+	if f.Waiting == nil {
+		t.Fatal("the hello frame carries no count, so a tab opens with whatever the bar was rendered with")
+	}
+	if *f.Waiting != 1 {
+		t.Errorf("hello says %d decisions waiting, want 1", *f.Waiting)
+	}
+}
+
+// A server with no store must not clear a badge it never counted.
+func TestNoStoreMeansNoCountRatherThanZero(t *testing.T) {
+	if waitingIf(false, new(int)) != nil {
+		t.Error("a server with no store sends a zero, which the client cannot tell from a counted zero")
+	}
+}
