@@ -587,6 +587,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      would spill a long way past a short word. */
   header .ring { padding: 1.2px; }
   header .ring.live::before { width: 260%; }
+  /* The ring is a gradient in a padding box, so whatever it wraps has to be
+     opaque and painted above it, or the two bright arms sweep across the word
+     instead of around it (MUS-F-0068). .toggle was both and this was neither:
+     an unpositioned box loses to an absolutely positioned pseudo-element, and
+     --accent-soft is 12.5% alpha, so the gradient came through the fill as
+     well as over it. The on state layers the same token over the page rather
+     than replacing it, which keeps the tint and stops the light. */
+  header .ring > .pill { position: relative; background: var(--paper); }
+  header .ring > .pill.on { background:
+      linear-gradient(var(--accent-soft), var(--accent-soft)), var(--paper); }
   /* MUS-Q-0052: the account surface is reached from here rather than from
      a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
      actually serves it — a link that goes nowhere is the failure the bar

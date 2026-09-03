@@ -1078,3 +1078,31 @@ func TestEnterSendsOnlyWhereThereIsAShiftKeyToHold(t *testing.T) {
 		t.Error("the Send button is gone or conditional; the owner's answer was that it is always present")
 	}
 }
+
+// The turning ring goes around the word, not across it.
+//
+// MUS-F-0068: the status pill sat inside .ring with no position and no
+// background, so the conic gradient -- absolutely positioned, and 12.5% alpha
+// showing through a transparent fill -- painted over the text as its two bright
+// arms came round. The sub-agent toggle beside it was opaque and positioned and
+// never had the fault, which is why it showed up on one control and not both.
+func TestTheTurningRingDoesNotPaintOverTheStatusPill(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	// Above the gradient. An unpositioned box loses to an absolutely
+	// positioned pseudo-element whatever the DOM order.
+	if !strings.Contains(body, "header .ring > .pill { position: relative;") {
+		t.Error("the status pill is not stacked above the ring's gradient")
+	}
+	// And opaque, or the light shows through the fill as well as over it.
+	if !strings.Contains(body, "background: var(--paper); }") {
+		t.Error("the status pill has no opaque background, so the gradient comes through it")
+	}
+	// The on state is the one that turns, so it is the one that must not go
+	// back to a bare translucent token.
+	if !strings.Contains(body, "header .ring > .pill.on { background:") {
+		t.Error("the running pill still takes --accent-soft alone, which is 12.5% alpha")
+	}
+}
+
