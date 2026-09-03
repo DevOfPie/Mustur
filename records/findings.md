@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-68 record(s), by identifier.
+70 record(s), by identifier.
 
 ## The queue
 
@@ -78,6 +78,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0062](#mus-f-0062) | The link gate could be told a fenced comment was a heading, and never looked at a file nobody had staged | A probe document with a link to a slug that exists only as a comment inside a shell fence: '1261 links resolve' before, a named FAIL after. The same file left unstaged: the gate passed and reported 1260, the count with the file absent. After both fixes it is caught staged or not, and the tree's own count is unchanged at 1260. | fixed |
 | [MUS-F-0063](#mus-f-0063) | A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked | A token at user scope: 'Needs authentication', with `claude mcp get mustur` reporting 'Scope: Project config'. The same token at local scope: 'Connected'. Over the wire with the token, initialize, tools/list and a mustur_route call all answer 200 and return this repository's routing, which is the mandated call working. | fixed |
 | [MUS-F-0064](#mus-f-0064) | I added added a user and they are not showing in the people list, as soon as the invite is… | Against the rendered page at 1366x900 and 390x844: an invitation appears immediately as its address, an 'invited' pill, the role and the expiry, with no forms on the row; after Redeem the same address is an ordinary row with its role select and Disable button, appearing once. Removing the Pending lookup fails the test with 'an invited person is not on the screen'. | fixed |
+| [MUS-F-0065](#mus-f-0065) | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. | fixed |
+| [MUS-F-0066](#mus-f-0066) | Two branches open at once conflict in records/, because each exports the whole store rather than its own change | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. | open |
 
 ---
 
@@ -1538,3 +1540,53 @@ The test that existed invited somebody and then checked the store for a pending 
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Where | internal/web/accountpage.go |
+
+---
+
+## MUS-F-0065
+
+**Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed**
+
+finding · 2026-09-03
+
+`git status` in the main checkout reported `?? .claude/`, and `git add -A` there would have staged it. That directory holds Claude Code's local settings and, under `worktrees/`, the git worktrees agents work in — each one a checkout of this repository living inside this repository. Staging it commits the whole tree a second time.
+
+It had not fired yet because nothing has run `git add -A` in the main checkout while a worktree existed. That is timing rather than safety: every agent session here creates a worktree at that path, so the hazard is present whenever anybody is working.
+
+Half of it was already covered and that is what hid the rest. A global ignore on this machine, `~/.config/git/ignore`, carries `**/.claude/settings.local.json` — so the settings file was invisible and the worktrees were not. A first attempt to measure this created only the settings file, saw a clean status, and would have concluded the rule was unnecessary. The measurement that answers the question creates something under `worktrees/`.
+
+That global rule is also the reason a repository-local one is still wanted rather than redundant: it is this machine's, and a clone anywhere else carries none of it.
+
+Fixed with `/.claude/`, anchored to the root because that is the only place the directory belongs. Nothing under it has ever been tracked, so ignoring it changes no history.
+
+| Field | Value |
+| --- | --- |
+| Where | .gitignore |
+| Evidence | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. |
+| Status | fixed |
+
+---
+
+## MUS-F-0066
+
+**Two branches open at once conflict in records/, because each exports the whole store rather than its own change**
+
+finding · 2026-09-03
+
+adjacent to: [MUS-F-0004](#mus-f-0004)
+
+`make export` renders every record in the store. A branch that runs it therefore commits the state of the whole store at that moment, including records whose code lives on some other branch. Two branches open at once each carry the other's records, at different vintages, in the same generated files — and git cannot reconcile two renderings of a thing it does not know is generated.
+
+Measured rather than predicted. Merging the three open branches into main in sequence: the first is clean and the second conflicts on `records/README.md`, `records/findings.md` and `records/questions.md`. Reversing the order changes which branch conflicts and not whether one does. The owner already hit this once and reported it as 'the PR stack for #30 and #31 has conflicts'; it was read then as a stack problem and it is not one.
+
+There is nothing to resolve by hand, which is the one comfort. records/ is generated from an insert-only log, so the correct content of a conflicted file is whatever `make export` produces on the merged base — resolving is running the command, not reading the diff. That is how the conflict this record was written on was settled.
+
+Two things make it smaller rather than fix it. Branches can be stacked so each is based on the last, which removes the divergence between them — done for the two most recent, and it took the change this record rides on from 240 insertions to 35. And a branch can re-export after the branch below it merges, which is an ordinary commit rather than a rewrite, so it needs no force-push.
+
+What would remove it is not committing the export at all, and that is a decision the repository has taken the other way on purpose: records/ is the reviewable half, and a store nobody can read in a clone is not a record. MUS-F-0004 holds the adjacent question of the export duplicating the contract files. This is recorded rather than solved because the fix is a scope decision the owner has already answered once.
+
+| Field | Value |
+| --- | --- |
+| Where | Makefile, records/ |
+| Evidence | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. |
+| Status | open |
