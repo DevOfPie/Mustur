@@ -728,6 +728,34 @@
     });
   }
 
+  // The key row.
+  //
+  // A pane can ask for a keypress rather than a sentence -- a dialog to get off,
+  // a list to move down, a turn to interrupt -- and the composer could only ever
+  // send a line of text followed by Enter (MUS-F-0080). The owner's case is the
+  // last of those: noticing an agent misreading them and wanting to stop it and
+  // correct it, which in the terminal is Escape.
+  //
+  // Delegated from the row rather than bound per button, and the row is outside
+  // the form on purpose: a button inside it submits it.
+  var keyRow = document.getElementById("keys");
+  if (keyRow) {
+    keyRow.addEventListener("click", function (e) {
+      var b = e.target.closest ? e.target.closest("button[data-key]") : null;
+      if (!b) return;
+      if (!ws || ws.readyState !== 1) {
+        note("not sent: still reconnecting.");
+        return;
+      }
+      if (closed) return;
+      ws.send(JSON.stringify({ t: "key", key: b.getAttribute("data-key") }));
+      // Straight back to the box. Pressing Escape to interrupt and then having
+      // to reach for the composer is two gestures for one intention, and the
+      // whole point of the row is that the correction follows the interrupt.
+      if (text) text.focus();
+    });
+  }
+
   if (dest && project) dest.textContent = "Send to " + project;
 
   // The draft is shared with the composer, so a thought started there and not

@@ -59,6 +59,16 @@ const InputEvery = 250 * time.Millisecond
 // finish and be replaced between ticks.
 const AgentsEvery = 2 * time.Second
 
+// A key gets a shorter leash than a message.
+//
+// InputEvery is 250ms, which is right for a message -- nobody writes two
+// sentences in a quarter second, and the limit is there to stop a pane being
+// flooded with prose. Arrow keys are the opposite: moving four rows down a list
+// at one press per 250ms is the kind of latency that makes a control feel
+// broken. 60ms is still a limit, and a key is a few bytes where a message can
+// be the read limit's worth.
+const KeysEvery = 60 * time.Millisecond
+
 // How often a connected tab is told how many decisions are waiting.
 //
 // Slower than the sub-agent tick on purpose: OpenCount lists every record in
@@ -318,7 +328,14 @@ type frame struct {
 	Screen string `json:"screen,omitempty"`
 	// Text goes the other way: it is what the composer sends up. Nothing is
 	// sent down as text any more — a screen is not a chunk.
-	Text  string `json:"text,omitempty"`
+	Text string `json:"text,omitempty"`
+	// Key is the other thing that goes up: one keypress, named, from the row
+	// above the composer. A pane can ask for a key rather than a sentence and
+	// the surface could not answer one (MUS-F-0080); MUS-Q-0072 chose this row
+	// over sending nothing and over becoming a full keyboard. It is a separate
+	// field rather than a reserved Text value so that nothing can type the word
+	// "escape" and have it pressed.
+	Key   string `json:"key,omitempty"`
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
 	// Agent is what the CLI's own pane says it is doing: working, waiting, or
@@ -566,17 +583,31 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 	defer cancel()
 	c.SetReadLimit(MaxInput)
 	last := time.Time{}
+	// Keys are paced separately, so holding an arrow down does not spend the
+	// composer's budget and a message does not have to wait behind one.
+	lastKey := time.Time{}
 	for {
 		_, data, err := c.Read(ctx)
 		if err != nil {
 			return
 		}
 		var f frame
-		if err := json.Unmarshal(data, &f); err != nil || f.T != "input" {
+		if err := json.Unmarshal(data, &f); err != nil {
+			continue
+		}
+		if f.T != "input" && f.T != "key" {
 			continue
 		}
 		text := strings.TrimSpace(f.Text)
-		if text == "" {
+		key := strings.TrimSpace(f.Key)
+		// A key frame carries a key and nothing else. Both empty is the
+		// composer's own dropped empty submit arriving anyway.
+		if f.T == "key" {
+			text = ""
+		} else {
+			key = ""
+		}
+		if text == "" && key == "" {
 			continue
 		}
 		// Every path out of here used to be silent: a message inside the rate
@@ -584,18 +615,30 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 		// Send closed it too. The owner saw a pill change and their text gone.
 		// frame.Error existed in this file the whole time and was never
 		// assigned; the client now has a branch for it and keeps the draft.
-		if now := s.now(); now.Sub(last) < InputEvery {
+		every, when := InputEvery, &last
+		if key != "" {
+			every, when = KeysEvery, &lastKey
+		}
+		if now := s.now(); now.Sub(*when) < every {
 			_ = say(frame{T: "error", Error: "sent too quickly; that one was not delivered"})
 			continue
 		} else {
-			last = now
+			*when = now
 		}
 		live, err := s.Adapter.Alive(ctx, project)
 		if err != nil || !live {
 			_ = say(frame{T: "error", Error: "that session is no longer running, so nothing was sent"})
 			return
 		}
-		if err := s.Adapter.Send(ctx, project, text); err != nil {
+		if key != "" {
+			// A rejected key is not a reason to drop the socket: the row is a
+			// handful of buttons and a name this server does not know means the
+			// page is older than the binary, not that the session is gone.
+			if err := s.Adapter.SendKey(ctx, project, key); err != nil {
+				_ = say(frame{T: "error", Error: "the session did not take that key: " + err.Error()})
+				continue
+			}
+		} else if err := s.Adapter.Send(ctx, project, text); err != nil {
 			_ = say(frame{T: "error", Error: "the session did not take it: " + err.Error()})
 			return
 		}
@@ -739,6 +782,26 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   #kept { opacity: .75; font-style: italic; }
   /* Grows with what is typed, to a point, then scrolls. A phone keyboard eats
      half the screen, so the cap is small deliberately. */
+  /* The key row. Scrolls sideways rather than wrapping, because a wrapped row
+     changes the dock's height and the output is positioned off it. */
+  .keys { display: flex; align-items: center; gap: .4rem; margin-bottom: .45rem;
+          overflow-x: auto; scrollbar-width: none; }
+  .keys::-webkit-scrollbar { display: none; }
+  .keys button { font: inherit; font-size: .8em; line-height: 1;
+                 padding: .4rem .6rem; min-width: 2.2rem; flex: 0 0 auto;
+                 border: 1px solid var(--edge); border-radius: .45rem;
+                 background: var(--paper); color: inherit; cursor: pointer; }
+  .keys button:active { background: var(--accent-soft); border-color: var(--accent); }
+  /* The four arrows read as one control, so they are joined into one. */
+  .keys .pad { display: inline-flex; flex: 0 0 auto; }
+  .keys .pad button { border-radius: 0; margin-left: -1px; }
+  .keys .pad button:first-child { border-radius: .45rem 0 0 .45rem; margin-left: 0; }
+  .keys .pad button:last-child { border-radius: 0 .45rem .45rem 0; }
+  /* Ctrl-C ends a turn. It sits apart from the keys that move around inside
+     one, which is the whole of the distinction this draws -- there is no tick
+     in front of it, because a row of seven buttons that each need confirming
+     is not a row anybody would use. */
+  .keys .stopish { margin-left: auto; opacity: .8; }
   textarea { flex: 1; min-width: 0; font: inherit; padding: .55rem;
              border: 1px solid var(--edge); border-radius: .5rem;
              background: transparent; color: inherit; resize: none;
@@ -992,6 +1055,27 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <pre id="out"></pre>
 <div class="dock">
 <div id="foot">quiet 0s</div>
+<!-- The keys, above the composer where MUS-Q-0072 put them.
+
+     Rendered only where the composer is, because they go down the same socket
+     and are useless without it. They are buttons in a div rather than in the
+     form: a button inside it submits it, which is the defect this row exists
+     to be the opposite of.
+
+     Escape first because getting off a dialog is the case that produced the
+     question, the arrows grouped because they are one control, and Ctrl-C last
+     and apart because it ends a turn. -->
+<div class="keys" id="keys">
+  <button type="button" data-key="escape">Esc</button>
+  <span class="pad">
+    <button type="button" data-key="left" aria-label="Left">&larr;</button
+    ><button type="button" data-key="up" aria-label="Up">&uarr;</button
+    ><button type="button" data-key="down" aria-label="Down">&darr;</button
+    ><button type="button" data-key="right" aria-label="Right">&rarr;</button>
+  </span>
+  <button type="button" data-key="enter">Enter</button>
+  <button type="button" data-key="cancel" class="stopish">Ctrl-C</button>
+</div>
 <form id="say">
   <div class="dest"><span class="grow" id="dest">Send to {{.Project}}</span><a href="/compose" id="compose-link">Compose…</a><span id="kept" hidden>draft kept</span></div>
   <div class="row">

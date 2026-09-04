@@ -1198,3 +1198,64 @@ func TestNoStoreMeansNoCountRatherThanZero(t *testing.T) {
 		t.Error("a server with no store sends a zero, which the client cannot tell from a counted zero")
 	}
 }
+
+// A pane can want a keypress, and the surface can send one.
+//
+// MUS-F-0080: everything reaching a pane was a line followed by Enter, so a
+// dialog wanting a key was visible and unreachable. MUS-Q-0072 chose a row of
+// keys above the composer. MUS-Q-0073 says what the owner actually wanted it
+// for: noticing an agent misreading them, interrupting it, and correcting it —
+// which in the terminal is Escape.
+func TestTheKeyRowSendsAKeyAndNotAMessage(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	for _, k := range []string{"escape", "enter", "up", "down", "left", "right", "cancel"} {
+		if !strings.Contains(body, `data-key="`+k+`"`) {
+			t.Errorf("no %s key in the row", k)
+		}
+	}
+	// Exactly what MUS-Q-0072 chose. A key nobody asked for is a key nobody
+	// decided, and the allowlist is where the next one gets argued for.
+	if strings.Contains(body, `data-key="tab"`) {
+		t.Error("a key the owner did not choose is in the row")
+	}
+	// Outside the form: a button inside one submits it, which is the defect
+	// this row is the opposite of.
+	keys := strings.Index(body, `<div class="keys"`)
+	form := strings.Index(body, `<form id="say">`)
+	if keys < 0 || form < 0 || keys > form {
+		t.Error("the key row is not above the composer, or is inside the form")
+	}
+	// type=button, or every one of them submits.
+	if strings.Contains(body, `<button data-key=`) {
+		t.Error("a key button has no explicit type, so it defaults to submit")
+	}
+
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(js), `t: "key"`) {
+		t.Error("the client sends no key frame")
+	}
+	// The interrupt and the correction are one intention.
+	if !strings.Contains(string(js), "text.focus()") {
+		t.Error("pressing a key leaves the composer unfocused, so correcting takes a second gesture")
+	}
+}
+
+// The allowlist is the boundary, not the browser.
+func TestOnlyTheChosenKeysAreSendable(t *testing.T) {
+	if got := session.KeyNames(); len(got) != 7 {
+		t.Errorf("KeyNames has %d entries, want the seven MUS-Q-0072 chose: %v", len(got), got)
+	}
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	err := a.SendKey(context.Background(), "Mustur", "C-z; rm -rf /")
+	if err == nil {
+		t.Fatal("a key name this server does not know was sent to tmux")
+	}
+	if !strings.Contains(err.Error(), "not a key this may send") {
+		t.Errorf("the refusal does not say what happened: %v", err)
+	}
+}

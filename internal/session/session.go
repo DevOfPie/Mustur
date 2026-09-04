@@ -570,3 +570,68 @@ func noServer(out string) bool {
 		strings.Contains(s, "error connecting to") ||
 		strings.Contains(s, "no such file or directory")
 }
+
+// Keys the session surface may send, and the tmux name for each.
+//
+// An allowlist rather than a pass-through, and the reason is the runner: this
+// package shells out to tmux with the caller's string as an argument, and
+// send-keys reads names like `C-c` from that argument. A key the browser could
+// name freely would be a browser choosing what tmux does to a pane.
+//
+// The set is what MUS-Q-0072 chose and no more -- Escape, Enter, the four
+// arrows and Ctrl-C: get off a dialog, answer one, move within one, and
+// interrupt a turn. There is deliberately no way to send
+// an arbitrary control character; the next one that is wanted is a line in this
+// map and a decision about what it is for.
+var keys = map[string]string{
+	"escape": "Escape",
+	"enter":  "Enter",
+	"up":     "Up",
+	"down":   "Down",
+	"left":   "Left",
+	"right":  "Right",
+	"cancel": "C-c",
+}
+
+// KeyNames is every key SendKey accepts, for a caller that wants to render
+// them. Sorted, so a surface built from it does not reorder between runs.
+func KeyNames() []string {
+	out := make([]string, 0, len(keys))
+	for k := range keys {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// SendKey presses one key in a session Mustur started.
+//
+// Separate from Send rather than a mode of it. Send's whole argument is that a
+// message is text and goes in as a paste that says so (MUS-D-0096); this is the
+// case that decision did not cover — a pane asking for a keypress rather than a
+// sentence — and MUS-Q-0072 is the named exception. Keeping them apart is what
+// stops "send this text" quietly growing a way to press Ctrl-C.
+//
+// No Enter follows. That is the difference: Send types a line and submits it,
+// and this presses exactly what it was asked for and nothing else.
+func (a *Adapter) SendKey(ctx context.Context, project, key string) error {
+	name, err := NameFor(project)
+	if err != nil {
+		return err
+	}
+	tmuxKey, ok := keys[strings.ToLower(strings.TrimSpace(key))]
+	if !ok {
+		return fmt.Errorf("%q is not a key this may send", key)
+	}
+	live, err := a.Alive(ctx, project)
+	if err != nil {
+		return err
+	}
+	if !live {
+		return fmt.Errorf("%s has no session Mustur started", project)
+	}
+	if out, err := a.runner().Run(ctx, "tmux", "send-keys", "-t", name, tmuxKey); err != nil {
+		return fmt.Errorf("tmux send-keys %s: %w: %s", tmuxKey, err, strings.TrimSpace(out))
+	}
+	return nil
+}

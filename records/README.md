@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 73 | [questions.md](questions.md) |
-| decision | 140 | [decisions.md](decisions.md) |
+| decision | 141 | [decisions.md](decisions.md) |
 | finding | 86 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
@@ -271,6 +271,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0138](decisions.md#mus-d-0138) | decision | The decision log's tail is generated, and the marker carries its own boundary |
 | [MUS-D-0139](decisions.md#mus-d-0139) | decision | Nine questions closed on a prompt's word are reopened, and the gate holds them open |
 | [MUS-D-0140](decisions.md#mus-d-0140) | decision | The Answer button dims in CSS, so nothing is retired and no script arrives |
+| [MUS-D-0141](decisions.md#mus-d-0141) | decision | The session view sends seven keys, and Escape is the one it was built for |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -351,7 +352,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0078](findings.md#mus-f-0078) | finding | Allow viewers to vote for answers to decisions but only owners can make final choice |
 | [MUS-F-0079](findings.md#mus-f-0079) | finding | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice |
 | [MUS-F-0080](findings.md#mus-f-0080) | finding | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable |
-| [MUS-F-0081](findings.md#mus-f-0081) | finding | Nothing on any surface stops a session, though the CLI does and the contract says Mustur does |
+| [MUS-F-0081](findings.md#mus-f-0081) | finding | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

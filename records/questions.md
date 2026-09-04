@@ -1636,7 +1636,7 @@ question · 2026-09-04
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0080 |
 | Option | A small row of keys above the composer :: Esc, Enter, Ctrl-C and the four arrows, sent as themselves :: Recommended. The composer keeps sending messages and gains a row of buttons that send one key each, so a dialog can be dismissed, a list navigated and a runaway turn interrupted from a phone. It is the smallest thing that makes a stuck pane recoverable without a terminal. The cost is that the surface stops being only a composer: it becomes a keyboard, MUS-D-0096's clean line between a message and keystrokes gets a named exception, and Ctrl-C in particular is a control that ends work mid-turn from a thumb. |
 | Option | One key, Escape, and nothing else :: covers the modal and refuses to become a keyboard :: Escape is what gets a pane off a dialog it cannot leave, which is the case that has now happened twice -- the MCP-trust prompt on 2026-08-23 and the draft today. Navigating a list still needs arrows and is still impossible, so a dialog that wants a choice rather than a dismissal stays stuck. It is the narrow fix, and it holds the line that this surface sends messages, with one exception that is easy to say out loud. |
@@ -1644,6 +1644,9 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 02:48 |
+| Answer | A small row of keys above the composer |
+| Answered | 2026-09-04 03:02 |
+| Delivered | typed into mustur/Check |
 
 ---
 
@@ -1655,7 +1658,7 @@ question · 2026-09-04
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0081 |
 | Option | A stop control on the session view, behind the tick that Withdraw uses :: one pattern for destructive things on this surface, no script :: Recommended. The session view gains a Stop beside the picker, with a checkbox reading what it does that the handler requires -- the same shape that fixed MUS-F-0077 yesterday, on a surface that carries no script and where a second page would be a second surface. It completes what CLAUDE.md already claims. The cost is a control that kills a running agent mid-turn placed on a phone screen, and a tick is a small thing to stand between a thumb and that. |
 | Option | A stop control, but only from the session list :: the list is where you choose, the view is where you watch :: Stop lives on /sessions beside each row rather than on the session's own page, so the page you sit and read is not the page that can end it. Reaching it is deliberate: leave the terminal, go to the list, stop the one you mean. The cost is two taps in the moment you most want one, and the list is exactly where it is easiest to stop the wrong session. |
@@ -1663,3 +1666,6 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 02:48 |
+| Answer | I was referring to interrupting the agent in order to provide different information/feedback before it continues. It doesn't happen often but occasionally I'll notice an agent starting to misinterpret my message and I would hit 'esc' in the terminal to stop it and provide corrections |
+| Answered | 2026-09-04 03:04 |
+| Delivered | typed into mustur/Check |

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-140 record(s), by identifier.
+141 record(s), by identifier.
 
 ## Index
 
@@ -152,6 +152,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0138](#mus-d-0138) | The decision log's tail is generated, and the marker carries its own boundary | 2026-09-03 |
 | [MUS-D-0139](#mus-d-0139) | Nine questions closed on a prompt's word are reopened, and the gate holds them open | 2026-09-03 |
 | [MUS-D-0140](#mus-d-0140) | The Answer button dims in CSS, so nothing is retired and no script arrives | 2026-09-03 |
+| [MUS-D-0141](#mus-d-0141) | The session view sends seven keys, and Escape is the one it was built for | 2026-09-04 |
 
 ---
 
@@ -2462,3 +2463,36 @@ This is the third time the owner has improved on the menu rather than picking fr
 | --- | --- |
 | How | form:not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown))) button.primary |
 | What still refuses | the server, unchanged; this is what the button looks like, not what the form accepts |
+
+---
+
+## MUS-D-0141
+
+**The session view sends seven keys, and Escape is the one it was built for**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0072](questions.md#mus-q-0072)
+
+what it is for: [MUS-Q-0073](questions.md#mus-q-0073)
+
+raised by: [MUS-F-0080](findings.md#mus-f-0080)
+
+the decision it excepts: [MUS-D-0096](#mus-d-0096)
+
+Everything reaching a pane was a line of text followed by Enter, because `Send` refuses empty text and MUS-D-0096 made a message the unit. A pane asking for a keypress rather than a sentence was visible and unreachable (MUS-F-0080). The owner chose a small row of keys above the composer over sending nothing and over becoming a full keyboard.
+
+**Escape, Enter, the four arrows, Ctrl-C.** Exactly seven, in an allowlist mapping a name the browser sends to a name tmux understands. Not a pass-through: this package shells out to tmux with the caller's string as an argument, and `send-keys` reads names like `C-c` out of it, so a browser naming its own key would be a browser choosing what tmux does to a pane. The next key wanted is a line in that map and an argument for what it is for.
+
+**What it is actually for is MUS-Q-0073.** That question was asked as *does stopping a session get a control*, which was the wrong question — the owner meant interrupting an agent mid-turn to correct it, having noticed it misreading them, which in the terminal is Escape. So the row is not a convenience beside the real fix; it is the fix, and Escape is its first button.
+
+**`SendKey` is separate from `Send` rather than a mode of it.** Send's whole argument is that a message is text and goes in as a paste that says so; keeping them apart is what stops *send this text* quietly growing a way to press Ctrl-C. No Enter follows a key — Send types a line and submits it, and this presses what it was asked for and nothing else, because a stray Enter would answer a dialog the owner had only meant to look at.
+
+**Keys are paced at 60ms where a message is paced at 250ms.** Nobody writes two sentences in a quarter second and the limit is there to stop a pane being flooded with prose; moving four rows down a list at one press per 250ms is the latency that makes a control feel broken. They have separate budgets, so holding an arrow does not spend the composer's.
+
+The row sits outside the form. A button inside a form submits it, which is the defect this row exists to be the opposite of. Ctrl-C sits apart from the keys that move around inside a dialog, and carries no tick: a row of seven buttons that each need confirming is not a row anybody would use.
+
+| Field | Value |
+| --- | --- |
+| The seven | escape, enter, up, down, left, right, cancel (C-c) |
+| Measured | Against real tmux with 'cat -v' as the probe, which prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, on one line, so nothing was appended to either |

@@ -94,8 +94,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0077](#mus-f-0077) | Withdraw closed a question on one press, and said nothing about what it was | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. | fixed |
 | [MUS-F-0078](#mus-f-0078) | Allow viewers to vote for answers to decisions but only owners can make final choice |  | triaged; parked against MUS-M-0008 |
 | [MUS-F-0079](#mus-f-0079) | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. | recorded; the three affected records now say what was meant |
-| [MUS-F-0080](#mus-f-0080) | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable | Adapter.Send returns 'nothing to send' for empty or whitespace text; the client drops an empty submit before sending. There is no frame kind that carries a key rather than text. Observed on mustur/Check, whose status line reads '1 feedback draft'. | with the owner on MUS-Q-0072 |
-| [MUS-F-0081](#mus-f-0081) | Nothing on any surface stops a session, though the CLI does and the contract says Mustur does | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | with the owner on MUS-Q-0073 |
+| [MUS-F-0080](#mus-f-0080) | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable | TestTheChosenKeysArriveAsThemselves against real tmux, with 'cat -v' as the probe because it prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, both on one line, so nothing was appended to either. TestOnlyTheChosenKeysAreSendable holds the allowlist against a name containing shell metacharacters. TestTheKeyRowSendsAKeyAndNotAMessage holds the row's shape: seven keys, above the composer, outside the form, every button type=button. | fixed |
+| [MUS-F-0081](#mus-f-0081) | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
 
 ---
 
@@ -2024,6 +2024,8 @@ the decision that made a message the unit: [MUS-D-0096](decisions.md#mus-d-0096)
 
 asked as: [MUS-Q-0072](questions.md#mus-q-0072)
 
+settled by: [MUS-D-0141](decisions.md#mus-d-0141)
+
 The owner opened a session in the browser, found a drafted bug report on the screen, and had no way to act on it.
 
 `Adapter.Send` refuses empty text — *nothing to send* — and the composer drops an empty submit before it gets that far. Everything that reaches a pane is a line followed by Enter. So there is no way from a browser to send a bare Enter, an Escape, an arrow key, Tab, or Ctrl-C. Anything an agent CLI puts on screen that wants a keypress rather than a sentence is visible and unreachable.
@@ -2038,15 +2040,15 @@ Not fixed. What the surface may send beyond a line of text is a decision, and it
 
 | Field | Value |
 | --- | --- |
-| Where | internal/session/session.go, internal/web/assets/session.js |
-| Status | with the owner on MUS-Q-0072 |
-| Evidence | Adapter.Send returns 'nothing to send' for empty or whitespace text; the client drops an empty submit before sending. There is no frame kind that carries a key rather than text. Observed on mustur/Check, whose status line reads '1 feedback draft'. |
+| Where | internal/session/session.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Status | fixed |
+| Evidence | TestTheChosenKeysArriveAsThemselves against real tmux, with 'cat -v' as the probe because it prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, both on one line, so nothing was appended to either. TestOnlyTheChosenKeysAreSendable holds the allowlist against a name containing shell metacharacters. TestTheKeyRowSendsAKeyAndNotAMessage holds the row's shape: seven keys, above the composer, outside the form, every button type=button. |
 
 ---
 
 ## MUS-F-0081
 
-**Nothing on any surface stops a session, though the CLI does and the contract says Mustur does**
+**The surface cannot interrupt an agent mid-turn, and separately cannot stop a session**
 
 finding · 2026-09-04
 
@@ -2054,16 +2056,20 @@ the same shape on a cheaper button: [MUS-F-0077](#mus-f-0077)
 
 asked as: [MUS-Q-0073](questions.md#mus-q-0073)
 
-The owner has no way to stop a session from the browser. `mustur session stop <project>` exists and works; it is a command line, which is the thing the surface exists so that the owner does not need.
+what actually answered it: [MUS-D-0141](decisions.md#mus-d-0141)
 
-CLAUDE.md says Mustur *starts agent sessions inside tmux, reports which are running, stops one*. Two of those three are on the surface. The third is not, and has never been — the session view carries a picker, a terminal, a sub-agent drawer and a composer, and nothing that ends anything.
+**This record asked the wrong question first, and the owner's answer is what corrected it.** It was filed as *nothing on any surface stops a session* after the owner said they did not think there was a way to stop one by hand. What they meant was interrupting an agent mid-turn: noticing it starting to misread them, stopping it, and giving corrections before it continues — which in the terminal is Escape, and which has nothing to do with ending a tmux session.
 
-It matters more than a missing button usually would, because Mustur deliberately does not restart anything: an agent CLI that crashed wants a person. A person who is holding a phone cannot currently be that person.
+So the reported need is met by MUS-D-0141's key row, whose first button is Escape, and not by anything in the paragraph below.
 
-Not fixed. A control that kills a running agent mid-turn, on a surface reached from a phone, is a design decision — where it sits, and what stands between a thumb and it. MUS-F-0077 was exactly this shape yesterday on a much cheaper button. MUS-Q-0073.
+**The other half is still true and is nobody's request.** `mustur session stop <project>` exists and works and is a command line; CLAUDE.md says Mustur starts sessions, reports which are running, and stops one, and only two of those three are on the surface. That gap is real and it is recorded here rather than built, because the owner has not asked for it and the thing they did ask for turned out to be something else. It matters least of the two: a session that needs ending is rarer than a turn that needs interrupting, and MUS-Q-0073's answer is the evidence for that ordering rather than a guess about it.
+
+The lesson worth keeping is not about sessions. *I don't think there is a way for me to manually stop a session* was read as a feature request about the word **session** when it was a report about the word **stop**, and a whole question was built on the reading rather than on asking which was meant.
 
 | Field | Value |
 | --- | --- |
 | Where | internal/web/sessions.go |
-| Status | with the owner on MUS-Q-0073 |
+| Status | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
 | Evidence | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. |
+| What the owner meant | Interrupting an agent mid-turn to correct it, which is Escape, and which the key row now sends |
+| What is still missing | A way to end a session from any surface. Real, unrequested, and cheaper to leave than to guess at |
