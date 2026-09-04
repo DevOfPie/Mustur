@@ -130,6 +130,35 @@ func (o Option) IsRecommended() bool {
 	return strings.HasPrefix(strings.TrimSpace(o.Line), Recommended)
 }
 
+// Says is the one-line part with the Recommended marker taken off the front.
+//
+// The marker is a prefix on the line so that it survives a reader who knows
+// nothing about this format -- a raw record, an export, a terminal. A surface
+// that has already drawn the recommendation is not that reader, and printing
+// the word again leaves it sitting in the description where the owner asked
+// for a mark on the row instead (MUS-F-0072).
+//
+// Only the marker and the punctuation holding it to the sentence come off. A
+// line that is nothing but the word survives as itself, because an option whose
+// whole line was the marker has nothing else to say and an empty line would
+// silently lose it.
+func (o Option) Says() string {
+	line := strings.TrimSpace(o.Line)
+	if !o.IsRecommended() {
+		return line
+	}
+	rest := strings.TrimSpace(strings.TrimPrefix(line, Recommended))
+	// Every separator this store actually uses between the marker and the
+	// sentence. The middot is the one the first version missed, and it is the
+	// one the existing questions are written with -- so the strip left a stray
+	// "·" at the head of the line and a test written months earlier caught it.
+	rest = strings.TrimLeft(rest, ".,:;-—–·| ")
+	if rest == "" {
+		return line
+	}
+	return strings.TrimSpace(rest)
+}
+
 // Options returns the answers offered, in the order they were given. A question
 // with none is answered in prose.
 func Options(r record.Record) []Option {

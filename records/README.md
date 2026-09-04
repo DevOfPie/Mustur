@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 73 | [questions.md](questions.md) |
+| question | 74 | [questions.md](questions.md) |
 | decision | 141 | [decisions.md](decisions.md) |
-| finding | 86 | [findings.md](findings.md) |
+| finding | 87 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 21 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -131,6 +131,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0071](questions.md#mus-q-0071) | question | Disabling Answer until an option is chosen retires the clause that lets text answer on its own |
 | [MUS-Q-0072](questions.md#mus-q-0072) | question | A pane can want a keypress rather than a sentence. What may the session view send? |
 | [MUS-Q-0073](questions.md#mus-q-0073) | question | Stopping a session is a command line. Does it get a control, and what stands in front of it? |
+| [MUS-Q-0074](questions.md#mus-q-0074) | question | A CLI's own prompt needs a keypress Mustur does not send. How far does the surface go? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -353,6 +354,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0079](findings.md#mus-f-0079) | finding | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice |
 | [MUS-F-0080](findings.md#mus-f-0080) | finding | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable |
 | [MUS-F-0081](findings.md#mus-f-0081) | finding | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session |
+| [MUS-F-0082](findings.md#mus-f-0082) | finding | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

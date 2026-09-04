@@ -165,7 +165,7 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		}
 		for _, o := range question.Options(r) {
 			item.Options = append(item.Options, queuedOption{
-				Label: o.Label, Line: o.Line, Detail: o.Detail,
+				Label: o.Label, Line: o.Says(), Detail: o.Detail,
 				Recommended: o.IsRecommended(),
 			})
 		}
@@ -399,9 +399,14 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
           cursor: pointer; }
   .opt .lbl { flex: 1; min-width: 0; }
   .opt .line { display: block; opacity: .7; font-size: .85em; }
-  .rec { font-size: .72em; text-transform: uppercase; letter-spacing: .04em;
-         border: 1px solid var(--accent); border-radius: 999px;
-         padding: .05rem .45rem; vertical-align: .1em; white-space: nowrap; }
+  /* The recommendation is a mark on the option's own row, not a word in its
+     description (MUS-F-0072). A star rather than a drawing: the tab icons are
+     CSS because the plan tool refuses SVG (MUS-F-0048), and a star is a
+     character that needs neither. The word it replaces is still in the record,
+     where a reader with no surface can see it -- Says() takes it off here and
+     nowhere else. */
+  .rec { color: var(--accent); font-size: 1em; line-height: 1;
+         vertical-align: .05em; white-space: nowrap; }
   .opt details { border-top: 1px solid var(--edge); }
   .opt details > summary { cursor: pointer; padding: .5rem 0; opacity: .6;
                            font-size: .85em; }
@@ -477,7 +482,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <div class="opt">
     <label class="pick">
       <input type="radio" name="option" value="{{.Label}}">
-      <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec">recommended</span>{{end}}
+      <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec" title="Recommended" aria-label="Recommended">&#9733;</span>{{end}}
         {{if .Line}}<span class="line">{{.Line}}</span>{{end}}</span>
     </label>
     {{if .Detail}}<details><summary>more</summary><p>{{.Detail}}</p></details>{{end}}

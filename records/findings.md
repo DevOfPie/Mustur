@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-86 record(s), by identifier.
+87 record(s), by identifier.
 
 ## The queue
 
@@ -86,7 +86,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0069](#mus-f-0069) | The decision prompt in the session came up but the ui didn't update to show that a decision was… | TestTheHelloFrameCarriesTheDecisionCount opens a real socket against a real tmux session with one open question in the store and reads 1 off the first frame. TestTheDecisionCountRidesTheSocket holds the client half: it finds the Decisions tab, handles the count before the frame kinds, and removes the badge rather than emptying it at zero. TestNoStoreMeansNoCountRatherThanZero holds the nil-store case. | fixed |
 | [MUS-F-0070](#mus-f-0070) | The session didn't resume after the decision was submitted | TestTheAnswererIsToldWhereTheAnswerWent posts an answer to a question naming no session, on a server that could have delivered, and finds 'not delivered' and its reason on the page the owner lands on. TestADeliveredAnswerSaysWhereItWentToo holds the other half against a live sender. MUS-Q-0067's own record carries the Delivered line this was read from. | fixed |
 | [MUS-F-0071](#mus-f-0071) | The Decision screen should allow additional text on an option selection, often I want to choose… | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. | fixed |
-| [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… |  | unreviewed |
+| [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… | TestSaysTakesTheMarkerOffAndKeepsTheSentence covers five separators including the middot the existing questions use, two non-recommended lines including one that merely mentions the word, and the whole-line case; it also asserts the flag still derives from the raw line. TestTheRecommendationIsAMarkNotAWordInTheDescription holds the rendered page. TestOptionsRenderWithTheirLineAndDetail, written months earlier, caught the first strip leaving a stray middot at the head of the line and now holds the corrected text. | fixed |
 | [MUS-F-0073](#mus-f-0073) | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. | fixed |
 | [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | closed by MUS-Q-0070's answers; the channel is still what it is |
 | [MUS-F-0075](#mus-f-0075) | The Mustur Decisions should have the answer button disabled until an option has been chosen | TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith holds that the served page asks both questions in CSS, carries no script tag, and does not dim Withdraw. | fixed |
@@ -96,6 +96,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0079](#mus-f-0079) | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. | recorded; the three affected records now say what was meant |
 | [MUS-F-0080](#mus-f-0080) | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable | TestTheChosenKeysArriveAsThemselves against real tmux, with 'cat -v' as the probe because it prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, both on one line, so nothing was appended to either. TestOnlyTheChosenKeysAreSendable holds the allowlist against a name containing shell metacharacters. TestTheKeyRowSendsAKeyAndNotAMessage holds the row's shape: seven keys, above the composer, outside the form, every button type=button. | fixed |
 | [MUS-F-0081](#mus-f-0081) | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
+| [MUS-F-0082](#mus-f-0082) | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |  | with the owner on MUS-Q-0074 |
 
 ---
 
@@ -1791,15 +1792,26 @@ finding · 2026-09-03
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
-The recommended option for decisions should have an icon on the main bar not text in the description
+why the mark is a character and not a drawing: [MUS-F-0048](#mus-f-0048)
+
+The recommended option for decisions should have an icon on the main bar not text in the description.
+
+The marker is a prefix on an option's one-line part -- `Recommended :: …` -- which is what sets the flag the surface reads. The surface drew a pill saying *recommended* beside the label and then rendered the line verbatim underneath, so the word appeared twice: once as a mark and once as the first word of the description it was attached to.
+
+The prefix stays where it is. It is there so a reader who knows nothing about this format still sees the recommendation -- in the raw record, in the export, in a terminal -- and that reader is the reason it is written into the text rather than into a separate field. What changed is that the surface, which has already drawn the mark, stops printing the word again: `Option.Says()` takes the marker and the punctuation holding it to the sentence off, and only for rendering.
+
+The mark is a star rather than a drawing. The tab icons are CSS because the plan tool refuses SVG (MUS-F-0048); a star is a character and needs neither, and it carries a title and an aria-label so it is not a symbol with nothing behind it.
+
+An option whose whole line is the word survives untouched. Stripping it would leave an empty description and lose the recommendation entirely, which is the one case where the word is the sentence.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | TestSaysTakesTheMarkerOffAndKeepsTheSentence covers five separators including the middot the existing questions use, two non-recommended lines including one that merely mentions the word, and the whole-line case; it also asserts the flag still derives from the raw line. TestTheRecommendationIsAMarkNotAWordInTheDescription holds the rendered page. TestOptionsRenderWithTheirLineAndDetail, written months earlier, caught the first strip leaving a stray middot at the head of the line and now holds the corrected text. |
+| Status | fixed |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/question/question.go, internal/web/questions.go |
 
 ---
 
@@ -2073,3 +2085,28 @@ The lesson worth keeping is not about sessions. *I don't think there is a way fo
 | Evidence | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. |
 | What the owner meant | Interrupting an agent mid-turn to correct it, which is Escape, and which the key row now sends |
 | What is still missing | A way to end a session from any surface. Real, unrequested, and cheaper to leave than to guess at |
+
+---
+
+## MUS-F-0082
+
+**Can we intercept these prompts and surface them in a ui prompt for the user to answer instead…**
+
+finding · 2026-09-04
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+asked as: [MUS-Q-0074](questions.md#mus-q-0074)
+
+the decision the row was built under: [MUS-D-0141](decisions.md#mus-d-0141)
+
+Can we intercept these prompts and surface them in a ui prompt for the user to answer instead of displaying in the tmux? I also noticed prompts for feedback to claude that require a number keypress for response
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | with the owner on MUS-Q-0074 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Why it is one question and not two | Intercepting a prompt and sending it a digit are the same axis: how much of the pane's meaning Mustur is willing to model. The digit is the cheap end of it and the interception is the far end, and answering them separately would decide the second by accident. |

@@ -239,7 +239,11 @@ func TestOptionsRenderWithTheirLineAndDetail(t *testing.T) {
 
 	for _, want := range []string{
 		"Check StrucGu out in CI",
-		"Recommended · conformance runs on every push",
+		// The line without its marker. This read "Recommended · conformance
+		// runs on every push" until MUS-F-0072: the owner asked for the
+		// recommendation to be a mark on the row rather than the first words of
+		// the description, and the prefix is still what the record carries.
+		"conformance runs on every push",
 		"The catalog is fetched per run.",
 		"Vendor a pinned copy",
 		"A pinned specification goes stale silently.",
@@ -247,6 +251,9 @@ func TestOptionsRenderWithTheirLineAndDetail(t *testing.T) {
 		if !strings.Contains(body, want) {
 			t.Errorf("the queue does not show %q", want)
 		}
+	}
+	if strings.Contains(body, "Recommended · conformance") {
+		t.Error("the marker is still text in the description")
 	}
 	// Expansion in place, and no script anywhere on the page.
 	if !strings.Contains(body, "<details") {
@@ -783,5 +790,28 @@ func TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith(t *testing.T) {
 	// Withdraw has to work when nothing is chosen -- that is what it is for.
 	if strings.Contains(body, "button { opacity: .45") {
 		t.Error("the rule is not scoped to the primary button, so Withdraw is dimmed too")
+	}
+}
+
+// The row carries a mark and the description does not carry the word.
+func TestTheRecommendationIsAMarkNotAWordInTheDescription(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended. It is the only place with a real catalog :: detail"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, `class="rec"`) {
+		t.Fatal("nothing marks the recommended option")
+	}
+	if !strings.Contains(body, "&#9733;") {
+		t.Error("the mark is not the star")
+	}
+	if strings.Contains(body, ">recommended<") {
+		t.Error("the word is still rendered as the mark")
+	}
+	if !strings.Contains(body, "It is the only place with a real catalog") {
+		t.Error("the description lost its sentence")
+	}
+	if strings.Contains(body, "Recommended. It is the only place") {
+		t.Error("the marker is still text in the description, which is what MUS-F-0072 reported")
 	}
 }

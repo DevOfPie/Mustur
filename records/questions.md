@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-73 record(s), by identifier.
+74 record(s), by identifier.
 
 ---
 
@@ -1669,3 +1669,22 @@ question · 2026-09-04
 | Answer | I was referring to interrupting the agent in order to provide different information/feedback before it continues. It doesn't happen often but occasionally I'll notice an agent starting to misinterpret my message and I would hit 'esc' in the terminal to stop it and provide corrections |
 | Answered | 2026-09-04 03:04 |
 | Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0074
+
+**A CLI's own prompt needs a keypress Mustur does not send. How far does the surface go?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0082 |
+| Option | Digits in the key row, behind a toggle :: answers the numbered prompt and understands nothing about the pane :: Recommended. The row gains 1 to 9 and 0, reached by a toggle that swaps them for the arrows rather than by ten more buttons -- the row already scrolls sideways, and MUS-F-0036 is the record of a sideways row hiding its last choice behind a swipe. It answers the case in hand exactly: a prompt wanting a number gets a number. Mustur still knows nothing about what is on the screen, which is the cheap part and also the limit -- the owner still has to read the pane to know which number means what. |
+| Option | Intercept the prompt and render it as real UI :: buttons with the CLI's own words on them, and a keypress sent back :: The pane is read, a prompt is recognised, its choices are drawn as controls, and picking one sends the key. There is precedent: MUS-F-0053 already takes the CLI's furniture off the screen and redraws its status as chips, so reading the pane for meaning is a thing this surface does. The cost is that Mustur starts understanding one vendor's dialogs, which strains MUS-D-0091, and it fails silently in both directions when that vendor changes them -- a prompt drawn that is not there, or a prompt on screen that nothing offers to answer. It is a milestone, not an afternoon. |
+| Option | Neither; the terminal is the terminal :: seven keys and a composer is the whole vocabulary :: What is on the screen is the CLI's, and the surface's job is to show it and to carry what the owner types. A prompt wanting a key Mustur does not send is a reason to reach for a terminal. Nothing is built, nothing is excepted, and the row stays the seven keys MUS-Q-0072 chose. The cost is that the owner has already hit this twice in two days -- a feedback prompt wanting a number, and before that a draft they could not dismiss -- so the answer is that the case will keep arriving. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 03:18 |
