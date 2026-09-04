@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-75 record(s), by identifier.
+76 record(s), by identifier.
 
 ---
 
@@ -1702,7 +1702,7 @@ question · 2026-09-04
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | withdrawn |
 | Blocks | MUS-D-0142 |
 | Option | Labelled buttons in the key row that is already there :: no new surface, and it degrades to plain keys :: Recommended. The row above the composer stops being seven fixed keys and becomes what the pane currently offers -- '1 Default', '2 Opus (1M)', '3 Opus', 's session only', 'Esc cancel' -- each sending its own key, with Escape and the arrows still there. Nothing new is drawn, the terminal is untouched above it, and a pane with no legend falls back to exactly the seven keys it shows today. The cost is room: an option's label is longer than 'Esc', the row scrolls sideways, and MUS-F-0036 is the record of a sideways row hiding its last choice behind a swipe. Long labels would have to be cut. |
 | Option | A panel in the dock, between the terminal and the composer :: room for the question and each option's detail, and one more thing on the surface :: The prompt's title, its rows and their detail text render as a block above the composer, with the terminal still fully visible above that. It is the only option with room for the sentence a prompt asks -- 'Switch between Claude models...' -- which a button label cannot carry. The cost is a new element on the session view that no artboard has, which is MUS-F-0027's pattern exactly, and a dock that grows takes its height from the terminal on a phone. |
@@ -1710,3 +1710,25 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 03:29 |
+| Answered | 2026-09-04 04:52 |
+| Withdrawn because | Where an intercepted prompt renders only matters if it is scraped off a pane. MUS-Q-0076 asks whether it is scraped at all, and the shape of this question changes with that answer -- a protocol dialog has a title, a body and typed options and would not be squeezed into a key row. Re-asked in whatever shape MUS-Q-0076 leaves. |
+
+---
+
+## MUS-Q-0076
+
+**Is a Mustur session a terminal? The structured protocol carries dialogs properly and requires --print**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0084 |
+| Needed to proceed | yes |
+| Option | It stays a terminal; keep the pane and finish the parser :: MUS-D-0088 and MUS-D-0142 both stand, and the dialogs get scraped :: Recommended. Nothing built is discarded. A session stays something tmux holds and a person can attach to from a machine, which is MUS-D-0016's premise and the reason 4a, 4b and 5 look the way they do. The prompt parser is written and reads a real picker, so the work in hand finishes. The cost is honest and permanent: Mustur reads dialogs off a screen that exists as structured messages three feet away, every CLI redraw is a chance to be wrong, and the legend is the only thing keeping that from being knowledge of one vendor's dialogs. Revisit if the pane stops being enough. |
+| Option | It becomes a client; drive --print stream-json and render natively :: what the extension does, and it costs the terminal :: Mustur spawns the CLI in --print with stream-json both ways and renders the conversation itself, the way the VS Code extension does. Dialogs arrive as control messages and answers go back as control responses -- no scraping, no legend, nothing to misread. What it costs is the premise: --print is not a terminal, so nobody attaches to a Mustur session from a machine ever again, the tmux adapter and the session view are rebuilt around a JSON harness, and Mustur becomes a Claude Code client rather than a supervisor of whatever CLI it was given, which MUS-D-0091 currently forbids. It is a rewrite of four milestones, not a feature. |
+| Option | Both: tmux sessions stay, and a second kind runs headless :: keeps attachability and gets the protocol, at twice the surface :: A session becomes two things -- one held in tmux for work somebody may want to attach to, one driven over stream-json and rendered natively. Each gets what it is good at. The cost is two session models, two ways a session can be running, two things the picker has to describe and two things every future surface has to handle, in a product with one project and one owner. It is the option that defers the decision by paying for both answers. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 04:52 |

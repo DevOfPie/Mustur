@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-88 record(s), by identifier.
+89 record(s), by identifier.
 
 ## The queue
 
@@ -98,6 +98,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0081](#mus-f-0081) | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
 | [MUS-F-0082](#mus-f-0082) | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |  | with the owner on MUS-Q-0074 |
 | [MUS-F-0083](#mus-f-0083) | A CLI prompt publishes its own key legend, so interception can read it rather than know it | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. | open; it is what MUS-W-0022 is built on |
+| [MUS-F-0084](#mus-f-0084) | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. | open; it is what MUS-Q-0076 turns on |
 
 ---
 
@@ -2149,3 +2150,33 @@ The 's to use this session only' entry is the proof that guessing would have fai
 | Where | internal/session |
 | Status | open; it is what MUS-W-0022 is built on |
 | Evidence | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. |
+
+---
+
+## MUS-F-0084
+
+**The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol**
+
+finding · 2026-09-04
+
+what measured this route first: [MUS-D-0088](decisions.md#mus-d-0088)
+
+the decision it puts back in question: [MUS-D-0142](decisions.md#mus-d-0142)
+
+asked as: [MUS-Q-0076](questions.md#mus-q-0076)
+
+The owner asked how the extension interacts with Claude Code before any more of the pane parser was built, on the grounds that it fully parses everything into its own format. It does, and the way it does rules out the thing that was about to be built on top of.
+
+**What the extension actually does.** It spawns the CLI with `--output-format stream-json --verbose --input-format stream-json` and speaks a bidirectional JSON protocol over stdio: `control_request`, `control_response`, `control_cancel_request`, `keep_alive`. Its conversation is a webview, not a terminal — the package contributes three webview views and no terminal at all. **Permission prompts and dialogs are protocol messages**: the initialize response carries `pending_permission_requests` and `pending_user_dialog_requests`, which exist so a reconnecting client is handed the prompts still outstanding. Nothing is read off a screen.
+
+**What the IDE WebSocket is, and is not.** `~/.claude/ide/<port>.lock` holds a pid, the workspace folders, the IDE's name and an auth token; the IDE hosts the socket and the CLI connects out to it. That channel is ordinary MCP — `tools/call`, `roots/list`, `sampling/createMessage`, `elicitation/create` — with the IDE as the server offering `openDiff` and `getDiagnostics`, and notifications for `selection_changed` and `at_mentioned`. It is how the CLI reaches the editor. **It does not carry the CLI's own prompts**, so an interactive session cannot be given a structured dialog channel by hosting one of these.
+
+**And the protocol still costs the terminal.** `claude --help` on 2.1.260 says `--output-format`, `--input-format` and `--include-partial-messages` each work *only with --print*. That is what MUS-D-0088 measured on 2026-08-22 and declined for exactly this reason, and it is still true thirteen days and several versions later.
+
+So the owner's instinct was right and the conclusion runs the other way from the one it points at: the structured route exists, carries dialogs properly, and is what a native client uses — and reaching it means a Mustur session stops being a terminal anybody can attach to. That is not a parser decision. It is MUS-D-0016's premise, and it is MUS-Q-0076.
+
+| Field | Value |
+| --- | --- |
+| Where | ~/.vscodium-server/extensions/anthropic.claude-code-2.1.251-linux-x64 |
+| Status | open; it is what MUS-Q-0076 turns on |
+| Evidence | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. |
