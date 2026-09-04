@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-141 record(s), by identifier.
+142 record(s), by identifier.
 
 ## Index
 
@@ -153,6 +153,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0139](#mus-d-0139) | Nine questions closed on a prompt's word are reopened, and the gate holds them open | 2026-09-03 |
 | [MUS-D-0140](#mus-d-0140) | The Answer button dims in CSS, so nothing is retired and no script arrives | 2026-09-03 |
 | [MUS-D-0141](#mus-d-0141) | The session view sends seven keys, and Escape is the one it was built for | 2026-09-04 |
+| [MUS-D-0142](#mus-d-0142) | Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints | 2026-09-04 |
 
 ---
 
@@ -2496,3 +2497,33 @@ The row sits outside the form. A button inside a form submits it, which is the d
 | --- | --- |
 | The seven | escape, enter, up, down, left, right, cancel (C-c) |
 | Measured | Against real tmux with 'cat -v' as the probe, which prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, on one line, so nothing was appended to either |
+
+---
+
+## MUS-D-0142
+
+**Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0074](questions.md#mus-q-0074)
+
+raised by: [MUS-F-0082](findings.md#mus-f-0082)
+
+what it is built on: [MUS-F-0083](findings.md#mus-f-0083)
+
+the vendor rule it sits under: [MUS-D-0091](#mus-d-0091)
+
+MUS-Q-0074 offered three distances: send a digit and understand nothing, intercept the prompt and render it as real UI, or neither. The owner chose interception, which the option itself called a milestone rather than an afternoon.
+
+**What makes it tractable is that the CLI publishes its own key legend** (MUS-F-0073's neighbour, MUS-F-0083). A prompt on screen carries a title, numbered rows, a cursor, and a line saying what every key does in the CLI's own words. So the surface does not have to know what a dialog means: it reads the rows and the legend and offers what the screen says is available. A dialog that changes its keys changes its legend in the same edit.
+
+**The terminal never goes away.** Whatever is offered sits beside the pane and not over it, because the failure mode of any parser here is silence in two directions -- a prompt drawn that is not there, and a prompt on screen that nothing offers to answer. When the parse is wrong the truth is still on the screen and still answerable with the keys, which is what makes a wrong parse a nuisance rather than a trap.
+
+**No legend means no offer.** A pane this cannot read gets nothing rendered and loses nothing, which is the same fallback MUS-D-0130 chose for the running-or-idle pill: read it from the CLI when the CLI says, and do not claim to know when it does not.
+
+This is vendor-specific and that is allowed rather than overlooked. MUS-D-0091 permits it where a capability belongs to one vendor, and MUS-F-0053 already reads this CLI's furniture off the screen to draw the status chips. This is the same act on a different part of the same screen.
+
+| Field | Value |
+| --- | --- |
+| Fallback | A pane with no legend gets no controls and keeps its terminal; nothing is guessed |

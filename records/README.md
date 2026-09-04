@@ -9,11 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 74 | [questions.md](questions.md) |
-| decision | 141 | [decisions.md](decisions.md) |
-| finding | 87 | [findings.md](findings.md) |
+| question | 75 | [questions.md](questions.md) |
+| decision | 142 | [decisions.md](decisions.md) |
+| finding | 88 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 21 | [work-units/index.md](work-units/index.md) |
+| work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -58,6 +58,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0019](work-units/MUS-W-0019.md#mus-w-0019) | work-unit | Composition |
 | [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020) | work-unit | Accounts of Mustur's own |
 | [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
+| [MUS-W-0022](work-units/MUS-W-0022.md#mus-w-0022) | work-unit | A CLI's prompt, read off the pane and offered as controls |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -132,6 +133,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0072](questions.md#mus-q-0072) | question | A pane can want a keypress rather than a sentence. What may the session view send? |
 | [MUS-Q-0073](questions.md#mus-q-0073) | question | Stopping a session is a command line. Does it get a control, and what stands in front of it? |
 | [MUS-Q-0074](questions.md#mus-q-0074) | question | A CLI's own prompt needs a keypress Mustur does not send. How far does the surface go? |
+| [MUS-Q-0075](questions.md#mus-q-0075) | question | Where does an intercepted prompt appear, given the terminal has to stay visible? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -273,6 +275,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0139](decisions.md#mus-d-0139) | decision | Nine questions closed on a prompt's word are reopened, and the gate holds them open |
 | [MUS-D-0140](decisions.md#mus-d-0140) | decision | The Answer button dims in CSS, so nothing is retired and no script arrives |
 | [MUS-D-0141](decisions.md#mus-d-0141) | decision | The session view sends seven keys, and Escape is the one it was built for |
+| [MUS-D-0142](decisions.md#mus-d-0142) | decision | Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -355,6 +358,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0080](findings.md#mus-f-0080) | finding | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable |
 | [MUS-F-0081](findings.md#mus-f-0081) | finding | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session |
 | [MUS-F-0082](findings.md#mus-f-0082) | finding | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |
+| [MUS-F-0083](findings.md#mus-f-0083) | finding | A CLI prompt publishes its own key legend, so interception can read it rather than know it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-87 record(s), by identifier.
+88 record(s), by identifier.
 
 ## The queue
 
@@ -97,6 +97,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0080](#mus-f-0080) | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable | TestTheChosenKeysArriveAsThemselves against real tmux, with 'cat -v' as the probe because it prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, both on one line, so nothing was appended to either. TestOnlyTheChosenKeysAreSendable holds the allowlist against a name containing shell metacharacters. TestTheKeyRowSendsAKeyAndNotAMessage holds the row's shape: seven keys, above the composer, outside the form, every button type=button. | fixed |
 | [MUS-F-0081](#mus-f-0081) | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
 | [MUS-F-0082](#mus-f-0082) | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |  | with the owner on MUS-Q-0074 |
+| [MUS-F-0083](#mus-f-0083) | A CLI prompt publishes its own key legend, so interception can read it rather than know it | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. | open; it is what MUS-W-0022 is built on |
 
 ---
 
@@ -2110,3 +2111,41 @@ Can we intercept these prompts and surface them in a ui prompt for the user to a
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Why it is one question and not two | Intercepting a prompt and sending it a digit are the same axis: how much of the pane's meaning Mustur is willing to model. The digit is the cheap end of it and the interception is the far end, and answering them separately would decide the second by accident. |
+
+---
+
+## MUS-F-0083
+
+**A CLI prompt publishes its own key legend, so interception can read it rather than know it**
+
+finding · 2026-09-04
+
+the reason it was captured rather than recalled: [MUS-F-0072](#mus-f-0072)
+
+what it makes possible: [MUS-Q-0074](questions.md#mus-q-0074)
+
+Captured from a real pane rather than remembered, because the last thing built from a remembered format left a stray middot in every line (MUS-F-0072).
+
+What a Claude Code selection prompt actually looks like on screen:
+
+    Select model
+    Switch between Claude models. Your pick becomes the default for new sessions.
+      1. Default (recommended)  Opus 5 with 1M context · Best for everyday, complex tasks
+      2. Opus (1M context)      Opus 5 with 1M context · Best for everyday, complex tasks
+    ❯ 3. Opus ✔                 Opus 5 · Best for everyday, complex tasks
+    ● High effort (default) ←/→ to adjust
+    Enter to set as default · s to use this session only · Esc to cancel
+
+Four things are on the screen and only two of them were expected. A title. Numbered options, each a number, a label and a detail. A cursor marking which is selected. **And a legend of what every key does**, printed by the CLI itself, in its own words, on the last line.
+
+That last one is the difference between the thing MUS-Q-0074's option warned about and something much smaller. The warning was that Mustur would start understanding one vendor's dialogs and break silently when they changed. A parser that reads the legend does not understand the dialog at all: it reads what this screen says its keys are and offers those. A dialog that changes its keys changes its legend in the same edit, and the surface follows it without being taught.
+
+It does not remove the vendor-specific part, it shrinks it. Finding the block, spotting numbered rows and reading the cursor are still shapes rather than a protocol, and a CLI that stops printing a legend takes the offer with it — which is the failure to design for: no legend means no buttons, and the terminal is still there.
+
+The 's to use this session only' entry is the proof that guessing would have failed. Nothing about a numbered list suggests a letter key, and no allowlist written from the shape of a menu would have included it.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session |
+| Status | open; it is what MUS-W-0022 is built on |
+| Evidence | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. |

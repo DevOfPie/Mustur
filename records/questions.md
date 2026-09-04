@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-74 record(s), by identifier.
+75 record(s), by identifier.
 
 ---
 
@@ -1680,7 +1680,7 @@ question · 2026-09-04
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0082 |
 | Option | Digits in the key row, behind a toggle :: answers the numbered prompt and understands nothing about the pane :: Recommended. The row gains 1 to 9 and 0, reached by a toggle that swaps them for the arrows rather than by ten more buttons -- the row already scrolls sideways, and MUS-F-0036 is the record of a sideways row hiding its last choice behind a swipe. It answers the case in hand exactly: a prompt wanting a number gets a number. Mustur still knows nothing about what is on the screen, which is the cheap part and also the limit -- the owner still has to read the pane to know which number means what. |
 | Option | Intercept the prompt and render it as real UI :: buttons with the CLI's own words on them, and a keypress sent back :: The pane is read, a prompt is recognised, its choices are drawn as controls, and picking one sends the key. There is precedent: MUS-F-0053 already takes the CLI's furniture off the screen and redraws its status as chips, so reading the pane for meaning is a thing this surface does. The cost is that Mustur starts understanding one vendor's dialogs, which strains MUS-D-0091, and it fails silently in both directions when that vendor changes them -- a prompt drawn that is not there, or a prompt on screen that nothing offers to answer. It is a milestone, not an afternoon. |
@@ -1688,3 +1688,25 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 03:18 |
+| Answer | Intercept the prompt and render it as real UI |
+| Answered | 2026-09-04 03:26 |
+| Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0075
+
+**Where does an intercepted prompt appear, given the terminal has to stay visible?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-D-0142 |
+| Option | Labelled buttons in the key row that is already there :: no new surface, and it degrades to plain keys :: Recommended. The row above the composer stops being seven fixed keys and becomes what the pane currently offers -- '1 Default', '2 Opus (1M)', '3 Opus', 's session only', 'Esc cancel' -- each sending its own key, with Escape and the arrows still there. Nothing new is drawn, the terminal is untouched above it, and a pane with no legend falls back to exactly the seven keys it shows today. The cost is room: an option's label is longer than 'Esc', the row scrolls sideways, and MUS-F-0036 is the record of a sideways row hiding its last choice behind a swipe. Long labels would have to be cut. |
+| Option | A panel in the dock, between the terminal and the composer :: room for the question and each option's detail, and one more thing on the surface :: The prompt's title, its rows and their detail text render as a block above the composer, with the terminal still fully visible above that. It is the only option with room for the sentence a prompt asks -- 'Switch between Claude models...' -- which a button label cannot carry. The cost is a new element on the session view that no artboard has, which is MUS-F-0027's pattern exactly, and a dock that grows takes its height from the terminal on a phone. |
+| Option | A sheet over the terminal, the way a sub-agent's output is read :: the most prominent, and it covers the thing it is describing :: MUS-D-0122 put a sub-agent's output in a sheet over the session, so the pattern exists and the surface already knows how to draw one. A prompt is more urgent than a sub-agent's output, which argues for the more prominent treatment. It also covers the pane, and the pane is the only thing that is definitely correct when the parse is wrong -- which is the one property the decision above says must hold. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 03:29 |
