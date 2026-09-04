@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-92 record(s), by identifier.
+93 record(s), by identifier.
 
 ## The queue
 
@@ -102,6 +102,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0085](#mus-f-0085) | A relayed answer was typed back into the session that wrote it, wearing the owner's name | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. | fixed |
 | [MUS-F-0086](#mus-f-0086) | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. | fixed |
 | [MUS-F-0087](#mus-f-0087) | The prompt pop-up set its own display, so the hidden attribute never hid it | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. | fixed |
+| [MUS-F-0088](#mus-f-0088) | A dialog the CLI draws only when idle is a dialog the surface can only offer while idle | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
 
 ---
 
@@ -2271,3 +2272,31 @@ So the fix is the rule and a gate rather than a fourth comment. `TestNothingHidd
 | Where | internal/web/sessions.go |
 | Status | fixed |
 | Evidence | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. |
+
+---
+
+## MUS-F-0088
+
+**A dialog the CLI draws only when idle is a dialog the surface can only offer while idle**
+
+finding · 2026-09-04
+
+the decision whose cost this is: [MUS-D-0143](decisions.md#mus-d-0143)
+
+what the protocol carries instead: [MUS-F-0084](#mus-f-0084)
+
+The owner reported the feedback-draft prompt on the pane with no pop-up beside it, and named the thing that makes it awkward: it is only visible when the session is idle, and it goes away as soon as work starts.
+
+**The state outlives the drawing.** While the agent works, the pane carries `· 1 feedback draft` in the status line and nothing else — the draft still exists, the CLI still holds it, and the screen simply stops showing the way to act on it. Verified by capturing this session's own pane mid-turn: the chip is there and no dialog is.
+
+That is the first concrete cost of MUS-D-0143, which chose to read dialogs off the pane rather than take them off the protocol, and it is worth stating plainly rather than discovering twice. **A surface that reads the screen can offer exactly what is drawn, for exactly as long as it is drawn.** The protocol carries `pending_permission_requests` and `pending_user_dialog_requests` precisely because a client is expected to know about prompts that are outstanding rather than visible (MUS-F-0084). Reading the pane cannot know that, and no amount of parsing fixes it.
+
+**Making the pop-up outlive the drawing would be worse.** It would offer keys for a dialog that is no longer accepting them, and a keypress sent to a pane that has moved on does not vanish — it goes into the composer, as text, in the middle of somebody's session. Faithful to the screen is the correct behaviour and the limitation is real at the same time.
+
+**And it cannot be caught from inside.** The agent whose session holds the draft is working whenever it looks, so the prompt is never on the screen at the moment it is asked about. The capture that answers this has to be scheduled to run after the turn ends. Drafts are per-session — two exist on disk and the other running session shows neither chip nor prompt — so there is no second pane to reproduce it in.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/prompt.go |
+| Status | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
+| Evidence | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. |
