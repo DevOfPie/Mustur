@@ -546,6 +546,9 @@
       // socket opens and again whenever it moves, so it is handled before the
       // frame kinds rather than repeated inside three of them.
       if (typeof f.waiting === "number") setWaiting(f.waiting);
+      // Sent with every hello and every screen, so its absence on one of those
+      // means there is no prompt rather than that nothing was said.
+      if (f.t === "hello" || f.t === "screen") drawPrompt(f.prompt || null);
       if (f.t === "hello") {
         // The first frame carries the screen as it stands, so a reconnect
         // paints immediately rather than waiting for the session to move.
@@ -728,6 +731,105 @@
     });
   }
 
+  // The prompt the pane is waiting on.
+  //
+  // MUS-Q-0077: in front of the session, minimising into the key row. It is
+  // over the terminal because a dialog is the only thing that matters while it
+  // is up, and it minimises rather than closes because the pane underneath is
+  // what you minimise it to read.
+  //
+  // Rebuilt only when the prompt actually changes. A screen frame arrives every
+  // time the pane redraws -- a cursor blink is a redraw -- and rebuilding on
+  // each one would throw away the minimised state a few times a second.
+  var dlg = document.getElementById("dlg");
+  var dlgT = document.getElementById("dlgt");
+  var dlgB = document.getElementById("dlgb");
+  var dlgO = document.getElementById("dlgo");
+  var dlgK = document.getElementById("dlgk");
+  var dlgMin = document.getElementById("dlgmin");
+  var lastPrompt = null;
+  var minimised = false;
+
+  function keyButton(cls, key, label) {
+    var b = el("button", cls, label);
+    b.type = "button";
+    b.setAttribute("data-key", key);
+    return b;
+  }
+
+  // The chip in the key row that brings a minimised prompt back.
+  function chip(show, title) {
+    if (!keyRow) return;
+    var have = keyRow.querySelector(".dlgchip");
+    if (!show) {
+      if (have && have.parentNode) have.parentNode.removeChild(have);
+      return;
+    }
+    if (!have) {
+      have = el("button", "dlgchip");
+      have.type = "button";
+      have.id = "dlgchip";
+      keyRow.insertBefore(have, keyRow.firstChild);
+    }
+    have.textContent = title || "Prompt";
+  }
+
+  function showPrompt() {
+    minimised = false;
+    if (dlg) dlg.hidden = false;
+    chip(false);
+    measureDock();
+  }
+
+  function hidePrompt(title) {
+    minimised = true;
+    if (dlg) dlg.hidden = true;
+    chip(true, title);
+    measureDock();
+  }
+
+  function drawPrompt(p) {
+    if (!dlg) return;
+    var sig = p ? JSON.stringify(p) : "";
+    if (sig === lastPrompt) return;
+    var wasMinimised = minimised && lastPrompt !== "";
+    lastPrompt = sig;
+
+    if (!p) {
+      dlg.hidden = true;
+      minimised = false;
+      chip(false);
+      measureDock();
+      return;
+    }
+
+    dlgT.textContent = p.title || "The session is waiting on you";
+    dlgB.textContent = p.body || "";
+    dlgO.textContent = "";
+    (p.options || []).forEach(function (o) {
+      var b = keyButton(o.selected ? "on" : "", o.key, "");
+      var n = el("span", "num", o.key);
+      b.appendChild(n);
+      b.appendChild(document.createTextNode(o.label));
+      dlgO.appendChild(b);
+    });
+    dlgK.textContent = "";
+    (p.keys || []).forEach(function (k) {
+      dlgK.appendChild(keyButton("", k.key, k.key + " \u00b7 " + k.label));
+    });
+
+    // A prompt that changed while minimised stays minimised: the owner put it
+    // away to read the pane, and a redraw is not them asking for it back.
+    if (wasMinimised) hidePrompt(p.title);
+    else showPrompt();
+  }
+
+  if (dlgMin) {
+    dlgMin.addEventListener("click", function () {
+      hidePrompt(dlgT ? dlgT.textContent : "");
+    });
+  }
+
   // The key row.
   //
   // A pane can ask for a keypress rather than a sentence -- a dialog to get off,
@@ -741,6 +843,11 @@
   var keyRow = document.getElementById("keys");
   if (keyRow) {
     keyRow.addEventListener("click", function (e) {
+      // The chip is in this row and is not a key: it brings the prompt back.
+      if (e.target.closest && e.target.closest(".dlgchip")) {
+        showPrompt();
+        return;
+      }
       var b = e.target.closest ? e.target.closest("button[data-key]") : null;
       if (!b) return;
       if (!ws || ws.readyState !== 1) {
@@ -755,6 +862,22 @@
       if (text) text.focus();
     });
   }
+
+  // The prompt's buttons send the same key frame the row does, so there is one
+  // path to a keypress and one place it can be refused.
+  [dlgO, dlgK].forEach(function (box) {
+    if (!box) return;
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest ? e.target.closest("button[data-key]") : null;
+      if (!b) return;
+      if (!ws || ws.readyState !== 1) {
+        note("not sent: still reconnecting.");
+        return;
+      }
+      if (closed) return;
+      ws.send(JSON.stringify({ t: "key", key: b.getAttribute("data-key") }));
+    });
+  });
 
   if (dest && project) dest.textContent = "Send to " + project;
 

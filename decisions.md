@@ -3099,3 +3099,32 @@ The owner chose the terminal. MUS-D-0016's premise stands, MUS-D-0088 stands, an
 **What that means, said once so nobody has to rediscover it.** Mustur reads dialogs off a screen that exists as structured messages on a protocol the CLI already speaks. That is a choice, not an oversight, and its price is paid every time the CLI redraws: a parse can be wrong in both directions, and the legend is the only thing standing between reading a screen and knowing one vendor's dialogs. What is bought is that a session remains something tmux holds and a person can attach to from a machine, which is what four milestones are built on.
 
 The escape hatch is written down rather than assumed. If the pane ever stops being enough, MUS-F-0084 is the record of what the alternative is, what it costs, and where the evidence for both was found.
+
+### MUS-D-0144
+
+**A prompt is a pop up in front of the session, minimised into the key row**
+
+decision · 2026-09-04
+
+answers: MUS-Q-0077
+
+the work it completes: MUS-W-0022
+
+the property minimising protects: MUS-D-0143
+
+MUS-Q-0077 offered three places for a prompt the surface has read: a panel between the terminal and the composer, buttons cut to fit in the key row, or a strip and the row together. The owner took none of them and wrote a fourth — a pop up in front of the session, that can be minimised into the button row.
+
+It is better than the three it replaced and the reason is worth keeping. The panel was recommended because the picker's rows do not fit on a button, and its cost was that a dock which grows takes height from the terminal. The row was cheap and threw away the column where a picker says what an option does. **A pop up pays neither: it takes the room a dialog needs because it is over the terminal rather than beside it, and it gives the room back on demand because the thing you want the room for is the pane underneath.** Minimising is the answer to the objection that a pop up covers what it is describing, which is the one property MUS-D-0143 says must hold.
+
+Three things follow from it and are built that way.
+
+**It is held above the dock.** A dialog that covered the composer would take the reply box away at the moment somebody most wants to type instead of pressing — the buttons offer what the screen offers, and the composer is what you reach for when that is not what you meant.
+
+**It is rebuilt only when the prompt changes.** A screen frame arrives on every redraw and a cursor blink is a redraw, so rebuilding per frame would throw the minimised state away several times a second. A prompt that changes while minimised stays minimised: it was put away to read the pane, and a redraw is not a request to bring it back.
+
+**Its buttons send the same key frame the row does.** One path to a keypress, one place it can be refused, and one allowlist. The cursor's row is marked rather than pre-pressed — the pane has a selection, this says which, and pressing is still a choice somebody makes.
+
+| Field | Value |
+| --- | --- |
+| Anchored to | the session column, not the viewport, so a wide layout puts it over the terminal rather than beside the rail |
+| Fallback | No prompt read means the element stays hidden and the terminal is untouched |

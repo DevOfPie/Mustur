@@ -79,6 +79,11 @@ type Frame struct {
 	Agent Agent
 	// Status is what the CLI's own furniture said, once it was taken off.
 	Status Status
+	// Prompt is a selection the CLI is waiting on, read off the same capture,
+	// or nil when there is nothing to read. Nil is the ordinary case and the
+	// one the design rests on: no legend means no controls and the terminal is
+	// untouched (MUS-D-0142).
+	Prompt *Prompt
 	// At is when this screen was captured.
 	At time.Time
 	// Ended is set once, on the last frame, when the session is gone.
@@ -326,6 +331,10 @@ func (p *pane) read(ctx context.Context, a *Adapter, now time.Time) Frame {
 		HTML:   ansi.HTML(trimBlank(body)),
 		Status: st,
 		Agent:  DoingIn(raw),
+		// Read from the raw capture rather than from body: SplitChrome takes
+		// the CLI's own furniture off, and a dialog's legend is furniture by
+		// every test that function applies.
+		Prompt: ReadPrompt(raw),
 		At:     now,
 	}
 	p.last = f

@@ -366,6 +366,12 @@ type frame struct {
 	// rather than an int: dropping to zero is the update that matters most and
 	// omitempty would swallow it.
 	Waiting *int `json:"waiting,omitempty"`
+	// Prompt is the selection the pane is waiting on, read off the same capture
+	// the screen came from, and sent with every screen. Absent means there is
+	// none — the field goes with every hello and every screen frame, so a
+	// client that receives one of those and no prompt knows there is nothing to
+	// offer rather than that nothing was said (MUS-D-0142).
+	Prompt *session.Prompt `json:"prompt,omitempty"`
 }
 
 // A statusRow is the CLI's status line, ready to render.
@@ -459,6 +465,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
 		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
+		Prompt:  now.Prompt,
 		Waiting: waitingIf(s.Store != nil, &waitingNow),
 	}); err != nil {
 		return
@@ -549,6 +556,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			if err := send(frame{
 				T: "screen", Screen: f.HTML,
 				Agent: string(f.Agent), Status: statusChips(f.Status),
+				Prompt: f.Prompt,
 			}); err != nil {
 				return
 			}
@@ -639,7 +647,7 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 			// A rejected key is not a reason to drop the socket: the row is a
 			// handful of buttons and a name this server does not know means the
 			// page is older than the binary, not that the session is gone.
-			if err := s.Adapter.SendKey(ctx, project, key); err != nil {
+			if err := s.Adapter.SendChoice(ctx, project, key); err != nil {
 				_ = say(frame{T: "error", Error: "the session did not take that key: " + err.Error()})
 				continue
 			}
@@ -669,8 +677,12 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      own rule wins and gives this page the width the rail leaves, which is now
      what every surface gets. It was set here first, for the terminal alone,
      before the owner asked for the rest. */
+  /* position: relative so the prompt anchors to this column rather than to the
+     viewport. Fixed would centre it on the screen, which on a wide layout is
+     beside the rail and not over the terminal it belongs to. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
          margin-inline: auto; display: flex; flex-direction: column;
+         position: relative;
          height: 100vh; height: 100dvh; }
   /* The chrome rows keep their own height. A flex item shrinks by default, so
      anything that grew — the sub-agent box did — took its room out of these
@@ -787,6 +799,43 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   #kept { opacity: .75; font-style: italic; }
   /* Grows with what is typed, to a point, then scrolls. A phone keyboard eats
      half the screen, so the cap is small deliberately. */
+  /* The prompt, in front of the session.
+
+     Anchored to the terminal's own box rather than to the viewport, so the bar
+     and the composer stay reachable underneath it — a dialog that covered the
+     composer would take the reply box away at the moment somebody most wants
+     to type instead of pressing. Scrolls inside itself: a picker with a dozen
+     rows must not push the box off the screen (MUS-F-0035 is what happens when
+     a box on this surface has no height cap). */
+  .dlg { position: absolute; inset: 0; bottom: var(--dock-h, 0px);
+         display: flex; align-items: flex-end; justify-content: center;
+         padding: .8rem; pointer-events: none; z-index: 5; }
+  .dlgbox { pointer-events: auto; width: 100%; max-width: 34rem;
+            max-height: 100%; overflow-y: auto; box-sizing: border-box;
+            background: var(--paper); border: 1.4px solid var(--accent);
+            border-radius: .7rem; padding: .8rem .9rem;
+            box-shadow: 0 .4rem 1.6rem rgba(0,0,0,.28); }
+  .dlghead { display: flex; align-items: center; gap: .5rem; }
+  .dlghead strong { flex: 1; min-width: 0; }
+  .dlghead button { font: inherit; line-height: 1; padding: .1rem .5rem;
+                    border: 1px solid var(--edge); border-radius: .4rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  .dlgbody { margin: .4rem 0 .7rem; opacity: .75; font-size: .88em; }
+  .dlgbody:empty { display: none; }
+  .dlgopts { display: flex; flex-direction: column; gap: .35rem; }
+  .dlgopts button { font: inherit; text-align: left; padding: .5rem .6rem;
+                    border: 1px solid var(--edge); border-radius: .5rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  /* The row the CLI's own cursor is on. Marked rather than pre-pressed: the
+     pane has a selection and this says which, and pressing is still a choice. */
+  .dlgopts button.on { border-color: var(--accent); background: var(--accent-soft); }
+  .dlgopts .num { opacity: .55; margin-right: .5rem; }
+  .dlgkeys { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+  .dlgkeys button { font: inherit; font-size: .82em; padding: .35rem .6rem;
+                    border: 1px solid var(--edge); border-radius: .45rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  /* What it minimises into: a button in the key row that brings it back. */
+  .keys .dlgchip { border-color: var(--accent); background: var(--accent-soft); }
   /* The key row. Scrolls sideways rather than wrapping, because a wrapped row
      changes the dock's height and the output is positioned off it. */
   .keys { display: flex; align-items: center; gap: .4rem; margin-bottom: .45rem;
@@ -1058,6 +1107,23 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   </aside>
 </div>
 <pre id="out"></pre>
+<!-- The prompt the pane is waiting on, in front of the session (MUS-Q-0077).
+
+     Empty and hidden until one is read. It sits over the terminal rather than
+     beside it because a dialog is the only thing that matters while it is up,
+     and it minimises into the key row rather than closing because the pane
+     underneath is the thing you minimise it to read. Nothing here is a
+     substitute for the terminal: the keys it offers are the keys the screen
+     says it has, and the screen is still behind it. -->
+<div class="dlg" id="dlg" hidden>
+  <div class="dlgbox" role="dialog" aria-live="polite" aria-labelledby="dlgt">
+    <div class="dlghead"><strong id="dlgt"></strong>
+      <button type="button" id="dlgmin" aria-label="Minimise">&minus;</button></div>
+    <p class="dlgbody" id="dlgb"></p>
+    <div class="dlgopts" id="dlgo"></div>
+    <div class="dlgkeys" id="dlgk"></div>
+  </div>
+</div>
 <div class="dock">
 <div id="foot">quiet 0s</div>
 <!-- The keys, above the composer where MUS-Q-0072 put them.

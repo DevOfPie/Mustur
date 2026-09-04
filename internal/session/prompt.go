@@ -17,13 +17,13 @@ import (
 // and the legend of keys the CLI prints in its own words on the last line. A
 // dialog that changes its keys changes its legend in the same edit.
 type Prompt struct {
-	Title string // The dialog's own heading, when it has one.
+	Title string `json:"title,omitempty"` // The dialog's own heading, when it has one.
 	// Body is the sentence under the heading, unwrapped. The CLI wraps it to
 	// the pane's width, which is not the reader's, so the lines are joined back
 	// into one and left for the surface to wrap again.
-	Body    string
-	Options []Choice // Numbered rows, in the order they appear.
-	Keys    []Choice // The legend: what the CLI says every other key does.
+	Body    string   `json:"body,omitempty"`
+	Options []Choice `json:"options,omitempty"` // Numbered rows, in order.
+	Keys    []Choice `json:"keys,omitempty"`    // The legend, in the CLI's words.
 }
 
 // A Choice is one thing the pane says can be pressed, and what pressing it does.
@@ -31,9 +31,9 @@ type Prompt struct {
 // Key is what to send: a digit for a numbered row, and whatever the legend
 // named for a legend entry — "Enter", "Esc", or a single character like "s".
 type Choice struct {
-	Key      string
-	Label    string
-	Selected bool // Only ever set on a numbered row: the one the cursor is on.
+	Key      string `json:"key"`
+	Label    string `json:"label"`
+	Selected bool   `json:"selected,omitempty"` // The row the cursor is on.
 }
 
 var (

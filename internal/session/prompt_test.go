@@ -174,3 +174,27 @@ func TestALegendCharacterArrivesLiterally(t *testing.T) {
 		t.Error("something was appended to a key")
 	}
 }
+
+// The prompt is read from the raw capture, not from what is left after the
+// CLI's furniture comes off.
+//
+// SplitChrome exists to take the input box, the dividers and the status line
+// off the screen before it is rendered (MUS-F-0053). A dialog's legend is a
+// line of key hints at the bottom of the screen, which is what that function
+// is looking for — so reading a prompt out of the body would be reading it out
+// of the half the furniture was removed from.
+func TestThePromptSurvivesTheChromeSplit(t *testing.T) {
+	raw := fixture(t, "prompt-model-picker.txt")
+	if ReadPrompt(raw) == nil {
+		t.Fatal("the fixture no longer parses at all")
+	}
+	body, _ := SplitChrome(raw)
+	fromBody := ReadPrompt(body)
+	if fromBody == nil {
+		t.Log("SplitChrome removes the legend, which is why the frame reads the raw capture")
+		return
+	}
+	if len(fromBody.Keys) != len(ReadPrompt(raw).Keys) {
+		t.Errorf("the split changed the legend: %d keys against %d", len(fromBody.Keys), len(ReadPrompt(raw).Keys))
+	}
+}

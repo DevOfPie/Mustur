@@ -1345,3 +1345,62 @@ func TestTheDecisionCountChangesWhileTheSocketIsOpen(t *testing.T) {
 	}
 	t.Fatal("no waiting frame arrived, so the badge only moves on a reload")
 }
+
+// The prompt is in front of the session and minimises into the key row.
+//
+// MUS-Q-0077, which is a fourth option the owner wrote rather than one of the
+// three offered: a pop up in front of the session, minimisable into the button
+// row. The two it was preferred over were a panel that pushes the terminal and
+// buttons cut to fit in the row.
+func TestThePromptIsAPopUpThatMinimisesIntoTheKeyRow(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	if !strings.Contains(body, `id="dlg"`) || !strings.Contains(body, `role="dialog"`) {
+		t.Fatal("no prompt element on the session view")
+	}
+	// Hidden until there is one to show. A dialog that renders empty is a
+	// dialog that covers the terminal for nothing.
+	if !strings.Contains(body, `class="dlg" id="dlg" hidden`) {
+		t.Error("the prompt element is not hidden on arrival")
+	}
+	if !strings.Contains(body, `id="dlgmin"`) {
+		t.Error("nothing minimises it, which is half of what the owner asked for")
+	}
+	// In front of the terminal, not pushing it: it comes after #out in the
+	// markup and is positioned over it.
+	if strings.Index(body, `id="out"`) > strings.Index(body, `id="dlg"`) {
+		t.Error("the prompt is drawn before the terminal it is meant to sit over")
+	}
+	// It must not cover the composer: the reply box is what somebody reaches
+	// for when the buttons are not what they wanted.
+	if !strings.Contains(body, "bottom: var(--dock-h, 0px)") {
+		t.Error("the prompt is not held above the dock, so it can cover the composer")
+	}
+	// A picker with many rows scrolls inside itself rather than growing.
+	// MUS-F-0035 is what an uncapped box on this surface does.
+	if !strings.Contains(body, "max-height: 100%; overflow-y: auto") {
+		t.Error("the prompt box has no height cap")
+	}
+
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	// Rebuilt only when the prompt changes: a screen frame arrives on every
+	// redraw, and rebuilding on each would drop the minimised state.
+	if !strings.Contains(src, "sig === lastPrompt") {
+		t.Error("the prompt is rebuilt on every frame, so minimising it cannot survive a redraw")
+	}
+	if !strings.Contains(src, "if (wasMinimised) hidePrompt") {
+		t.Error("a prompt that changes while minimised pops itself back up")
+	}
+	// Its buttons go down the same socket as the key row.
+	if !strings.Contains(src, `t: "key"`) {
+		t.Error("the prompt's buttons send something other than a key frame")
+	}
+	if !strings.Contains(src, "dlgchip") {
+		t.Error("nothing brings a minimised prompt back")
+	}
+}

@@ -1747,7 +1747,7 @@ question · 2026-09-04
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-W-0022 |
 | Option | A panel between the terminal and the composer :: room for the heading, the sentence and each row, and one new element on the surface :: Recommended, and this reverses what was recommended on MUS-Q-0075. That was written before a real prompt had been read. The picker's heading is 'Select model', its sentence is 'Switch between Claude models. Your pick becomes the default for new sessions. For other/previous model names, specify with --model.', and one row reads 'Default (recommended) Opus 5 with 1M context · Best for everyday, complex tasks'. None of that fits on a button. A panel renders the heading, the sentence, a row per option with the cursor marked, and the legend keys as buttons -- with the terminal still whole above it. The cost is a new element no artboard has, which is MUS-F-0027's pattern, and a dock that grows takes height from the terminal on a phone. |
 | Option | Labelled buttons in the key row, cut to fit :: no new element, and the labels lose the half that says what they mean :: What MUS-Q-0075 recommended. The row becomes '1 Default (recommended)', '2 Opus (1M co…', 's session only', 'Esc cancel'. Nothing new is drawn and the fallback is exactly today's seven keys. The cost is now measurable rather than guessed: the detail column is where a picker says what an option actually does, and cutting a row to button width throws that away -- and MUS-F-0036 is already the record of a sideways row hiding its last choice behind a swipe. |
@@ -1755,6 +1755,9 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 05:05 |
+| Answer | A pop up in front of the session, that can be minimized into the button row |
+| Answered | 2026-09-04 05:13 |
+| Delivered | typed into mustur/Check |
 
 ---
 
@@ -1766,7 +1769,7 @@ question · 2026-09-04
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0086 |
 | Option | Poll on both surfaces that show it :: the count stops lying anywhere, and two server-rendered pages gain a script :: Recommended. Intake and the decision queue ask the server for the count on a timer and update the badge, which is a handful of lines and degrades to exactly today's behaviour when script is blocked -- the page still renders its count, it just stops moving. It ends the class of failure rather than the instance: a tab left open anywhere tells the truth. The cost is that two surfaces whose whole design is that they work without script now ship one, and MUS-Q-0053 already asks what that rule counts when only some of them stop working without it. |
 | Option | Only the decision queue :: the page somebody sits on while waiting, and nothing else changes :: The queue is where a person waits for a question to arrive; intake is a page you go to, file something, and leave. One script instead of two, on the surface that actually has somebody sitting on it. The cost is that the rule gets crossed anyway, for one page instead of two, and the next report is intake. |
@@ -1774,3 +1777,6 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 05:08 |
+| Answer | The badges should be live on every surface |
+| Answered | 2026-09-04 05:13 |
+| Delivered | typed into mustur/Check |

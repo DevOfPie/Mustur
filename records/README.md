@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 78 | [questions.md](questions.md) |
-| decision | 143 | [decisions.md](decisions.md) |
+| decision | 144 | [decisions.md](decisions.md) |
 | finding | 91 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
@@ -280,6 +280,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0141](decisions.md#mus-d-0141) | decision | The session view sends seven keys, and Escape is the one it was built for |
 | [MUS-D-0142](decisions.md#mus-d-0142) | decision | Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints |
 | [MUS-D-0143](decisions.md#mus-d-0143) | decision | A Mustur session stays a terminal, and the dialogs are read off the pane knowingly |
+| [MUS-D-0144](decisions.md#mus-d-0144) | decision | A prompt is a pop up in front of the session, minimised into the key row |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
