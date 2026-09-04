@@ -1506,3 +1506,97 @@ func TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded(t *testing.T) {
 		t.Fatal("no element on this page both sets a display and hides by attribute; this test is asserting nothing")
 	}
 }
+
+// A prompt on the pane reaches the browser.
+//
+// Everything between the parser and the pop-up was untested: the parser had its
+// own tests, the client had its own, and nothing asserted that a dialog on a
+// real pane arrives in a frame. The owner reported the prompt on screen with no
+// pop-up beside it after the parser had been fixed, which is exactly the gap
+// this covers.
+func TestAPromptOnThePaneArrivesInAFrame(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	fixture, err := filepath.Abs(filepath.Join("..", "session", "testdata", "prompt-feedback-draft.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzPrompt"
+	// The pane holds the captured dialog and stays open, so the poller sees
+	// what a real session shows.
+	if _, err := a.Start(context.Background(), project, t.TempDir(),
+		"sh -c 'cat "+fixture+"; sleep 30'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	deadline := time.Now().Add(20 * time.Second)
+	for time.Now().Before(deadline) {
+		_, b, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("reading: %v", err)
+		}
+		var f frame
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
+		if f.T != "hello" && f.T != "screen" {
+			continue
+		}
+		if f.Prompt == nil {
+			continue // the pane may not have painted yet
+		}
+		if len(f.Prompt.Keys) != 3 {
+			t.Fatalf("frame carried %d keys, want the dialog's three: %+v", len(f.Prompt.Keys), f.Prompt)
+		}
+		if !strings.Contains(f.Prompt.Title, "Bug report drafted") {
+			t.Errorf("frame carried the wrong dialog: %q", f.Prompt.Title)
+		}
+		return
+	}
+	t.Fatal("no frame carried a prompt, so a dialog on the pane never reaches the browser")
+}
+
+// A tab older than the server says so instead of doing nothing.
+//
+// The pop-up's markup is served with the page and a session tab is left open
+// for hours, so a tab loaded before the server learned to draw prompts receives
+// them and has nowhere to put them. It looked exactly like a broken parser: the
+// dialog on the pane, no pop-up, and the socket delivering it the whole time.
+func TestATabWithoutThePopUpSaysItIsStale(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, "older than the server") {
+		t.Error("a prompt arriving at a page with no pop-up is still silent")
+	}
+	// Once, not on every frame: a screen frame arrives on every redraw.
+	if !strings.Contains(src, "toldStale") {
+		t.Error("the notice has no latch, so it would repeat on every frame")
+	}
+}

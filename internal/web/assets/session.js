@@ -766,8 +766,25 @@
     measureDock();
   }
 
+  // Said once, when a prompt arrives and there is nowhere to put it.
+  var toldStale = false;
+
   function drawPrompt(p) {
-    if (!dlg) return;
+    if (!dlg) {
+      // The markup for the pop-up is served with the page, and a session tab
+      // is left open for hours. So a tab opened before the server learned to
+      // draw prompts has no #dlg in it, receives them, and silently does
+      // nothing -- which is what the owner saw: the dialog on the pane, no
+      // pop-up beside it, and the socket delivering it the whole time.
+      //
+      // A missing element is not a state to recover from; it is a page that is
+      // older than the server. Saying so is the fix.
+      if (p && !toldStale) {
+        toldStale = true;
+        note("this tab is older than the server: reload it to see prompts");
+      }
+      return;
+    }
     var sig = p ? JSON.stringify(p) : "";
     if (sig === lastPrompt) return;
     var wasMinimised = minimised && lastPrompt !== "";

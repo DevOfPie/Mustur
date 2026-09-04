@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-94 record(s), by identifier.
+95 record(s), by identifier.
 
 ## The queue
 
@@ -104,6 +104,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0087](#mus-f-0087) | The prompt pop-up set its own display, so the hidden attribute never hid it | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. | fixed |
 | [MUS-F-0088](#mus-f-0088) | A dialog the CLI draws only when idle is a dialog the surface can only offer while idle | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
 | [MUS-F-0089](#mus-f-0089) | A dialog whose choices are its legend, inside a box, was read as neither | TestADialogWhoseChoicesAreItsLegend reads the real capture: no rows, three keys 1, 2 and 0 with their words, a title free of the box and of the glyph the CLI decorates it with, and the wrapped body. TestALegendOnABareLineIsNotADialogOnItsOwn holds the guard both ways. The model picker fixture still parses, so the shape that was assumed still works. | fixed |
+| [MUS-F-0090](#mus-f-0090) | A session tab outlives the binary, and a pop-up it has no markup for fails silently | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. | fixed for the prompt; the class is open |
 
 ---
 
@@ -2301,6 +2302,7 @@ That is the first concrete cost of MUS-D-0143, which chose to read dialogs off t
 | Where | internal/session/prompt.go |
 | Status | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
 | Evidence | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. |
+| Correction | The body says the CLI draws the draft prompt only when the session is idle and that it goes away when work starts. That was inferred from one capture taken before the dialog had been drawn at all. Measured again while this session was working: the dialog is on the pane continuously, and the socket carried it on every frame. What the owner saw was MUS-F-0090 — a tab with no markup for the pop-up — not a dialog that comes and goes. The limitation the record names is still real, and this instance was not it. |
 
 ---
 
@@ -2342,3 +2344,31 @@ And the parser required numbered rows. This dialog has none: its choices *are* i
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Where | internal/session/prompt.go |
+
+---
+
+## MUS-F-0090
+
+**A session tab outlives the binary, and a pop-up it has no markup for fails silently**
+
+finding · 2026-09-04
+
+the surface it appeared on: [MUS-D-0144](decisions.md#mus-d-0144)
+
+The owner reported the dialog on the pane and no pop-up beside it, after the parser had been fixed. Every layer was measured and every layer was working: the parser reads the live pane, the poller puts the prompt on the frame, and a socket opened against the running session right then carried it on the hello frame and on every screen frame after, with all three keys.
+
+The pop-up's markup is served with the page. A session tab is left open for hours — that is the whole point of the surface — so a tab loaded before the server learned to draw prompts has no `#dlg` element in it. The client's first line is `if (!dlg) return`, and it returned, on every frame, for as long as the tab stayed open.
+
+**That is indistinguishable from a broken parser.** It cost a fixture, two watchers and three probes to tell them apart, and the thing that separated them in the end was connecting a socket to the live session and watching the frames arrive.
+
+`session.js` is served `no-cache` and revalidates, so the script was current. Only the markup was stale, and nothing reloads markup in a tab nobody reloads.
+
+Fixed by saying so: a prompt arriving with nowhere to put it now writes *this tab is older than the server: reload it to see prompts* into the surface's own error channel, once, latched — a screen frame arrives on every redraw and a notice per frame would be its own defect.
+
+**It generalises and is not generally fixed.** Any element added to this page in future is missing from every tab already open, and only this one says anything about it. What would fix the class is the page knowing which build it was served by; that is not built, and this record is what a future one should cite.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/assets/session.js |
+| Status | fixed for the prompt; the class is open |
+| Evidence | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. |
