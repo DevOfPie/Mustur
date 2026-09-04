@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-71 record(s), by identifier.
+73 record(s), by identifier.
 
 ---
 
@@ -1625,3 +1625,41 @@ question · 2026-09-03
 | Answer | Can we enable the button for a chosen option or text in the box? |
 | Answered | 2026-09-03 05:40 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0072
+
+**A pane can want a keypress rather than a sentence. What may the session view send?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0080 |
+| Option | A small row of keys above the composer :: Esc, Enter, Ctrl-C and the four arrows, sent as themselves :: Recommended. The composer keeps sending messages and gains a row of buttons that send one key each, so a dialog can be dismissed, a list navigated and a runaway turn interrupted from a phone. It is the smallest thing that makes a stuck pane recoverable without a terminal. The cost is that the surface stops being only a composer: it becomes a keyboard, MUS-D-0096's clean line between a message and keystrokes gets a named exception, and Ctrl-C in particular is a control that ends work mid-turn from a thumb. |
+| Option | One key, Escape, and nothing else :: covers the modal and refuses to become a keyboard :: Escape is what gets a pane off a dialog it cannot leave, which is the case that has now happened twice -- the MCP-trust prompt on 2026-08-23 and the draft today. Navigating a list still needs arrows and is still impossible, so a dialog that wants a choice rather than a dismissal stays stuck. It is the narrow fix, and it holds the line that this surface sends messages, with one exception that is easy to say out loud. |
+| Option | Nothing; a stuck pane wants a terminal :: the surface stays exactly what it was decided to be :: MUS-D-0096 says the composer sends a message and a message is text, and the answer to a pane that wants a keypress is a person at a keyboard. Nothing is built and nothing is excepted. The cost is that the owner, on a phone, off the home network, can watch a session sit on a dialog and do nothing about it -- which is the situation that produced this question. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 02:48 |
+
+---
+
+## MUS-Q-0073
+
+**Stopping a session is a command line. Does it get a control, and what stands in front of it?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0081 |
+| Option | A stop control on the session view, behind the tick that Withdraw uses :: one pattern for destructive things on this surface, no script :: Recommended. The session view gains a Stop beside the picker, with a checkbox reading what it does that the handler requires -- the same shape that fixed MUS-F-0077 yesterday, on a surface that carries no script and where a second page would be a second surface. It completes what CLAUDE.md already claims. The cost is a control that kills a running agent mid-turn placed on a phone screen, and a tick is a small thing to stand between a thumb and that. |
+| Option | A stop control, but only from the session list :: the list is where you choose, the view is where you watch :: Stop lives on /sessions beside each row rather than on the session's own page, so the page you sit and read is not the page that can end it. Reaching it is deliberate: leave the terminal, go to the list, stop the one you mean. The cost is two taps in the moment you most want one, and the list is exactly where it is easiest to stop the wrong session. |
+| Option | Leave it on the command line :: the safest place for it is where it already is :: Stopping stays 'mustur session stop', which works and is unambiguous. Nothing destructive is added to a surface reached from a phone. The cost is that the contract says Mustur stops sessions and the surface does not, and that the owner away from a terminal can watch a crashed or runaway session and not end it -- which is the situation that produced this question. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 02:48 |

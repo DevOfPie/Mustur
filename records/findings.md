@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-84 record(s), by identifier.
+86 record(s), by identifier.
 
 ## The queue
 
@@ -94,6 +94,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0077](#mus-f-0077) | Withdraw closed a question on one press, and said nothing about what it was | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. | fixed |
 | [MUS-F-0078](#mus-f-0078) | Allow viewers to vote for answers to decisions but only owners can make final choice |  | triaged; parked against MUS-M-0008 |
 | [MUS-F-0079](#mus-f-0079) | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. | recorded; the three affected records now say what was meant |
+| [MUS-F-0080](#mus-f-0080) | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable | Adapter.Send returns 'nothing to send' for empty or whitespace text; the client drops an empty submit before sending. There is no frame kind that carries a key rather than text. Observed on mustur/Check, whose status line reads '1 feedback draft'. | with the owner on MUS-Q-0072 |
+| [MUS-F-0081](#mus-f-0081) | Nothing on any surface stops a session, though the CLI does and the contract says Mustur does | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | with the owner on MUS-Q-0073 |
 
 ---
 
@@ -1751,6 +1753,7 @@ A server started without `--sessions` says nothing, deliberately. There is no Se
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Where | internal/web/questions.go |
+| Correction 2026-09-04 | The paragraph above says a session running in a terminal is invisible to Mustur and that there is nothing for --in to name. That is true in general and was false for the session it was written in: this session runs inside mustur/Check, which Mustur started, and --in Check would have delivered every answer. The delivery said 'the question names no session' because the flag was not passed, not because no session existed. The agent assumed it was outside Mustur's reach and never checked 'mustur session list', which takes one command. |
 
 ---
 
@@ -2008,3 +2011,59 @@ Recorded rather than gated. Nothing checks an option's shape when it is written,
 | Where | MUS-Q-0061, MUS-Q-0062, MUS-Q-0063 |
 | Status | recorded; the three affected records now say what was meant |
 | Evidence | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. |
+
+---
+
+## MUS-F-0080
+
+**The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable**
+
+finding · 2026-09-04
+
+the decision that made a message the unit: [MUS-D-0096](decisions.md#mus-d-0096)
+
+asked as: [MUS-Q-0072](questions.md#mus-q-0072)
+
+The owner opened a session in the browser, found a drafted bug report on the screen, and had no way to act on it.
+
+`Adapter.Send` refuses empty text — *nothing to send* — and the composer drops an empty submit before it gets that far. Everything that reaches a pane is a line followed by Enter. So there is no way from a browser to send a bare Enter, an Escape, an arrow key, Tab, or Ctrl-C. Anything an agent CLI puts on screen that wants a keypress rather than a sentence is visible and unreachable.
+
+That is not an oversight in the composer; it is MUS-D-0096 working as designed. The composer sends a *message*, and a message is text. What was never decided is what happens when the pane is not asking for a message.
+
+**It has happened before and was recorded.** On 2026-08-23 a Mustur-started session landed on Claude Code's MCP-trust prompt and keystrokes typed into the composer went into that dialog rather than to the agent; the queue line says the pane reports as running because it is, and that nothing distinguishes running from waiting-on-a-dialog. That was thirteen days ago, it was written down, and the shape recurred.
+
+**This instance is smaller than it looks.** A queued feedback draft is local, is never sent without approval, and blocks nothing — so the owner can ignore it. The general case is not smaller: a modal the agent cannot get past on its own leaves the session stuck with the surface unable to help.
+
+Not fixed. What the surface may send beyond a line of text is a decision, and it is MUS-Q-0072.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go, internal/web/assets/session.js |
+| Status | with the owner on MUS-Q-0072 |
+| Evidence | Adapter.Send returns 'nothing to send' for empty or whitespace text; the client drops an empty submit before sending. There is no frame kind that carries a key rather than text. Observed on mustur/Check, whose status line reads '1 feedback draft'. |
+
+---
+
+## MUS-F-0081
+
+**Nothing on any surface stops a session, though the CLI does and the contract says Mustur does**
+
+finding · 2026-09-04
+
+the same shape on a cheaper button: [MUS-F-0077](#mus-f-0077)
+
+asked as: [MUS-Q-0073](questions.md#mus-q-0073)
+
+The owner has no way to stop a session from the browser. `mustur session stop <project>` exists and works; it is a command line, which is the thing the surface exists so that the owner does not need.
+
+CLAUDE.md says Mustur *starts agent sessions inside tmux, reports which are running, stops one*. Two of those three are on the surface. The third is not, and has never been — the session view carries a picker, a terminal, a sub-agent drawer and a composer, and nothing that ends anything.
+
+It matters more than a missing button usually would, because Mustur deliberately does not restart anything: an agent CLI that crashed wants a person. A person who is holding a phone cannot currently be that person.
+
+Not fixed. A control that kills a running agent mid-turn, on a surface reached from a phone, is a design decision — where it sits, and what stands between a thumb and it. MUS-F-0077 was exactly this shape yesterday on a much cheaper button. MUS-Q-0073.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Status | with the owner on MUS-Q-0073 |
+| Evidence | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. |
