@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -187,7 +188,39 @@ func TestThePageSaysWhenMusturDidNotStartTheSession(t *testing.T) {
 // never going to have script. A test that cannot fail for the reason its name
 // gives is worse than no test: `MUS-W-0017` cited this one as proof of a claim
 // the tree had stopped making.
-func TestExactlyTwoSurfacesCarryScript(t *testing.T) {
+// scriptsIn is every script a page loads, by src.
+//
+// Used instead of looking for "<script", which stopped meaning anything when
+// the owner made the badge live on every surface (MUS-Q-0078): every page
+// carries bar.js now. What is still worth asserting is that a page loads the
+// scripts it was given and no others, which is the property the old test was
+// really protecting.
+func scriptsIn(body string) []string {
+	var out []string
+	for _, m := range regexp.MustCompile(`<script src="([^"]+)"`).FindAllStringSubmatch(body, -1) {
+		out = append(out, m[1])
+	}
+	return out
+}
+
+func loads(body, src string) bool {
+	for _, s := range scriptsIn(body) {
+		if s == src {
+			return true
+		}
+	}
+	return false
+}
+
+// Every surface carries the bar's script, and nothing carries a script it was
+// not given.
+//
+// This asserted that exactly two surfaces carried any script at all, and the
+// exception spreading by accident was the thing it watched for. The owner
+// changed the rule on MUS-Q-0078 — the badge is live everywhere, which costs a
+// script tag everywhere — so the accident this now watches for is a *second*
+// script arriving on a page that was only meant to have the bar's.
+func TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	if !strings.Contains(getFrom(t, srv, "/sessions/Mustur"), "/assets/session.js") {
 		t.Error("the session page does not load the client")
@@ -223,23 +256,39 @@ func TestExactlyTwoSurfacesCarryScript(t *testing.T) {
 	other := httptest.NewServer(mux)
 	defer other.Close()
 
-	if body := getFrom(t, other, "/compose"); !strings.Contains(body, "/assets/compose.js") {
-		t.Error("the composer does not load its client layer")
+	// The composer keeps its own client and gains the bar's.
+	comp0 := getFrom(t, other, "/compose")
+	for _, want := range []string{"/assets/compose.js", "/assets/bar.js"} {
+		if !loads(comp0, want) {
+			t.Errorf("the composer does not load %s", want)
+		}
 	}
+	if got := len(scriptsIn(comp0)); got != 2 {
+		t.Errorf("the composer loads %d scripts: %v", got, scriptsIn(comp0))
+	}
+
+	// Intake and the queue carry the bar's script and only that.
 	for _, path := range []string{"/intake", "/questions"} {
-		if body := getFrom(t, other, path); strings.Contains(body, "<script") {
-			t.Errorf("%s carries script; the exception has become a suggestion", path)
+		body := getFrom(t, other, path)
+		if !loads(body, "/assets/bar.js") {
+			t.Errorf("%s does not keep its badge live", path)
+		}
+		if got := scriptsIn(body); len(got) != 1 {
+			t.Errorf("%s loads %v; the exception has become a suggestion", path, got)
 		}
 	}
 }
 
-// A page with no socket and no composer has nothing for the client to do, and
-// loading it there was the exception spreading by accident rather than by
-// decision.
-func TestAPageWithNoSessionCarriesNoScript(t *testing.T) {
+// A page with no socket has nothing for the session client to do. It still
+// carries the bar, because it still shows the bar.
+func TestAPageWithNoSessionLoadsNoSessionClient(t *testing.T) {
 	srv := serveSessions(t, "")
-	if body := getFrom(t, srv, "/sessions/nosuchproject"); strings.Contains(body, "<script") {
-		t.Error("the no-session page loads the client")
+	body := getFrom(t, srv, "/sessions/nosuchproject")
+	if loads(body, "/assets/session.js") {
+		t.Error("the no-session page loads the session client")
+	}
+	if !loads(body, "/assets/bar.js") {
+		t.Error("the no-session page renders a bar whose count cannot move")
 	}
 }
 
@@ -423,10 +472,11 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 		t.Error("a running sub-agent was given a final message it has not sent")
 	}
 
-	// The rows are server-rendered. This surface carries one script and it is
-	// for the output stream; a sub-agent appearing is not worth a second.
-	if strings.Count(body, "<script") != 1 {
-		t.Errorf("%d scripts on the page, want the one that drives the socket", strings.Count(body, "<script"))
+	// The rows are server-rendered: a sub-agent appearing is not worth a
+	// script. This surface loads two — the socket's and the bar's, the second
+	// since MUS-Q-0078 — and a third would be one that came in for the rows.
+	if got := scriptsIn(body); len(got) != 2 {
+		t.Errorf("the session page loads %v, want the socket's and the bar's", got)
 	}
 }
 
@@ -1110,23 +1160,40 @@ func TestTheTurningRingDoesNotPaintOverTheStatusPill(t *testing.T) {
 //
 // MUS-F-0069: the tab bar is rendered once by the server and a session tab
 // outlives that render by hours, so the count said what was true when the tab
-// opened. The count now rides the socket that is already there, the way
-// sub-agent rows do (MUS-D-0092).
+// opened. The count rides the socket that is already there, the way sub-agent
+// rows do (MUS-D-0092).
+//
+// The writing lives in bar.js since MUS-Q-0078, because the session view having
+// its own copy is how the fix ended up on one surface (MUS-F-0086). So this
+// asserts two things in two files: the socket delivers a count, and the one
+// piece of code that writes a badge is where every surface can reach it.
 func TestTheDecisionCountRidesTheSocket(t *testing.T) {
-	js, err := os.ReadFile("assets/session.js")
+	sess, err := os.ReadFile("assets/session.js")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(js), `nav a[href="/questions"]`) {
-		t.Fatal("the client never finds the Decisions tab, so nothing can update its count")
-	}
 	// Handled before the frame kinds, so hello and the later updates share one
 	// path rather than three copies of it.
-	if !strings.Contains(string(js), `typeof f.waiting === "number"`) {
+	if !strings.Contains(string(sess), `typeof f.waiting === "number"`) {
 		t.Error("the client ignores the count the server sends")
 	}
+	// Through the shared writer, not a second copy of it.
+	if !strings.Contains(string(sess), "window.musturBadge") {
+		t.Error("the session view writes the badge itself instead of through bar.js")
+	}
+	if strings.Contains(string(sess), `nav a[href="/questions"]`) {
+		t.Error("the session view still has its own badge code, which is what MUS-F-0086 was")
+	}
+
+	bar, err := os.ReadFile("assets/bar.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(bar), `nav a[href="/questions"]`) {
+		t.Fatal("the shared writer never finds the Decisions tab")
+	}
 	// Absent, not empty: that is how the server renders nothing waiting.
-	if !strings.Contains(string(js), "removeChild(cnt)") {
+	if !strings.Contains(string(bar), "removeChild(cnt)") {
 		t.Error("a count falling to zero leaves the badge on screen")
 	}
 }

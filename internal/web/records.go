@@ -143,6 +143,10 @@ type kindView struct {
 }
 
 type recordsPage struct {
+	// OpenQuestions is the bar's count. Every surface carries it, and bar.js
+	// keeps it true after this render (MUS-F-0086).
+	OpenQuestions int
+
 	Project      string
 	ShowSessions bool
 	ShowAccount  bool
@@ -303,7 +307,7 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 		}
 		page.Kinds = append(page.Kinds, kv)
 	}
-	rr.render(w, page)
+	rr.render(w, r, page)
 }
 
 // one is the canonical URL for a single record, which is what "every record
@@ -318,7 +322,7 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 	rec, ok := by[id]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
-		rr.render(w, recordsPage{Project: rr.Project, Missing: id})
+		rr.render(w, r, recordsPage{Project: rr.Project, Missing: id})
 		return
 	}
 	v := rr.view(rec, by)
@@ -333,7 +337,7 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 	}
-	rr.render(w, recordsPage{Project: rr.Project, One: &v, Checked: rr.now().Format("15:04")})
+	rr.render(w, r, recordsPage{Project: rr.Project, One: &v, Checked: rr.now().Format("15:04")})
 }
 
 // less orders identifiers by role then serial, which is how every listing here
@@ -367,13 +371,16 @@ func (rr *Records) image(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(data)
 }
 
-func (rr *Records) render(w http.ResponseWriter, p recordsPage) {
+func (rr *Records) render(w http.ResponseWriter, r *http.Request, p recordsPage) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	// Set here rather than at three call sites, because a page built without
 	// them renders a bar missing a tab and says nothing about it.
 	p.ShowSessions = rr.ShowSessions
 	p.ShowAccount = rr.ShowAccount
+	if rr.Store != nil {
+		p.OpenQuestions = OpenCount(r.Context(), rr.Store)
+	}
 	if err := recordsTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -469,11 +476,12 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
-  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span></a>
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
   <a href="/records" class="here" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
+<script src="/assets/bar.js"></script>
 </body>
 </html>
 

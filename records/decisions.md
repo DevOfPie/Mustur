@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-144 record(s), by identifier.
+145 record(s), by identifier.
 
 ## Index
 
@@ -156,6 +156,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0142](#mus-d-0142) | Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints | 2026-09-04 |
 | [MUS-D-0143](#mus-d-0143) | A Mustur session stays a terminal, and the dialogs are read off the pane knowingly | 2026-09-04 |
 | [MUS-D-0144](#mus-d-0144) | A prompt is a pop up in front of the session, minimised into the key row | 2026-09-04 |
+| [MUS-D-0145](#mus-d-0145) | The badge is live on every surface, and one file writes it | 2026-09-04 |
 
 ---
 
@@ -2584,3 +2585,34 @@ Three things follow from it and are built that way.
 | --- | --- |
 | Anchored to | the session column, not the viewport, so a wide layout puts it over the terminal rather than beside the rail |
 | Fallback | No prompt read means the element stays hidden and the terminal is untouched |
+
+---
+
+## MUS-D-0145
+
+**The badge is live on every surface, and one file writes it**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0078](questions.md#mus-q-0078)
+
+raised by: [MUS-F-0086](findings.md#mus-f-0086)
+
+what the rule counts, still open: [MUS-Q-0053](questions.md#mus-q-0053)
+
+MUS-Q-0078 offered a poll on the two surfaces that showed a stale count, a poll on the decision queue alone, or nothing. The owner asked for more than any of them: live on every surface.
+
+That turned out to be the right scope for a reason the question had not found. Six surfaces render the bar and only three rendered the count at all — the records page, the composer and the account page showed a Decisions tab with no badge on it. So on those the count was not stale, it was missing, and no amount of polling the other three would have fixed it. All six now render it server-side and all six keep it live.
+
+**One file writes a badge.** `bar.js` is loaded by every surface and exposes the writer; the session view's socket calls it rather than keeping the copy it had. That copy is exactly how MUS-F-0086 happened: the badge was fixed once, on the surface that reported it, and the other five were never in the change. A second implementation of a shared control is the defect, not the surface count.
+
+**The poll is answered from a two-second cache.** `OpenCount` lists every record in the store and filters, which is fine once and wasteful per tab per tick, so a page full of tabs costs one count between them. The endpoint returns a number and never which questions — a reader who may not open the queue still learns that something is waiting without learning what.
+
+**It stops asking when it is refused.** A 401 or 403 means the session went away while the tab sat there, and a page that polls a sign-in screen every ten seconds is a page doing harm.
+
+**The no-script property is kept where it was real.** Every surface still renders its own count and still works with script blocked; what stops is the number changing. `/questions/count` is added to the surfaces gate's exclusions by exact path, not by prefix, because a rule covering `/questions/*` would let a page through unbriefed.
+
+| Field | Value |
+| --- | --- |
+| Loaded by | every surface that renders the bar; the session view loads it alongside its own client |
+| Endpoint | GET /questions/count, a number only, cached two seconds |

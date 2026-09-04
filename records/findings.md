@@ -100,7 +100,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0083](#mus-f-0083) | A CLI prompt publishes its own key legend, so interception can read it rather than know it | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. | open; it is what MUS-W-0022 is built on |
 | [MUS-F-0084](#mus-f-0084) | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. | open; it is what MUS-Q-0076 turns on |
 | [MUS-F-0085](#mus-f-0085) | A relayed answer was typed back into the session that wrote it, wearing the owner's name | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. | fixed |
-| [MUS-F-0086](#mus-f-0086) | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked | class=cnt appears in intake.go, questions.go and sessions.go; a script tag appears only in sessions.go. TestTheDecisionCountChangesWhileTheSocketIsOpen opens a real socket against a real tmux session, appends a question with nothing reloading, and reads the count arriving as 1 — with WaitingEvery made a var so the ticker can be shortened, which is the only reason it is not a const. | the session view is fixed and now tested; the other two are with the owner on MUS-Q-0078 |
+| [MUS-F-0086](#mus-f-0086) | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. | fixed |
 
 ---
 
@@ -2225,6 +2225,8 @@ what the scripted-surface count already asks: [MUS-Q-0053](questions.md#mus-q-00
 
 asked as: [MUS-Q-0078](questions.md#mus-q-0078)
 
+settled by: [MUS-D-0145](decisions.md#mus-d-0145)
+
 The owner reported the badge still needing a refresh, and missed a question being raised because of it.
 
 **Two things are wrong and only one of them is the bug they hit.**
@@ -2238,5 +2240,5 @@ Making the other two live costs a script tag on a surface whose design is that i
 | Field | Value |
 | --- | --- |
 | Where | internal/web/intake.go, internal/web/questions.go, internal/web/sessions.go |
-| Status | the session view is fixed and now tested; the other two are with the owner on MUS-Q-0078 |
-| Evidence | class=cnt appears in intake.go, questions.go and sessions.go; a script tag appears only in sessions.go. TestTheDecisionCountChangesWhileTheSocketIsOpen opens a real socket against a real tmux session, appends a question with nothing reloading, and reads the count arriving as 1 — with WaitingEvery made a var so the ticker can be shortened, which is the only reason it is not a const. |
+| Status | fixed |
+| Evidence | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. |

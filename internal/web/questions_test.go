@@ -259,8 +259,11 @@ func TestOptionsRenderWithTheirLineAndDetail(t *testing.T) {
 	if !strings.Contains(body, "<details") {
 		t.Error("options do not expand in place")
 	}
-	if strings.Contains(body, "<script") {
-		t.Error("the page carries script")
+	// Only the bar's script. The queue's own design is that it works without
+	// one, and the owner's answer on MUS-Q-0078 added exactly the badge and
+	// nothing else — so what is worth asserting is that nothing followed it in.
+	if got := scriptsIn(body); len(got) != 1 || got[0] != "/assets/bar.js" {
+		t.Errorf("the queue loads %v, want only the bar's script", got)
 	}
 }
 
@@ -783,9 +786,11 @@ func TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith(t *testing.T) {
 	if !strings.Contains(body, "textarea:not(:placeholder-shown)") {
 		t.Error("nothing asks whether the box has text, so text alone would not enable it")
 	}
-	// Still no script on this surface: that is the whole reason for the CSS.
-	if strings.Contains(body, "<script") {
-		t.Error("the decision queue now carries a script")
+	// The dimming is CSS and stays CSS. The bar's script is the only one here,
+	// and it touches the badge and nothing else — if the button ever becomes
+	// script's job, this is where it shows up.
+	if got := scriptsIn(body); len(got) != 1 || got[0] != "/assets/bar.js" {
+		t.Errorf("the queue loads %v; the dimming is meant to be CSS", got)
 	}
 	// Withdraw has to work when nothing is chosen -- that is what it is for.
 	if strings.Contains(body, "button { opacity: .45") {

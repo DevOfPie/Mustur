@@ -628,6 +628,9 @@ func cmdServe(args []string) error {
 	// Registered on the outer mux, ahead of the intake box's catch-all, so the
 	// queue is reachable at a hostname whose "/" belongs to intake.
 	questions.Routes(mux)
+	// One script for the bar every surface renders (MUS-Q-0078). Registered
+	// here rather than by a page type, because it belongs to all of them.
+	web.BarRoutes(mux)
 	// The hook directory is what makes a session's sub-agents visible: the
 	// adapter installs a hook pointing at it, and the surface reads it back.
 	hookDir := session.DefaultHookDir()

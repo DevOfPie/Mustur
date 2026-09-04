@@ -1210,6 +1210,7 @@ question · 2026-08-25
 | Answer | Count script tags, and the number is six. A surface either ships script or it does not, which is checkable by grep — and that is what made the drift visible at all. The rule keeps its teeth: a seventh is a new decision again. |
 | Answered | 2026-08-25 07:09 |
 | Delivered | not delivered: the question names no session |
+| Moved by | MUS-Q-0078, which did not settle it. Every page ships a script tag now, so the count that prompted this question is all of them; the count that matters, pages that stop working without one, is unchanged at two. |
 
 ---
 

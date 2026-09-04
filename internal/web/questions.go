@@ -34,10 +34,12 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/export"
@@ -48,6 +50,8 @@ import (
 
 // Questions serves the decision queue.
 type Questions struct {
+	counts countCache
+
 	Store   *store.Store
 	Project string
 	Actor   string
@@ -90,6 +94,7 @@ func (q *Questions) deliverTimeout() time.Duration {
 func (q *Questions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /questions", q.show)
 	mux.HandleFunc("POST /questions", q.answer)
+	mux.HandleFunc("GET /questions/count", q.count)
 }
 
 func (q *Questions) now() time.Time {
@@ -510,6 +515,47 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
+<script src="/assets/bar.js"></script>
 </body>
 </html>
 `))
+
+// countCache holds the answer for a moment so a handful of open tabs polling
+// the badge cost one count between them rather than one each.
+//
+// OpenCount lists every record in the store and filters, which is fine once and
+// wasteful per tab per tick. Two seconds is short enough that nobody sees a
+// stale number and long enough that a page full of tabs is one query.
+type countCache struct {
+	mu   sync.Mutex
+	at   time.Time
+	n    int
+	have bool
+}
+
+func (c *countCache) get(ctx context.Context, s *store.Store, now func() time.Time) int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.have && now().Sub(c.at) < 2*time.Second {
+		return c.n
+	}
+	c.n = OpenCount(ctx, s)
+	c.at = now()
+	c.have = true
+	return c.n
+}
+
+// count answers the badge's poll. A number and nothing else: it says how many
+// decisions are open and never which, so a surface that may not read questions
+// still learns that something is waiting without learning what.
+func (q *Questions) count(w http.ResponseWriter, r *http.Request) {
+	n := 0
+	if q.Store != nil {
+		n = q.counts.get(r.Context(), q.Store, q.now)
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = json.NewEncoder(w).Encode(struct {
+		Waiting int `json:"waiting"`
+	}{n})
+}

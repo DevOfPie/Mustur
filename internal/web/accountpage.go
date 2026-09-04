@@ -151,6 +151,9 @@ type personRow struct {
 }
 
 type accountPage struct {
+	// OpenQuestions is the bar's count; bar.js keeps it true after this render.
+	OpenQuestions int
+
 	Email    string
 	Roles    []roleRow
 	Passkeys []passkeyRow
@@ -264,6 +267,9 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 	// nav with no way back to a running session, which is what MUS-F-0040 was.
 	p.ShowSessions = a.ShowSessions
 	ctx := r.Context()
+	if a.Records != nil {
+		p.OpenQuestions = OpenCount(ctx, a.Records)
+	}
 	p.Email = acct.Email
 	p.Project = a.Project
 	p.ProjectName = projectName(ctx, a.Records, a.Project)
@@ -654,13 +660,14 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
 
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
-  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span></a>
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   <a class="me here" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>
 </nav>
 <script src="/assets/auth.js"></script>
 <script src="/assets/account.js"></script>
+<script src="/assets/bar.js"></script>
 </body>
 </html>
 `))
