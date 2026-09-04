@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-90 record(s), by identifier.
+91 record(s), by identifier.
 
 ## The queue
 
@@ -100,6 +100,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0083](#mus-f-0083) | A CLI prompt publishes its own key legend, so interception can read it rather than know it | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. | open; it is what MUS-W-0022 is built on |
 | [MUS-F-0084](#mus-f-0084) | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. | open; it is what MUS-Q-0076 turns on |
 | [MUS-F-0085](#mus-f-0085) | A relayed answer was typed back into the session that wrote it, wearing the owner's name | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. | fixed |
+| [MUS-F-0086](#mus-f-0086) | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked | class=cnt appears in intake.go, questions.go and sessions.go; a script tag appears only in sessions.go. TestTheDecisionCountChangesWhileTheSocketIsOpen opens a real socket against a real tmux session, appends a question with nothing reloading, and reads the count arriving as 1 — with WaitingEvery made a var so the ticker can be shortened, which is the only reason it is not a const. | the session view is fixed and now tested; the other two are with the owner on MUS-Q-0078 |
 
 ---
 
@@ -2209,3 +2210,33 @@ There is a second thing here that is not fixed and is worth naming. A session ca
 | Where | internal/session/deliver.go, cmd/mustur/questions.go |
 | Status | fixed |
 | Evidence | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. |
+
+---
+
+## MUS-F-0086
+
+**The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked**
+
+finding · 2026-09-04
+
+the fix this is about: [MUS-F-0069](#mus-f-0069)
+
+what the scripted-surface count already asks: [MUS-Q-0053](questions.md#mus-q-0053)
+
+asked as: [MUS-Q-0078](questions.md#mus-q-0078)
+
+The owner reported the badge still needing a refresh, and missed a question being raised because of it.
+
+**Two things are wrong and only one of them is the bug they hit.**
+
+The fix for MUS-F-0069 went into the session view, because that is where the report came from: a tab left open on a terminal for hours. Three surfaces render the badge — intake, the decision queue and the session view — and the session view is the only one with a socket. So a tab left open on the decision queue, which is where somebody answering questions actually sits, shows the count it was rendered with until they navigate. That is almost certainly what the owner hit, and it is not a defect in the fix; it is the fix having been scoped to the surface that reported it.
+
+**The other thing is that nothing would have caught it if it had been the fix.** The tests written alongside MUS-F-0069 asserted the hello frame carried a count and that the client had the strings to handle one. The ticker — the part that carries a change while a socket is open, which is the entire feature — had no test at all. It could have been unreachable and every gate would have stayed green. A test now exists and the live path passes, so the session view does update; that was verified after the report rather than before it, which is the wrong order and is why the report was needed.
+
+Making the other two live costs a script tag on a surface whose design is that it works without one, which is MUS-Q-0053's territory and MUS-Q-0078's question.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go, internal/web/questions.go, internal/web/sessions.go |
+| Status | the session view is fixed and now tested; the other two are with the owner on MUS-Q-0078 |
+| Evidence | class=cnt appears in intake.go, questions.go and sessions.go; a script tag appears only in sessions.go. TestTheDecisionCountChangesWhileTheSocketIsOpen opens a real socket against a real tmux session, appends a question with nothing reloading, and reads the count arriving as 1 — with WaitingEvery made a var so the ticker can be shortened, which is the only reason it is not a const. |

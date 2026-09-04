@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 77 | [questions.md](questions.md) |
+| question | 78 | [questions.md](questions.md) |
 | decision | 143 | [decisions.md](decisions.md) |
-| finding | 90 | [findings.md](findings.md) |
+| finding | 91 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -136,6 +136,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0075](questions.md#mus-q-0075) | question | Where does an intercepted prompt appear, given the terminal has to stay visible? |
 | [MUS-Q-0076](questions.md#mus-q-0076) | question | Is a Mustur session a terminal? The structured protocol carries dialogs properly and requires --print |
 | [MUS-Q-0077](questions.md#mus-q-0077) | question | Where does a read prompt appear? MUS-Q-0075 is re-asked, because the fixture shows the labels are long |
+| [MUS-Q-0078](questions.md#mus-q-0078) | question | The badge is live on one surface. Making it live on the other two costs a script tag on each |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -364,6 +365,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0083](findings.md#mus-f-0083) | finding | A CLI prompt publishes its own key legend, so interception can read it rather than know it |
 | [MUS-F-0084](findings.md#mus-f-0084) | finding | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol |
 | [MUS-F-0085](findings.md#mus-f-0085) | finding | A relayed answer was typed back into the session that wrote it, wearing the owner's name |
+| [MUS-F-0086](findings.md#mus-f-0086) | finding | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

@@ -76,7 +76,12 @@ const KeysEvery = 60 * time.Millisecond
 // stops there. Ten seconds is the latency on a badge, not on the terminal, and
 // the alternative measured worse -- that list ran per viewer every two seconds
 // for a number that changes a few times a day.
-const WaitingEvery = 10 * time.Second
+// A var rather than a const, and only so a test can shorten it. The live path
+// -- a count that changes while a socket is open -- had no test at all when it
+// shipped: the one that existed asserted the hello frame and the client's
+// strings, so the ticker could have been unreachable and nothing would have
+// failed. The owner found it instead (MUS-F-0086).
+var WaitingEvery = 10 * time.Second
 
 // IdleTimeout closes a socket nobody is using. A tab left open on a phone in a
 // drawer should not hold a writable channel into an agent for a week.

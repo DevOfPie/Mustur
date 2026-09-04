@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-77 record(s), by identifier.
+78 record(s), by identifier.
 
 ---
 
@@ -1755,3 +1755,22 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 05:05 |
+
+---
+
+## MUS-Q-0078
+
+**The badge is live on one surface. Making it live on the other two costs a script tag on each**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0086 |
+| Option | Poll on both surfaces that show it :: the count stops lying anywhere, and two server-rendered pages gain a script :: Recommended. Intake and the decision queue ask the server for the count on a timer and update the badge, which is a handful of lines and degrades to exactly today's behaviour when script is blocked -- the page still renders its count, it just stops moving. It ends the class of failure rather than the instance: a tab left open anywhere tells the truth. The cost is that two surfaces whose whole design is that they work without script now ship one, and MUS-Q-0053 already asks what that rule counts when only some of them stop working without it. |
+| Option | Only the decision queue :: the page somebody sits on while waiting, and nothing else changes :: The queue is where a person waits for a question to arrive; intake is a page you go to, file something, and leave. One script instead of two, on the surface that actually has somebody sitting on it. The cost is that the rule gets crossed anyway, for one page instead of two, and the next report is intake. |
+| Option | Leave it; navigating is what updates it :: no new scripted surface, and a page left open keeps lying :: The badge is a hint and every navigation refreshes it. Nothing is built and the no-script surfaces stay no-script. The cost is the thing that was just reported: the owner sat on a page, a question was raised, and nothing said so -- and the answer would be that this is how it works. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 05:08 |

@@ -1259,3 +1259,89 @@ func TestOnlyTheChosenKeysAreSendable(t *testing.T) {
 		t.Errorf("the refusal does not say what happened: %v", err)
 	}
 }
+
+// The count changes while the tab is open, without a reload.
+//
+// This is the half MUS-F-0069's fix shipped without: the hello frame had a
+// test, the client's strings had a test, and the ticker that carries a change
+// mid-session had none. The owner reported the badge still needing a refresh.
+func TestTheDecisionCountChangesWhileTheSocketIsOpen(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	was := WaitingEvery
+	WaitingEvery = 100 * time.Millisecond
+	t.Cleanup(func() { WaitingEvery = was })
+
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzBadge"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 20'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	ctx0 := context.Background()
+	st, err := store.Open(ctx0, filepath.Join(t.TempDir(), "badge.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir, Store: st}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	read := func() frame {
+		t.Helper()
+		_, b, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("reading: %v", err)
+		}
+		var f frame
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
+		return f
+	}
+
+	if f := read(); f.T != "hello" || f.Waiting == nil || *f.Waiting != 0 {
+		t.Fatalf("hello = %+v, want a count of 0", f)
+	}
+
+	// A question is raised while the tab sits there. Nothing reloads.
+	if err := st.Append(ctx0, openQuestion("MUS-Q-9002", "does the badge move on its own"), "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	deadline := time.Now().Add(20 * time.Second)
+	for time.Now().Before(deadline) {
+		f := read()
+		if f.T != "waiting" {
+			continue // screens and agent rows go past on their own tickers
+		}
+		if f.Waiting == nil {
+			t.Fatal("a waiting frame carried no count")
+		}
+		if *f.Waiting != 1 {
+			t.Fatalf("waiting = %d, want 1", *f.Waiting)
+		}
+		return
+	}
+	t.Fatal("no waiting frame arrived, so the badge only moves on a reload")
+}
