@@ -226,3 +226,7 @@ func (a *Adapter) SendChoice(ctx context.Context, project, key string) error {
 	}
 	return nil
 }
+
+// plainForTest exposes the same stripping ReadPrompt does, so a test can assert
+// what is on a screen without keeping a second copy of the rule.
+func plainForTest(s string) string { return ansi.Plain(s) }

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-91 record(s), by identifier.
+92 record(s), by identifier.
 
 ## The queue
 
@@ -101,6 +101,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0084](#mus-f-0084) | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. | open; it is what MUS-Q-0076 turns on |
 | [MUS-F-0085](#mus-f-0085) | A relayed answer was typed back into the session that wrote it, wearing the owner's name | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. | fixed |
 | [MUS-F-0086](#mus-f-0086) | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. | fixed |
+| [MUS-F-0087](#mus-f-0087) | The prompt pop-up set its own display, so the hidden attribute never hid it | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. | fixed |
 
 ---
 
@@ -2242,3 +2243,31 @@ Making the other two live costs a script tag on a surface whose design is that i
 | Where | internal/web/intake.go, internal/web/questions.go, internal/web/sessions.go |
 | Status | fixed |
 | Evidence | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. |
+
+---
+
+## MUS-F-0087
+
+**The prompt pop-up set its own display, so the hidden attribute never hid it**
+
+finding · 2026-09-04
+
+the same shape, twice before: [MUS-F-0062](#mus-f-0062)
+
+the surface it broke: [MUS-D-0144](decisions.md#mus-d-0144)
+
+The owner reported the pop-up showing and empty. It was showing because it was never hidden, and empty because there was no prompt to put in it — one symptom, and the two halves have nothing to do with each other.
+
+The HTML `hidden` attribute works through a user-agent rule, `[hidden] { display: none }`. Any explicit `display` on the element outranks it. `.dlg` sets `display: flex` so it can centre its box, and `<div class="dlg" id="dlg" hidden>` was therefore not hidden at all: a bordered, shadowed, empty box sitting over the terminal that nothing on the page would close.
+
+**The file already knew.** `.chips[hidden]` and `.drawer[hidden]` both carry the guard, and the second is twelve lines from where the new element was added. That makes this the same shape as MUS-F-0062 and MUS-F-0064 — a lesson written down beside the code that had not learned it — and the third time in this repository that a rule sitting next to the change failed to reach it.
+
+So the fix is the rule and a gate rather than a fourth comment. `TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded` reads the served page, finds every element that carries `hidden` and whose class sets a `display`, and requires a `[hidden]` rule for it. It fails without the fix and passes with it, checked both ways rather than assumed.
+
+**The other half is a fixture.** An empty box was equally consistent with the parser reading a prompt off an ordinary screen and finding nothing to show, and nothing distinguished the two without trying a real screen. Both live panes returned nil, and the capture of the one that has a status line — `auto mode on (shift+tab to cycle) · PR #38 · esc to interrupt · 1 agent`, which has middots and contains something that reads exactly like a legend entry — is now a fixture asserting it stays nil. It is rejected because every entry on the line must parse and the first one does not.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Status | fixed |
+| Evidence | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. |

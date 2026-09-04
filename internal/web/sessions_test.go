@@ -1471,3 +1471,38 @@ func TestThePromptIsAPopUpThatMinimisesIntoTheKeyRow(t *testing.T) {
 		t.Error("nothing brings a minimised prompt back")
 	}
 }
+
+// Anything hidden by attribute that sets its own display must say so twice.
+//
+// The HTML hidden attribute works through a user-agent rule, `[hidden] {
+// display: none }`, which any explicit display declaration on the element
+// overrides. So an element with `display: flex` and `hidden` is not hidden. The
+// prompt shipped exactly that way and the owner got an empty box sitting over
+// the terminal that nothing would close (MUS-F-0087).
+//
+// .chips and .drawer in this template already carried the guard. A third
+// element needed it, twelve lines from where the lesson was written down, and
+// did not get it — so this is the gate rather than a fourth comment.
+func TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	// Classes on elements that carry the hidden attribute.
+	tags := regexp.MustCompile(`<\w+ class="([\w-]+)"[^>]*\shidden[\s>]`)
+	var checked int
+	for _, m := range tags.FindAllStringSubmatch(body, -1) {
+		cls := m[1]
+		// Does any rule for this class set a display?
+		rule := regexp.MustCompile(`\.` + cls + `\s*\{[^}]*display:`)
+		if !rule.MatchString(body) {
+			continue // nothing overrides the browser, so nothing to guard
+		}
+		checked++
+		if !strings.Contains(body, "."+cls+"[hidden]") {
+			t.Errorf(".%s sets its own display and is hidden by attribute, with no .%s[hidden] rule: it will never hide", cls, cls)
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no element on this page both sets a display and hides by attribute; this test is asserting nothing")
+	}
+}

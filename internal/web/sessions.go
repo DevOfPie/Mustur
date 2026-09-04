@@ -810,6 +810,13 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .dlg { position: absolute; inset: 0; bottom: var(--dock-h, 0px);
          display: flex; align-items: flex-end; justify-content: center;
          padding: .8rem; pointer-events: none; z-index: 5; }
+  /* An explicit display beats the browser's own [hidden] rule, so an element
+     that sets one and is hidden by attribute needs this or it never hides. It
+     shipped without it and the owner got an empty box over the terminal that
+     nothing would close. .chips and .drawer in this same file already carry the
+     guard, twelve lines apart, which is what makes this the third instance of a
+     lesson written down beside the code that had not learned it. */
+  .dlg[hidden] { display: none; }
   .dlgbox { pointer-events: auto; width: 100%; max-width: 34rem;
             max-height: 100%; overflow-y: auto; box-sizing: border-box;
             background: var(--paper); border: 1.4px solid var(--accent);

@@ -198,3 +198,30 @@ func TestThePromptSurvivesTheChromeSplit(t *testing.T) {
 		t.Errorf("the split changed the legend: %d keys against %d", len(fromBody.Keys), len(ReadPrompt(raw).Keys))
 	}
 }
+
+// An ordinary session screen is not a prompt.
+//
+// The fixture is a real capture of a running Claude Code pane with no dialog on
+// it, taken while the owner reported an empty pop-up. It exists because that
+// report had two possible causes and only one was the real one: a false
+// positive here would have drawn an empty box just as surely as the CSS bug
+// that turned out to be responsible (MUS-F-0087), and nothing distinguished
+// them without a screen to try.
+//
+// The status line is the thing that could plausibly fool the legend reader —
+// "auto mode on (shift+tab to cycle) · PR #38 · esc to interrupt · 1 agent"
+// has middots and contains "esc to interrupt", which reads exactly like a
+// legend entry. It is rejected because every entry on a line must parse, and
+// the first one does not.
+// ansiPlain is the package's own stripper, named here so the test reads.
+func ansiPlain(s string) string { return plainForTest(s) }
+
+func TestAnOrdinarySessionScreenIsNotAPrompt(t *testing.T) {
+	screen := fixture(t, "screen-no-prompt.txt")
+	if !strings.Contains(ansiPlain(screen), "esc to interrupt") {
+		t.Fatal("the fixture has no status line in it, so it cannot prove the status line is rejected")
+	}
+	if p := ReadPrompt(screen); p != nil {
+		t.Errorf("read a prompt off an ordinary screen: %+v", p)
+	}
+}
