@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-76 record(s), by identifier.
+77 record(s), by identifier.
 
 ---
 
@@ -1723,7 +1723,7 @@ question · 2026-09-04
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0084 |
 | Needed to proceed | yes |
 | Option | It stays a terminal; keep the pane and finish the parser :: MUS-D-0088 and MUS-D-0142 both stand, and the dialogs get scraped :: Recommended. Nothing built is discarded. A session stays something tmux holds and a person can attach to from a machine, which is MUS-D-0016's premise and the reason 4a, 4b and 5 look the way they do. The prompt parser is written and reads a real picker, so the work in hand finishes. The cost is honest and permanent: Mustur reads dialogs off a screen that exists as structured messages three feet away, every CLI redraw is a chance to be wrong, and the legend is the only thing keeping that from being knowledge of one vendor's dialogs. Revisit if the pane stops being enough. |
@@ -1732,3 +1732,26 @@ question · 2026-09-04
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-04 04:52 |
+| Answer | It stays a terminal; keep the pane and finish the parser |
+| Answered | 2026-09-04 05:03 |
+| Relayed | written down by whippy, from the owner's own message in this session's chat, 2026-09-04 |
+| Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0077
+
+**Where does a read prompt appear? MUS-Q-0075 is re-asked, because the fixture shows the labels are long**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-W-0022 |
+| Option | A panel between the terminal and the composer :: room for the heading, the sentence and each row, and one new element on the surface :: Recommended, and this reverses what was recommended on MUS-Q-0075. That was written before a real prompt had been read. The picker's heading is 'Select model', its sentence is 'Switch between Claude models. Your pick becomes the default for new sessions. For other/previous model names, specify with --model.', and one row reads 'Default (recommended) Opus 5 with 1M context · Best for everyday, complex tasks'. None of that fits on a button. A panel renders the heading, the sentence, a row per option with the cursor marked, and the legend keys as buttons -- with the terminal still whole above it. The cost is a new element no artboard has, which is MUS-F-0027's pattern, and a dock that grows takes height from the terminal on a phone. |
+| Option | Labelled buttons in the key row, cut to fit :: no new element, and the labels lose the half that says what they mean :: What MUS-Q-0075 recommended. The row becomes '1 Default (recommended)', '2 Opus (1M co…', 's session only', 'Esc cancel'. Nothing new is drawn and the fallback is exactly today's seven keys. The cost is now measurable rather than guessed: the detail column is where a picker says what an option actually does, and cutting a row to button width throws that away -- and MUS-F-0036 is already the record of a sideways row hiding its last choice behind a swipe. |
+| Option | The heading and sentence in the panel, the choices in the key row :: reads the question in one place and answers it in another :: A thin strip carries the heading and the sentence, and the choices stay in the key row beneath it. It is the smallest new element and it keeps the row as the one place anything is pressed. It also splits one dialog across two controls, so the row that says '2' is not next to the line that says what 2 is, which on a phone is a scroll apart. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 05:05 |

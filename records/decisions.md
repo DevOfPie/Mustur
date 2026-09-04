@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-142 record(s), by identifier.
+143 record(s), by identifier.
 
 ## Index
 
@@ -154,6 +154,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0140](#mus-d-0140) | The Answer button dims in CSS, so nothing is retired and no script arrives | 2026-09-03 |
 | [MUS-D-0141](#mus-d-0141) | The session view sends seven keys, and Escape is the one it was built for | 2026-09-04 |
 | [MUS-D-0142](#mus-d-0142) | Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints | 2026-09-04 |
+| [MUS-D-0143](#mus-d-0143) | A Mustur session stays a terminal, and the dialogs are read off the pane knowingly | 2026-09-04 |
 
 ---
 
@@ -2527,3 +2528,27 @@ This is vendor-specific and that is allowed rather than overlooked. MUS-D-0091 p
 | Field | Value |
 | --- | --- |
 | Fallback | A pane with no legend gets no controls and keeps its terminal; nothing is guessed |
+
+---
+
+## MUS-D-0143
+
+**A Mustur session stays a terminal, and the dialogs are read off the pane knowingly**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0076](questions.md#mus-q-0076)
+
+the evidence it was decided against: [MUS-F-0084](findings.md#mus-f-0084)
+
+the premise it keeps: [MUS-D-0016](#mus-d-0016)
+
+the first measurement of the alternative: [MUS-D-0088](#mus-d-0088)
+
+MUS-F-0084 put the structured route on the table with evidence rather than memory: the VS Code extension spawns a second CLI in `--print` with stream-json both ways and renders the protocol, dialogs included, and the IDE WebSocket is MCP for editor capabilities and cannot be made to carry a prompt. Reaching that protocol costs `--print`, which is not a terminal — measured again at CLI 2.1.260, thirteen days after MUS-D-0088 measured it first.
+
+The owner chose the terminal. MUS-D-0016's premise stands, MUS-D-0088 stands, and MUS-D-0142's interception is built on the pane.
+
+**What that means, said once so nobody has to rediscover it.** Mustur reads dialogs off a screen that exists as structured messages on a protocol the CLI already speaks. That is a choice, not an oversight, and its price is paid every time the CLI redraws: a parse can be wrong in both directions, and the legend is the only thing standing between reading a screen and knowing one vendor's dialogs. What is bought is that a session remains something tmux holds and a person can attach to from a machine, which is what four milestones are built on.
+
+The escape hatch is written down rather than assumed. If the pane ever stops being enough, MUS-F-0084 is the record of what the alternative is, what it costs, and where the evidence for both was found.

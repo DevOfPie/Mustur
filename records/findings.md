@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-89 record(s), by identifier.
+90 record(s), by identifier.
 
 ## The queue
 
@@ -99,6 +99,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0082](#mus-f-0082) | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |  | with the owner on MUS-Q-0074 |
 | [MUS-F-0083](#mus-f-0083) | A CLI prompt publishes its own key legend, so interception can read it rather than know it | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. | open; it is what MUS-W-0022 is built on |
 | [MUS-F-0084](#mus-f-0084) | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. | open; it is what MUS-Q-0076 turns on |
+| [MUS-F-0085](#mus-f-0085) | A relayed answer was typed back into the session that wrote it, wearing the owner's name | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. | fixed |
 
 ---
 
@@ -2180,3 +2181,31 @@ So the owner's instinct was right and the conclusion runs the other way from the
 | Where | ~/.vscodium-server/extensions/anthropic.claude-code-2.1.251-linux-x64 |
 | Status | open; it is what MUS-Q-0076 turns on |
 | Evidence | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. |
+
+---
+
+## MUS-F-0085
+
+**A relayed answer was typed back into the session that wrote it, wearing the owner's name**
+
+finding · 2026-09-04
+
+the rule it defeated: [MUS-D-0126](decisions.md#mus-d-0126)
+
+the same family, at a different surface: [MUS-F-0074](#mus-f-0074)
+
+MUS-Q-0076 was raised with `--in Check` and answered with `mustur answer --from-owner`, from this session, about this session. The delivery then typed *The owner answered MUS-Q-0076: It stays a terminal…* into that session's stdin — where it arrived as a fresh message from the owner, in the middle of the turn that had just written it.
+
+It was caught by reading the event log and finding three amends, all by `whippy` and none by the owner. Nothing on the surface of the message said so, and the near miss is the point: the agent was one unchecked assumption away from reporting that the owner had answered twice, which is the mistake MUS-F-0074 already cost a round of nine reopened questions.
+
+**The rule was right and the one place it mattered did not carry it.** MUS-D-0126 exists so that nobody reads a relay as the owner having been here, and it does that everywhere a record is read — `Relayed` is on the record, in the export, on the queue. The delivered line is the one copy of an answer that leaves the store, and it was the copy with the provenance stripped off.
+
+Fixed by carrying it: a relayed answer now arrives as *MUS-Q-0076 was answered "…" — written down by whippy, from …. Not typed by the owner here.* An answer the owner actually gave is unchanged, because that sentence is true of it.
+
+There is a second thing here that is not fixed and is worth naming. A session can raise a question, write down its own answer to it, and receive that answer as input — a closed loop with no person in it at any point. Provenance in the text is what makes the loop legible; it is not what makes it impossible.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/deliver.go, cmd/mustur/questions.go |
+| Status | fixed |
+| Evidence | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. |

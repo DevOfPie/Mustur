@@ -1,8 +1,11 @@
 package session
 
 import (
+	"context"
+	"fmt"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/DevOfPie/Mustur/internal/ansi"
 )
@@ -170,4 +173,56 @@ func isRule(s string) bool {
 		return false
 	}
 	return strings.TrimLeft(s, "▔▁─━═▂▃▄▅▆▇█ ") == ""
+}
+
+// SendChoice presses what a Choice says to press.
+//
+// A prompt's keys come off the pane in the CLI's own words, so they are two
+// different things wearing one field: a name the allowlist knows -- Enter, Esc,
+// an arrow -- or a single character the legend named, like the "s" in "s to use
+// this session only". Nothing about a numbered menu suggests a letter key,
+// which is why the legend is read rather than assumed (MUS-F-0083), and why
+// this cannot be the named allowlist alone.
+//
+// A single character goes in with send-keys -l, which sends it literally and
+// interprets no names at all -- so "C-c" as a literal would type three
+// characters rather than interrupting. That is what makes accepting a character
+// safe where accepting a name would not be. It is still bounded: exactly one
+// rune, printable, and not a space.
+func (a *Adapter) SendChoice(ctx context.Context, project, key string) error {
+	k := strings.TrimSpace(key)
+	if k == "" {
+		return fmt.Errorf("no key to press")
+	}
+	// A name the allowlist knows, however the CLI capitalised it. "Esc" is the
+	// legend's spelling and "escape" is the allowlist's.
+	name := strings.ToLower(k)
+	if name == "esc" {
+		name = "escape"
+	}
+	if _, ok := keys[name]; ok {
+		return a.SendKey(ctx, project, name)
+	}
+
+	r := []rune(k)
+	if len(r) != 1 || !unicode.IsPrint(r[0]) || unicode.IsSpace(r[0]) {
+		return fmt.Errorf("%q is neither a key this may send nor a single character", key)
+	}
+	target, err := NameFor(project)
+	if err != nil {
+		return err
+	}
+	live, err := a.Alive(ctx, project)
+	if err != nil {
+		return err
+	}
+	if !live {
+		return fmt.Errorf("%s has no session Mustur started", project)
+	}
+	// -l is literal and -- ends the flags, so a key that is "-" is a hyphen and
+	// not the start of an option.
+	if out, err := a.runner().Run(ctx, "tmux", "send-keys", "-t", target, "-l", "--", k); err != nil {
+		return fmt.Errorf("tmux send-keys -l %q: %w: %s", k, err, strings.TrimSpace(out))
+	}
+	return nil
 }

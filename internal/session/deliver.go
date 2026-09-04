@@ -29,6 +29,12 @@ type Sender interface {
 // it because a session went away would lose the one thing that was not
 // recoverable. What the caller gets back is a sentence for the record.
 func Deliver(ctx context.Context, s Sender, project, id, answer string) string {
+	return DeliverRelayed(ctx, s, project, id, answer, "")
+}
+
+// DeliverRelayed is Deliver for an answer somebody wrote down on the owner's
+// behalf. The provenance travels into the session with it (MUS-F-0085).
+func DeliverRelayed(ctx context.Context, s Sender, project, id, answer, relayed string) string {
 	if strings.TrimSpace(project) == "" {
 		return "not delivered: the question names no session"
 	}
@@ -42,7 +48,7 @@ func Deliver(ctx context.Context, s Sender, project, id, answer string) string {
 	if !live {
 		return fmt.Sprintf("not delivered: %s has no session Mustur started, and Mustur never attaches to one it did not", project)
 	}
-	if err := s.Send(ctx, project, Text(id, answer)); err != nil {
+	if err := s.Send(ctx, project, TextRelayed(id, answer, relayed)); err != nil {
 		return fmt.Sprintf("not delivered: %v", err)
 	}
 	return fmt.Sprintf("typed into %s%s", Prefix, project)
@@ -51,6 +57,20 @@ func Deliver(ctx context.Context, s Sender, project, id, answer string) string {
 // Text is what gets typed. It names the question so the receiving agent can
 // tell an answer from a fresh instruction, and says the owner answered it so
 // nothing treats Mustur as the author of a decision it only carried.
-func Text(id, answer string) string {
-	return fmt.Sprintf("The owner answered %s: %s", id, strings.TrimSpace(answer))
+func Text(id, answer string) string { return TextRelayed(id, answer, "") }
+
+// TextRelayed says who wrote the answer down when it was not the owner typing.
+//
+// Without this the delivered line reads "The owner answered X: ..." whatever
+// its provenance -- so an agent that writes down an answer with
+// `mustur answer --from-owner`, in a session the question names with --in, has
+// its own words typed back into its own stdin wearing the owner's name. It
+// happened on MUS-Q-0076 and was caught only by reading the event log, which is
+// the exact thing MUS-D-0126 exists to make unnecessary (MUS-F-0085).
+func TextRelayed(id, answer, relayed string) string {
+	answer = strings.TrimSpace(answer)
+	if r := strings.TrimSpace(relayed); r != "" {
+		return fmt.Sprintf("%s was answered %q -- %s. Not typed by the owner here.", id, answer, r)
+	}
+	return fmt.Sprintf("The owner answered %s: %s", id, answer)
 }
