@@ -225,3 +225,75 @@ func TestAnOrdinarySessionScreenIsNotAPrompt(t *testing.T) {
 		t.Errorf("read a prompt off an ordinary screen: %+v", p)
 	}
 }
+
+// A dialog whose choices are its legend, with no rows at all.
+//
+// MUS-F-0089. The owner reported the feedback-draft prompt on the pane with no
+// pop-up beside it. Two independent reasons, and each alone was enough:
+// the box is drawn with a side character on every line, so "│ 1 to review"
+// offered a key called "│"; and the parser required numbered rows, which this
+// dialog does not have — its choices are the legend.
+//
+// The fixture is a real capture, taken by a watcher that recorded distinct
+// screens until this one appeared, because the session holding the draft is
+// working whenever it looks for it (MUS-F-0088).
+func TestADialogWhoseChoicesAreItsLegend(t *testing.T) {
+	p := ReadPrompt(fixture(t, "prompt-feedback-draft.txt"))
+	if p == nil {
+		t.Fatal("nothing read off a screen that is asking a question")
+	}
+	if len(p.Options) != 0 {
+		t.Errorf("read %d numbered rows off a dialog that has none: %+v", len(p.Options), p.Options)
+	}
+	if len(p.Keys) != 3 {
+		t.Fatalf("read %d keys, want 1, 2 and 0: %+v", len(p.Keys), p.Keys)
+	}
+	got := map[string]string{}
+	for _, k := range p.Keys {
+		got[k.Key] = k.Label
+	}
+	for key, want := range map[string]string{"1": "review", "2": "send", "0": "dismiss"} {
+		if got[key] != want {
+			t.Errorf("legend[%q] = %q, want %q", key, got[key], want)
+		}
+	}
+	// The heading comes off the top of the box, without the box and without the
+	// glyph the CLI decorates it with.
+	if !strings.HasPrefix(p.Title, "Bug report drafted:") {
+		t.Errorf("title = %q", p.Title)
+	}
+	if strings.ContainsAny(p.Title, "│╭╰✻") {
+		t.Errorf("the title kept its furniture: %q", p.Title)
+	}
+	if !strings.Contains(p.Body, "What happened:") {
+		t.Errorf("body = %q, want the wrapped description under the heading", p.Body)
+	}
+	if strings.ContainsAny(p.Body, "│╭╰") {
+		t.Errorf("the body kept its furniture: %q", p.Body)
+	}
+}
+
+// An unboxed legend still needs rows under it.
+//
+// Dropping the requirement outright would let any sentence with two "x to y"
+// clauses in it become a row of buttons. Being inside a box is what says a
+// legend is a dialog rather than prose.
+func TestALegendOnABareLineIsNotADialogOnItsOwn(t *testing.T) {
+	// A legend that genuinely parses, so this is refused for being unboxed and
+	// not for being unreadable. The first draft of this test used "press h to
+	// help", which fails the entry pattern, and so passed while proving
+	// nothing.
+	bare := "some prose\n  h to help · q to quit\n"
+	if p := ReadPrompt(bare); p != nil {
+		t.Errorf("a bare line became a dialog: %+v", p)
+	}
+	// The same line inside a box is one.
+	boxed := "╭────────────╮\n│ Something happened │\n│ h to help · q to quit │\n╰────────────╯\n"
+	p := ReadPrompt(boxed)
+	if p == nil {
+		t.Fatal("a boxed legend with no rows was refused")
+	}
+	if len(p.Keys) != 2 || p.Title != "Something happened" {
+		t.Errorf("boxed dialog read as %+v", p)
+	}
+}

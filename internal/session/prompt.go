@@ -46,6 +46,27 @@ var (
 	legendOne = regexp.MustCompile(`^(\S+) to (\S.*)$`)
 )
 
+// The characters the CLI rules and boxes its dialogs with.
+//
+// Two shapes have been seen and they are drawn differently: the model picker
+// sits under a plain ▔ rule, and the feedback-draft prompt is inside a rounded
+// box whose sides are on every line. Both are furniture, and a parser that does
+// not take it off reads "│ 1 to review" and finds no key called "│".
+const boxChars = "╭╮╰╯┌┐└┘─━│┃▔▁═╌╍┄┅ "
+
+// unbox strips the box a line may be drawn inside, and reports whether there
+// was one.
+//
+// Whether there was one matters: a legend inside a box is a dialog even when it
+// has no numbered rows beneath it, and a legend on a bare line is only a dialog
+// when rows follow. That is the whole of what keeps an ordinary sentence
+// containing "· x to y · z to w" from being offered as buttons.
+func unbox(line string) (string, bool) {
+	t := strings.TrimSpace(line)
+	stripped := strings.Trim(t, boxChars)
+	return strings.TrimSpace(stripped), stripped != t
+}
+
 // ReadPrompt finds a selection prompt on a captured screen.
 //
 // It returns nil when there is nothing it can read, which is the important
@@ -56,10 +77,10 @@ func ReadPrompt(screen string) *Prompt {
 
 	// The legend anchors everything. Searched from the bottom, because the
 	// pane's own footer is below it and a dialog is the last thing drawn.
-	legendAt, keys := -1, []Choice(nil)
+	legendAt, keys, boxed := -1, []Choice(nil), false
 	for i := len(lines) - 1; i >= 0; i-- {
-		if k := readLegend(lines[i]); len(k) > 0 {
-			legendAt, keys = i, k
+		if k, b := readLegend(lines[i]); len(k) > 0 {
+			legendAt, keys, boxed = i, k, b
 			break
 		}
 	}
@@ -73,7 +94,8 @@ func ReadPrompt(screen string) *Prompt {
 	var opts []Choice
 	first := legendAt
 	for i := 0; i < legendAt; i++ {
-		m := numbered.FindStringSubmatch(lines[i])
+		row, _ := unbox(lines[i])
+		m := numbered.FindStringSubmatch(row)
 		if m == nil {
 			continue
 		}
@@ -86,7 +108,14 @@ func ReadPrompt(screen string) *Prompt {
 			Selected: m[1] != "",
 		})
 	}
-	if len(opts) == 0 {
+	// A legend inside a box is a dialog on its own: the feedback-draft prompt
+	// offers "1 to review · 2 to send · 0 to dismiss" and has no rows at all,
+	// because its choices *are* its legend. Requiring rows meant the surface
+	// showed nothing while the pane was asking a question (MUS-F-0089).
+	//
+	// A legend on an unboxed line still needs rows under it. That is what stops
+	// a sentence with two "x to y" clauses in it becoming a row of buttons.
+	if len(opts) == 0 && !boxed {
 		return nil
 	}
 
@@ -100,23 +129,23 @@ func ReadPrompt(screen string) *Prompt {
 // Two entries at least. One "X to Y" on a line is a sentence, and a dialog's
 // legend has never been a single key — requiring two is what stops an ordinary
 // line of output being read as a footer.
-func readLegend(line string) []Choice {
-	line = strings.TrimSpace(line)
+func readLegend(line string) ([]Choice, bool) {
+	line, boxed := unbox(line)
 	if !strings.Contains(line, "·") {
-		return nil
+		return nil, false
 	}
 	var out []Choice
 	for _, part := range strings.Split(line, "·") {
 		m := legendOne.FindStringSubmatch(strings.TrimSpace(part))
 		if m == nil {
-			return nil // One unreadable entry and the whole line is not a legend.
+			return nil, false // One unreadable entry, and the line is not a legend.
 		}
 		out = append(out, Choice{Key: m[1], Label: strings.TrimSpace(m[2])})
 	}
 	if len(out) < 2 {
-		return nil
+		return nil, false
 	}
-	return out
+	return out, boxed
 }
 
 // heading is the dialog's title and the sentence under it.
@@ -144,8 +173,14 @@ func heading(lines []string, first int) (string, string) {
 	var title string
 	var body []string
 	for i := start; i < first; i++ {
-		t := strings.TrimSpace(lines[i])
+		t, _ := unbox(lines[i])
 		if t == "" || isRule(t) {
+			continue
+		}
+		// The CLI marks a dialog's first line with a glyph of its own. It is
+		// decoration, and a heading that starts with it reads as a typo.
+		t = strings.TrimSpace(strings.TrimLeft(t, "✻✽✳✶●◆*"))
+		if t == "" {
 			continue
 		}
 		if title == "" {
@@ -172,7 +207,7 @@ func isRule(s string) bool {
 	if strings.TrimSpace(s) == "" {
 		return false
 	}
-	return strings.TrimLeft(s, "▔▁─━═▂▃▄▅▆▇█ ") == ""
+	return strings.TrimLeft(s, boxChars+"▂▃▄▅▆▇█") == ""
 }
 
 // SendChoice presses what a Choice says to press.

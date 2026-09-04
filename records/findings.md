@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-93 record(s), by identifier.
+94 record(s), by identifier.
 
 ## The queue
 
@@ -103,6 +103,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0086](#mus-f-0086) | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. | fixed |
 | [MUS-F-0087](#mus-f-0087) | The prompt pop-up set its own display, so the hidden attribute never hid it | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. | fixed |
 | [MUS-F-0088](#mus-f-0088) | A dialog the CLI draws only when idle is a dialog the surface can only offer while idle | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
+| [MUS-F-0089](#mus-f-0089) | A dialog whose choices are its legend, inside a box, was read as neither | TestADialogWhoseChoicesAreItsLegend reads the real capture: no rows, three keys 1, 2 and 0 with their words, a title free of the box and of the glyph the CLI decorates it with, and the wrapped body. TestALegendOnABareLineIsNotADialogOnItsOwn holds the guard both ways. The model picker fixture still parses, so the shape that was assumed still works. | fixed |
 
 ---
 
@@ -2300,3 +2301,44 @@ That is the first concrete cost of MUS-D-0143, which chose to read dialogs off t
 | Where | internal/session/prompt.go |
 | Status | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
 | Evidence | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. |
+
+---
+
+## MUS-F-0089
+
+**A dialog whose choices are its legend, inside a box, was read as neither**
+
+finding · 2026-09-04
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+why it could not be caught from inside: [MUS-F-0088](#mus-f-0088)
+
+the first shape, and the one that was assumed: [MUS-F-0083](#mus-f-0083)
+
+The owner filed the screen as a picture. What it holds:
+
+    ╭──────────────────────────────────────────────────────────────╮
+    │ ✻ Bug report drafted: AskUserQuestion returned an option …    │
+    │ │ - What happened: Five AskUserQuestion calls in one session … │
+    │ 1 to review · 2 to send · 0 to dismiss                        │
+    ╰──────────────────────────────────────────────────────────────╯
+
+**Two reasons it read as nothing, and either alone was enough.**
+
+The box has a side character on every line, so the legend arrived as `│ 1 to review · 2 to send · 0 to dismiss │` and the first entry offered a key called `│`. One unreadable entry rejects the line, by design, so the whole dialog went.
+
+And the parser required numbered rows. This dialog has none: its choices *are* its legend. The model picker had both a legend and rows, and a shape seen once became the shape assumed.
+
+**What replaced the row requirement is not its removal.** A legend inside a box is a dialog on its own; a legend on a bare line still needs rows under it. That is what keeps an ordinary sentence containing two *x to y* clauses from being offered as a row of buttons, and there is a test for both halves — the first draft of which used `press h to help`, which fails the entry pattern, so it passed while proving nothing.
+
+**The capture is the point.** The session holding the draft is working whenever it looks for the prompt (MUS-F-0088), so the first watcher — which searched for numbered rows, the shape that had been assumed — ran a hundred polls and found nothing. It was right to find nothing. A second watcher that assumed no shape and kept every distinct screen caught it on the third. The picture said what to look for; the capture is what the parser is written against.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestADialogWhoseChoicesAreItsLegend reads the real capture: no rows, three keys 1, 2 and 0 with their words, a title free of the box and of the glyph the CLI decorates it with, and the wrapped body. TestALegendOnABareLineIsNotADialogOnItsOwn holds the guard both ways. The model picker fixture still parses, so the shape that was assumed still works. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/session/prompt.go |
