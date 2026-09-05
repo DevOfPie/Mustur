@@ -224,28 +224,50 @@ func merge(old, in record.Record, set map[string]bool, drop names) record.Record
 	// A field is identified by its key: passing Status again replaces it, in
 	// the place it already had. Fields are rendered in order, so a correction
 	// that shuffles them is a diff nobody asked for.
-	incoming := map[string]record.Field{}
+	//
+	// A key can repeat -- Option does, once per answer the owner can pick -- so
+	// what is held per key is a list, and passing a key replaces every
+	// occurrence of it in order. The first version kept one field per key, so
+	// two --data Option= values collapsed to the last and then overwrote every
+	// existing row with it: a question with three options came back with three
+	// copies of the third, silently, from the command whose job is correcting
+	// records (MUS-F-0094).
+	incoming := map[string][]record.Field{}
+	var order []string
 	for _, f := range in.Data {
-		incoming[strings.ToLower(strings.TrimSpace(f.Key))] = f
+		key := strings.ToLower(strings.TrimSpace(f.Key))
+		if _, ok := incoming[key]; !ok {
+			order = append(order, key)
+		}
+		incoming[key] = append(incoming[key], f)
 	}
-	used := map[string]bool{}
+	taken := map[string]int{}
 	var data []record.Field
 	for _, f := range old.Data {
 		key := strings.ToLower(strings.TrimSpace(f.Key))
-		if now, ok := incoming[key]; ok {
-			f = now
-			used[key] = true
+		if list, ok := incoming[key]; ok {
+			// More of this key already here than were passed: the surplus is
+			// what the caller chose not to restate, and it goes.
+			if taken[key] >= len(list) {
+				continue
+			}
+			f = list[taken[key]]
+			taken[key]++
 		}
 		if gone(f.Key, f.Value) {
 			continue
 		}
 		data = append(data, f)
 	}
-	for _, f := range in.Data {
-		if used[strings.ToLower(strings.TrimSpace(f.Key))] || gone(f.Key, f.Value) {
-			continue
+	// Whatever is left over is new: a key the record did not carry, or more of
+	// one than it had.
+	for _, key := range order {
+		for _, f := range incoming[key][taken[key]:] {
+			if gone(f.Key, f.Value) {
+				continue
+			}
+			data = append(data, f)
 		}
-		data = append(data, f)
 	}
 	out.Data = data
 

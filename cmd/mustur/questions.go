@@ -93,6 +93,9 @@ func cmdAsk(args []string) error {
 		r.Data = append(r.Data, record.Field{Key: question.FieldNeeded, Value: question.Yes})
 	}
 	for _, o := range options {
+		if err := question.CheckOption(o); err != nil {
+			return err
+		}
 		r.Data = append(r.Data, record.Field{Key: question.FieldOption, Value: o})
 	}
 	// Recorded so `answer` can refuse the raiser. Without it the gate is one

@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 79 | [questions.md](questions.md) |
 | decision | 145 | [decisions.md](decisions.md) |
-| finding | 98 | [findings.md](findings.md) |
+| finding | 100 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -376,6 +376,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0091](findings.md#mus-f-0091) | finding | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour |
 | [MUS-F-0092](findings.md#mus-f-0092) | finding | Ten rounds of asking the owner to run a command that was never actually refused |
 | [MUS-F-0093](findings.md#mus-f-0093) | finding | Nothing on any surface starts a session, and the surface has no POST at all |
+| [MUS-F-0094](findings.md#mus-f-0094) | finding | amend collapsed a repeated field, so correcting one option overwrote them all |
+| [MUS-F-0095](findings.md#mus-f-0095) | finding | Thirteen questions carried their recommendation where nothing reads it |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-98 record(s), by identifier.
+100 record(s), by identifier.
 
 ## The queue
 
@@ -108,6 +108,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0091](#mus-f-0091) | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. | fixed |
 | [MUS-F-0092](#mus-f-0092) | Ten rounds of asking the owner to run a command that was never actually refused | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. | fixed |
 | [MUS-F-0093](#mus-f-0093) | Nothing on any surface starts a session, and the surface has no POST at all | Sessions.Routes registers GET /sessions, GET /sessions/{project}, GET /sessions/{project}/ws and GET /assets/session.js, and nothing else. 'mustur session start' takes a name, --dir and --cmd, all free text, and refuses only a missing name. | with the owner on MUS-Q-0079 |
+| [MUS-F-0094](#mus-f-0094) | amend collapsed a repeated field, so correcting one option overwrote them all | On a scratch store, a question with three options amended with three --data Option= values came back holding three copies of the last. TestAmendReplacesEachOccurrenceOfARepeatedField covers all three cases — equal, fewer, more — and asserts the fields around the repeated one keep their positions and that an unmentioned field survives. | fixed |
+| [MUS-F-0095](#mus-f-0095) | Thirteen questions carried their recommendation where nothing reads it | Thirteen questions, MUS-Q-0067 through MUS-Q-0079, held the marker at the front of the paragraph; after the repair none do, none gained or lost an option, and thirty-four questions in the store now carry it on the line. TestCheckOptionRefusesAMisplacedRecommendation holds the refusal, that its message shows the corrected option, and that prose merely containing the word is not refused. | fixed |
 
 ---
 
@@ -2464,3 +2466,57 @@ What the store already holds makes a narrower shape possible: a repository recor
 | Where | internal/web/sessions.go |
 | Status | with the owner on MUS-Q-0079 |
 | Evidence | Sessions.Routes registers GET /sessions, GET /sessions/{project}, GET /sessions/{project}/ws and GET /assets/session.js, and nothing else. 'mustur session start' takes a name, --dir and --cmd, all free text, and refuses only a missing name. |
+
+---
+
+## MUS-F-0094
+
+**amend collapsed a repeated field, so correcting one option overwrote them all**
+
+finding · 2026-09-05
+
+the same shape, fixed once before: [MUS-F-0055](#mus-f-0055)
+
+the rule it does not change: [MUS-D-0134](decisions.md#mus-d-0134)
+
+Found while trying to repair MUS-F-0095, in the command that exists to repair records.
+
+`merge` held incoming fields in a `map[string]record.Field`, one per key. A key can repeat — `Option` does, once per answer the owner can pick — so passing three `--data Option=` values kept only the last, and then replaced *every* existing Option row with it. A question with three options came back with three copies of the third. No error, no warning; the record was simply gutted and the command said the identifier back.
+
+This is MUS-F-0055's shape a second time. That one was amend replacing a record whole and quietly gutting it, fixed by making an amendment keep what it does not mention (MUS-D-0134). The fix was written for fields that appear once and never asked what a repeated key would do.
+
+**What it does now:** passing a key replaces every occurrence of it, in order. Fewer passed than held removes the surplus, because that is what the caller chose not to restate. More passed than held appends the extras. A key never mentioned is untouched, which is MUS-D-0134 unchanged.
+
+It was caught by trying it on a scratch store before touching real records, which is the only reason thirteen questions were not flattened while being repaired.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/main.go |
+| Status | fixed |
+| Evidence | On a scratch store, a question with three options amended with three --data Option= values came back holding three copies of the last. TestAmendReplacesEachOccurrenceOfARepeatedField covers all three cases — equal, fewer, more — and asserts the fields around the repeated one keep their positions and that an unmentioned field survives. |
+
+---
+
+## MUS-F-0095
+
+**Thirteen questions carried their recommendation where nothing reads it**
+
+finding · 2026-09-05
+
+what had to be fixed first to repair it: [MUS-F-0094](#mus-f-0094)
+
+the rendering it was invisible to: [MUS-F-0072](#mus-f-0072)
+
+The owner said they were not seeing the recommended icon on the decisions. Every question raised in this session — thirteen of them — had the marker at the front of the option's *paragraph* instead of its *one line*.
+
+`IsRecommended` reads the line, which is the half rendered under the label. In the paragraph the word is invisible to it: no star drew, on any of them, and the export shows nothing either. The owner answered thirteen questions without being told which one was recommended.
+
+**It went unnoticed because the asker kept saying it in prose.** Every one of those questions was accompanied by a message naming the recommended option in words, so the information arrived and the control never did. That is the failure mode to remember: a habit that supplies by hand what a surface is supposed to show will hide the surface being broken for as long as the habit lasts.
+
+The thirteen are repaired, marker moved to the line and stripped from the paragraph, each verified to still hold the same number of options afterwards. `mustur ask` now refuses an option whose paragraph starts with the marker and prints the corrected option in the refusal, because being told at the moment of asking is cheap and finding it afterwards took a fortnight of questions and the owner's eye.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/questions.go, internal/question/question.go |
+| Status | fixed |
+| Evidence | Thirteen questions, MUS-Q-0067 through MUS-Q-0079, held the marker at the front of the paragraph; after the repair none do, none gained or lost an option, and thirty-four questions in the store now carry it on the line. TestCheckOptionRefusesAMisplacedRecommendation holds the refusal, that its message shows the corrected option, and that prose merely containing the word is not refused. |

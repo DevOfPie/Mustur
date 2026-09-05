@@ -390,3 +390,31 @@ func Set(r *record.Record, key, value string) {
 func sortByID(rs []record.Record) {
 	sort.Slice(rs, func(i, j int) bool { return rs[i].ID < rs[j].ID })
 }
+
+// CheckOption refuses an option whose recommendation is in the wrong place.
+//
+// The marker is a prefix on the one-line part, which is the half a surface
+// renders under the label and the half IsRecommended reads. Written at the
+// front of the paragraph instead it is invisible to both: the star never draws
+// and the word sits in prose nobody reads as a marker.
+//
+// Thirteen questions in a row were raised that way before the owner noticed the
+// star was missing, so this is a refusal rather than a note (MUS-F-0095). It is
+// cheap to be told at the moment of asking and expensive to find afterwards.
+func CheckOption(value string) error {
+	parts := strings.SplitN(value, OptionSep, 3)
+	if len(parts) < 3 {
+		return nil // No paragraph, nowhere to put it wrongly.
+	}
+	line, detail := strings.TrimSpace(parts[1]), strings.TrimSpace(parts[2])
+	if strings.HasPrefix(detail, Recommended) && !strings.HasPrefix(line, Recommended) {
+		return fmt.Errorf(
+			"%q starts its paragraph with %q, where nothing reads it.\n"+
+				"The marker is a prefix on the one-line part, between the first and second %q:\n"+
+				"  --option %q",
+			strings.TrimSpace(parts[0]), Recommended, OptionSep,
+			strings.TrimSpace(parts[0])+OptionSep+Recommended+". "+line+OptionSep+
+				strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(detail, Recommended), ".,:;-—– ")))
+	}
+	return nil
+}
