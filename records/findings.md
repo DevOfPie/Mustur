@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-95 record(s), by identifier.
+96 record(s), by identifier.
 
 ## The queue
 
@@ -105,6 +105,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0088](#mus-f-0088) | A dialog the CLI draws only when idle is a dialog the surface can only offer while idle | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
 | [MUS-F-0089](#mus-f-0089) | A dialog whose choices are its legend, inside a box, was read as neither | TestADialogWhoseChoicesAreItsLegend reads the real capture: no rows, three keys 1, 2 and 0 with their words, a title free of the box and of the glyph the CLI decorates it with, and the wrapped body. TestALegendOnABareLineIsNotADialogOnItsOwn holds the guard both ways. The model picker fixture still parses, so the shape that was assumed still works. | fixed |
 | [MUS-F-0090](#mus-f-0090) | A session tab outlives the binary, and a pop-up it has no markup for fails silently | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. | fixed for the prompt; the class is open |
+| [MUS-F-0091](#mus-f-0091) | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. | fixed |
 
 ---
 
@@ -2372,3 +2373,36 @@ Fixed by saying so: a prompt arriving with nowhere to put it now writes *this ta
 | Where | internal/web/assets/session.js |
 | Status | fixed for the prompt; the class is open |
 | Evidence | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. |
+
+---
+
+## MUS-F-0091
+
+**A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour**
+
+finding · 2026-09-05
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+why the pane is tall enough for this to happen: [MUS-F-0052](#mus-f-0052)
+
+the dialog shape it offers: [MUS-F-0089](#mus-f-0089)
+
+The owner reloaded, the pop-up appeared correctly — title, description, and *1 · review*, *2 · send*, *0 · dismiss* — and it was wrong. The dialog it offered had been answered and left behind. The counter beside it read *quiet 1h*.
+
+**Nothing on this pane scrolls.** Mustur runs a session 300 rows tall because an agent CLI keeps no scrollback and a tall pane is the only place a transcript can live (MUS-F-0052). The CLI paints down the screen, and what it painted an hour ago is still there, character for character. So a dialog does not leave when it is done with; it stays exactly as it looked, and the parser kept finding it.
+
+**The guards that were there all held.** The prose in the transcript — this session's own explanation of the dialog's format, which contains the string `1 to review · 2 to send · 0 to dismiss` twice — was correctly refused both times, because an unboxed legend needs numbered rows under it. Only the real box parsed. It was the right box, and it was in the past.
+
+**What separates a live dialog from a painted one is what is underneath it.** A live dialog is the last thing on the transcript. A dead one has the conversation that came after it printed below. Measured on the pane that produced this: the live capture had its legend one line from the end of the body, and the stale one a hundred and thirty-nine. The transcript is what `SplitChrome` leaves once the CLI's furniture comes off the bottom, and that body is a prefix of the screen, so a line's index means the same in both.
+
+Both fixtures are now in the tree. They are the same dialog on the same pane, and the only thing that differs between them is what came after.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/session/prompt.go |

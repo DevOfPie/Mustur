@@ -297,3 +297,33 @@ func TestALegendOnABareLineIsNotADialogOnItsOwn(t *testing.T) {
 		t.Errorf("boxed dialog read as %+v", p)
 	}
 }
+
+// A dialog the conversation has moved past is not a dialog.
+//
+// MUS-F-0092. The pane is 300 rows tall so a transcript has somewhere to live
+// (MUS-F-0052), and nothing in it scrolls: what the CLI painted an hour ago is
+// still on the screen, pixel for pixel. The feedback-draft box was answered and
+// left behind, and the surface went on offering "1 · review · 2 · send · 0 ·
+// dismiss" for an hour, over a session that had printed forty more exchanges
+// underneath it.
+//
+// The two fixtures are the same dialog on the same pane, and the only thing
+// that differs is what came after it.
+func TestADialogTheConversationHasMovedPastIsNotOffered(t *testing.T) {
+	live := ReadPrompt(fixture(t, "prompt-feedback-draft.txt"))
+	if live == nil {
+		t.Fatal("the live dialog stopped being read")
+	}
+	if len(live.Keys) != 3 {
+		t.Errorf("the live dialog lost its keys: %+v", live)
+	}
+
+	stale := fixture(t, "prompt-scrolled-past.txt")
+	// The same box is still on this screen, character for character.
+	if !strings.Contains(plainForTest(stale), "1 to review · 2 to send · 0 to dismiss") {
+		t.Fatal("the stale fixture no longer holds the dialog, so it proves nothing")
+	}
+	if p := ReadPrompt(stale); p != nil {
+		t.Errorf("offered a dialog the pane had printed past: %+v", p)
+	}
+}

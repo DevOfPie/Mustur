@@ -119,6 +119,24 @@ func ReadPrompt(screen string) *Prompt {
 		return nil
 	}
 
+	// And it has to still be the thing the pane is asking.
+	//
+	// Mustur runs a session in a pane 300 rows tall, because an agent CLI keeps
+	// no scrollback and a tall pane is the only place a transcript can live
+	// (MUS-F-0052). Nothing scrolls: the CLI paints down the screen and what it
+	// painted an hour ago is still there. So a dialog that was answered, or
+	// simply moved past, stays on the screen exactly as it looked -- and the
+	// surface offered its buttons for an hour after the CLI stopped listening
+	// (MUS-F-0092).
+	//
+	// What separates the two is what is under it. A live dialog is the last
+	// thing on the transcript; a dead one has the conversation that came after
+	// it printed below. Measured on the pane that produced this: the live one
+	// sat one line from the end, the dead one a hundred and thirty-nine.
+	if paintedBelow(screen, lines, legendAt) {
+		return nil
+	}
+
 	title, body := heading(lines, first)
 	return &Prompt{Title: title, Body: body, Options: opts, Keys: keys}
 }
@@ -195,6 +213,32 @@ func heading(lines []string, first int) (string, string) {
 // How far above the options a heading may be. Enough for a wrapped paragraph
 // and not so much that an unrelated line of output becomes a title.
 const maxHead = 12
+
+// paintedBelow reports whether the CLI wrote anything under the legend.
+//
+// The transcript is what SplitChrome leaves once the CLI's own furniture -- its
+// input box, its dividers, its status line -- has been taken off the bottom.
+// That body is a prefix of the screen, so a line's index means the same in
+// both, and anything after the legend and inside the body is output the pane
+// produced after the dialog was drawn.
+//
+// Blanks and the dialog's own closing rule do not count. They are what sits
+// under a live dialog.
+func paintedBelow(screen string, lines []string, legendAt int) bool {
+	body, _ := SplitChrome(screen)
+	end := len(strings.Split(ansi.Plain(body), "\n"))
+	if end > len(lines) {
+		end = len(lines)
+	}
+	for i := legendAt + 1; i < end; i++ {
+		t := strings.TrimSpace(lines[i])
+		if t == "" || isRule(t) {
+			continue
+		}
+		return true
+	}
+	return false
+}
 
 // isRule reports a line made only of the box-drawing characters the CLI rules
 // its dialogs with.
