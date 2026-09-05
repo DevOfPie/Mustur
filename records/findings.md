@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-97 record(s), by identifier.
+98 record(s), by identifier.
 
 ## The queue
 
@@ -107,6 +107,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0090](#mus-f-0090) | A session tab outlives the binary, and a pop-up it has no markup for fails silently | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. | fixed for the prompt; the class is open |
 | [MUS-F-0091](#mus-f-0091) | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. | fixed |
 | [MUS-F-0092](#mus-f-0092) | Ten rounds of asking the owner to run a command that was never actually refused | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. | fixed |
+| [MUS-F-0093](#mus-f-0093) | Nothing on any surface starts a session, and the surface has no POST at all | Sessions.Routes registers GET /sessions, GET /sessions/{project}, GET /sessions/{project}/ws and GET /assets/session.js, and nothing else. 'mustur session start' takes a name, --dir and --cmd, all free text, and refuses only a missing name. | with the owner on MUS-Q-0079 |
 
 ---
 
@@ -2435,3 +2436,31 @@ The hazard MUS-F-0030 named — a stop that hangs while a pane is being piped, h
 | Where | Makefile |
 | Status | fixed |
 | Evidence | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. |
+
+---
+
+## MUS-F-0093
+
+**Nothing on any surface starts a session, and the surface has no POST at all**
+
+finding · 2026-09-05
+
+the other third of the same sentence: [MUS-F-0081](#mus-f-0081)
+
+asked as: [MUS-Q-0079](questions.md#mus-q-0079)
+
+The owner asked whether there is a way to start a session in Mustur. There is not, from any surface. `mustur session start <name> --dir D --cmd C` exists and works and is a command line.
+
+The sessions surface registers four routes and every one of them is a GET: the list, one session, its socket, and its script. It has never taken a POST. Everything it can do to a running session goes down the WebSocket, which is how typing and now keypresses reach a pane.
+
+CLAUDE.md says Mustur *starts agent sessions inside tmux, reports which are running, stops one*. Only the middle one is on the surface. MUS-F-0081 recorded the missing stop and parked it as unrequested; this is the other two thirds of the same sentence, and this one was asked for.
+
+**It is not a missing button.** `--cmd` runs whatever it is given — the queue has said so since 2026-08-21 — and the answer path can then type into whatever that turns out to be. A form with a command field, on a surface reached from a phone, is a shell behind Cloudflare Access. Access authenticates the person and says nothing about what the person's browser has been persuaded to submit; the origin check on the socket is what covers typing, and a POST would need its own.
+
+What the store already holds makes a narrower shape possible: a repository record carries its checkout path (`Checkout on MUS-H-0001`), so a directory need never be typed. Which of those shapes to build is MUS-Q-0079.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Status | with the owner on MUS-Q-0079 |
+| Evidence | Sessions.Routes registers GET /sessions, GET /sessions/{project}, GET /sessions/{project}/ws and GET /assets/session.js, and nothing else. 'mustur session start' takes a name, --dir and --cmd, all free text, and refuses only a missing name. |

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-78 record(s), by identifier.
+79 record(s), by identifier.
 
 ---
 
@@ -1781,3 +1781,22 @@ question · 2026-09-04
 | Answer | The badges should be live on every surface |
 | Answered | 2026-09-04 05:13 |
 | Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0079
+
+**Starting a session from a browser means a command field, unless the command is chosen from a list**
+
+question · 2026-09-05
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0093 |
+| Option | A name, a project from the routing records, and a command from an allowlist :: nothing is typed that becomes a process :: Recommended. The form offers the projects the store already knows, takes the checkout path from the repository record rather than asking for it, and offers a command from a short list the server holds -- claude today. Nothing a browser sends decides what runs; it decides which of a few known things runs, in a directory the store already named. The cost is that a session running something not on the list still needs the command line, and adding to the list is a decision rather than a keystroke. |
+| Option | The CLI's three fields, as a form :: exactly what the command line does, and a shell behind Access :: Name, directory and command, all free text, owner-only. It matches the CLI exactly, so nothing is ever impossible from the browser and no list needs maintaining. It also means a POST to this origin decides what process runs on the machine: Access authenticates the person and says nothing about what their browser was persuaded to submit, and the socket's origin check does not cover a form. The queue has recorded since 2026-08-21 that --cmd runs whatever it is given and the answer path can then type into it. |
+| Option | Leave starting on the command line :: the surface keeps having no POST, which is a property worth something :: Sessions stay started from a terminal. The surface remains four GETs and a socket, and the only thing that reaches a pane is what the origin check already guards. The cost is the one just reported: the owner, away from a terminal, cannot start the thing the whole surface exists to watch -- and MUS-F-0081's missing stop is the same sentence's other third. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-05 22:35 |

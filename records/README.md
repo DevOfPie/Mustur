@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 78 | [questions.md](questions.md) |
+| question | 79 | [questions.md](questions.md) |
 | decision | 145 | [decisions.md](decisions.md) |
-| finding | 97 | [findings.md](findings.md) |
+| finding | 98 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -137,6 +137,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0076](questions.md#mus-q-0076) | question | Is a Mustur session a terminal? The structured protocol carries dialogs properly and requires --print |
 | [MUS-Q-0077](questions.md#mus-q-0077) | question | Where does a read prompt appear? MUS-Q-0075 is re-asked, because the fixture shows the labels are long |
 | [MUS-Q-0078](questions.md#mus-q-0078) | question | The badge is live on one surface. Making it live on the other two costs a script tag on each |
+| [MUS-Q-0079](questions.md#mus-q-0079) | question | Starting a session from a browser means a command field, unless the command is chosen from a list |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -374,6 +375,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0090](findings.md#mus-f-0090) | finding | A session tab outlives the binary, and a pop-up it has no markup for fails silently |
 | [MUS-F-0091](findings.md#mus-f-0091) | finding | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour |
 | [MUS-F-0092](findings.md#mus-f-0092) | finding | Ten rounds of asking the owner to run a command that was never actually refused |
+| [MUS-F-0093](findings.md#mus-f-0093) | finding | Nothing on any surface starts a session, and the surface has no POST at all |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
