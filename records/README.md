@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 78 | [questions.md](questions.md) |
 | decision | 145 | [decisions.md](decisions.md) |
-| finding | 96 | [findings.md](findings.md) |
+| finding | 97 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -373,6 +373,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0089](findings.md#mus-f-0089) | finding | A dialog whose choices are its legend, inside a box, was read as neither |
 | [MUS-F-0090](findings.md#mus-f-0090) | finding | A session tab outlives the binary, and a pop-up it has no markup for fails silently |
 | [MUS-F-0091](findings.md#mus-f-0091) | finding | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour |
+| [MUS-F-0092](findings.md#mus-f-0092) | finding | Ten rounds of asking the owner to run a command that was never actually refused |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

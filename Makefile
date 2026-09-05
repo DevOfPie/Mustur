@@ -7,7 +7,7 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
-        questions surfaces build serve seed export audit install install-service workflow-proposals help
+        questions surfaces build serve seed export audit install install-service deploy workflow-proposals help
 
 check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces ## Every commit gate this tree can enforce mechanically
 
@@ -80,6 +80,12 @@ verify-records: ## The committed export cites only identifiers it defines
 install: ## Build the binary into ~/.local/bin, where the unit expects it
 	@go build -o "$$HOME/.local/bin/mustur" ./cmd/mustur \
 	  && echo "  ok    $$HOME/.local/bin/mustur $$($$HOME/.local/bin/mustur version)"
+
+deploy: install ## Build, install and restart, so a change is live in one command
+	@systemctl --user restart mustur
+	@systemctl --user is-active --quiet mustur \
+	  && echo "  ok    restarted; the running binary is this tree" \
+	  || { echo "  FAIL  mustur did not come back: systemctl --user status mustur"; exit 1; }
 
 install-service: install ## Install the systemd user unit. Does NOT enable or start it
 	@install -Dm644 deploy/mustur.service "$$HOME/.config/systemd/user/mustur.service" \

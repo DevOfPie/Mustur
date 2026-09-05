@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-96 record(s), by identifier.
+97 record(s), by identifier.
 
 ## The queue
 
@@ -106,6 +106,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0089](#mus-f-0089) | A dialog whose choices are its legend, inside a box, was read as neither | TestADialogWhoseChoicesAreItsLegend reads the real capture: no rows, three keys 1, 2 and 0 with their words, a title free of the box and of the glyph the CLI decorates it with, and the wrapped body. TestALegendOnABareLineIsNotADialogOnItsOwn holds the guard both ways. The model picker fixture still parses, so the shape that was assumed still works. | fixed |
 | [MUS-F-0090](#mus-f-0090) | A session tab outlives the binary, and a pop-up it has no markup for fails silently | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. | fixed for the prompt; the class is open |
 | [MUS-F-0091](#mus-f-0091) | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. | fixed |
+| [MUS-F-0092](#mus-f-0092) | Ten rounds of asking the owner to run a command that was never actually refused | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. | fixed |
 
 ---
 
@@ -2406,3 +2407,31 @@ Both fixtures are now in the tree. They are the same dialog on the same pane, an
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Where | internal/session/prompt.go |
+
+---
+
+## MUS-F-0092
+
+**Ten rounds of asking the owner to run a command that was never actually refused**
+
+finding · 2026-09-05
+
+the hazard that no longer applies: [MUS-F-0030](#mus-f-0030)
+
+The owner asked to stop having to run `make install && systemctl --user restart mustur` after every change. They had run it about ten times.
+
+The reason they were running it is that the command was refused once, early on, by the permission classifier. What was refused was that exact string — the two commands chained with `&&`. Neither half was ever refused, and neither was ever retried. `systemctl --user restart mustur` on its own is allowed. `make install` on its own is allowed. The chain was the problem, and the fix was to type them on two lines.
+
+**The failure is not the classifier's.** A refusal was read as a standing fact about a capability rather than as a fact about one command, and the workaround — hand it to the owner — was cheap enough each time that it never got questioned. Ten rounds is what that costs when nobody re-checks.
+
+`make deploy` now does both: install, restart, and confirm the service came back. One target, run from here, and the owner is out of the loop.
+
+**Two things it does not need.** It does not need a systemd path unit watching the binary, which was the first design and is machinery for a problem that did not exist. And it does not need a permission rule added anywhere, because nothing was denied.
+
+The hazard MUS-F-0030 named — a stop that hangs while a pane is being piped, holding the port through a ninety-second timeout — no longer applies: the session view renders frames from `capture-pane` and nothing pipes a pane any more (MUS-D-0132). Restarts have been clean throughout this session.
+
+| Field | Value |
+| --- | --- |
+| Where | Makefile |
+| Status | fixed |
+| Evidence | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. |

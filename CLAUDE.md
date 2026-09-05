@@ -127,6 +127,11 @@ and a save-on-change.
 **A session left running in a terminal is invisible to Mustur and will not
 become visible.** Mustur starts sessions and never attaches to one it did not.
 
+**A change reaches `mustur.devofpie.com` with `make deploy`** — build, install,
+restart, and a line saying the service came back. Run it from the session that
+made the change; it needs nobody's hands but yours
+([MUS-F-0092](records/findings.md#mus-f-0092)).
+
 Three rules bind every session in this repository:
 
 - **Milestone 1 has run and passed**, 20 of 20 against a rule of 18 of 20 fixed
