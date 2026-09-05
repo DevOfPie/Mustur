@@ -75,3 +75,29 @@ func TestAnUndeliverableAnswerIsStillRecordedWithTheReason(t *testing.T) {
 		})
 	}
 }
+
+// A relayed answer says so when it lands in the session.
+//
+// MUS-F-0085: the delivered line read "The owner answered X: ..." whatever its
+// provenance, so an agent that wrote down an answer with --from-owner, into a
+// session the question named with --in, had its own words typed back into its
+// own stdin under the owner's name. MUS-D-0126 exists so nobody reads a relay
+// as the owner having been here, and the one place the relay actually travelled
+// to was the place that lost it.
+func TestARelayedAnswerDoesNotArriveWearingTheOwnersName(t *testing.T) {
+	plain := Text("MUS-Q-0001", "do the thing")
+	if plain != "The owner answered MUS-Q-0001: do the thing" {
+		t.Errorf("an unrelayed answer changed shape: %q", plain)
+	}
+
+	got := TextRelayed("MUS-Q-0076", "keep the pane",
+		"written down by whippy, from the owner's own message in this session's chat")
+	if strings.Contains(got, "The owner answered") {
+		t.Errorf("a relayed answer still claims the owner typed it: %q", got)
+	}
+	for _, want := range []string{"MUS-Q-0076", "keep the pane", "written down by whippy", "Not typed by the owner here"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("relayed text is missing %q: %q", want, got)
+		}
+	}
+}

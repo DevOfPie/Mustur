@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-136 record(s), by identifier.
+145 record(s), by identifier.
 
 ## Index
 
@@ -148,6 +148,15 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0134](#mus-d-0134) | An amendment keeps what it does not mention, and removing something is a thing you type | 2026-08-28 |
 | [MUS-D-0135](#mus-d-0135) | GitHub's anchor rule has one implementation, and the shell gate asks for it | 2026-08-29 |
 | [MUS-D-0136](#mus-d-0136) | A pull request diff shows the code and two documents; the rest of the markdown folds away | 2026-09-03 |
+| [MUS-D-0137](#mus-d-0137) | An answer keeps its choice and gains a note | 2026-09-03 |
+| [MUS-D-0138](#mus-d-0138) | The decision log's tail is generated, and the marker carries its own boundary | 2026-09-03 |
+| [MUS-D-0139](#mus-d-0139) | Nine questions closed on a prompt's word are reopened, and the gate holds them open | 2026-09-03 |
+| [MUS-D-0140](#mus-d-0140) | The Answer button dims in CSS, so nothing is retired and no script arrives | 2026-09-03 |
+| [MUS-D-0141](#mus-d-0141) | The session view sends seven keys, and Escape is the one it was built for | 2026-09-04 |
+| [MUS-D-0142](#mus-d-0142) | Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints | 2026-09-04 |
+| [MUS-D-0143](#mus-d-0143) | A Mustur session stays a terminal, and the dialogs are read off the pane knowingly | 2026-09-04 |
+| [MUS-D-0144](#mus-d-0144) | A prompt is a pop up in front of the session, minimised into the key row | 2026-09-04 |
+| [MUS-D-0145](#mus-d-0145) | The badge is live on every surface, and one file writes it | 2026-09-04 |
 
 ---
 
@@ -2345,3 +2354,265 @@ One consequence to know before it surprises somebody: the exemptions are anchore
 | --- | --- |
 | Where | .gitattributes |
 | Evidence | `git check-attr linguist-generated` over eleven files: false for CLAUDE.md and README.md, true for decisions.md, Plan.md, workflow.md, queue.md, docs/ui-surfaces.md, ci/README.md and the records tree. |
+
+---
+
+## MUS-D-0137
+
+**An answer keeps its choice and gains a note**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0068](questions.md#mus-q-0068)
+
+supersedes one clause of: [MUS-D-0055](#mus-d-0055)
+
+raised by: [MUS-F-0071](findings.md#mus-f-0071)
+
+MUS-D-0055 made an answer a choice between options and put free text beneath them, beating a choice when both were sent. The reasoning for the override still holds: the owner wanting to say something the list does not contain is the case a list is worst at. What it did not anticipate is the owner wanting to say something *about* an option — and the only way through the surface was to retype the option's label into the box and append the remark, after which the record said what was typed and never which option it named.
+
+The owner chose to keep the choice. A chosen option is still the answer, verbatim and matchable back to the option it names; the box beside it becomes a note on that choice, kept in its own field. Free text with no choice is unchanged and is still the answer itself, which is the clause of MUS-D-0055 that this leaves standing.
+
+A session waiting on the answer is told both, joined into one sentence: an agent handed only the label would act on an option the owner had qualified.
+
+The two alternatives were weighed and refused. Folding the note into the answer string is the smallest change and destroys the property that made options worth having. Prefilling the box with the chosen label fixes the retyping the owner named and not the thing underneath it — the record still ends up saying only what was written.
+
+| Field | Value |
+| --- | --- |
+| Stored as | Answer keeps the option's label; Note holds the remark. No note is written when there is none, so a plain answer renders exactly as it did |
+
+---
+
+## MUS-D-0138
+
+**The decision log's tail is generated, and the marker carries its own boundary**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0069](questions.md#mus-q-0069)
+
+raised by: [MUS-F-0073](findings.md#mus-f-0073)
+
+decisions.md fell seventeen decisions behind the store — MUS-D-0121 through MUS-D-0137 — and every gate passed throughout, because nothing compares the two (MUS-F-0073). The owner found it by looking for a decision and not finding it.
+
+Three ways out were offered: hand the file over to a pointer and add a gate, backfill seventeen essays, or generate the tail. The owner chose to generate it.
+
+So the file keeps its prose, its index and its append-only rule down to a marker, and everything below the marker is rendered from the store by `make export`. The two halves read differently on purpose: above is an argument with its corrections and retractions inside it, written when a decision earns one; below is the decision as the store holds it. A decision that deserves an essay still gets one written above.
+
+**The marker carries the boundary**, `<!-- mustur:generated from=MUS-D-0121 -->`, rather than the code holding a constant. The hand-written half stopped where it stopped for reasons that are in the document, and a number in Go would be a second place to keep them in step. A file with no marker, or a marker naming no boundary, is refused with the file untouched — the alternative is guessing where the prose ends, and guessing wrong deletes it.
+
+**It is not part of `export.Write`, and the flag is off by default.** Write owns a directory it may prune; this edits one file it must not otherwise touch. The running service exports `records/` from a systemd unit whose filesystem is read-only everywhere else, so `--decisions` is passed by the Makefile and by nothing else. A daemon that could write the checkout's root is a different thing from a daemon that renders its own export directory.
+
+Nothing yet fails when the file is stale. `make export` is what keeps it current, which is the standing `records/` has had since MUS-F-0011 — this file now sits under that open finding rather than beside it.
+
+| Field | Value |
+| --- | --- |
+| Marker | <!-- mustur:generated from=MUS-D-0121 --> in decisions.md; everything below it is replaced on every export |
+| Run by | make export, which passes --decisions decisions.md; the service does not |
+
+---
+
+## MUS-D-0139
+
+**Nine questions closed on a prompt's word are reopened, and the gate holds them open**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0070](questions.md#mus-q-0070)
+
+raised by: [MUS-F-0074](findings.md#mus-f-0074)
+
+the rule the relays were written under: [MUS-D-0126](#mus-d-0126)
+
+MUS-F-0074 found the prompt returning an option the owner had not chosen: five calls in one session, each returning the first and recommended option, and the owner confirmed they had answered none of them. Ten questions in this store carry a `Relayed` field; nine of them — MUS-Q-0058 through MUS-Q-0066 — cite a prompt as where the owner gave the answer. Each closed a question. Each drove behaviour that shipped.
+
+Three ways forward were offered: review the nine in one pass, let them stand until something contradicts one, or reopen all nine. The owner chose to reopen all nine, which was named as the safest and the most expensive.
+
+So each of the nine is open again and marked as one the work cannot proceed without, which is what puts it in front of `make check` rather than leaving it to be waited out. The gate is red until the owner answers them, deliberately: that is the difference between reopening a question and noting that it might be wrong.
+
+**Nothing was deleted and nothing was reversed.** The relayed text is kept verbatim on each record as `Unconfirmed answer`, beside when it was recorded and by whom, so a reader can see what was acted on. No code was changed and no shipped behaviour was rolled back — a decision that turns out to have been right will be answered the same way, and one that does not is a defect with a record already pointing at it.
+
+MUS-Q-0057 is not among them. Its answer was relayed from a question form on a published plan rather than from a prompt, which is a surface the owner used directly.
+
+| Field | Value |
+| --- | --- |
+| Reopened | MUS-Q-0058, MUS-Q-0059, MUS-Q-0060, MUS-Q-0061, MUS-Q-0062, MUS-Q-0063, MUS-Q-0064, MUS-Q-0065, MUS-Q-0066 |
+| Kept on each | Unconfirmed answer, Unconfirmed because, Originally recorded |
+
+---
+
+## MUS-D-0140
+
+**The Answer button dims in CSS, so nothing is retired and no script arrives**
+
+decision · 2026-09-03
+
+answers: [MUS-Q-0071](questions.md#mus-q-0071)
+
+raised by: [MUS-F-0075](findings.md#mus-f-0075)
+
+the clause it does not retire: [MUS-D-0055](#mus-d-0055)
+
+MUS-Q-0071 offered three ways to make Answer unavailable until there is something to answer with, and the owner took none of them: *can we enable the button for a chosen option or text in the box?* That is option three's behaviour without option three's price, and it turns out to cost nothing at all.
+
+`:has()` asks the form whether any radio is checked; `:placeholder-shown` asks whether the box is empty. Both are live, both are CSS, and each question is its own form so the rule scopes to one question rather than to the page. A question offering no options has no radio to check and so turns on text alone, which is what it should do.
+
+So MUS-D-0055's surviving clause stands — text with no choice still answers a question that offers options — and the decision queue is still a page with no script on it. Neither of the costs the menu asked the owner to accept is paid.
+
+**It is an affordance and not a guard, and the record should say so rather than let a reader assume otherwise.** `pointer-events: none` stops a pointer and not a keyboard, and a browser without `:has()` applies none of it and gets the button as it was. The refusal that actually holds is the server's, which has been there since the surface was built and is unchanged. Withdraw is untouched on purpose: closing a question with no answer is the one thing that has to work when nothing is chosen.
+
+This is the third time the owner has improved on the menu rather than picking from it.
+
+| Field | Value |
+| --- | --- |
+| How | form:not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown))) button.primary |
+| What still refuses | the server, unchanged; this is what the button looks like, not what the form accepts |
+
+---
+
+## MUS-D-0141
+
+**The session view sends seven keys, and Escape is the one it was built for**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0072](questions.md#mus-q-0072)
+
+what it is for: [MUS-Q-0073](questions.md#mus-q-0073)
+
+raised by: [MUS-F-0080](findings.md#mus-f-0080)
+
+the decision it excepts: [MUS-D-0096](#mus-d-0096)
+
+Everything reaching a pane was a line of text followed by Enter, because `Send` refuses empty text and MUS-D-0096 made a message the unit. A pane asking for a keypress rather than a sentence was visible and unreachable (MUS-F-0080). The owner chose a small row of keys above the composer over sending nothing and over becoming a full keyboard.
+
+**Escape, Enter, the four arrows, Ctrl-C.** Exactly seven, in an allowlist mapping a name the browser sends to a name tmux understands. Not a pass-through: this package shells out to tmux with the caller's string as an argument, and `send-keys` reads names like `C-c` out of it, so a browser naming its own key would be a browser choosing what tmux does to a pane. The next key wanted is a line in that map and an argument for what it is for.
+
+**What it is actually for is MUS-Q-0073.** That question was asked as *does stopping a session get a control*, which was the wrong question — the owner meant interrupting an agent mid-turn to correct it, having noticed it misreading them, which in the terminal is Escape. So the row is not a convenience beside the real fix; it is the fix, and Escape is its first button.
+
+**`SendKey` is separate from `Send` rather than a mode of it.** Send's whole argument is that a message is text and goes in as a paste that says so; keeping them apart is what stops *send this text* quietly growing a way to press Ctrl-C. No Enter follows a key — Send types a line and submits it, and this presses what it was asked for and nothing else, because a stray Enter would answer a dialog the owner had only meant to look at.
+
+**Keys are paced at 60ms where a message is paced at 250ms.** Nobody writes two sentences in a quarter second and the limit is there to stop a pane being flooded with prose; moving four rows down a list at one press per 250ms is the latency that makes a control feel broken. They have separate budgets, so holding an arrow does not spend the composer's.
+
+The row sits outside the form. A button inside a form submits it, which is the defect this row exists to be the opposite of. Ctrl-C sits apart from the keys that move around inside a dialog, and carries no tick: a row of seven buttons that each need confirming is not a row anybody would use.
+
+| Field | Value |
+| --- | --- |
+| The seven | escape, enter, up, down, left, right, cancel (C-c) |
+| Measured | Against real tmux with 'cat -v' as the probe, which prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, on one line, so nothing was appended to either |
+
+---
+
+## MUS-D-0142
+
+**Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0074](questions.md#mus-q-0074)
+
+raised by: [MUS-F-0082](findings.md#mus-f-0082)
+
+what it is built on: [MUS-F-0083](findings.md#mus-f-0083)
+
+the vendor rule it sits under: [MUS-D-0091](#mus-d-0091)
+
+MUS-Q-0074 offered three distances: send a digit and understand nothing, intercept the prompt and render it as real UI, or neither. The owner chose interception, which the option itself called a milestone rather than an afternoon.
+
+**What makes it tractable is that the CLI publishes its own key legend** (MUS-F-0073's neighbour, MUS-F-0083). A prompt on screen carries a title, numbered rows, a cursor, and a line saying what every key does in the CLI's own words. So the surface does not have to know what a dialog means: it reads the rows and the legend and offers what the screen says is available. A dialog that changes its keys changes its legend in the same edit.
+
+**The terminal never goes away.** Whatever is offered sits beside the pane and not over it, because the failure mode of any parser here is silence in two directions -- a prompt drawn that is not there, and a prompt on screen that nothing offers to answer. When the parse is wrong the truth is still on the screen and still answerable with the keys, which is what makes a wrong parse a nuisance rather than a trap.
+
+**No legend means no offer.** A pane this cannot read gets nothing rendered and loses nothing, which is the same fallback MUS-D-0130 chose for the running-or-idle pill: read it from the CLI when the CLI says, and do not claim to know when it does not.
+
+This is vendor-specific and that is allowed rather than overlooked. MUS-D-0091 permits it where a capability belongs to one vendor, and MUS-F-0053 already reads this CLI's furniture off the screen to draw the status chips. This is the same act on a different part of the same screen.
+
+| Field | Value |
+| --- | --- |
+| Fallback | A pane with no legend gets no controls and keeps its terminal; nothing is guessed |
+
+---
+
+## MUS-D-0143
+
+**A Mustur session stays a terminal, and the dialogs are read off the pane knowingly**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0076](questions.md#mus-q-0076)
+
+the evidence it was decided against: [MUS-F-0084](findings.md#mus-f-0084)
+
+the premise it keeps: [MUS-D-0016](#mus-d-0016)
+
+the first measurement of the alternative: [MUS-D-0088](#mus-d-0088)
+
+MUS-F-0084 put the structured route on the table with evidence rather than memory: the VS Code extension spawns a second CLI in `--print` with stream-json both ways and renders the protocol, dialogs included, and the IDE WebSocket is MCP for editor capabilities and cannot be made to carry a prompt. Reaching that protocol costs `--print`, which is not a terminal — measured again at CLI 2.1.260, thirteen days after MUS-D-0088 measured it first.
+
+The owner chose the terminal. MUS-D-0016's premise stands, MUS-D-0088 stands, and MUS-D-0142's interception is built on the pane.
+
+**What that means, said once so nobody has to rediscover it.** Mustur reads dialogs off a screen that exists as structured messages on a protocol the CLI already speaks. That is a choice, not an oversight, and its price is paid every time the CLI redraws: a parse can be wrong in both directions, and the legend is the only thing standing between reading a screen and knowing one vendor's dialogs. What is bought is that a session remains something tmux holds and a person can attach to from a machine, which is what four milestones are built on.
+
+The escape hatch is written down rather than assumed. If the pane ever stops being enough, MUS-F-0084 is the record of what the alternative is, what it costs, and where the evidence for both was found.
+
+---
+
+## MUS-D-0144
+
+**A prompt is a pop up in front of the session, minimised into the key row**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0077](questions.md#mus-q-0077)
+
+the work it completes: [MUS-W-0022](work-units/MUS-W-0022.md#mus-w-0022)
+
+the property minimising protects: [MUS-D-0143](#mus-d-0143)
+
+MUS-Q-0077 offered three places for a prompt the surface has read: a panel between the terminal and the composer, buttons cut to fit in the key row, or a strip and the row together. The owner took none of them and wrote a fourth — a pop up in front of the session, that can be minimised into the button row.
+
+It is better than the three it replaced and the reason is worth keeping. The panel was recommended because the picker's rows do not fit on a button, and its cost was that a dock which grows takes height from the terminal. The row was cheap and threw away the column where a picker says what an option does. **A pop up pays neither: it takes the room a dialog needs because it is over the terminal rather than beside it, and it gives the room back on demand because the thing you want the room for is the pane underneath.** Minimising is the answer to the objection that a pop up covers what it is describing, which is the one property MUS-D-0143 says must hold.
+
+Three things follow from it and are built that way.
+
+**It is held above the dock.** A dialog that covered the composer would take the reply box away at the moment somebody most wants to type instead of pressing — the buttons offer what the screen offers, and the composer is what you reach for when that is not what you meant.
+
+**It is rebuilt only when the prompt changes.** A screen frame arrives on every redraw and a cursor blink is a redraw, so rebuilding per frame would throw the minimised state away several times a second. A prompt that changes while minimised stays minimised: it was put away to read the pane, and a redraw is not a request to bring it back.
+
+**Its buttons send the same key frame the row does.** One path to a keypress, one place it can be refused, and one allowlist. The cursor's row is marked rather than pre-pressed — the pane has a selection, this says which, and pressing is still a choice somebody makes.
+
+| Field | Value |
+| --- | --- |
+| Anchored to | the session column, not the viewport, so a wide layout puts it over the terminal rather than beside the rail |
+| Fallback | No prompt read means the element stays hidden and the terminal is untouched |
+
+---
+
+## MUS-D-0145
+
+**The badge is live on every surface, and one file writes it**
+
+decision · 2026-09-04
+
+answers: [MUS-Q-0078](questions.md#mus-q-0078)
+
+raised by: [MUS-F-0086](findings.md#mus-f-0086)
+
+what the rule counts, still open: [MUS-Q-0053](questions.md#mus-q-0053)
+
+MUS-Q-0078 offered a poll on the two surfaces that showed a stale count, a poll on the decision queue alone, or nothing. The owner asked for more than any of them: live on every surface.
+
+That turned out to be the right scope for a reason the question had not found. Six surfaces render the bar and only three rendered the count at all — the records page, the composer and the account page showed a Decisions tab with no badge on it. So on those the count was not stale, it was missing, and no amount of polling the other three would have fixed it. All six now render it server-side and all six keep it live.
+
+**One file writes a badge.** `bar.js` is loaded by every surface and exposes the writer; the session view's socket calls it rather than keeping the copy it had. That copy is exactly how MUS-F-0086 happened: the badge was fixed once, on the surface that reported it, and the other five were never in the change. A second implementation of a shared control is the defect, not the surface count.
+
+**The poll is answered from a two-second cache.** `OpenCount` lists every record in the store and filters, which is fine once and wasteful per tab per tick, so a page full of tabs costs one count between them. The endpoint returns a number and never which questions — a reader who may not open the queue still learns that something is waiting without learning what.
+
+**It stops asking when it is refused.** A 401 or 403 means the session went away while the tab sat there, and a page that polls a sign-in screen every ten seconds is a page doing harm.
+
+**The no-script property is kept where it was real.** Every surface still renders its own count and still works with script blocked; what stops is the number changing. `/questions/count` is added to the surfaces gate's exclusions by exact path, not by prefix, because a rule covering `/questions/*` would let a page through unbriefed.
+
+| Field | Value |
+| --- | --- |
+| Loaded by | every surface that renders the bar; the session view loads it alongside its own client |
+| Endpoint | GET /questions/count, a number only, cached two seconds |

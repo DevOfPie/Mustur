@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-66 record(s), by identifier.
+78 record(s), by identifier.
 
 ---
 
@@ -1210,6 +1210,7 @@ question · 2026-08-25
 | Answer | Count script tags, and the number is six. A surface either ships script or it does not, which is checkable by grep — and that is what made the drift visible at all. The rule keeps its teeth: a seventh is a new decision again. |
 | Answered | 2026-08-25 07:09 |
 | Delivered | not delivered: the question names no session |
+| Moved by | MUS-Q-0078, which did not settle it. Every page ships a script tag now, so the count that prompted this question is all of them; the count that matters, pages that stop working without one, is unchanged at two. |
 
 ---
 
@@ -1310,16 +1311,17 @@ question · 2026-08-26
 | --- | --- |
 | Status | answered |
 | Blocks | MUS-F-0044 |
-| Needed to proceed | yes |
 | Option | A correction files a new record and retires the old :: keeps identifiers permanent; costs two records per correction :: IDW-F-0004 would be re-filed as a MUS finding, and IDW-F-0004 would stay, marked superseded and pointing at it. Nothing an identifier ever meant changes, which is the promise the whole store rests on. The cost is that every correction leaves a stub in the wrong project's list, and the idea inbox counter the scratch pad exists to protect goes up rather than down. Recommended |
 | Option | Routing becomes mutable and the identifier is reissued :: reads better afterwards; breaks the one rule everything else assumes :: The record keeps its content and gets a new identifier at the correct destination, and the old identifier stops resolving. Anything that cited it — a commit message, a decision, a comment in the code — is then pointing at nothing. That is the failure the permanence rule exists to prevent, and it would be reintroduced for the convenience of a tidy list. |
 | Option | Routing becomes mutable and the identifier does not change :: no stub and no broken citation; the prefix then lies :: IDW-F-0004 stays IDW-F-0004 and is routed to Mustur. Every citation keeps working and nothing is duplicated. What breaks is that the prefix stops meaning where the record lives, so an identifier can no longer be read — and every surface that groups by prefix would have to stop trusting it. |
 | Asked by | whippy |
 | Surfaced | 2026-08-26 22:44 |
-| Answer | A correction files a new record at the right destination and retires the old one, which keeps its identifier and points at its replacement. Identifiers stay permanent; the cost is a stub left in the wrong project's list. |
-| Answered | 2026-08-26 22:45 |
-| Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-08-26 22:45, written down by whippy, from a prompt in the session that raised it |
+| Answer | A correction files a new record and retires the old |
+| Answered | 2026-09-03 04:16 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | A correction files a new record at the right destination and retires the old one, which keeps its identifier and points at its replacement. Identifiers stay permanent; the cost is a stub left in the wrong project's list. |
 
 ---
 
@@ -1338,10 +1340,13 @@ question · 2026-08-26
 | Option | A question can be withdrawn as overtaken, by whoever raised it :: no new answering power; says less than an answer :: 'mustur answer --withdraw' already exists and an agent may already use it on its own question. Making 'overtaken by a decision taken elsewhere' an explicit withdrawal reason would clear the queue without anyone claiming to have recorded what the owner said. What is lost is the answer itself: the record would say the question stopped mattering, not what was decided. |
 | Asked by | whippy |
 | Surfaced | 2026-08-26 22:44 |
-| Answer | An agent may record the owner's answer, attributed. 'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. The asker still may not answer unqualified. |
-| Answered | 2026-08-26 22:45 |
-| Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-08-26 22:45, written down by whippy, from a prompt in the session that raised it |
+| Cut off | "This was previously answered as 'An agent may record..." — what the box held when Enter submitted it (MUS-F-0076). Kept because it is the start of what the owner meant to say, not because it is an answer. |
+| Answer | The previous selection of 'An agent may record...' was correct, but this may have caused our recent issues, I will aim to only answer through Mustur |
+| Answered | 2026-09-03 04:43 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | An agent may record the owner's answer, attributed. 'mustur answer --from-owner' takes where the answer was given, not a bare yes, and writes a Relayed field naming who wrote it down and where it came from. The asker still may not answer unqualified. |
 
 ---
 
@@ -1355,16 +1360,18 @@ question · 2026-08-27
 | --- | --- |
 | Status | answered |
 | Blocks | MUS-F-0049 |
-| Needed to proceed | yes |
 | Option | Render frames from capture-pane :: correct for free; changes what resume means :: tmux has already done the emulation, so ask it for the screen instead of the protocol. The seed path already does exactly this and reads correctly. One poll per watched session sends about 1.4KB where the raw stream sent 6.6KB for the same turn, and the working and idle detection already reads the same pane, so it costs nothing new. What changes is the resume model: the byte offset a viewer reconnects at, the 256KB buffer from MUS-Q-0021 and the gap message all describe a stream, and a screen has none of those. Scrollback comes from capture-pane -S instead. Recommended |
 | Option | Emulate the terminal in Mustur :: keeps the stream and its resume model; a terminal emulator to own :: Run the raw bytes through a VT parser, keep a screen model, send diffs. Byte offsets, replay and the gap message all survive unchanged, and the output could be diffed rather than re-sent whole. The cost is a terminal emulator in the binary and in the tests — every escape sequence that arrives is one this project now has to be correct about, and tmux is already correct about all of them one process away. |
 | Option | Strip the escapes and keep the log :: the cheap half; the layout stays wrong :: Makes the live stream match the seed in character set, so the bracket codes stop appearing as literal text. It does not fix the problem: ESC[21;3H means the text after it overwrites row 21, so removing the code keeps the text and loses where it belongs. Frames would still stack on each other, just without the codes visible. Worth naming because it is what 'fix the formatting' sounds like it means. |
 | Asked by | whippy |
 | Surfaced | 2026-08-27 01:57 |
-| Answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
-| Answered | 2026-08-27 01:57 |
-| Relayed | written down by whippy, from a prompt in the session that raised it |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-08-27 01:57, written down by whippy, from a prompt in the session that raised it |
+| Answered | 2026-09-03 04:49 |
+| Reopened | Withdrawn at 04:23 by a one-press button that did not say what it did (MUS-F-0077). Nothing was recorded to recover; the question itself is what came back. |
+| Answer | The existing decision was mine and the current operation is good. |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | Render frames from capture-pane. tmux has already done the emulation; ask it for the screen instead of the protocol, as the seed path already does. The resume model changes with it: the byte offset, the 256KB buffer and the gap message all describe a stream and a screen has none of them. |
 
 ---
 
@@ -1383,10 +1390,13 @@ question · 2026-08-28
 | Option | Something narrower :: Gate only the surfaces that carry script :: A script tag is already a decision the owner takes rather than a consequence of building something, and MUS-Q-0053 left what the rule counts open. Gating that smaller set is cheaper to build and harder to argue with, and it would have caught two of the seven rather than all of them. |
 | Asked by | whippy |
 | Surfaced | 2026-08-28 08:51 |
-| Answer | Build the gate. make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. |
-| Answered | 2026-08-28 08:52 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-08-28 08:52, written down by whippy, from the prompt in this session, 2026-08-28 |
+| Answer | Recommended |
+| Answered | 2026-09-03 05:14 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | Build the gate. make check learns which templates render a surface and fails when one appears that docs/ui-surfaces.md does not name. |
+| What Recommended meant | Build the gate — the first option, whose label is the word Recommended. |
 
 ---
 
@@ -1405,10 +1415,13 @@ question · 2026-08-28
 | Option | Datalist, and route by display name :: Script-free, and it costs the name in the box :: With `input list=`, the input's value is the option's value, so choosing Mustur leaves MUS-P-0001 sitting in the box. Routing by display name instead would fix that and would work only while no two destinations share a name — which is a constraint on the routing records rather than on the control, and one nothing currently enforces. |
 | Asked by | whippy |
 | Surfaced | 2026-08-28 08:51 |
-| Answer | Leave it. The closed control is not the problem and the list is four long; revisit when the opened popup is actually unpleasant. |
-| Answered | 2026-08-28 08:52 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-08-28 08:52, written down by whippy, from the prompt in this session, 2026-08-28 |
+| Answer | Recommended |
+| Answered | 2026-09-03 05:21 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | Leave it. The closed control is not the problem and the list is four long; revisit when the opened popup is actually unpleasant. |
+| What Recommended meant | Leave it — the first option, whose label is the word Recommended. |
 
 ---
 
@@ -1428,10 +1441,13 @@ question · 2026-08-28
 | Option | Leave it, and gate the damage instead :: Keep amend as it is, and add a check that fails when a record loses a citation :: Treats the loss as something to detect rather than prevent. It would have caught all eight of the records repaired today, and it catches nothing at the moment of the mistake — the record is still gutted, and the gate tells you afterwards. |
 | Asked by | whippy |
 | Surfaced | 2026-08-28 23:04 |
-| Answer | Merge, with an explicit --drop. What is passed replaces that part and nothing else; anything omitted survives. Removing a field or citation becomes --drop KEY, typed on purpose. |
-| Answered | 2026-08-28 23:04 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-08-28 23:04, written down by whippy, from the prompt in this session, 2026-08-28 |
+| Answer | Recommended |
+| Answered | 2026-09-03 05:31 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | Merge, with an explicit --drop. What is passed replaces that part and nothing else; anything omitted survives. Removing a field or citation becomes --drop KEY, typed on purpose. |
+| What Recommended meant | Merge, with an explicit --drop — the first option, whose label is the word Recommended. |
 
 ---
 
@@ -1450,10 +1466,12 @@ question · 2026-08-28
 | Option | Leave it :: They agree now, and drift is a problem for the day it happens :: Cheapest, and honest about the fact that both were fixed today. It also accepts that the next divergence is found the way this one was — by somebody running the gates by hand and wondering. |
 | Asked by | whippy |
 | Surfaced | 2026-08-29 00:23 |
-| Answer | One implementation, in Go, with the script calling it. The rule gets one place to be wrong; the link gate stops being runnable without building the tree, which is the accepted cost. |
-| Answered | 2026-08-29 00:23 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-08-28 |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-08-29 00:23, written down by whippy, from the prompt in this session, 2026-08-28 |
+| Answer | I made this choice previously, use the existing answer |
+| Answered | 2026-09-03 05:31 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | One implementation, in Go, with the script calling it. The rule gets one place to be wrong; the link gate stops being runnable without building the tree, which is the accepted cost. |
 
 ---
 
@@ -1467,16 +1485,17 @@ question · 2026-09-02
 | --- | --- |
 | Status | answered |
 | Blocks | the mandated tool call, in every session started anywhere but this one worktree |
-| Needed to proceed | yes |
 | Option | Recommended :: Take mustur out of .mcp.json and keep it at user scope :: The tracked entry cannot work any more — it carries no credential, and since enforcement it can only refuse. It also shadows the one that would work: measured, project scope beats user scope, so the user-scope entry now sitting in ~/.claude.json is inert while that file exists. Removing it leaves one configuration, on this machine, holding one secret, with no environment plumbing at all. The cost is that a fresh clone no longer learns from the repository that there is a server to point at — which is documentation, and can be a sentence in workflow.md instead of a config that refuses. |
 | Option | Keep it tracked, carrying ${MUSTUR_TOKEN} :: The repository keeps the pointer and the secret stays out of it :: Measured working: Claude Code expands the variable and connects. It covers the main checkout and every worktree, present and future, from one file, and it is the shape a second person on a second machine would want. The cost is environment plumbing in every place a session starts — a shell profile, the Remote Control systemd user service, anything launched by cron — and today found two defects that were exactly 'works in one launch context, not another'. A clone with the variable unset fails honestly (403 naming the header) but loses the OAuth offer, which never worked against Mustur anyway. |
 | Option | Per-directory local scope, changing nothing in the repository :: Works today, refuses in every worktree made after :: Local scope beats project scope, so this works without touching a public file — but it is keyed to one directory. Every worktree an agent creates from here on would fall back to the tracked entry and refuse. That is the shape of MUS-F-0061, found today: a gate that silently did not run because 'beside the tree' meant beside the worktree. |
 | Asked by | whippy |
 | Surfaced | 2026-09-02 23:57 |
-| Answer | Take mustur out of .mcp.json and keep it at user scope. One config, one secret, no environment plumbing; the repository documents the server in prose instead of carrying a configuration that can only refuse. Revoke the old token too. |
-| Answered | 2026-09-02 23:57 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-09-02 |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-09-02 23:57, written down by whippy, from the prompt in this session, 2026-09-02 |
+| Answer | Keep previous decision |
+| Answered | 2026-09-03 05:35 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | Take mustur out of .mcp.json and keep it at user scope. One config, one secret, no environment plumbing; the repository documents the server in prose instead of carrying a configuration that can only refuse. Revoke the old token too. |
 
 ---
 
@@ -1495,7 +1514,270 @@ question · 2026-09-03
 | Option | The generated export and docs/ :: records/** and docs/** collapse, the root files stay :: A middle reading, keeping every file at the top level visible while the long-form investigations and the export fold away. |
 | Asked by | whippy |
 | Surfaced | 2026-09-03 00:19 |
-| Answer | All of it, with two exemptions: every *.md collapses in the diff except CLAUDE.md and README.md, which still show. |
-| Answered | 2026-09-03 00:19 |
-| Relayed | written down by whippy, from the prompt in this session, 2026-09-03 |
 | Delivered | not delivered: the question names no session |
+| Originally recorded | 2026-09-03 00:19, written down by whippy, from the prompt in this session, 2026-09-03 |
+| Answer | Keep previous answer |
+| Answered | 2026-09-03 05:35 |
+| Confirmed | Reopened by MUS-Q-0070 because the earlier answer had been relayed from a prompt, and answered again by the owner in Mustur on 2026-09-03. The earlier answer is confirmed: nothing built on it was built on a decision the owner had not made. |
+| Previously relayed answer | All of it, with two exemptions: every *.md collapses in the diff except CLAUDE.md and README.md, which still show. |
+
+---
+
+## MUS-Q-0067
+
+**Enter sends in the session box. A phone keyboard has no shift, so what does it do there?**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0067 |
+| Option | Enter sends only where a physical keyboard is likely :: the phone keeps Send and its return key still makes a newline :: Recommended. A media query for a fine pointer and hover decides it, which is what every chat composer on the web does: on a desktop Enter sends and Shift+Enter breaks the line; on a touch screen Enter stays a newline and the Send button is the submit, as it already is. enterkeyhint is set to match so the soft keyboard's key is labelled for what it will do. The cost is that the same box behaves differently on two devices, and the rule for which is a guess about the hardware rather than a fact about it -- a tablet with a keyboard attached reads as touch and keeps the button. |
+| Option | Enter sends everywhere, and a phone loses multi-line :: one rule, no detection, no exceptions :: The handler does not care what is typing into it. Shift+Enter makes a newline for anyone who has a shift key and nobody else does, so a multi-line reply cannot be written on a phone at all -- it would have to be written in the composer, which is a different screen with a different draft flow, or not at all. That is a real loss on the surface the owner uses most, in exchange for a rule that can be stated in one line and never surprises. |
+| Option | Enter sends everywhere, and the phone gets its own newline control :: multi-line survives on a phone at the cost of a button nobody drew :: Same single rule as above, plus a small control beside Send that inserts a line break, shown only where Shift+Enter is unavailable. It keeps both capabilities on every device. It also puts a piece of furniture on the session view that no artboard has, which is the exact pattern MUS-F-0027 exists to record, and it would need drawing before it is built. |
+| Asked by | whippy |
+| Answer | The send button should always be present, phone input return should use newline |
+| Answered | 2026-09-03 02:20 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-03 02:25 |
+
+---
+
+## MUS-Q-0068
+
+**A note alongside a chosen option means changing MUS-D-0055, which says free text beats the choice**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0071 |
+| Option | The note is its own field; the answer stays the option :: MUS-D-0055 keeps its sentence and gains a second one :: Recommended. The chosen option is still the answer, verbatim, and the box beneath becomes a note attached to it rather than a replacement for it. The record carries both -- Answer and Note -- so a reader can still tell which option was picked, and what gets typed into a waiting session is the option followed by the note. Nothing about the existing shape changes for an answer with no note. The cost is a new field on the record and a second thing for the delivery text to carry. |
+| Option | The note is folded into the answer string :: one field, and no way to tell the option from the remark :: The chosen label and the free text are joined into a single Answer. It is the smallest change -- no new field, no change to delivery -- and it destroys the one property that made options worth having: an answer that is a verbatim option label can be matched back to the option it chose, and 'Label -- and also do X' cannot. Every reader after this has to parse a sentence to learn what was picked. |
+| Option | Nothing changes but the form; the box prefills with the chosen label :: no record change at all, and the choice is still lost :: Picking an option types its label into the free-text box, so adding a remark means editing rather than retyping. MUS-D-0055 stands untouched, because free text still beats the choice. It fixes the retyping the owner named and not the thing underneath it: once the text is edited the record no longer says an option was chosen, only what was written. |
+| Asked by | whippy |
+| Answer | The note is its own field; the answer stays the option |
+| Answered | 2026-09-03 03:04 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-03 03:05 |
+
+---
+
+## MUS-Q-0069
+
+**decisions.md is seventeen decisions behind the store. Does it catch up, hand back, or start being generated?**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0073 |
+| Needed to proceed | yes |
+| Option | It becomes the pointer, and a gate stops it drifting again :: the essays stay for decisions that earn one; everything else lives in the store :: Recommended. One dated section appends to decisions.md saying that from MUS-D-0121 the log of record is the store, exported to records/decisions.md, with the index gaining a row per decision so the file is still the map. The file keeps its append-only rule and its voice: an entry is written when a decision earns an essay -- a correction, a retraction, an argument worth keeping -- and not because a record exists. A gate compares the store's decision list against the file and fails when one is named nowhere, so this cannot happen a third time. The cost is that the reasoning for most decisions is one hop away, in a document that reads as records rather than as prose. |
+| Option | Seventeen essays are written now :: the file is whole again, by a hand that was not there for most of it :: decisions.md catches up in full: a dated section per decision, in the existing voice, with index rows. A reader following CLAUDE.md finds everything where it says. The cost is that the essays would be reconstructed from the store records rather than written at the time -- the corrections and the retractions that make the existing entries worth reading are exactly what cannot be recovered afterwards -- and it re-establishes the double write MUS-F-0004 named, which is what stopped happening in the first place. Nothing prevents the next seventeen going the same way unless a gate goes in too. |
+| Option | The tail is generated from the store :: no drift and no double write, at the cost of the file being partly written by a program :: make export appends new decisions to decisions.md in the record shape, below everything written by hand. The file is never behind again and nobody writes anything twice. The cost is that an append-only document a person edits becomes one a program edits, its two halves read differently, and a merge conflict in it stops being a thing to think about and becomes a thing to re-run -- which is MUS-F-0066 arriving in a file that is not currently generated. |
+| Asked by | whippy |
+| Answer | The tail is generated from the store |
+| Answered | 2026-09-03 03:45 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-03 03:45 |
+
+---
+
+## MUS-Q-0070
+
+**Nine questions were closed with an answer relayed from a prompt. Do they stand?**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0074 |
+| Option | Review the nine in one pass, and say which are wrong :: one screen, not nine conversations :: Recommended. MUS-Q-0058 through MUS-Q-0066 are listed with their answers in one place; the owner reads them and names any that are not what they would have chosen. Those reopen and the work built on them is revisited; the rest are marked confirmed, so the record says the owner has been here rather than that an agent wrote something down. It is one pass over ten short answers rather than nine separate questions, and it ends with the store able to tell the two provenances apart. |
+| Option | They stand until something contradicts one :: nothing is re-asked, and the record keeps saying an agent wrote it down :: All nine are already built, reviewed and in some cases reviewed twice, and a decision that was badly wrong would likely have surfaced as a defect by now. Nothing is re-opened and no time is spent on answers that were probably right. The cost is that a wrong one hides in shipped behaviour with a record saying the owner chose it, and MUS-D-0136's 'the owner exempted two' is the shape that would never surface on its own. |
+| Option | Reopen all nine :: the safest and the most expensive :: Every relayed answer is treated as unanswered until the owner says otherwise, and the gate blocks on them. It is the only option that makes no assumption about which were right. It also stops work on anything downstream of nine decisions, several of which are load-bearing, for as long as they sit open. |
+| Asked by | whippy |
+| Surfaced | 2026-09-03 03:56 |
+| Answer | Reopen all nine |
+| Answered | 2026-09-03 04:04 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0071
+
+**Disabling Answer until an option is chosen retires the clause that lets text answer on its own**
+
+question · 2026-09-03
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0075 |
+| Option | Make the options required, natively :: the browser refuses the submit, no script, and text-only answers on an optioned question end :: Recommended. The radio group gets the HTML required attribute, so a browser will not submit the form until one is chosen and says so itself. It is exactly the behaviour asked for, it costs no script, and this surface stays server-rendered. What it retires is real: MUS-D-0055's surviving clause, reaffirmed in MUS-D-0137 two hours ago, says free text with no choice is still the answer -- the case a list of options is worst at. After this, a question that offers options can only be answered by picking one, and saying something the list does not contain means picking the nearest and writing why in the note. |
+| Option | Leave it; the accident it guards against is already gone :: no change, and the button still looks pressable when nothing is chosen :: The server already refuses a submit with neither an option nor text, and the box that submitted on Enter mid-sentence is now a textarea (MUS-F-0076), so the way this actually went wrong cannot happen again. What remains is cosmetic: a button that looks pressable and tells you afterwards. Nothing is retired and nothing is built. The cost is that the owner asked for something and the answer is that the underlying accident was a different bug. |
+| Option | Disable it with script, keyed on either an option or text :: keeps text-only answers, at the price of a seventh scripted surface :: A few lines watch the radios and the box and enable Answer when either has content, which is the only version that does not retire MUS-D-0055's clause. It makes /questions the seventh page shipping a script tag, on a surface whose whole design is that it works without one, and MUS-Q-0053 is already open on what that rule counts. It also degrades badly: with script blocked the button is enabled, which is today's behaviour, so the guard is exactly absent for the reader who most needs the form to be plain. |
+| Asked by | whippy |
+| Surfaced | 2026-09-03 04:28 |
+| Answer | Can we enable the button for a chosen option or text in the box? |
+| Answered | 2026-09-03 05:40 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0072
+
+**A pane can want a keypress rather than a sentence. What may the session view send?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0080 |
+| Option | A small row of keys above the composer :: Esc, Enter, Ctrl-C and the four arrows, sent as themselves :: Recommended. The composer keeps sending messages and gains a row of buttons that send one key each, so a dialog can be dismissed, a list navigated and a runaway turn interrupted from a phone. It is the smallest thing that makes a stuck pane recoverable without a terminal. The cost is that the surface stops being only a composer: it becomes a keyboard, MUS-D-0096's clean line between a message and keystrokes gets a named exception, and Ctrl-C in particular is a control that ends work mid-turn from a thumb. |
+| Option | One key, Escape, and nothing else :: covers the modal and refuses to become a keyboard :: Escape is what gets a pane off a dialog it cannot leave, which is the case that has now happened twice -- the MCP-trust prompt on 2026-08-23 and the draft today. Navigating a list still needs arrows and is still impossible, so a dialog that wants a choice rather than a dismissal stays stuck. It is the narrow fix, and it holds the line that this surface sends messages, with one exception that is easy to say out loud. |
+| Option | Nothing; a stuck pane wants a terminal :: the surface stays exactly what it was decided to be :: MUS-D-0096 says the composer sends a message and a message is text, and the answer to a pane that wants a keypress is a person at a keyboard. Nothing is built and nothing is excepted. The cost is that the owner, on a phone, off the home network, can watch a session sit on a dialog and do nothing about it -- which is the situation that produced this question. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 02:48 |
+| Answer | A small row of keys above the composer |
+| Answered | 2026-09-04 03:02 |
+| Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0073
+
+**Stopping a session is a command line. Does it get a control, and what stands in front of it?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0081 |
+| Option | A stop control on the session view, behind the tick that Withdraw uses :: one pattern for destructive things on this surface, no script :: Recommended. The session view gains a Stop beside the picker, with a checkbox reading what it does that the handler requires -- the same shape that fixed MUS-F-0077 yesterday, on a surface that carries no script and where a second page would be a second surface. It completes what CLAUDE.md already claims. The cost is a control that kills a running agent mid-turn placed on a phone screen, and a tick is a small thing to stand between a thumb and that. |
+| Option | A stop control, but only from the session list :: the list is where you choose, the view is where you watch :: Stop lives on /sessions beside each row rather than on the session's own page, so the page you sit and read is not the page that can end it. Reaching it is deliberate: leave the terminal, go to the list, stop the one you mean. The cost is two taps in the moment you most want one, and the list is exactly where it is easiest to stop the wrong session. |
+| Option | Leave it on the command line :: the safest place for it is where it already is :: Stopping stays 'mustur session stop', which works and is unambiguous. Nothing destructive is added to a surface reached from a phone. The cost is that the contract says Mustur stops sessions and the surface does not, and that the owner away from a terminal can watch a crashed or runaway session and not end it -- which is the situation that produced this question. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 02:48 |
+| Answer | I was referring to interrupting the agent in order to provide different information/feedback before it continues. It doesn't happen often but occasionally I'll notice an agent starting to misinterpret my message and I would hit 'esc' in the terminal to stop it and provide corrections |
+| Answered | 2026-09-04 03:04 |
+| Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0074
+
+**A CLI's own prompt needs a keypress Mustur does not send. How far does the surface go?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0082 |
+| Option | Digits in the key row, behind a toggle :: answers the numbered prompt and understands nothing about the pane :: Recommended. The row gains 1 to 9 and 0, reached by a toggle that swaps them for the arrows rather than by ten more buttons -- the row already scrolls sideways, and MUS-F-0036 is the record of a sideways row hiding its last choice behind a swipe. It answers the case in hand exactly: a prompt wanting a number gets a number. Mustur still knows nothing about what is on the screen, which is the cheap part and also the limit -- the owner still has to read the pane to know which number means what. |
+| Option | Intercept the prompt and render it as real UI :: buttons with the CLI's own words on them, and a keypress sent back :: The pane is read, a prompt is recognised, its choices are drawn as controls, and picking one sends the key. There is precedent: MUS-F-0053 already takes the CLI's furniture off the screen and redraws its status as chips, so reading the pane for meaning is a thing this surface does. The cost is that Mustur starts understanding one vendor's dialogs, which strains MUS-D-0091, and it fails silently in both directions when that vendor changes them -- a prompt drawn that is not there, or a prompt on screen that nothing offers to answer. It is a milestone, not an afternoon. |
+| Option | Neither; the terminal is the terminal :: seven keys and a composer is the whole vocabulary :: What is on the screen is the CLI's, and the surface's job is to show it and to carry what the owner types. A prompt wanting a key Mustur does not send is a reason to reach for a terminal. Nothing is built, nothing is excepted, and the row stays the seven keys MUS-Q-0072 chose. The cost is that the owner has already hit this twice in two days -- a feedback prompt wanting a number, and before that a draft they could not dismiss -- so the answer is that the case will keep arriving. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 03:18 |
+| Answer | Intercept the prompt and render it as real UI |
+| Answered | 2026-09-04 03:26 |
+| Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0075
+
+**Where does an intercepted prompt appear, given the terminal has to stay visible?**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | withdrawn |
+| Blocks | MUS-D-0142 |
+| Option | Labelled buttons in the key row that is already there :: no new surface, and it degrades to plain keys :: Recommended. The row above the composer stops being seven fixed keys and becomes what the pane currently offers -- '1 Default', '2 Opus (1M)', '3 Opus', 's session only', 'Esc cancel' -- each sending its own key, with Escape and the arrows still there. Nothing new is drawn, the terminal is untouched above it, and a pane with no legend falls back to exactly the seven keys it shows today. The cost is room: an option's label is longer than 'Esc', the row scrolls sideways, and MUS-F-0036 is the record of a sideways row hiding its last choice behind a swipe. Long labels would have to be cut. |
+| Option | A panel in the dock, between the terminal and the composer :: room for the question and each option's detail, and one more thing on the surface :: The prompt's title, its rows and their detail text render as a block above the composer, with the terminal still fully visible above that. It is the only option with room for the sentence a prompt asks -- 'Switch between Claude models...' -- which a button label cannot carry. The cost is a new element on the session view that no artboard has, which is MUS-F-0027's pattern exactly, and a dock that grows takes its height from the terminal on a phone. |
+| Option | A sheet over the terminal, the way a sub-agent's output is read :: the most prominent, and it covers the thing it is describing :: MUS-D-0122 put a sub-agent's output in a sheet over the session, so the pattern exists and the surface already knows how to draw one. A prompt is more urgent than a sub-agent's output, which argues for the more prominent treatment. It also covers the pane, and the pane is the only thing that is definitely correct when the parse is wrong -- which is the one property the decision above says must hold. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 03:29 |
+| Answered | 2026-09-04 04:52 |
+| Withdrawn because | Where an intercepted prompt renders only matters if it is scraped off a pane. MUS-Q-0076 asks whether it is scraped at all, and the shape of this question changes with that answer -- a protocol dialog has a title, a body and typed options and would not be squeezed into a key row. Re-asked in whatever shape MUS-Q-0076 leaves. |
+
+---
+
+## MUS-Q-0076
+
+**Is a Mustur session a terminal? The structured protocol carries dialogs properly and requires --print**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0084 |
+| Needed to proceed | yes |
+| Option | It stays a terminal; keep the pane and finish the parser :: MUS-D-0088 and MUS-D-0142 both stand, and the dialogs get scraped :: Recommended. Nothing built is discarded. A session stays something tmux holds and a person can attach to from a machine, which is MUS-D-0016's premise and the reason 4a, 4b and 5 look the way they do. The prompt parser is written and reads a real picker, so the work in hand finishes. The cost is honest and permanent: Mustur reads dialogs off a screen that exists as structured messages three feet away, every CLI redraw is a chance to be wrong, and the legend is the only thing keeping that from being knowledge of one vendor's dialogs. Revisit if the pane stops being enough. |
+| Option | It becomes a client; drive --print stream-json and render natively :: what the extension does, and it costs the terminal :: Mustur spawns the CLI in --print with stream-json both ways and renders the conversation itself, the way the VS Code extension does. Dialogs arrive as control messages and answers go back as control responses -- no scraping, no legend, nothing to misread. What it costs is the premise: --print is not a terminal, so nobody attaches to a Mustur session from a machine ever again, the tmux adapter and the session view are rebuilt around a JSON harness, and Mustur becomes a Claude Code client rather than a supervisor of whatever CLI it was given, which MUS-D-0091 currently forbids. It is a rewrite of four milestones, not a feature. |
+| Option | Both: tmux sessions stay, and a second kind runs headless :: keeps attachability and gets the protocol, at twice the surface :: A session becomes two things -- one held in tmux for work somebody may want to attach to, one driven over stream-json and rendered natively. Each gets what it is good at. The cost is two session models, two ways a session can be running, two things the picker has to describe and two things every future surface has to handle, in a product with one project and one owner. It is the option that defers the decision by paying for both answers. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 04:52 |
+| Answer | It stays a terminal; keep the pane and finish the parser |
+| Answered | 2026-09-04 05:03 |
+| Relayed | written down by whippy, from the owner's own message in this session's chat, 2026-09-04 |
+| Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0077
+
+**Where does a read prompt appear? MUS-Q-0075 is re-asked, because the fixture shows the labels are long**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-W-0022 |
+| Option | A panel between the terminal and the composer :: room for the heading, the sentence and each row, and one new element on the surface :: Recommended, and this reverses what was recommended on MUS-Q-0075. That was written before a real prompt had been read. The picker's heading is 'Select model', its sentence is 'Switch between Claude models. Your pick becomes the default for new sessions. For other/previous model names, specify with --model.', and one row reads 'Default (recommended) Opus 5 with 1M context · Best for everyday, complex tasks'. None of that fits on a button. A panel renders the heading, the sentence, a row per option with the cursor marked, and the legend keys as buttons -- with the terminal still whole above it. The cost is a new element no artboard has, which is MUS-F-0027's pattern, and a dock that grows takes height from the terminal on a phone. |
+| Option | Labelled buttons in the key row, cut to fit :: no new element, and the labels lose the half that says what they mean :: What MUS-Q-0075 recommended. The row becomes '1 Default (recommended)', '2 Opus (1M co…', 's session only', 'Esc cancel'. Nothing new is drawn and the fallback is exactly today's seven keys. The cost is now measurable rather than guessed: the detail column is where a picker says what an option actually does, and cutting a row to button width throws that away -- and MUS-F-0036 is already the record of a sideways row hiding its last choice behind a swipe. |
+| Option | The heading and sentence in the panel, the choices in the key row :: reads the question in one place and answers it in another :: A thin strip carries the heading and the sentence, and the choices stay in the key row beneath it. It is the smallest new element and it keeps the row as the one place anything is pressed. It also splits one dialog across two controls, so the row that says '2' is not next to the line that says what 2 is, which on a phone is a scroll apart. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 05:05 |
+| Answer | A pop up in front of the session, that can be minimized into the button row |
+| Answered | 2026-09-04 05:13 |
+| Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0078
+
+**The badge is live on one surface. Making it live on the other two costs a script tag on each**
+
+question · 2026-09-04
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0086 |
+| Option | Poll on both surfaces that show it :: the count stops lying anywhere, and two server-rendered pages gain a script :: Recommended. Intake and the decision queue ask the server for the count on a timer and update the badge, which is a handful of lines and degrades to exactly today's behaviour when script is blocked -- the page still renders its count, it just stops moving. It ends the class of failure rather than the instance: a tab left open anywhere tells the truth. The cost is that two surfaces whose whole design is that they work without script now ship one, and MUS-Q-0053 already asks what that rule counts when only some of them stop working without it. |
+| Option | Only the decision queue :: the page somebody sits on while waiting, and nothing else changes :: The queue is where a person waits for a question to arrive; intake is a page you go to, file something, and leave. One script instead of two, on the surface that actually has somebody sitting on it. The cost is that the rule gets crossed anyway, for one page instead of two, and the next report is intake. |
+| Option | Leave it; navigating is what updates it :: no new scripted surface, and a page left open keeps lying :: The badge is a hint and every navigation refreshes it. Nothing is built and the no-script surfaces stay no-script. The cost is the thing that was just reported: the owner sat on a page, a question was raised, and nothing said so -- and the answer would be that this is how it works. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-04 05:08 |
+| Answer | The badges should be live on every surface |
+| Answered | 2026-09-04 05:13 |
+| Delivered | typed into mustur/Check |

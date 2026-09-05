@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -187,7 +188,39 @@ func TestThePageSaysWhenMusturDidNotStartTheSession(t *testing.T) {
 // never going to have script. A test that cannot fail for the reason its name
 // gives is worse than no test: `MUS-W-0017` cited this one as proof of a claim
 // the tree had stopped making.
-func TestExactlyTwoSurfacesCarryScript(t *testing.T) {
+// scriptsIn is every script a page loads, by src.
+//
+// Used instead of looking for "<script", which stopped meaning anything when
+// the owner made the badge live on every surface (MUS-Q-0078): every page
+// carries bar.js now. What is still worth asserting is that a page loads the
+// scripts it was given and no others, which is the property the old test was
+// really protecting.
+func scriptsIn(body string) []string {
+	var out []string
+	for _, m := range regexp.MustCompile(`<script src="([^"]+)"`).FindAllStringSubmatch(body, -1) {
+		out = append(out, m[1])
+	}
+	return out
+}
+
+func loads(body, src string) bool {
+	for _, s := range scriptsIn(body) {
+		if s == src {
+			return true
+		}
+	}
+	return false
+}
+
+// Every surface carries the bar's script, and nothing carries a script it was
+// not given.
+//
+// This asserted that exactly two surfaces carried any script at all, and the
+// exception spreading by accident was the thing it watched for. The owner
+// changed the rule on MUS-Q-0078 — the badge is live everywhere, which costs a
+// script tag everywhere — so the accident this now watches for is a *second*
+// script arriving on a page that was only meant to have the bar's.
+func TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	if !strings.Contains(getFrom(t, srv, "/sessions/Mustur"), "/assets/session.js") {
 		t.Error("the session page does not load the client")
@@ -223,23 +256,39 @@ func TestExactlyTwoSurfacesCarryScript(t *testing.T) {
 	other := httptest.NewServer(mux)
 	defer other.Close()
 
-	if body := getFrom(t, other, "/compose"); !strings.Contains(body, "/assets/compose.js") {
-		t.Error("the composer does not load its client layer")
+	// The composer keeps its own client and gains the bar's.
+	comp0 := getFrom(t, other, "/compose")
+	for _, want := range []string{"/assets/compose.js", "/assets/bar.js"} {
+		if !loads(comp0, want) {
+			t.Errorf("the composer does not load %s", want)
+		}
 	}
+	if got := len(scriptsIn(comp0)); got != 2 {
+		t.Errorf("the composer loads %d scripts: %v", got, scriptsIn(comp0))
+	}
+
+	// Intake and the queue carry the bar's script and only that.
 	for _, path := range []string{"/intake", "/questions"} {
-		if body := getFrom(t, other, path); strings.Contains(body, "<script") {
-			t.Errorf("%s carries script; the exception has become a suggestion", path)
+		body := getFrom(t, other, path)
+		if !loads(body, "/assets/bar.js") {
+			t.Errorf("%s does not keep its badge live", path)
+		}
+		if got := scriptsIn(body); len(got) != 1 {
+			t.Errorf("%s loads %v; the exception has become a suggestion", path, got)
 		}
 	}
 }
 
-// A page with no socket and no composer has nothing for the client to do, and
-// loading it there was the exception spreading by accident rather than by
-// decision.
-func TestAPageWithNoSessionCarriesNoScript(t *testing.T) {
+// A page with no socket has nothing for the session client to do. It still
+// carries the bar, because it still shows the bar.
+func TestAPageWithNoSessionLoadsNoSessionClient(t *testing.T) {
 	srv := serveSessions(t, "")
-	if body := getFrom(t, srv, "/sessions/nosuchproject"); strings.Contains(body, "<script") {
-		t.Error("the no-session page loads the client")
+	body := getFrom(t, srv, "/sessions/nosuchproject")
+	if loads(body, "/assets/session.js") {
+		t.Error("the no-session page loads the session client")
+	}
+	if !loads(body, "/assets/bar.js") {
+		t.Error("the no-session page renders a bar whose count cannot move")
 	}
 }
 
@@ -423,10 +472,11 @@ func TestTheSessionPageShowsSubagents(t *testing.T) {
 		t.Error("a running sub-agent was given a final message it has not sent")
 	}
 
-	// The rows are server-rendered. This surface carries one script and it is
-	// for the output stream; a sub-agent appearing is not worth a second.
-	if strings.Count(body, "<script") != 1 {
-		t.Errorf("%d scripts on the page, want the one that drives the socket", strings.Count(body, "<script"))
+	// The rows are server-rendered: a sub-agent appearing is not worth a
+	// script. This surface loads two — the socket's and the bar's, the second
+	// since MUS-Q-0078 — and a third would be one that came in for the rows.
+	if got := scriptsIn(body); len(got) != 2 {
+		t.Errorf("the session page loads %v, want the socket's and the bar's", got)
 	}
 }
 
@@ -1037,5 +1087,516 @@ func TestTheSocketSendsARenderedScreen(t *testing.T) {
 	if strings.Contains(string(b), `"seq"`) || strings.Contains(string(b), `"replay"`) ||
 		strings.Contains(string(b), `"lostBytes"`) {
 		t.Errorf("the frame still describes a byte stream:\n%s", b)
+	}
+}
+
+// Enter sends, and a phone keeps its newline.
+//
+// MUS-F-0067 asked for Enter to send and Shift+Enter to break the line.
+// MUS-Q-0067 settled what that means where there is no shift key: on a touch
+// screen Enter stays a newline and the Send button is the submit, because a
+// soft keyboard has no modifier and Enter-sends-everywhere would take
+// multi-line off the surface this box exists for.
+func TestEnterSendsOnlyWhereThereIsAShiftKeyToHold(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	js := getFrom(t, srv, "/assets/session.js")
+
+	if !strings.Contains(js, `"(hover: hover) and (pointer: fine)"`) {
+		t.Fatal("nothing asks whether a physical keyboard is present, so Enter behaves the same on a phone as on a desktop")
+	}
+	// Read at each keystroke, not cached: a tablet that gains a keyboard
+	// should change with it.
+	if !strings.Contains(js, "deskKeys.matches") {
+		t.Error("the query result is not read at the keystroke")
+	}
+	if !strings.Contains(js, "e.shiftKey") {
+		t.Error("Shift+Enter is not let through, so a desktop cannot write a second line")
+	}
+	// The modifier shortcut predates this and still works everywhere, which is
+	// the only way to send from a touch screen without reaching for the button.
+	if !strings.Contains(js, "e.metaKey || e.ctrlKey") {
+		t.Error("Cmd/Ctrl+Enter no longer sends")
+	}
+	// An IME candidate is chosen with Enter. Sending on it eats the word.
+	if !strings.Contains(js, "e.isComposing") {
+		t.Error("an IME's Enter would send a half-typed word")
+	}
+	// The button is not conditional on anything: a control that comes and goes
+	// with a media query is a control nobody trusts.
+	body := getFrom(t, srv, "/sessions/Mustur")
+	if !strings.Contains(body, `<button type="submit">Send</button>`) {
+		t.Error("the Send button is gone or conditional; the owner's answer was that it is always present")
+	}
+}
+
+// The turning ring goes around the word, not across it.
+//
+// MUS-F-0068: the status pill sat inside .ring with no position and no
+// background, so the conic gradient -- absolutely positioned, and 12.5% alpha
+// showing through a transparent fill -- painted over the text as its two bright
+// arms came round. The sub-agent toggle beside it was opaque and positioned and
+// never had the fault, which is why it showed up on one control and not both.
+func TestTheTurningRingDoesNotPaintOverTheStatusPill(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	// Above the gradient. An unpositioned box loses to an absolutely
+	// positioned pseudo-element whatever the DOM order.
+	if !strings.Contains(body, "header .ring > .pill { position: relative;") {
+		t.Error("the status pill is not stacked above the ring's gradient")
+	}
+	// And opaque, or the light shows through the fill as well as over it.
+	if !strings.Contains(body, "background: var(--paper); }") {
+		t.Error("the status pill has no opaque background, so the gradient comes through it")
+	}
+	// The on state is the one that turns, so it is the one that must not go
+	// back to a bare translucent token.
+	if !strings.Contains(body, "header .ring > .pill.on { background:") {
+		t.Error("the running pill still takes --accent-soft alone, which is 12.5% alpha")
+	}
+}
+
+// A decision raised while somebody is watching a session reaches the bar.
+//
+// MUS-F-0069: the tab bar is rendered once by the server and a session tab
+// outlives that render by hours, so the count said what was true when the tab
+// opened. The count rides the socket that is already there, the way sub-agent
+// rows do (MUS-D-0092).
+//
+// The writing lives in bar.js since MUS-Q-0078, because the session view having
+// its own copy is how the fix ended up on one surface (MUS-F-0086). So this
+// asserts two things in two files: the socket delivers a count, and the one
+// piece of code that writes a badge is where every surface can reach it.
+func TestTheDecisionCountRidesTheSocket(t *testing.T) {
+	sess, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Handled before the frame kinds, so hello and the later updates share one
+	// path rather than three copies of it.
+	if !strings.Contains(string(sess), `typeof f.waiting === "number"`) {
+		t.Error("the client ignores the count the server sends")
+	}
+	// Through the shared writer, not a second copy of it.
+	if !strings.Contains(string(sess), "window.musturBadge") {
+		t.Error("the session view writes the badge itself instead of through bar.js")
+	}
+	if strings.Contains(string(sess), `nav a[href="/questions"]`) {
+		t.Error("the session view still has its own badge code, which is what MUS-F-0086 was")
+	}
+
+	bar, err := os.ReadFile("assets/bar.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(bar), `nav a[href="/questions"]`) {
+		t.Fatal("the shared writer never finds the Decisions tab")
+	}
+	// Absent, not empty: that is how the server renders nothing waiting.
+	if !strings.Contains(string(bar), "removeChild(cnt)") {
+		t.Error("a count falling to zero leaves the badge on screen")
+	}
+}
+
+// And the server actually sends it, on the first frame.
+func TestTheHelloFrameCarriesTheDecisionCount(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzWaiting"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 5'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	ctx0 := context.Background()
+	st, err := store.Open(ctx0, filepath.Join(t.TempDir(), "waiting.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	// One question, open and therefore waiting.
+	if err := st.Append(ctx0, openQuestion("MUS-Q-9001", "does the badge move"), "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir, Store: st}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+	_, b, err := c.Read(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var f frame
+	if err := json.Unmarshal(b, &f); err != nil {
+		t.Fatal(err)
+	}
+	if f.T != "hello" {
+		t.Fatalf("first frame is %q, not hello", f.T)
+	}
+	if f.Waiting == nil {
+		t.Fatal("the hello frame carries no count, so a tab opens with whatever the bar was rendered with")
+	}
+	if *f.Waiting != 1 {
+		t.Errorf("hello says %d decisions waiting, want 1", *f.Waiting)
+	}
+}
+
+// A server with no store must not clear a badge it never counted.
+func TestNoStoreMeansNoCountRatherThanZero(t *testing.T) {
+	if waitingIf(false, new(int)) != nil {
+		t.Error("a server with no store sends a zero, which the client cannot tell from a counted zero")
+	}
+}
+
+// A pane can want a keypress, and the surface can send one.
+//
+// MUS-F-0080: everything reaching a pane was a line followed by Enter, so a
+// dialog wanting a key was visible and unreachable. MUS-Q-0072 chose a row of
+// keys above the composer. MUS-Q-0073 says what the owner actually wanted it
+// for: noticing an agent misreading them, interrupting it, and correcting it —
+// which in the terminal is Escape.
+func TestTheKeyRowSendsAKeyAndNotAMessage(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	for _, k := range []string{"escape", "enter", "up", "down", "left", "right", "cancel"} {
+		if !strings.Contains(body, `data-key="`+k+`"`) {
+			t.Errorf("no %s key in the row", k)
+		}
+	}
+	// Exactly what MUS-Q-0072 chose. A key nobody asked for is a key nobody
+	// decided, and the allowlist is where the next one gets argued for.
+	if strings.Contains(body, `data-key="tab"`) {
+		t.Error("a key the owner did not choose is in the row")
+	}
+	// Outside the form: a button inside one submits it, which is the defect
+	// this row is the opposite of.
+	keys := strings.Index(body, `<div class="keys"`)
+	form := strings.Index(body, `<form id="say">`)
+	if keys < 0 || form < 0 || keys > form {
+		t.Error("the key row is not above the composer, or is inside the form")
+	}
+	// type=button, or every one of them submits.
+	if strings.Contains(body, `<button data-key=`) {
+		t.Error("a key button has no explicit type, so it defaults to submit")
+	}
+
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(js), `t: "key"`) {
+		t.Error("the client sends no key frame")
+	}
+	// The interrupt and the correction are one intention.
+	if !strings.Contains(string(js), "text.focus()") {
+		t.Error("pressing a key leaves the composer unfocused, so correcting takes a second gesture")
+	}
+}
+
+// The allowlist is the boundary, not the browser.
+func TestOnlyTheChosenKeysAreSendable(t *testing.T) {
+	if got := session.KeyNames(); len(got) != 7 {
+		t.Errorf("KeyNames has %d entries, want the seven MUS-Q-0072 chose: %v", len(got), got)
+	}
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	err := a.SendKey(context.Background(), "Mustur", "C-z; rm -rf /")
+	if err == nil {
+		t.Fatal("a key name this server does not know was sent to tmux")
+	}
+	if !strings.Contains(err.Error(), "not a key this may send") {
+		t.Errorf("the refusal does not say what happened: %v", err)
+	}
+}
+
+// The count changes while the tab is open, without a reload.
+//
+// This is the half MUS-F-0069's fix shipped without: the hello frame had a
+// test, the client's strings had a test, and the ticker that carries a change
+// mid-session had none. The owner reported the badge still needing a refresh.
+func TestTheDecisionCountChangesWhileTheSocketIsOpen(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	was := WaitingEvery
+	WaitingEvery = 100 * time.Millisecond
+	t.Cleanup(func() { WaitingEvery = was })
+
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzBadge"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 20'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	ctx0 := context.Background()
+	st, err := store.Open(ctx0, filepath.Join(t.TempDir(), "badge.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir, Store: st}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	read := func() frame {
+		t.Helper()
+		_, b, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("reading: %v", err)
+		}
+		var f frame
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
+		return f
+	}
+
+	if f := read(); f.T != "hello" || f.Waiting == nil || *f.Waiting != 0 {
+		t.Fatalf("hello = %+v, want a count of 0", f)
+	}
+
+	// A question is raised while the tab sits there. Nothing reloads.
+	if err := st.Append(ctx0, openQuestion("MUS-Q-9002", "does the badge move on its own"), "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	deadline := time.Now().Add(20 * time.Second)
+	for time.Now().Before(deadline) {
+		f := read()
+		if f.T != "waiting" {
+			continue // screens and agent rows go past on their own tickers
+		}
+		if f.Waiting == nil {
+			t.Fatal("a waiting frame carried no count")
+		}
+		if *f.Waiting != 1 {
+			t.Fatalf("waiting = %d, want 1", *f.Waiting)
+		}
+		return
+	}
+	t.Fatal("no waiting frame arrived, so the badge only moves on a reload")
+}
+
+// The prompt is in front of the session and minimises into the key row.
+//
+// MUS-Q-0077, which is a fourth option the owner wrote rather than one of the
+// three offered: a pop up in front of the session, minimisable into the button
+// row. The two it was preferred over were a panel that pushes the terminal and
+// buttons cut to fit in the row.
+func TestThePromptIsAPopUpThatMinimisesIntoTheKeyRow(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	if !strings.Contains(body, `id="dlg"`) || !strings.Contains(body, `role="dialog"`) {
+		t.Fatal("no prompt element on the session view")
+	}
+	// Hidden until there is one to show. A dialog that renders empty is a
+	// dialog that covers the terminal for nothing.
+	if !strings.Contains(body, `class="dlg" id="dlg" hidden`) {
+		t.Error("the prompt element is not hidden on arrival")
+	}
+	if !strings.Contains(body, `id="dlgmin"`) {
+		t.Error("nothing minimises it, which is half of what the owner asked for")
+	}
+	// In front of the terminal, not pushing it: it comes after #out in the
+	// markup and is positioned over it.
+	if strings.Index(body, `id="out"`) > strings.Index(body, `id="dlg"`) {
+		t.Error("the prompt is drawn before the terminal it is meant to sit over")
+	}
+	// It must not cover the composer: the reply box is what somebody reaches
+	// for when the buttons are not what they wanted.
+	if !strings.Contains(body, "bottom: var(--dock-h, 0px)") {
+		t.Error("the prompt is not held above the dock, so it can cover the composer")
+	}
+	// A picker with many rows scrolls inside itself rather than growing.
+	// MUS-F-0035 is what an uncapped box on this surface does.
+	if !strings.Contains(body, "max-height: 100%; overflow-y: auto") {
+		t.Error("the prompt box has no height cap")
+	}
+
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	// Rebuilt only when the prompt changes: a screen frame arrives on every
+	// redraw, and rebuilding on each would drop the minimised state.
+	if !strings.Contains(src, "sig === lastPrompt") {
+		t.Error("the prompt is rebuilt on every frame, so minimising it cannot survive a redraw")
+	}
+	if !strings.Contains(src, "if (wasMinimised) hidePrompt") {
+		t.Error("a prompt that changes while minimised pops itself back up")
+	}
+	// Its buttons go down the same socket as the key row.
+	if !strings.Contains(src, `t: "key"`) {
+		t.Error("the prompt's buttons send something other than a key frame")
+	}
+	if !strings.Contains(src, "dlgchip") {
+		t.Error("nothing brings a minimised prompt back")
+	}
+}
+
+// Anything hidden by attribute that sets its own display must say so twice.
+//
+// The HTML hidden attribute works through a user-agent rule, `[hidden] {
+// display: none }`, which any explicit display declaration on the element
+// overrides. So an element with `display: flex` and `hidden` is not hidden. The
+// prompt shipped exactly that way and the owner got an empty box sitting over
+// the terminal that nothing would close (MUS-F-0087).
+//
+// .chips and .drawer in this template already carried the guard. A third
+// element needed it, twelve lines from where the lesson was written down, and
+// did not get it — so this is the gate rather than a fourth comment.
+func TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	// Classes on elements that carry the hidden attribute.
+	tags := regexp.MustCompile(`<\w+ class="([\w-]+)"[^>]*\shidden[\s>]`)
+	var checked int
+	for _, m := range tags.FindAllStringSubmatch(body, -1) {
+		cls := m[1]
+		// Does any rule for this class set a display?
+		rule := regexp.MustCompile(`\.` + cls + `\s*\{[^}]*display:`)
+		if !rule.MatchString(body) {
+			continue // nothing overrides the browser, so nothing to guard
+		}
+		checked++
+		if !strings.Contains(body, "."+cls+"[hidden]") {
+			t.Errorf(".%s sets its own display and is hidden by attribute, with no .%s[hidden] rule: it will never hide", cls, cls)
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no element on this page both sets a display and hides by attribute; this test is asserting nothing")
+	}
+}
+
+// A prompt on the pane reaches the browser.
+//
+// Everything between the parser and the pop-up was untested: the parser had its
+// own tests, the client had its own, and nothing asserted that a dialog on a
+// real pane arrives in a frame. The owner reported the prompt on screen with no
+// pop-up beside it after the parser had been fixed, which is exactly the gap
+// this covers.
+func TestAPromptOnThePaneArrivesInAFrame(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	fixture, err := filepath.Abs(filepath.Join("..", "session", "testdata", "prompt-feedback-draft.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzPrompt"
+	// The pane holds the captured dialog and stays open, so the poller sees
+	// what a real session shows.
+	if _, err := a.Start(context.Background(), project, t.TempDir(),
+		"sh -c 'cat "+fixture+"; sleep 30'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	deadline := time.Now().Add(20 * time.Second)
+	for time.Now().Before(deadline) {
+		_, b, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("reading: %v", err)
+		}
+		var f frame
+		if err := json.Unmarshal(b, &f); err != nil {
+			t.Fatal(err)
+		}
+		if f.T != "hello" && f.T != "screen" {
+			continue
+		}
+		if f.Prompt == nil {
+			continue // the pane may not have painted yet
+		}
+		if len(f.Prompt.Keys) != 3 {
+			t.Fatalf("frame carried %d keys, want the dialog's three: %+v", len(f.Prompt.Keys), f.Prompt)
+		}
+		if !strings.Contains(f.Prompt.Title, "Bug report drafted") {
+			t.Errorf("frame carried the wrong dialog: %q", f.Prompt.Title)
+		}
+		return
+	}
+	t.Fatal("no frame carried a prompt, so a dialog on the pane never reaches the browser")
+}
+
+// A tab older than the server says so instead of doing nothing.
+//
+// The pop-up's markup is served with the page and a session tab is left open
+// for hours, so a tab loaded before the server learned to draw prompts receives
+// them and has nowhere to put them. It looked exactly like a broken parser: the
+// dialog on the pane, no pop-up, and the socket delivering it the whole time.
+func TestATabWithoutThePopUpSaysItIsStale(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, "older than the server") {
+		t.Error("a prompt arriving at a page with no pop-up is still silent")
+	}
+	// Once, not on every frame: a screen frame arrives on every redraw.
+	if !strings.Contains(src, "toldStale") {
+		t.Error("the notice has no latch, so it would repeat on every frame")
 	}
 }

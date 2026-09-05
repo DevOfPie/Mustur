@@ -9,11 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 66 | [questions.md](questions.md) |
-| decision | 136 | [decisions.md](decisions.md) |
-| finding | 70 | [findings.md](findings.md) |
+| question | 78 | [questions.md](questions.md) |
+| decision | 145 | [decisions.md](decisions.md) |
+| finding | 97 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 21 | [work-units/index.md](work-units/index.md) |
+| work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -24,6 +24,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
 | [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
 | [IDW-F-0004](findings.md#idw-f-0004) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
+| [IDW-F-0005](findings.md#idw-f-0005) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
 | [MUS-M-0001](milestones.md#mus-m-0001) | milestone | The delivery bet is tested |
 | [MUS-M-0002](milestones.md#mus-m-0002) | milestone | Records and routing, behind one call |
 | [MUS-M-0003](milestones.md#mus-m-0003) | milestone | The audit StrucGu never shipped |
@@ -57,6 +58,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0019](work-units/MUS-W-0019.md#mus-w-0019) | work-unit | Composition |
 | [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020) | work-unit | Accounts of Mustur's own |
 | [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
+| [MUS-W-0022](work-units/MUS-W-0022.md#mus-w-0022) | work-unit | A CLI's prompt, read off the pane and offered as controls |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -123,6 +125,18 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0064](questions.md#mus-q-0064) | question | Should there be one implementation of GitHub's anchor rule, or two? |
 | [MUS-Q-0065](questions.md#mus-q-0065) | question | Where does the agent's token live, given that the tracked .mcp.json shadows every configuration that has one? |
 | [MUS-Q-0066](questions.md#mus-q-0066) | question | Which markdown should a pull request diff show by default? |
+| [MUS-Q-0067](questions.md#mus-q-0067) | question | Enter sends in the session box. A phone keyboard has no shift, so what does it do there? |
+| [MUS-Q-0068](questions.md#mus-q-0068) | question | A note alongside a chosen option means changing MUS-D-0055, which says free text beats the choice |
+| [MUS-Q-0069](questions.md#mus-q-0069) | question | decisions.md is seventeen decisions behind the store. Does it catch up, hand back, or start being generated? |
+| [MUS-Q-0070](questions.md#mus-q-0070) | question | Nine questions were closed with an answer relayed from a prompt. Do they stand? |
+| [MUS-Q-0071](questions.md#mus-q-0071) | question | Disabling Answer until an option is chosen retires the clause that lets text answer on its own |
+| [MUS-Q-0072](questions.md#mus-q-0072) | question | A pane can want a keypress rather than a sentence. What may the session view send? |
+| [MUS-Q-0073](questions.md#mus-q-0073) | question | Stopping a session is a command line. Does it get a control, and what stands in front of it? |
+| [MUS-Q-0074](questions.md#mus-q-0074) | question | A CLI's own prompt needs a keypress Mustur does not send. How far does the surface go? |
+| [MUS-Q-0075](questions.md#mus-q-0075) | question | Where does an intercepted prompt appear, given the terminal has to stay visible? |
+| [MUS-Q-0076](questions.md#mus-q-0076) | question | Is a Mustur session a terminal? The structured protocol carries dialogs properly and requires --print |
+| [MUS-Q-0077](questions.md#mus-q-0077) | question | Where does a read prompt appear? MUS-Q-0075 is re-asked, because the fixture shows the labels are long |
+| [MUS-Q-0078](questions.md#mus-q-0078) | question | The badge is live on one surface. Making it live on the other two costs a script tag on each |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -259,6 +273,15 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0134](decisions.md#mus-d-0134) | decision | An amendment keeps what it does not mention, and removing something is a thing you type |
 | [MUS-D-0135](decisions.md#mus-d-0135) | decision | GitHub's anchor rule has one implementation, and the shell gate asks for it |
 | [MUS-D-0136](decisions.md#mus-d-0136) | decision | A pull request diff shows the code and two documents; the rest of the markdown folds away |
+| [MUS-D-0137](decisions.md#mus-d-0137) | decision | An answer keeps its choice and gains a note |
+| [MUS-D-0138](decisions.md#mus-d-0138) | decision | The decision log's tail is generated, and the marker carries its own boundary |
+| [MUS-D-0139](decisions.md#mus-d-0139) | decision | Nine questions closed on a prompt's word are reopened, and the gate holds them open |
+| [MUS-D-0140](decisions.md#mus-d-0140) | decision | The Answer button dims in CSS, so nothing is retired and no script arrives |
+| [MUS-D-0141](decisions.md#mus-d-0141) | decision | The session view sends seven keys, and Escape is the one it was built for |
+| [MUS-D-0142](decisions.md#mus-d-0142) | decision | Mustur reads a CLI's prompt and offers it as controls, driven by the legend the CLI prints |
+| [MUS-D-0143](decisions.md#mus-d-0143) | decision | A Mustur session stays a terminal, and the dialogs are read off the pane knowingly |
+| [MUS-D-0144](decisions.md#mus-d-0144) | decision | A prompt is a pop up in front of the session, minimised into the key row |
+| [MUS-D-0145](decisions.md#mus-d-0145) | decision | The badge is live on every surface, and one file writes it |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -325,6 +348,32 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0064](findings.md#mus-f-0064) | finding | I added added a user and they are not showing in the people list, as soon as the invite is… |
 | [MUS-F-0065](findings.md#mus-f-0065) | finding | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed |
 | [MUS-F-0066](findings.md#mus-f-0066) | finding | Two branches open at once conflict in records/, because each exports the whole store rather than its own change |
+| [MUS-F-0067](findings.md#mus-f-0067) | finding | The session input should send on enter and add a newline on shift+enter |
+| [MUS-F-0068](findings.md#mus-f-0068) | finding | The spinner makes the status text hard to read at certain positions |
+| [MUS-F-0069](findings.md#mus-f-0069) | finding | The decision prompt in the session came up but the ui didn't update to show that a decision was… |
+| [MUS-F-0070](findings.md#mus-f-0070) | finding | The session didn't resume after the decision was submitted |
+| [MUS-F-0071](findings.md#mus-f-0071) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
+| [MUS-F-0072](findings.md#mus-f-0072) | finding | The recommended option for decisions should have an icon on the main bar not text in the… |
+| [MUS-F-0073](findings.md#mus-f-0073) | finding | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it |
+| [MUS-F-0074](findings.md#mus-f-0074) | finding | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it |
+| [MUS-F-0075](findings.md#mus-f-0075) | finding | The Mustur Decisions should have the answer button disabled until an option has been chosen |
+| [MUS-F-0076](findings.md#mus-f-0076) | finding | The decision queue's answer box submitted on Enter, so a note stopped where the owner's thumb did |
+| [MUS-F-0077](findings.md#mus-f-0077) | finding | Withdraw closed a question on one press, and said nothing about what it was |
+| [MUS-F-0078](findings.md#mus-f-0078) | finding | Allow viewers to vote for answers to decisions but only owners can make final choice |
+| [MUS-F-0079](findings.md#mus-f-0079) | finding | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice |
+| [MUS-F-0080](findings.md#mus-f-0080) | finding | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable |
+| [MUS-F-0081](findings.md#mus-f-0081) | finding | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session |
+| [MUS-F-0082](findings.md#mus-f-0082) | finding | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |
+| [MUS-F-0083](findings.md#mus-f-0083) | finding | A CLI prompt publishes its own key legend, so interception can read it rather than know it |
+| [MUS-F-0084](findings.md#mus-f-0084) | finding | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol |
+| [MUS-F-0085](findings.md#mus-f-0085) | finding | A relayed answer was typed back into the session that wrote it, wearing the owner's name |
+| [MUS-F-0086](findings.md#mus-f-0086) | finding | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked |
+| [MUS-F-0087](findings.md#mus-f-0087) | finding | The prompt pop-up set its own display, so the hidden attribute never hid it |
+| [MUS-F-0088](findings.md#mus-f-0088) | finding | A dialog the CLI draws only when idle is a dialog the surface can only offer while idle |
+| [MUS-F-0089](findings.md#mus-f-0089) | finding | A dialog whose choices are its legend, inside a box, was read as neither |
+| [MUS-F-0090](findings.md#mus-f-0090) | finding | A session tab outlives the binary, and a pop-up it has no markup for fails silently |
+| [MUS-F-0091](findings.md#mus-f-0091) | finding | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour |
+| [MUS-F-0092](findings.md#mus-f-0092) | finding | Ten rounds of asking the owner to run a command that was never actually refused |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

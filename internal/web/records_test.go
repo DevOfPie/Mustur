@@ -71,10 +71,11 @@ func TestTheRecordsPageIsOneDocumentWithCountsForNavigation(t *testing.T) {
 			t.Errorf("the document does not show %q", want)
 		}
 	}
-	// No script: expansion is a details element, which the browser already
-	// knows how to open.
-	if strings.Contains(body, "<script") {
-		t.Error("the records page carries script")
+	// Expansion is a details element, which the browser already knows how to
+	// open. The only script here is the bar's, which keeps the badge live
+	// (MUS-Q-0078) and touches nothing on the page itself.
+	if got := scriptsIn(body); len(got) != 1 || got[0] != "/assets/bar.js" {
+		t.Errorf("the records page loads %v, want only the bar's script", got)
 	}
 }
 

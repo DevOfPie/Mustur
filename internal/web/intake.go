@@ -537,6 +537,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
+<script src="/assets/bar.js"></script>
 </body>
 </html>
 `))

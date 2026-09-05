@@ -51,7 +51,10 @@ threshold rather than claiming to know
 holds one draft that survives a reload and follows you between sessions, and it
 sends what you wrote as a single message rather than a prompt per line —
 measured by hand against one CLI, and the thing to re-check first if another
-ever behaves oddly. That session's sub-agents live in a
+ever behaves oddly. Enter sends where a physical keyboard is likely and
+Shift+Enter breaks the line; on a touch screen Enter stays a newline and the
+Send button, which is on every device, is the submit
+([MUS-Q-0067](records/questions.md#mus-q-0067)). That session's sub-agents live in a
 drawer that is **shut on arrival** — a button beside the session picker says
 how many there are and wears a turning accent ring while any is running, and
 opening it lists them one line each: what it was asked to do, how long it has
@@ -89,18 +92,29 @@ is missing one rather than looking at a stopped server.
 
 Nothing below 5c is built; do not describe any of it in the present tense.
 
-**Six pages carry script**: the session view, the composer, and the four
-authentication surfaces — sign in, accept an invitation, account, and people.
-Every other surface is server-rendered with nothing to fetch, and that is still
-the rule. Each addition was a decision the owner took, never a precedent set by
-building it: the composer on
-[MUS-Q-0034](records/questions.md#mus-q-0034), the account page on
-[MUS-Q-0047](records/questions.md#mus-q-0047). A seventh is a new decision
-again.
+**Every page carries a script now, and two kinds carry a second.** The badge in
+the tab bar is live on every surface since
+[MUS-Q-0078](records/questions.md#mus-q-0078): a page left open used to show the
+count it was rendered with, and the owner missed a question being raised because
+of it. `bar.js` polls `/questions/count` and writes the badge, and it is the only
+code that writes one — the session view having its own copy is how the first fix
+ended up living on a single surface
+([MUS-F-0086](records/findings.md#mus-f-0086)). Every page still renders its own
+count server-side and works with script blocked; what stops is the number
+changing.
 
-**What the rule counts is itself open** on
-[MUS-Q-0053](records/questions.md#mus-q-0053), because six is the count of
-surfaces shipping a `<script>` tag and only two of them stop working without it.
+On top of that, six pages carry a second script for something only script can
+do: the session view, the composer, and the four authentication surfaces — sign
+in, accept an invitation, account, and people. Each was a decision the owner
+took, never a precedent set by building it: the composer on
+[MUS-Q-0034](records/questions.md#mus-q-0034), the account page on
+[MUS-Q-0047](records/questions.md#mus-q-0047).
+
+**What the rule counts is still open** on
+[MUS-Q-0053](records/questions.md#mus-q-0053), and MUS-Q-0078 moved the numbers
+rather than settling it: the count of pages shipping a `<script>` tag is now all
+of them, and the count that matters — pages that stop working without one — is
+unchanged at two.
 
 They are not the same kind of exception. The session view cannot be
 server-rendered at all: it is a live terminal, and neither can the passkey
@@ -112,6 +126,11 @@ and a save-on-change.
 
 **A session left running in a terminal is invisible to Mustur and will not
 become visible.** Mustur starts sessions and never attaches to one it did not.
+
+**A change reaches `mustur.devofpie.com` with `make deploy`** — build, install,
+restart, and a line saying the service came back. Run it from the session that
+made the change; it needs nobody's hands but yours
+([MUS-F-0092](records/findings.md#mus-f-0092)).
 
 Three rules bind every session in this repository:
 

@@ -184,3 +184,35 @@ func TestGateNamesEveryBuriedQuestionAndTheRemedy(t *testing.T) {
 		t.Errorf("message names a surfaced question:\n%s", msg)
 	}
 }
+
+// The marker stays in the record and comes off the surface.
+//
+// MUS-F-0072: the owner asked for the recommendation to be a mark on the
+// option's row rather than text in its description, and it was both — the
+// prefix is what sets the flag, and the line was rendered with the word still
+// on the front of it.
+func TestSaysTakesTheMarkerOffAndKeepsTheSentence(t *testing.T) {
+	for _, c := range []struct{ line, want string }{
+		{"Recommended. A media query decides it", "A media query decides it"},
+		{"Recommended: one screen, not nine", "one screen, not nine"},
+		{"Recommended — the essays stay", "the essays stay"},
+		// The separator the existing questions in this store are written with.
+		{"Recommended · conformance runs on every push", "conformance runs on every push"},
+		{"Recommended the essays stay", "the essays stay"},
+		// Not recommended: untouched, including a line that merely mentions it.
+		{"one rule, no detection", "one rule, no detection"},
+		{"cheaper than the Recommended one", "cheaper than the Recommended one"},
+		// The whole line is the marker: there is nothing else to say, and an
+		// empty description would lose it silently.
+		{"Recommended", "Recommended"},
+	} {
+		o := Option{Label: "x", Line: c.line}
+		if got := o.Says(); got != c.want {
+			t.Errorf("Says(%q) = %q, want %q", c.line, got, c.want)
+		}
+	}
+	// The flag still comes from the raw line, so the record is unchanged.
+	if !(Option{Line: "Recommended. x"}).IsRecommended() {
+		t.Error("stripping broke the flag it is derived from")
+	}
+}

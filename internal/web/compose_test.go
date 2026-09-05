@@ -320,8 +320,13 @@ func TestNowhereToSendSaysSo(t *testing.T) {
 	if strings.Contains(body, "<textarea") {
 		t.Error("a box that cannot send anywhere is offered anyway")
 	}
-	if strings.Contains(body, "<script") {
+	if loads(body, "/assets/compose.js") {
 		t.Error("the client layer loads on a page with nothing for it to do")
+	}
+	// The bar is still a bar, and its count is still live (MUS-Q-0078). What
+	// this test is about is the composer's own client, not every script.
+	if !loads(body, "/assets/bar.js") {
+		t.Error("a page with no destinations still shows a bar, and its count cannot move")
 	}
 }
 

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-70 record(s), by identifier.
+97 record(s), by identifier.
 
 ## The queue
 
@@ -14,6 +14,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
 | [IDW-F-0004](#idw-f-0004) | The sub-agent drawer can be dragged wider on a desktop screen | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. | superseded |
+| [IDW-F-0005](#idw-f-0005) | The Decision screen should allow additional text on an option selection, often I want to choose… |  | superseded |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  | overtaken |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | open |
@@ -80,6 +81,32 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0064](#mus-f-0064) | I added added a user and they are not showing in the people list, as soon as the invite is… | Against the rendered page at 1366x900 and 390x844: an invitation appears immediately as its address, an 'invited' pill, the role and the expiry, with no forms on the row; after Redeem the same address is an ordinary row with its role select and Disable button, appearing once. Removing the Pending lookup fails the test with 'an invited person is not on the screen'. | fixed |
 | [MUS-F-0065](#mus-f-0065) | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. | fixed |
 | [MUS-F-0066](#mus-f-0066) | Two branches open at once conflict in records/, because each exports the whole store rather than its own change | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. | open |
+| [MUS-F-0067](#mus-f-0067) | The session input should send on enter and add a newline on shift+enter | TestEnterSendsOnlyWhereThereIsAShiftKeyToHold in internal/web/sessions_test.go: the handler consults the media query at the keystroke, lets Shift+Enter and an IME's Enter through, keeps the modifier shortcut, and the rendered /sessions/Mustur still carries an unconditional Send button. Asserted rather than measured: that the query is true on the owner's desktop and false on their phone rests on the pointer and hover specification, not on a hands-on check of either device. | fixed |
+| [MUS-F-0068](#mus-f-0068) | The spinner makes the status text hard to read at certain positions | TestTheTurningRingDoesNotPaintOverTheStatusPill asserts both properties on the served stylesheet and that the running state no longer takes --accent-soft alone. The cause was read off the rules rather than measured in a browser: an absolutely positioned pseudo-element paints above an unpositioned sibling box, and #6a8fd820 is 12.5% alpha. | fixed |
+| [MUS-F-0069](#mus-f-0069) | The decision prompt in the session came up but the ui didn't update to show that a decision was… | TestTheHelloFrameCarriesTheDecisionCount opens a real socket against a real tmux session with one open question in the store and reads 1 off the first frame. TestTheDecisionCountRidesTheSocket holds the client half: it finds the Decisions tab, handles the count before the frame kinds, and removes the badge rather than emptying it at zero. TestNoStoreMeansNoCountRatherThanZero holds the nil-store case. | fixed |
+| [MUS-F-0070](#mus-f-0070) | The session didn't resume after the decision was submitted | TestTheAnswererIsToldWhereTheAnswerWent posts an answer to a question naming no session, on a server that could have delivered, and finds 'not delivered' and its reason on the page the owner lands on. TestADeliveredAnswerSaysWhereItWentToo holds the other half against a live sender. MUS-Q-0067's own record carries the Delivered line this was read from. | fixed |
+| [MUS-F-0071](#mus-f-0071) | The Decision screen should allow additional text on an option selection, often I want to choose… | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. | fixed |
+| [MUS-F-0072](#mus-f-0072) | The recommended option for decisions should have an icon on the main bar not text in the… | TestSaysTakesTheMarkerOffAndKeepsTheSentence covers five separators including the middot the existing questions use, two non-recommended lines including one that merely mentions the word, and the whole-line case; it also asserts the flag still derives from the raw line. TestTheRecommendationIsAMarkNotAWordInTheDescription holds the rendered page. TestOptionsRenderWithTheirLineAndDetail, written months earlier, caught the first strip leaving a stray middot at the head of the line and now holds the corrected text. | fixed |
+| [MUS-F-0073](#mus-f-0073) | decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. | fixed |
+| [MUS-F-0074](#mus-f-0074) | An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. | closed by MUS-Q-0070's answers; the channel is still what it is |
+| [MUS-F-0075](#mus-f-0075) | The Mustur Decisions should have the answer button disabled until an option has been chosen | TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith holds that the served page asks both questions in CSS, carries no script tag, and does not dim Withdraw. | fixed |
+| [MUS-F-0076](#mus-f-0076) | The decision queue's answer box submitted on Enter, so a note stopped where the owner's thumb did | MUS-Q-0059's recorded answer, 'This was previously answered as \'An agent may record...', is truncated mid-clause. TestTheAnswerBoxIsMultiLineSoEnterCannotSubmitIt holds that the served page carries a textarea and no single-line answer input. | fixed |
+| [MUS-F-0077](#mus-f-0077) | Withdraw closed a question on one press, and said nothing about what it was | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. | fixed |
+| [MUS-F-0078](#mus-f-0078) | Allow viewers to vote for answers to decisions but only owners can make final choice |  | triaged; parked against MUS-M-0008 |
+| [MUS-F-0079](#mus-f-0079) | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. | recorded; the three affected records now say what was meant |
+| [MUS-F-0080](#mus-f-0080) | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable | TestTheChosenKeysArriveAsThemselves against real tmux, with 'cat -v' as the probe because it prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, both on one line, so nothing was appended to either. TestOnlyTheChosenKeysAreSendable holds the allowlist against a name containing shell metacharacters. TestTheKeyRowSendsAKeyAndNotAMessage holds the row's shape: seven keys, above the composer, outside the form, every button type=button. | fixed |
+| [MUS-F-0081](#mus-f-0081) | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
+| [MUS-F-0082](#mus-f-0082) | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |  | with the owner on MUS-Q-0074 |
+| [MUS-F-0083](#mus-f-0083) | A CLI prompt publishes its own key legend, so interception can read it rather than know it | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. | open; it is what MUS-W-0022 is built on |
+| [MUS-F-0084](#mus-f-0084) | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. | open; it is what MUS-Q-0076 turns on |
+| [MUS-F-0085](#mus-f-0085) | A relayed answer was typed back into the session that wrote it, wearing the owner's name | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. | fixed |
+| [MUS-F-0086](#mus-f-0086) | The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. | fixed |
+| [MUS-F-0087](#mus-f-0087) | The prompt pop-up set its own display, so the hidden attribute never hid it | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. | fixed |
+| [MUS-F-0088](#mus-f-0088) | A dialog the CLI draws only when idle is a dialog the surface can only offer while idle | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
+| [MUS-F-0089](#mus-f-0089) | A dialog whose choices are its legend, inside a box, was read as neither | TestADialogWhoseChoicesAreItsLegend reads the real capture: no rows, three keys 1, 2 and 0 with their words, a title free of the box and of the glyph the CLI decorates it with, and the wrapped body. TestALegendOnABareLineIsNotADialogOnItsOwn holds the guard both ways. The model picker fixture still parses, so the shape that was assumed still works. | fixed |
+| [MUS-F-0090](#mus-f-0090) | A session tab outlives the binary, and a pop-up it has no markup for fails silently | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. | fixed for the prompt; the class is open |
+| [MUS-F-0091](#mus-f-0091) | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. | fixed |
+| [MUS-F-0092](#mus-f-0092) | Ten rounds of asking the owner to run a command that was never actually refused | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. | fixed |
 
 ---
 
@@ -171,6 +198,29 @@ This record stayed in the idea inbox. Correcting its routing is blocked on MUS-Q
 | Evidence | Chrome and Firefox at 1366x768: a real pointer drag took the panel 272 -> 430px with the composer's right edge moving 960 -> 920 in step and no overlap; arrow keys step 16px, End clamps to 224px, Home to 640px; the width survived a reload at 400px. At 390x844 the grip is absent entirely. |
 | Status | superseded |
 | Superseded by | MUS-F-0047 — it asks for a change to Mustur's own session view, which the idea inbox does not own |
+
+---
+
+## IDW-F-0005
+
+**The Decision screen should allow additional text on an option selection, often I want to choose…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0002](routing.md#mus-p-0002)
+
+Superseded by: [MUS-F-0071](#mus-f-0071)
+
+The Decision screen should allow additional text on an option selection, often I want to choose an option but add additional notes to it and I can't do that without choosing other and typing the selected option plus the additional text
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | superseded |
+| Routed to | Idea inbox (MUS-P-0002) |
+| Routing | no destination is obvious |
+| Filed by | dev@killerofpie.com |
+| Superseded by | MUS-F-0071 — routed to Idea inbox (MUS-P-0002) when it belonged to Mustur |
 
 ---
 
@@ -1590,3 +1640,798 @@ What would remove it is not committing the export at all, and that is a decision
 | Where | Makefile, records/ |
 | Evidence | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. |
 | Status | open |
+
+---
+
+## MUS-F-0067
+
+**The session input should send on enter and add a newline on shift+enter**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+settled by: [MUS-Q-0067](questions.md#mus-q-0067)
+
+The session input should send on enter and add a newline on shift+enter.
+
+It did the opposite. The handler in `internal/web/assets/session.js` treated Enter as a newline and sent on Cmd/Ctrl+Enter, with a comment saying why: this is a composer and not a chat box, so the Send button is the phone's submit and the modifier is the desktop's shortcut. That reasoning is sound for the phone and wrong for the desktop, where every composer this one will be compared against sends on Enter.
+
+Flipping it outright would have taken multi-line off the phone, which is the surface the box exists for: a soft keyboard has no shift, so Shift+Enter is a shortcut only a physical keyboard can reach. [MUS-Q-0067](questions.md#mus-q-0067) put that to the owner, who settled it: the Send button is always present, and a phone's return key stays a newline.
+
+So Enter sends where a physical keyboard is likely and makes a newline where it is not. `(hover: hover) and (pointer: fine)` is the closest a browser gets to asking, and it is read at each keystroke rather than cached, so a tablet that gains a keyboard changes with it. Cmd/Ctrl+Enter still sends on any device, which is the only way to send from a touch screen without reaching for the button. An IME's Enter is let through, because there it chooses a candidate rather than ending a sentence.
+
+The Send button is untouched and unconditional on every device. A control that appears and disappears with a media query is a control nobody trusts, and on the desktop it is now the second route to the same thing rather than the only one.
+
+The composer at `/compose` is deliberately not changed. MUS-D-0013 makes it the surface that takes the thought first, and a long thought typed into a box that submits on Enter is a thought lost.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestEnterSendsOnlyWhereThereIsAShiftKeyToHold in internal/web/sessions_test.go: the handler consults the media query at the keystroke, lets Shift+Enter and an IME's Enter through, keeps the modifier shortcut, and the rendered /sessions/Mustur still carries an unconditional Send button. Asserted rather than measured: that the query is true on the owner's desktop and false on their phone rests on the pointer and hover specification, not on a hands-on check of either device. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/assets/session.js |
+
+---
+
+## MUS-F-0068
+
+**The spinner makes the status text hard to read at certain positions**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The spinner makes the status text hard to read at certain positions.
+
+The turning ring is a conic gradient with two bright arms 180 degrees apart, painted once into a `::before` and rotated. It is a *ring* because the thing it wraps sits on top of it and covers everything but a 1.2px rim. The status pill did neither of the two things that requires.
+
+It was not positioned, and an absolutely positioned pseudo-element paints above an unpositioned box whatever the DOM order — so the arms swept across the word rather than around it, which is why it was legible at some angles and not others. And it had no background of its own: its running state is `--accent-soft`, which is 12.5% alpha, so the gradient came through the fill as well as over it.
+
+The sub-agent toggle beside it has `position: relative` and `background: var(--paper)` and never had the fault. That is why this showed up on one control and not both, and why the fix is the toggle's own two properties rather than a new idea: the pill is stacked above the gradient and given the page as its fill, with the running tint layered over that rather than replacing it.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestTheTurningRingDoesNotPaintOverTheStatusPill asserts both properties on the served stylesheet and that the running state no longer takes --accent-soft alone. The cause was read off the rules rather than measured in a browser: an absolutely positioned pseudo-element paints above an unpositioned sibling box, and #6a8fd820 is 12.5% alpha. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go |
+
+---
+
+## MUS-F-0069
+
+**The decision prompt in the session came up but the ui didn't update to show that a decision was…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the shape it follows: [MUS-D-0092](decisions.md#mus-d-0092)
+
+The decision prompt in the session came up but the ui didn't update to show that a decision was waiting.
+
+The count in the tab bar is server-rendered: every surface asks `OpenCount` once, while it is building the page. That is right for the four surfaces you arrive at and leave, and wrong for the one you leave open — a session tab outlives its own render by hours, so the badge kept saying what was true when the tab was opened. A question raised while somebody was watching a session was invisible until they reloaded.
+
+The socket was already there and already carrying something that is not the terminal: MUS-D-0092 pushes sub-agent rows down it, chosen by the owner over a page reload. The count now rides the same socket — on the `hello` frame, and again whenever it moves. MUS-D-0092's closing sentence, *'this is the one thing the surface's client layer models that is not the terminal'*, is now two, which is worth saying rather than leaving a reader to notice.
+
+Ten seconds rather than the sub-agent ticker's two. `OpenCount` lists every record in the store and filters, where the sub-agent poll stats one file and usually stops there; running that per viewer every two seconds for a number that moves a few times a day is the wrong trade. Frames are sent only when the count changes, so a quiet session costs one list every ten seconds and no traffic.
+
+The field is a pointer. Falling to zero is the update that matters most — a decision answered while you watch should clear the badge — and `omitempty` on a plain int would have swallowed exactly that frame. A server with no store sends no count at all rather than a zero, so it cannot clear a badge it never counted.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestTheHelloFrameCarriesTheDecisionCount opens a real socket against a real tmux session with one open question in the store and reads 1 off the first frame. TestTheDecisionCountRidesTheSocket holds the client half: it finds the Decisions tab, handles the count before the frame kinds, and removes the badge rather than emptying it at zero. TestNoStoreMeansNoCountRatherThanZero holds the nil-store case. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, internal/web/assets/session.js |
+
+---
+
+## MUS-F-0070
+
+**The session didn't resume after the decision was submitted**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the rule this does not change: [MUS-D-0065](decisions.md#mus-d-0065)
+
+The session didn't resume after the decision was submitted.
+
+Two things, and only one of them is a defect.
+
+**The answer had nowhere to go.** `mustur ask --in <project>` names the Mustur-owned session an answer should be typed back into, and without it the answer is recorded and delivered nowhere. That is MUS-D-0065 working as written — an undelivered answer is still an answer — and it is the ordinary case, because a session running in a terminal is invisible to Mustur and there is nothing to name. The question behind this episode, MUS-Q-0067, carries `Delivered: not delivered: the question names no session`. Nothing was broken; nothing was ever going to type into anything.
+
+**Nobody said so.** `session.Deliver` returns that sentence, the record keeps it, and the record is the one place the person who has just answered is not looking. They pressed Answer, watched a session, and waited for something that was never coming.
+
+Fixed at the surface, not at the rule. The delivery's own sentence is carried through the redirect and rendered beside the confirmation, so answering says either *typed into mustur/Mustur* or *not delivered: the question names no session*. The wording is the record's, unaltered — one sentence, written once, shown in both places.
+
+A server started without `--sessions` says nothing, deliberately. There is no Sessions tab on that deployment either, so nobody is waiting for a session to resume, and a delivery notice on every answer would be noise about a capability that surface does not offer.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestTheAnswererIsToldWhereTheAnswerWent posts an answer to a question naming no session, on a server that could have delivered, and finds 'not delivered' and its reason on the page the owner lands on. TestADeliveredAnswerSaysWhereItWentToo holds the other half against a live sender. MUS-Q-0067's own record carries the Delivered line this was read from. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/questions.go |
+| Correction 2026-09-04 | The paragraph above says a session running in a terminal is invisible to Mustur and that there is nothing for --in to name. That is true in general and was false for the session it was written in: this session runs inside mustur/Check, which Mustur started, and --in Check would have delivered every answer. The delivery said 'the question names no session' because the flag was not passed, not because no session existed. The agent assumed it was outside Mustur's reach and never checked 'mustur session list', which takes one command. |
+
+---
+
+## MUS-F-0071
+
+**The Decision screen should allow additional text on an option selection, often I want to choose…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Corrects: [IDW-F-0005](#idw-f-0005)
+
+settled by: [MUS-Q-0068](questions.md#mus-q-0068)
+
+The Decision screen should allow additional text on an option selection, often I want to choose an option but add additional notes to it and I can't do that without choosing other and typing the selected option plus the additional text
+
+| Field | Value |
+| --- | --- |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Evidence | TestANoteRidesAlongsideTheChosenOption: the answer stays the option verbatim and the remark lands in Note. TestFreeTextWithNoChoiceIsStillTheAnswer holds MUS-D-0055's surviving clause. TestTheNoteTravelsWithTheAnswerIntoTheSession asserts both reach a waiting session. TestFreeTextOverridesAChosenOption is gone as a name and present as a paragraph in the test that replaced it, saying what it used to hold and why it no longer does. |
+| Status | fixed |
+| Filed by | dev@killerofpie.com |
+| Corrects | IDW-F-0005 — routed to Idea inbox (MUS-P-0002) when it belonged to Mustur |
+| Where | internal/question/question.go, internal/web/questions.go |
+
+---
+
+## MUS-F-0072
+
+**The recommended option for decisions should have an icon on the main bar not text in the…**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+why the mark is a character and not a drawing: [MUS-F-0048](#mus-f-0048)
+
+The recommended option for decisions should have an icon on the main bar not text in the description.
+
+The marker is a prefix on an option's one-line part -- `Recommended :: …` -- which is what sets the flag the surface reads. The surface drew a pill saying *recommended* beside the label and then rendered the line verbatim underneath, so the word appeared twice: once as a mark and once as the first word of the description it was attached to.
+
+The prefix stays where it is. It is there so a reader who knows nothing about this format still sees the recommendation -- in the raw record, in the export, in a terminal -- and that reader is the reason it is written into the text rather than into a separate field. What changed is that the surface, which has already drawn the mark, stops printing the word again: `Option.Says()` takes the marker and the punctuation holding it to the sentence off, and only for rendering.
+
+The mark is a star rather than a drawing. The tab icons are CSS because the plan tool refuses SVG (MUS-F-0048); a star is a character and needs neither, and it carries a title and an aria-label so it is not a symbol with nothing behind it.
+
+An option whose whole line is the word survives untouched. Stripping it would leave an empty description and lose the recommendation entirely, which is the one case where the word is the sentence.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestSaysTakesTheMarkerOffAndKeepsTheSentence covers five separators including the middot the existing questions use, two non-recommended lines including one that merely mentions the word, and the whole-line case; it also asserts the flag still derives from the raw line. TestTheRecommendationIsAMarkNotAWordInTheDescription holds the rendered page. TestOptionsRenderWithTheirLineAndDetail, written months earlier, caught the first strip leaving a stray middot at the head of the line and now holds the corrected text. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/question/question.go, internal/web/questions.go |
+
+---
+
+## MUS-F-0073
+
+**decisions.md stopped at MUS-D-0120, and no gate noticed seventeen decisions going past it**
+
+finding · 2026-09-03
+
+the same shape at the other document: [MUS-F-0011](#mus-f-0011)
+
+the duplication this resolves by attrition: [MUS-F-0004](#mus-f-0004)
+
+settled by: [MUS-Q-0069](questions.md#mus-q-0069)
+
+the gate that still does not exist: [MUS-F-0011](#mus-f-0011)
+
+CLAUDE.md tells every reader to read [decisions.md](../decisions.md) for *why*. Its last entry is dated 2026-08-26 and covers MUS-D-0120. Seventeen decisions since — MUS-D-0121 through MUS-D-0137 — exist only in the store and in `records/decisions.md`, which is the export.
+
+The owner found this by looking for a decision and not finding it, which is the only way it could have been found. `make check` has passed on every commit through all seventeen: the question gate reads `records/questions.md`, the link gate resolves anchors, and nothing anywhere compares the store's decisions to the file the contract names as the reasoning. This is MUS-F-0011's shape — no gate detects the export drifting from the store — arriving at the other document.
+
+It is also MUS-F-0004 growing teeth. That finding recorded the export and the contract files holding the same records twice and left the question of which is authoritative open; what happened in practice is that one of them quietly stopped being written, and the one that stopped is the one a reader is pointed at.
+
+The two are not the same artifact, which is why this is not simply a backfill. The entries in `decisions.md` are essays — a dated section, a narrative, corrections and retractions inside it — and a store decision is a claim with its reasoning attached. Seventeen essays written now by someone who was not there for most of them would be a different thing wearing the same shape.
+
+Recorded rather than fixed: how the file catches up, and whether it is written by hand from here on, is the owner's on MUS-Q-0069.
+
+| Field | Value |
+| --- | --- |
+| Where | decisions.md, internal/export/tail.go |
+| Status | fixed |
+| Evidence | decisions.md now carries 17 '### MUS-D-01xx' headings below the marker, from MUS-D-0121 to MUS-D-0137, written by 'make export'. internal/export tests hold the four properties that matter: the prose above the marker survives, what was below it is replaced rather than appended to, a second run changes nothing, and a file with no marker or a marker with no from= is refused with the file untouched. make check passes: 1340 links resolve, 2004 table rows match. |
+
+---
+
+## MUS-F-0074
+
+**An agent recorded a prompt's return value as the owner's answer, and the owner had not answered it**
+
+finding · 2026-09-03
+
+the rule that makes the first answer stick: [MUS-D-0126](decisions.md#mus-d-0126)
+
+the question it happened to: [MUS-Q-0069](questions.md#mus-q-0069)
+
+the rule the relay was written under: [MUS-D-0126](decisions.md#mus-d-0126)
+
+what to do about the nine: [MUS-Q-0070](questions.md#mus-q-0070)
+
+what the owner decided: [MUS-D-0139](decisions.md#mus-d-0139)
+
+**This record first claimed the wrong thing, and the wrong claim is kept here because it is how the real one was found.** It said MUS-Q-0069 had been answered twice within thirteen seconds — once in Mustur, once in the prompt — and that the contract's two surfaces had no rule for which wins. The owner corrected it: they answered in Mustur and nowhere else. Nobody answered the prompt.
+
+So the prompt returned a value the owner never chose, and the agent read it as the owner speaking.
+
+Every `AskUserQuestion` call in this session — five of them — returned the **first** option, which was in each case the one labelled Recommended. On MUS-Q-0067 and MUS-Q-0068 that happened to agree with what the owner had already said in Mustur, so nothing looked wrong. On MUS-Q-0069 it did not: the owner chose *the tail is generated from the store* and the prompt returned *it becomes the pointer, and a gate stops it drifting again*. That divergence is the only reason this was noticed at all.
+
+**Nothing false was written today, and only by luck.** Twice this session an agent ran `mustur answer --from-owner "AskUserQuestion prompt…"` to write the prompt's value down as the owner's. Both were refused, because the store already held the owner's real answer and MUS-D-0126 does not overwrite one without `--reanswer`. That refusal is the whole of the defence, and it only works when the owner has already answered somewhere else first.
+
+**It has not always been refused.** Ten questions in this store carry a `Relayed` field, nine of them attributing the answer to a prompt: MUS-Q-0058 through MUS-Q-0066. Each was written by an agent, each closed a question, and each drove behaviour that shipped. Whether the owner made those choices is not knowable from this store — the record says an agent wrote down what a prompt returned, which is exactly what it says on a prompt that returned a default. That is MUS-Q-0070.
+
+What this does not say: that those nine are wrong. Only that the record cannot tell the difference, and that MUS-D-0126 was written to make sure nobody ever had to guess.
+
+| Field | Value |
+| --- | --- |
+| Where | the relay path, and every question closed through it |
+| Status | closed by MUS-Q-0070's answers; the channel is still what it is |
+| Evidence | Five AskUserQuestion calls this session returned the first, Recommended option each time. The owner states they answered only in Mustur. record_event for MUS-Q-0069: one amend by dev@killerofpie.com at 03:45:21 and no other answer. Ten records carry Relayed; nine cite a prompt. |
+| What was done | MUS-Q-0070: the owner reopened all nine (MUS-D-0139). Each is open, marked needed, and holds its relayed answer as 'Unconfirmed answer'. make check is red until they are answered. |
+| Not fixed by any of this | The prompt still returns what it returns. Nothing in this repository can detect it; what this repository can do is stop treating that return as the owner's word, which is now what MUS-D-0139 and the reopened records say. |
+| Outcome | All nine were answered again by the owner in Mustur on 2026-09-03 and all nine confirmed the earlier answer. Nothing that shipped was built on a decision the owner had not made. What the reopening proved is that the relays happened to be right, not that relaying was safe. |
+| What the owner said on MUS-Q-0059 | That the previous selection was correct, that this may have caused the recent issues, and that they will aim to answer only through Mustur. |
+
+---
+
+## MUS-F-0075
+
+**The Mustur Decisions should have the answer button disabled until an option has been chosen**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+asked as: [MUS-Q-0071](questions.md#mus-q-0071)
+
+settled by: [MUS-D-0140](decisions.md#mus-d-0140)
+
+The Mustur Decisions should have the answer button disabled until an option has been chosen
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith holds that the served page asks both questions in CSS, carries no script tag, and does not dim Withdraw. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Why it is not simply built | It retires MUS-D-0055's surviving clause, that free text with no choice is still the answer, which MUS-D-0137 reaffirmed two hours before this jot was filed. A conflict between two of the owner's own decisions is named rather than picked. |
+
+---
+
+## MUS-F-0076
+
+**The decision queue's answer box submitted on Enter, so a note stopped where the owner's thumb did**
+
+finding · 2026-09-03
+
+the same class, reported this morning: [MUS-F-0067](#mus-f-0067)
+
+what made the box a note box: [MUS-D-0137](decisions.md#mus-d-0137)
+
+The owner was part-way through writing a note on MUS-Q-0059 when Enter went in by accident. The box was `<input type="text">`, and Enter in a single-line input submits the form it is in — so what had been typed so far was recorded as the answer and the question closed. `This was previously answered as 'An agent may record…` is what MUS-Q-0059 holds: a sentence cut mid-clause with the quote still open.
+
+The box had been a note box for about an hour. MUS-D-0137 turned the free-text field beside the options into a remark attached to a chosen answer, which is exactly the change that makes a longer sentence likely — and it was made without touching the control, so a field now meant for prose was still a control that submits on Enter.
+
+Fixed by making it a `textarea`. Enter is a newline and the Answer button is the only way out. That is the same lesson MUS-F-0067 taught the session composer this morning, arriving at the second surface within the day: the fix was applied where it was reported and the class of defect was not looked for anywhere else.
+
+MUS-Q-0059 is reopened, with what was captured kept on the record. MUS-Q-0058 was answered in the same minute and reads as a complete sentence, so it is left alone and named to the owner rather than reopened on a guess.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/questions.go |
+| Status | fixed |
+| Evidence | MUS-Q-0059's recorded answer, 'This was previously answered as \'An agent may record...', is truncated mid-clause. TestTheAnswerBoxIsMultiLineSoEnterCannotSubmitIt holds that the served page carries a textarea and no single-line answer input. |
+
+---
+
+## MUS-F-0077
+
+**Withdraw closed a question on one press, and said nothing about what it was**
+
+finding · 2026-09-03
+
+the question it cost: [MUS-Q-0060](questions.md#mus-q-0060)
+
+The owner pressed Withdraw on MUS-Q-0060 not knowing what it did. It closed the question with no answer, in one press, with no confirmation and no way back through the surface.
+
+The button said `Withdraw`. Nothing beside it said that withdrawing is for a question that no longer wants an answer — overtaken by events, or settled elsewhere — and that it closes without one. Read cold, next to an Answer button, it reads like a way out of the form.
+
+It also sat at `margin-left: auto`, pushed to the far edge of the row, which is where a phone's thumb rests.
+
+Fixed with a tick beside it reading *close it with no answer*, which the handler now requires: an unticked Withdraw is refused and the question is untouched. A checkbox rather than a confirmation page, because this surface carries no script and a second page would be a second surface. The tick takes the space the button used to push itself over with, so the button cannot be reached without passing the sentence that says what it does.
+
+MUS-Q-0060 is reopened. Nothing was lost — a withdrawal records no answer, so there was nothing to recover except the question itself.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/questions.go |
+| Status | fixed |
+| Evidence | MUS-Q-0060 was withdrawn at 04:23:16 by dev@killerofpie.com with no answer recorded. TestWithdrawNeedsTheTickBesideIt holds both halves: unticked is refused with the question still open and a message saying how to withdraw on purpose, ticked withdraws. |
+
+---
+
+## MUS-F-0078
+
+**Allow viewers to vote for answers to decisions but only owners can make final choice**
+
+finding · 2026-09-03
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+where it belongs: [MUS-M-0008](milestones.md#mus-m-0008)
+
+the clause it must not touch: [MUS-D-0055](decisions.md#mus-d-0055)
+
+the adjacent question: [MUS-Q-0046](questions.md#mus-q-0046)
+
+Allow viewers to vote for answers to decisions but only owners can make final choice.
+
+Triaged rather than built: this is a milestone, not a fix, and it belongs to MUS-M-0008 — *a second person* — which is the milestone where somebody who is not the owner reads a project from their own device. Voting is that milestone growing a second verb.
+
+**What already exists.** Accounts, invitations and a role per project shipped in 5b, and the guard refuses a reader's POST to `/questions` today. So the two halves this needs — knowing who is asking, and refusing them the decision — are built and enforced.
+
+**What it needs.** A vote is a new thing in the store: an account, a question, an option, and when. It is not an answer and must not be storable as one, because MUS-D-0055 makes an answer the owner's choice between options and a tally is not a choice. The queue then has to render counts beside each option, and the owner's Answer button has to stay exactly what it is.
+
+**The question inside it.** Whether a vote is attributable — whether the owner sees who voted for what, and whether a voter sees anyone else's. MUS-Q-0046 already asked the adjacent one, should a reader see who else has access, and the answer to that constrains this. A tally that names its voters and one that does not are different products.
+
+**Why it is parked and not asked.** Nothing in flight depends on it, and the owner has just cleared a queue of ten. It becomes a question when it becomes work: whether MUS-M-0008 absorbs it or it earns a milestone of its own is the shape of that question, and this record is what it will cite.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | triaged; parked against MUS-M-0008 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Scale | a milestone, not a fix: a new record kind in the store, a role-aware surface, and a question about attribution |
+| Already built | accounts, invitations and a role per project since 5b; a reader's POST to /questions is already refused |
+
+---
+
+## MUS-F-0079
+
+**Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice**
+
+finding · 2026-09-03
+
+the property it defeats: [MUS-D-0055](decisions.md#mus-d-0055)
+
+MUS-Q-0061, MUS-Q-0062 and MUS-Q-0063 each wrote their first option as `Recommended :: <the actual label> :: <the paragraph>`. The contract asks for the *line* to be prefixed with Recommended, not for the label to be the word — and the label is what a chosen option records as the answer.
+
+So all three came back from the owner reading `Answer: Recommended`. What was chosen is recoverable only by opening the question and finding which option was listed first, which is exactly the property MUS-D-0055 exists to preserve: an answer that is a verbatim option label can be matched back to the option it names. `Recommended` names nothing.
+
+The three resolve to *build the gate*, *leave it* and *merge with an explicit --drop*, each matching the answer that had previously been relayed, and each is now written onto its record as `What Recommended meant`. Nothing is wrong in the outcome; the record was briefly unreadable without a lookup.
+
+Recorded rather than gated. Nothing checks an option's shape when it is written, and a check that refused the word `Recommended` as a label would be a rule about prose. The three affected records carry the resolution; the contract already says what to do and this is the note that it was not done.
+
+| Field | Value |
+| --- | --- |
+| Where | MUS-Q-0061, MUS-Q-0062, MUS-Q-0063 |
+| Status | recorded; the three affected records now say what was meant |
+| Evidence | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. |
+
+---
+
+## MUS-F-0080
+
+**The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable**
+
+finding · 2026-09-04
+
+the decision that made a message the unit: [MUS-D-0096](decisions.md#mus-d-0096)
+
+asked as: [MUS-Q-0072](questions.md#mus-q-0072)
+
+settled by: [MUS-D-0141](decisions.md#mus-d-0141)
+
+The owner opened a session in the browser, found a drafted bug report on the screen, and had no way to act on it.
+
+`Adapter.Send` refuses empty text — *nothing to send* — and the composer drops an empty submit before it gets that far. Everything that reaches a pane is a line followed by Enter. So there is no way from a browser to send a bare Enter, an Escape, an arrow key, Tab, or Ctrl-C. Anything an agent CLI puts on screen that wants a keypress rather than a sentence is visible and unreachable.
+
+That is not an oversight in the composer; it is MUS-D-0096 working as designed. The composer sends a *message*, and a message is text. What was never decided is what happens when the pane is not asking for a message.
+
+**It has happened before and was recorded.** On 2026-08-23 a Mustur-started session landed on Claude Code's MCP-trust prompt and keystrokes typed into the composer went into that dialog rather than to the agent; the queue line says the pane reports as running because it is, and that nothing distinguishes running from waiting-on-a-dialog. That was thirteen days ago, it was written down, and the shape recurred.
+
+**This instance is smaller than it looks.** A queued feedback draft is local, is never sent without approval, and blocks nothing — so the owner can ignore it. The general case is not smaller: a modal the agent cannot get past on its own leaves the session stuck with the surface unable to help.
+
+Not fixed. What the surface may send beyond a line of text is a decision, and it is MUS-Q-0072.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go, internal/web/sessions.go, internal/web/assets/session.js |
+| Status | fixed |
+| Evidence | TestTheChosenKeysArriveAsThemselves against real tmux, with 'cat -v' as the probe because it prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, both on one line, so nothing was appended to either. TestOnlyTheChosenKeysAreSendable holds the allowlist against a name containing shell metacharacters. TestTheKeyRowSendsAKeyAndNotAMessage holds the row's shape: seven keys, above the composer, outside the form, every button type=button. |
+
+---
+
+## MUS-F-0081
+
+**The surface cannot interrupt an agent mid-turn, and separately cannot stop a session**
+
+finding · 2026-09-04
+
+the same shape on a cheaper button: [MUS-F-0077](#mus-f-0077)
+
+asked as: [MUS-Q-0073](questions.md#mus-q-0073)
+
+what actually answered it: [MUS-D-0141](decisions.md#mus-d-0141)
+
+**This record asked the wrong question first, and the owner's answer is what corrected it.** It was filed as *nothing on any surface stops a session* after the owner said they did not think there was a way to stop one by hand. What they meant was interrupting an agent mid-turn: noticing it starting to misread them, stopping it, and giving corrections before it continues — which in the terminal is Escape, and which has nothing to do with ending a tmux session.
+
+So the reported need is met by MUS-D-0141's key row, whose first button is Escape, and not by anything in the paragraph below.
+
+**The other half is still true and is nobody's request.** `mustur session stop <project>` exists and works and is a command line; CLAUDE.md says Mustur starts sessions, reports which are running, and stops one, and only two of those three are on the surface. That gap is real and it is recorded here rather than built, because the owner has not asked for it and the thing they did ask for turned out to be something else. It matters least of the two: a session that needs ending is rarer than a turn that needs interrupting, and MUS-Q-0073's answer is the evidence for that ordering rather than a guess about it.
+
+The lesson worth keeping is not about sessions. *I don't think there is a way for me to manually stop a session* was read as a feature request about the word **session** when it was a report about the word **stop**, and a whole question was built on the reading rather than on asking which was meant.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Status | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
+| Evidence | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. |
+| What the owner meant | Interrupting an agent mid-turn to correct it, which is Escape, and which the key row now sends |
+| What is still missing | A way to end a session from any surface. Real, unrequested, and cheaper to leave than to guess at |
+
+---
+
+## MUS-F-0082
+
+**Can we intercept these prompts and surface them in a ui prompt for the user to answer instead…**
+
+finding · 2026-09-04
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+asked as: [MUS-Q-0074](questions.md#mus-q-0074)
+
+the decision the row was built under: [MUS-D-0141](decisions.md#mus-d-0141)
+
+Can we intercept these prompts and surface them in a ui prompt for the user to answer instead of displaying in the tmux? I also noticed prompts for feedback to claude that require a number keypress for response
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | with the owner on MUS-Q-0074 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Why it is one question and not two | Intercepting a prompt and sending it a digit are the same axis: how much of the pane's meaning Mustur is willing to model. The digit is the cheap end of it and the interception is the far end, and answering them separately would decide the second by accident. |
+
+---
+
+## MUS-F-0083
+
+**A CLI prompt publishes its own key legend, so interception can read it rather than know it**
+
+finding · 2026-09-04
+
+the reason it was captured rather than recalled: [MUS-F-0072](#mus-f-0072)
+
+what it makes possible: [MUS-Q-0074](questions.md#mus-q-0074)
+
+Captured from a real pane rather than remembered, because the last thing built from a remembered format left a stray middot in every line (MUS-F-0072).
+
+What a Claude Code selection prompt actually looks like on screen:
+
+    Select model
+    Switch between Claude models. Your pick becomes the default for new sessions.
+      1. Default (recommended)  Opus 5 with 1M context · Best for everyday, complex tasks
+      2. Opus (1M context)      Opus 5 with 1M context · Best for everyday, complex tasks
+    ❯ 3. Opus ✔                 Opus 5 · Best for everyday, complex tasks
+    ● High effort (default) ←/→ to adjust
+    Enter to set as default · s to use this session only · Esc to cancel
+
+Four things are on the screen and only two of them were expected. A title. Numbered options, each a number, a label and a detail. A cursor marking which is selected. **And a legend of what every key does**, printed by the CLI itself, in its own words, on the last line.
+
+That last one is the difference between the thing MUS-Q-0074's option warned about and something much smaller. The warning was that Mustur would start understanding one vendor's dialogs and break silently when they changed. A parser that reads the legend does not understand the dialog at all: it reads what this screen says its keys are and offers those. A dialog that changes its keys changes its legend in the same edit, and the surface follows it without being taught.
+
+It does not remove the vendor-specific part, it shrinks it. Finding the block, spotting numbered rows and reading the cursor are still shapes rather than a protocol, and a CLI that stops printing a legend takes the offer with it — which is the failure to design for: no legend means no buttons, and the terminal is still there.
+
+The 's to use this session only' entry is the proof that guessing would have failed. Nothing about a numbered list suggests a letter key, and no allowlist written from the shape of a menu would have included it.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session |
+| Status | open; it is what MUS-W-0022 is built on |
+| Evidence | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. |
+
+---
+
+## MUS-F-0084
+
+**The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol**
+
+finding · 2026-09-04
+
+what measured this route first: [MUS-D-0088](decisions.md#mus-d-0088)
+
+the decision it puts back in question: [MUS-D-0142](decisions.md#mus-d-0142)
+
+asked as: [MUS-Q-0076](questions.md#mus-q-0076)
+
+The owner asked how the extension interacts with Claude Code before any more of the pane parser was built, on the grounds that it fully parses everything into its own format. It does, and the way it does rules out the thing that was about to be built on top of.
+
+**What the extension actually does.** It spawns the CLI with `--output-format stream-json --verbose --input-format stream-json` and speaks a bidirectional JSON protocol over stdio: `control_request`, `control_response`, `control_cancel_request`, `keep_alive`. Its conversation is a webview, not a terminal — the package contributes three webview views and no terminal at all. **Permission prompts and dialogs are protocol messages**: the initialize response carries `pending_permission_requests` and `pending_user_dialog_requests`, which exist so a reconnecting client is handed the prompts still outstanding. Nothing is read off a screen.
+
+**What the IDE WebSocket is, and is not.** `~/.claude/ide/<port>.lock` holds a pid, the workspace folders, the IDE's name and an auth token; the IDE hosts the socket and the CLI connects out to it. That channel is ordinary MCP — `tools/call`, `roots/list`, `sampling/createMessage`, `elicitation/create` — with the IDE as the server offering `openDiff` and `getDiagnostics`, and notifications for `selection_changed` and `at_mentioned`. It is how the CLI reaches the editor. **It does not carry the CLI's own prompts**, so an interactive session cannot be given a structured dialog channel by hosting one of these.
+
+**And the protocol still costs the terminal.** `claude --help` on 2.1.260 says `--output-format`, `--input-format` and `--include-partial-messages` each work *only with --print*. That is what MUS-D-0088 measured on 2026-08-22 and declined for exactly this reason, and it is still true thirteen days and several versions later.
+
+So the owner's instinct was right and the conclusion runs the other way from the one it points at: the structured route exists, carries dialogs properly, and is what a native client uses — and reaching it means a Mustur session stops being a terminal anybody can attach to. That is not a parser decision. It is MUS-D-0016's premise, and it is MUS-Q-0076.
+
+| Field | Value |
+| --- | --- |
+| Where | ~/.vscodium-server/extensions/anthropic.claude-code-2.1.251-linux-x64 |
+| Status | open; it is what MUS-Q-0076 turns on |
+| Evidence | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. |
+
+---
+
+## MUS-F-0085
+
+**A relayed answer was typed back into the session that wrote it, wearing the owner's name**
+
+finding · 2026-09-04
+
+the rule it defeated: [MUS-D-0126](decisions.md#mus-d-0126)
+
+the same family, at a different surface: [MUS-F-0074](#mus-f-0074)
+
+MUS-Q-0076 was raised with `--in Check` and answered with `mustur answer --from-owner`, from this session, about this session. The delivery then typed *The owner answered MUS-Q-0076: It stays a terminal…* into that session's stdin — where it arrived as a fresh message from the owner, in the middle of the turn that had just written it.
+
+It was caught by reading the event log and finding three amends, all by `whippy` and none by the owner. Nothing on the surface of the message said so, and the near miss is the point: the agent was one unchecked assumption away from reporting that the owner had answered twice, which is the mistake MUS-F-0074 already cost a round of nine reopened questions.
+
+**The rule was right and the one place it mattered did not carry it.** MUS-D-0126 exists so that nobody reads a relay as the owner having been here, and it does that everywhere a record is read — `Relayed` is on the record, in the export, on the queue. The delivered line is the one copy of an answer that leaves the store, and it was the copy with the provenance stripped off.
+
+Fixed by carrying it: a relayed answer now arrives as *MUS-Q-0076 was answered "…" — written down by whippy, from …. Not typed by the owner here.* An answer the owner actually gave is unchanged, because that sentence is true of it.
+
+There is a second thing here that is not fixed and is worth naming. A session can raise a question, write down its own answer to it, and receive that answer as input — a closed loop with no person in it at any point. Provenance in the text is what makes the loop legible; it is not what makes it impossible.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/deliver.go, cmd/mustur/questions.go |
+| Status | fixed |
+| Evidence | record_event for MUS-Q-0076 holds three rows, all actor whippy, and the delivered text said 'The owner answered'. TestARelayedAnswerDoesNotArriveWearingTheOwnersName asserts the unrelayed sentence is unchanged and the relayed one carries the identifier, the answer, who wrote it down and that the owner did not type it. |
+
+---
+
+## MUS-F-0086
+
+**The decision count went live on one of the three surfaces that show it, and the test only covered the half that worked**
+
+finding · 2026-09-04
+
+the fix this is about: [MUS-F-0069](#mus-f-0069)
+
+what the scripted-surface count already asks: [MUS-Q-0053](questions.md#mus-q-0053)
+
+asked as: [MUS-Q-0078](questions.md#mus-q-0078)
+
+settled by: [MUS-D-0145](decisions.md#mus-d-0145)
+
+The owner reported the badge still needing a refresh, and missed a question being raised because of it.
+
+**Two things are wrong and only one of them is the bug they hit.**
+
+The fix for MUS-F-0069 went into the session view, because that is where the report came from: a tab left open on a terminal for hours. Three surfaces render the badge — intake, the decision queue and the session view — and the session view is the only one with a socket. So a tab left open on the decision queue, which is where somebody answering questions actually sits, shows the count it was rendered with until they navigate. That is almost certainly what the owner hit, and it is not a defect in the fix; it is the fix having been scoped to the surface that reported it.
+
+**The other thing is that nothing would have caught it if it had been the fix.** The tests written alongside MUS-F-0069 asserted the hello frame carried a count and that the client had the strings to handle one. The ticker — the part that carries a change while a socket is open, which is the entire feature — had no test at all. It could have been unreachable and every gate would have stayed green. A test now exists and the live path passes, so the session view does update; that was verified after the report rather than before it, which is the wrong order and is why the report was needed.
+
+Making the other two live costs a script tag on a surface whose design is that it works without one, which is MUS-Q-0053's territory and MUS-Q-0078's question.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go, internal/web/questions.go, internal/web/sessions.go |
+| Status | fixed |
+| Evidence | Against a scratch store holding one open question: /questions/count answers {"waiting":1} and /questions, /intake, /records and /compose each render class=cnt with the value 1 and load /assets/bar.js. Three of those four rendered no badge at all before this. TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven holds that each surface loads the bar's script and no script it was not given; TestTheDecisionCountRidesTheSocket holds that the session view writes through the shared writer and no longer has its own. |
+
+---
+
+## MUS-F-0087
+
+**The prompt pop-up set its own display, so the hidden attribute never hid it**
+
+finding · 2026-09-04
+
+the same shape, twice before: [MUS-F-0062](#mus-f-0062)
+
+the surface it broke: [MUS-D-0144](decisions.md#mus-d-0144)
+
+The owner reported the pop-up showing and empty. It was showing because it was never hidden, and empty because there was no prompt to put in it — one symptom, and the two halves have nothing to do with each other.
+
+The HTML `hidden` attribute works through a user-agent rule, `[hidden] { display: none }`. Any explicit `display` on the element outranks it. `.dlg` sets `display: flex` so it can centre its box, and `<div class="dlg" id="dlg" hidden>` was therefore not hidden at all: a bordered, shadowed, empty box sitting over the terminal that nothing on the page would close.
+
+**The file already knew.** `.chips[hidden]` and `.drawer[hidden]` both carry the guard, and the second is twelve lines from where the new element was added. That makes this the same shape as MUS-F-0062 and MUS-F-0064 — a lesson written down beside the code that had not learned it — and the third time in this repository that a rule sitting next to the change failed to reach it.
+
+So the fix is the rule and a gate rather than a fourth comment. `TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded` reads the served page, finds every element that carries `hidden` and whose class sets a `display`, and requires a `[hidden]` rule for it. It fails without the fix and passes with it, checked both ways rather than assumed.
+
+**The other half is a fixture.** An empty box was equally consistent with the parser reading a prompt off an ordinary screen and finding nothing to show, and nothing distinguished the two without trying a real screen. Both live panes returned nil, and the capture of the one that has a status line — `auto mode on (shift+tab to cycle) · PR #38 · esc to interrupt · 1 agent`, which has middots and contains something that reads exactly like a legend entry — is now a fixture asserting it stays nil. It is rejected because every entry on the line must parse and the first one does not.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go |
+| Status | fixed |
+| Evidence | Removing the .dlg[hidden] rule fails TestNothingHiddenByAttributeSetsItsOwnDisplayUnguarded with '.dlg sets its own display and is hidden by attribute'; restoring it passes. TestAnOrdinarySessionScreenIsNotAPrompt runs ReadPrompt over a real capture of a running pane carrying the status line and asserts nil, and refuses to pass if the fixture has no status line in it. |
+
+---
+
+## MUS-F-0088
+
+**A dialog the CLI draws only when idle is a dialog the surface can only offer while idle**
+
+finding · 2026-09-04
+
+the decision whose cost this is: [MUS-D-0143](decisions.md#mus-d-0143)
+
+what the protocol carries instead: [MUS-F-0084](#mus-f-0084)
+
+The owner reported the feedback-draft prompt on the pane with no pop-up beside it, and named the thing that makes it awkward: it is only visible when the session is idle, and it goes away as soon as work starts.
+
+**The state outlives the drawing.** While the agent works, the pane carries `· 1 feedback draft` in the status line and nothing else — the draft still exists, the CLI still holds it, and the screen simply stops showing the way to act on it. Verified by capturing this session's own pane mid-turn: the chip is there and no dialog is.
+
+That is the first concrete cost of MUS-D-0143, which chose to read dialogs off the pane rather than take them off the protocol, and it is worth stating plainly rather than discovering twice. **A surface that reads the screen can offer exactly what is drawn, for exactly as long as it is drawn.** The protocol carries `pending_permission_requests` and `pending_user_dialog_requests` precisely because a client is expected to know about prompts that are outstanding rather than visible (MUS-F-0084). Reading the pane cannot know that, and no amount of parsing fixes it.
+
+**Making the pop-up outlive the drawing would be worse.** It would offer keys for a dialog that is no longer accepting them, and a keypress sent to a pane that has moved on does not vanish — it goes into the composer, as text, in the middle of somebody's session. Faithful to the screen is the correct behaviour and the limitation is real at the same time.
+
+**And it cannot be caught from inside.** The agent whose session holds the draft is working whenever it looks, so the prompt is never on the screen at the moment it is asked about. The capture that answers this has to be scheduled to run after the turn ends. Drafts are per-session — two exist on disk and the other running session shows neither chip nor prompt — so there is no second pane to reproduce it in.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/prompt.go |
+| Status | open; the parse itself is not yet known to be wrong, because the screen it fails on has not been captured |
+| Evidence | A mid-turn capture of mustur/Check carries '· 1 feedback draft' in the status line and no numbered rows anywhere. ~/.claude/feedback/drafts holds two files while the other running session, idle, shows no draft chip at all, so a draft belongs to a session rather than to the machine. |
+| Correction | The body says the CLI draws the draft prompt only when the session is idle and that it goes away when work starts. That was inferred from one capture taken before the dialog had been drawn at all. Measured again while this session was working: the dialog is on the pane continuously, and the socket carried it on every frame. What the owner saw was MUS-F-0090 — a tab with no markup for the pop-up — not a dialog that comes and goes. The limitation the record names is still real, and this instance was not it. |
+
+---
+
+## MUS-F-0089
+
+**A dialog whose choices are its legend, inside a box, was read as neither**
+
+finding · 2026-09-04
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+why it could not be caught from inside: [MUS-F-0088](#mus-f-0088)
+
+the first shape, and the one that was assumed: [MUS-F-0083](#mus-f-0083)
+
+The owner filed the screen as a picture. What it holds:
+
+    ╭──────────────────────────────────────────────────────────────╮
+    │ ✻ Bug report drafted: AskUserQuestion returned an option …    │
+    │ │ - What happened: Five AskUserQuestion calls in one session … │
+    │ 1 to review · 2 to send · 0 to dismiss                        │
+    ╰──────────────────────────────────────────────────────────────╯
+
+**Two reasons it read as nothing, and either alone was enough.**
+
+The box has a side character on every line, so the legend arrived as `│ 1 to review · 2 to send · 0 to dismiss │` and the first entry offered a key called `│`. One unreadable entry rejects the line, by design, so the whole dialog went.
+
+And the parser required numbered rows. This dialog has none: its choices *are* its legend. The model picker had both a legend and rows, and a shape seen once became the shape assumed.
+
+**What replaced the row requirement is not its removal.** A legend inside a box is a dialog on its own; a legend on a bare line still needs rows under it. That is what keeps an ordinary sentence containing two *x to y* clauses from being offered as a row of buttons, and there is a test for both halves — the first draft of which used `press h to help`, which fails the entry pattern, so it passed while proving nothing.
+
+**The capture is the point.** The session holding the draft is working whenever it looks for the prompt (MUS-F-0088), so the first watcher — which searched for numbered rows, the shape that had been assumed — ran a hundred polls and found nothing. It was right to find nothing. A second watcher that assumed no shape and kept every distinct screen caught it on the third. The picture said what to look for; the capture is what the parser is written against.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestADialogWhoseChoicesAreItsLegend reads the real capture: no rows, three keys 1, 2 and 0 with their words, a title free of the box and of the glyph the CLI decorates it with, and the wrapped body. TestALegendOnABareLineIsNotADialogOnItsOwn holds the guard both ways. The model picker fixture still parses, so the shape that was assumed still works. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/session/prompt.go |
+
+---
+
+## MUS-F-0090
+
+**A session tab outlives the binary, and a pop-up it has no markup for fails silently**
+
+finding · 2026-09-04
+
+the surface it appeared on: [MUS-D-0144](decisions.md#mus-d-0144)
+
+The owner reported the dialog on the pane and no pop-up beside it, after the parser had been fixed. Every layer was measured and every layer was working: the parser reads the live pane, the poller puts the prompt on the frame, and a socket opened against the running session right then carried it on the hello frame and on every screen frame after, with all three keys.
+
+The pop-up's markup is served with the page. A session tab is left open for hours — that is the whole point of the surface — so a tab loaded before the server learned to draw prompts has no `#dlg` element in it. The client's first line is `if (!dlg) return`, and it returned, on every frame, for as long as the tab stayed open.
+
+**That is indistinguishable from a broken parser.** It cost a fixture, two watchers and three probes to tell them apart, and the thing that separated them in the end was connecting a socket to the live session and watching the frames arrive.
+
+`session.js` is served `no-cache` and revalidates, so the script was current. Only the markup was stale, and nothing reloads markup in a tab nobody reloads.
+
+Fixed by saying so: a prompt arriving with nowhere to put it now writes *this tab is older than the server: reload it to see prompts* into the surface's own error channel, once, latched — a screen frame arrives on every redraw and a notice per frame would be its own defect.
+
+**It generalises and is not generally fixed.** Any element added to this page in future is missing from every tab already open, and only this one says anything about it. What would fix the class is the page knowing which build it was served by; that is not built, and this record is what a future one should cite.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/assets/session.js |
+| Status | fixed for the prompt; the class is open |
+| Evidence | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. |
+
+---
+
+## MUS-F-0091
+
+**A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour**
+
+finding · 2026-09-05
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+why the pane is tall enough for this to happen: [MUS-F-0052](#mus-f-0052)
+
+the dialog shape it offers: [MUS-F-0089](#mus-f-0089)
+
+The owner reloaded, the pop-up appeared correctly — title, description, and *1 · review*, *2 · send*, *0 · dismiss* — and it was wrong. The dialog it offered had been answered and left behind. The counter beside it read *quiet 1h*.
+
+**Nothing on this pane scrolls.** Mustur runs a session 300 rows tall because an agent CLI keeps no scrollback and a tall pane is the only place a transcript can live (MUS-F-0052). The CLI paints down the screen, and what it painted an hour ago is still there, character for character. So a dialog does not leave when it is done with; it stays exactly as it looked, and the parser kept finding it.
+
+**The guards that were there all held.** The prose in the transcript — this session's own explanation of the dialog's format, which contains the string `1 to review · 2 to send · 0 to dismiss` twice — was correctly refused both times, because an unboxed legend needs numbered rows under it. Only the real box parsed. It was the right box, and it was in the past.
+
+**What separates a live dialog from a painted one is what is underneath it.** A live dialog is the last thing on the transcript. A dead one has the conversation that came after it printed below. Measured on the pane that produced this: the live capture had its legend one line from the end of the body, and the stale one a hundred and thirty-nine. The transcript is what `SplitChrome` leaves once the CLI's furniture comes off the bottom, and that body is a prefix of the screen, so a line's index means the same in both.
+
+Both fixtures are now in the tree. They are the same dialog on the same pane, and the only thing that differs between them is what came after.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/session/prompt.go |
+
+---
+
+## MUS-F-0092
+
+**Ten rounds of asking the owner to run a command that was never actually refused**
+
+finding · 2026-09-05
+
+the hazard that no longer applies: [MUS-F-0030](#mus-f-0030)
+
+The owner asked to stop having to run `make install && systemctl --user restart mustur` after every change. They had run it about ten times.
+
+The reason they were running it is that the command was refused once, early on, by the permission classifier. What was refused was that exact string — the two commands chained with `&&`. Neither half was ever refused, and neither was ever retried. `systemctl --user restart mustur` on its own is allowed. `make install` on its own is allowed. The chain was the problem, and the fix was to type them on two lines.
+
+**The failure is not the classifier's.** A refusal was read as a standing fact about a capability rather than as a fact about one command, and the workaround — hand it to the owner — was cheap enough each time that it never got questioned. Ten rounds is what that costs when nobody re-checks.
+
+`make deploy` now does both: install, restart, and confirm the service came back. One target, run from here, and the owner is out of the loop.
+
+**Two things it does not need.** It does not need a systemd path unit watching the binary, which was the first design and is machinery for a problem that did not exist. And it does not need a permission rule added anywhere, because nothing was denied.
+
+The hazard MUS-F-0030 named — a stop that hangs while a pane is being piped, holding the port through a ninety-second timeout — no longer applies: the session view renders frames from `capture-pane` and nothing pipes a pane any more (MUS-D-0132). Restarts have been clean throughout this session.
+
+| Field | Value |
+| --- | --- |
+| Where | Makefile |
+| Status | fixed |
+| Evidence | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. |
