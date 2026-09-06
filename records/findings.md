@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-100 record(s), by identifier.
+101 record(s), by identifier.
 
 ## The queue
 
@@ -107,9 +107,10 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0090](#mus-f-0090) | A session tab outlives the binary, and a pop-up it has no markup for fails silently | A socket opened against the live mustur/Check session carried the prompt on the hello frame and on five consecutive screen frames, each with keys 1, 2 and 0, while the owner's tab showed nothing. TestAPromptOnThePaneArrivesInAFrame holds the server path end to end against a real pane; TestATabWithoutThePopUpSaysItIsStale holds the notice and its latch. | fixed for the prompt; the class is open |
 | [MUS-F-0091](#mus-f-0091) | A dialog stayed on the screen after the conversation moved past it, so the surface offered it for an hour | TestADialogTheConversationHasMovedPastIsNotOffered reads two real captures of the same dialog: the live one still parses with its three keys, the stale one is refused, and the test fails if the stale fixture ever stops containing the dialog text. Measured before the fix: legend at line 154 of a body ending at 293, against 292 of 293 for the live one. | fixed |
 | [MUS-F-0092](#mus-f-0092) | Ten rounds of asking the owner to run a command that was never actually refused | Run separately in this session: 'systemctl --user restart mustur' succeeded, 'make install' succeeded. 'make deploy' runs both and reports the service active; the installed binary then hashes equal to a fresh build of the tree and the running process is that file. | fixed |
-| [MUS-F-0093](#mus-f-0093) | Nothing on any surface starts a session, and the surface has no POST at all | Sessions.Routes registers GET /sessions, GET /sessions/{project}, GET /sessions/{project}/ws and GET /assets/session.js, and nothing else. 'mustur session start' takes a name, --dir and --cmd, all free text, and refuses only a missing name. | with the owner on MUS-Q-0079 |
+| [MUS-F-0093](#mus-f-0093) | Nothing on any surface starts a session, and the surface has no POST at all | POST /sessions is the surface's first write path. TestStartingASessionTakesNoPathAndNoCommand holds that the form offers the store's checkout and no path field, that the command is a select and not a text input, and that four refusals work: no Origin, another origin, a command off the list without echoing it back, and a repository the store does not hold. | fixed for starting; stopping is still MUS-F-0081 |
 | [MUS-F-0094](#mus-f-0094) | amend collapsed a repeated field, so correcting one option overwrote them all | On a scratch store, a question with three options amended with three --data Option= values came back holding three copies of the last. TestAmendReplacesEachOccurrenceOfARepeatedField covers all three cases — equal, fewer, more — and asserts the fields around the repeated one keep their positions and that an unmentioned field survives. | fixed |
 | [MUS-F-0095](#mus-f-0095) | Thirteen questions carried their recommendation where nothing reads it | Thirteen questions, MUS-Q-0067 through MUS-Q-0079, held the marker at the front of the paragraph; after the repair none do, none gained or lost an option, and thirty-four questions in the store now carry it on the line. TestCheckOptionRefusesAMisplacedRecommendation holds the refusal, that its message shows the corrected option, and that prose merely containing the word is not refused. | fixed |
+| [MUS-F-0096](#mus-f-0096) | No POST in the web package checked its origin until one had to | sameOrigin appears twice in the package: the socket handshake and POST /sessions. No other handler reads the Origin header. The guard refuses a POST from a reader by role, which is a different property and does not help when the request carries the owner's own cookie. | open; the start form checks and nothing else does |
 
 ---
 
@@ -2451,6 +2452,8 @@ the other third of the same sentence: [MUS-F-0081](#mus-f-0081)
 
 asked as: [MUS-Q-0079](questions.md#mus-q-0079)
 
+settled by: [MUS-D-0146](decisions.md#mus-d-0146)
+
 The owner asked whether there is a way to start a session in Mustur. There is not, from any surface. `mustur session start <name> --dir D --cmd C` exists and works and is a command line.
 
 The sessions surface registers four routes and every one of them is a GET: the list, one session, its socket, and its script. It has never taken a POST. Everything it can do to a running session goes down the WebSocket, which is how typing and now keypresses reach a pane.
@@ -2464,8 +2467,8 @@ What the store already holds makes a narrower shape possible: a repository recor
 | Field | Value |
 | --- | --- |
 | Where | internal/web/sessions.go |
-| Status | with the owner on MUS-Q-0079 |
-| Evidence | Sessions.Routes registers GET /sessions, GET /sessions/{project}, GET /sessions/{project}/ws and GET /assets/session.js, and nothing else. 'mustur session start' takes a name, --dir and --cmd, all free text, and refuses only a missing name. |
+| Status | fixed for starting; stopping is still MUS-F-0081 |
+| Evidence | POST /sessions is the surface's first write path. TestStartingASessionTakesNoPathAndNoCommand holds that the form offers the store's checkout and no path field, that the command is a select and not a text input, and that four refusals work: no Origin, another origin, a command off the list without echoing it back, and a repository the store does not hold. |
 
 ---
 
@@ -2520,3 +2523,27 @@ The thirteen are repaired, marker moved to the line and stripped from the paragr
 | Where | cmd/mustur/questions.go, internal/question/question.go |
 | Status | fixed |
 | Evidence | Thirteen questions, MUS-Q-0067 through MUS-Q-0079, held the marker at the front of the paragraph; after the repair none do, none gained or lost an option, and thirty-four questions in the store now carry it on the line. TestCheckOptionRefusesAMisplacedRecommendation holds the refusal, that its message shows the corrected option, and that prose merely containing the word is not refused. |
+
+---
+
+## MUS-F-0096
+
+**No POST in the web package checked its origin until one had to**
+
+finding · 2026-09-06
+
+the decision that made it visible: [MUS-D-0146](decisions.md#mus-d-0146)
+
+Found while building the start form. `sameOrigin` exists, is strict — an absent Origin is refused, because a browser always sends one on a handshake — and until now it guarded exactly one path: the WebSocket, which is what types into a running agent.
+
+Every other write is a plain form POST with no check at all. Filing a jot, answering a decision, granting a role, disabling an account: a page on another site can submit any of them, and the browser will attach the reader's session cookie because that is what browsers do. Cloudflare Access authenticates the person and says nothing about which page their browser was on when it posted.
+
+The start form checks, because starting a process is the wrong place to inherit a habit. The rest do not, and that is now written down rather than assumed to be deliberate.
+
+Not fixed here. Adding the check to five surfaces is small; deciding whether an absent Origin should refuse a form the way it refuses a socket is not, because a form POST from a browser does send Origin but some clients and some proxies do not, and the answer decides whether `curl` can still file a jot on this machine. That is a question rather than a patch.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go, internal/web/questions.go, internal/web/accountpage.go, internal/web/compose.go |
+| Status | open; the start form checks and nothing else does |
+| Evidence | sameOrigin appears twice in the package: the socket handshake and POST /sessions. No other handler reads the Origin header. The guard refuses a POST from a reader by role, which is a different property and does not help when the request carries the owner's own cookie. |

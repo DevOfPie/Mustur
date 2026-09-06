@@ -594,6 +594,12 @@ func cmdServe(args []string) error {
 	// the other surfaces does not offer a tab to them: a tab that goes nowhere
 	// is an unbuilt capability described as existing.
 	withSessions := fs.Bool("sessions", false, "serve the session surface and let the composer reach sessions; both type into a running agent")
+	// What the surface may start, and nothing else. Repeatable; empty falls
+	// back to web.DefaultCommands. A browser picks from this list rather than
+	// naming a process, which is the whole of why starting a session from a
+	// page is not a shell behind Access (MUS-D-0146).
+	sessionCmds := &values{}
+	fs.Var(sessionCmds, "session-cmd", "a command the session surface may start, repeatable")
 	// The site as a browser sees it. A passkey is bound to it, which is what
 	// makes one unphishable — and what makes a wrong value fail silently, by
 	// making every registered passkey unusable rather than by erroring.
@@ -667,6 +673,7 @@ func cmdServe(args []string) error {
 			Hub: hub, Adapter: adapter, Store: s,
 			Actor: defaultActor(), HookDir: hookDir,
 			ShowAccount: showAccount,
+			Commands:    *sessionCmds,
 		}
 		sessions.Routes(mux)
 	}

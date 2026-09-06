@@ -1792,7 +1792,7 @@ question · 2026-09-05
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0093 |
 | Option | A name, a project from the routing records, and a command from an allowlist :: Recommended. nothing is typed that becomes a process :: The form offers the projects the store already knows, takes the checkout path from the repository record rather than asking for it, and offers a command from a short list the server holds -- claude today. Nothing a browser sends decides what runs; it decides which of a few known things runs, in a directory the store already named. The cost is that a session running something not on the list still needs the command line, and adding to the list is a decision rather than a keystroke. |
 | Option | The CLI's three fields, as a form :: exactly what the command line does, and a shell behind Access :: Name, directory and command, all free text, owner-only. It matches the CLI exactly, so nothing is ever impossible from the browser and no list needs maintaining. It also means a POST to this origin decides what process runs on the machine: Access authenticates the person and says nothing about what their browser was persuaded to submit, and the socket's origin check does not cover a form. The queue has recorded since 2026-08-21 that --cmd runs whatever it is given and the answer path can then type into it. |
@@ -1800,3 +1800,6 @@ question · 2026-09-05
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-05 22:35 |
+| Answer | A name, a project from the routing records, and a command from an allowlist |
+| Answered | 2026-09-06 11:40 |
+| Delivered | typed into mustur/Check |

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-145 record(s), by identifier.
+146 record(s), by identifier.
 
 ## Index
 
@@ -157,6 +157,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0143](#mus-d-0143) | A Mustur session stays a terminal, and the dialogs are read off the pane knowingly | 2026-09-04 |
 | [MUS-D-0144](#mus-d-0144) | A prompt is a pop up in front of the session, minimised into the key row | 2026-09-04 |
 | [MUS-D-0145](#mus-d-0145) | The badge is live on every surface, and one file writes it | 2026-09-04 |
+| [MUS-D-0146](#mus-d-0146) | A session is started from three places, and only one of them is typed | 2026-09-06 |
 
 ---
 
@@ -2616,3 +2617,38 @@ That turned out to be the right scope for a reason the question had not found. S
 | --- | --- |
 | Loaded by | every surface that renders the bar; the session view loads it alongside its own client |
 | Endpoint | GET /questions/count, a number only, cached two seconds |
+
+---
+
+## MUS-D-0146
+
+**A session is started from three places, and only one of them is typed**
+
+decision · 2026-09-06
+
+answers: [MUS-Q-0079](questions.md#mus-q-0079)
+
+raised by: [MUS-F-0093](findings.md#mus-f-0093)
+
+the naming rule it enforces: [MUS-D-0064](#mus-d-0064)
+
+the vendor rule it sits under: [MUS-D-0091](#mus-d-0091)
+
+MUS-Q-0079 asked what a start form is allowed to take, given that `mustur session start --cmd` runs whatever it is given. The owner chose a name, somewhere from the routing records, and a command from an allowlist.
+
+**The name is typed, because nothing runs it.** It is a label, validated by the rule tmux already imposes — letters, digits, dash, underscore, because tmux reads `:` and `.` as target separators (MUS-D-0064).
+
+**Where it runs is never submitted.** The form offers the repositories the store holds a checkout for, and the directory is looked up from the record after the choice arrives. A path in a form field is a path a browser can invent; an identifier is a key into something the store already said.
+
+Repositories rather than projects, which is a reading of the answer and is worth saying out loud: the owner said *a project from the routing records*, and the directory a session needs lives on the repository record. A project record carries a prefix and a name, and the idea inbox is a project with no checkout at all.
+
+**What it runs is matched against a list the server holds.** `--session-cmd` sets it and `claude` is the default — one entry, naming a vendor, which MUS-D-0091 permits where a capability belongs to one: the adapter already reads this CLI's status line for the running pill and its dialogs for the pop-up, so a session running anything else is watched by a surface that understands none of it.
+
+**The refusal does not echo.** A command that is not on the list is refused by name, not by repeating what was sent, because the value came from a browser.
+
+**And it checks its origin**, which no other POST in this package does. That is MUS-F-0096 and not a reason for the one path that starts processes to skip it. The guard already refuses any POST from a reader, since the only two roles are owner and reader and `CanWrite` is owner-only.
+
+| Field | Value |
+| --- | --- |
+| Takes | a name, a repository identifier, and a command from the allowlist |
+| Never takes | a directory or a command as free text |

@@ -89,6 +89,12 @@ const IdleTimeout = 30 * time.Minute
 
 // Sessions serves the session surface.
 type Sessions struct {
+	// Commands is what the surface may start, and nothing else. A browser
+	// chooses between these rather than naming a process (MUS-D-0146). Empty
+	// falls back to DefaultCommands; a deployment that wants none takes the
+	// form away by serving no sessions at all.
+	Commands []string
+
 	// ShowAccount renders the header link to the account surface, which is
 	// served only when an origin is configured. Off means the link is absent
 	// rather than dead (MUS-Q-0052).
@@ -110,6 +116,7 @@ type Sessions struct {
 // Routes registers the surface on an existing mux.
 func (s *Sessions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /sessions", s.list)
+	mux.HandleFunc("POST /sessions", s.start)
 	mux.HandleFunc("GET /sessions/{project}", s.show)
 	mux.HandleFunc("GET /sessions/{project}/ws", s.socket)
 	mux.HandleFunc("GET /assets/session.js", func(w http.ResponseWriter, r *http.Request) {
@@ -168,6 +175,16 @@ type sessionPage struct {
 	Running       int
 	OpenQuestions int
 	Missing       bool
+	// Starting is the form's data: where a session may be started and what it
+	// may be told to run. Empty when the store holds no checkout, which is a
+	// page that says so rather than a form that cannot be submitted.
+	Starting []startable
+	Commands []string
+	// Start renders the form rather than the list. /sessions redirects to a
+	// running session when there is one, so starting another needs a way to
+	// reach the page that is not "have none".
+	Start bool
+	Error string
 }
 
 // A subagentRow is one sub-agent as the page says it, with every value already
@@ -279,12 +296,19 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(pick), http.StatusSeeOther)
 		return
 	}
+	// Asked for explicitly, so the redirect below is skipped: with a session
+	// running, /sessions goes straight to it, and starting a second one would
+	// otherwise be reachable only by having none.
+	starting := r.URL.Query().Get("new") != "" || r.URL.Query().Get("error") != ""
 	rows, _ := s.rows(r.Context(), "")
-	if len(rows) > 0 {
+	if len(rows) > 0 && !starting {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(rows[0].Project), http.StatusSeeOther)
 		return
 	}
-	s.render(w, r, sessionPage{Project: "", Rows: nil, Missing: true})
+	s.render(w, r, sessionPage{
+		Project: "", Rows: rows, Missing: len(rows) == 0,
+		Start: true, Error: r.URL.Query().Get("error"),
+	})
 }
 
 func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
@@ -298,6 +322,12 @@ func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage) {
+	// Set here rather than at the call sites, for the same reason the tab
+	// counts are: a page built without them renders a form with nowhere to run.
+	if p.Start {
+		p.Starting = s.startables(r.Context())
+		p.Commands = s.commands()
+	}
 	if s.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), s.Store)
 	}
@@ -716,6 +746,23 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
+  /* The start form. Plain and stacked: three fields, and two of them are
+     pickers because what they choose has to come from a list rather than a
+     keyboard (MUS-D-0146). */
+  .new { padding: 1rem; max-width: 30rem; margin-inline: auto; }
+  .new form { display: flex; flex-direction: column; gap: .7rem; }
+  .new label { display: flex; flex-direction: column; gap: .25rem;
+               font-size: .85em; opacity: .8; }
+  .new input, .new select { font: inherit; padding: .5rem; color: inherit;
+               border: 1px solid var(--edge); border-radius: .5rem;
+               background: var(--paper); box-sizing: border-box; }
+  .new button.primary { margin-top: .3rem; border: 1px solid var(--accent);
+               background: var(--accent-soft); padding: .6rem; font: inherit;
+               border-radius: .5rem; color: inherit; cursor: pointer; }
+  .new .said { border: 1px solid var(--accent); border-radius: .5rem;
+               padding: .5rem .7rem; font-size: .9em; }
+  .newlink { font-size: .82em; opacity: .7; text-decoration: none; color: inherit;
+             border: 1px solid var(--edge); border-radius: .45rem; padding: .2rem .55rem; }
   /* The strip that used to sit here said "live" across the whole width, and
      the pill in the header beside the project name already said "running".
      Two places saying one thing, one of them a full-width band above the
@@ -1082,11 +1129,40 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
       {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
+  <a class="newlink" href="/sessions?new=1" title="Start a session">New</a>
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
     aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
     class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>
 </div>{{end}}
-{{if .Missing}}
+{{if .Start}}
+<!-- Starting a session (MUS-D-0146).
+
+     Three fields from three places. The name is typed, because it is a label
+     and nothing runs it. Where it runs is chosen from the repositories the
+     store holds a checkout for, so no path is ever submitted. What it runs is
+     chosen from a list the server holds, so a browser picks between known
+     things rather than naming a process. -->
+<div class="new">
+  {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
+  {{if .Missing}}<p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
+  <small>A session left running in a terminal is not here and will not appear.</small></p>{{end}}
+  {{if .Starting}}
+  <form method="post" action="/sessions">
+    <label>Name<input type="text" name="name" required autocomplete="off"
+      placeholder="Letters, digits, dash or underscore"
+      pattern="[A-Za-z0-9_-]+" title="tmux reads : and . as target separators"></label>
+    <label>Where it runs<select name="repo">
+      {{range .Starting}}<option value="{{.ID}}">{{.Title}} &mdash; {{.Dir}}</option>{{end}}
+    </select></label>
+    <label>What it runs<select name="cmd">
+      {{range .Commands}}<option value="{{.}}">{{.}}</option>{{end}}
+    </select></label>
+    <button class="primary" type="submit">Start</button>
+  </form>
+  {{else}}<p class="none">No repository in the routing records has a checkout on this machine, so there is nowhere to start one.</p>{{end}}
+  <p><small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
+</div>
+{{else if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
 <small>A session left running in a terminal is not here and will not appear.</small><br>
 <small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
