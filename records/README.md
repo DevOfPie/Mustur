@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 79 | [questions.md](questions.md) |
 | decision | 146 | [decisions.md](decisions.md) |
-| finding | 101 | [findings.md](findings.md) |
+| finding | 102 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -380,6 +380,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0094](findings.md#mus-f-0094) | finding | amend collapsed a repeated field, so correcting one option overwrote them all |
 | [MUS-F-0095](findings.md#mus-f-0095) | finding | Thirteen questions carried their recommendation where nothing reads it |
 | [MUS-F-0096](findings.md#mus-f-0096) | finding | No POST in the web package checked its origin until one had to |
+| [MUS-F-0097](findings.md#mus-f-0097) | finding | A name refused for a space was answered with a paragraph about colons |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

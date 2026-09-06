@@ -761,8 +761,13 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
                border-radius: .5rem; color: inherit; cursor: pointer; }
   .new .said { border: 1px solid var(--accent); border-radius: .5rem;
                padding: .5rem .7rem; font-size: .9em; }
-  .newlink { font-size: .82em; opacity: .7; text-decoration: none; color: inherit;
-             border: 1px solid var(--edge); border-radius: .45rem; padding: .2rem .55rem; }
+  /* A plus rather than the word: the rail is a row of controls and "New" was
+     the only one spelling itself out. Square, so the glyph sits in the middle
+     of it rather than on the left of a word-shaped box. */
+  .newlink { font-size: 1em; line-height: 1; opacity: .7; text-decoration: none;
+             color: inherit; border: 1px solid var(--edge); border-radius: .45rem;
+             width: 1.9rem; height: 1.9rem; flex: 0 0 auto;
+             display: inline-flex; align-items: center; justify-content: center; }
   /* The strip that used to sit here said "live" across the whole width, and
      the pill in the header beside the project name already said "running".
      Two places saying one thing, one of them a full-width band above the
@@ -1129,7 +1134,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
       {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
-  <a class="newlink" href="/sessions?new=1" title="Start a session">New</a>
+  <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
     aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
     class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>
@@ -1150,7 +1155,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <form method="post" action="/sessions">
     <label>Name<input type="text" name="name" required autocomplete="off"
       placeholder="Letters, digits, dash or underscore"
-      pattern="[A-Za-z0-9_-]+" title="tmux reads : and . as target separators"></label>
+      pattern="[A-Za-z0-9_-]+" title="Letters, digits, dash or underscore"></label>
     <label>Where it runs<select name="repo">
       {{range .Starting}}<option value="{{.ID}}">{{.Title}} &mdash; {{.Dir}}</option>{{end}}
     </select></label>

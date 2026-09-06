@@ -61,7 +61,7 @@ func TestAnUndeliverableAnswerIsStillRecordedWithTheReason(t *testing.T) {
 		{"session is gone", &sender{live: false}, "Mustur", "has no session Mustur started"},
 		{"tmux failed while looking", &sender{liveErr: fmt.Errorf("socket gone")}, "Mustur", "socket gone"},
 		{"typing failed", &sender{live: true, sendErr: fmt.Errorf("pane died")}, "Mustur", "pane died"},
-		{"name would address a pane", &sender{live: true}, "Mustur:0", "target separators"},
+		{"name would address a pane", &sender{live: true}, "Mustur:0", `cannot contain ":"`},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

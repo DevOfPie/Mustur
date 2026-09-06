@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-101 record(s), by identifier.
+102 record(s), by identifier.
 
 ## The queue
 
@@ -111,6 +111,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0094](#mus-f-0094) | amend collapsed a repeated field, so correcting one option overwrote them all | On a scratch store, a question with three options amended with three --data Option= values came back holding three copies of the last. TestAmendReplacesEachOccurrenceOfARepeatedField covers all three cases — equal, fewer, more — and asserts the fields around the repeated one keep their positions and that an unmentioned field survives. | fixed |
 | [MUS-F-0095](#mus-f-0095) | Thirteen questions carried their recommendation where nothing reads it | Thirteen questions, MUS-Q-0067 through MUS-Q-0079, held the marker at the front of the paragraph; after the repair none do, none gained or lost an option, and thirty-four questions in the store now carry it on the line. TestCheckOptionRefusesAMisplacedRecommendation holds the refusal, that its message shows the corrected option, and that prose merely containing the word is not refused. | fixed |
 | [MUS-F-0096](#mus-f-0096) | No POST in the web package checked its origin until one had to | sameOrigin appears twice in the package: the socket handshake and POST /sessions. No other handler reads the Origin header. The guard refuses a POST from a reader by role, which is a different property and does not help when the request carries the owner's own cookie. | open; the start form checks and nothing else does |
+| [MUS-F-0097](#mus-f-0097) | A name refused for a space was answered with a paragraph about colons | TestARefusedNameNamesWhatIsWrongWithIt covers a space, a tab, a colon, a full stop and a non-ASCII letter; each names the fault, each summarises the rule once, and none mentions target separators. The empty name is checked separately. | fixed |
 
 ---
 
@@ -2547,3 +2548,27 @@ Not fixed here. Adding the check to five surfaces is small; deciding whether an 
 | Where | internal/web/intake.go, internal/web/questions.go, internal/web/accountpage.go, internal/web/compose.go |
 | Status | open; the start form checks and nothing else does |
 | Evidence | sameOrigin appears twice in the package: the socket handshake and POST /sessions. No other handler reads the Origin header. The guard refuses a POST from a reader by role, which is a different property and does not help when the request carries the owner's own cookie. |
+
+---
+
+## MUS-F-0097
+
+**A name refused for a space was answered with a paragraph about colons**
+
+finding · 2026-09-06
+
+The owner typed a session name with a space in it. `NameFor` replied: *project "two words" must be letters, digits, dash or underscore: tmux reads : and . as target separators.*
+
+Everything after the colon is true of the rule and irrelevant to what was typed. Nobody who has just put a space in a name is helped by an explanation of tmux target addressing; they want to be told there is a space in it. The message led with the rule, buried the fault, and then justified itself.
+
+The reason the rule exists is worth keeping and belongs where reasons belong — it is a comment on `safeProject`, and a good one: tmux does not refuse a name carrying `:` or `.`, it substitutes `_`, so the danger is at send time when `send-keys -t 'a:0'` addresses window 0 of session `a` instead. That is why the guard exists. It is not why this name was refused.
+
+A refusal now names the offending character in the words somebody would use — *a space*, *a tab*, or the character itself in quotes — and then summarises what is allowed, once. One fault, not a list: a name with a space and a colon has two problems, fixing either is progress, and a refusal that enumerates is a refusal nobody finishes reading.
+
+The empty name is its own case, because *cannot contain* is nonsense about nothing.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go |
+| Status | fixed |
+| Evidence | TestARefusedNameNamesWhatIsWrongWithIt covers a space, a tab, a colon, a full stop and a non-ASCII letter; each names the fault, each summarises the rule once, and none mentions target separators. The empty name is checked separately. |

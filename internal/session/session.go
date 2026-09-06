@@ -47,6 +47,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	"unicode"
 )
 
 // Prefix names every tmux session Mustur started, so a person running `tmux ls`
@@ -172,11 +173,47 @@ func (a *Adapter) runner() Runner {
 var safeProject = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 // NameFor builds the tmux session name for a project.
+//
+// A refused name says what is wrong with it and then what is allowed, in that
+// order. The first version said only the second half and then explained tmux's
+// target separators — so a name refused for containing a space was answered
+// with a sentence about colons and full stops, which is true of the rule and
+// irrelevant to what was typed. The reason the rule exists is above; a person
+// who has just been refused wants the fact, not the derivation.
 func NameFor(project string) (string, error) {
+	if project == "" {
+		return "", fmt.Errorf("a name is needed: letters, digits, dash or underscore")
+	}
 	if !safeProject.MatchString(project) {
-		return "", fmt.Errorf("project %q must be letters, digits, dash or underscore: tmux reads : and . as target separators", project)
+		return "", fmt.Errorf("a name cannot contain %s: use letters, digits, dash or underscore", offending(project))
 	}
 	return Prefix + project, nil
+}
+
+// offending names what is wrong with a name, in the words somebody would use.
+//
+// One thing, not a list: the first character that is not allowed. A name with a
+// space and a colon in it has two problems and fixing either is progress, and a
+// refusal that enumerates is a refusal nobody finishes reading.
+func offending(project string) string {
+	for _, r := range project {
+		switch {
+		case r >= 'A' && r <= 'Z', r >= 'a' && r <= 'z', r >= '0' && r <= '9', r == '_', r == '-':
+			continue
+		case r == ' ':
+			return "a space"
+		case r == '\t':
+			return "a tab"
+		case unicode.IsSpace(r):
+			return "whitespace"
+		default:
+			return fmt.Sprintf("%q", string(r))
+		}
+	}
+	// Every character is allowed, so the name failed the pattern for its
+	// length. The regexp requires at least one, and the empty case is caught
+	// before this is reached.
+	return "what it contains"
 }
 
 // Start launches a session for a project, running cmd in dir. It refuses to

@@ -1698,3 +1698,19 @@ func TestStartingASessionTakesNoPathAndNoCommand(t *testing.T) {
 		t.Errorf("a name with tmux separators got %d", res.StatusCode)
 	}
 }
+
+// The control that starts a session is a glyph, not a word.
+func TestTheStartControlIsAPlus(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	if !strings.Contains(body, `class="newlink"`) {
+		t.Fatal("no way to reach the start form from a running session")
+	}
+	if strings.Contains(body, `>New</a>`) {
+		t.Error("the control still spells itself out")
+	}
+	if !strings.Contains(body, `aria-label="Start a session">+<`) {
+		t.Error("the glyph has no name, so it is a symbol with nothing behind it")
+	}
+}
