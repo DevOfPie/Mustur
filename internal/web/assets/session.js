@@ -171,7 +171,7 @@
   }
 
   setInterval(function () {
-    if (foot && !closed) foot.textContent = quiet();
+    if (foot && !closed) showFoot();
     refreshState();
     // The ages move on their own, so the server does not send a frame to move
     // them.
@@ -526,7 +526,13 @@
       if (typeof f.waiting === "number") setWaiting(f.waiting);
       // Sent with every hello and every screen, so its absence on one of those
       // means there is no prompt rather than that nothing was said.
-      if (f.t === "hello" || f.t === "screen") drawPrompt(f.prompt || null);
+      if (f.t === "hello" || f.t === "screen") {
+        drawPrompt(f.prompt || null);
+        // Sent with the same frames as the prompt, so its absence on one of
+        // them means the turn ended rather than that nothing was said.
+        doingNow = f.activity || null;
+        showFoot();
+      }
       if (f.t === "hello") {
         // The first frame carries the screen as it stands, so a reconnect
         // paints immediately rather than waiting for the session to move.
@@ -565,7 +571,9 @@
         closed = true;
         attached = false;
         setState(f.at ? "ended " + f.at : "ended", false);
-        if (foot) foot.textContent = "Nothing is running. Output is kept until you start another.";
+        doingNow = null;
+        if (spin) spin.hidden = true;
+        if (footText) footText.textContent = "Nothing is running. Output is kept until you start another.";
         // The box stays writable: MUS-Q-0018 is that the composer is always
         // writable, and a dropped connection is exactly when someone is most
         // likely to be mid-sentence. Only the look dims.
@@ -707,6 +715,30 @@
       e.preventDefault();
       if (form) form.dispatchEvent(new Event("submit", { cancelable: true }));
     });
+  }
+
+  // What the session is doing, under the terminal.
+  //
+  // The CLI's own animated line is taken off the output and arrives as fields
+  // (MUS-F-0098), so this draws "Zigzagging · 3m 40s · 11.5k tokens" beside a
+  // ring that turns in CSS. With nothing running it is the quiet counter, which
+  // is what this row was before.
+  var spin = document.getElementById("spin");
+  var footText = document.getElementById("foottext");
+  var doingNow = null;
+
+  function showFoot() {
+    if (!footText) return;
+    if (doingNow) {
+      var bits = [doingNow.verb];
+      if (doingNow.for) bits.push(doingNow.for);
+      if (doingNow.detail) bits.push(doingNow.detail);
+      footText.textContent = bits.join(" \u00b7 ");
+      if (spin) spin.hidden = false;
+      return;
+    }
+    if (spin) spin.hidden = true;
+    footText.textContent = quiet();
   }
 
   // The prompt the pane is waiting on.

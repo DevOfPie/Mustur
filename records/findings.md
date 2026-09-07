@@ -112,7 +112,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0095](#mus-f-0095) | Thirteen questions carried their recommendation where nothing reads it | Thirteen questions, MUS-Q-0067 through MUS-Q-0079, held the marker at the front of the paragraph; after the repair none do, none gained or lost an option, and thirty-four questions in the store now carry it on the line. TestCheckOptionRefusesAMisplacedRecommendation holds the refusal, that its message shows the corrected option, and that prose merely containing the word is not refused. | fixed |
 | [MUS-F-0096](#mus-f-0096) | No POST in the web package checked its origin until one had to | sameOrigin appears twice in the package: the socket handshake and POST /sessions. No other handler reads the Origin header. The guard refuses a POST from a reader by role, which is a different property and does not help when the request carries the owner's own cookie. | open; the start form checks and nothing else does |
 | [MUS-F-0097](#mus-f-0097) | A name refused for a space was answered with a paragraph about colons | TestARefusedNameNamesWhatIsWrongWithIt covers a space, a tab, a colon, a full stop and a non-ASCII letter; each names the fault, each summarises the rule once, and none mentions target separators. The empty name is checked separately. | fixed |
-| [MUS-F-0098](#mus-f-0098) | Te quit line should be replaced with the ziggzagging text line from tmux when the session is… |  | unreviewed |
+| [MUS-F-0098](#mus-f-0098) | The CLI's animated line is now the dock's, and turns in CSS | Against a real capture of a working pane: the live line reads as Zigzagging / 3m 40s / ↓ 11.5k tokens, is gone from the output, and the two finished lines above it are still there. A line of the same shape with output printed after it is refused, and an idle screen yields nothing. The spinner carries the [hidden] guard MUS-F-0087 was about and holds still under prefers-reduced-motion. | fixed |
 | [MUS-F-0099](#mus-f-0099) | Add a confirmation prompt for intake and session text if what will be sent includes spelling… |  | unreviewed |
 | [MUS-F-0100](#mus-f-0100) | The pop-up offered an agent's own prose as a dialog's options | TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript reads the captured pane and asserts the heading is the dialog's, the three options are Yes / Not now / Don't show again with the cursor on the first, and that neither transcript bullet is offered. TestALegendWithNoBoundaryAboveItIsNotADialog holds the boundary requirement both ways. | fixed |
 
@@ -2585,21 +2585,34 @@ The empty name is its own case, because *cannot contain* is nonsense about nothi
 
 ## MUS-F-0098
 
-**Te quit line should be replaced with the ziggzagging text line from tmux when the session is…**
+**The CLI's animated line is now the dock's, and turns in CSS**
 
 finding · 2026-09-07
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
-Te quit line should be replaced with the ziggzagging text line from tmux when the session is working. Strip the text from the tmux output and replace the animated text with animated ui elements so they look smoother
+the guard its display needed: [MUS-F-0087](#mus-f-0087)
+
+the furniture it joins: [MUS-F-0053](#mus-f-0053)
+
+The owner asked for the quiet line to be replaced by the CLI's own working line, for that text to come off the terminal output, and for the animation to be UI rather than characters.
+
+**Why the characters looked rough.** The CLI animates by redrawing one row: `✢ Zigzagging… (3m 40s · ↓ 11.5k tokens)`, with the glyph cycling through shapes. Every one of those redraws is a screen change, so it arrives here as a whole frame and repaints the terminal — and what a reader sees is a character jumping between forms a few times a second, at whatever rate the frames happen to land.
+
+**So the line is furniture, and it is treated as furniture.** `SplitActivity` takes it off the body the way `SplitChrome` already takes off the input box, the dividers and the status line, and sends it as fields instead: a verb, how long, and what it is spending. The dock renders those beside a ring that turns in CSS at a constant speed, painted once and rotated — the same technique the sub-agent ring uses, and it costs a phone almost nothing. It holds still for anyone who asked for reduced motion.
+
+**A finished line is not furniture.** `✻ Baked for 2m 47s · done 12:22 AM` is a record of what happened and stays in the transcript. The ellipsis is what separates them: live lines have one, finished ones say *for* and *done*. Only the tail is taken, so a line of that shape further up is the agent's own output and stays where it is.
+
+With nothing running the row is the quiet counter it replaced, which is what it was before.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | Against a real capture of a working pane: the live line reads as Zigzagging / 3m 40s / ↓ 11.5k tokens, is gone from the output, and the two finished lines above it are still there. A line of the same shape with output printed after it is refused, and an idle screen yields nothing. The spinner carries the [hidden] guard MUS-F-0087 was about and holds still under prefers-reduced-motion. |
+| Status | fixed |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/session/activity.go, internal/web/sessions.go, internal/web/assets/session.js |
 
 ---
 

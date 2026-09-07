@@ -392,3 +392,45 @@ func TestALegendWithNoBoundaryAboveItIsNotADialog(t *testing.T) {
 		t.Errorf("read as %+v", p)
 	}
 }
+
+// The animated line comes off the output, and the finished ones stay on it.
+//
+// MUS-F-0098: the CLI moves a glyph by redrawing one row, so its animation
+// arrives here as whole frames and renders as a character jumping between
+// shapes. The line is taken off and sent as fields instead, so a spinner can
+// turn in CSS and the numbers can change without a repaint under them.
+func TestTheLiveActivityLineIsFurnitureAndTheFinishedOnesAreNot(t *testing.T) {
+	raw := fixture(t, "screen-working.txt")
+	body, _ := SplitChrome(raw)
+	rest, a := SplitActivity(body)
+	if a == nil {
+		t.Fatal("the live line was not read")
+	}
+	if a.Verb != "Zigzagging" || a.For != "3m 40s" || a.Detail != "↓ 11.5k tokens" {
+		t.Errorf("read %+v", *a)
+	}
+	if strings.Contains(plainForTest(rest), "Zigzagging") {
+		t.Error("the live line is still in the output, so it would be drawn twice")
+	}
+	// A finished line is a record of what happened and stays where it is.
+	for _, keep := range []string{"Baked for 2m 47s", "Cogitated for 1m 34s"} {
+		if !strings.Contains(plainForTest(rest), keep) {
+			t.Errorf("a finished line was stripped: %q is gone from the transcript", keep)
+		}
+	}
+
+	// An idle screen has nothing live on it. Written out rather than taken
+	// from screen-no-prompt.txt, which was captured from a session that was
+	// working at the time and carries "Transmuting… (30s · ↓ 1.9k tokens)" —
+	// it is a fixture for having no *prompt*, and assuming it was idle as well
+	// is how this test first failed.
+	if _, a := SplitActivity("  ❯ ready\n"); a != nil {
+		t.Errorf("read activity off an idle screen: %+v", *a)
+	}
+	// And a line of that shape further up the transcript is the agent's, not
+	// the CLI's: only the tail is furniture.
+	buried := "  ✢ Working… (1s · x)\nsomething printed after it\n"
+	if _, a := SplitActivity(buried); a != nil {
+		t.Errorf("read a line the transcript had printed past: %+v", *a)
+	}
+}

@@ -383,7 +383,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0095](findings.md#mus-f-0095) | finding | Thirteen questions carried their recommendation where nothing reads it |
 | [MUS-F-0096](findings.md#mus-f-0096) | finding | No POST in the web package checked its origin until one had to |
 | [MUS-F-0097](findings.md#mus-f-0097) | finding | A name refused for a space was answered with a paragraph about colons |
-| [MUS-F-0098](findings.md#mus-f-0098) | finding | Te quit line should be replaced with the ziggzagging text line from tmux when the session is… |
+| [MUS-F-0098](findings.md#mus-f-0098) | finding | The CLI's animated line is now the dock's, and turns in CSS |
 | [MUS-F-0099](findings.md#mus-f-0099) | finding | Add a confirmation prompt for intake and session text if what will be sent includes spelling… |
 | [MUS-F-0100](findings.md#mus-f-0100) | finding | The pop-up offered an agent's own prose as a dialog's options |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |

@@ -1782,3 +1782,33 @@ func TestEndingASessionNeedsTheTickAndAsksFirst(t *testing.T) {
 		t.Error("the prompt does not name the session it would end")
 	}
 }
+
+// The dock says what the session is doing, and turns a ring while it does.
+func TestTheDockShowsTheActivityRatherThanTheQuietCounter(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	if !strings.Contains(body, `id="spin"`) || !strings.Contains(body, `id="foottext"`) {
+		t.Fatal("the dock has no place to say what is happening")
+	}
+	// The spinner sets its own display, so it needs the guard MUS-F-0087 was.
+	if !strings.Contains(body, ".spin[hidden]") {
+		t.Error("the spinner would never hide")
+	}
+	if !strings.Contains(body, "prefers-reduced-motion") {
+		t.Error("the ring turns for everyone, including those who asked it not to")
+	}
+
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, "f.activity") {
+		t.Error("the client ignores what the server says the session is doing")
+	}
+	// Falls back to the counter it replaced rather than going blank.
+	if !strings.Contains(src, "footText.textContent = quiet()") {
+		t.Error("with nothing running the dock says nothing at all")
+	}
+}

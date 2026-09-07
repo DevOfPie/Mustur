@@ -404,6 +404,9 @@ type frame struct {
 	// client that receives one of those and no prompt knows there is nothing to
 	// offer rather than that nothing was said (MUS-D-0142).
 	Prompt *session.Prompt `json:"prompt,omitempty"`
+	// Activity is what the CLI says it is doing, sent with every screen so its
+	// absence on one means nothing is running (MUS-F-0098).
+	Activity *session.Activity `json:"activity,omitempty"`
 }
 
 // A statusRow is the CLI's status line, ready to render.
@@ -497,8 +500,9 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
 		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
-		Prompt:  now.Prompt,
-		Waiting: waitingIf(s.Store != nil, &waitingNow),
+		Prompt:   now.Prompt,
+		Activity: now.Activity,
+		Waiting:  waitingIf(s.Store != nil, &waitingNow),
 	}); err != nil {
 		return
 	}
@@ -588,7 +592,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			if err := send(frame{
 				T: "screen", Screen: f.HTML,
 				Agent: string(f.Agent), Status: statusChips(f.Status),
-				Prompt: f.Prompt,
+				Prompt: f.Prompt, Activity: f.Activity,
 			}); err != nil {
 				return
 			}
@@ -849,7 +853,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
           width: var(--shell-dock-width, 100%);
           z-index: 2; background: var(--paper);
           border-top: 1.4px solid var(--edge); }
-  #foot { padding: .4rem 1rem; background: #8881;
+  #foot { display: flex; align-items: center; gap: .45rem;
+         padding: .4rem 1rem; background: #8881;
           font-size: .82em; opacity: .75; }
   form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
          border-top: 1.4px solid var(--edge); }
@@ -864,6 +869,17 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   #kept { opacity: .75; font-style: italic; }
   /* Grows with what is typed, to a point, then scrolls. A phone keyboard eats
      half the screen, so the cap is small deliberately. */
+  /* The spinner beside what the session is doing. A ring turning at a constant
+     speed, painted once and rotated, which is the same technique the sub-agent
+     ring uses and costs a phone almost nothing. It replaces a character that
+     changed shape four times a second. */
+  .spin { width: .72em; height: .72em; flex: 0 0 auto; border-radius: 50%;
+          border: 2px solid var(--accent-soft); border-top-color: var(--accent);
+          animation: spin 900ms linear infinite; }
+  .spin[hidden] { display: none; }
+  @keyframes spin { to { transform: rotate(1turn) } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
   /* The prompt, in front of the session.
 
      Anchored to the terminal's own box rather than to the viewport, so the bar
@@ -1231,7 +1247,15 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   </div>
 </div>
 <div class="dock">
-<div id="foot">quiet 0s</div>
+<!-- What the session is doing, or how long it has not been.
+
+     The CLI animates its own line by redrawing one row of the screen, which
+     arrives here as a whole frame and renders as a character jumping between
+     shapes. That line comes off the output and lands here instead, where the
+     spinner turns in CSS and the numbers change without anything being
+     repainted under them (MUS-F-0098). With nothing running this is the quiet
+     counter it replaced. -->
+<div id="foot"><span class="spin" id="spin" hidden></span><span id="foottext">quiet 0s</span></div>
 <!-- The keys, above the composer where MUS-Q-0072 put them.
 
      Rendered only where the composer is, because they go down the same socket
