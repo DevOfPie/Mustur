@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 79 | [questions.md](questions.md) |
+| question | 80 | [questions.md](questions.md) |
 | decision | 146 | [decisions.md](decisions.md) |
 | finding | 102 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -138,6 +138,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0077](questions.md#mus-q-0077) | question | Where does a read prompt appear? MUS-Q-0075 is re-asked, because the fixture shows the labels are long |
 | [MUS-Q-0078](questions.md#mus-q-0078) | question | The badge is live on one surface. Making it live on the other two costs a script tag on each |
 | [MUS-Q-0079](questions.md#mus-q-0079) | question | Starting a session from a browser means a command field, unless the command is chosen from a list |
+| [MUS-Q-0080](questions.md#mus-q-0080) | question | Ending a session from a surface: where does a control that kills a running agent live? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |

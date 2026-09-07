@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-79 record(s), by identifier.
+80 record(s), by identifier.
 
 ---
 
@@ -1803,3 +1803,22 @@ question · 2026-09-05
 | Answer | A name, a project from the routing records, and a command from an allowlist |
 | Answered | 2026-09-06 11:40 |
 | Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0080
+
+**Ending a session from a surface: where does a control that kills a running agent live?**
+
+question · 2026-09-07
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0081 |
+| Option | On the session view, behind the tick Withdraw uses :: Recommended. One pattern for destructive things, no script, and the page you are on is the page that ends it :: The session's own page gains a Stop beside the picker, with a checkbox reading what it does that the handler requires — the shape that fixed MUS-F-0077 on the decision queue, on a surface that carries no script and where a second page would be a second surface. It posts like the start form does: same-origin checked, owner-only by the guard. Stopping the session you are watching lands you on the start page, because there is nothing left to watch. The cost is a control that kills a running agent mid-turn sitting on the page you sit and read, one tick from a thumb. |
+| Option | On the start page, one per running session :: The list is where you choose and the terminal is where you watch :: Stop lives beside each row on /sessions?new=1, next to the form that starts them, so the page you leave open has nothing destructive on it. Reaching it is deliberate: leave the terminal, go to the list, end the one you mean. The cost is two navigations at the moment you most want one — an agent going wrong is exactly when you do not want to be picking from a list — and a list is where it is easiest to stop the wrong session. |
+| Option | Leave ending on the command line :: Nothing that kills a process is added to a surface reached from a phone :: mustur session stop works and is unambiguous, and the surface keeps its one write path being the one that starts things rather than ends them. The cost is what was just asked about: away from a terminal, a crashed or runaway session cannot be ended, and Mustur deliberately restarts nothing — an agent CLI that crashed wants a person, and the person is holding a phone. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-07 00:18 |

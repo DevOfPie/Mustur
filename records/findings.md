@@ -95,7 +95,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0078](#mus-f-0078) | Allow viewers to vote for answers to decisions but only owners can make final choice |  | triaged; parked against MUS-M-0008 |
 | [MUS-F-0079](#mus-f-0079) | Three questions used 'Recommended' as an option's label, so answering them recorded the word and not the choice | Each of the three carries an Option field beginning 'Recommended :: '. Each answered as 'Recommended'. The first option of each matches its Previously relayed answer. | recorded; the three affected records now say what was meant |
 | [MUS-F-0080](#mus-f-0080) | The session view can send a line of text and nothing else, so a dialog wanting a key is unreachable | TestTheChosenKeysArriveAsThemselves against real tmux, with 'cat -v' as the probe because it prints control characters rather than acting on them: Escape arrives as ^[ and Up as ^[[A, both on one line, so nothing was appended to either. TestOnlyTheChosenKeysAreSendable holds the allowlist against a name containing shell metacharacters. TestTheKeyRowSendsAKeyAndNotAMessage holds the row's shape: seven keys, above the composer, outside the form, every button type=button. | fixed |
-| [MUS-F-0081](#mus-f-0081) | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
+| [MUS-F-0081](#mus-f-0081) | The surface cannot interrupt an agent mid-turn, and separately cannot stop a session | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. | the interrupt is fixed; the stop is now requested and is MUS-Q-0080 |
 | [MUS-F-0082](#mus-f-0082) | Can we intercept these prompts and surface them in a ui prompt for the user to answer instead… |  | with the owner on MUS-Q-0074 |
 | [MUS-F-0083](#mus-f-0083) | A CLI prompt publishes its own key legend, so interception can read it rather than know it | Captured from mustur/Ring at 03:3x on 2026-09-04 by opening the model picker and dismissing it with Escape; the raw capture-pane output is 2,287 bytes and is the fixture the parser is written against. | open; it is what MUS-W-0022 is built on |
 | [MUS-F-0084](#mus-f-0084) | The VS Code extension does not parse the terminal; it runs a second CLI in --print and renders the protocol | extension.js carries the literal argv list --output-format stream-json --verbose --input-format stream-json; five occurrences of control_request and the pending_permission_requests / pending_user_dialog_requests fields on the initialize response; package.json contributes three webview views and no terminal. ~/.claude/ide/43013.lock names VSCodium, transport ws, and an auth token, and the extension's method table is MCP plus openDiff, getDiagnostics, selection_changed and at_mentioned. claude --help at 2.1.260 marks all three streaming flags 'only works with --print'. | open; it is what MUS-Q-0076 turns on |
@@ -2085,6 +2085,8 @@ asked as: [MUS-Q-0073](questions.md#mus-q-0073)
 
 what actually answered it: [MUS-D-0141](decisions.md#mus-d-0141)
 
+asked as: [MUS-Q-0080](questions.md#mus-q-0080)
+
 **This record asked the wrong question first, and the owner's answer is what corrected it.** It was filed as *nothing on any surface stops a session* after the owner said they did not think there was a way to stop one by hand. What they meant was interrupting an agent mid-turn: noticing it starting to misread them, stopping it, and giving corrections before it continues — which in the terminal is Escape, and which has nothing to do with ending a tmux session.
 
 So the reported need is met by MUS-D-0141's key row, whose first button is Escape, and not by anything in the paragraph below.
@@ -2096,10 +2098,11 @@ The lesson worth keeping is not about sessions. *I don't think there is a way fo
 | Field | Value |
 | --- | --- |
 | Where | internal/web/sessions.go |
-| Status | the reported need is fixed by MUS-D-0141; the stop control is recorded and unbuilt |
+| Status | the interrupt is fixed; the stop is now requested and is MUS-Q-0080 |
 | Evidence | No occurrence of a stop control in the sessions templates. 'mustur session stop' is in cmd/mustur/sessions.go and is reachable only from a shell. Two sessions were running when this was filed, mustur/Check and mustur/Ring, and neither could be ended from the browser. |
 | What the owner meant | Interrupting an agent mid-turn to correct it, which is Escape, and which the key row now sends |
 | What is still missing | A way to end a session from any surface. Real, unrequested, and cheaper to leave than to guess at |
+| No longer unrequested | The owner asked on 2026-09-07 whether there is a way to end a session. There is not, from any surface. That is the half of this record which said it was real and nobody's request; it is now somebody's. |
 
 ---
 
