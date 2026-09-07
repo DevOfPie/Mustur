@@ -118,6 +118,7 @@ func (s *Sessions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /sessions", s.list)
 	mux.HandleFunc("POST /sessions", s.start)
 	mux.HandleFunc("POST /sessions/{project}/stop", s.stop)
+	mux.HandleFunc("POST /sessions/{project}/restore", s.restore)
 	mux.HandleFunc("GET /sessions/{project}", s.show)
 	mux.HandleFunc("GET /sessions/{project}/ws", s.socket)
 	mux.HandleFunc("GET /assets/session.js", func(w http.ResponseWriter, r *http.Request) {
@@ -181,6 +182,10 @@ type sessionPage struct {
 	// page that says so rather than a form that cannot be submitted.
 	Starting []startable
 	Commands []string
+	// Lost is what Mustur started that is no longer running, offered back
+	// (MUS-Q-0083). Rendered on the same page as the start form, because after
+	// a reboot that is the page the owner arrives on.
+	Lost []lostRow
 	// Start renders the form rather than the list. /sessions redirects to a
 	// running session when there is one, so starting another needs a way to
 	// reach the page that is not "have none".
@@ -329,6 +334,7 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 	if p.Start {
 		p.Starting = s.startables(r.Context())
 		p.Commands = s.commands()
+		p.Lost = s.lost(r.Context())
 	}
 	if s.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), s.Store)
@@ -767,6 +773,24 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
                border-radius: .5rem; color: inherit; cursor: pointer; }
   .new .said { border: 1px solid var(--accent); border-radius: .5rem;
                padding: .5rem .7rem; font-size: .9em; }
+  /* Sessions the machine took, offered back. Above the start form and quieter
+     than it: this is the shorter path to what the owner wants after a reboot,
+     but starting something fresh is still the page's subject. */
+  .lost { margin-bottom: 1.4rem; }
+  .lost h2 { font-size: .95em; margin: 0 0 .2rem; }
+  .lost ul { list-style: none; margin: .6rem 0 0; padding: 0;
+               display: flex; flex-direction: column; gap: .5rem; }
+  .lost form { display: flex; flex-direction: row; align-items: center;
+               gap: .7rem; border: 1px solid var(--edge); border-radius: .5rem;
+               padding: .55rem .7rem; }
+  .lost form div { display: flex; flex-direction: column; gap: .1rem;
+               min-width: 0; flex: 1; }
+  /* The path and the note are the long values here, and a session started in a
+     deep checkout used to make this box wider than a phone (MUS-F-0033). */
+  .lost small { font-size: .8em; opacity: .7; overflow-wrap: anywhere; }
+  .lost button { font: inherit; padding: .45rem .7rem; border-radius: .5rem;
+               border: 1px solid var(--edge); background: var(--paper);
+               color: inherit; cursor: pointer; white-space: nowrap; }
   /* A plus rather than the word: the rail is a row of controls and "New" was
      the only one spelling itself out. Square, so the glyph sits in the middle
      of it rather than on the left of a word-shaped box. */
@@ -1199,6 +1223,31 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
   {{if .Missing}}<p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
   <small>A session left running in a terminal is not here and will not appear.</small></p>{{end}}
+  {{if .Lost}}
+  <!-- Sessions Mustur started that are no longer running (MUS-Q-0083).
+
+       A stopped session is deleted from the store when it is stopped, so
+       everything here went without being told to — which is what makes it
+       worth offering back. Nothing on this form names a process: the button
+       carries a project, and the server already holds where it ran, what it
+       ran and which conversation it was having. -->
+  <div class="lost">
+    <h2>Not running</h2>
+    <p class="none"><small>Mustur started these and they are gone. A reboot ends every session; nothing here restarts one on its own.</small></p>
+    <ul>
+      {{range .Lost}}<li>
+        <form method="post" action="/sessions/{{.Project}}/restore">
+          <div>
+            <strong>{{.Project}}</strong>
+            <small>{{.Dir}}{{if .When}} &middot; started {{.When}}{{end}}</small>
+            <small>{{if .Resumes}}Comes back with the conversation it was having.{{else}}Starts again here, empty: there is no conversation on disk to bring back.{{end}}</small>
+          </div>
+          <button type="submit">Start it again</button>
+        </form>
+      </li>{{end}}
+    </ul>
+  </div>
+  {{end}}
   {{if .Starting}}
   <form method="post" action="/sessions">
     <label>Name<input type="text" name="name" required autocomplete="off"

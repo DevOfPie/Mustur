@@ -379,14 +379,28 @@ func tail(path string, n int64) ([]byte, error) {
 // short-lived processes per tool call in the session — the pair is what lets a
 // row distinguish a sub-agent inside a tool from one between tools, which the
 // first version claimed to do with only the first half.
-func HookSettings(exe, dir, project string) (string, error) {
+func HookSettings(exe, dir, project, db string) (string, error) {
 	call := fmt.Sprintf("%s session subagent-event --dir %s --project %s",
 		shellQuote(exe), shellQuote(dir), shellQuote(project))
 	// One command for all three: every payload names its own event, so the hook
 	// does not need telling which one it is.
 	hooks := []any{map[string]any{"type": "command", "command": call}}
+
+	// The other hook, and it is not about sub-agents at all.
+	//
+	// A conversation the CLI is having has an identifier, and the identifier is
+	// the only way to open that conversation again after the machine has taken
+	// the pane. The CLI offers it in a hook payload and nowhere else — not on
+	// the command line, not in the pane — so this is the one route to it
+	// (MUS-Q-0083). It writes to the store rather than to the sub-agent log,
+	// because it has to survive the reboot the log is cleared by.
+	started := fmt.Sprintf("%s session cli-started --project %s", shellQuote(exe), shellQuote(project))
+	if strings.TrimSpace(db) != "" {
+		started += " --db " + shellQuote(db)
+	}
 	settings := map[string]any{
 		"hooks": map[string]any{
+			"SessionStart":  []any{map[string]any{"hooks": []any{map[string]any{"type": "command", "command": started}}}},
 			"SubagentStart": []any{map[string]any{"hooks": hooks}},
 			"SubagentStop":  []any{map[string]any{"hooks": hooks}},
 			"PreToolUse":    []any{map[string]any{"matcher": "*", "hooks": hooks}},
@@ -411,11 +425,11 @@ func HookSettings(exe, dir, project string) (string, error) {
 // something else would produce a session that fails to start, so a command this
 // package does not recognise is left exactly as it was given and simply shows
 // no sub-agents. Guessing wider would trade a working session for a row.
-func withHook(cmd, exe, dir, project string) string {
+func withHook(cmd, exe, dir, project, db string) string {
 	if !isClaude(cmd) || exe == "" || dir == "" {
 		return cmd
 	}
-	settings, err := HookSettings(exe, dir, project)
+	settings, err := HookSettings(exe, dir, project, db)
 	if err != nil {
 		return cmd
 	}

@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-148 record(s), by identifier.
+149 record(s), by identifier.
 
 ## Index
 
@@ -160,6 +160,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0146](#mus-d-0146) | A session is started from three places, and only one of them is typed | 2026-09-06 |
 | [MUS-D-0147](#mus-d-0147) | A session is ended from its own page, behind a tick and a prompt that names it | 2026-09-07 |
 | [MUS-D-0148](#mus-d-0148) | Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped | 2026-09-07 |
+| [MUS-D-0149](#mus-d-0149) | A session lost with the machine is written down and offered back, and nothing starts on its own | 2026-09-07 |
 
 ---
 
@@ -2715,3 +2716,38 @@ The note asking for this arrived containing a typo, which is the argument for it
 | --- | --- |
 | Now | spellcheck on the intake box, the session composer and the compose surface |
 | Kept for later | the check runs on the server when the form is posted, not in the browser; the affix rules are the cost, not the dictionary |
+
+---
+
+## MUS-D-0149
+
+**A session lost with the machine is written down and offered back, and nothing starts on its own**
+
+decision · 2026-09-07
+
+raised by: [MUS-Q-0083](questions.md#mus-q-0083)
+
+the rule this does not break: [MUS-D-0062](#mus-d-0062)
+
+answers: [MUS-Q-0083](questions.md#mus-q-0083)
+
+A reboot took the owner's sessions and Mustur could not afterwards say they had ever existed. tmux is the source of truth for what is running (MUS-D-0062) and tmux does not survive a reboot, so the three facts needed to open a conversation again — which project, where it ran, what it ran — went with the panes.
+
+The processes are not recoverable and never will be. The conversations are: the CLI keeps each one on disk, and `--resume` opens it. So Start now writes down what it launched and Stop deletes what it ended, and the difference between those two is the whole feature — a session the owner ended is finished, a session that went without being told to is offered back.
+
+**MUS-D-0062 is not reversed.** Nothing reads the table to answer what is running: List, Alive and Stop still ask tmux, and the surface subtracts the live list from what is remembered rather than trusting either alone. When tmux cannot be asked at all, nothing is offered, because with no live list every remembered session looks missing.
+
+The conversation's identifier comes from the CLI's SessionStart hook, which is the only place it is published — not the command line, not the pane. The hook records the transcript path with it, and the path is checked on disk before a restore resumes anything: the hook fires as the CLI starts and the file is not written until the conversation has something in it, so an identifier alone can name nothing. A session started and never spoken to comes back empty, and the page says which of the two it will be before the button is pressed.
+
+**Mustur still restarts nothing.** There is no boot path, no timer and no loop. The button is a person. That is the option the owner chose on MUS-Q-0083, in the decision queue, over sessions coming back by themselves after a power cut — which would have meant rewriting the standing rule that an agent CLI that crashed wants a person.
+
+One thing about the order is worth keeping, because it was luck rather than method. The owner answered in the queue at 12:23 and this was built from an instruction given in a session — 'recover the conversations still on disk and build anything needed' — by an agent that had not read the answer and had said, twice, that the question was still open. The answer was delivered into that same session and went unread; the first entry of this record repeated the claim. The two agreed, so nothing was built against the owner's choice. Nothing about the way it was done made that so: an agent proceeding on an instruction while a question it raised sits answered a command away is the shape of MUS-F-0074 wearing different clothes.
+
+The table is not a record: no identifier, never in the log, never exported, for the same reason a scratch filing is not one. It is operational state about one machine.
+
+Verified end to end on this machine rather than only in tests: a session started, its identifier and transcript path recorded by the hook, the pane killed the way a reboot kills it, the page offering it back, and the restored pane carrying the conversation it had before. The empty case was verified the same way, on a session that had never been spoken to.
+
+| Field | Value |
+| --- | --- |
+| Offered by | the page that starts a session |
+| Started by | a person pressing a button |

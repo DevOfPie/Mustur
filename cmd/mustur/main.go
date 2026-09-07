@@ -662,7 +662,12 @@ func cmdServe(args []string) error {
 	// The hook directory is what makes a session's sub-agents visible: the
 	// adapter installs a hook pointing at it, and the surface reads it back.
 	hookDir := session.DefaultHookDir()
-	adapter := &session.Adapter{HookDir: hookDir}
+	// Remember and DB are the two halves of surviving a reboot (MUS-Q-0083):
+	// the adapter writes down what it launched, and the hook it installs is
+	// told which store to report the CLI's conversation identifier to. The path
+	// is passed rather than defaulted, because a server told to use another
+	// store would otherwise have its hooks write to the machine's usual one.
+	adapter := &session.Adapter{HookDir: hookDir, DB: *db, Remember: s}
 	hub := &session.Hub{Adapter: adapter}
 	// Readers hold a fifo and a tmux pipe-pane each; without this a server that
 	// goes down leaves both behind, with tmux still writing into a pipe nobody

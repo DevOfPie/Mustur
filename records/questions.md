@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-82 record(s), by identifier.
+83 record(s), by identifier.
 
 ---
 
@@ -1860,7 +1860,7 @@ question · 2026-09-07
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0102 |
 | Option | Per session in the reply box; the composer keeps its single draft :: Recommended. The reply box is addressed to a session; the composer is addressed to a thought :: The session view's box holds a draft per session, so switching sessions shows what was written for that one and never somebody else's half-sentence. The composer keeps the shared draft, which is where MUS-D-0013's reasoning actually lives -- it is the surface for writing a thought before deciding where it goes, and its destination is a dropdown for exactly that reason. Each box then behaves like the thing it is. The cost is two rules instead of one, and a sentence started in the reply box no longer follows you to the composer. |
 | Option | Per session everywhere, including the composer :: One rule, and the composer stops protecting the case it was built for :: Every box keys its draft by where it is pointed. Simplest to hold in the head and simplest to explain. It also ends the thing MUS-D-0097 was written for: deciding mid-sentence that what you are writing belongs somewhere else, and having it survive the change of mind. On the composer that change of mind is a dropdown away and is the whole point of the screen. |
@@ -1868,3 +1868,28 @@ question · 2026-09-07
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-07 00:58 |
+| Answer | I am confused on this question, I thought I only asked for the session input to be separated. Not sure where the composer(I believe the intake tab) comes into this? |
+| Answered | 2026-09-07 12:23 |
+| Delivered | not delivered: Check has no session Mustur started, and Mustur never attaches to one it did not |
+
+---
+
+## MUS-Q-0083
+
+**A reboot takes every session and Mustur remembers nothing. Who brings them back?**
+
+question · 2026-09-07
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Whether Start records what it launched, and whether anything relaunches it after the machine comes back. |
+| Option | Remember them, offer them back, start nothing :: Recommended · one press per session, no unattended agent :: Start writes the name, directory, command and the CLI's own session id (read from a SessionStart hook, which is the only place the id is offered) into the store. After a reboot the sessions page lists what was running, each with a button that starts it again on its own transcript. Nothing runs without a person pressing it, so the standing rule is unchanged. It does not touch MUS-D-0062 either: the table is a history of what was started, not a second answer to what is running. |
+| Option | Restore them at boot :: the sessions are simply there when the machine comes back :: The same record, plus a restore path that runs when mustur starts and recreates every session that was running, each resumed on its own transcript. The cost is agents waking unattended: after a power cut every session comes back at once with whatever permissions it had, and CLAUDE.md's 'it does not restart anything' has to be rewritten to say where the line now sits. |
+| Option | Neither, and the cost stands :: nothing is built, the answer is written down :: MUS-Q-0013 accepted this in as many words — nothing survives a tmux server restart except what was already a record. Transcripts are on disk, and 'claude --resume <id>' in the right directory brings a conversation back by hand. What stays lost is knowing which sessions existed at all. |
+| Asked by | whippy |
+| Session project | Sessions_Lost |
+| Answer | Remember them, offer them back, start nothing |
+| Answered | 2026-09-07 12:23 |
+| Delivered | typed into mustur/Sessions_Lost |
+| Surfaced | 2026-09-07 12:24 |

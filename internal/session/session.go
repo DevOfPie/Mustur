@@ -19,8 +19,15 @@
 // sessions exist, which are alive and what they last printed, and it knows it a
 // second before any mirror would. So nothing here keeps a table of sessions:
 // listing is a live query, and the store holds only what outlives a session.
-// The cost, accepted rather than discovered: when the tmux server dies, so does
-// every session and everything Mustur knew about them.
+//
+// The cost was accepted rather than discovered — when the tmux server dies, so
+// does every session — and half of it has since been paid back. A reboot took
+// the owner's sessions and Mustur could not afterwards say they had existed, so
+// Start now writes down what it launched and Stop deletes what it ended
+// (MUS-Q-0083). That is a note about the past, not a mirror: **nothing here
+// reads it**, listing is still a live query, and what the note buys is a
+// surface that can offer a lost session back rather than a session that comes
+// back on its own. Mustur still restarts nothing.
 //
 // **Mustur starts sessions and never attaches to one it did not start**
 // (MUS-D-0007). Enforcement is by provenance, not by name: Start sets a tmux
@@ -143,6 +150,29 @@ type Adapter struct {
 	HookDir string
 	// Exe is the Mustur binary the hook calls back. Empty means this one.
 	Exe string
+	// DB is the store the SessionStart hook writes the CLI's conversation
+	// identifier into. Empty leaves the path off the hook's command line, so it
+	// falls back to this machine's default — which is right for every process
+	// that did not override it, and wrong to guess at for one that did.
+	DB string
+	// Remember is told what Start launched and what Stop ended, so a session
+	// lost with the machine can be offered back (MUS-Q-0083). Nil remembers
+	// nothing.
+	//
+	// It is not a mirror of what is running and nothing here reads it back:
+	// List, Alive and Stop still ask tmux, which is the source of truth
+	// (MUS-D-0062). This only writes down what was launched.
+	Remember Rememberer
+}
+
+// Rememberer is told what Start launched and what Stop ended.
+//
+// An interface rather than the store itself, so this package keeps shelling out
+// to tmux as its only dependency and a caller with no store open — the answer
+// path, the delivery path — passes nothing and remembers nothing.
+type Rememberer interface {
+	RememberSession(ctx context.Context, project, dir, cmd string) error
+	ForgetSession(ctx context.Context, project string) error
 }
 
 type execRunner struct{}
@@ -257,7 +287,7 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 	// runs, so the first hook to fire writes into an empty log rather than
 	// underneath rows belonging to a session that has already ended.
 	ForgetSubagents(a.HookDir, project)
-	args = append(args, withHook(cmd, a.exe(), a.HookDir, project))
+	args = append(args, withHook(cmd, a.exe(), a.HookDir, project, a.DB))
 	if out, err := a.runner().Run(ctx, "tmux", args...); err != nil {
 		return Session{}, fmt.Errorf("tmux new-session: %w: %s", err, strings.TrimSpace(out))
 	}
@@ -281,7 +311,64 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 	if err := a.settle(ctx, project, name, cmd); err != nil {
 		return Session{}, err
 	}
+
+	// Written down after the session is believed in, so a command that died on
+	// startup is not offered back as something to restore. The command recorded
+	// is the one that was given, without the hook this function appended: the
+	// hook is rebuilt at the next start, and a stale one baked into a stored
+	// command line would outlive the binary that answers it.
+	//
+	// A failure to remember is not a failure to start. The session is running
+	// and saying otherwise would be worse than the thing that went wrong; what
+	// is lost is the offer to start it again after a reboot.
+	if a.Remember != nil {
+		if err := a.Remember.RememberSession(ctx, project, dir, cmd); err != nil {
+			fmt.Fprintf(os.Stderr, "mustur: %s started but was not written down, so a reboot will lose it: %v\n", name, err)
+		}
+	}
 	return Session{Name: name, Project: project}, nil
+}
+
+// Resume rewrites a command so it continues a conversation the CLI already has.
+//
+// Only a command this package recognises, for the reason withHook only appends
+// to one: the flag belongs to a vendor, and adding it to something else
+// produces a session that will not start.
+//
+// Any --resume or --continue already on the line is dropped first. A restored
+// session's stored command carries the one from last time, and two --resume
+// flags is a command that resumes the wrong thing or nothing at all.
+// A command carrying a quote is left exactly as it is. This walks the line as
+// whitespace-separated fields and rebuilds it, which is right for `claude` and
+// `claude --resume <id>` — everything this actually stores — and would quietly
+// re-word `--model "opus 5"`. A session that starts without its conversation is
+// a disappointment; a session that starts with its arguments rearranged is a
+// defect, so the disappointment is the one chosen.
+func Resume(cmd, cli string) string {
+	if !isClaude(cmd) || strings.ContainsAny(cmd, `"'`) {
+		return cmd
+	}
+	fields := strings.Fields(cmd)
+	out := fields[:0:0]
+	for i := 0; i < len(fields); i++ {
+		switch fields[i] {
+		case "--resume", "-r":
+			// The identifier is a separate argument, and skipping it is the
+			// point: left behind it becomes a prompt the CLI is asked to answer.
+			if i+1 < len(fields) && !strings.HasPrefix(fields[i+1], "-") {
+				i++
+			}
+			continue
+		case "--continue", "-c":
+			continue
+		}
+		out = append(out, fields[i])
+	}
+	cmd = strings.Join(out, " ")
+	if strings.TrimSpace(cli) == "" {
+		return cmd
+	}
+	return cmd + " --resume " + cli
 }
 
 // SettleFor is how long Start watches a new session before believing in it.
@@ -595,6 +682,14 @@ func (a *Adapter) Stop(ctx context.Context, project string) error {
 	}
 	if out, err := a.runner().Run(ctx, "tmux", "kill-session", "-t", name); err != nil {
 		return fmt.Errorf("tmux kill-session: %w: %s", err, strings.TrimSpace(out))
+	}
+	// A session the owner ended is finished, so it stops being offered back.
+	// That is the whole distinction the remembered table encodes: this is how a
+	// stop is told apart from a reboot.
+	if a.Remember != nil {
+		if err := a.Remember.ForgetSession(ctx, project); err != nil {
+			fmt.Fprintf(os.Stderr, "mustur: %s was stopped but is still written down: %v\n", name, err)
+		}
 	}
 	return nil
 }

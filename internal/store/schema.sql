@@ -244,3 +244,39 @@ CREATE TABLE IF NOT EXISTS scratch (
   created    TEXT NOT NULL,
   created_by TEXT NOT NULL
 );
+
+-- What Mustur last started, so a session the machine took can be offered back.
+--
+-- tmux is still the source of truth for what is *running* (MUS-D-0062) and
+-- this is not a second answer to that question. It records what was launched:
+-- a name, where, and what with. Nothing here claims a session is alive, and
+-- the surface never reads it alone — it subtracts the live list from these and
+-- offers what is left.
+--
+-- Not a record either, for the reason `scratch` is not: this is operational
+-- state about one machine, not a claim about the project. No identifier, never
+-- in the log, never exported.
+--
+-- Stopping a session deletes its row. A session the owner ended is finished; a
+-- session lost to a reboot is not, and that difference is the whole of what
+-- gets offered back.
+CREATE TABLE IF NOT EXISTS session_started (
+  project     TEXT PRIMARY KEY,
+  dir         TEXT NOT NULL,
+  cmd         TEXT NOT NULL,
+  -- The CLI's own conversation id, reported by its SessionStart hook. Empty
+  -- until that fires, and empty for good on a CLI with no such hook — which
+  -- is a session that can be started again in the same place, without the
+  -- conversation it was having.
+  cli_session TEXT NOT NULL DEFAULT '',
+  -- Where the CLI keeps that conversation, as the same hook reports it.
+  --
+  -- The identifier alone is not enough to know a conversation can be reopened:
+  -- the hook fires as the CLI starts and the file is not written until the
+  -- conversation has something in it, so a session that was started and never
+  -- spoken to has an identifier and nothing behind it. Asking this file whether
+  -- it exists is the difference between offering a session back empty and
+  -- offering to resume something that will refuse.
+  transcript  TEXT NOT NULL DEFAULT '',
+  started     TEXT NOT NULL
+);

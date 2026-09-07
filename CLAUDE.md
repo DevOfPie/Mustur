@@ -75,7 +75,18 @@ reason the intake destinations are
 ([MUS-D-0121](records/decisions.md#mus-d-0121)): a row that scrolls sideways
 hides its last choice behind a swipe.
 **It does not restart anything** — an agent CLI that crashed wants a person, not
-a loop.
+a loop. A reboot ends every session and no process survives one, so what Mustur
+does instead is remember: since 2026-09-07 `Start` writes down which project,
+where and what it ran, and the CLI's own `SessionStart` hook adds the identifier
+of the conversation it is having, which is the only place that identifier is
+published ([MUS-D-0149](records/decisions.md#mus-d-0149), on the owner's answer
+to [MUS-Q-0083](records/questions.md#mus-q-0083)). The page that starts
+a session then lists what is written down and no longer running, with a button
+that starts each one again on its own transcript — a person pressing it, never a
+timer. Stopping a session deletes its row, so what is offered back is only what
+went without being told to. tmux is still the only answer to what is *running*
+([MUS-D-0062](records/decisions.md#mus-d-0062)): with tmux unreachable nothing
+is offered rather than everything.
 
 Since milestone 5b it also knows who is asking: an invitation, a passkey, and a
 role per project that decides what somebody reaches. That is built and refuses

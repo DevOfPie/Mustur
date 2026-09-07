@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 82 | [questions.md](questions.md) |
-| decision | 148 | [decisions.md](decisions.md) |
+| question | 83 | [questions.md](questions.md) |
+| decision | 149 | [decisions.md](decisions.md) |
 | finding | 109 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
@@ -141,6 +141,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0080](questions.md#mus-q-0080) | question | Ending a session from a surface: where does a control that kills a running agent live? |
 | [MUS-Q-0081](questions.md#mus-q-0081) | question | Warning before sending needs our own spellchecker, because no browser will lend us its one |
 | [MUS-Q-0082](questions.md#mus-q-0082) | question | A draft per session reverses MUS-D-0097, which chose one draft on purpose |
+| [MUS-Q-0083](questions.md#mus-q-0083) | question | A reboot takes every session and Mustur remembers nothing. Who brings them back? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -289,6 +290,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0146](decisions.md#mus-d-0146) | decision | A session is started from three places, and only one of them is typed |
 | [MUS-D-0147](decisions.md#mus-d-0147) | decision | A session is ended from its own page, behind a tick and a prompt that names it |
 | [MUS-D-0148](decisions.md#mus-d-0148) | decision | Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped |
+| [MUS-D-0149](decisions.md#mus-d-0149) | decision | A session lost with the machine is written down and offered back, and nothing starts on its own |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
