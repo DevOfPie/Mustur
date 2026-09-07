@@ -116,7 +116,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0099](#mus-f-0099) | A browser will not say whether a box has spelling errors in it | No engine exposes spellchecker results to script; the attribute only enables the browser's own underlining. Asserted from the platform's API surface rather than measured. The intake textarea carried no spellcheck attribute where sessions.go and compose.go each carry one; TestTheIntakeBoxIsSpellChecked holds the fix. /usr/share/hunspell/en_US.dic is 79,014 lines and 844KB, with an affix file beside it. | fixed as far as the owner asked; the warning is deferred, not declined |
 | [MUS-F-0100](#mus-f-0100) | The pop-up offered an agent's own prose as a dialog's options | TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript reads the captured pane and asserts the heading is the dialog's, the three options are Yes / Not now / Don't show again with the cursor on the first, and that neither transcript bullet is offered. TestALegendWithNoBoundaryAboveItIsNotADialog holds the boundary requirement both ways. | fixed |
 | [MUS-F-0101](#mus-f-0101) | A third dialog shape: toggles with no numbers, and a legend key that is a pair | TestADialogOfTogglesWithNoNumbers reads the captured pane: the heading, a description that stops where the rows start, four rows each carrying state and none pressable, the cursor on the row the pane has it on, and a legend of three keys where ←/→ is not sendable and Enter and Esc are. The model picker's test now distinguishes its three pressable rows from the effort row it had been dropping. | fixed |
-| [MUS-F-0102](#mus-f-0102) | The text in the send box should be held per session, changing to a new session should show a… |  | unreviewed |
+| [MUS-F-0102](#mus-f-0102) | The text in the send box should be held per session, changing to a new session should show a… |  | with the owner on MUS-Q-0082 |
 | [MUS-F-0103](#mus-f-0103) | The tick above Stop guarded a case the session view does not have | TestEndingASessionAsksFirstAndCarriesNoTick asserts the form is on the session's page and not the start page, that no sure field remains, that an origin-less and a cross-origin POST are still refused, and that the client confirmation names the session. | fixed |
 | [MUS-F-0104](#mus-f-0104) | A dialog of toggles could be read and not used | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. | fixed |
 
@@ -2734,15 +2734,20 @@ finding · 2026-09-07
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+the decision it reverses: [MUS-D-0097](decisions.md#mus-d-0097)
+
+asked as: [MUS-Q-0082](questions.md#mus-q-0082)
+
 The text in the send box should be held per session, changing to a new session should show a text box that does not contain text that was added to another session
 
 | Field | Value |
 | --- | --- |
 | Evidence |  |
-| Status | unreviewed |
+| Status | with the owner on MUS-Q-0082 |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Why it is not simply built | It reverses MUS-D-0097, which chose one draft rather than one per session so that deciding mid-sentence that a thought belongs elsewhere does not cost the sentence. TestTheDraftIsNotKeyedPerSession forbids exactly the change being asked for, by name. |
 
 ---
 

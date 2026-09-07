@@ -172,7 +172,7 @@ func queryEscape(s string) string {
 // stop ends a session the owner asked to end.
 //
 // MUS-Q-0080 put it on the session's own page behind the tick that Withdraw
-// uses, and the tick is gone again (MUS-F-0102). It was copied from a surface
+// uses, and the tick is gone again (MUS-F-0103). It was copied from a surface
 // where blocking script leaves a page that still works; this is not one. The
 // session view is a live terminal and there is nothing here without script --
 // no output, no composer, no keys -- so a tick guarding the no-script case was

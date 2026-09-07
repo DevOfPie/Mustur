@@ -846,7 +846,7 @@
         // Movable rather than pressable. The cursor is moved with the arrows,
         // so clicking a row sends the arrows needed to reach it — the owner
         // should not be pressing ↑ four times to get somewhere the surface can
-        // already see (MUS-F-0103).
+        // already see (MUS-F-0104).
         var row = el("button", o.selected ? "row on" : "row", "");
         row.type = "button";
         row.setAttribute("data-row", String(i));

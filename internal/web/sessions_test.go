@@ -1721,7 +1721,7 @@ func TestTheStartControlIsAPlus(t *testing.T) {
 // from a surface where blocking script leaves a page that still works, and this
 // is not one: the session view is a live terminal and there is nothing here
 // without script. So it guarded a case that does not exist, and it looked like
-// it did — stacked above the button (MUS-F-0102). What remains is the
+// it did — stacked above the button (MUS-F-0103). What remains is the
 // confirmation the owner asked for, and the two guards that were always real.
 func TestEndingASessionAsksFirstAndCarriesNoTick(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
@@ -1827,7 +1827,7 @@ func TestThePopUpDrawsNoDeadButtons(t *testing.T) {
 
 // A row is reached by clicking it, not by pressing arrows.
 //
-// MUS-F-0103: the toggles dialog is navigated with ↑ and ↓, so the rows were
+// MUS-F-0104: the toggles dialog is navigated with ↑ and ↓, so the rows were
 // shown and could not be used — the owner could see where the cursor was and
 // had no way to move it. The surface knows both ends of that walk, so it makes
 // it: clicking a row sends the arrows needed to reach it.

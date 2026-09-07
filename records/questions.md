@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-81 record(s), by identifier.
+82 record(s), by identifier.
 
 ---
 
@@ -1849,3 +1849,22 @@ question · 2026-09-07
 | Answered | 2026-09-07 00:41 |
 | Note | Note checking on submission with the warning poop-up for later. There is still a good chance I forget to check for errors before sending and that would help, but does not need to be done now. |
 | Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0082
+
+**A draft per session reverses MUS-D-0097, which chose one draft on purpose**
+
+question · 2026-09-07
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0102 |
+| Option | Per session in the reply box; the composer keeps its single draft :: Recommended. The reply box is addressed to a session; the composer is addressed to a thought :: The session view's box holds a draft per session, so switching sessions shows what was written for that one and never somebody else's half-sentence. The composer keeps the shared draft, which is where MUS-D-0013's reasoning actually lives -- it is the surface for writing a thought before deciding where it goes, and its destination is a dropdown for exactly that reason. Each box then behaves like the thing it is. The cost is two rules instead of one, and a sentence started in the reply box no longer follows you to the composer. |
+| Option | Per session everywhere, including the composer :: One rule, and the composer stops protecting the case it was built for :: Every box keys its draft by where it is pointed. Simplest to hold in the head and simplest to explain. It also ends the thing MUS-D-0097 was written for: deciding mid-sentence that what you are writing belongs somewhere else, and having it survive the change of mind. On the composer that change of mind is a dropdown away and is the whole point of the screen. |
+| Option | Leave it: one draft, shared :: MUS-D-0097 stands and the reported surprise stands with it :: Nothing changes. A thought started anywhere is available everywhere, which is what the decision chose and why the test forbids keying it per project. The cost is what was just reported: opening a different session shows text written for another one, which reads as a bug every time even when it is the design. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-07 00:58 |
