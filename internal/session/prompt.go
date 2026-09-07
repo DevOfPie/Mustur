@@ -88,12 +88,34 @@ func ReadPrompt(screen string) *Prompt {
 		return nil
 	}
 
-	// Numbered rows above it. Anything else between them is ignored rather
+	// Where the dialog starts.
+	//
+	// A dialog is drawn inside something: a rule above it, or a box around it.
+	// Finding that boundary first is what stops the rows being collected from
+	// the whole screen, which is what they were -- an agent's own numbered
+	// prose, two hundred and sixty lines above the dialog, came back as its
+	// options, and the heading came from whatever sentence sat above that
+	// (MUS-F-0100).
+	//
+	// No boundary means this is not a dialog. Both shapes that are have one:
+	// the model picker sits under a rule, the feedback prompt inside a box.
+	blockStart := -1
+	for i := legendAt - 1; i >= 0 && i > legendAt-maxBlock; i-- {
+		if isRule(strings.TrimSpace(lines[i])) {
+			blockStart = i + 1
+			break
+		}
+	}
+	if blockStart < 0 {
+		return nil
+	}
+
+	// Numbered rows inside it. Anything else between them is ignored rather
 	// than treated as an end: the model picker has an unnumbered line of its
 	// own between the last option and the legend.
 	var opts []Choice
 	first := legendAt
-	for i := 0; i < legendAt; i++ {
+	for i := blockStart; i < legendAt; i++ {
 		row, _ := unbox(lines[i])
 		m := numbered.FindStringSubmatch(row)
 		if m == nil {
@@ -137,7 +159,7 @@ func ReadPrompt(screen string) *Prompt {
 		return nil
 	}
 
-	title, body := heading(lines, first)
+	title, body := heading(lines, blockStart, first)
 	return &Prompt{Title: title, Body: body, Options: opts, Keys: keys}
 }
 
@@ -174,20 +196,7 @@ func readLegend(line string) ([]Choice, bool) {
 // title came back as "other/previous model names, specify with --model." The
 // block's own rule is the boundary; the first line after it is the heading and
 // everything between that and the options is the description, unwrapped.
-func heading(lines []string, first int) (string, string) {
-	// Where the block starts: the nearest rule above the options, or as far
-	// back as this is willing to look.
-	start := first - maxHead
-	if start < 0 {
-		start = 0
-	}
-	for i := first - 1; i >= start; i-- {
-		if isRule(strings.TrimSpace(lines[i])) {
-			start = i + 1
-			break
-		}
-	}
-
+func heading(lines []string, start, first int) (string, string) {
 	var title string
 	var body []string
 	for i := start; i < first; i++ {
@@ -210,9 +219,10 @@ func heading(lines []string, first int) (string, string) {
 	return title, strings.Join(body, " ")
 }
 
-// How far above the options a heading may be. Enough for a wrapped paragraph
-// and not so much that an unrelated line of output becomes a title.
-const maxHead = 12
+// How far above the legend a dialog may start. Enough for a heading, a wrapped
+// paragraph and a dozen options, and short enough that the boundary found is
+// the dialog's own rather than some rule further up the transcript.
+const maxBlock = 40
 
 // paintedBelow reports whether the CLI wrote anything under the legend.
 //

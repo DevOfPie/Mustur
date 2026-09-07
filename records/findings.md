@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-104 record(s), by identifier.
+105 record(s), by identifier.
 
 ## The queue
 
@@ -114,6 +114,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0097](#mus-f-0097) | A name refused for a space was answered with a paragraph about colons | TestARefusedNameNamesWhatIsWrongWithIt covers a space, a tab, a colon, a full stop and a non-ASCII letter; each names the fault, each summarises the rule once, and none mentions target separators. The empty name is checked separately. | fixed |
 | [MUS-F-0098](#mus-f-0098) | Te quit line should be replaced with the ziggzagging text line from tmux when the session is… |  | unreviewed |
 | [MUS-F-0099](#mus-f-0099) | Add a confirmation prompt for intake and session text if what will be sent includes spelling… |  | unreviewed |
+| [MUS-F-0100](#mus-f-0100) | The pop-up offered an agent's own prose as a dialog's options | TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript reads the captured pane and asserts the heading is the dialog's, the three options are Yes / Not now / Don't show again with the cursor on the first, and that neither transcript bullet is offered. TestALegendWithNoBoundaryAboveItIsNotADialog holds the boundary requirement both ways. | fixed |
 
 ---
 
@@ -2619,3 +2620,36 @@ Add a confirmation prompt for intake and session text if what will be sent inclu
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0100
+
+**The pop-up offered an agent's own prose as a dialog's options**
+
+finding · 2026-09-07
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the shapes it still reads: [MUS-F-0089](#mus-f-0089)
+
+what the misparsed screen was about: [MUS-F-0096](#mus-f-0096)
+
+The owner sent a picture of the session view showing a heading that was a sentence from the transcript, two options that were bullets from a list the agent had written, and none of the choices the pane was actually waiting on.
+
+The real dialog was *Teach auto mode about your environment?* with **1. Yes**, **2. Not now**, **3. Don't show again** and a legend of *Enter to confirm · Esc to cancel*. What the surface offered instead was *POST /intake and POST /questions have no origin check* and *Cf-Access-Authenticated-User-Email is trusted unconditionally* — the first two items of a numbered list the agent had printed two hundred and sixty lines earlier, in prose, about something else entirely.
+
+**They matched because they are numbered lists.** `1. text` is exactly what the row pattern is for, and the search ran from the top of the screen to the legend, so anything numbered anywhere above the dialog was a candidate. The heading then came from whatever sentence sat above the first of them.
+
+**A dialog is drawn inside something, and that is now what bounds it.** The rows come from between the boundary and the legend, not from the whole screen, and so does the heading. Both shapes have a boundary: the model picker sits under a rule, the feedback prompt inside a box. A legend with nothing drawn around it is refused, because without a boundary there is no way to tell a dialog's rows from whatever the transcript happens to have numbered — which is the whole of what went wrong.
+
+**Worth noting about the picture itself:** the misparse was on a screen where another session had independently found MUS-F-0096 and proved it by filing a jot cross-origin. The finding it was misreporting was real.
+
+| Field | Value |
+| --- | --- |
+| Evidence | TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript reads the captured pane and asserts the heading is the dialog's, the three options are Yes / Not now / Don't show again with the cursor on the first, and that neither transcript bullet is offered. TestALegendWithNoBoundaryAboveItIsNotADialog holds the boundary requirement both ways. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/session/prompt.go |

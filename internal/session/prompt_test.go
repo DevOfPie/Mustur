@@ -327,3 +327,68 @@ func TestADialogTheConversationHasMovedPastIsNotOffered(t *testing.T) {
 		t.Errorf("offered a dialog the pane had printed past: %+v", p)
 	}
 }
+
+// A dialog's options come from inside the dialog.
+//
+// MUS-F-0100. The owner sent a picture of the pop-up showing an agent's own
+// prose as a heading, two of its numbered bullets as options, and the real
+// dialog's choices nowhere. The bullets were "1. POST /intake and POST
+// /questions have no origin check" and "2. Cf-Access-Authenticated-User-Email
+// is trusted unconditionally" — a genuine numbered list in a transcript, two
+// hundred and sixty lines above the dialog, matching the row pattern exactly
+// because rows were collected from the whole screen above the legend.
+func TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript(t *testing.T) {
+	p := ReadPrompt(fixture(t, "prompt-below-numbered-prose.txt"))
+	if p == nil {
+		t.Fatal("the real dialog on this screen was not read at all")
+	}
+	if p.Title != "Teach auto mode about your environment?" {
+		t.Errorf("title = %q, want the dialog's own heading", p.Title)
+	}
+	if len(p.Options) != 3 {
+		t.Fatalf("read %d options, want the dialog's three: %+v", len(p.Options), p.Options)
+	}
+	for i, want := range []string{"Yes", "Not now", "Don't show again"} {
+		if p.Options[i].Label != want {
+			t.Errorf("option %d = %q, want %q", i, p.Options[i].Label, want)
+		}
+	}
+	// The cursor is on the first, as the pane draws it.
+	if !p.Options[0].Selected {
+		t.Error("the cursor row was not read")
+	}
+	// Nothing from the transcript came with it.
+	for _, o := range p.Options {
+		if strings.Contains(o.Label, "origin check") || strings.Contains(o.Label, "Cf-Access") {
+			t.Errorf("a transcript bullet was offered as an option: %q", o.Label)
+		}
+	}
+	if strings.Contains(p.Title, "Tested against") || strings.Contains(p.Body, "Blockers") {
+		t.Errorf("the heading came from the transcript: %q / %q", p.Title, p.Body)
+	}
+	if len(p.Keys) != 2 {
+		t.Errorf("read %d legend keys, want Enter and Esc: %+v", len(p.Keys), p.Keys)
+	}
+}
+
+// A legend with nothing drawn around it is not a dialog.
+//
+// The boundary is what says where a dialog begins. Without one there is no way
+// to tell its rows from whatever the transcript happens to have numbered, which
+// is exactly how MUS-F-0100 happened.
+func TestALegendWithNoBoundaryAboveItIsNotADialog(t *testing.T) {
+	// Rows and a legend, and nothing enclosing them.
+	bare := "some output\n  1. One\n  2. Two\n  Enter to confirm · Esc to cancel\n"
+	if p := ReadPrompt(bare); p != nil {
+		t.Errorf("read a dialog with no boundary: %+v", p)
+	}
+	// The same thing under a rule is one.
+	ruled := "some output\n────────────\n  Pick one\n  1. One\n  2. Two\n  Enter to confirm · Esc to cancel\n"
+	p := ReadPrompt(ruled)
+	if p == nil {
+		t.Fatal("a ruled dialog was refused")
+	}
+	if p.Title != "Pick one" || len(p.Options) != 2 {
+		t.Errorf("read as %+v", p)
+	}
+}
