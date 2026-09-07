@@ -3221,3 +3221,28 @@ Ending the session you were watching lands on the page that starts one, because 
 | --- | --- |
 | In front of it | a required tick, server-side; a confirmation naming the session, browser-side |
 | Lands on | /sessions?new=1, because the session it was reached from is gone |
+
+### MUS-D-0148
+
+**Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped**
+
+decision · 2026-09-07
+
+answers: MUS-Q-0081
+
+raised by: MUS-F-0099
+
+MUS-Q-0081 offered the underlines alone, a dictionary shipped to the page, or a check when the form is posted. The owner took the first and asked for the third to be kept for later: *there is still a good chance I forget to check for errors before sending and that would help, but does not need to be done now.*
+
+So the state is: all three boxes prose is written in carry `spellcheck`, which is the browser marking a word while it is being typed — the moment it is cheapest to fix, and the only moment a page can know anything about spelling at all, since no engine exposes what its checker found.
+
+**Deferred is not declined, and the difference is written down so a later reader does not have to guess.** The server-side route is the one to build when it is built: the form posts, comes back with the suspect words marked and a confirm button, and nothing is shipped to the browser. It keeps intake working without script, which the dictionary route would have ended.
+
+**What makes it expensive is the same thing either way.** The word list on this machine is a stem list with an affix file beside it, so a check that does not implement hunspell's affix rules will flag every ordinary inflection and most of this repository's vocabulary — and a warning that cries wolf is trained away in a week, which is worse than no warning because it costs the click as well.
+
+The note asking for this arrived containing a typo, which is the argument for it stated more economically than either of us managed.
+
+| Field | Value |
+| --- | --- |
+| Now | spellcheck on the intake box, the session composer and the compose surface |
+| Kept for later | the check runs on the server when the form is posted, not in the browser; the affix rules are the cost, not the dictionary |

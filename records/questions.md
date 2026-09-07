@@ -1837,7 +1837,7 @@ question · 2026-09-07
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0099 |
 | Option | Leave it at the underlines, now that intake has them too :: Recommended. The box marks a misspelling while it is being typed, which is the moment it is cheapest to fix :: The three boxes prose is written in all carry spellcheck now, so a misspelling is underlined as it happens rather than announced after the fact. Nothing is shipped, no dictionary, no script on intake. The cost is exactly what was asked for and not built: nothing stops a send, so a jot filed without looking still goes out misspelt — and on a phone, where the owner files most of them, the underline is small and easy to miss. |
 | Option | Ship a dictionary and check in the page :: A real warning, at the price of a dictionary and a script on a surface that has neither :: The word list on this machine is 79,014 entries and 844KB before compression, and it is a stem list with an affix file — using it properly means implementing hunspell's affix rules, and using it naively flags every ordinary inflection and most of this repository's vocabulary. It also puts a script on intake, whose whole design is that it works without one, and the warning it produces would be wrong often enough to be trained away within a week. |
@@ -1845,3 +1845,7 @@ question · 2026-09-07
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-07 00:34 |
+| Answer | Leave it at the underlines, now that intake has them too |
+| Answered | 2026-09-07 00:41 |
+| Note | Note checking on submission with the warning poop-up for later. There is still a good chance I forget to check for errors before sending and that would help, but does not need to be done now. |
+| Delivered | typed into mustur/Check |
