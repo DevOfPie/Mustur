@@ -113,7 +113,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0096](#mus-f-0096) | No POST in the web package checked its origin until one had to | sameOrigin appears twice in the package: the socket handshake and POST /sessions. No other handler reads the Origin header. The guard refuses a POST from a reader by role, which is a different property and does not help when the request carries the owner's own cookie. | open; the start form checks and nothing else does |
 | [MUS-F-0097](#mus-f-0097) | A name refused for a space was answered with a paragraph about colons | TestARefusedNameNamesWhatIsWrongWithIt covers a space, a tab, a colon, a full stop and a non-ASCII letter; each names the fault, each summarises the rule once, and none mentions target separators. The empty name is checked separately. | fixed |
 | [MUS-F-0098](#mus-f-0098) | The CLI's animated line is now the dock's, and turns in CSS | Against a real capture of a working pane: the live line reads as Zigzagging / 3m 40s / ↓ 11.5k tokens, is gone from the output, and the two finished lines above it are still there. A line of the same shape with output printed after it is refused, and an idle screen yields nothing. The spinner carries the [hidden] guard MUS-F-0087 was about and holds still under prefers-reduced-motion. | fixed |
-| [MUS-F-0099](#mus-f-0099) | Add a confirmation prompt for intake and session text if what will be sent includes spelling… |  | unreviewed |
+| [MUS-F-0099](#mus-f-0099) | A browser will not say whether a box has spelling errors in it | No engine exposes spellchecker results to script; the attribute only enables the browser's own underlining. Asserted from the platform's API surface rather than measured. The intake textarea carried no spellcheck attribute where sessions.go and compose.go each carry one; TestTheIntakeBoxIsSpellChecked holds the fix. /usr/share/hunspell/en_US.dic is 79,014 lines and 844KB, with an affix file beside it. | the missing attribute is fixed; the warning is with the owner on MUS-Q-0081 |
 | [MUS-F-0100](#mus-f-0100) | The pop-up offered an agent's own prose as a dialog's options | TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript reads the captured pane and asserts the heading is the dialog's, the three options are Yes / Not now / Don't show again with the cursor on the first, and that neither transcript bullet is offered. TestALegendWithNoBoundaryAboveItIsNotADialog holds the boundary requirement both ways. | fixed |
 
 ---
@@ -2618,21 +2618,32 @@ With nothing running the row is the quiet counter it replaced, which is what it 
 
 ## MUS-F-0099
 
-**Add a confirmation prompt for intake and session text if what will be sent includes spelling…**
+**A browser will not say whether a box has spelling errors in it**
 
 finding · 2026-09-07
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
-Add a confirmation prompt for intake and session text if what will be sent includes spelling errors
+asked as: [MUS-Q-0081](questions.md#mus-q-0081)
+
+The owner asked for a confirmation prompt on intake and session text when what is about to be sent has spelling errors in it.
+
+**No browser exposes that.** `spellcheck="true"` turns the checker on and the red underlines are drawn by the browser itself; there is no API that asks it what it found, in any engine. So a page cannot know there is a misspelling to warn about. That is the wall this request runs into and it is not one that can be argued round.
+
+**One part of it was a real gap and is fixed.** The intake box carried no `spellcheck` attribute at all — the session composer and the compose surface both do, and the box the owner actually files jots from was the one with no underlines under it. It now carries the same three attributes the others do, so a misspelling is at least marked while it is being typed.
+
+**The rest is a decision, and it costs more than it looks.** Warning before sending means checking in our own code, which means a dictionary. There is one on this machine — `/usr/share/hunspell/en_US.dic`, 79,014 entries, 844KB — but it is a stem list with an affix file beside it, so using it properly means implementing hunspell's affix rules; using it naively flags every ordinary inflection and every proper noun in this repository's vocabulary, which is most of what a jot contains. Shipping it to the browser also puts a dictionary and a script on intake, a surface whose whole design is that it works without one.
+
+That is MUS-Q-0081.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | No engine exposes spellchecker results to script; the attribute only enables the browser's own underlining. Asserted from the platform's API surface rather than measured. The intake textarea carried no spellcheck attribute where sessions.go and compose.go each carry one; TestTheIntakeBoxIsSpellChecked holds the fix. /usr/share/hunspell/en_US.dic is 79,014 lines and 844KB, with an affix file beside it. |
+| Status | the missing attribute is fixed; the warning is with the owner on MUS-Q-0081 |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/intake.go |
 
 ---
 

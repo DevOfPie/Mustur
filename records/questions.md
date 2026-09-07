@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-80 record(s), by identifier.
+81 record(s), by identifier.
 
 ---
 
@@ -1826,3 +1826,22 @@ question · 2026-09-07
 | Answered | 2026-09-07 00:20 |
 | Note | Make sure there is a confirmation prompt to end any sessions |
 | Delivered | typed into mustur/Check |
+
+---
+
+## MUS-Q-0081
+
+**Warning before sending needs our own spellchecker, because no browser will lend us its one**
+
+question · 2026-09-07
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0099 |
+| Option | Leave it at the underlines, now that intake has them too :: Recommended. The box marks a misspelling while it is being typed, which is the moment it is cheapest to fix :: The three boxes prose is written in all carry spellcheck now, so a misspelling is underlined as it happens rather than announced after the fact. Nothing is shipped, no dictionary, no script on intake. The cost is exactly what was asked for and not built: nothing stops a send, so a jot filed without looking still goes out misspelt — and on a phone, where the owner files most of them, the underline is small and easy to miss. |
+| Option | Ship a dictionary and check in the page :: A real warning, at the price of a dictionary and a script on a surface that has neither :: The word list on this machine is 79,014 entries and 844KB before compression, and it is a stem list with an affix file — using it properly means implementing hunspell's affix rules, and using it naively flags every ordinary inflection and most of this repository's vocabulary. It also puts a script on intake, whose whole design is that it works without one, and the warning it produces would be wrong often enough to be trained away within a week. |
+| Option | Check on the server when the form is posted :: No dictionary in the browser, and a round trip before anything is filed :: The post comes back as the form again with the suspect words marked and a confirm button, which is how a server-rendered surface asks anything. No script anywhere and the dictionary stays on the machine. The cost is a step between writing a jot and filing it, on the surface built so that filing one is a single act — and it still needs the affix rules to avoid crying wolf, which is the expensive half of the second option without the browser weight. |
+| Asked by | whippy |
+| Session project | Check |
+| Surfaced | 2026-09-07 00:34 |

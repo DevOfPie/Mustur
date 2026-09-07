@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 80 | [questions.md](questions.md) |
+| question | 81 | [questions.md](questions.md) |
 | decision | 147 | [decisions.md](decisions.md) |
 | finding | 105 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -139,6 +139,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0078](questions.md#mus-q-0078) | question | The badge is live on one surface. Making it live on the other two costs a script tag on each |
 | [MUS-Q-0079](questions.md#mus-q-0079) | question | Starting a session from a browser means a command field, unless the command is chosen from a list |
 | [MUS-Q-0080](questions.md#mus-q-0080) | question | Ending a session from a surface: where does a control that kills a running agent live? |
+| [MUS-Q-0081](questions.md#mus-q-0081) | question | Warning before sending needs our own spellchecker, because no browser will lend us its one |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -384,7 +385,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0096](findings.md#mus-f-0096) | finding | No POST in the web package checked its origin until one had to |
 | [MUS-F-0097](findings.md#mus-f-0097) | finding | A name refused for a space was answered with a paragraph about colons |
 | [MUS-F-0098](findings.md#mus-f-0098) | finding | The CLI's animated line is now the dock's, and turns in CSS |
-| [MUS-F-0099](findings.md#mus-f-0099) | finding | Add a confirmation prompt for intake and session text if what will be sent includes spelling… |
+| [MUS-F-0099](findings.md#mus-f-0099) | finding | A browser will not say whether a box has spelling errors in it |
 | [MUS-F-0100](findings.md#mus-f-0100) | finding | The pop-up offered an agent's own prose as a dialog's options |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
