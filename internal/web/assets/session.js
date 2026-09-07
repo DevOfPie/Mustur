@@ -758,6 +758,9 @@
   var dlgK = document.getElementById("dlgk");
   var dlgMin = document.getElementById("dlgmin");
   var lastPrompt = null;
+  // The prompt as last drawn, so a click knows where the cursor is without
+  // keeping a second copy of it.
+  var lastDrawn = null;
   var minimised = false;
 
   function keyButton(cls, key, label) {
@@ -821,6 +824,7 @@
     if (sig === lastPrompt) return;
     var wasMinimised = minimised && lastPrompt !== "";
     lastPrompt = sig;
+    lastDrawn = p;
 
     if (!p) {
       dlg.hidden = true;
@@ -833,13 +837,27 @@
     dlgT.textContent = p.title || "The session is waiting on you";
     dlgB.textContent = p.body || "";
     dlgO.textContent = "";
-    (p.options || []).forEach(function (o) {
+    (p.options || []).forEach(function (o, i) {
       // A row with no key is not a button. One shape of dialog has toggles
       // moved between with the arrows rather than pressed by name, and drawing
       // those as buttons offers a press that does nothing (MUS-F-0101). They
       // are shown with their state, and the cursor still marks which is which.
       if (!o.key) {
-        var row = el("div", o.selected ? "row on" : "row", o.label);
+        // Movable rather than pressable. The cursor is moved with the arrows,
+        // so clicking a row sends the arrows needed to reach it — the owner
+        // should not be pressing ↑ four times to get somewhere the surface can
+        // already see (MUS-F-0103).
+        var row = el("button", o.selected ? "row on" : "row", "");
+        row.type = "button";
+        row.setAttribute("data-row", String(i));
+        row.appendChild(document.createTextNode(o.label));
+        // A row carrying a cycler is changed in place once the cursor is on
+        // it, so it offers the two keys that do that rather than making the
+        // reader find them in the legend.
+        if (/[◀▶]/.test(o.label)) {
+          row.appendChild(keyButton("side", "left", "\u25c0"));
+          row.appendChild(keyButton("side", "right", "\u25b6"));
+        }
         dlgO.appendChild(row);
         return;
       }
@@ -927,19 +945,44 @@
     });
   }
 
+  function sendKey(key) {
+    if (!ws || ws.readyState !== 1) {
+      note("not sent: still reconnecting.");
+      return false;
+    }
+    if (closed) return false;
+    ws.send(JSON.stringify({ t: "key", key: key }));
+    return true;
+  }
+
   // The prompt's buttons send the same key frame the row does, so there is one
   // path to a keypress and one place it can be refused.
   [dlgO, dlgK].forEach(function (box) {
     if (!box) return;
     box.addEventListener("click", function (e) {
-      var b = e.target.closest ? e.target.closest("button[data-key]") : null;
-      if (!b) return;
-      if (!ws || ws.readyState !== 1) {
-        note("not sent: still reconnecting.");
+      if (!e.target.closest) return;
+      // A key on the row — the cycler's arrows — is that key and not a move.
+      var k = e.target.closest("button[data-key]");
+      if (k) {
+        e.stopPropagation();
+        sendKey(k.getAttribute("data-key"));
         return;
       }
-      if (closed) return;
-      ws.send(JSON.stringify({ t: "key", key: b.getAttribute("data-key") }));
+      var row = e.target.closest("button[data-row]");
+      if (!row || !lastDrawn) return;
+      // Where the cursor is, and how far to walk it. Read from what was drawn
+      // rather than remembered, so a pane that moved under us is followed
+      // rather than fought.
+      var want = Number(row.getAttribute("data-row"));
+      var at = -1;
+      (lastDrawn.options || []).forEach(function (o, i) {
+        if (o.selected) at = i;
+      });
+      if (at < 0 || at === want) return;
+      var step = want > at ? "down" : "up";
+      for (var n = Math.abs(want - at); n > 0; n--) {
+        if (!sendKey(step)) return;
+      }
     });
   });
 

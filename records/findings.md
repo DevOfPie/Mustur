@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-106 record(s), by identifier.
+109 record(s), by identifier.
 
 ## The queue
 
@@ -116,6 +116,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0099](#mus-f-0099) | A browser will not say whether a box has spelling errors in it | No engine exposes spellchecker results to script; the attribute only enables the browser's own underlining. Asserted from the platform's API surface rather than measured. The intake textarea carried no spellcheck attribute where sessions.go and compose.go each carry one; TestTheIntakeBoxIsSpellChecked holds the fix. /usr/share/hunspell/en_US.dic is 79,014 lines and 844KB, with an affix file beside it. | fixed as far as the owner asked; the warning is deferred, not declined |
 | [MUS-F-0100](#mus-f-0100) | The pop-up offered an agent's own prose as a dialog's options | TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript reads the captured pane and asserts the heading is the dialog's, the three options are Yes / Not now / Don't show again with the cursor on the first, and that neither transcript bullet is offered. TestALegendWithNoBoundaryAboveItIsNotADialog holds the boundary requirement both ways. | fixed |
 | [MUS-F-0101](#mus-f-0101) | A third dialog shape: toggles with no numbers, and a legend key that is a pair | TestADialogOfTogglesWithNoNumbers reads the captured pane: the heading, a description that stops where the rows start, four rows each carrying state and none pressable, the cursor on the row the pane has it on, and a legend of three keys where ←/→ is not sendable and Enter and Esc are. The model picker's test now distinguishes its three pressable rows from the effort row it had been dropping. | fixed |
+| [MUS-F-0102](#mus-f-0102) | The text in the send box should be held per session, changing to a new session should show a… |  | unreviewed |
+| [MUS-F-0103](#mus-f-0103) | The tick above Stop guarded a case the session view does not have | TestEndingASessionAsksFirstAndCarriesNoTick asserts the form is on the session's page and not the start page, that no sure field remains, that an origin-less and a cross-origin POST are still refused, and that the client confirmation names the session. | fixed |
+| [MUS-F-0104](#mus-f-0104) | A dialog of toggles could be read and not used | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. | fixed |
 
 ---
 
@@ -2720,3 +2723,77 @@ The rule was also stale. Since MUS-F-0100 a dialog must be bounded to be read at
 | Where | internal/session/prompt.go, internal/web/assets/session.js |
 | Status | fixed |
 | Evidence | TestADialogOfTogglesWithNoNumbers reads the captured pane: the heading, a description that stops where the rows start, four rows each carrying state and none pressable, the cursor on the row the pane has it on, and a legend of three keys where ←/→ is not sendable and Enter and Esc are. The model picker's test now distinguishes its three pressable rows from the effort row it had been dropping. |
+
+---
+
+## MUS-F-0102
+
+**The text in the send box should be held per session, changing to a new session should show a…**
+
+finding · 2026-09-07
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The text in the send box should be held per session, changing to a new session should show a text box that does not contain text that was added to another session
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0103
+
+**The tick above Stop guarded a case the session view does not have**
+
+finding · 2026-09-07
+
+where the tick is right: [MUS-F-0077](#mus-f-0077)
+
+the decision it amends: [MUS-D-0147](decisions.md#mus-d-0147)
+
+The owner said the tick sitting on top of Stop looks horrible and asked for a confirmation on press instead. It looked wrong because it was wrong, and the reason is worth more than the fix.
+
+The tick came from MUS-F-0077, where it is right: the decision queue is server-rendered, works with script blocked, and a destructive button there needs a guard that does not depend on script. **The session view is not that surface.** It is a live terminal — no output, no composer, no keys, no prompt pop-up without script. A guard for the no-script case was guarding a case that does not exist on this page, and it announced itself by being a checkbox stacked over a button in a row of controls.
+
+Copying a pattern is not the same as copying the reasoning that produced it. The pattern was carried across; the premise it rested on was not checked.
+
+So the tick is gone. What is in front of Stop now is the confirmation the owner asked for, which names the session, and the two guards that were always the real ones: the origin check on the POST, and the guard's owner-only rule on any write. The tick was never one of those — it stopped a mispress, not an attacker, and a mispress is what a confirmation is for.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, internal/web/start.go |
+| Status | fixed |
+| Evidence | TestEndingASessionAsksFirstAndCarriesNoTick asserts the form is on the session's page and not the start page, that no sure field remains, that an origin-less and a cross-origin POST are still refused, and that the client confirmation names the session. |
+
+---
+
+## MUS-F-0104
+
+**A dialog of toggles could be read and not used**
+
+finding · 2026-09-07
+
+the shape it makes usable: [MUS-F-0101](#mus-f-0101)
+
+what it presses with: [MUS-D-0141](decisions.md#mus-d-0141)
+
+The owner could see the new prompt and could not interact with it, and said it should not require arrow presses.
+
+Both halves were true. The rows in that shape carry no key — they are moved between with ↑ and ↓ and changed with ←/→ — so the surface drew them as text and offered nothing. Everything needed to use it was on screen and none of it was reachable.
+
+**The surface knows both ends of the walk.** It knows which row the cursor is on, because the pane draws it and the parser reads it, and it knows which row was clicked. The distance between them is a number of arrow presses, and pressing arrows is something Mustur has been able to do since MUS-D-0141. So clicking a row sends them.
+
+The distance is read from the prompt as last drawn rather than from anything remembered, so a pane that moved under us is followed rather than fought. A row carrying a cycler gets that cycler's two keys on its own row, because it is changed in place once the cursor reaches it and leaving those in the legend makes a reader hunt for them. A press on one of those is that key and not also a move, which is one line and would have been a maddening bug without it.
+
+What this does not do is make the dialog's own arrow-driven design go away. It moves the pressing from the owner to the surface, which is what was asked.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/assets/session.js |
+| Status | fixed |
+| Evidence | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. |

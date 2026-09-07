@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 81 | [questions.md](questions.md) |
 | decision | 148 | [decisions.md](decisions.md) |
-| finding | 106 | [findings.md](findings.md) |
+| finding | 109 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -389,6 +389,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0099](findings.md#mus-f-0099) | finding | A browser will not say whether a box has spelling errors in it |
 | [MUS-F-0100](findings.md#mus-f-0100) | finding | The pop-up offered an agent's own prose as a dialog's options |
 | [MUS-F-0101](findings.md#mus-f-0101) | finding | A third dialog shape: toggles with no numbers, and a legend key that is a pair |
+| [MUS-F-0102](findings.md#mus-f-0102) | finding | The text in the send box should be held per session, changing to a new session should show a… |
+| [MUS-F-0103](findings.md#mus-f-0103) | finding | The tick above Stop guarded a case the session view does not have |
+| [MUS-F-0104](findings.md#mus-f-0104) | finding | A dialog of toggles could be read and not used |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

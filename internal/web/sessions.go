@@ -773,9 +773,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   /* Ending one. Beside the control that starts one, because that is where a
      reader looks for what can be done to a session, and behind the same tick
      the decision queue puts in front of Withdraw (MUS-D-0147). */
-  .endform { display: inline-flex; align-items: center; gap: .4rem; flex: 0 0 auto; }
-  .endform .sure { display: inline-flex; align-items: center; gap: .3rem;
-                   font-size: .78em; opacity: .65; white-space: nowrap; }
+  .endform { display: inline-flex; flex: 0 0 auto; }
   .endform button { font: inherit; font-size: .82em; padding: .2rem .55rem;
                     border: 1px solid var(--edge); border-radius: .45rem;
                     background: transparent; color: inherit; cursor: pointer; }
@@ -921,10 +919,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   /* A row with nothing to press: it carries its state and the cursor says
      which one the arrows are on. Not a button, because there is no press
      (MUS-F-0101). */
-  .dlgopts .row { padding: .5rem .6rem; border: 1px solid transparent;
-                  border-radius: .5rem; opacity: .85;
+  .dlgopts .row { display: flex; align-items: center; gap: .4rem; width: 100%;
+                  padding: .5rem .6rem; border: 1px solid transparent;
+                  border-radius: .5rem; opacity: .85; text-align: left;
+                  background: transparent; color: inherit; cursor: pointer;
                   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
                   font-size: .86em; white-space: pre-wrap; }
+  /* The cycler's own two keys, on the row they change. */
+  .dlgopts .row .side { margin-left: auto; flex: 0 0 auto; font-size: .9em;
+                        padding: .1rem .45rem; }
+  .dlgopts .row .side + .side { margin-left: .25rem; }
   .dlgopts .row.on { border-color: var(--accent); background: var(--accent-soft);
                      opacity: 1; }
   /* A legend entry naming more than one key. Text, not a control. */
@@ -1176,7 +1180,6 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   </form>
   <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>
   {{if .Project}}<form class="endform" method="post" action="/sessions/{{.Project}}/stop" id="endform">
-    <label class="sure"><input type="checkbox" name="sure" value="1">end it</label>
     <button type="submit" id="endbtn" data-project="{{.Project}}">Stop</button>
   </form>{{end}}
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"

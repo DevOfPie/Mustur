@@ -1715,30 +1715,31 @@ func TestTheStartControlIsAPlus(t *testing.T) {
 	}
 }
 
-// Ending a session has two things in front of it, and they fail differently.
+// Ending a session asks first, and the tick is gone.
 //
-// MUS-Q-0080 put the control on the session's own page behind the tick that
-// Withdraw uses, and the owner's note asked for a confirmation prompt as well.
-// The tick is the server's and is refused without; the prompt is the browser's.
-// With script blocked the tick is the whole guard, which is Withdraw's standing.
-func TestEndingASessionNeedsTheTickAndAsksFirst(t *testing.T) {
+// MUS-Q-0080 put the control behind the tick Withdraw uses. The tick was copied
+// from a surface where blocking script leaves a page that still works, and this
+// is not one: the session view is a live terminal and there is nothing here
+// without script. So it guarded a case that does not exist, and it looked like
+// it did — stacked above the button (MUS-F-0102). What remains is the
+// confirmation the owner asked for, and the two guards that were always real.
+func TestEndingASessionAsksFirstAndCarriesNoTick(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	body := getFrom(t, srv, "/sessions/Mustur")
 
 	if !strings.Contains(body, `action="/sessions/Mustur/stop"`) {
 		t.Fatal("no way to end the session from its own page")
 	}
-	if !strings.Contains(body, `name="sure"`) {
-		t.Error("nothing stands between the button and the session")
+	if strings.Contains(body, `name="sure"`) {
+		t.Error("the tick is still there")
 	}
-	// The start page has nothing to end.
 	if strings.Contains(getFrom(t, srv, "/sessions?new=1"), `/stop"`) {
 		t.Error("the start page offers to end a session it is not showing")
 	}
 
-	post := func(v url.Values, origin, path string) *http.Response {
+	post := func(origin string) *http.Response {
 		t.Helper()
-		req, err := http.NewRequest(http.MethodPost, srv.URL+path, strings.NewReader(v.Encode()))
+		req, err := http.NewRequest(http.MethodPost, srv.URL+"/sessions/Mustur/stop", strings.NewReader(""))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1753,20 +1754,11 @@ func TestEndingASessionNeedsTheTickAndAsksFirst(t *testing.T) {
 		res.Body.Close()
 		return res
 	}
-
-	// Cross-origin and origin-less are refused outright, like the start form.
+	// The guards that were always the real ones.
 	for _, o := range []string{"", "https://evil.example"} {
-		if res := post(url.Values{"sure": {"1"}}, o, "/sessions/Mustur/stop"); res.StatusCode != http.StatusForbidden {
+		if res := post(o); res.StatusCode != http.StatusForbidden {
 			t.Errorf("a POST from %q got %d, want 403", o, res.StatusCode)
 		}
-	}
-	// Unticked: refused, and the message says how to mean it.
-	res := post(url.Values{}, srv.URL, "/sessions/Mustur/stop")
-	if res.StatusCode != http.StatusSeeOther {
-		t.Fatalf("an unticked stop got %d", res.StatusCode)
-	}
-	if loc := res.Header.Get("Location"); !strings.Contains(loc, "Tick%20the%20box") {
-		t.Errorf("the refusal does not say how to end it on purpose: %q", loc)
 	}
 
 	js, err := os.ReadFile("assets/session.js")
@@ -1775,9 +1767,8 @@ func TestEndingASessionNeedsTheTickAndAsksFirst(t *testing.T) {
 	}
 	src := string(js)
 	if !strings.Contains(src, "window.confirm") {
-		t.Error("no confirmation prompt, which the owner asked for by name")
+		t.Error("no confirmation, which is now the only thing in front of it")
 	}
-	// Named, not "are you sure": one session and eight look the same otherwise.
 	if !strings.Contains(src, `"End " + name`) {
 		t.Error("the prompt does not name the session it would end")
 	}
@@ -1831,5 +1822,40 @@ func TestThePopUpDrawsNoDeadButtons(t *testing.T) {
 	body := getFrom(t, serveSessions(t, owned("mustur/Mustur")), "/sessions/Mustur")
 	if !strings.Contains(body, ".dlgkeys .hintkey") || !strings.Contains(body, ".dlgopts .row") {
 		t.Error("nothing styles the parts that are text rather than controls")
+	}
+}
+
+// A row is reached by clicking it, not by pressing arrows.
+//
+// MUS-F-0103: the toggles dialog is navigated with ↑ and ↓, so the rows were
+// shown and could not be used — the owner could see where the cursor was and
+// had no way to move it. The surface knows both ends of that walk, so it makes
+// it: clicking a row sends the arrows needed to reach it.
+func TestClickingARowWalksTheCursorToIt(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, `data-row`) {
+		t.Fatal("the rows are not clickable, so a dialog of toggles cannot be used")
+	}
+	// The distance is computed from what was last drawn, so a pane that moved
+	// is followed rather than fought.
+	if !strings.Contains(src, "lastDrawn") {
+		t.Error("the walk does not read the cursor from the frame it was drawn from")
+	}
+	if !strings.Contains(src, `want > at ? "down" : "up"`) {
+		t.Error("the walk does not go both ways")
+	}
+	// A cycler is changed in place, so its two keys are on its own row rather
+	// than left for the reader to find in the legend.
+	if !strings.Contains(src, `/[◀▶]/.test(o.label)`) {
+		t.Error("a row carrying a cycler offers no way to change it")
+	}
+	// A key on the row is that key, not a move: without this every press of ◀
+	// would also walk the cursor.
+	if !strings.Contains(src, "e.stopPropagation()") {
+		t.Error("pressing a cycler key would also be read as clicking its row")
 	}
 }

@@ -171,12 +171,17 @@ func queryEscape(s string) string {
 
 // stop ends a session the owner asked to end.
 //
-// MUS-Q-0080 put it on the session's own page, behind the tick that Withdraw
-// uses, and the owner's note asked for a confirmation prompt as well. So there
-// are two things in front of it and they fail differently: the tick is the
-// server's, required here and refused without, and the prompt is the browser's,
-// naming the session before the form is submitted at all. With script blocked
-// the tick is the whole guard, which is the same standing Withdraw has.
+// MUS-Q-0080 put it on the session's own page behind the tick that Withdraw
+// uses, and the tick is gone again (MUS-F-0102). It was copied from a surface
+// where blocking script leaves a page that still works; this is not one. The
+// session view is a live terminal and there is nothing here without script --
+// no output, no composer, no keys -- so a tick guarding the no-script case was
+// guarding a case that does not exist, and it sat stacked above the button
+// looking like it did.
+//
+// What is in front of it now is the confirmation the owner asked for, which
+// names the session, plus the two that were always the real ones: the origin
+// check here, and the guard's owner-only rule on any POST.
 //
 // It can only end a session Mustur started: Stop prefixes the name and asks
 // Alive first, and Alive reads the marker Mustur set at start. A project named
@@ -189,12 +194,6 @@ func (s *Sessions) stop(w http.ResponseWriter, r *http.Request) {
 	project := r.PathValue("project")
 	if err := r.ParseForm(); err != nil {
 		s.startFailed(w, r, "that did not arrive as a form")
-		return
-	}
-	if r.PostFormValue("sure") == "" {
-		http.Redirect(w, r, "/sessions/"+project+"?error="+urlQuery(
-			"Ending a session kills what it is running. Tick the box beside it if that is what you meant."),
-			http.StatusSeeOther)
 		return
 	}
 	if err := s.Adapter.Stop(r.Context(), project); err != nil {

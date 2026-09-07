@@ -2687,6 +2687,7 @@ Ending the session you were watching lands on the page that starts one, because 
 | --- | --- |
 | In front of it | a required tick, server-side; a confirmation naming the session, browser-side |
 | Lands on | /sessions?new=1, because the session it was reached from is gone |
+| Amended 2026-09-07 | The tick is gone (MUS-F-0102). It was taken from MUS-F-0077, where the surface works without script and the guard therefore matters; the session view is a live terminal and has nothing without script, so it guarded a case this page does not have. The confirmation the owner's note asked for stands, and so do the origin check and the owner-only rule, which were always the real guards. |
 
 ---
 
