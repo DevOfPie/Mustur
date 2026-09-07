@@ -825,6 +825,26 @@
     });
   }
 
+  // Ending the session.
+  //
+  // The owner asked for a confirmation prompt as well as the tick (MUS-Q-0080's
+  // note), so there are two things in front of it that fail differently: the
+  // tick is the server's and is refused without, and this is the browser's and
+  // names the session before anything is submitted. With script blocked the
+  // tick is the whole guard, which is the standing Withdraw already has.
+  var endForm = document.getElementById("endform");
+  if (endForm) {
+    endForm.addEventListener("submit", function (e) {
+      var btn = document.getElementById("endbtn");
+      var name = btn ? btn.getAttribute("data-project") : "";
+      // Named, not "are you sure": a page with one session and a page with
+      // eight look the same at the moment of asking.
+      if (!window.confirm("End " + name + "? Whatever it is running is killed.")) {
+        e.preventDefault();
+      }
+    });
+  }
+
   // The key row.
   //
   // A pane can ask for a keypress rather than a sentence -- a dialog to get off,

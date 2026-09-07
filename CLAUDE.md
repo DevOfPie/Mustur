@@ -26,7 +26,9 @@ holds open questions and refuses to let work be reported complete around one.
 It also starts agent sessions inside tmux — from a terminal, and since
 2026-09-06 from the surface, where a name is typed and the directory and the
 command are chosen from lists rather than submitted
-([MUS-D-0146](records/decisions.md#mus-d-0146)) — reports which are running, stops one,
+([MUS-D-0146](records/decisions.md#mus-d-0146)) — reports which are running,
+stops one from its own page behind a tick and a prompt that names it
+([MUS-D-0147](records/decisions.md#mus-d-0147)),
 and types an answered decision back into the session that raised it — where the
 question named one with `--in`, which is the only way delivery has a target.
 It shows a running session's screen in a browser tab and notices when one ends

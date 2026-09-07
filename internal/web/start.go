@@ -168,3 +168,40 @@ func queryEscape(s string) string {
 	}
 	return strings.ReplaceAll(b.String(), " ", "+")
 }
+
+// stop ends a session the owner asked to end.
+//
+// MUS-Q-0080 put it on the session's own page, behind the tick that Withdraw
+// uses, and the owner's note asked for a confirmation prompt as well. So there
+// are two things in front of it and they fail differently: the tick is the
+// server's, required here and refused without, and the prompt is the browser's,
+// naming the session before the form is submitted at all. With script blocked
+// the tick is the whole guard, which is the same standing Withdraw has.
+//
+// It can only end a session Mustur started: Stop prefixes the name and asks
+// Alive first, and Alive reads the marker Mustur set at start. A project named
+// in a URL cannot reach a tmux session belonging to somebody's own terminal.
+func (s *Sessions) stop(w http.ResponseWriter, r *http.Request) {
+	if !sameOrigin(r) {
+		http.Error(w, "that did not come from this site", http.StatusForbidden)
+		return
+	}
+	project := r.PathValue("project")
+	if err := r.ParseForm(); err != nil {
+		s.startFailed(w, r, "that did not arrive as a form")
+		return
+	}
+	if r.PostFormValue("sure") == "" {
+		http.Redirect(w, r, "/sessions/"+project+"?error="+urlQuery(
+			"Ending a session kills what it is running. Tick the box beside it if that is what you meant."),
+			http.StatusSeeOther)
+		return
+	}
+	if err := s.Adapter.Stop(r.Context(), project); err != nil {
+		http.Redirect(w, r, "/sessions/"+project+"?error="+urlQuery(err.Error()), http.StatusSeeOther)
+		return
+	}
+	// Nowhere to go back to: the session this was reached from is gone, so the
+	// page that starts one is where this lands.
+	http.Redirect(w, r, "/sessions?new=1", http.StatusSeeOther)
+}

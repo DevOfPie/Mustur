@@ -117,6 +117,7 @@ type Sessions struct {
 func (s *Sessions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /sessions", s.list)
 	mux.HandleFunc("POST /sessions", s.start)
+	mux.HandleFunc("POST /sessions/{project}/stop", s.stop)
 	mux.HandleFunc("GET /sessions/{project}", s.show)
 	mux.HandleFunc("GET /sessions/{project}/ws", s.socket)
 	mux.HandleFunc("GET /assets/session.js", func(w http.ResponseWriter, r *http.Request) {
@@ -318,6 +319,7 @@ func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	s.render(w, r, sessionPage{
 		Project: project, Rows: rows, Missing: !found,
 		Subagents: agents, Running: running,
+		Error: r.URL.Query().Get("error"),
 	})
 }
 
@@ -764,6 +766,17 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   /* A plus rather than the word: the rail is a row of controls and "New" was
      the only one spelling itself out. Square, so the glyph sits in the middle
      of it rather than on the left of a word-shaped box. */
+  /* Ending one. Beside the control that starts one, because that is where a
+     reader looks for what can be done to a session, and behind the same tick
+     the decision queue puts in front of Withdraw (MUS-D-0147). */
+  .endform { display: inline-flex; align-items: center; gap: .4rem; flex: 0 0 auto; }
+  .endform .sure { display: inline-flex; align-items: center; gap: .3rem;
+                   font-size: .78em; opacity: .65; white-space: nowrap; }
+  .endform button { font: inherit; font-size: .82em; padding: .2rem .55rem;
+                    border: 1px solid var(--edge); border-radius: .45rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  .said.err { margin: .6rem 1rem 0; border: 1px solid var(--accent);
+              border-radius: .5rem; padding: .5rem .7rem; font-size: .9em; }
   .newlink { font-size: 1em; line-height: 1; opacity: .7; text-decoration: none;
              color: inherit; border: 1px solid var(--edge); border-radius: .45rem;
              width: 1.9rem; height: 1.9rem; flex: 0 0 auto;
@@ -1135,10 +1148,15 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
   <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>
+  {{if .Project}}<form class="endform" method="post" action="/sessions/{{.Project}}/stop" id="endform">
+    <label class="sure"><input type="checkbox" name="sure" value="1">end it</label>
+    <button type="submit" id="endbtn" data-project="{{.Project}}">Stop</button>
+  </form>{{end}}
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
     aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
     class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>
 </div>{{end}}
+{{if .Error}}<p class="said err">{{.Error}}</p>{{end}}
 {{if .Start}}
 <!-- Starting a session (MUS-D-0146).
 

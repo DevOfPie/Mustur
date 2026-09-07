@@ -10,8 +10,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 80 | [questions.md](questions.md) |
-| decision | 146 | [decisions.md](decisions.md) |
-| finding | 102 | [findings.md](findings.md) |
+| decision | 147 | [decisions.md](decisions.md) |
+| finding | 104 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -285,6 +285,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0144](decisions.md#mus-d-0144) | decision | A prompt is a pop up in front of the session, minimised into the key row |
 | [MUS-D-0145](decisions.md#mus-d-0145) | decision | The badge is live on every surface, and one file writes it |
 | [MUS-D-0146](decisions.md#mus-d-0146) | decision | A session is started from three places, and only one of them is typed |
+| [MUS-D-0147](decisions.md#mus-d-0147) | decision | A session is ended from its own page, behind a tick and a prompt that names it |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -382,6 +383,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0095](findings.md#mus-f-0095) | finding | Thirteen questions carried their recommendation where nothing reads it |
 | [MUS-F-0096](findings.md#mus-f-0096) | finding | No POST in the web package checked its origin until one had to |
 | [MUS-F-0097](findings.md#mus-f-0097) | finding | A name refused for a space was answered with a paragraph about colons |
+| [MUS-F-0098](findings.md#mus-f-0098) | finding | Te quit line should be replaced with the ziggzagging text line from tmux when the session is… |
+| [MUS-F-0099](findings.md#mus-f-0099) | finding | Add a confirmation prompt for intake and session text if what will be sent includes spelling… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

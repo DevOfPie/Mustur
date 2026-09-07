@@ -3190,3 +3190,34 @@ Repositories rather than projects, which is a reading of the answer and is worth
 | --- | --- |
 | Takes | a name, a repository identifier, and a command from the allowlist |
 | Never takes | a directory or a command as free text |
+
+### MUS-D-0147
+
+**A session is ended from its own page, behind a tick and a prompt that names it**
+
+decision · 2026-09-07
+
+answers: MUS-Q-0080
+
+raised by: MUS-F-0081
+
+the pattern it reuses: MUS-F-0077
+
+MUS-Q-0080 offered the session's own page, the start page, or the command line. The owner took the first and added a note: make sure there is a confirmation prompt to end any sessions.
+
+So there are two things in front of it, and they fail differently on purpose.
+
+**The tick is the server's.** An unticked stop is refused and the refusal says how to mean it, which is the shape MUS-F-0077 settled on the decision queue after the owner pressed Withdraw not knowing what it did. It is a checkbox rather than a second page because this surface would otherwise gain one, and MUS-D-0133's gate counts pages.
+
+**The prompt is the browser's**, and it names the session: *End Check? Whatever it is running is killed.* Not *are you sure* — a page showing one session and a page showing eight look identical at the moment of asking, and the name is the only thing that distinguishes ending the right one from ending the one you were reading.
+
+**With script blocked the tick is the whole guard**, which is exactly Withdraw's standing. The prompt is the belt; the tick is the braces, and the braces are the ones the server enforces.
+
+**It cannot reach a session Mustur did not start.** `Stop` prefixes the name and asks `Alive` first, and `Alive` reads the marker set at start — so a project named in a URL cannot reach a tmux session belonging to somebody's own terminal. The origin check and the guard's owner-only write rule are the same two the start form has.
+
+Ending the session you were watching lands on the page that starts one, because there is nothing left to watch.
+
+| Field | Value |
+| --- | --- |
+| In front of it | a required tick, server-side; a confirmation naming the session, browser-side |
+| Lands on | /sessions?new=1, because the session it was reached from is gone |

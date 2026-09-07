@@ -1714,3 +1714,71 @@ func TestTheStartControlIsAPlus(t *testing.T) {
 		t.Error("the glyph has no name, so it is a symbol with nothing behind it")
 	}
 }
+
+// Ending a session has two things in front of it, and they fail differently.
+//
+// MUS-Q-0080 put the control on the session's own page behind the tick that
+// Withdraw uses, and the owner's note asked for a confirmation prompt as well.
+// The tick is the server's and is refused without; the prompt is the browser's.
+// With script blocked the tick is the whole guard, which is Withdraw's standing.
+func TestEndingASessionNeedsTheTickAndAsksFirst(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	if !strings.Contains(body, `action="/sessions/Mustur/stop"`) {
+		t.Fatal("no way to end the session from its own page")
+	}
+	if !strings.Contains(body, `name="sure"`) {
+		t.Error("nothing stands between the button and the session")
+	}
+	// The start page has nothing to end.
+	if strings.Contains(getFrom(t, srv, "/sessions?new=1"), `/stop"`) {
+		t.Error("the start page offers to end a session it is not showing")
+	}
+
+	post := func(v url.Values, origin, path string) *http.Response {
+		t.Helper()
+		req, err := http.NewRequest(http.MethodPost, srv.URL+path, strings.NewReader(v.Encode()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		if origin != "" {
+			req.Header.Set("Origin", origin)
+		}
+		res, err := srv.Client().Transport.RoundTrip(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		return res
+	}
+
+	// Cross-origin and origin-less are refused outright, like the start form.
+	for _, o := range []string{"", "https://evil.example"} {
+		if res := post(url.Values{"sure": {"1"}}, o, "/sessions/Mustur/stop"); res.StatusCode != http.StatusForbidden {
+			t.Errorf("a POST from %q got %d, want 403", o, res.StatusCode)
+		}
+	}
+	// Unticked: refused, and the message says how to mean it.
+	res := post(url.Values{}, srv.URL, "/sessions/Mustur/stop")
+	if res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("an unticked stop got %d", res.StatusCode)
+	}
+	if loc := res.Header.Get("Location"); !strings.Contains(loc, "Tick%20the%20box") {
+		t.Errorf("the refusal does not say how to end it on purpose: %q", loc)
+	}
+
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, "window.confirm") {
+		t.Error("no confirmation prompt, which the owner asked for by name")
+	}
+	// Named, not "are you sure": one session and eight look the same otherwise.
+	if !strings.Contains(src, `"End " + name`) {
+		t.Error("the prompt does not name the session it would end")
+	}
+}
