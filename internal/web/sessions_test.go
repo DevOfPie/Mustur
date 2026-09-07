@@ -1812,3 +1812,24 @@ func TestTheDockShowsTheActivityRatherThanTheQuietCounter(t *testing.T) {
 		t.Error("with nothing running the dock says nothing at all")
 	}
 }
+
+// The pop-up draws no button it cannot press.
+func TestThePopUpDrawsNoDeadButtons(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	// A row with no key is text with its state, not a control.
+	if !strings.Contains(src, "if (!o.key)") {
+		t.Error("a row with nothing to press is still drawn as a button")
+	}
+	// A legend entry naming more than one key is text too.
+	if !strings.Contains(src, "if (!k.sendable)") {
+		t.Error("the client offers every legend entry as a button, including the pairs")
+	}
+	body := getFrom(t, serveSessions(t, owned("mustur/Mustur")), "/sessions/Mustur")
+	if !strings.Contains(body, ".dlgkeys .hintkey") || !strings.Contains(body, ".dlgopts .row") {
+		t.Error("nothing styles the parts that are text rather than controls")
+	}
+}

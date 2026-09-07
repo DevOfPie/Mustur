@@ -34,6 +34,12 @@ type Choice struct {
 	Key      string `json:"key"`
 	Label    string `json:"label"`
 	Selected bool   `json:"selected,omitempty"` // The row the cursor is on.
+	// Sendable is whether pressing this is something Mustur can do. A legend
+	// names keys in the CLI's own words and some of them are not one key at
+	// all -- "←/→ to change usage" is a pair, and there is nothing to send for
+	// it. A surface that drew a button there would draw one that fails
+	// (MUS-F-0101), so the server says which are real and the rest are text.
+	Sendable bool `json:"sendable,omitempty"`
 }
 
 var (
@@ -110,36 +116,60 @@ func ReadPrompt(screen string) *Prompt {
 		return nil
 	}
 
-	// Numbered rows inside it. Anything else between them is ignored rather
-	// than treated as an end: the model picker has an unnumbered line of its
-	// own between the last option and the legend.
+	// The rows inside it, and where they start.
+	//
+	// A dialog's rows are not always numbered. One shape has toggles instead --
+	// "Also scan shell history [✔]", "How you use Claude here ◀ Mixed ▶" --
+	// which are moved between with the arrows rather than pressed by name. They
+	// are still rows, and joining them into the description turned a set of
+	// switches into a run-on sentence with a cursor in the middle of it
+	// (MUS-F-0101).
+	//
+	// So the first row-shaped line ends the description, and everything from
+	// there to the legend is a row. A wrapped sentence after that point would
+	// be read as one, which is visible on the surface rather than silent.
 	var opts []Choice
 	first := legendAt
 	for i := blockStart; i < legendAt; i++ {
 		row, _ := unbox(lines[i])
-		m := numbered.FindStringSubmatch(row)
-		if m == nil {
+		if strings.TrimSpace(row) == "" {
 			continue
 		}
-		if len(opts) == 0 {
+		if first == legendAt && !rowish(row) {
+			continue
+		}
+		if first == legendAt {
 			first = i
 		}
-		opts = append(opts, Choice{
-			Key:      m[2],
-			Label:    strings.TrimSpace(m[3]),
-			Selected: m[1] != "",
-		})
+		if m := numbered.FindStringSubmatch(row); m != nil {
+			opts = append(opts, Choice{
+				Key: m[2], Label: strings.TrimSpace(m[3]),
+				Selected: m[1] != "", Sendable: true,
+			})
+			continue
+		}
+		// Unnumbered: there is nothing to press, so it carries its state and
+		// says so by being unsendable. The cursor still marks which one the
+		// arrows are on.
+		label, sel := strings.TrimSpace(row), false
+		if c := []rune(label); len(c) > 0 && (c[0] == '❯' || c[0] == '>') {
+			label, sel = strings.TrimSpace(string(c[1:])), true
+		}
+		opts = append(opts, Choice{Label: label, Selected: sel})
 	}
-	// A legend inside a box is a dialog on its own: the feedback-draft prompt
-	// offers "1 to review · 2 to send · 0 to dismiss" and has no rows at all,
-	// because its choices *are* its legend. Requiring rows meant the surface
-	// showed nothing while the pane was asking a question (MUS-F-0089).
+	// Rows are not what makes it a dialog; the boundary above it is.
 	//
-	// A legend on an unboxed line still needs rows under it. That is what stops
-	// a sentence with two "x to y" clauses in it becoming a row of buttons.
-	if len(opts) == 0 && !boxed {
-		return nil
-	}
+	// This asked for numbered rows unless the legend was boxed, which refused a
+	// third shape the CLI draws: a heading, a description, a set of toggles
+	// with no numbers on them, and "←/→ to change usage · Enter to continue ·
+	// Esc to cancel" underneath (MUS-F-0101). It is bounded by a rule like the
+	// model picker and has no rows like the feedback prompt, so it fell between
+	// the two tests.
+	//
+	// The boundary is the guard now and it is a stronger one: it is what
+	// stopped an agent's numbered prose being read as options, and a legend
+	// with nothing drawn above it is refused before this is reached.
+	_ = boxed
 
 	// And it has to still be the thing the pane is asking.
 	//
@@ -163,6 +193,29 @@ func ReadPrompt(screen string) *Prompt {
 	return &Prompt{Title: title, Body: body, Options: opts, Keys: keys}
 }
 
+// rowish reports whether a line is the first of a dialog's rows rather than
+// more of its description.
+//
+// Three shapes say so: a number, the cursor, and a state marker on the end of
+// the line. Anything else is prose until one of them appears.
+func rowish(line string) bool {
+	t := strings.TrimSpace(line)
+	if t == "" {
+		return false
+	}
+	if numbered.MatchString(t) {
+		return true
+	}
+	if r := []rune(t); r[0] == '❯' || r[0] == '>' {
+		return true
+	}
+	return stateMarker.MatchString(t)
+}
+
+// stateMarker is a switch or a cycler drawn at the end of a row: "[✔]", "[ ]",
+// "◀ Mixed ▶". Vendor-specific, and named rather than guessed at.
+var stateMarker = regexp.MustCompile(`(\[[^\]]?\]|◀[^▶]*▶)\s*$`)
+
 // readLegend parses a line like "Enter to set as default · s to use this
 // session only · Esc to cancel".
 //
@@ -180,7 +233,7 @@ func readLegend(line string) ([]Choice, bool) {
 		if m == nil {
 			return nil, false // One unreadable entry, and the line is not a legend.
 		}
-		out = append(out, Choice{Key: m[1], Label: strings.TrimSpace(m[2])})
+		out = append(out, Choice{Key: m[1], Label: strings.TrimSpace(m[2]), Sendable: Sendable(m[1])})
 	}
 	if len(out) < 2 {
 		return nil, false
@@ -262,6 +315,24 @@ func isRule(s string) bool {
 		return false
 	}
 	return strings.TrimLeft(s, boxChars+"▂▃▄▅▆▇█") == ""
+}
+
+// Sendable reports whether SendChoice would accept this key.
+//
+// The same two tests SendChoice makes, without a session to make them against,
+// so a surface can tell a key it can press from a word the CLI used to describe
+// two of them.
+func Sendable(key string) bool {
+	k := strings.TrimSpace(key)
+	name := strings.ToLower(k)
+	if name == "esc" {
+		name = "escape"
+	}
+	if _, ok := keys[name]; ok {
+		return true
+	}
+	r := []rune(k)
+	return len(r) == 1 && unicode.IsPrint(r[0]) && !unicode.IsSpace(r[0])
 }
 
 // SendChoice presses what a Choice says to press.

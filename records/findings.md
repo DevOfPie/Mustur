@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-105 record(s), by identifier.
+106 record(s), by identifier.
 
 ## The queue
 
@@ -115,6 +115,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0098](#mus-f-0098) | The CLI's animated line is now the dock's, and turns in CSS | Against a real capture of a working pane: the live line reads as Zigzagging / 3m 40s / ↓ 11.5k tokens, is gone from the output, and the two finished lines above it are still there. A line of the same shape with output printed after it is refused, and an idle screen yields nothing. The spinner carries the [hidden] guard MUS-F-0087 was about and holds still under prefers-reduced-motion. | fixed |
 | [MUS-F-0099](#mus-f-0099) | A browser will not say whether a box has spelling errors in it | No engine exposes spellchecker results to script; the attribute only enables the browser's own underlining. Asserted from the platform's API surface rather than measured. The intake textarea carried no spellcheck attribute where sessions.go and compose.go each carry one; TestTheIntakeBoxIsSpellChecked holds the fix. /usr/share/hunspell/en_US.dic is 79,014 lines and 844KB, with an affix file beside it. | fixed as far as the owner asked; the warning is deferred, not declined |
 | [MUS-F-0100](#mus-f-0100) | The pop-up offered an agent's own prose as a dialog's options | TestOptionsComeFromInsideTheDialogAndNotFromTheTranscript reads the captured pane and asserts the heading is the dialog's, the three options are Yes / Not now / Don't show again with the cursor on the first, and that neither transcript bullet is offered. TestALegendWithNoBoundaryAboveItIsNotADialog holds the boundary requirement both ways. | fixed |
+| [MUS-F-0101](#mus-f-0101) | A third dialog shape: toggles with no numbers, and a legend key that is a pair | TestADialogOfTogglesWithNoNumbers reads the captured pane: the heading, a description that stops where the rows start, four rows each carrying state and none pressable, the cursor on the row the pane has it on, and a legend of three keys where ←/→ is not sendable and Enter and Esc are. The model picker's test now distinguishes its three pressable rows from the effort row it had been dropping. | fixed |
 
 ---
 
@@ -2680,3 +2681,42 @@ The real dialog was *Teach auto mode about your environment?* with **1. Yes**, *
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Where | internal/session/prompt.go |
+
+---
+
+## MUS-F-0101
+
+**A third dialog shape: toggles with no numbers, and a legend key that is a pair**
+
+finding · 2026-09-07
+
+the boundary that made the old rule redundant: [MUS-F-0100](#mus-f-0100)
+
+the shape it sat between: [MUS-F-0089](#mus-f-0089)
+
+The owner noticed a prompt in a session that the surface was showing nothing for.
+
+    ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+       Teach auto mode about your environment?
+       Claude Code reads this project, your recent Claude sessions, and …
+         How you use Claude here    ◀ Mixed ▶
+       ❯ Also scan shell history    [✔]
+         Also scan your other repos [ ]
+         Continue
+       ←/→ to change usage · Enter to continue · Esc to cancel
+
+**It fell between the two shapes already known.** The model picker has numbered rows under a rule; the feedback prompt has no rows and sits in a box. The rule was *rows, unless the legend is boxed* — and this has a rule above it and no numbers on anything, so it was refused.
+
+The rule was also stale. Since MUS-F-0100 a dialog must be bounded to be read at all, and that boundary is a stronger guard than the one it replaced: it is what stops an agent's numbered prose being taken for options. Requiring rows as well was belt from a pair of braces already fastened.
+
+**The rows are shown without being offered.** They are moved between with the arrows rather than pressed, so they carry their state — `[✔]`, `[ ]`, `◀ Mixed ▶` — and no key. Drawing them as buttons would offer a press that does nothing. Before they were separated out they were swallowed into the description, which read as one run-on sentence with a cursor in the middle of it.
+
+**And one legend entry is not a key.** `←/→ to change usage` names two, and there is nothing to send for it. The server marks each entry with whether `SendChoice` would take it, and the surface draws the rest as text — so a reader learns the key without being handed a button that fails.
+
+**It found a row the model picker had been hiding.** That dialog's `● High effort (default) ←/→ to adjust` is a real control on it, dropped for as long as only numbered lines counted as rows. It shows now, with its state and nothing to press.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/prompt.go, internal/web/assets/session.js |
+| Status | fixed |
+| Evidence | TestADialogOfTogglesWithNoNumbers reads the captured pane: the heading, a description that stops where the rows start, four rows each carrying state and none pressable, the cursor on the row the pane has it on, and a legend of three keys where ←/→ is not sendable and Enter and Esc are. The model picker's test now distinguishes its three pressable rows from the effort row it had been dropping. |

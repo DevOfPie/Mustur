@@ -834,15 +834,32 @@
     dlgB.textContent = p.body || "";
     dlgO.textContent = "";
     (p.options || []).forEach(function (o) {
+      // A row with no key is not a button. One shape of dialog has toggles
+      // moved between with the arrows rather than pressed by name, and drawing
+      // those as buttons offers a press that does nothing (MUS-F-0101). They
+      // are shown with their state, and the cursor still marks which is which.
+      if (!o.key) {
+        var row = el("div", o.selected ? "row on" : "row", o.label);
+        dlgO.appendChild(row);
+        return;
+      }
       var b = keyButton(o.selected ? "on" : "", o.key, "");
-      var n = el("span", "num", o.key);
-      b.appendChild(n);
+      b.appendChild(el("span", "num", o.key));
       b.appendChild(document.createTextNode(o.label));
       dlgO.appendChild(b);
     });
     dlgK.textContent = "";
     (p.keys || []).forEach(function (k) {
-      dlgK.appendChild(keyButton("", k.key, k.key + " \u00b7 " + k.label));
+      var text = k.key + " \u00b7 " + k.label;
+      // The legend names keys in the CLI's own words and some of them are not
+      // one key: "←/→ to change usage" is a pair, and there is nothing to send.
+      // The server says which are real; the rest are what the dialog says, in
+      // text, so the reader learns the key without being offered a dead button.
+      if (!k.sendable) {
+        dlgK.appendChild(el("span", "hintkey", text));
+        return;
+      }
+      dlgK.appendChild(keyButton("", k.key, text));
     });
 
     // A prompt that changed while minimised stays minimised: the owner put it

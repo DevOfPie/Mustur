@@ -918,6 +918,17 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      pane has a selection and this says which, and pressing is still a choice. */
   .dlgopts button.on { border-color: var(--accent); background: var(--accent-soft); }
   .dlgopts .num { opacity: .55; margin-right: .5rem; }
+  /* A row with nothing to press: it carries its state and the cursor says
+     which one the arrows are on. Not a button, because there is no press
+     (MUS-F-0101). */
+  .dlgopts .row { padding: .5rem .6rem; border: 1px solid transparent;
+                  border-radius: .5rem; opacity: .85;
+                  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                  font-size: .86em; white-space: pre-wrap; }
+  .dlgopts .row.on { border-color: var(--accent); background: var(--accent-soft);
+                     opacity: 1; }
+  /* A legend entry naming more than one key. Text, not a control. */
+  .dlgkeys .hintkey { font-size: .82em; padding: .35rem .2rem; opacity: .6; }
   .dlgkeys { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
   .dlgkeys button { font: inherit; font-size: .82em; padding: .35rem .6rem;
                     border: 1px solid var(--edge); border-radius: .45rem;

@@ -39,20 +39,41 @@ func TestReadPromptReadsARealModelPicker(t *testing.T) {
 	if strings.Contains(p.Body, "  ") {
 		t.Errorf("body kept the pane's padding: %q", p.Body)
 	}
-	if len(p.Options) != 3 {
-		t.Fatalf("read %d options, want 3: %+v", len(p.Options), p.Options)
+	// Three pressable rows and one that is not. The fourth is the picker's
+	// effort cycler — "● High effort (default) ←/→ to adjust" — which is a real
+	// control on this dialog and was being dropped when only numbered lines
+	// counted as rows. It carries state and nothing to press (MUS-F-0101).
+	var pressable, shown []Choice
+	for _, o := range p.Options {
+		if o.Key != "" {
+			pressable = append(pressable, o)
+		} else {
+			shown = append(shown, o)
+		}
+	}
+	if len(pressable) != 3 {
+		t.Fatalf("read %d pressable options, want 3: %+v", len(pressable), p.Options)
 	}
 	for i, want := range []string{"1", "2", "3"} {
-		if p.Options[i].Key != want {
-			t.Errorf("option %d sends %q, want %q", i, p.Options[i].Key, want)
+		if pressable[i].Key != want {
+			t.Errorf("option %d sends %q, want %q", i, pressable[i].Key, want)
 		}
+		if !pressable[i].Sendable {
+			t.Errorf("option %d is not marked sendable", i)
+		}
+	}
+	if len(shown) != 1 || !strings.Contains(shown[0].Label, "High effort") {
+		t.Errorf("the effort row read as %+v", shown)
+	}
+	if shown[0].Sendable {
+		t.Error("a row with nothing to press is marked sendable")
 	}
 	if !strings.HasPrefix(p.Options[0].Label, "Default (recommended)") {
 		t.Errorf("first label = %q", p.Options[0].Label)
 	}
 	// The cursor marks one row and only one.
 	var selected []string
-	for _, o := range p.Options {
+	for _, o := range pressable {
 		if o.Selected {
 			selected = append(selected, o.Key)
 		}
@@ -432,5 +453,59 @@ func TestTheLiveActivityLineIsFurnitureAndTheFinishedOnesAreNot(t *testing.T) {
 	buried := "  ✢ Working… (1s · x)\nsomething printed after it\n"
 	if _, a := SplitActivity(buried); a != nil {
 		t.Errorf("read a line the transcript had printed past: %+v", *a)
+	}
+}
+
+// A dialog whose rows are toggles, with no numbers on any of them.
+//
+// MUS-F-0101, the third shape. A heading, a description, a cycler and two
+// checkboxes moved between with the arrows, and "←/→ to change usage · Enter to
+// continue · Esc to cancel" underneath. It is bounded by a rule like the model
+// picker and has no numbered rows like the feedback prompt, so it fell between
+// the two tests and the surface showed nothing.
+func TestADialogOfTogglesWithNoNumbers(t *testing.T) {
+	p := ReadPrompt(fixture(t, "prompt-toggles-no-numbers.txt"))
+	if p == nil {
+		t.Fatal("nothing read off a dialog that is asking a question")
+	}
+	if p.Title != "Teach auto mode about your environment?" {
+		t.Errorf("title = %q", p.Title)
+	}
+	// The description is prose and stops where the rows start. It read as one
+	// run-on sentence with a cursor in the middle of it before the rows were
+	// separated out.
+	if !strings.HasSuffix(p.Body, "better decisions.") {
+		t.Errorf("body ran into the rows: %q", p.Body)
+	}
+	if len(p.Options) != 4 {
+		t.Fatalf("read %d rows, want four: %+v", len(p.Options), p.Options)
+	}
+	for _, o := range p.Options {
+		if o.Key != "" || o.Sendable {
+			t.Errorf("a toggle was offered as a press: %+v", o)
+		}
+	}
+	if !strings.Contains(p.Options[1].Label, "shell history") || !p.Options[1].Selected {
+		t.Errorf("the cursor is not on the row the pane has it on: %+v", p.Options)
+	}
+	// The state is what makes these worth showing at all.
+	if !strings.Contains(p.Options[1].Label, "[✔]") || !strings.Contains(p.Options[2].Label, "[ ]") {
+		t.Error("the toggles lost the state they carry")
+	}
+
+	// The legend names three keys and one of them is a pair, with nothing to
+	// send for it.
+	if len(p.Keys) != 3 {
+		t.Fatalf("read %d legend keys: %+v", len(p.Keys), p.Keys)
+	}
+	sendable := map[string]bool{}
+	for _, k := range p.Keys {
+		sendable[k.Key] = k.Sendable
+	}
+	if sendable["←/→"] {
+		t.Error(`"←/→" is offered as a key, and there is nothing to send for it`)
+	}
+	if !sendable["Enter"] || !sendable["Esc"] {
+		t.Errorf("Enter and Esc are not sendable: %+v", p.Keys)
 	}
 }
