@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-83 record(s), by identifier.
+84 record(s), by identifier.
 
 ---
 
@@ -1893,3 +1893,29 @@ question · 2026-09-07
 | Answered | 2026-09-07 12:23 |
 | Delivered | typed into mustur/Sessions_Lost |
 | Surfaced | 2026-09-07 12:24 |
+
+---
+
+## MUS-Q-0084
+
+**A redeploy takes every session. Should the tmux server stop dying with the unit?**
+
+question · 2026-09-08
+
+finding: [MUS-F-0106](findings.md#mus-f-0106)
+
+question: [MUS-Q-0083](#mus-q-0083)
+
+MUS-F-0106: mustur.service has no KillMode, so it has systemd's default, control-group. The tmux server is spawned by the serving process and stays in that cgroup, so systemctl stop kills it and every session on it. Proven in isolation on a separate socket, and matched to the journal for the 2026-09-08 01:50 redeploy, which ended three panes that had been running over thirteen hours. MUS-Q-0083 answered the reboot case; this is the same loss on a far more frequent event, and the deploy that shipped the offer-back feature was the deploy that could not use it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing is blocked. Every deploy of Mustur interrupts every agent running on this machine until this is answered. |
+| Option | Recommended :: Give the tmux server its own transient scope :: When Start has to spawn a server, put it in a scope of its own, the way tmux already puts each pane child in one. Only the server escapes the unit; everything else Mustur spawns still dies with it, so nothing about the stop path changes. The cost is code, a systemd dependency on the spawn path, and a decision about what a host without systemd does instead. |
+| Option | Set KillMode=process on the unit :: one line, today :: systemd stops the main process and leaves the rest of the cgroup alone, so the tmux server survives every restart from the next daemon-reload onward. The cost is that it is indiscriminate: everything else the unit ever leaks survives too, and the cgroup kill is currently what cleans up after a Mustur that did not exit gracefully. |
+| Option | Change nothing; the restore button is the answer :: a deploy costs one press per session :: Since 2026-09-07 a lost session is written down and offered back with its conversation, so a redeploy costs the owner a press each rather than the work. The cost is that a resumed session is not an uninterrupted one — the agent was mid-turn, and whatever it was part-way through is gone. |
+| Asked by | whippy |
+| Answer | Change nothing; the restore button is the answer |
+| Answered | 2026-09-08 02:07 |
+| Delivered | not delivered: the question names no session |

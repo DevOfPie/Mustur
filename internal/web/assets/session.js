@@ -12,6 +12,25 @@
 (function () {
   "use strict";
 
+  // The picker navigates on change. Nothing here touches the submit button
+  // beside it, because there is none to touch: it lives in a noscript element,
+  // so if this line is running the browser has already left it out. The first
+  // version drew it and hid it from here, and a control the server draws and
+  // the script removes is one that can fail visible — which is how the owner
+  // met it, on a stale page holding new markup beside old script.
+  //
+  // Bound before the return below, because the pages with no terminal are
+  // exactly the ones the picker has to work on: a session that is not running
+  // has no screen to paint and is still somewhere the dropdown can land
+  // (MUS-D-0150). It used to be bound after, so on those pages a browser with
+  // script had a dropdown that did nothing and no submit button either.
+  var picker = document.getElementById("pick");
+  if (picker) {
+    picker.addEventListener("change", function () {
+      if (picker.value) location.href = "/sessions/" + encodeURIComponent(picker.value);
+    });
+  }
+
   var project = document.body.getAttribute("data-project");
   var out = document.getElementById("out");
   if (!project || !out) return;
@@ -478,19 +497,6 @@
     addEventListener("resize", function () {
       var now = document.querySelector(".panel").getBoundingClientRect().width;
       if (now > gripMax()) setDrawerWidth(gripMax(), false);
-    });
-  }
-
-  // The picker navigates on change. Nothing here touches the submit button
-  // beside it, because there is none to touch: it lives in a noscript element,
-  // so if this line is running the browser has already left it out. The first
-  // version drew it and hid it from here, and a control the server draws and
-  // the script removes is one that can fail visible — which is how the owner
-  // met it, on a stale page holding new markup beside old script.
-  var picker = document.getElementById("pick");
-  if (picker) {
-    picker.addEventListener("change", function () {
-      if (picker.value) location.href = "/sessions/" + encodeURIComponent(picker.value);
     });
   }
 

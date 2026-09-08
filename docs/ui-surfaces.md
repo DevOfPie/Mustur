@@ -173,6 +173,13 @@ Must make it obvious that **a session left in a terminal is not here and will no
 appear** — that is the likeliest week-one surprise and the interface should not
 let the owner form the wrong model.
 
+**The picker carries what is not running as well** ([MUS-D-0150](../records/decisions.md#mus-d-0150)),
+in a second group under the running ones. It only navigates: the button that
+starts a session again is on the page it lands on, because a `<select>` fires
+change on every option a keyboard arrows past. The list on the start form stays,
+because with nothing running that is where the owner arrives and it is the only
+place all of them are visible at once.
+
 ### 3. Records
 
 **Serves** `/records`, `/records/{id}`
@@ -274,6 +281,13 @@ what has it just said? A dropped connection must reconnect and replay what was
 missed without the owner wondering whether walking into a lift killed the work.
 A session that has **ended** must not look like one that is merely quiet — that
 confusion is most of what this surface exists to prevent.
+
+**A session Mustur started and is no longer running has this page too**, and it
+is not a terminal: where it ran, when it started, whether the conversation comes
+back, and one button that starts it again
+([MUS-D-0150](../records/decisions.md#mus-d-0150)). No Stop and no sub-agent
+drawer, because there is nothing behind it. A project Mustur never started is
+still nothing to show.
 
 **One of the two surfaces in v1 that carry a client layer**, and the only one
 with no alternative. A live terminal cannot be server-rendered. The stack table names this as the exception and keeps the rule

@@ -242,3 +242,112 @@ func TestASessionWhoseTranscriptWasNeverWrittenComesBackEmpty(t *testing.T) {
 		t.Errorf("the session did not come back at all: %v", run.calls)
 	}
 }
+
+// The picker carries what is not running, and lands on a page that offers it
+// back (MUS-D-0150).
+//
+// The defect this closes: the restore list lived only on the start form, and
+// /sessions redirects into a running session before that form is reached. After
+// a deploy that took three sessions and left one, the owner arrived in the
+// survivor and the other three were behind an unlabelled "+".
+func TestThePickerCarriesWhatIsNotRunning(t *testing.T) {
+	srv, st, ctx := restoreServer(t, fakeRunner{listing: owned("mustur/alive")})
+	if err := st.RememberSession(ctx, "lost", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.RememberSession(ctx, "alive", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+
+	body := getFrom(t, srv, "/sessions/alive")
+	if !strings.Contains(body, `<optgroup label="Not running">`) {
+		t.Errorf("the picker on a running session does not carry the lost one: %s", body)
+	}
+	if !strings.Contains(body, `<option value="lost"`) {
+		t.Error("the lost session is not in the dropdown")
+	}
+	// Two groups or none: a flat list of both would say a session that is gone
+	// is somewhere to go.
+	if !strings.Contains(body, `<optgroup label="Running">`) {
+		t.Error("the running session is not grouped as running")
+	}
+}
+
+// Choosing one out of that group lands on its own page, which carries the
+// button. The dropdown itself starts nothing: a select fires change on every
+// option a keyboard arrows past.
+func TestALostSessionsPageOffersItBack(t *testing.T) {
+	srv, st, ctx := restoreServer(t, fakeRunner{listing: owned("mustur/alive")})
+	if err := st.RememberSession(ctx, "lost", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.NoteSessionCLI(ctx, "lost", "abc-123", transcript(t, "abc-123")); err != nil {
+		t.Fatal(err)
+	}
+
+	body := getFrom(t, srv, "/sessions/lost")
+	if !strings.Contains(body, `action="/sessions/lost/restore"`) {
+		t.Errorf("the page the picker lands on does not offer the session back: %s", body)
+	}
+	if !strings.Contains(body, "Comes back with the conversation") {
+		t.Error("the page does not say whether the conversation returns")
+	}
+	if !strings.Contains(body, "/checkout") {
+		t.Error("the page does not say where it ran")
+	}
+	// Nothing to stop and no sub-agents to open: there is no session behind it.
+	if strings.Contains(body, `action="/sessions/lost/stop"`) {
+		t.Error("a session that is not running offers a Stop button")
+	}
+	if strings.Contains(body, `id="out"`) {
+		t.Error("a session that is not running renders a terminal")
+	}
+}
+
+// A project nobody remembers is still nothing to show. The recover card is for
+// sessions Mustur started, not for any name typed into the address bar.
+func TestAnUnknownProjectIsStillNothingToShow(t *testing.T) {
+	srv, _, _ := restoreServer(t, fakeRunner{listing: owned("mustur/alive")})
+
+	body := getFrom(t, srv, "/sessions/whatever")
+	if strings.Contains(body, "/restore") {
+		t.Error("a project Mustur never started is offered back")
+	}
+	if !strings.Contains(body, "did not start a session for whatever") {
+		t.Errorf("the page does not say what it is: %s", body)
+	}
+}
+
+// With tmux unanswering the picker says nothing either: the same rule the start
+// page follows, for the same reason.
+func TestThePickerOffersNothingWhenTmuxCannotBeAsked(t *testing.T) {
+	srv, st, ctx := restoreServer(t, refusing{})
+	if err := st.RememberSession(ctx, "lost", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if body := getFrom(t, srv, "/sessions/lost"); strings.Contains(body, "/restore") {
+		t.Error("a session was offered back on the word of a tmux that did not answer")
+	}
+}
+
+// The picker is bound before the script gives up on a page with no terminal.
+//
+// The guard `if (!project || !out) return` exists because most of that file is
+// a socket painting a screen. The picker is not: the pages it has to work on
+// now include the ones with no screen at all, and bound after the guard it was
+// a dropdown that did nothing on exactly those pages — with no submit button
+// either, because that one lives in a noscript.
+func TestThePickerIsBoundBeforeTheTerminalGuard(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bind := strings.Index(string(js), `document.getElementById("pick")`)
+	guard := strings.Index(string(js), "if (!project || !out) return;")
+	if bind < 0 || guard < 0 {
+		t.Fatal("the picker binding or the terminal guard is gone")
+	}
+	if bind > guard {
+		t.Error("the picker is bound after the script returns, so it is dead on every page with no terminal")
+	}
+}

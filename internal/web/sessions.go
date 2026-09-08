@@ -183,9 +183,15 @@ type sessionPage struct {
 	Starting []startable
 	Commands []string
 	// Lost is what Mustur started that is no longer running, offered back
-	// (MUS-Q-0083). Rendered on the same page as the start form, because after
-	// a reboot that is the page the owner arrives on.
+	// (MUS-Q-0083). Listed on the same page as the start form, because after a
+	// reboot that is the page the owner arrives on, and carried in the picker
+	// on every session page, because with something still running that page is
+	// the one nobody leaves (MUS-D-0150).
 	Lost []lostRow
+	// Recover is the lost session this page *is*, when the picker has landed
+	// on one. Nil on every other page, including the start form, which lists
+	// them all rather than being one of them.
+	Recover *lostRow
 	// Start renders the form rather than the list. /sessions redirects to a
 	// running session when there is one, so starting another needs a way to
 	// reach the page that is not "have none".
@@ -271,24 +277,40 @@ func since(d time.Duration) string {
 	}
 }
 
-func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, bool) {
+// rows is what the picker offers: every session running, and every session
+// Mustur started that is not.
+//
+// The two lists come back separately rather than as one flagged list, because
+// they are two different things to press. A running session is somewhere to go;
+// a lost one is something to start again, and a select that started a process
+// on its own change event would restart an agent on an arrow key. The picker
+// navigates in both cases and the page it lands on carries the button
+// (MUS-D-0150).
+//
+// The live query is made once here and its answer handed to lost, which needs
+// it to subtract. With tmux unanswering both lists are empty: nothing is
+// running that this can say, and nothing can be offered back either, because
+// every remembered session would look missing.
+func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostRow, bool) {
 	live, err := s.Adapter.List(ctx)
 	if err != nil {
-		return nil, false
+		return nil, nil, false
 	}
 	rows := make([]sessionRow, 0, len(live))
+	running := make(map[string]bool, len(live))
 	found := false
 	for _, sn := range live {
 		if sn.Project == here {
 			found = true
 		}
+		running[sn.Project] = true
 		state := "running"
 		if sn.Attached {
 			state = "running · attached"
 		}
 		rows = append(rows, sessionRow{Project: sn.Project, Here: sn.Project == here, State: state})
 	}
-	return rows, found
+	return rows, s.lost(ctx, running, here), found
 }
 
 func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
@@ -306,26 +328,43 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 	// running, /sessions goes straight to it, and starting a second one would
 	// otherwise be reachable only by having none.
 	starting := r.URL.Query().Get("new") != "" || r.URL.Query().Get("error") != ""
-	rows, _ := s.rows(r.Context(), "")
+	rows, gone, _ := s.rows(r.Context(), "")
+	// Only a *running* session is redirected into. With everything lost this
+	// page is where the whole list is offered back, and jumping into the first
+	// of them would hide the rest behind a dropdown.
 	if len(rows) > 0 && !starting {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(rows[0].Project), http.StatusSeeOther)
 		return
 	}
 	s.render(w, r, sessionPage{
-		Project: "", Rows: rows, Missing: len(rows) == 0,
+		Project: "", Rows: rows, Lost: gone, Missing: len(rows) == 0,
 		Start: true, Error: r.URL.Query().Get("error"),
 	})
 }
 
 func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	project := r.PathValue("project")
-	rows, found := s.rows(r.Context(), project)
+	rows, gone, found := s.rows(r.Context(), project)
 	agents, running := s.subagents(project)
-	s.render(w, r, sessionPage{
-		Project: project, Rows: rows, Missing: !found,
+	p := sessionPage{
+		Project: project, Rows: rows, Lost: gone, Missing: !found,
 		Subagents: agents, Running: running,
 		Error: r.URL.Query().Get("error"),
-	})
+	}
+	// A session that is not running but is remembered gets its own page rather
+	// than "there is nothing to show": that page is where the picker lands
+	// after somebody chooses it out of the not-running group, and it is the
+	// only place the button can be, because a dropdown may not start anything
+	// by being scrolled through (MUS-D-0150).
+	if !found {
+		for i, row := range gone {
+			if row.Project == project {
+				p.Recover = &gone[i]
+				break
+			}
+		}
+	}
+	s.render(w, r, p)
 }
 
 func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage) {
@@ -334,7 +373,6 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 	if p.Start {
 		p.Starting = s.startables(r.Context())
 		p.Commands = s.commands()
-		p.Lost = s.lost(r.Context())
 	}
 	if s.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), s.Store)
@@ -791,6 +829,12 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .lost button { font: inherit; padding: .45rem .7rem; border-radius: .5rem;
                border: 1px solid var(--edge); background: var(--paper);
                color: inherit; cursor: pointer; white-space: nowrap; }
+  /* The same card, alone on the page the picker lands on. Nothing around it
+     supplies what .new does, and here restarting *is* the subject rather than
+     the quieter of two things to do, so the button takes the accent. */
+  .lost.alone { padding: 1rem; max-width: 30rem; margin-inline: auto; }
+  .lost.alone button { border-color: var(--accent);
+               background: var(--accent-soft); }
   /* A plus rather than the word: the rail is a row of controls and "New" was
      the only one spelling itself out. Square, so the glyph sits in the middle
      of it rather than on the left of a word-shaped box. */
@@ -1196,19 +1240,31 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 <header><strong>{{if .Project}}{{.Project}}{{else}}Sessions{{end}}</strong>
   <span class="ring" id="statering"><span class="pill" id="state">connecting</span></span>
   <span class="who">whippy-vm</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
-{{if .Rows}}<div class="rail" id="rail">
+<!-- The picker carries what is running and what was (MUS-D-0150).
+
+     Two groups, not one list: a running session is somewhere to go and a lost
+     one is something to start again, and the difference has to be readable
+     before it is chosen. Choosing either one only navigates — the button that
+     restarts a session is on the page it lands on, because a select fires
+     change on every option a keyboard arrows past, and an agent CLI restarted
+     by an arrow key is not a control anybody asked for. -->
+{{if or .Rows .Lost}}<div class="rail" id="rail">
   <form class="pick" method="get" action="/sessions">
     <select name="p" id="pick" aria-label="Session">
-      {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
+      {{if .Lost}}{{if .Rows}}<optgroup label="Running">
+        {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
+      </optgroup>{{end}}<optgroup label="Not running">
+        {{range .Lost}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
+      </optgroup>{{else}}{{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}{{end}}
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
   <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>
-  {{if .Project}}<form class="endform" method="post" action="/sessions/{{.Project}}/stop" id="endform">
+  {{if and .Project (not .Missing)}}<form class="endform" method="post" action="/sessions/{{.Project}}/stop" id="endform">
     <button type="submit" id="endbtn" data-project="{{.Project}}">Stop</button>
-  </form>{{end}}
+  </form>
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
     aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
-    class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>
+    class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>{{end}}
 </div>{{end}}
 {{if .Error}}<p class="said err">{{.Error}}</p>{{end}}
 {{if .Start}}
@@ -1263,6 +1319,28 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   </form>
   {{else}}<p class="none">No repository in the routing records has a checkout on this machine, so there is nowhere to start one.</p>{{end}}
   <p><small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
+</div>
+{{else if .Recover}}
+<!-- A session Mustur started that is not running, on its own page.
+
+     This is where the picker's "Not running" group lands. It says the same
+     three things the list on the start page says — where it ran, when it
+     started, and whether the conversation comes back — because a session
+     chosen out of a dropdown arrives with none of that on screen. -->
+<div class="lost alone">
+  <h2>Not running</h2>
+  <p class="none">Mustur started {{.Project}} and it is gone. A reboot ends every session, and a deploy of Mustur ends every session it started.</p>
+  <ul><li>
+    <form method="post" action="/sessions/{{.Project}}/restore">
+      <div>
+        <strong>{{.Project}}</strong>
+        <small>{{.Recover.Dir}}{{if .Recover.When}} &middot; started {{.Recover.When}}{{end}}</small>
+        <small>{{if .Recover.Resumes}}Comes back with the conversation it was having.{{else}}Starts again here, empty: there is no conversation on disk to bring back.{{end}}</small>
+      </div>
+      <button type="submit">Start it again</button>
+    </form>
+  </li></ul>
+  <p class="none"><small>Nothing here restarts on its own. <a href="/sessions?new=1">Start something else</a>.</small></p>
 </div>
 {{else if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>

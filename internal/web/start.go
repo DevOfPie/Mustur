@@ -99,29 +99,25 @@ type lostRow struct {
 	// which, rather than promising a transcript it cannot fetch.
 	Resumes bool
 	When    string
+	// Here marks the one being looked at, so the picker shows it selected the
+	// way a running session does.
+	Here bool
 }
 
-// lost is what was started and is not running.
+// lost is what was started and is not running, given what is.
 //
-// It asks tmux first and gives up entirely if tmux will not answer. The
-// subtraction only means anything against a live list: with no answer, every
-// remembered session looks missing, and a page offering to start six sessions
-// that are all already running is worse than a page offering none.
-func (s *Sessions) lost(ctx context.Context) []lostRow {
+// The subtraction only means anything against a live list, so the caller passes
+// one it has already asked tmux for; with no answer there is no call to make
+// here at all, because every remembered session would look missing and a page
+// offering to start six that are all already running is worse than a page
+// offering none.
+func (s *Sessions) lost(ctx context.Context, running map[string]bool, here string) []lostRow {
 	if s.Store == nil {
 		return nil
 	}
 	remembered, err := s.Store.RememberedSessions(ctx)
 	if err != nil || len(remembered) == 0 {
 		return nil
-	}
-	live, err := s.Adapter.List(ctx)
-	if err != nil {
-		return nil
-	}
-	running := make(map[string]bool, len(live))
-	for _, sn := range live {
-		running[sn.Project] = true
 	}
 	now := s.now()
 	var out []lostRow
@@ -137,6 +133,7 @@ func (s *Sessions) lost(ctx context.Context) []lostRow {
 			Project: r.Project, Dir: r.Dir,
 			Resumes: resumes(r) != r.Cmd,
 			When:    when,
+			Here:    r.Project == here,
 		})
 	}
 	return out

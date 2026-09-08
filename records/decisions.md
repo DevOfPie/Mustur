@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-149 record(s), by identifier.
+150 record(s), by identifier.
 
 ## Index
 
@@ -161,6 +161,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0147](#mus-d-0147) | A session is ended from its own page, behind a tick and a prompt that names it | 2026-09-07 |
 | [MUS-D-0148](#mus-d-0148) | Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped | 2026-09-07 |
 | [MUS-D-0149](#mus-d-0149) | A session lost with the machine is written down and offered back, and nothing starts on its own | 2026-09-07 |
+| [MUS-D-0150](#mus-d-0150) | The picker carries what is not running, and the button is on the page it lands on | 2026-09-08 |
 
 ---
 
@@ -2750,4 +2751,39 @@ Verified end to end on this machine rather than only in tests: a session started
 | Field | Value |
 | --- | --- |
 | Offered by | the page that starts a session |
+| Started by | a person pressing a button |
+
+---
+
+## MUS-D-0150
+
+**The picker carries what is not running, and the button is on the page it lands on**
+
+decision · 2026-09-08
+
+raised by: [MUS-F-0109](findings.md#mus-f-0109)
+
+finding: [MUS-F-0110](findings.md#mus-f-0110)
+
+decision: [MUS-D-0149](#mus-d-0149)
+
+question: [MUS-Q-0084](questions.md#mus-q-0084)
+
+the rule this does not break: [MUS-D-0062](#mus-d-0062)
+
+MUS-D-0149 wrote a lost session down and offered it back on the page that starts a session. That page is the one `/sessions` redirects past whenever anything is running (MUS-F-0109), so the offer was reachable only by someone who already knew where it was. The owner asked for the lost sessions to be in the session dropdown instead, and for recovery to work from there.
+
+**The dropdown lists them; it does not restart them.** Two `<optgroup>`s, Running and Not running, and choosing either only navigates. A `<select>` fires change on every option a keyboard arrows past and a phone's picker scrolls through them, so a select that started a process would restart an agent CLI on a gesture nobody meant as a press. The page a lost session lands on carries the button, which is the same POST the start page's list already used.
+
+That page is new only in what it says: where it ran, when it started, and whether the conversation comes back — the three things the list on the start form says, repeated because a session chosen out of a dropdown arrives with none of them on screen. It shows no Stop and no sub-agent drawer, because there is nothing behind it to stop or to have launched anything.
+
+The list on the start form stays. It is where the owner arrives when nothing at all is running, and it is the only place all of them are visible at once.
+
+**MUS-D-0062 is not reversed and the subtraction is unchanged.** tmux is still asked what is running; the difference is that the one answer now feeds both lists rather than being asked for twice. With tmux unanswering the dropdown carries no lost sessions at all, for the reason MUS-D-0149 gives: every remembered session would look missing.
+
+Two things had to move for it to work. The rail renders whenever there is anything to pick, rather than only when something is running, so a total loss still has a dropdown. And the picker's change handler moved above the script's terminal guard (MUS-F-0110), because the pages it now has to work on are exactly the ones with no terminal.
+
+| Field | Value |
+| --- | --- |
+| Offered by | the session picker, on every session page |
 | Started by | a person pressing a button |

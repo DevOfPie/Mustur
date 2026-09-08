@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-110 record(s), by identifier.
+115 record(s), by identifier.
 
 ## The queue
 
@@ -120,6 +120,11 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0103](#mus-f-0103) | The tick above Stop guarded a case the session view does not have | TestEndingASessionAsksFirstAndCarriesNoTick asserts the form is on the session's page and not the start page, that no sure field remains, that an origin-less and a cross-origin POST are still refused, and that the client confirmation names the session. | fixed |
 | [MUS-F-0104](#mus-f-0104) | A dialog of toggles could be read and not used | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. | fixed |
 | [MUS-F-0105](#mus-f-0105) | An answer was delivered into a session that never saw it, and the record says it was typed in |  |  |
+| [MUS-F-0106](#mus-f-0106) | Every redeploy kills every session, because the tmux server lives in the service's cgroup |  |  |
+| [MUS-F-0107](#mus-f-0107) | There is still a divider line above the stop button where the checkbox was on top of |  | unreviewed |
+| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… |  | unreviewed |
+| [MUS-F-0109](#mus-f-0109) | The offer to restore a lost session was on the one page a running session redirects past |  |  |
+| [MUS-F-0110](#mus-f-0110) | The session picker did nothing on a page with no terminal, and had no submit button either |  |  |
 
 ---
 
@@ -2831,3 +2836,105 @@ Worth naming as the cost rather than the cause: an agent that raised a question 
 | Field | Value |
 | --- | --- |
 | State | open |
+
+---
+
+## MUS-F-0106
+
+**Every redeploy kills every session, because the tmux server lives in the service's cgroup**
+
+finding · 2026-09-08
+
+question: [MUS-Q-0083](questions.md#mus-q-0083)
+
+decision: [MUS-D-0062](decisions.md#mus-d-0062)
+
+MUS-Q-0083 was answered as though a reboot were the event that takes a session. A restart of mustur.service is the same event, and it happens far more often.
+
+mustur.service carries no KillMode, so it has systemd's default, control-group: on stop, every process still in the unit's cgroup is killed. When Start shells out to `tmux new-session` and no tmux server is running, the server it spawns is a descendant of the serving process and inherits that cgroup. Nothing moves it out — tmux's own systemd support puts each new *pane child* in a transient scope (`tmux-spawn-<uuid>.scope`) and leaves the server where it was started.
+
+Observed on this machine. The tmux server was PID 55271, started 2026-09-07 12:17:45 — the same second the user D-Bus came up to answer tmux's scope request, and no login scope was created anywhere near it. Three pane scopes outlived everything else on that server. The unit was stopped and started at 2026-09-08 01:50:00 for a redeploy, and the journal has all three scopes ending at 01:50:00 and 01:50:01:
+
+  tmux-spawn-4660637d....scope: Consumed 8min 38.259s CPU time over 13h 32min 14.887s wall clock time
+  tmux-spawn-01e465a4....scope: Consumed 4min 39.920s CPU time over 13h 23min 23.868s wall clock time
+  tmux-spawn-94fd4ddc....scope: Consumed 5min 4.451s CPU time over 13h 23min 24.539s wall clock time
+
+Reproduced in isolation, on its own socket, so the mechanism is not inferred from the timing: a transient user service that runs `tmux -L cgtest new-session -d`, stopped with `systemctl --user stop`, leaves `no server running on /tmp/tmux-1000/cgtest`.
+
+The consequence is not only the sessions. It is that deploying the thing that offers a lost session back is itself the event that loses them — so the feature will be exercised on every deploy, by the deploy.
+
+---
+
+## MUS-F-0107
+
+**There is still a divider line above the stop button where the checkbox was on top of**
+
+finding · 2026-09-08
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+There is still a divider line above the stop button where the checkbox was on top of. This should be removed
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0108
+
+**The selector drop-down on the session tab should show the name of each session and the project…**
+
+finding · 2026-09-08
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The selector drop-down on the session tab should show the name of each session and the project it is for. Once another project is added it will be impossible to tell projects apart unless they are all named perfectly.
+
+It would also be nice to know which sessions are actively working, and which are awaiting input from the drop-down
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0109
+
+**The offer to restore a lost session was on the one page a running session redirects past**
+
+finding · 2026-09-08
+
+decision: [MUS-D-0149](decisions.md#mus-d-0149)
+
+question: [MUS-Q-0084](questions.md#mus-q-0084)
+
+finding: [MUS-F-0106](#mus-f-0106)
+
+MUS-D-0149 put the lost sessions on the page that starts a session. `/sessions` redirects straight into the first running session whenever one exists (internal/web/sessions.go, the list handler), so that page is reached only through the unlabelled `+` beside the picker.
+
+The case this fails is the common one and the one MUS-Q-0084 was answered on. A redeploy kills every session (MUS-F-0106); the owner then starts one, or restores one, and from that moment the other lost sessions are three taps away behind a control that looks like 'new', on a page whose subject is starting something fresh. The owner reported not seeing the button at all.
+
+Answering MUS-Q-0084 with 'the restore button is the answer' made the button's reachability the whole of the mitigation, and nothing had measured it.
+
+---
+
+## MUS-F-0110
+
+**The session picker did nothing on a page with no terminal, and had no submit button either**
+
+finding · 2026-09-08
+
+internal/web/assets/session.js is one IIFE that returns early when the page has no `#out`, because the rest of it is a socket painting a screen. The picker's change handler was bound after that return, so on every page without a terminal — a project Mustur never started, and now a session that is not running — the dropdown moved and nothing happened.
+
+There is no fallback on those pages. The submit button beside the picker lives in a `<noscript>`, so a browser with script has already left it out (MUS-F-0046 is why it is drawn that way). Script on and no terminal was therefore a control with no behaviour and no alternative.
+
+Found by building on it rather than by it failing: the picker only had to work on such a page once a lost session got one.

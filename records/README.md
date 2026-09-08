@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 83 | [questions.md](questions.md) |
-| decision | 149 | [decisions.md](decisions.md) |
-| finding | 110 | [findings.md](findings.md) |
+| question | 84 | [questions.md](questions.md) |
+| decision | 150 | [decisions.md](decisions.md) |
+| finding | 115 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -142,6 +142,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0081](questions.md#mus-q-0081) | question | Warning before sending needs our own spellchecker, because no browser will lend us its one |
 | [MUS-Q-0082](questions.md#mus-q-0082) | question | A draft per session reverses MUS-D-0097, which chose one draft on purpose |
 | [MUS-Q-0083](questions.md#mus-q-0083) | question | A reboot takes every session and Mustur remembers nothing. Who brings them back? |
+| [MUS-Q-0084](questions.md#mus-q-0084) | question | A redeploy takes every session. Should the tmux server stop dying with the unit? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -291,6 +292,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0147](decisions.md#mus-d-0147) | decision | A session is ended from its own page, behind a tick and a prompt that names it |
 | [MUS-D-0148](decisions.md#mus-d-0148) | decision | Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped |
 | [MUS-D-0149](decisions.md#mus-d-0149) | decision | A session lost with the machine is written down and offered back, and nothing starts on its own |
+| [MUS-D-0150](decisions.md#mus-d-0150) | decision | The picker carries what is not running, and the button is on the page it lands on |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -396,6 +398,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0103](findings.md#mus-f-0103) | finding | The tick above Stop guarded a case the session view does not have |
 | [MUS-F-0104](findings.md#mus-f-0104) | finding | A dialog of toggles could be read and not used |
 | [MUS-F-0105](findings.md#mus-f-0105) | finding | An answer was delivered into a session that never saw it, and the record says it was typed in |
+| [MUS-F-0106](findings.md#mus-f-0106) | finding | Every redeploy kills every session, because the tmux server lives in the service's cgroup |
+| [MUS-F-0107](findings.md#mus-f-0107) | finding | There is still a divider line above the stop button where the checkbox was on top of |
+| [MUS-F-0108](findings.md#mus-f-0108) | finding | The selector drop-down on the session tab should show the name of each session and the project… |
+| [MUS-F-0109](findings.md#mus-f-0109) | finding | The offer to restore a lost session was on the one page a running session redirects past |
+| [MUS-F-0110](findings.md#mus-f-0110) | finding | The session picker did nothing on a page with no terminal, and had no submit button either |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
