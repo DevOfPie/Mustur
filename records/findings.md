@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-109 record(s), by identifier.
+110 record(s), by identifier.
 
 ## The queue
 
@@ -119,6 +119,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0102](#mus-f-0102) | The text in the send box should be held per session, changing to a new session should show a… |  | with the owner on MUS-Q-0082 |
 | [MUS-F-0103](#mus-f-0103) | The tick above Stop guarded a case the session view does not have | TestEndingASessionAsksFirstAndCarriesNoTick asserts the form is on the session's page and not the start page, that no sure field remains, that an origin-less and a cross-origin POST are still refused, and that the client confirmation names the session. | fixed |
 | [MUS-F-0104](#mus-f-0104) | A dialog of toggles could be read and not used | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. | fixed |
+| [MUS-F-0105](#mus-f-0105) | An answer was delivered into a session that never saw it, and the record says it was typed in |  |  |
 
 ---
 
@@ -2802,3 +2803,31 @@ What this does not do is make the dialog's own arrow-driven design go away. It m
 | Where | internal/web/assets/session.js |
 | Status | fixed |
 | Evidence | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. |
+
+---
+
+## MUS-F-0105
+
+**An answer was delivered into a session that never saw it, and the record says it was typed in**
+
+finding · 2026-09-08
+
+the question: [MUS-Q-0083](questions.md#mus-q-0083)
+
+the decision it answered: [MUS-D-0149](decisions.md#mus-d-0149)
+
+The owner answered MUS-Q-0083 in the decision queue at 12:23:51. The question named a session with `--in`, so the answer was delivered: `DeliverRelayed` found the session alive, sent `The owner answered MUS-Q-0083: Remember them, offer them back, start nothing`, and recorded `Delivered: typed into mustur/Sessions_Lost`.
+
+That session never saw it. The string is nowhere in the pane, the agent went on saying the question was open for another twenty minutes, and it built the answer's option from a separate instruction rather than from the answer. The delivery is the mechanism that exists so exactly that cannot happen, and it reported success.
+
+**What is proven:** the answer was written by the owner's account at 12:23:51, the delivery was recorded as typed in, the text is not in the pane, and the receiving agent acted as though nothing had arrived.
+
+**What is not proven, and is the first place to look:** at that second the session was showing a modal prompt — the CLI's own dialog, not its input box. Text pasted into a pane showing one goes to the dialog. `Send` writes a bracketed paste and has no way to ask what is on the screen first, and `DeliverRelayed` returns success on the write succeeding, which is a claim about tmux rather than about the agent.
+
+That is the shape of the bug either way: delivery reports on the write and not on the read, so a pane that swallows the paste is indistinguishable from one that acts on it. MUS-F-0085 corrected what the delivered line *says*; nothing has checked that it lands.
+
+Worth naming as the cost rather than the cause: an agent that raised a question and then proceeded on a separate instruction is one delivery away from building against the owner's choice. Here the two agreed. Nothing about the method made that so.
+
+| Field | Value |
+| --- | --- |
+| State | open |

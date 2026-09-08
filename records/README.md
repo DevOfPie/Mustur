@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 83 | [questions.md](questions.md) |
 | decision | 149 | [decisions.md](decisions.md) |
-| finding | 109 | [findings.md](findings.md) |
+| finding | 110 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -395,6 +395,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0102](findings.md#mus-f-0102) | finding | The text in the send box should be held per session, changing to a new session should show a… |
 | [MUS-F-0103](findings.md#mus-f-0103) | finding | The tick above Stop guarded a case the session view does not have |
 | [MUS-F-0104](findings.md#mus-f-0104) | finding | A dialog of toggles could be read and not used |
+| [MUS-F-0105](findings.md#mus-f-0105) | finding | An answer was delivered into a session that never saw it, and the record says it was typed in |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
