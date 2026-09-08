@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 86 | [questions.md](questions.md) |
 | decision | 150 | [decisions.md](decisions.md) |
-| finding | 119 | [findings.md](findings.md) |
+| finding | 120 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -409,6 +409,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0112](findings.md#mus-f-0112) | finding | Every agent publishes a transcript in its own shape, and only ACP is the same shape twice |
 | [MUS-F-0113](findings.md#mus-f-0113) | finding | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal |
 | [MUS-F-0114](findings.md#mus-f-0114) | finding | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol |
+| [MUS-F-0115](findings.md#mus-f-0115) | finding | A restored session shows a blank terminal with no sign that it is still loading |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

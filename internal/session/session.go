@@ -499,6 +499,18 @@ const (
 	// does not recognise. It is not "idle": a surface that treated it as idle
 	// would be asserting something about every CLI nobody has looked at.
 	AgentUnknown Agent = ""
+	// AgentStarting means the pane is running and has printed nothing at all.
+	//
+	// A CLI paints its first screen a second or two after it is launched, and a
+	// restored one has a conversation to read off disk before it can. Until
+	// then the capture is blank, which the silence timer reads as a session
+	// that has been quiet since it started — so the surface said "idle" about a
+	// session that had not yet drawn its first frame, with no sign that
+	// anything was coming (MUS-F-0115).
+	//
+	// A blank pane is the honest evidence for this and the only evidence
+	// available: nothing else here knows what a CLI does before it prints.
+	AgentStarting Agent = "starting"
 	// AgentWorking means a turn is in flight.
 	AgentWorking Agent = "working"
 	// AgentWaiting means the CLI is sitting at its prompt.
@@ -566,6 +578,11 @@ func (a *Adapter) Capture(ctx context.Context, project, from string) (string, er
 // DoingIn reads what the agent is up to out of a pane that has already been
 // captured, so a caller holding one does not fetch it twice.
 func DoingIn(pane string) Agent {
+	// Nothing on the screen at all. Before the marks below can say anything,
+	// there has to be a screen to look at.
+	if strings.TrimSpace(pane) == "" {
+		return AgentStarting
+	}
 	// Working first: the input box is drawn during a turn as well, so looking
 	// for the caret first would call every working session idle.
 	if strings.Contains(pane, workingMark) {

@@ -95,6 +95,17 @@
   // removed for exactly that reason.
   function refreshState() {
     if (!attached || closed) return;
+    // Nothing on the pane yet. A CLI paints a second or two after it is
+    // launched and a restored one has a conversation to read off disk first,
+    // and the silence timer below reads that blank screen as a session that
+    // has been quiet since it started — so the surface said "idle" over an
+    // empty terminal with nothing to say anything was coming (MUS-F-0115).
+    // The ring turns, because something is in fact happening.
+    if (doing === "starting") {
+      setState("starting", true);
+      startingNote();
+      return;
+    }
     if (doing === "working") {
       setState("running", true);
       return;
@@ -170,6 +181,19 @@
   // session said. Appended under the screen rather than into it, because the
   // screen is replaced wholesale and anything written into it would vanish on
   // the next frame.
+  // The same thing the pill says, in the middle of the empty terminal.
+  //
+  // The pill is at the top of a phone and the thing being stared at is the
+  // black rectangle, so the word has to be in it. Written only while the screen
+  // really is empty: the next frame that carries anything replaces the lot.
+  function startingNote() {
+    if (!out || out.firstChild) return;
+    var p = document.createElement("p");
+    p.className = "note starting";
+    p.textContent = "Starting\u2026 a restored session reads its conversation back before it draws anything.";
+    out.appendChild(p);
+  }
+
   function note(msg) {
     var stick = atBottom();
     var p = document.createElement("p");
@@ -744,7 +768,10 @@
       return;
     }
     if (spin) spin.hidden = true;
-    footText.textContent = quiet();
+    // Not the quiet counter while the pane is still blank: counting silence
+    // from a session that has not spoken yet says it has been idle for as long
+    // as it has been alive.
+    footText.textContent = doing === "starting" ? "starting" : quiet();
   }
 
   // The prompt the pane is waiting on.

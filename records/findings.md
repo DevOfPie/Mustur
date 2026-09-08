@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-119 record(s), by identifier.
+120 record(s), by identifier.
 
 ## The queue
 
@@ -129,6 +129,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0112](#mus-f-0112) | Every agent publishes a transcript in its own shape, and only ACP is the same shape twice | Claude Code 2.1.263 writes one flat JSONL per session under ~/.claude/projects/<cwd-slug>/<session-id>.jsonl, twenty-three undocumented entry types, no dialogs. Codex CLI writes rollout-<id>.jsonl under ~/.codex/sessions/YYYY/MM/DD/, a different partitioning and a different event stream that does carry approval decisions. Gemini CLI documents no transcript format and instead ships ACP natively -- docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio. ACP adapters exist for all three: claude-agent-acp, @zed-industries/codex-acp, and Gemini's own mode. |  |
 | [MUS-F-0113](#mus-f-0113) | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal | code.claude.com/docs/en/hooks lists PermissionRequest, PermissionDenied, Notification, MessageDisplay, Elicitation, ElicitationResult, TaskCreated and TaskCompleted among thirty-two events; all eight appear as exact strings in the shipped 2.1.263 binary. PreToolUse and PermissionRequest work in non---print sessions and decide permission through a decision object of allow, deny or ask. Command hooks default to a 600s timeout, are configurable per hook with timeout, and enforce none at all with async true. MessageDisplay fires while assistant text is displayed, has no matcher and a 10s default. |  |
 | [MUS-F-0114](#mus-f-0114) | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |  |
+| [MUS-F-0115](#mus-f-0115) | A restored session shows a blank terminal with no sign that it is still loading |  |  |
 
 ---
 
@@ -3024,3 +3025,25 @@ What that costs is the interface itself. It has to be written against what the s
 | Field | Value |
 | --- | --- |
 | Evidence | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |
+
+---
+
+## MUS-F-0115
+
+**A restored session shows a blank terminal with no sign that it is still loading**
+
+finding · 2026-09-08
+
+decision: [MUS-D-0130](decisions.md#mus-d-0130)
+
+decision: [MUS-D-0150](decisions.md#mus-d-0150)
+
+question: [MUS-Q-0083](questions.md#mus-q-0083)
+
+Pressing Start it again launches the CLI with --resume, and the CLI reads the conversation off disk before it paints anything. Measured on this machine: the pane is entirely blank from launch until 1.15s and fully painted by 1.40s, resuming a 6.3MB transcript into a 300x100 pane on its own tmux socket. A larger conversation is longer, and the largest transcript here is 53MB.
+
+For that whole window the surface shows an empty black terminal. Nothing on it says a session is starting.
+
+What it actually says is worse than nothing, and not what I first assumed. DoingIn returned AgentUnknown for a blank pane, so the client fell through to its silence timer — and the silence timer had just been told the screen changed a moment ago, so the pill read **running** with the accent ring turning, over an empty terminal, and the dock counted 'quiet 0s'. Running was a coincidence of the fallback rather than a reading of the pane: past the three-minute threshold the same blank screen reads idle, so a slow enough resume would have said idle about a session that had not drawn its first frame.
+
+MUS-D-0130 fixed the vocabulary for this: unknown is not idle, because a surface treating it as idle asserts something about a CLI nobody has looked at. A blank pane is a third thing again, and it is the one state the pane can be read for without knowing any vendor's strings.

@@ -1799,8 +1799,13 @@ func TestTheDockShowsTheActivityRatherThanTheQuietCounter(t *testing.T) {
 		t.Error("the client ignores what the server says the session is doing")
 	}
 	// Falls back to the counter it replaced rather than going blank.
-	if !strings.Contains(src, "footText.textContent = quiet()") {
+	if !strings.Contains(src, ": quiet();") {
 		t.Error("with nothing running the dock says nothing at all")
+	}
+	// Except while the pane is still blank, where the counter would be timing
+	// a silence that has not started yet (MUS-F-0115).
+	if !strings.Contains(src, `doing === "starting" ? "starting"`) {
+		t.Error("the dock counts silence at a session that has not painted yet")
 	}
 }
 
@@ -1857,5 +1862,64 @@ func TestClickingARowWalksTheCursorToIt(t *testing.T) {
 	// would also walk the cursor.
 	if !strings.Contains(src, "e.stopPropagation()") {
 		t.Error("pressing a cycler key would also be read as clicking its row")
+	}
+}
+
+// A session whose pane has printed nothing reads as starting, not as idle.
+//
+// The case is a restored session: the CLI is launched, reads a conversation
+// off disk and paints nothing for a second or more. Measured at 1.4s on this
+// machine against a 6.3MB transcript. For that whole time the capture is blank,
+// which the pill's silence fallback called idle over an empty terminal
+// (MUS-F-0115). Run against the real tmux, because the claim is about what a
+// pane looks like before its command speaks.
+func TestASessionThatHasPrintedNothingReadsAsStarting(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzStarting"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sleep 12"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	_, b, err := c.Read(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var f frame
+	if err := json.Unmarshal(b, &f); err != nil {
+		t.Fatal(err)
+	}
+	if f.T != "hello" {
+		t.Fatalf("the first frame is %q, not hello", f.T)
+	}
+	if f.Agent != string(session.AgentStarting) {
+		t.Errorf("a pane that has printed nothing reads as %q, want %q",
+			f.Agent, session.AgentStarting)
+	}
+	if strings.TrimSpace(f.Screen) != "" {
+		t.Errorf("the pane was not blank, so this measured nothing: %q", f.Screen)
 	}
 }

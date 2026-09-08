@@ -96,7 +96,11 @@ func TestDoingReadsThePane(t *testing.T) {
 			"$ tail -f /var/log/syslog\nAug 27 01:12:03 whippy-vm kernel: nothing to see",
 			AgentUnknown,
 		},
-		{"an empty pane", "", AgentUnknown},
+		// A pane with nothing on it is a CLI that has not painted yet, not one
+		// nobody can read. The difference is what the surface says while a
+		// restored session reads its conversation off disk (MUS-F-0115).
+		{"an empty pane", "", AgentStarting},
+		{"a pane of only blanks", "   \n\n  \n", AgentStarting},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			a := &Adapter{Run: paneRunner{out: c.pane}}
@@ -106,7 +110,8 @@ func TestDoingReadsThePane(t *testing.T) {
 		})
 	}
 
-	// A tmux that will not answer says nothing, rather than saying idle.
+	// A tmux that will not answer says nothing — not "starting", which is a
+	// claim about a pane that was actually read, and not idle.
 	a := &Adapter{Run: paneRunner{err: true}}
 	if got := a.Doing(ctx, "Whatever"); got != AgentUnknown {
 		t.Errorf("a failed capture reads as %q, want unknown", got)
