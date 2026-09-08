@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-84 record(s), by identifier.
+86 record(s), by identifier.
 
 ---
 
@@ -1919,3 +1919,56 @@ MUS-F-0106: mustur.service has no KillMode, so it has systemd's default, control
 | Answer | Change nothing; the restore button is the answer |
 | Answered | 2026-09-08 02:07 |
 | Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0085
+
+**Each vendor's best channel is a different channel. Does the session surface get a module boundary?**
+
+question · 2026-09-08
+
+what reading a transcript actually buys: [MUS-F-0111](findings.md#mus-f-0111)
+
+what a second agent costs each way: [MUS-F-0112](findings.md#mus-f-0112)
+
+the channel MUS-F-0084 missed: [MUS-F-0113](findings.md#mus-f-0113)
+
+why a module beats a protocol: [MUS-F-0114](findings.md#mus-f-0114)
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing yet: this is a direction for the session surface, and the pane still works. Every dialog shape the CLI adds is another parser edit until it is answered. |
+| Option | A module per vendor, composing whatever that vendor offers :: Recommended · the only route that uses each agent's best channel and keeps the terminal :: One interface written against what the surface needs -- start/list/stop, watch, send text, send a key, answer a dialog, report sub-agents -- and a module per vendor filling it however it can, declaring what it cannot. Claude's module composes three channels it already has half of: tmux for the pty, the CLI's PermissionRequest and MessageDisplay hooks for dialogs and live text (MUS-F-0113), the transcript for history. Gemini's is ACP, which is its native interface. Codex's is app-server, which is richer than ACP. Nothing is given up, MUS-D-0016 stands, and the permission half of the parser goes. The cost is the interface itself, and a module that fakes a capability being worse than one that refuses it. |
+| Option | One protocol for all of them: ACP :: simplest boundary, and on two of three it wraps something better :: One JSON-RPC client and adapters somebody else maintains. Dialogs become messages and the whole parser goes. But claude-agent-acp is the Agent SDK, so on Claude it is --print underneath and costs the terminal exactly as MUS-Q-0076 priced; and on Codex it exposes less than app-server does. Native and first-class on Gemini alone. |
+| Option | Take the hooks and change nothing else :: the smallest thing that reduces the churn :: Add PermissionRequest and MessageDisplay to the settings Mustur already injects for sub-agents (MUS-D-0087). Permission dialogs get answered from the surface instead of read off the screen, live text arrives structured, and if a hook times out the CLI draws its dialog as today. No module boundary, no second agent, no rewrite. The picker half of the parser stays, and so does everything vendor-specific about it. |
+| Option | Change nothing :: MUS-D-0143 was four days ago :: The pane is understood and the shapes seen so far are handled. Correct if no second agent is coming and the churn is cheaper than any of the above. |
+| Asked by | whippy |
+| Surfaced | 2026-09-08 02:23 |
+| Answer | Change nothing |
+| Answered | 2026-09-08 02:47 |
+| Note | Further research is needed before a final decision should be made |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0086
+
+**The picker change is committed and not live. Deploying it kills every session, including the one that built it**
+
+question · 2026-09-08
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing is blocked. The restore offer stays where MUS-F-0109 found it — behind the + on a page /sessions redirects past — until the unit restarts. |
+| Option | Deploy now, from this session :: Recommended :: this session dies mid-turn and comes back on its own conversation :: make deploy restarts the unit, the tmux server goes with it (MUS-F-0106) and every pane on it ends. The work is already committed, so nothing is lost but the turn. This session is then the first thing the new dropdown lists under Not running, with its transcript on disk, and one press brings it back — which exercises the path end to end on the event MUS-Q-0084 was answered about. |
+| Option | Later, by your hand :: the machine keeps the 01:50 binary until you run it :: Nothing changes now. You run make deploy when no session is mid-turn — which is the honest reading of MUS-Q-0084's answer, that a deploy costs a press per session and is therefore a thing you choose the moment for. |
+| Option | Later, and take MUS-F-0108 in the same deploy :: one more commit before anything restarts :: Hold the deploy, build the project name and the working/waiting state into the same dropdown, and restart once for both. Costs a second round of work before the fix for MUS-F-0109 is live. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Deploy now, from this session |
+| Answered | 2026-09-08 03:14 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-08 03:14 |

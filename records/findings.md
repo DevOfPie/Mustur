@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-115 record(s), by identifier.
+119 record(s), by identifier.
 
 ## The queue
 
@@ -125,6 +125,10 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… |  | unreviewed |
 | [MUS-F-0109](#mus-f-0109) | The offer to restore a lost session was on the one page a running session redirects past |  |  |
 | [MUS-F-0110](#mus-f-0110) | The session picker did nothing on a page with no terminal, and had no submit button either |  |  |
+| [MUS-F-0111](#mus-f-0111) | The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser | Twenty-five transcripts under ~/.claude/projects, 52,160 lines, on CLI 2.1.263. Twenty-three entry types appear and none is a dialog: assistant, user, attachment, queue-operation, last-prompt, ai-title, atis-latch, mode, permission-mode, agent-name, pr-link, agent-setting, relocated, worktree-state, bridge-session, file-history-delta, system, file-history-snapshot, frame-link, artifact-autoreact-ledger, cost-state, artifact-comment-monitor, continued-in. system carries only turn_duration, compact_boundary, away_summary and informational. Zero lines carry isSidechain:true across all twenty-five, so a sub-agent's own turns are not in its parent's file; what is there is the Agent tool_use with description, subagent_type, model and the whole prompt, and its result when it lands. Assistant content blocks are thinking, text, tool_use and usage. |  |
+| [MUS-F-0112](#mus-f-0112) | Every agent publishes a transcript in its own shape, and only ACP is the same shape twice | Claude Code 2.1.263 writes one flat JSONL per session under ~/.claude/projects/<cwd-slug>/<session-id>.jsonl, twenty-three undocumented entry types, no dialogs. Codex CLI writes rollout-<id>.jsonl under ~/.codex/sessions/YYYY/MM/DD/, a different partitioning and a different event stream that does carry approval decisions. Gemini CLI documents no transcript format and instead ships ACP natively -- docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio. ACP adapters exist for all three: claude-agent-acp, @zed-industries/codex-acp, and Gemini's own mode. |  |
+| [MUS-F-0113](#mus-f-0113) | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal | code.claude.com/docs/en/hooks lists PermissionRequest, PermissionDenied, Notification, MessageDisplay, Elicitation, ElicitationResult, TaskCreated and TaskCompleted among thirty-two events; all eight appear as exact strings in the shipped 2.1.263 binary. PreToolUse and PermissionRequest work in non---print sessions and decide permission through a decision object of allow, deny or ask. Command hooks default to a 600s timeout, are configurable per hook with timeout, and enforce none at all with async true. MessageDisplay fires while assistant text is displayed, has no matcher and a 10s default. |  |
+| [MUS-F-0114](#mus-f-0114) | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |  |
 
 ---
 
@@ -2938,3 +2942,85 @@ internal/web/assets/session.js is one IIFE that returns early when the page has 
 There is no fallback on those pages. The submit button beside the picker lives in a `<noscript>`, so a browser with script has already left it out (MUS-F-0046 is why it is drawn that way). Script on and no terminal was therefore a control with no behaviour and no alternative.
 
 Found by building on it rather than by it failing: the picker only had to work on such a page once a lost session got one.
+
+---
+
+## MUS-F-0111
+
+**The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser**
+
+finding · 2026-09-08
+
+The transcript is the conversation. It is not the session.
+
+What it carries beats the pane in three ways: thinking blocks the pane folds away, per-turn duration and usage the pane never showed, and a sub-agent paired to its launching call by identity rather than by MUS-D-0090's thirty-second window, which is a bound on a guess and known to be wrong sometimes.
+
+What it does not carry is everything the parser was written for. No permission prompt, no model picker, no toggles, no legend -- a dialog is drawn, not messaged, so MUS-F-0083, MUS-F-0088, MUS-F-0089, MUS-F-0091, MUS-F-0100, MUS-F-0101 and MUS-F-0104 are all defects in code the transcript cannot replace. No status line, so MUS-F-0053's chips and MUS-D-0130's running-or-idle stay read off the screen. No partial message, so a turn appears when it lands rather than as it is written, and the accent ring still comes from the pane. No local command output and no CLI error, because those are printed rather than sent.
+
+And it is read-only. Nothing is delivered through a transcript, so every line of the input path stands: send-keys, the bracketed paste of MUS-D-0096, the seven keys of MUS-D-0141.
+
+So reading the transcript is a second source beside the first, not a replacement for it. It buys a clean conversation column. It retires no parser, and the parser is where the tweaking is.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Twenty-five transcripts under ~/.claude/projects, 52,160 lines, on CLI 2.1.263. Twenty-three entry types appear and none is a dialog: assistant, user, attachment, queue-operation, last-prompt, ai-title, atis-latch, mode, permission-mode, agent-name, pr-link, agent-setting, relocated, worktree-state, bridge-session, file-history-delta, system, file-history-snapshot, frame-link, artifact-autoreact-ledger, cost-state, artifact-comment-monitor, continued-in. system carries only turn_duration, compact_boundary, away_summary and informational. Zero lines carry isSidechain:true across all twenty-five, so a sub-agent's own turns are not in its parent's file; what is there is the Agent tool_use with description, subagent_type, model and the whole prompt, and its result when it lands. Assistant content blocks are thinking, text, tool_use and usage. |
+
+---
+
+## MUS-F-0112
+
+**Every agent publishes a transcript in its own shape, and only ACP is the same shape twice**
+
+finding · 2026-09-08
+
+The question of a second agent is where the two routes separate, and they separate the opposite way from how they look.
+
+Reading transcripts costs one reverse-engineered parser per vendor, over formats that are not merely different but differently shaped -- one file per session against date-partitioned rollouts, approvals present in one and absent in the other, and in Gemini's case no documented file at all. And because a transcript is read-only, each of those vendors still needs its own pane parser for its dialogs and its own key map for input. Two bespoke modules per agent, both against undocumented surfaces.
+
+ACP costs one client and an adapter per vendor that somebody else maintains. Permissions, tool calls, plans and modes arrive as messages; there is no screen to read and no keys to map.
+
+The asymmetry worth naming: ACP costs the terminal on Claude, because claude-agent-acp goes through the Agent SDK and that is --print underneath. On Gemini it costs nothing -- ACP is the documented interface. So MUS-Q-0076's price is a Claude price, not an ACP price, and it falls with every agent added rather than rising.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Claude Code 2.1.263 writes one flat JSONL per session under ~/.claude/projects/<cwd-slug>/<session-id>.jsonl, twenty-three undocumented entry types, no dialogs. Codex CLI writes rollout-<id>.jsonl under ~/.codex/sessions/YYYY/MM/DD/, a different partitioning and a different event stream that does carry approval decisions. Gemini CLI documents no transcript format and instead ships ACP natively -- docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio. ACP adapters exist for all three: claude-agent-acp, @zed-industries/codex-acp, and Gemini's own mode. |
+
+---
+
+## MUS-F-0113
+
+**The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal**
+
+finding · 2026-09-08
+
+MUS-F-0084 looked at the extension and found the structured channel behind --print. It is not the only one. The CLI publishes a second structured channel that works in an ordinary interactive terminal, and Mustur is already using a corner of it: MUS-D-0087 installs SubagentStart and SubagentStop through --settings on the command line Start builds.
+
+The corner is small and the channel is not. A PermissionRequest hook fires exactly when the CLI is about to draw a permission dialog, receives the tool and its input as JSON, and returns allow, deny or ask. With a timeout measured in minutes -- 600 seconds by default and unbounded with async -- that hook can hand the request to Mustur's surface, wait for the owner, and answer. The dialog is never read off a screen because it is never drawn. If nobody answers in time the CLI draws it as it does today, which makes the fallback the thing already built rather than a failure.
+
+MessageDisplay closes the transcript's gap: text as it is displayed rather than when the turn lands, which is what MUS-F-0111 says the file cannot give.
+
+What it does not cover is the half of the dialogs the owner starts rather than the agent -- the model picker, the effort cycler, the toggles of MUS-F-0101. Those are drawn on a keypress and no hook fires. So this retires the permission half of the parser and leaves the picker half, which is a smaller claim than it first looks and still the largest reduction available without giving up the terminal.
+
+| Field | Value |
+| --- | --- |
+| Evidence | code.claude.com/docs/en/hooks lists PermissionRequest, PermissionDenied, Notification, MessageDisplay, Elicitation, ElicitationResult, TaskCreated and TaskCompleted among thirty-two events; all eight appear as exact strings in the shipped 2.1.263 binary. PreToolUse and PermissionRequest work in non---print sessions and decide permission through a decision object of allow, deny or ask. Command hooks default to a 600s timeout, are configurable per hook with timeout, and enforce none at all with async true. MessageDisplay fires while assistant text is displayed, has no matcher and a 10s default. |
+
+---
+
+## MUS-F-0114
+
+**Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol**
+
+finding · 2026-09-08
+
+The owner's proposal is right and the reason is sharper than convenience.
+
+ACP is one protocol across three agents, and on two of them it is a wrapper over something better. Codex's app-server is stateful, bidirectional and carries more than ACP exposes; Claude's hooks reach a running terminal that ACP cannot address at all, because claude-agent-acp is the Agent SDK and that is --print. Only on Gemini is ACP the native thing.
+
+So a module per vendor is not a way of tolerating differences. It is the only way to use each vendor's best channel, and it is also the only way to compose several -- tmux for the pty, hooks for the dialogs, the transcript for history, all three behind one interface, which no single protocol offers.
+
+What that costs is the interface itself. It has to be written against what the surface needs rather than against what any vendor offers, and it has to let a module say what it cannot do, because a module that fakes a capability is worse than one that refuses it. Six things the surface asks for today: start, list and stop; watch output; send text; send a key; answer a dialog; report sub-agents. A vendor that cannot do one says so, and the surface hides the control rather than offering a button that does nothing.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |

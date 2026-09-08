@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 84 | [questions.md](questions.md) |
+| question | 86 | [questions.md](questions.md) |
 | decision | 150 | [decisions.md](decisions.md) |
-| finding | 115 | [findings.md](findings.md) |
+| finding | 119 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -143,6 +143,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0082](questions.md#mus-q-0082) | question | A draft per session reverses MUS-D-0097, which chose one draft on purpose |
 | [MUS-Q-0083](questions.md#mus-q-0083) | question | A reboot takes every session and Mustur remembers nothing. Who brings them back? |
 | [MUS-Q-0084](questions.md#mus-q-0084) | question | A redeploy takes every session. Should the tmux server stop dying with the unit? |
+| [MUS-Q-0085](questions.md#mus-q-0085) | question | Each vendor's best channel is a different channel. Does the session surface get a module boundary? |
+| [MUS-Q-0086](questions.md#mus-q-0086) | question | The picker change is committed and not live. Deploying it kills every session, including the one that built it |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -403,6 +405,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0108](findings.md#mus-f-0108) | finding | The selector drop-down on the session tab should show the name of each session and the project… |
 | [MUS-F-0109](findings.md#mus-f-0109) | finding | The offer to restore a lost session was on the one page a running session redirects past |
 | [MUS-F-0110](findings.md#mus-f-0110) | finding | The session picker did nothing on a page with no terminal, and had no submit button either |
+| [MUS-F-0111](findings.md#mus-f-0111) | finding | The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser |
+| [MUS-F-0112](findings.md#mus-f-0112) | finding | Every agent publishes a transcript in its own shape, and only ACP is the same shape twice |
+| [MUS-F-0113](findings.md#mus-f-0113) | finding | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal |
+| [MUS-F-0114](findings.md#mus-f-0114) | finding | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
