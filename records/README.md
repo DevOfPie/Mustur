@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 87 | [questions.md](questions.md) |
-| decision | 150 | [decisions.md](decisions.md) |
-| finding | 120 | [findings.md](findings.md) |
+| question | 88 | [questions.md](questions.md) |
+| decision | 151 | [decisions.md](decisions.md) |
+| finding | 121 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -146,6 +146,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0085](questions.md#mus-q-0085) | question | Each vendor's best channel is a different channel. Does the session surface get a module boundary? |
 | [MUS-Q-0086](questions.md#mus-q-0086) | question | The picker change is committed and not live. Deploying it kills every session, including the one that built it |
 | [MUS-Q-0087](questions.md#mus-q-0087) | question | Does a green change deploy itself, or does every deploy wait for you? |
+| [MUS-Q-0088](questions.md#mus-q-0088) | question | One session's deploy kills every other session's turn, and deploying no longer asks |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -296,6 +297,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0148](decisions.md#mus-d-0148) | decision | Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped |
 | [MUS-D-0149](decisions.md#mus-d-0149) | decision | A session lost with the machine is written down and offered back, and nothing starts on its own |
 | [MUS-D-0150](decisions.md#mus-d-0150) | decision | The picker carries what is not running, and the button is on the page it lands on |
+| [MUS-D-0151](decisions.md#mus-d-0151) | decision | The tmux server is spawned in a scope of its own, so a deploy stops ending every session |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -411,6 +413,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0113](findings.md#mus-f-0113) | finding | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal |
 | [MUS-F-0114](findings.md#mus-f-0114) | finding | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol |
 | [MUS-F-0115](findings.md#mus-f-0115) | finding | A restored session shows a blank terminal with no sign that it is still loading |
+| [MUS-F-0116](findings.md#mus-f-0116) | finding | The session is restored not started over, the button text and descriptions are all wrong |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

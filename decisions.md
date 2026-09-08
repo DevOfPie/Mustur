@@ -3313,3 +3313,40 @@ Two things had to move for it to work. The rail renders whenever there is anythi
 | --- | --- |
 | Offered by | the session picker, on every session page |
 | Started by | a person pressing a button |
+
+### MUS-D-0151
+
+**The tmux server is spawned in a scope of its own, so a deploy stops ending every session**
+
+decision · 2026-09-08
+
+raised by: MUS-Q-0088
+
+finding: MUS-F-0106
+
+question: MUS-Q-0084
+
+question: MUS-Q-0087
+
+the rule this does not break: MUS-D-0062
+
+MUS-Q-0084 asked whether the tmux server should stop dying with the unit and the owner chose the restore button, because the loss was one press. MUS-Q-0087 then authorised deploying whenever the gates are green, without asking. Together those two answers let any session end every other session's turn, several times an hour, and it happened before it was noticed: the Research session was working at 09:09 and a deploy from this one restarted the unit at 09:09:21.
+
+So the option MUS-Q-0084 recommended and did not take is taken now. When Start finds no tmux server running, the new-session that will spawn one runs inside `systemd-run --user --scope --unit mustur-tmux`. The server inherits that cgroup, which is not mustur.service's, and `systemctl stop` no longer reaches it. Every later session connects to the server already there and asks for nothing.
+
+**It has to be the new-session, not `tmux start-server`.** The first version ran start-server inside the scope and was measured failing: a server with no session exits immediately — exit-empty is on by default — so the scope emptied and the next client spawned a fresh server back inside the unit. Turning exit-empty off would have worked and changes a server-wide option on a socket that is not necessarily only ours.
+
+**Only the server escapes.** tmux already puts each pane child in a `tmux-spawn-<uuid>` scope of its own, and still does; everything else Mustur spawns stays in the unit's cgroup and still dies with it, which is what the stop path relies on.
+
+It is best effort. systemd-run is missing on a host without systemd and can fail on one with it, and then the plain spawn runs instead: the server lands in this cgroup, a deploy costs a press per session, and stderr says so. Refusing to start a session because systemd would not make a unit would be worse than the thing being avoided.
+
+Verified in isolation on this machine, on its own socket, the same way MUS-F-0106 was proven: a transient service starts a session through the scope, the service is stopped, and the server is still in mustur-tmux-probe.scope with its session running and its pane child in a tmux-spawn scope of its own.
+
+**One more deploy ends everything.** The server running now was spawned inside mustur.service and nothing moves a running process out; the restart that ships this takes it and every session on it. From the next session started after that, deploys stop costing anything.
+
+MUS-D-0062 is untouched: tmux is still asked what is running, and nothing here mirrors it.
+
+| Field | Value |
+| --- | --- |
+| Unit | mustur-tmux.scope |
+| Spawned by | the first session started when no server is running |

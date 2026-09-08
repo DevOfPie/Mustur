@@ -288,7 +288,28 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 	// underneath rows belonging to a session that has already ended.
 	ForgetSubagents(a.HookDir, project)
 	args = append(args, withHook(cmd, a.exe(), a.HookDir, project, a.DB))
-	if out, err := a.runner().Run(ctx, "tmux", args...); err != nil {
+	// Where the server ends up is decided here, once, by whoever finds none
+	// running (MUS-Q-0088).
+	out, err := "", error(nil)
+	if prefix := a.scopePrefix(ctx); prefix != nil {
+		out, err = a.runner().Run(ctx, prefix[0], append(prefix[1:], append([]string{"tmux"}, args...)...)...)
+		if err != nil {
+			// Best effort, deliberately. systemd-run is missing on a host
+			// without systemd and can fail on one with it — no session bus in
+			// the environment, the scope name already held — and in every one
+			// of those cases the right outcome is the one that shipped before:
+			// tmux spawns the server itself, in this cgroup, and a deploy costs
+			// a press per session. Said out loud, because a session that
+			// quietly stops surviving deploys is a thing to find later.
+			fmt.Fprintf(os.Stderr,
+				"mustur: %s could not be given its own scope, so restarting the service will end it: %v: %s\n",
+				name, err, strings.TrimSpace(out))
+			out, err = a.runner().Run(ctx, "tmux", args...)
+		}
+	} else {
+		out, err = a.runner().Run(ctx, "tmux", args...)
+	}
+	if err != nil {
 		return Session{}, fmt.Errorf("tmux new-session: %w: %s", err, strings.TrimSpace(out))
 	}
 
@@ -393,6 +414,63 @@ func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
 		case <-time.After(50 * time.Millisecond):
 		}
 	}
+}
+
+// TmuxScope is the transient unit the tmux server is put in when Mustur has to
+// spawn one.
+//
+// Named rather than random so a person can find it: `systemctl --user status
+// mustur-tmux.scope` says whether the sessions are outside the service or in
+// it. tmux uses a uuid for the scopes it makes per pane child, which is right
+// for something there are many of and wrong for the one there is only ever one
+// of.
+const TmuxScope = "mustur-tmux"
+
+// serverUp reports whether a tmux server is running at all — not whether it
+// holds any session of ours.
+//
+// An error that is not "no server running" answers yes. Spawning a server on a
+// tmux that failed for some other reason would be acting on a guess, and the
+// failure mode is a second server on the same socket, which is not a thing
+// tmux has an answer for.
+func (a *Adapter) serverUp(ctx context.Context) bool {
+	out, err := a.runner().Run(ctx, "tmux", "list-sessions", "-F", "#{session_name}")
+	if err != nil && noServer(out) {
+		return false
+	}
+	return true
+}
+
+// scopePrefix is the command prefix that puts a spawned tmux server outside
+// this unit's cgroup, or nil when there is already a server or no way to do it.
+//
+// **This is MUS-F-0106's fix.** mustur.service has systemd's default KillMode,
+// control-group: on stop, everything left in the unit's cgroup is killed. A
+// tmux server is spawned by whichever client first finds none running, so a
+// server first started by the serving process lived inside the unit, and every
+// deploy ended every session on it — measured, and matched to the journal for
+// the 2026-09-08 01:50 redeploy.
+//
+// tmux already does exactly this for each pane child, in `tmux-spawn-<uuid>`
+// scopes, and leaves the server where it was started. So the *first*
+// new-session runs inside a scope of Mustur's own, and the server it spawns
+// inherits that cgroup. Every later one connects to the server that is already
+// there and needs no prefix.
+//
+// It has to be the new-session and not `tmux start-server`: measured on this
+// machine, a server started with no session exits immediately — exit-empty is
+// on by default — so the scope emptied and the next client spawned a fresh
+// server back inside the unit. Turning exit-empty off would have worked and
+// changes a server-wide option on a socket that may not only be ours.
+//
+// **Only the server escapes.** Everything else Mustur spawns is still in the
+// unit's cgroup and still dies with it, which is what the stop path relies on.
+func (a *Adapter) scopePrefix(ctx context.Context) []string {
+	if a.serverUp(ctx) {
+		return nil
+	}
+	return []string{"systemd-run", "--user", "--scope", "--quiet", "--collect",
+		"--unit", TmuxScope}
 }
 
 // List returns every session Mustur started on this machine, and nothing else.

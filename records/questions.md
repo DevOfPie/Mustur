@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-87 record(s), by identifier.
+88 record(s), by identifier.
 
 ---
 
@@ -1994,3 +1994,26 @@ question · 2026-09-08
 | Answered | 2026-09-08 09:08 |
 | Delivered | typed into mustur/Build |
 | Surfaced | 2026-09-08 09:08 |
+
+---
+
+## MUS-Q-0088
+
+**One session's deploy kills every other session's turn, and deploying no longer asks**
+
+question · 2026-09-08
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing is blocked, and it is already happening: the Research session was working at 09:09 and my deploy at 09:09:21 ended it. It is sitting under Not running, unrestored. |
+| Option | Give the tmux server its own transient scope :: Recommended :: a deploy stops killing sessions at all :: MUS-Q-0084's first option, declined when the cost was one press. With several sessions the cost is one lost turn each, taken without asking, several times an hour — and the thing that made 'change nothing' reasonable was that the loss was one press. Start would put the server in a scope of its own when it has to spawn one, the way tmux already does for each pane child; only the server escapes the unit, so nothing about the stop path changes. Costs code on the spawn path, a systemd dependency, and an answer for a host without systemd. |
+| Option | Narrow MUS-Q-0087: deploy unasked only when nothing else is running :: a prompt exactly when it would cost somebody something :: Mustur already knows what is live. One session running means a restart costs one turn and goes ahead; anything else running and it asks. The loss stays possible, it just stops being silent. This was option three on MUS-Q-0087 and it was not the one taken, in a world with one session. |
+| Option | Tell the others before the restart :: they still die, but they know why :: Before restarting, type a line into every other session saying a deploy is about to end it. A restored agent then reads, in its own transcript, that it was killed rather than that its last action completed. Cheapest of the three and it fixes the smaller half: the loss is unchanged, the confusion is not. |
+| Option | Change nothing :: N presses per deploy, and each restored agent believes its last action finished :: What MUS-Q-0084 chose, priced for one session. Every deploy ends every milestone in flight; each comes back with its conversation and the CLI's own 'Continue from where you left off', with no record that anything was interrupted. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Give the tmux server its own transient scope |
+| Answered | 2026-09-08 09:22 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-08 09:22 |

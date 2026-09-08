@@ -62,6 +62,14 @@
 # pipe reader blocks uninterruptibly, systemd's stop times out at 90s, and the
 # unreaped process holds the port the whole time. Turn the pipe off first —
 # `tmux pipe-pane -t <pane>` — and the stop is immediate.
+#
+# **The tmux server is deliberately not in this unit's cgroup**, and there is no
+# KillMode here on purpose. This unit kills its whole control group on stop,
+# which is what should happen to everything it spawns — except the tmux server,
+# because that would end every agent session on every deploy (MUS-F-0106). The
+# adapter therefore starts the server inside `mustur-tmux.scope` when it has to
+# start one at all (MUS-D-0151). `systemctl --user status mustur-tmux.scope`
+# says whether the sessions on this machine are outside this service or in it.
 
 [Unit]
 Description=Mustur — records, routing and intake
