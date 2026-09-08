@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-86 record(s), by identifier.
+87 record(s), by identifier.
 
 ---
 
@@ -1972,3 +1972,25 @@ question · 2026-09-08
 | Answered | 2026-09-08 03:14 |
 | Delivered | typed into mustur/Build |
 | Surfaced | 2026-09-08 03:14 |
+
+---
+
+## MUS-Q-0087
+
+**Does a green change deploy itself, or does every deploy wait for you?**
+
+question · 2026-09-08
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing, until the next change is green. MUS-Q-0086 answered one deploy; it did not set a rule, and asking per change costs a prompt every time. |
+| Option | Deploy when the gates are green, without asking :: Recommended :: every deploy still kills every session :: make check passing is the bar the repository already sets for reporting work complete, and a change nobody can see is not delivered. The cost is real and unchanged: a restart takes the tmux server and every pane on it (MUS-F-0106), including whichever session you are reading at the time. That is the thing being authorised, not the deploy. |
+| Option | Ask every time :: a prompt per change, which is what today cost :: Each deploy is its own decision, because each one interrupts whatever is running. Safest, and it means a fix can sit built and undeployed while you are away — which is exactly the state MUS-F-0109 was found in. |
+| Option | Deploy without asking when nothing is running but this session :: no prompt in the common case, a prompt when it would cost you something :: Mustur already knows what is running. If this session is the only one, a restart costs the turn it is in and nothing else, so it goes ahead; if anything else is running, it asks. The cost is a rule with a condition in it, which is a rule I can get wrong. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Deploy when the gates are green, without asking |
+| Answered | 2026-09-08 09:08 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-08 09:08 |

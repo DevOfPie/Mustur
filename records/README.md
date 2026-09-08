@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 86 | [questions.md](questions.md) |
+| question | 87 | [questions.md](questions.md) |
 | decision | 150 | [decisions.md](decisions.md) |
 | finding | 120 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -145,6 +145,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0084](questions.md#mus-q-0084) | question | A redeploy takes every session. Should the tmux server stop dying with the unit? |
 | [MUS-Q-0085](questions.md#mus-q-0085) | question | Each vendor's best channel is a different channel. Does the session surface get a module boundary? |
 | [MUS-Q-0086](questions.md#mus-q-0086) | question | The picker change is committed and not live. Deploying it kills every session, including the one that built it |
+| [MUS-Q-0087](questions.md#mus-q-0087) | question | Does a green change deploy itself, or does every deploy wait for you? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
