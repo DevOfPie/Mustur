@@ -1,14 +1,17 @@
 # 0003 — can a dialog be answered without the screen, and does the terminal survive it?
 
-**Status:** open, pre-registered 2026-09-08. **Nothing has been run.** This file
-is committed before any evidence is looked at, so the git history shows the rule
-preceding the finding — the same reason
-[0001](0001-mandated-tool-call.md) was believable, and the same protocol
+**Status:** answered, 2026-09-08. **It can be done, and not through the event
+the question named.** The rule, the properties and the routes were committed
+before any of it was run — the previous commit to this file — so the git history
+shows the rule preceding the finding, the same protocol
+[0001](0001-mandated-tool-call.md) and
 [0002](0002-sub-agent-visibility.md) used.
-**Verified against:** to be filled in by the run. Claude Code 2.1.263 is what is
-installed; the version actually measured goes here, because
-[MUS-F-0084](../../records/findings.md#mus-f-0084) was measured at 2.1.260 and
-this file must not inherit its numbers.
+**Verified against:** Claude Code **2.1.263** for the five consecutive trials
+and **2.1.266** for the confirmation, because the CLI updated itself in the
+middle of the run. That is recorded rather than tidied away: the result holds
+across the update, and it was not measured on one version and claimed for the
+other. [MUS-F-0084](../../records/findings.md#mus-f-0084) was measured at 2.1.260
+and none of its numbers are inherited here.
 **Run during:** the session-channel work proposed as milestone 8. **That
 milestone is deliberately not in [Plan.md](../../Plan.md#milestones) yet**, and
 will not be until this returns — writing the row first is how *cannot be done*
@@ -130,4 +133,76 @@ reason.
 
 ## Verdict
 
-To be written after the run, in this file, in a separate commit.
+**Route A passes. The dialog can be answered without the screen, and the
+terminal survives it — through `PreToolUse`, not through `PermissionRequest`.**
+
+### What the rule asked for
+
+| | Result |
+| --- | --- |
+| **Interceptable** | Yes, on every one of seven firings. The payload names the tool and carries its input — `{"tool_name":"Bash","tool_input":{"command":"touch ran-the-tool","description":"Create empty file ran-the-tool"}}` — plus `session_id`, `transcript_path`, and `permission_suggestions` that are *literally options 2 and 3 of the dialog the CLI would have drawn*. Captured whole in [captured/payload-pretooluse.json](0003-harness/captured/payload-pretooluse.json) |
+| **Answerable** | Yes, both directions. `allow` ran the tool and drew no dialog; `deny` stopped it and the reason reached the agent verbatim — *"the tool call came back with \"Refused by investigation 0003\" rather than running"* ([captured/pane-deny.txt](0003-harness/captured/pane-deny.txt)) |
+| **Terminal-preserving** | Yes, checked after every trial. A second client attached over a separate tmux socket, rendered the whole conversation and the CLI's input box, and typed into it — the typed marker appeared in the inner pane on all five |
+
+Five consecutive trials, 11 through 15, all three properties, no trial requiring
+a pane read. Trial 26 repeated it on 2.1.266 after the update. **The rule is
+met.**
+
+### What happens when nobody answers
+
+Three trials with a hook that never returns, its timeout shortened to 20s so the
+behaviour could be watched in seconds rather than at the documented 600s default.
+All three ended the same way: **the CLI waits out the hook and then draws its own
+dialog** — 21.3s, 24s and 20s from the hook firing.
+
+That is the outcome that makes this shippable. The fallback for an owner who is
+asleep is the pane parser that already exists, so the feature degrades into
+today rather than into a hung session or a silent refusal.
+[captured/pane-timeout-fallback.txt](0003-harness/captured/pane-timeout-fallback.txt).
+
+### The event the question named does not work
+
+**`PermissionRequest` fired and its decision was ignored.** Trials 0 and 1: the
+hook received a full payload
+([captured/payload-permissionrequest.json](0003-harness/captured/payload-permissionrequest.json))
+and returned the documented object —
+
+```json
+{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":"allow"}}
+```
+
+— and the pane drew the dialog anyway, and was still drawing it minutes later.
+Retried with the exact key names the documentation quotes; same result.
+
+`PreToolUse` with `permissionDecision` suppressed it on the first attempt and on
+every attempt after.
+
+So MUS-F-0113's central claim was right about the channel and wrong about the
+event, which is the whole reason this was measured rather than built on. Whether
+`PermissionRequest`'s decision object works only where a permission host exists —
+`--print` and the SDK — was not established here and is not needed: the route
+that works is the one that keeps the terminal.
+
+### One dialog no hook can reach
+
+The workspace-trust prompt is drawn **before the session exists**, so no hook is
+installed when it appears. Every trial answered it by hand through `send-keys`.
+It is not a defect and it is not in the rule's way — a session Mustur starts in
+a directory the owner has already trusted never sees it — but a module that
+assumes every dialog is interceptable would hang on the first one of a session's
+life.
+
+### What this does not say
+
+It does not say the picker half of the parser can go. Nothing here touched the
+model picker, the effort cycler or the toggles of
+[MUS-F-0101](../../records/findings.md#mus-f-0101): those are drawn on the
+owner's own keypress, no hook fires, and
+[MUS-F-0113](../../records/findings.md#mus-f-0113) said so before this ran.
+
+It does not say route C was tried. Route A passed, so the daemon's control
+socket was not touched, which is what the ordering was for.
+
+Route B was not re-run, as pre-registered. The one fact re-checked is unchanged:
+at 2.1.266 `--output-format`, `--input-format` and `--include-partial-messages`
+are all still marked *only works with --print*.
