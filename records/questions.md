@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-89 record(s), by identifier.
+91 record(s), by identifier.
 
 ---
 
@@ -1936,6 +1936,8 @@ the channel MUS-F-0084 missed: [MUS-F-0113](findings.md#mus-f-0113)
 
 why a module beats a protocol: [MUS-F-0114](findings.md#mus-f-0114)
 
+the investigation that measured option 1: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
 | Field | Value |
 | --- | --- |
 | Status | answered |
@@ -2039,3 +2041,45 @@ question · 2026-09-09
 | Answered | 2026-09-09 01:40 |
 | Delivered | typed into mustur/Build |
 | Surfaced | 2026-09-09 01:40 |
+
+---
+
+## MUS-Q-0090
+
+**Does LinkCtrl declare StrucGu adoption now, or does milestone 7 derive the mapping when it starts?**
+
+question · 2026-09-09
+
+If the answer is 'you decide': declare adoption now, without the gate. It is reversible — deleting a strucgu.yaml costs one commit — and it is the only option that leaves milestone 7 something to read.
+
+The default is stated here rather than as a fourth option, because an option that is not a choice gets recorded as the answer. MUS-F-0079 is that defect.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | LinkCtrl's side of the transition; MUS-M-0009 |
+| Asked by | whippy |
+| Option | Declare adoption now :: Recommended — one hand-written strucgu.yaml in LinkCtrl, carrying the deviations its audit will report, before any record moves :: Mustur's record shape IS StrucGu's roles, so a tree that declares none has nothing for milestone 7 to read, and the mapping stops being a document and becomes a checkable claim. Five DevOfPie trees declare adoption and LinkCtrl does not. The cost, stated: LinkCtrl acquires a conformance obligation and a review cadence before anything has moved, and it commits the largest and most active corpus to a spec whose only runner is a service one person maintains — Mustur's own known limitation, not an argument invented here. The recommendation comes from the actor that would also write the file, which is worth discounting. |
+| Option | Map it, declare nothing :: The survey document stands, no claim is made, and milestone 7 derives what it needs when it starts :: Costs nothing now and keeps LinkCtrl free of an obligation it may never need if milestone 7 is never reached. What it costs later is precisely what Plan.md warned about: the mapping is re-derived by whoever runs milestone 7, from a tree they did not build, which is the lift-and-shift the assignment to 'that repository's agents' was avoiding. |
+| Option | Declare it and gate it :: strucgu.yaml plus mustur audit wired into make check :: The strongest version — a claim that cannot rot, because the gate reads it every run. It also puts an external binary and a StrucGu checkout into a gate that is already six steps long, on a repository whose CI is its release path, and it means a Mustur outage or a catalog bump can fail a LinkCtrl build. Mustur itself declined to gate its own audit until someone asked (MUS-D-0032); doing it here first would be odd. |
+
+---
+
+## MUS-Q-0091
+
+**What moves into Mustur: LinkCtrl's 947 existing records, or only what is written after the transition?**
+
+question · 2026-09-09
+
+If the answer is 'you decide': cutover at a date. It is the only option whose cost is stated rather than discovered, and the one that can be reversed by importing more later — the other direction, un-minting 381 identifiers, cannot.
+
+The default is stated here rather than as a fourth option, because an option that is not a choice gets recorded as the answer. MUS-F-0079 is that defect.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | LinkCtrl's side of the transition; MUS-M-0009 |
+| Option | Cutover at a date :: Recommended — Mustur holds LNK records from the transition date forward; the 947 existing ones freeze where they are and stay in the repository :: Nothing is retrofitted, which is what Mustur's own non-goal asks for, and the split has a rule a reader can state in one sentence: before the date it is in a file, after it it has an identifier. The cost is real and permanent — two places to look for a decision, forever, and the standing rule that nothing leaves a tracker silently now spans a file and a store. It is also the only option that does not depend on a number: LNK already works, since mustur add --project takes a prefix and the store already carries five IDW-F records. |
+| Option | Import everything :: 947 records, of which 381 findings and 173 decisions get addresses they were never written with :: The only option that makes success criterion 4 true for LinkCtrl's whole history — a record from six months ago retrieved by identifier without knowing its file. It is also exactly the retrofit Plan.md's non-goals refuse: every one of the 381 findings is a table row with no address at all, so importing them means minting 381 identifiers for rows nobody wrote one for. And the export would rewrite a 42,587-line append-only file, which is a different claim about that file than the one it makes about itself. |
+| Option | Import what is already addressed :: the 271 heading-addressable decisions and the 74 milestone files; the 381 findings and the 173 unheaded decisions freeze :: Cheapest honest import — it moves only records that already have the property Mustur requires, so nothing is retrofitted and roughly three-fifths of the decision log becomes addressable. The cost is that the split is by shape rather than by date, so 'is D14 in Mustur' has no rule a reader can predict without checking, and the file and the store then interleave across the same range of identifiers. |
+| Asked by | whippy |
