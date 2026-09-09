@@ -1,0 +1,300 @@
+                                                                                                    
+
+  [38;5;246mSearched for [1m2[0m[38;5;246m patterns, ran [1m4[0m[38;5;246m shell commands [39m                                                    
+
+[38;5;231m●[39m Now the three surfaces that render no badge at all, and the shared script tag on all six.         
+
+  [38;5;246mSearched for [1m2[0m[38;5;246m patterns, ran [1m7[0m[38;5;246m shell commands [39m                                                    
+                                                                                   
+[38;5;231m●[39m Four tests assert those surfaces carry no script. That was the rule you just changed — they need  
+  to assert the new one, not be silenced.       
+
+  [38;5;246mRan [1m4[0m[38;5;246m shell commands [39m                                                                    
+                                                                                                    
+[38;5;231m●[39m The surfaces gate fired on [38;5;153m/questions/count[39m — MUS-D-0133 working as designed. Checking what it   
+  expects before I decide whether that's a brief or a gate gap.                                     
+
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m5[0m[38;5;246m shell commands [39m 
+                                                                                   
+[38;5;231m●[39m [38;5;153m{"waiting":0}[39m is correct — nothing is open right now, so an absent badge is right too. That proves
+  nothing about rendering. Testing against a store that has one.
+
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                     
+                                                                                                  
+[38;5;231m●[39m All four render the badge server-side with the count, and the endpoint agrees. Now the doc claim
+  that's no longer true.
+
+  [38;5;246mRan [1m3[0m[38;5;246m shell commands [39m                                         
+                                                                                                
+[38;5;231m●[39m Verified — you, 05:13:55. And "every surface" was the right scope for a reason my question hadn't
+  found.
+
+  [1mSix surfaces render the bar; only three rendered the count at all.[0m Records, compose and account
+  showed a Decisions tab with no badge. On those it wasn't stale, it was missing — polling the other
+  three would have fixed nothing.                                                                   
+
+  All six now render it server-side and all six keep it live.                                      
+                                                                
+  [1mOne file writes a badge.[0m [38;5;153mbar.js[39m is loaded everywhere and exposes the writer; the session view's 
+  socket calls it instead of keeping its own copy. That copy is precisely how MUS-F-0086 happened —
+  I fixed the badge once, on the surface that reported it, and the other five were never in the     
+  change. A second implementation of a shared control was the defect, not the surface count.
+                        
+  - Poll answered from a two-second cache — [38;5;153mOpenCount[39m lists every record, fine once, wasteful per  
+    tab per tick                                                                                    
+  - Returns a number, never [3mwhich[0m questions, so a reader learns something is waiting without      
+    learning what                                                                                  
+  - Stops asking on 401/403 — a page polling a sign-in screen every ten seconds is doing harm       
+  - Every surface still renders its count and works with script blocked; what stops is the number   
+    [3mchanging[0m                                                                                        
+                                                                                                    
+  [1mVerified against a scratch store with one open question:[0m [38;5;153m/questions/count[39m answers [38;5;153m{"waiting":1}
+[39m  and all four public pages render [38;5;153mclass="cnt">1[39m and load [38;5;153mbar.js[39m.                                   
+                                                                                                   
+  Two things I had to change rather than silence. Four tests asserted those pages carried no script
+  at all — that was the rule you just changed, so they now assert what's actually worth protecting: 
+  each page loads the scripts it was [3mgiven[0m and no others, read from [38;5;153msrc[39m attributes rather than      
+  grepping [38;5;153m<script[39m, which stopped meaning anything once every page had one. And CLAUDE.md's "six   
+  pages carry script… that is still the rule" was simply false, so it says the new thing.          
+                                                                                                 
+  The surfaces gate fired on [38;5;153m/questions/count[39m and was right to — a served path with no brief.       
+  Excluded by exact path, not prefix, since [38;5;153m/questions/*[39m would let a real page through unbriefed.   
+                                                                                                    
+  [38;5;153mmake check[39m green: 1459 links, 354 identifiers. Nothing open.                                      
+                                                                                                
+  Needs a redeploy — this one changes every page: [38;5;153m! make install && systemctl --user restart mustur
+[39m                                                                                                   
+[38;5;246m✻[39m [38;5;246mCooked for 7m 1s · done 5:25 AM · 1 shell still running[39m                                           
+                                                                                                   
+[38;5;211m[48;5;59m! [38;5;231m make install && systemctl --user restart mustur[39m                                                  
+[38;5;246m[49m  ⎿  [39m  ok    /home/whippy/.local/bin/mustur 0.1.0                                                  
+                                                                                                   
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                                    
+[38;5;231m●[39m Live — PID 2228994. [38;5;153mbar.js[39m referenced by all seven templates, the shared writer and the count    
+  endpoint present, the prompt pop-up and its minimise chip in the binary. The endpoint answers 303
+  to an unauthenticated request, same as every page, so the guard covers it.                        
+
+  Two things landed this round:
+                                                                                                    
+  [1mThe prompt pop-up[0m (MUS-D-0144) — when a Claude Code dialog appears in a session you're watching,
+  it renders in front of the terminal with the heading, the sentence, the numbered rows with the   
+  cursor marked, and the legend keys as buttons. Minimise collapses it into the key row; the chip  
+  brings it back. It stays minimised across redraws, because you put it away to read the pane.      
+
+  [1mThe badge[0m (MUS-D-0145) — live on all six surfaces, one file writing it, count rendered server-side
+  so the page is right before and without script.                                                  
+                                                                                                    
+  Nothing is open. Where the session stands:                                                    
+                                                                                                   
+  - [1mIntake empty.[0m Fourteen jots processed.                                                         
+  - [1mMUS-W-0022 built[0m — the prompt parser, written against a real capture from your [38;5;153mRing[39m session   
+    rather than a remembered format, which caught two defects a recollection wouldn't have.         
+  - [1mMUS-D-0143[0m records what the pane choice costs, so nobody rediscovers it: Mustur reads dialogs   
+    off a screen that exists as structured messages on a protocol the CLI already speaks. MUS-F-0084
+    is the escape hatch if that ever stops being worth it.                                        
+                                                                                                    
+  Still recorded and deliberately unbuilt: no way to end a session from a surface (MUS-F-0081), no  
+  gate catching [38;5;153mrecords/[39m or [38;5;153mdecisions.md[39m drifting from the store (MUS-F-0011), viewer voting parked
+  against MUS-M-0008 (MUS-F-0078), and MUS-Q-0053 — what the scripted-surface rule counts — still   
+  open, with its numbers moved by yesterday's answer rather than settled.                           
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCooked for 24s · done 5:38 AM · 1 shell still running[39m                                             
+                                                                                                   
+[38;5;239m[48;5;237m❯ [38;5;231mThe prompt pop-up is showing but empty[39m                                                            
+[49m                                                                                                    
+[38;5;231m●[39m A false positive, most likely — parsing something that isn't a dialog. Let me capture the panes as
+  they are now and run the parser against them.                                                     
+                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                                    
+[38;5;231m●[39m Found it. [38;5;153m.dlg { display: flex }[39m overrides the browser's [38;5;153m[hidden] { display: none }[39m — the         
+  attribute is set, the rule loses, so an empty bordered box sits over the terminal permanently.    
+
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m2[0m[38;5;246m shell commands [39m                                                    
+
+[38;5;231m●[39m The file already knows this trap — [38;5;153m.chips[hidden][39m and [38;5;153m.drawer[hidden][39m both carry the guard. I
+  added a third element with [38;5;153mdisplay: flex[39m and didn't apply the lesson sitting twelve lines above
+  it.                                                                                               
+                                                                                                
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands [39m                                                                             
+                                                                                                    
+[38;5;231m●[39m Gate fails without the fix, passes with it — verified both ways. Adding the real-screen fixture so
+  a false positive can't creep in either.                                                       
+                                                                                                    
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands [39m                                                                    
+                                                                                                    
+[38;5;231m●[39m [38;5;153mRing[39m is idle so it has no interrupt hint — [38;5;153mCheck[39m does. Using that capture instead.            
+                                                                                                 
+  [38;5;246mRan [1m3[0m[38;5;246m shell commands [39m                                                                             
+                                         
+[38;5;231m●[39m Showing and empty are two unrelated facts, and only one was a bug.                             
+                                                                                                 
+  [1mIt was never hidden.[0m The [38;5;153mhidden[39m attribute works through a user-agent rule, [38;5;153m[hidden] { display: 
+[39m  [38;5;153mnone }[39m, and any explicit [38;5;153mdisplay[39m on the element outranks it. [38;5;153m.dlg[39m sets [38;5;153mdisplay: flex[39m to centre its
+  box — so [38;5;153m<div class="dlg" hidden>[39m was fully displayed: a bordered, shadowed, empty box over the   
+  terminal that nothing on the page would close. It was empty because there was no prompt to put in 
+  it, which is correct behaviour.                                                                   
+
+  [1mThe file already knew.[0m [38;5;153m.chips[hidden][39m and [38;5;153m.drawer[hidden][39m both carry the guard, and the second
+  sits twelve lines from where I added the new element. Same shape as MUS-F-0062 and MUS-F-0064 — a
+  lesson written down beside the code that didn't learn it, third time here.                        
+                                                                                                 
+  So the fix is a gate, not a fourth comment: the test reads the served page, finds every element  
+  carrying [38;5;153mhidden[39m whose class sets a [38;5;153mdisplay[39m, and requires a [38;5;153m[hidden][39m rule. I checked it both ways —
+  removing the rule fails it by name, restoring it passes.                                          
+                                                                                                 
+  [1mThe other half needed ruling out.[0m An empty box was equally consistent with the parser reading a  
+  prompt off an ordinary screen and finding nothing to show, and nothing separated the two without  
+  trying a real screen. Both live panes return nil. The capture of the one carrying a status line is
+  now a fixture:                                                                                    
+                                                                                                    
+  ⏵⏵ auto mode on (shift+tab to cycle) · PR #38 · esc to interrupt · ← 1 agent                   
+                                                                                                    
+  Middots, and [38;5;153mesc to interrupt[39m reads exactly like a legend entry. It's rejected because every entry
+  on the line must parse and the first one doesn't. The test refuses to pass if the fixture ever    
+  loses its status line, so it can't quietly stop proving that.                                     
+                                                                                                    
+  [38;5;153mmake check[39m green: 1463 links, 355 identifiers.                                                    
+                                                                                                    
+  [38;5;153m! make install && systemctl --user restart mustur[39m                                                 
+                                                                                                    
+  Once it's up, the box should be gone entirely. To see it actually work, [38;5;153m/model[39m in a Mustur-started
+  session puts a real picker on screen — that's how I captured the fixture, and Escape dismisses    
+  it.                                                                                               
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCogitated for 3m 16s · done 5:42 AM · 1 shell still running[39m                                       
+                                                                                                    
+[38;5;211m[48;5;59m! [38;5;231m make install && systemctl --user restart mustur[39m                                                  
+[38;5;246m[49m  ⎿  [39m  ok    /home/whippy/.local/bin/mustur 0.1.0                                                   
+                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                                    
+[38;5;231m●[39m Live — PID 39593, guard present. The empty box should be gone.                                    
+                                                                                                    
+  To see the pop-up actually do its job, type [38;5;153m/model[39m into a Mustur-started session from the         
+  composer. That's the picker I captured the fixture from: it should render as the heading, the     
+  sentence, three numbered rows with the cursor marked on the current one, and [38;5;153mEnter · set as 
+[39m  [38;5;153mdefault[39m / [38;5;153ms · use this session only[39m / [38;5;153mEsc · cancel[39m as buttons. Escape dismisses it, and the       
+  minimise button tucks it into the key row.
+
+  If it renders wrong, the capture is worth more than a description — [38;5;153mtmux capture-pane -p -e -J -t 
+[39m  [38;5;153mmustur/<name>[39m and I'll make it a fixture the way I did this one.                                  
+                                                                                               
+  Nothing is open. Two gates came out of this round rather than comments:                     
+                                                                                             
+  - [1m[38;5;153m[hidden][39m guard[0m — any element that sets its own [38;5;153mdisplay[39m and hides by attribute now fails the     
+    build without the matching rule. Three occurrences of that trap in one file was two too many.
+  - [1mThe no-prompt fixture[0m — a real screen with a status line that reads like a legend, asserting the
+    parser stays silent on it, and refusing to pass if the fixture ever loses that line.     
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCogitated for 22s · done 9:23 PM · 1 shell still running[39m                                     
+                                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231mThe bug report draft prompt is on the screen but the prompt isn't showing. The prompt is only [39m    
+  [38;5;231mvisible when the session is idle and goes away as soon as you start working[39m                       
+[49m                                                                                                    
+[38;5;231m●[39m Two things there — the parser missing that dialog, and why it's hard to catch. Let me look at what
+  that prompt actually renders, from the CLI itself rather than waiting to catch it idle.      
+
+  [38;5;246mRan [1m4[0m[38;5;246m shell commands [39m                                                                             
+
+[38;5;231m●[39m I can't see this from inside my own turn — while I'm working the prompt isn't on the pane, only   
+  the [38;5;153m1 feedback draft[39m chip. Starting a capture that fires after this turn ends and the session goes
+  idle.                                                                                             
+                                                                                                    
+  [38;5;246mRan [1m3[0m[38;5;246m shell commands 
+[39m                       
+[38;5;231m●[39m Capture is armed and will fire when this turn ends. Meanwhile — checking whether drafts are
+  per-session, since [38;5;153mRing[39m is idle right now.                                                        
+                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                                    
+[38;5;231m●[39m Two drafts on disk, but idle [38;5;153mRing[39m shows neither chip nor prompt — they're bound to a session, so I
+  can't reproduce it there. The capture is the only route, and it fires when this turn ends.        
+
+  One thing I can record now, because it's the more interesting half of your report.
+                                                                                                    
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands [39m                                                                             
+
+[38;5;231m●[39m I can't see it from in here, and that's the interesting part.                                     
+                                                                                                    
+  While I'm working, this session's pane carries only [38;5;153m· 1 feedback draft[39m in the status line — I     
+  captured it mid-turn to check. The draft exists, the CLI holds it, and the screen stops showing
+  the way to act on it. So the prompt is never on screen at the moment I'd look for it. Drafts are
+  per-session too: two sit on disk, and idle [38;5;153mRing[39m shows neither chip nor prompt, so there's no
+  second pane to reproduce it in.                                                                   
+
+  [1mA capture is armed[0m and polls [38;5;153mmustur/Check[39m for numbered rows every 3s for five minutes. It'll fire 
+  once this turn ends and you're looking at the prompt. I'll have the real screen next turn rather
+  than guessing at the parse.                                                                    
+                                                                                                  
+  [1mThe half I can act on now is the more important one.[0m You've found the first concrete cost of the
+  pane decision (MUS-D-0143): [3ma surface that reads the screen can offer exactly what is drawn, for [0m 
+  [3mexactly as long as it's drawn.[0m The protocol carries [38;5;153mpending_permission_requests[39m and               
+  [38;5;153mpending_user_dialog_requests[39m precisely because a client is expected to know about prompts that are
+  [1moutstanding[0m rather than [1mvisible[0m. Reading the pane can't know that, and no amount of parsing fixes
+  it.                                                                                               
+                                                                                                    
+  Making the pop-up outlive the drawing would be worse, not better — it would offer keys for a      
+  dialog no longer accepting them, and a keypress sent to a pane that's moved on doesn't vanish. It
+  lands in your composer, as text, mid-session. Faithful-to-screen is correct [3mand[0m the limitation is 
+  real.                                                                                             
+                                                                                                   
+  Filed as MUS-F-0088, with the parse question left open rather than guessed at.                    
+                                                                                                   
+  If you'd rather not wait for my capture: [38;5;153mtmux capture-pane -p -e -J -t mustur/Check > [39m            
+  [38;5;153m/tmp/draft.txt[39m while the prompt is up gives me the same thing immediately.                       
+                                                                                                   
+[38;5;246m✻[39m [38;5;246mBaked for 2m 48s · done 9:27 PM · 1 shell still running[39m                                           
+                                                                                                    
+[38;5;114m●[39m Background command "SP=/tmp/claude-1000/-home-whippy-repos-DevOfPie-Mustur/5deaa93a-e914-4e67-880c
+-be3da7d07c0d/scratchpad                                                                            
+"$SP/catch-draft.sh" "$SP"" completed (exit code 0)                                                
+                                                                                                    
+[38;5;231m●[39m The capture fired. Looking at what it caught.                                                     
+
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+
+[38;5;231m●[39m Five minutes of polling, no numbered dialog appeared. So either it doesn't render on every idle, 
+  or it isn't numbered rows at all — and I shouldn't guess again. Arming a wider watcher that      
+  records whatever actually shows up.                                                               
+
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands 
+[39m                                                   
+[38;5;231m●[39m My five-minute watcher caught nothing — no numbered dialog appeared on [38;5;153mmustur/Check[39m in 100 polls.
+  So my guess about its shape was wrong, or it doesn't render on every idle. Either way I'm not     
+  guessing a third time.                                                                     
+                                     
+  A wider watcher is now running: it records every [3mdistinct[0m bottom-of-screen state for up to twenty
+  minutes, ignoring the spinner line, keeping up to 25 screens. Whatever that prompt looks like will
+  be on disk to read rather than inferred.                                                   
+
+  Two things would make this immediate, if you'd rather not wait:                              
+                                                                                                    
+  tmux capture-pane -p -e -J -t mustur/Check > /tmp/draft.txt                                
+                                                                                                   
+  while the prompt is on screen — that's exactly what I need, escapes and all.                      
+                                                                                                    
+  Or tell me what it says. Specifically whether it's a box with numbered rows like the model picker,
+  or a single line near the status bar. That alone decides it: my parser requires numbered rows [1mand[0m 
+  a legend of at least two [38;5;153mkey to action[39m pairs. A one-line hint would be correctly ignored —        
+  nothing to offer as buttons — and then the pop-up not showing is right, and the thing you actually
+  want is a way to reach [38;5;153m/feedback[39m, which is a different problem.                                  
+                                                                                                    
+  There's also a real chance these are two separate things: the draft chip, and the numbered        
+  feedback survey you mentioned earlier. Those would need different answers.                        
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCogitated for 48s · done 9:32 PM · 1 shell still running[39m                                         
+                                                                                                    
+╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ [38;5;174m✻ [39mBug report drafted: [1mAskUserQuestion returned an option the user never selected (first/Recomme…[0m │
+│ [2m│[0m - [1mWhat happened:[0m Five AskUserQuestion calls in one session each returned the FIRST listed      │
+│ [2m│[0m option, which in each case was the one labelled "(Recommended)". T…                            │
+│ [38;5;246m1 to review · 2 to send · 0 to dismiss[39m                                                           │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                  
+                                                            [38;5;114m✔ Update installed · Restart to update[39m  
+[38;5;244m────────────────────────────────────────────────────────────────────── mustur milestone resolution ─
+[39m❯ [2mtmux capture-pane -p -e -J -t mustur/Check > /tmp/draft.txt[0m                                       
+[38;5;244m────────────────────────────────────────────────────────────────────────────────────────────────────
+[39m  [38;5;220m⏵⏵ auto mode on[38;5;246m · PR[39m [4m[38;5;220m]8;id=uzlkej;https://github.com/DevOfPie/Mustur/pull/38\#38[0m[38;5;246m]8;;\ · [38;5;44m1 shell[38;5;246m · ← 1 agent · 1 feedback draft · ↓ to manage[39m              [38;5;114m]8;id=1oohvs6;https://claude.ai/code/session_011KzADsJf4bC7Q8SYjKeKDB?from=cli\/rc[39m]8;;\  

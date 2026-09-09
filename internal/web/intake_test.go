@@ -485,3 +485,28 @@ func TestDestinationsAreGroupedByKind(t *testing.T) {
 		}
 	}
 }
+
+// The intake box is spell-checked, like every other box prose is written in.
+//
+// It was the only one that was not: the session composer and the compose
+// surface both carry it and this did not, so the box the owner files a jot
+// from was the one with no red underlines under it (MUS-F-0099).
+func TestTheIntakeBoxIsSpellChecked(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	in := &Intake{Store: st, Project: "MUS", Actor: "pie"}
+	srv := httptest.NewServer(in.Handler())
+	defer srv.Close()
+
+	body := getFrom(t, srv, "/intake")
+	if !strings.Contains(body, `spellcheck="true"`) {
+		t.Error("the intake box is not spell-checked")
+	}
+	if !strings.Contains(body, `autocapitalize="sentences"`) {
+		t.Error("a phone will not capitalise a sentence typed into it")
+	}
+}

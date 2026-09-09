@@ -113,6 +113,9 @@ type composeTarget struct {
 }
 
 type composePage struct {
+	// OpenQuestions is the bar's count; bar.js keeps it true after this render.
+	OpenQuestions int
+
 	Targets []composeTarget
 	// ShowAccount renders the header link to the account surface, which is
 	// served only when an origin is configured. Off means the link is absent
@@ -228,7 +231,7 @@ func lastActive(at, now time.Time) string {
 func (c *Compose) show(w http.ResponseWriter, r *http.Request) {
 	want := r.URL.Query().Get("to")
 	targets := c.targets(r.Context(), want)
-	c.render(w, composePage{
+	c.render(w, r, composePage{
 		Targets: targets,
 		None:    len(targets) == 0,
 		Sent:    r.URL.Query().Get("sent"),
@@ -274,7 +277,7 @@ func (c *Compose) send(w http.ResponseWriter, r *http.Request) {
 		// this same package argues the prose must not sit in a tmux buffer
 		// anything on the machine could read.
 		targets := c.targets(r.Context(), to)
-		c.render(w, composePage{
+		c.render(w, r, composePage{
 			Targets: targets,
 			None:    len(targets) == 0,
 			Draft:   text,
@@ -338,11 +341,14 @@ func (c *Compose) redirect(w http.ResponseWriter, r *http.Request, to, sent, msg
 	http.Redirect(w, r, "/compose?"+q.Encode(), http.StatusSeeOther)
 }
 
-func (c *Compose) render(w http.ResponseWriter, p composePage) {
+func (c *Compose) render(w http.ResponseWriter, r *http.Request, p composePage) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	// A capture surface a browser caches is one that shows a stale draft.
 	w.Header().Set("Cache-Control", "no-store")
 	p.ShowAccount = c.ShowAccount
+	if c.Store != nil {
+		p.OpenQuestions = OpenCount(r.Context(), c.Store)
+	}
 	if err := composeTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -434,12 +440,13 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
 {{end}}
 <nav>
   <a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>
-  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span></a>
+  <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 {{if not .None}}<script src="/assets/compose.js"></script>{{end}}
+<script src="/assets/bar.js"></script>
 </body>
 </html>
 `))

@@ -93,6 +93,9 @@ func cmdAsk(args []string) error {
 		r.Data = append(r.Data, record.Field{Key: question.FieldNeeded, Value: question.Yes})
 	}
 	for _, o := range options {
+		if err := question.CheckOption(o); err != nil {
+			return err
+		}
 		r.Data = append(r.Data, record.Field{Key: question.FieldOption, Value: o})
 	}
 	// Recorded so `answer` can refuse the raiser. Without it the gate is one
@@ -245,9 +248,17 @@ func cmdAnswer(args []string) error {
 		}
 		dctx, cancel := context.WithTimeout(context.Background(), session.DeliverTimeout)
 		defer cancel()
+		// The provenance travels with the answer. An agent writing down the
+		// owner's words, into a session the question names with --in, would
+		// otherwise have its own line typed back at it saying "The owner
+		// answered" (MUS-F-0085).
+		var relayed string
+		if v, ok := r.Get(question.FieldRelayed); ok {
+			relayed = v
+		}
 		question.Set(r, question.FieldDelivered,
-			session.Deliver(dctx, &session.Adapter{},
-				question.ProjectOf(*r), r.ID, *answer))
+			session.DeliverRelayed(dctx, &session.Adapter{},
+				question.ProjectOf(*r), r.ID, *answer, relayed))
 		return nil
 	})
 }

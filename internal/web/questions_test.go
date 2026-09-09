@@ -160,12 +160,16 @@ func TestEmptyAnswerIsRefusedAndTheQuestionStaysOpen(t *testing.T) {
 	}
 }
 
+// The tick is carried here too. Withdrawing without it is refused, which
+// TestWithdrawNeedsTheTickBesideIt holds; this test is about what a deliberate
+// withdrawal does, and it needs the same form the surface sends.
 func TestWithdrawClosesWithoutAnAnswer(t *testing.T) {
 	srv, s := serveQuestions(t, openQuestion("MUS-Q-0001", "Own the session, or attach?"))
 
 	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
 		"id":       {"MUS-Q-0001"},
 		"withdraw": {"1"},
+		"sure":     {"1"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -235,7 +239,11 @@ func TestOptionsRenderWithTheirLineAndDetail(t *testing.T) {
 
 	for _, want := range []string{
 		"Check StrucGu out in CI",
-		"Recommended · conformance runs on every push",
+		// The line without its marker. This read "Recommended · conformance
+		// runs on every push" until MUS-F-0072: the owner asked for the
+		// recommendation to be a mark on the row rather than the first words of
+		// the description, and the prefix is still what the record carries.
+		"conformance runs on every push",
 		"The catalog is fetched per run.",
 		"Vendor a pinned copy",
 		"A pinned specification goes stale silently.",
@@ -244,12 +252,18 @@ func TestOptionsRenderWithTheirLineAndDetail(t *testing.T) {
 			t.Errorf("the queue does not show %q", want)
 		}
 	}
+	if strings.Contains(body, "Recommended · conformance") {
+		t.Error("the marker is still text in the description")
+	}
 	// Expansion in place, and no script anywhere on the page.
 	if !strings.Contains(body, "<details") {
 		t.Error("options do not expand in place")
 	}
-	if strings.Contains(body, "<script") {
-		t.Error("the page carries script")
+	// Only the bar's script. The queue's own design is that it works without
+	// one, and the owner's answer on MUS-Q-0078 added exactly the badge and
+	// nothing else — so what is worth asserting is that nothing followed it in.
+	if got := scriptsIn(body); len(got) != 1 || got[0] != "/assets/bar.js" {
+		t.Errorf("the queue loads %v, want only the bar's script", got)
 	}
 }
 
@@ -294,15 +308,49 @@ func TestChoosingAnOptionAnswersTheQuestion(t *testing.T) {
 	}
 }
 
-// Free text beats a chosen option: the owner wanting to say something the list
-// does not contain is the case a list of options is worst at.
-func TestFreeTextOverridesAChosenOption(t *testing.T) {
+// Free text beside a chosen option is a note on that choice.
+//
+// This test held the opposite until MUS-Q-0068: MUS-D-0055 put free text
+// beneath the options and let it beat a choice, so picking an option and adding
+// a remark meant retyping the label into the box, and the record then said only
+// what was typed. The owner asked for both (MUS-F-0071) and chose to keep the
+// choice as the answer. The clause that survives is the one below it: text with
+// no choice is still the answer itself.
+func TestANoteRidesAlongsideTheChosenOption(t *testing.T) {
 	srv, s := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
 		"Check StrucGu out in CI :: Recommended :: detail"))
 
 	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
 		"id":     {"MUS-Q-0001"},
 		"option": {"Check StrucGu out in CI"},
+		"answer": {"but only once the catalog is pinned"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	got, err := s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Verbatim, so it can still be matched back to the option it names.
+	if ans, _ := got.Get(question.FieldAnswer); ans != "Check StrucGu out in CI" {
+		t.Errorf("answer = %q, want the chosen option unchanged", ans)
+	}
+	if note := question.NoteOf(got); note != "but only once the catalog is pinned" {
+		t.Errorf("note = %q, want the remark kept beside the choice", note)
+	}
+}
+
+// And text with no choice is the answer, which is MUS-D-0055's case for what
+// the list does not contain. That half is unchanged.
+func TestFreeTextWithNoChoiceIsStillTheAnswer(t *testing.T) {
+	srv, s := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
+		"id":     {"MUS-Q-0001"},
 		"answer": {"Neither. Ask me again after milestone 4."},
 	})
 	if err != nil {
@@ -317,6 +365,60 @@ func TestFreeTextOverridesAChosenOption(t *testing.T) {
 	if ans, _ := got.Get(question.FieldAnswer); ans != "Neither. Ask me again after milestone 4." {
 		t.Errorf("answer = %q, want the typed text", ans)
 	}
+	// No choice was made, so there is nothing for a note to be a note on.
+	if note := question.NoteOf(got); note != "" {
+		t.Errorf("note = %q, want none: the text was the answer", note)
+	}
+}
+
+// A waiting session is told the choice and the note, not the choice alone.
+func TestTheNoteTravelsWithTheAnswerIntoTheSession(t *testing.T) {
+	rec := withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail")
+	rec.Data = append(rec.Data, record.Field{Key: question.FieldProject, Value: "Mustur"})
+
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if err := s.Append(ctx, rec, "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	spy := &recordingSender{}
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", Sessions: spy}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
+		"id":     {"MUS-Q-0001"},
+		"option": {"Check StrucGu out in CI"},
+		"answer": {"but only once the catalog is pinned"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	if !strings.Contains(spy.sent, "Check StrucGu out in CI") {
+		t.Errorf("the session was not told the choice: %q", spy.sent)
+	}
+	if !strings.Contains(spy.sent, "but only once the catalog is pinned") {
+		t.Errorf("the session was told the choice and not the note, so it would act on an option the owner qualified: %q", spy.sent)
+	}
+}
+
+// A sender that keeps what it was handed.
+type recordingSender struct{ sent string }
+
+func (recordingSender) Alive(context.Context, string) (bool, error) { return true, nil }
+func (r *recordingSender) Send(_ context.Context, _, text string) error {
+	r.sent = text
+	return nil
 }
 
 // The surface marks the recommended option. The first build computed the flag
@@ -494,5 +596,227 @@ func TestAnEmptyQueueSaysSo(t *testing.T) {
 	srv, _ := serveQuestions(t)
 	if body := getFrom(t, srv, "/questions"); !strings.Contains(body, "Nothing waiting on you") {
 		t.Error("an empty queue does not say it is empty")
+	}
+}
+
+// The person answering learns what became of the answer.
+//
+// MUS-F-0070: the owner answered a question that named no session, waited for a
+// session to resume, and nothing had ever been going to type into one. Deliver
+// already returned the sentence and it went only into the record, which is the
+// one place the person who just answered was not looking. MUS-D-0065 stands --
+// an undelivered answer is still an answer -- and saying so is not the same as
+// refusing it.
+func TestTheAnswererIsToldWhereTheAnswerWent(t *testing.T) {
+	// No FieldProject: a question raised outside a session Mustur started,
+	// which is the common case and the one that surprised the owner. Sessions
+	// is set, because the surprise needs a server that could have delivered --
+	// with the flag off there is no Sessions tab either and nobody is waiting
+	// for a session to resume.
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if err := s.Append(ctx, openQuestion("MUS-Q-0001", "Where does the audit run?"), "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", Sessions: liveSender{}, ShowSessions: true}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "answer": {"CI, with a real catalog"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The client follows the redirect, so this is the page the owner lands on.
+	if !strings.Contains(string(body), "Answered <code>MUS-Q-0001</code>") {
+		t.Fatal("the queue does not confirm the answer at all")
+	}
+	if !strings.Contains(string(body), "not delivered") {
+		t.Errorf("the page says nothing about delivery, so an answer that reached no session looks like one that did:\n%s", string(body))
+	}
+	if !strings.Contains(string(body), "names no session") {
+		t.Error("the reason is not carried back, only the fact")
+	}
+}
+
+// And a delivery that worked says so, rather than saying nothing.
+func TestADeliveredAnswerSaysWhereItWentToo(t *testing.T) {
+	rec := openQuestion("MUS-Q-0001", "Where does the audit run?")
+	rec.Data = append(rec.Data, record.Field{Key: question.FieldProject, Value: "Mustur"})
+
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	if err := s.Append(ctx, rec, "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	q := &Questions{Store: s, Project: "MUS", Actor: "pie", Sessions: liveSender{}}
+	mux := http.NewServeMux()
+	q.Routes(mux)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	res, err := srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "answer": {"CI, with a real catalog"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), "typed into") {
+		t.Errorf("a delivered answer does not say so:\n%s", string(body))
+	}
+}
+
+// A sender whose session is alive and takes what it is given.
+type liveSender struct{}
+
+func (liveSender) Alive(context.Context, string) (bool, error) { return true, nil }
+func (liveSender) Send(context.Context, string, string) error  { return nil }
+
+// The answer box cannot submit on Enter.
+//
+// MUS-F-0076: it was a single-line input, and Enter in one submits the form.
+// The owner pressed it mid-sentence while writing a note and the half they had
+// typed was recorded as the answer. A textarea takes Enter as a newline, so the
+// Answer button is the only way out.
+func TestTheAnswerBoxIsMultiLineSoEnterCannotSubmitIt(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, `<textarea name="answer"`) {
+		t.Error("the answer box is not a textarea, so Enter still submits mid-sentence")
+	}
+	if strings.Contains(body, `<input type="text" name="answer"`) {
+		t.Error("the single-line input is still there")
+	}
+	// It is the same box that carries a note, so it is spell-checked like the
+	// other place prose is written.
+	if !strings.Contains(body, `spellcheck="true"`) {
+		t.Error("the box is not spell-checked")
+	}
+}
+
+// Withdraw says what it does before it does it.
+//
+// MUS-F-0077: the button said only "Withdraw" and closed the question with no
+// answer on one press. The owner pressed it not knowing, and MUS-Q-0060 closed.
+func TestWithdrawNeedsTheTickBesideIt(t *testing.T) {
+	srv, s := serveQuestions(t, openQuestion("MUS-Q-0001", "Where does the audit run?"))
+
+	body := getFrom(t, srv, "/questions")
+	if !strings.Contains(body, `name="sure"`) {
+		t.Fatal("nothing beside the button says what it does")
+	}
+	if !strings.Contains(body, "close it with no answer") {
+		t.Error("the tick does not say what withdrawing is")
+	}
+
+	// Unticked: refused, and the question is untouched.
+	res, err := srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "withdraw": {"1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := io.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !question.IsOpen(got) {
+		t.Fatalf("an unticked withdraw closed the question: status %q", question.Status(got))
+	}
+	if !strings.Contains(string(page), "Tick the box") {
+		t.Errorf("the refusal does not say how to withdraw on purpose:\n%s", string(page))
+	}
+
+	// Ticked: it withdraws, because saying no to the owner twice is not the point.
+	res, err = srv.Client().PostForm(srv.URL+"/questions",
+		url.Values{"id": {"MUS-Q-0001"}, "withdraw": {"1"}, "sure": {"1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	got, err = s.Get(context.Background(), "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if question.Status(got) != question.StatusWithdrawn {
+		t.Errorf("a ticked withdraw did not withdraw: status %q", question.Status(got))
+	}
+}
+
+// Answer reads as unavailable until there is something to answer with.
+//
+// MUS-Q-0071. Done in CSS rather than with script or a required attribute:
+// the first would make this the seventh scripted surface and the second would
+// retire MUS-D-0055's clause that text alone can answer a question that offers
+// options.
+func TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended :: detail"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, "input[type=radio]:checked") {
+		t.Error("nothing asks whether an option is chosen")
+	}
+	if !strings.Contains(body, "textarea:not(:placeholder-shown)") {
+		t.Error("nothing asks whether the box has text, so text alone would not enable it")
+	}
+	// The dimming is CSS and stays CSS. The bar's script is the only one here,
+	// and it touches the badge and nothing else — if the button ever becomes
+	// script's job, this is where it shows up.
+	if got := scriptsIn(body); len(got) != 1 || got[0] != "/assets/bar.js" {
+		t.Errorf("the queue loads %v; the dimming is meant to be CSS", got)
+	}
+	// Withdraw has to work when nothing is chosen -- that is what it is for.
+	if strings.Contains(body, "button { opacity: .45") {
+		t.Error("the rule is not scoped to the primary button, so Withdraw is dimmed too")
+	}
+}
+
+// The row carries a mark and the description does not carry the word.
+func TestTheRecommendationIsAMarkNotAWordInTheDescription(t *testing.T) {
+	srv, _ := serveQuestions(t, withOptions("MUS-Q-0001", "Where does the audit run?",
+		"Check StrucGu out in CI :: Recommended. It is the only place with a real catalog :: detail"))
+	body := getFrom(t, srv, "/questions")
+
+	if !strings.Contains(body, `class="rec"`) {
+		t.Fatal("nothing marks the recommended option")
+	}
+	if !strings.Contains(body, "&#9733;") {
+		t.Error("the mark is not the star")
+	}
+	if strings.Contains(body, ">recommended<") {
+		t.Error("the word is still rendered as the mark")
+	}
+	if !strings.Contains(body, "It is the only place with a real catalog") {
+		t.Error("the description lost its sentence")
+	}
+	if strings.Contains(body, "Recommended. It is the only place") {
+		t.Error("the marker is still text in the description, which is what MUS-F-0072 reported")
 	}
 }

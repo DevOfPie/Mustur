@@ -277,3 +277,43 @@ func TestStopRefusesASessionMusturDidNotStart(t *testing.T) {
 		t.Errorf("kill-session ran anyway: %v", f.calls)
 	}
 }
+
+// A refused name says what is wrong before what is allowed.
+//
+// The owner typed a name with a space in it and was answered with a sentence
+// about tmux reading ":" and "." as target separators — true of the rule,
+// irrelevant to what they had typed, and no help at all in fixing it
+// (MUS-F-0097).
+func TestARefusedNameNamesWhatIsWrongWithIt(t *testing.T) {
+	for _, c := range []struct{ name, want string }{
+		{"two words", "cannot contain a space"},
+		{"a\tb", "cannot contain a tab"},
+		{"Mustur:0", `cannot contain ":"`},
+		{"end.", `cannot contain "."`},
+		{"café", `cannot contain "é"`},
+	} {
+		_, err := NameFor(c.name)
+		if err == nil {
+			t.Errorf("NameFor(%q) was accepted", c.name)
+			continue
+		}
+		if !strings.Contains(err.Error(), c.want) {
+			t.Errorf("NameFor(%q) said %q, want it to name %q", c.name, err, c.want)
+		}
+		// And then the rule, once, in the same breath.
+		if !strings.Contains(err.Error(), "letters, digits, dash or underscore") {
+			t.Errorf("NameFor(%q) does not summarise what is allowed: %v", c.name, err)
+		}
+		// The derivation is not the message. It is a comment on the rule.
+		if strings.Contains(err.Error(), "target separators") {
+			t.Errorf("NameFor(%q) still explains tmux at somebody who typed a space: %v", c.name, err)
+		}
+	}
+
+	if _, err := NameFor(""); err == nil || !strings.Contains(err.Error(), "a name is needed") {
+		t.Errorf("an empty name said %v", err)
+	}
+	if _, err := NameFor("Fine_name-1"); err != nil {
+		t.Errorf("a good name was refused: %v", err)
+	}
+}

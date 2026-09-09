@@ -47,6 +47,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	"unicode"
 )
 
 // Prefix names every tmux session Mustur started, so a person running `tmux ls`
@@ -172,11 +173,47 @@ func (a *Adapter) runner() Runner {
 var safeProject = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 // NameFor builds the tmux session name for a project.
+//
+// A refused name says what is wrong with it and then what is allowed, in that
+// order. The first version said only the second half and then explained tmux's
+// target separators — so a name refused for containing a space was answered
+// with a sentence about colons and full stops, which is true of the rule and
+// irrelevant to what was typed. The reason the rule exists is above; a person
+// who has just been refused wants the fact, not the derivation.
 func NameFor(project string) (string, error) {
+	if project == "" {
+		return "", fmt.Errorf("a name is needed: letters, digits, dash or underscore")
+	}
 	if !safeProject.MatchString(project) {
-		return "", fmt.Errorf("project %q must be letters, digits, dash or underscore: tmux reads : and . as target separators", project)
+		return "", fmt.Errorf("a name cannot contain %s: use letters, digits, dash or underscore", offending(project))
 	}
 	return Prefix + project, nil
+}
+
+// offending names what is wrong with a name, in the words somebody would use.
+//
+// One thing, not a list: the first character that is not allowed. A name with a
+// space and a colon in it has two problems and fixing either is progress, and a
+// refusal that enumerates is a refusal nobody finishes reading.
+func offending(project string) string {
+	for _, r := range project {
+		switch {
+		case r >= 'A' && r <= 'Z', r >= 'a' && r <= 'z', r >= '0' && r <= '9', r == '_', r == '-':
+			continue
+		case r == ' ':
+			return "a space"
+		case r == '\t':
+			return "a tab"
+		case unicode.IsSpace(r):
+			return "whitespace"
+		default:
+			return fmt.Sprintf("%q", string(r))
+		}
+	}
+	// Every character is allowed, so the name failed the pattern for its
+	// length. The regexp requires at least one, and the empty case is caught
+	// before this is reached.
+	return "what it contains"
 }
 
 // Start launches a session for a project, running cmd in dir. It refuses to
@@ -569,4 +606,69 @@ func noServer(out string) bool {
 	return strings.Contains(s, "no server running") ||
 		strings.Contains(s, "error connecting to") ||
 		strings.Contains(s, "no such file or directory")
+}
+
+// Keys the session surface may send, and the tmux name for each.
+//
+// An allowlist rather than a pass-through, and the reason is the runner: this
+// package shells out to tmux with the caller's string as an argument, and
+// send-keys reads names like `C-c` from that argument. A key the browser could
+// name freely would be a browser choosing what tmux does to a pane.
+//
+// The set is what MUS-Q-0072 chose and no more -- Escape, Enter, the four
+// arrows and Ctrl-C: get off a dialog, answer one, move within one, and
+// interrupt a turn. There is deliberately no way to send
+// an arbitrary control character; the next one that is wanted is a line in this
+// map and a decision about what it is for.
+var keys = map[string]string{
+	"escape": "Escape",
+	"enter":  "Enter",
+	"up":     "Up",
+	"down":   "Down",
+	"left":   "Left",
+	"right":  "Right",
+	"cancel": "C-c",
+}
+
+// KeyNames is every key SendKey accepts, for a caller that wants to render
+// them. Sorted, so a surface built from it does not reorder between runs.
+func KeyNames() []string {
+	out := make([]string, 0, len(keys))
+	for k := range keys {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// SendKey presses one key in a session Mustur started.
+//
+// Separate from Send rather than a mode of it. Send's whole argument is that a
+// message is text and goes in as a paste that says so (MUS-D-0096); this is the
+// case that decision did not cover — a pane asking for a keypress rather than a
+// sentence — and MUS-Q-0072 is the named exception. Keeping them apart is what
+// stops "send this text" quietly growing a way to press Ctrl-C.
+//
+// No Enter follows. That is the difference: Send types a line and submits it,
+// and this presses exactly what it was asked for and nothing else.
+func (a *Adapter) SendKey(ctx context.Context, project, key string) error {
+	name, err := NameFor(project)
+	if err != nil {
+		return err
+	}
+	tmuxKey, ok := keys[strings.ToLower(strings.TrimSpace(key))]
+	if !ok {
+		return fmt.Errorf("%q is not a key this may send", key)
+	}
+	live, err := a.Alive(ctx, project)
+	if err != nil {
+		return err
+	}
+	if !live {
+		return fmt.Errorf("%s has no session Mustur started", project)
+	}
+	if out, err := a.runner().Run(ctx, "tmux", "send-keys", "-t", name, tmuxKey); err != nil {
+		return fmt.Errorf("tmux send-keys %s: %w: %s", tmuxKey, err, strings.TrimSpace(out))
+	}
+	return nil
 }

@@ -1,5 +1,10 @@
 package web
 
+import (
+	_ "embed"
+	"net/http"
+)
+
 // The chrome every surface shares: the tab bar, and the rail it becomes.
 //
 // Six templates carried their own copy of these rules and had already drifted —
@@ -26,6 +31,23 @@ package web
 // output pane fills the page with `flex: 1`, which means nothing in a grid
 // container, and the composer would lose its bottom edge. Taking the rail out
 // of flow leaves every surface's internal layout exactly as it was.
+//
+//go:embed assets/bar.js
+var barJS string
+
+// BarRoutes serves the one script the shared bar needs.
+//
+// Registered once by the caller rather than by each page type, because the bar
+// is shared and a second copy of its script is how MUS-F-0086 happened: the
+// session view had its own badge code, so fixing the badge fixed one surface.
+func BarRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /assets/bar.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		_, _ = w.Write([]byte(barJS))
+	})
+}
+
 const shellCSS = `
   /* Canvas follows color-scheme, so the bar is opaque in both themes without
      this file having to know either one's colour. */

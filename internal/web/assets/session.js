@@ -54,6 +54,14 @@
   // pill have a choice to make between running and idle.
   var attached = false;
 
+  // How many decisions are waiting. The writing is bar.js's, so the socket and
+  // the poll put a number in the badge through one piece of code -- the session
+  // view having its own copy is how MUS-F-0086 happened, and fixing the badge
+  // fixed one surface.
+  function setWaiting(n) {
+    if (window.musturBadge) window.musturBadge(n);
+  }
+
   function setState(label, on) {
     state.textContent = label;
     state.className = on ? "pill on" : "pill";
@@ -163,7 +171,7 @@
   }
 
   setInterval(function () {
-    if (foot && !closed) foot.textContent = quiet();
+    if (foot && !closed) showFoot();
     refreshState();
     // The ages move on their own, so the server does not send a frame to move
     // them.
@@ -512,6 +520,19 @@
       } catch (e) {
         return;
       }
+      // The badge, on every frame that carries one. A count is sent when the
+      // socket opens and again whenever it moves, so it is handled before the
+      // frame kinds rather than repeated inside three of them.
+      if (typeof f.waiting === "number") setWaiting(f.waiting);
+      // Sent with every hello and every screen, so its absence on one of those
+      // means there is no prompt rather than that nothing was said.
+      if (f.t === "hello" || f.t === "screen") {
+        drawPrompt(f.prompt || null);
+        // Sent with the same frames as the prompt, so its absence on one of
+        // them means the turn ended rather than that nothing was said.
+        doingNow = f.activity || null;
+        showFoot();
+      }
       if (f.t === "hello") {
         // The first frame carries the screen as it stands, so a reconnect
         // paints immediately rather than waiting for the session to move.
@@ -550,7 +571,9 @@
         closed = true;
         attached = false;
         setState(f.at ? "ended " + f.at : "ended", false);
-        if (foot) foot.textContent = "Nothing is running. Output is kept until you start another.";
+        doingNow = null;
+        if (spin) spin.hidden = true;
+        if (footText) footText.textContent = "Nothing is running. Output is kept until you start another.";
         // The box stays writable: MUS-Q-0018 is that the composer is always
         // writable, and a dropped connection is exactly when someone is most
         // likely to be mid-sentence. Only the look dims.
@@ -663,16 +686,305 @@
       grow();
       showKept();
     });
-    // Enter is a newline, because this is a composer and not a chat box. The
-    // Send button is the phone's submit, and the keyboard shortcut is for the
-    // desktop where a modifier is at hand.
+    // Enter sends where there is a shift key to hold, and makes a newline where
+    // there is not (MUS-Q-0067). A soft keyboard has no shift, so Enter-sends
+    // everywhere would take multi-line off the phone entirely -- which is the
+    // surface this box exists for. The query is the closest a browser gets to
+    // asking whether a physical keyboard is present; it is read at each
+    // keystroke rather than cached, so a tablet that gains one changes with it.
+    //
+    // The Send button stays on every device either way. It is the phone's
+    // submit and the desktop's second route to the same thing, and a control
+    // that comes and goes with a media query is a control nobody trusts.
+    var deskKeys = window.matchMedia
+      ? window.matchMedia("(hover: hover) and (pointer: fine)")
+      : null;
     text.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      if (e.key !== "Enter") return;
+      // Composing in an IME: Enter is choosing a candidate, not sending.
+      if (e.isComposing || e.keyCode === 229) return;
+      // The modifier still sends anywhere, including the touch screen where
+      // plain Enter deliberately does not.
+      if (e.metaKey || e.ctrlKey) {
         e.preventDefault();
         if (form) form.dispatchEvent(new Event("submit", { cancelable: true }));
+        return;
+      }
+      if (e.shiftKey || e.altKey) return;
+      if (!deskKeys || !deskKeys.matches) return;
+      e.preventDefault();
+      if (form) form.dispatchEvent(new Event("submit", { cancelable: true }));
+    });
+  }
+
+  // What the session is doing, under the terminal.
+  //
+  // The CLI's own animated line is taken off the output and arrives as fields
+  // (MUS-F-0098), so this draws "Zigzagging · 3m 40s · 11.5k tokens" beside a
+  // ring that turns in CSS. With nothing running it is the quiet counter, which
+  // is what this row was before.
+  var spin = document.getElementById("spin");
+  var footText = document.getElementById("foottext");
+  var doingNow = null;
+
+  function showFoot() {
+    if (!footText) return;
+    if (doingNow) {
+      var bits = [doingNow.verb];
+      if (doingNow.for) bits.push(doingNow.for);
+      if (doingNow.detail) bits.push(doingNow.detail);
+      footText.textContent = bits.join(" \u00b7 ");
+      if (spin) spin.hidden = false;
+      return;
+    }
+    if (spin) spin.hidden = true;
+    footText.textContent = quiet();
+  }
+
+  // The prompt the pane is waiting on.
+  //
+  // MUS-Q-0077: in front of the session, minimising into the key row. It is
+  // over the terminal because a dialog is the only thing that matters while it
+  // is up, and it minimises rather than closes because the pane underneath is
+  // what you minimise it to read.
+  //
+  // Rebuilt only when the prompt actually changes. A screen frame arrives every
+  // time the pane redraws -- a cursor blink is a redraw -- and rebuilding on
+  // each one would throw away the minimised state a few times a second.
+  var dlg = document.getElementById("dlg");
+  var dlgT = document.getElementById("dlgt");
+  var dlgB = document.getElementById("dlgb");
+  var dlgO = document.getElementById("dlgo");
+  var dlgK = document.getElementById("dlgk");
+  var dlgMin = document.getElementById("dlgmin");
+  var lastPrompt = null;
+  // The prompt as last drawn, so a click knows where the cursor is without
+  // keeping a second copy of it.
+  var lastDrawn = null;
+  var minimised = false;
+
+  function keyButton(cls, key, label) {
+    var b = el("button", cls, label);
+    b.type = "button";
+    b.setAttribute("data-key", key);
+    return b;
+  }
+
+  // The chip in the key row that brings a minimised prompt back.
+  function chip(show, title) {
+    if (!keyRow) return;
+    var have = keyRow.querySelector(".dlgchip");
+    if (!show) {
+      if (have && have.parentNode) have.parentNode.removeChild(have);
+      return;
+    }
+    if (!have) {
+      have = el("button", "dlgchip");
+      have.type = "button";
+      have.id = "dlgchip";
+      keyRow.insertBefore(have, keyRow.firstChild);
+    }
+    have.textContent = title || "Prompt";
+  }
+
+  function showPrompt() {
+    minimised = false;
+    if (dlg) dlg.hidden = false;
+    chip(false);
+    measureDock();
+  }
+
+  function hidePrompt(title) {
+    minimised = true;
+    if (dlg) dlg.hidden = true;
+    chip(true, title);
+    measureDock();
+  }
+
+  // Said once, when a prompt arrives and there is nowhere to put it.
+  var toldStale = false;
+
+  function drawPrompt(p) {
+    if (!dlg) {
+      // The markup for the pop-up is served with the page, and a session tab
+      // is left open for hours. So a tab opened before the server learned to
+      // draw prompts has no #dlg in it, receives them, and silently does
+      // nothing -- which is what the owner saw: the dialog on the pane, no
+      // pop-up beside it, and the socket delivering it the whole time.
+      //
+      // A missing element is not a state to recover from; it is a page that is
+      // older than the server. Saying so is the fix.
+      if (p && !toldStale) {
+        toldStale = true;
+        note("this tab is older than the server: reload it to see prompts");
+      }
+      return;
+    }
+    var sig = p ? JSON.stringify(p) : "";
+    if (sig === lastPrompt) return;
+    var wasMinimised = minimised && lastPrompt !== "";
+    lastPrompt = sig;
+    lastDrawn = p;
+
+    if (!p) {
+      dlg.hidden = true;
+      minimised = false;
+      chip(false);
+      measureDock();
+      return;
+    }
+
+    dlgT.textContent = p.title || "The session is waiting on you";
+    dlgB.textContent = p.body || "";
+    dlgO.textContent = "";
+    (p.options || []).forEach(function (o, i) {
+      // A row with no key is not a button. One shape of dialog has toggles
+      // moved between with the arrows rather than pressed by name, and drawing
+      // those as buttons offers a press that does nothing (MUS-F-0101). They
+      // are shown with their state, and the cursor still marks which is which.
+      if (!o.key) {
+        // Movable rather than pressable. The cursor is moved with the arrows,
+        // so clicking a row sends the arrows needed to reach it — the owner
+        // should not be pressing ↑ four times to get somewhere the surface can
+        // already see (MUS-F-0104).
+        var row = el("button", o.selected ? "row on" : "row", "");
+        row.type = "button";
+        row.setAttribute("data-row", String(i));
+        row.appendChild(document.createTextNode(o.label));
+        // A row carrying a cycler is changed in place once the cursor is on
+        // it, so it offers the two keys that do that rather than making the
+        // reader find them in the legend.
+        if (/[◀▶]/.test(o.label)) {
+          row.appendChild(keyButton("side", "left", "\u25c0"));
+          row.appendChild(keyButton("side", "right", "\u25b6"));
+        }
+        dlgO.appendChild(row);
+        return;
+      }
+      var b = keyButton(o.selected ? "on" : "", o.key, "");
+      b.appendChild(el("span", "num", o.key));
+      b.appendChild(document.createTextNode(o.label));
+      dlgO.appendChild(b);
+    });
+    dlgK.textContent = "";
+    (p.keys || []).forEach(function (k) {
+      var text = k.key + " \u00b7 " + k.label;
+      // The legend names keys in the CLI's own words and some of them are not
+      // one key: "←/→ to change usage" is a pair, and there is nothing to send.
+      // The server says which are real; the rest are what the dialog says, in
+      // text, so the reader learns the key without being offered a dead button.
+      if (!k.sendable) {
+        dlgK.appendChild(el("span", "hintkey", text));
+        return;
+      }
+      dlgK.appendChild(keyButton("", k.key, text));
+    });
+
+    // A prompt that changed while minimised stays minimised: the owner put it
+    // away to read the pane, and a redraw is not them asking for it back.
+    if (wasMinimised) hidePrompt(p.title);
+    else showPrompt();
+  }
+
+  if (dlgMin) {
+    dlgMin.addEventListener("click", function () {
+      hidePrompt(dlgT ? dlgT.textContent : "");
+    });
+  }
+
+  // Ending the session.
+  //
+  // The owner asked for a confirmation prompt as well as the tick (MUS-Q-0080's
+  // note), so there are two things in front of it that fail differently: the
+  // tick is the server's and is refused without, and this is the browser's and
+  // names the session before anything is submitted. With script blocked the
+  // tick is the whole guard, which is the standing Withdraw already has.
+  var endForm = document.getElementById("endform");
+  if (endForm) {
+    endForm.addEventListener("submit", function (e) {
+      var btn = document.getElementById("endbtn");
+      var name = btn ? btn.getAttribute("data-project") : "";
+      // Named, not "are you sure": a page with one session and a page with
+      // eight look the same at the moment of asking.
+      if (!window.confirm("End " + name + "? Whatever it is running is killed.")) {
+        e.preventDefault();
       }
     });
   }
+
+  // The key row.
+  //
+  // A pane can ask for a keypress rather than a sentence -- a dialog to get off,
+  // a list to move down, a turn to interrupt -- and the composer could only ever
+  // send a line of text followed by Enter (MUS-F-0080). The owner's case is the
+  // last of those: noticing an agent misreading them and wanting to stop it and
+  // correct it, which in the terminal is Escape.
+  //
+  // Delegated from the row rather than bound per button, and the row is outside
+  // the form on purpose: a button inside it submits it.
+  var keyRow = document.getElementById("keys");
+  if (keyRow) {
+    keyRow.addEventListener("click", function (e) {
+      // The chip is in this row and is not a key: it brings the prompt back.
+      if (e.target.closest && e.target.closest(".dlgchip")) {
+        showPrompt();
+        return;
+      }
+      var b = e.target.closest ? e.target.closest("button[data-key]") : null;
+      if (!b) return;
+      if (!ws || ws.readyState !== 1) {
+        note("not sent: still reconnecting.");
+        return;
+      }
+      if (closed) return;
+      ws.send(JSON.stringify({ t: "key", key: b.getAttribute("data-key") }));
+      // Straight back to the box. Pressing Escape to interrupt and then having
+      // to reach for the composer is two gestures for one intention, and the
+      // whole point of the row is that the correction follows the interrupt.
+      if (text) text.focus();
+    });
+  }
+
+  function sendKey(key) {
+    if (!ws || ws.readyState !== 1) {
+      note("not sent: still reconnecting.");
+      return false;
+    }
+    if (closed) return false;
+    ws.send(JSON.stringify({ t: "key", key: key }));
+    return true;
+  }
+
+  // The prompt's buttons send the same key frame the row does, so there is one
+  // path to a keypress and one place it can be refused.
+  [dlgO, dlgK].forEach(function (box) {
+    if (!box) return;
+    box.addEventListener("click", function (e) {
+      if (!e.target.closest) return;
+      // A key on the row — the cycler's arrows — is that key and not a move.
+      var k = e.target.closest("button[data-key]");
+      if (k) {
+        e.stopPropagation();
+        sendKey(k.getAttribute("data-key"));
+        return;
+      }
+      var row = e.target.closest("button[data-row]");
+      if (!row || !lastDrawn) return;
+      // Where the cursor is, and how far to walk it. Read from what was drawn
+      // rather than remembered, so a pane that moved under us is followed
+      // rather than fought.
+      var want = Number(row.getAttribute("data-row"));
+      var at = -1;
+      (lastDrawn.options || []).forEach(function (o, i) {
+        if (o.selected) at = i;
+      });
+      if (at < 0 || at === want) return;
+      var step = want > at ? "down" : "up";
+      for (var n = Math.abs(want - at); n > 0; n--) {
+        if (!sendKey(step)) return;
+      }
+    });
+  });
 
   if (dest && project) dest.textContent = "Send to " + project;
 

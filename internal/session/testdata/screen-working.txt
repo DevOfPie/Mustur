@@ -1,0 +1,300 @@
+                                                                                                    
+
+[38;5;231m●[39m That's my error, and it's in the question you're looking at. The [38;5;153mRecommended[39m marker goes on the
+  option's [1mone-line[0m part; I put it at the start of the paragraph, where nothing reads it.
+
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                      
+[38;5;231m●[39m Every question I raised this session — all thirteen. No star has ever rendered on any of them; I'd
+  been saying "recommended" in prose instead, which is why it never surfaced. Testing how [38;5;153mamend[39m  
+  treats a repeated field before I touch real records.
+                                                                                                  
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+
+[38;5;231m●[39m [38;5;153mamend[39m silently corrupted it — two [38;5;153m--data Option=[39m values and both options became the same one.     
+  That's a defect in the command whose job is correcting records, and it has to be fixed before I   
+  repair anything with it.                                                                       
+                                                                                                    
+  [38;5;246mSearched for [1m4[0m[38;5;246m patterns, ran [1m2[0m[38;5;246m shell commands [39m                                               
+
+[38;5;231m●[39m [38;5;153mincoming[39m is a [38;5;153mmap[string]record.Field[39m — repeated keys collapse to the last, and every existing row
+  is overwritten with it. Fixing the merge to keep a list per key.                             
+                                                                                                    
+  [38;5;246mRan [1m4[0m[38;5;246m shell commands [39m                                                                        
+
+[38;5;231m●[39m Now the repair. Thirteen records, with the fixed [38;5;153mamend[39m — and I'll verify each round-trips rather
+  than trusting it.                                               
+
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                                   
+[38;5;231m●[39m All thirteen repaired, no duplicates, no strays. Now a guard so [38;5;153mask[39m can't accept it again.      
+                   
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m4[0m[38;5;246m shell commands [39m                                                     
+                                                                                              
+[38;5;231m●[39m My mistake, in every question I've asked you. The [38;5;153mRecommended[39m marker goes on the option's [1mone-line
+[0m  part; I put it at the front of the paragraph, where [38;5;153mIsRecommended[39m never looks. Thirteen questions
+  — MUS-Q-0067 through 0079 — and no star has ever drawn on any of them.
+                                                                                                   
+  It went unnoticed because [1mI kept saying it in prose.[0m Every one of those came with a message naming
+  the recommended option in words, so the information reached you and the control never did. A
+  habit that supplies by hand what a surface is meant to show will hide that surface being broken   
+  for as long as the habit lasts.                                                                   
+                                                                                                    
+  All thirteen are repaired and verified: none still carry a misplaced marker, none gained or lost  
+  an option. Deployed — reload and MUS-Q-0079 should show the ★.                                    
+                                                                                                    
+  [1mRepairing them found something worse.[0m [38;5;153mamend[39m — the command that exists to correct records — held  
+  incoming fields one per key, and [38;5;153mOption[39m repeats. Passing three [38;5;153m--data Option=[39m values kept the last
+  and overwrote [3mevery[0m existing row with it: a question with three options came back with three      
+  copies of the third, silently, and the command printed the identifier as if nothing were wrong.   
+                                                                                                  
+  That's MUS-F-0055's shape a second time. Its fix was written for fields that appear once and never
+  asked what a repeated key would do. Now: passing a key replaces every occurrence in order, fewer  
+  removes the surplus, more appends, and a key never mentioned is untouched.                        
+                                                                                                    
+  I only caught it because I tried the repair on a scratch store first. Otherwise I'd have flattened
+  thirteen questions while fixing them.                                                             
+                                                                                                    
+  [38;5;153mmustur ask[39m now refuses an option whose paragraph starts with the marker, and prints the corrected 
+  option in the refusal:                                                                            
+                                                                                                    
+  mustur: "A" starts its paragraph with "Recommended", where nothing reads it.                      
+  The marker is a prefix on the one-line part, between the first and second " :: ":                 
+    --option "A :: Recommended. one line :: the paragraph"                                          
+
+  [38;5;153mmake check[39m green: 1497 links, 364 identifiers. Deployed with [38;5;153mmake deploy[39m — no command needed from 
+  you.                                                                                              
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mSautéed for 3m 52s · done 10:42 PM[39m                                                                
+
+[38;5;239m[48;5;237m❯ [38;5;231mThe owner answered MUS-Q-0079: A name, a project from the routing records, and a command from an [39m 
+  [38;5;231mallowlist[39m                                                                                         
+[49m                                                                                                    
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands 
+
+[38;5;231m●[39m No existing POST checks Origin — intake and questions accept cross-origin form posts today.
+  Checking how the guard restricts writes before I add one that starts processes.                   
+
+  [38;5;246mSearched for [1m2[0m[38;5;246m patterns, ran [1m2[0m[38;5;246m shell commands [39m                                                    
+                                                
+[38;5;231m●[39m Guard already makes any POST owner-only — two roles, and [38;5;153mCanWrite()[39m is owner. Building the form.  
+                                                                                 
+  [38;5;246mRan [1m4[0m[38;5;246m shell commands [39m                                                                    
+                                                                                 
+[38;5;231m●[39m Now the form itself on the sessions list, and the page data it needs.                             
+
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m3[0m[38;5;246m shell commands [39m                                                    
+                                                                                                  
+[38;5;231m●[39m The CSS anchor I used was from another file — nothing was written. Finding the right one.  
+                                                                                                   
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m10[0m[38;5;246m shell commands 
+[39m                                                                                                  
+[38;5;231m●[39m Built and deployed. [38;5;153m/sessions?new=1[39m — or the [1mNew[0m link beside the session picker — gives you three
+  fields, and only one of them is typed:                                                   
+                                                                                         
+  - [1mName[0m — a label; nothing runs it. Validated by tmux's own rule, since it reads [38;5;153m:[39m and [38;5;153m.[39m as target
+    separators.                                                                                    
+  - [1mWhere it runs[0m — a picker of repositories the store holds a checkout for. Verified live:         
+    [38;5;153mDevOfPie/Mustur — /home/whippy/repos/DevOfPie/Mustur[39m. The directory is looked up [3mafter[0m the
+    choice arrives, so no path is ever submitted.
+  - [1mWhat it runs[0m — a picker from an allowlist, [38;5;153mclaude[39m by default, set with [38;5;153m--session-cmd[39m.           
+                                                                                                   
+  I read your "a project from the routing records" as [1mrepositories[0m, and recorded that reading: the 
+  directory lives on the repository record, and the idea inbox is a project with no checkout at all.
+  Say if you meant something else.                                                                  
+                                                                                                    
+  Four refusals have tests: no [38;5;153mOrigin[39m, another origin, a command off the list (refused [3mby name[0m — the
+  value came from a browser, so it isn't echoed back), and a repository the store doesn't hold, so  
+  no path can be smuggled through the identifier.                                                   
+                                                                                                    
+  [1mOne thing I found doing it, and did not fix.[0m [38;5;153msameOrigin[39m guarded exactly one path — the socket that
+  types into an agent. [1mNo other POST in the package checks anything.[0m Filing a jot, answering a      
+  decision, granting a role, disabling an account: any page on any site can submit those, and the   
+  browser attaches your session cookie. Access authenticates [3myou[0m; it says nothing about which page  
+  you were on.                                                                                      
+                                                                                                    
+  The start form checks, because starting a process is the wrong place to inherit a habit. Filed as 
+  MUS-F-0096, open. Adding the check to five surfaces is small; deciding whether an absent [38;5;153mOrigin[39m   
+  should refuse a [3mform[0m the way it refuses a socket decides whether [38;5;153mcurl[39m can still file a jot on this
+  machine — that's a question, not a patch, and I'll raise it if you want it closed.                
+                                                                                                    
+  Stopping a session is still CLI-only (MUS-F-0081), still unrequested.                             
+
+  [38;5;153mmake check[39m green: 1508 links, 366 identifiers.                                                    
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCogitated for 6m 3s · done 11:47 AM[39m                                                               
+                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231m1. Replace the New text on the button with a + symbol[39m                                             
+  [38;5;231m2. The error message when a name includes a space is overly descriptive about nothing relevant. [39m  
+  [38;5;231mThe warning should directly describe what is wrong and summarize the similar limitations.[39m         
+[49m                                                                                                    
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m4[0m[38;5;246m shell commands 
+
+[38;5;231m●[39m Both done and deployed.                                                                           
+
+  [1m1. The button is a [38;5;153m+[0m — square, centred, with [38;5;153maria-label="Start a session"[39m so it isn't a symbol  
+  with nothing behind it. The rail is a row of controls and "New" was the only one spelling itself  
+  out.                                                                                              
+                                                                                                    
+  [1m2. The refusal now leads with the fault.[0m It was:       
+                                                                                                    
+  [2m▎[0m [3mproject "two words" must be letters, digits, dash or underscore: tmux reads : and . as target [0m  
+  [2m▎[0m [3mseparators[0m                                                                                    
+                                                                                                  
+  Everything after the colon is true of the rule and irrelevant to what you typed. It led with the  
+  rule, buried the fault, and then justified itself. Now:                                         
+                                                                                                  
+  a name cannot contain a space: use letters, digits, dash or underscore                          
+  a name cannot contain ":": use letters, digits, dash or underscore                              
+  a name cannot contain "é": use letters, digits, dash or underscore                                
+                                                                                                  
+  One fault, not a list — a name with a space [3mand[0m a colon has two problems, fixing either is        
+  progress, and a refusal that enumerates is one nobody finishes reading. The empty name gets its 
+  own message, because "cannot contain" is nonsense about nothing.                                
+                                                                                                  
+  The tmux reasoning is worth keeping and stays where reasons belong: a comment on [38;5;153msafeProject[39m. It's
+  a good one — tmux doesn't [3mrefuse[0m a name with [38;5;153m:[39m or [38;5;153m.[39m, it substitutes [38;5;153m_[39m, so the danger is at send   
+  time when [38;5;153msend-keys -t 'a:0'[39m addresses window 0 of session [38;5;153ma[39m instead. That's why the guard exists.
+  It isn't why your name was refused.                                                               
+                                                                                                    
+  The form's tooltip carried the same sentence and now carries the rule.                            
+                                                                                                    
+  [38;5;153mmake check[39m green: 1510 links, 367 identifiers. Filed as MUS-F-0097.                               
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mBaked for 2m 10s · done 12:11 PM[39m                                                                  
+                                                                        
+[38;5;239m[48;5;237m❯ [38;5;231mIs there currently a way to end a session?[39m                                                        
+
+[38;5;231m[49m●[39m From a surface, no. From a terminal, [38;5;153mmustur session stop <name>[39m. Let me check what stopping
+  actually involves before I put options to you — there's a decision about reasons.
+                       
+  [38;5;246mRan [1m1[0m[38;5;246m shell command 
+
+[38;5;231m●[39m [38;5;153mMUS-D-0030[39m is about an agent stopping work, not a session — stopping is just [38;5;153mAdapter.Stop[39m, no
+  reason needed. So the only open thing is where the control lives.                                
+                                                                  
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands [39m                                                                             
+                                                                                                  
+[38;5;231m●[39m No — not from any surface. [38;5;153mmustur session stop <name>[39m works, and it's a terminal.                 
+                                                                                                
+  That's MUS-F-0081, which I recorded and parked as [3mreal but nobody's request[0m. It's now somebody's,
+  so I've raised [1mMUS-Q-0080[0m in Mustur rather than picking for you:                                 
+                                                                                                    
+  - [1mOn the session view, behind the tick Withdraw uses[0m [3m(recommended)[0m — one pattern for destructive 
+    things, no script, and the page you're on is the page that ends it. Posts like the start form:
+    same-origin checked, owner-only. Stopping the session you're watching lands you on the start   
+    page. Cost: a control that kills a running agent mid-turn, on the page you sit and read, one    
+    tick from a thumb.                                                                             
+  - [1mOn the start page, one per running session[0m — nothing destructive on the page you leave open;  
+    reaching it is deliberate. Cost: two navigations at exactly the moment you want one, and a list 
+    is where it's easiest to stop the wrong session.                                               
+  - [1mLeave it on the command line[0m — cost is what you just asked about: away from a terminal, a      
+    crashed or runaway session can't be ended, and Mustur restarts nothing by design.             
+                                                                                                   
+  One thing I checked rather than assumed: [38;5;153mMUS-D-0030[39m — [3mstopping takes a reason from a table[0m — is  
+  about an [1magent stopping work[0m, not ending a session. [38;5;153mAdapter.Stop[39m takes a project and nothing else,
+  so there's no reason to collect and no second decision hiding behind this one.                    
+                                                                                                    
+  This is also the first question raised since the marker guard went in, and it carries its         
+  recommendation on the line where something actually reads it — so you should see the ★ on the     
+  first option.                                                                                     
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCogitated for 1m 34s · done 12:19 AM[39m                                                              
+
+[38;5;239m[48;5;237m❯ [38;5;231mThe owner answered MUS-Q-0080: On the session view, behind the tick Withdraw uses — Make sure [39m    
+  [38;5;231mthere is a confirmation prompt to end any sessions[39m                                                
+[49m                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command 
+
+[38;5;231m●[39m Verified — your answer plus the note, and that's [38;5;153mNote[39m doing its job for the first time. Checking  
+  that [38;5;153mStop[39m won't kill a session Mustur didn't start.
+                       
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern [39m                                                                           
+
+[38;5;231m●[39m Ownership holds — [38;5;153mAlive[39m checks the Mustur marker and [38;5;153mNameFor[39m prefixes the name, so it can only
+  kill a session Mustur started. Building.           
+
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands [39m                                                                        
+                                                                  
+[38;5;231m●[39m My [38;5;153murlQuery[39m encodes spaces as [38;5;153m%20[39m, not [38;5;153m+[39m — the test's expectation was wrong, not the code.
+                                                            
+  [38;5;246mRan [1m3[0m[38;5;246m shell commands 
+[39m                                                                                                   
+[38;5;231m●[39m Built and live. Verified against the running server: the stop form is on [38;5;153m/sessions/Check[39m, the 
+  start page offers none, and the client prompt names the session.                          
+
+  Two things in front of it, failing differently on purpose:                                    
+                                                                                                    
+  [1mThe tick is the server's.[0m An unticked stop is refused, with a message saying how to mean it — the
+  shape MUS-F-0077 settled after you pressed Withdraw not knowing what it did. A checkbox rather   
+  than a second page, because a second page is a second surface and the gate counts pages.
+                                                                                                    
+  [1mThe prompt is the browser's[0m, and it names the session — [3m"End Check? Whatever it is running is 
+[0m  [3mkilled."[0m Not "are you sure": a page showing one session and a page showing eight look identical at
+  that moment, and the name is the only thing separating ending the right one from ending the one   
+  you were reading.                                                                                 
+                                                                                                 
+  With script blocked the tick is the whole guard, which is exactly Withdraw's standing. The prompt
+  is the belt; the tick is the braces, and the braces are what the server enforces.                 
+                                                                                                    
+  It can't reach a session Mustur didn't start — [38;5;153mStop[39m prefixes the name and asks [38;5;153mAlive[39m first, and   
+  [38;5;153mAlive[39m reads the marker set at start, so a project named in a URL can't touch a tmux session from 
+  your own terminal. Same origin check and same owner-only rule as the start form.                  
+                                                                                                   
+  Ending the session you're watching lands you on the page that starts one, since there's nothing   
+  left to watch.                                                                                   
+                                                                                                    
+  [38;5;153mmake check[39m green: 1525 links, 371 identifiers. Deployed.                                         
+                                                                                                    
+  CLAUDE.md's sentence — [3mstarts sessions, reports which are running, stops one[0m — is finally true of 
+  the surface and not just the CLI. That took MUS-F-0081, MUS-Q-0073 (which turned out to be about  
+  interrupting instead), MUS-Q-0079 and MUS-Q-0080 to get right.                                    
+
+  One still open from this stretch: [1mMUS-F-0096[0m — no POST except these two checks its origin. Filing 
+  a jot, answering a decision, granting a role: any page can submit those with your cookie attached.
+  Say the word and I'll raise the question that decides whether an absent [38;5;153mOrigin[39m should refuse a    
+  form the way it refuses a socket.                                                                 
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mBaked for 2m 47s · done 12:22 AM[39m                                                                  
+                                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231mprocess the inbox[39m                                                                                 
+[49m                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                                    
+[38;5;231m●[39m Three. The third looks like it has a picture.                                                    
+
+  [38;5;246mRead [1m1[0m[38;5;246m file, ran [1m1[0m[38;5;246m shell command 
+[39m                                                                                                    
+[38;5;231m●[39m Now I can see the misparse: it swept up the agent's [1mprose bullets[0m as dialog rows and took the    
+  heading from prose far above. The real dialog is [38;5;153m1 Yes / 2 Not now / 3 Don't show again[39m. Capturing
+  that pane.                                                                                      
+                                                                                                    
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands [39m                                                                             
+                                                                                               
+[38;5;231m●[39m Completely clear now. The real dialog is [38;5;153mTeach auto mode about your environment?[39m under a rule at  
+  line 286 — and the agent's prose at line 28 is a genuine [38;5;153m1. POST /intake…[39m numbered list, which my
+  row regex matches. I collect rows from the whole screen above the legend, so it swept prose from  
+  260 lines away.                                                                                  
+                                                                                                    
+  [38;5;246mRead [1m1[0m[38;5;246m file, ran [1m3[0m[38;5;246m shell commands [39m                                                              
+                                                                                                    
+[38;5;231m●[39m MUS-F-0100 is fixed and tested. Shipping that before touching the others.                        
+
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                            
+                                                 
+[38;5;231m●[39m Now the activity line. Checking what the pane parser already extracts before adding another.
+                                                                                                    
+[38;5;246m●[39m Searching for [1m1[0m pattern, running [1m2[0m shell commands…                                                
+[38;5;246m  ⎿  $ SP=/tmp/claude-1000/-home-whippy-repos-DevOfPie-Mustur/5deaa93a-e914-4e67-880c-be3da7d07c0d/s
+[39m     [38;5;246mcratchpad[39m                                                                                      
+     [38;5;246mtmux capture-pane -p -e -J -t mustur/Check > $SP/busy.txt[39m                                      
+     [38;5;246msed 's/\x1b\[[0-9;]*m//g' $SP/busy.txt | grep -nE '^[[:space:]]*[✻✽✳✶*✢·][[:space:]]' | tail -3
+[39m     [38;5;246m| cut -c1-110[39m                                                                                  
+                                                                                                   
+[38;5;174m✢[39m [38;5;216mZigzagging…[38;5;174m [38;5;246m(3m 40s · ↓[39m [38;5;246m11.5k tokens)[39m                                 
+                                                            [38;5;114m✔ Update installed · Restart to update[39m  
+[38;5;244m────────────────────────────────────────────────────────────────────── mustur milestone resolution ─
+[38;5;246m❯ [39m                                                                                                  
+[38;5;244m────────────────────────────────────────────────────────────────────────────────────────────────────
+[39m  [38;5;220m⏵⏵ auto mode on[38;5;246m (shift+tab to cycle) · PR[39m [4m[38;5;220m]8;id=uzlkej;https://github.com/DevOfPie/Mustur/pull/38\#38[0m[38;5;246m]8;;\ · esc to interrupt · ← 1 agent · 1 feedback draft[39m   
+                                                                                               [38;5;114m]8;id=1oohvs6;https://claude.ai/code/session_011KzADsJf4bC7Q8SYjKeKDB?from=cli\/rc[39m]8;;\  

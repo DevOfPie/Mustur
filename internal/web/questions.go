@@ -34,10 +34,12 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/export"
@@ -48,6 +50,8 @@ import (
 
 // Questions serves the decision queue.
 type Questions struct {
+	counts countCache
+
 	Store   *store.Store
 	Project string
 	Actor   string
@@ -90,6 +94,7 @@ func (q *Questions) deliverTimeout() time.Duration {
 func (q *Questions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /questions", q.show)
 	mux.HandleFunc("POST /questions", q.answer)
+	mux.HandleFunc("GET /questions/count", q.count)
 }
 
 func (q *Questions) now() time.Time {
@@ -132,7 +137,14 @@ type queuePage struct {
 	Open     []queued
 	OpenN    int
 	Answered string
-	Error    string
+	// What became of the answer once it was written: the same sentence the
+	// record keeps, shown to the person who just answered (MUS-F-0070). An
+	// answer to a question that named no session is recorded and delivered
+	// nowhere, which is correct and was invisible -- the owner answered, waited
+	// for a session to resume, and nothing had ever been going to type into
+	// one.
+	Delivered string
+	Error     string
 	// ShowSessions renders the Sessions tab. See the note on intake's page.
 	ShowSessions bool
 	ShowAccount  bool
@@ -158,7 +170,7 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		}
 		for _, o := range question.Options(r) {
 			item.Options = append(item.Options, queuedOption{
-				Label: o.Label, Line: o.Line, Detail: o.Detail,
+				Label: o.Label, Line: o.Says(), Detail: o.Detail,
 				Recommended: o.IsRecommended(),
 			})
 		}
@@ -180,6 +192,7 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		Open:         openQs,
 		OpenN:        len(openQs),
 		Answered:     r.URL.Query().Get("answered"),
+		Delivered:    r.URL.Query().Get("sent"),
 		Error:        r.URL.Query().Get("error"),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -197,11 +210,26 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 	}
 	id := strings.TrimSpace(r.PostFormValue("id"))
 	withdraw := r.PostFormValue("withdraw") != ""
-	// A chosen option answers the question; free text answers one that offered
-	// none, and overrides a choice when the owner wants to say something else.
-	text := strings.TrimSpace(r.PostFormValue("answer"))
+	// Withdrawing closes a question with no answer, and the button said only
+	// "Withdraw" — the owner pressed it not knowing what it did and lost
+	// MUS-Q-0060 (MUS-F-0077). The tick beside it is what says so, and it is a
+	// checkbox rather than a confirmation page because this surface has no
+	// script and a second page would be a second surface.
+	if withdraw && r.PostFormValue("sure") == "" {
+		q.redirect(w, r, "", "Withdraw closes a question with no answer. Tick the box beside it if that is what you meant.")
+		return
+	}
+	// A chosen option answers the question. Free text beside it is a note on
+	// that choice; free text with no choice is the answer itself, which is
+	// MUS-D-0055's case for what the list does not contain.
+	//
+	// It used to override the choice, so picking an option and adding a remark
+	// meant retyping the option's label into the box -- and the record then
+	// said only what was typed, never which option it named (MUS-F-0071).
+	text := strings.TrimSpace(r.PostFormValue("option"))
+	note := strings.TrimSpace(r.PostFormValue("answer"))
 	if text == "" {
-		text = strings.TrimSpace(r.PostFormValue("option"))
+		text, note = note, ""
 	}
 	if id == "" {
 		q.redirect(w, r, "", "no question named")
@@ -236,10 +264,11 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	at := q.now().Format("2006-01-02 15:04")
+	var sent string
 	if withdraw {
 		question.Withdraw(&rec, at)
 	} else {
-		question.Answer(&rec, text, at)
+		question.AnswerWithNote(&rec, text, note, at)
 		// Carried back before the record is written, so what happened to the
 		// delivery is part of the same event rather than a second one that
 		// could fail on its own.
@@ -249,8 +278,11 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		// fails; the answer is written with the reason.
 		if q.Sessions != nil {
 			dctx, cancel := context.WithTimeout(ctx, q.deliverTimeout())
-			question.Set(&rec, question.FieldDelivered,
-				session.Deliver(dctx, q.Sessions, question.ProjectOf(rec), rec.ID, text))
+			// The note travels with the choice: an agent told only the label
+			// would act on an option the owner qualified.
+			sent = session.Deliver(dctx, q.Sessions, question.ProjectOf(rec), rec.ID,
+				question.Said(text, note))
+			question.Set(&rec, question.FieldDelivered, sent)
 			cancel()
 		}
 	}
@@ -259,7 +291,7 @@ func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q.export(ctx)
-	q.redirect(w, r, rec.ID, "")
+	q.redirectSent(w, r, rec.ID, sent, "")
 }
 
 // export renders the store after an answer. A failure is not surfaced to the
@@ -277,12 +309,22 @@ func (q *Questions) export(ctx context.Context) {
 }
 
 func (q *Questions) redirect(w http.ResponseWriter, r *http.Request, answered, problem string) {
+	q.redirectSent(w, r, answered, "", problem)
+}
+
+// redirectSent carries the delivery's own sentence back to the page, so the
+// person who answered learns what happened to the answer at the moment they
+// answered rather than by opening the record later.
+func (q *Questions) redirectSent(w http.ResponseWriter, r *http.Request, answered, sent, problem string) {
 	u := "/questions"
 	switch {
 	case problem != "":
 		u += "?error=" + template.URLQueryEscaper(problem)
 	case answered != "":
 		u += "?answered=" + template.URLQueryEscaper(answered)
+		if sent != "" {
+			u += "&sent=" + template.URLQueryEscaper(sent)
+		}
 	}
 	http.Redirect(w, r, u, http.StatusSeeOther)
 }
@@ -362,24 +404,62 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
           cursor: pointer; }
   .opt .lbl { flex: 1; min-width: 0; }
   .opt .line { display: block; opacity: .7; font-size: .85em; }
-  .rec { font-size: .72em; text-transform: uppercase; letter-spacing: .04em;
-         border: 1px solid var(--accent); border-radius: 999px;
-         padding: .05rem .45rem; vertical-align: .1em; white-space: nowrap; }
+  /* The recommendation is a mark on the option's own row, not a word in its
+     description (MUS-F-0072). A star rather than a drawing: the tab icons are
+     CSS because the plan tool refuses SVG (MUS-F-0048), and a star is a
+     character that needs neither. The word it replaces is still in the record,
+     where a reader with no surface can see it -- Says() takes it off here and
+     nowhere else. */
+  .rec { color: var(--accent); font-size: 1em; line-height: 1;
+         vertical-align: .05em; white-space: nowrap; }
   .opt details { border-top: 1px solid var(--edge); }
   .opt details > summary { cursor: pointer; padding: .5rem 0; opacity: .6;
                            font-size: .85em; }
   .opt details p { margin: 0 0 .7rem; font-size: .92em; }
-  input[type=text] { width: 100%; font: inherit; padding: .6rem;
-             border: 1px solid var(--edge); border-radius: .5rem;
+  /* A textarea rather than a text input, because Enter in a single-line input
+     submits the form: the owner pressed it mid-sentence while writing a note
+     and the half they had typed was recorded as the answer (MUS-F-0076). Here
+     Enter is a newline and the Answer button is the only way out, which is the
+     same lesson MUS-F-0067 taught the session composer arriving at the second
+     surface. It grows a little rather than scrolling, because a note about a
+     choice is a sentence or two. */
+  textarea { width: 100%; font: inherit; padding: .6rem; min-height: 4.2rem;
+             border: 1px solid var(--edge); border-radius: .5rem; resize: vertical;
              background: transparent; color: inherit; box-sizing: border-box; }
   button { font: inherit; padding: .65rem 1.2rem; border: 1px solid var(--edge);
            border-radius: .5rem; background: transparent; color: inherit; }
   /* Answering is one tap, above the bar rather than inside it. */
   button.primary { width: 100%; margin-top: .8rem; border-color: var(--accent);
                    background: var(--accent-soft); }
-  .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem; }
+  /* The owner asked for Answer to be unavailable until there is something to
+     answer with -- a chosen option, or text in the box (MUS-Q-0071). The three
+     options put to them all cost something: making the radios required retires
+     MUS-D-0055's clause that text alone can answer, and a script makes this the
+     seventh scripted surface. Neither is needed. :has() asks the form whether
+     anything is checked and :placeholder-shown asks whether the box is empty,
+     both live, both CSS.
+
+     Each question is its own form, so this scopes to one question rather than
+     to the page. A question with no options has no radio to check, so it turns
+     on text alone, which is what it should do.
+
+     It is an affordance, not a guard. pointer-events: none stops a pointer and
+     not a keyboard, and a browser without :has() applies none of this and gets
+     today's button. The refusal that actually holds is the server's, which has
+     always been there and stays. Withdraw is deliberately untouched: closing a
+     question with no answer is the one thing that must work when nothing is
+     chosen. */
+  form:not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown)))
+    button.primary { opacity: .45; pointer-events: none; }
+  .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem;
+          flex-wrap: wrap; }
   .id { opacity: .5; font-size: .78em; }
-  .drop button { font-size: .85em; padding: .35rem .8rem; margin-left: auto; }
+  .drop button { font-size: .85em; padding: .35rem .8rem; }
+  /* The tick sits between the identifier and the button, and takes the space
+     the button used to push itself over with, so the button cannot be reached
+     without passing the sentence that says what it does. */
+  .sure { margin-left: auto; display: flex; align-items: center; gap: .4rem;
+          font-size: .8em; opacity: .75; }
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
 ` + shellCSS + `
@@ -389,7 +469,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
-{{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.</p>{{end}}
+{{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
 {{if .Open}}
 {{range $i, $q := .Open}}
 {{if $i}}<hr>{{end}}
@@ -407,17 +487,19 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <div class="opt">
     <label class="pick">
       <input type="radio" name="option" value="{{.Label}}">
-      <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec">recommended</span>{{end}}
+      <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec" title="Recommended" aria-label="Recommended">&#9733;</span>{{end}}
         {{if .Line}}<span class="line">{{.Line}}</span>{{end}}</span>
     </label>
     {{if .Detail}}<details><summary>more</summary><p>{{.Detail}}</p></details>{{end}}
   </div>
   {{end}}
-  <input type="text" name="answer" autocomplete="off"
-         placeholder="{{if $q.Options}}Or say something else{{else}}Your answer{{end}}">
+  <textarea name="answer" rows="2" spellcheck="true" autocapitalize="sentences"
+            autocomplete="off"
+            placeholder="{{if $q.Options}}A note on your choice, or something else entirely{{else}}Your answer{{end}}"></textarea>
   <button class="primary" type="submit">Answer</button>
   <div class="drop">
     <span class="id">{{$q.ID}}</span>
+    <label class="sure"><input type="checkbox" name="sure" value="1">close it with no answer</label>
     <button type="submit" name="withdraw" value="1">Withdraw</button>
   </div>
 </form>
@@ -433,6 +515,47 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
+<script src="/assets/bar.js"></script>
 </body>
 </html>
 `))
+
+// countCache holds the answer for a moment so a handful of open tabs polling
+// the badge cost one count between them rather than one each.
+//
+// OpenCount lists every record in the store and filters, which is fine once and
+// wasteful per tab per tick. Two seconds is short enough that nobody sees a
+// stale number and long enough that a page full of tabs is one query.
+type countCache struct {
+	mu   sync.Mutex
+	at   time.Time
+	n    int
+	have bool
+}
+
+func (c *countCache) get(ctx context.Context, s *store.Store, now func() time.Time) int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.have && now().Sub(c.at) < 2*time.Second {
+		return c.n
+	}
+	c.n = OpenCount(ctx, s)
+	c.at = now()
+	c.have = true
+	return c.n
+}
+
+// count answers the badge's poll. A number and nothing else: it says how many
+// decisions are open and never which, so a surface that may not read questions
+// still learns that something is waiting without learning what.
+func (q *Questions) count(w http.ResponseWriter, r *http.Request) {
+	n := 0
+	if q.Store != nil {
+		n = q.counts.get(r.Context(), q.Store, q.now)
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = json.NewEncoder(w).Encode(struct {
+		Waiting int `json:"waiting"`
+	}{n})
+}

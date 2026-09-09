@@ -59,12 +59,42 @@ const InputEvery = 250 * time.Millisecond
 // finish and be replaced between ticks.
 const AgentsEvery = 2 * time.Second
 
+// A key gets a shorter leash than a message.
+//
+// InputEvery is 250ms, which is right for a message -- nobody writes two
+// sentences in a quarter second, and the limit is there to stop a pane being
+// flooded with prose. Arrow keys are the opposite: moving four rows down a list
+// at one press per 250ms is the kind of latency that makes a control feel
+// broken. 60ms is still a limit, and a key is a few bytes where a message can
+// be the read limit's worth.
+const KeysEvery = 60 * time.Millisecond
+
+// How often a connected tab is told how many decisions are waiting.
+//
+// Slower than the sub-agent tick on purpose: OpenCount lists every record in
+// the store and filters, where the sub-agent poll stats one file and usually
+// stops there. Ten seconds is the latency on a badge, not on the terminal, and
+// the alternative measured worse -- that list ran per viewer every two seconds
+// for a number that changes a few times a day.
+// A var rather than a const, and only so a test can shorten it. The live path
+// -- a count that changes while a socket is open -- had no test at all when it
+// shipped: the one that existed asserted the hello frame and the client's
+// strings, so the ticker could have been unreachable and nothing would have
+// failed. The owner found it instead (MUS-F-0086).
+var WaitingEvery = 10 * time.Second
+
 // IdleTimeout closes a socket nobody is using. A tab left open on a phone in a
 // drawer should not hold a writable channel into an agent for a week.
 const IdleTimeout = 30 * time.Minute
 
 // Sessions serves the session surface.
 type Sessions struct {
+	// Commands is what the surface may start, and nothing else. A browser
+	// chooses between these rather than naming a process (MUS-D-0146). Empty
+	// falls back to DefaultCommands; a deployment that wants none takes the
+	// form away by serving no sessions at all.
+	Commands []string
+
 	// ShowAccount renders the header link to the account surface, which is
 	// served only when an origin is configured. Off means the link is absent
 	// rather than dead (MUS-Q-0052).
@@ -86,6 +116,8 @@ type Sessions struct {
 // Routes registers the surface on an existing mux.
 func (s *Sessions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /sessions", s.list)
+	mux.HandleFunc("POST /sessions", s.start)
+	mux.HandleFunc("POST /sessions/{project}/stop", s.stop)
 	mux.HandleFunc("GET /sessions/{project}", s.show)
 	mux.HandleFunc("GET /sessions/{project}/ws", s.socket)
 	mux.HandleFunc("GET /assets/session.js", func(w http.ResponseWriter, r *http.Request) {
@@ -144,6 +176,16 @@ type sessionPage struct {
 	Running       int
 	OpenQuestions int
 	Missing       bool
+	// Starting is the form's data: where a session may be started and what it
+	// may be told to run. Empty when the store holds no checkout, which is a
+	// page that says so rather than a form that cannot be submitted.
+	Starting []startable
+	Commands []string
+	// Start renders the form rather than the list. /sessions redirects to a
+	// running session when there is one, so starting another needs a way to
+	// reach the page that is not "have none".
+	Start bool
+	Error string
 }
 
 // A subagentRow is one sub-agent as the page says it, with every value already
@@ -255,12 +297,19 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(pick), http.StatusSeeOther)
 		return
 	}
+	// Asked for explicitly, so the redirect below is skipped: with a session
+	// running, /sessions goes straight to it, and starting a second one would
+	// otherwise be reachable only by having none.
+	starting := r.URL.Query().Get("new") != "" || r.URL.Query().Get("error") != ""
 	rows, _ := s.rows(r.Context(), "")
-	if len(rows) > 0 {
+	if len(rows) > 0 && !starting {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(rows[0].Project), http.StatusSeeOther)
 		return
 	}
-	s.render(w, r, sessionPage{Project: "", Rows: nil, Missing: true})
+	s.render(w, r, sessionPage{
+		Project: "", Rows: rows, Missing: len(rows) == 0,
+		Start: true, Error: r.URL.Query().Get("error"),
+	})
 }
 
 func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
@@ -270,10 +319,17 @@ func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	s.render(w, r, sessionPage{
 		Project: project, Rows: rows, Missing: !found,
 		Subagents: agents, Running: running,
+		Error: r.URL.Query().Get("error"),
 	})
 }
 
 func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage) {
+	// Set here rather than at the call sites, for the same reason the tab
+	// counts are: a page built without them renders a form with nowhere to run.
+	if p.Start {
+		p.Starting = s.startables(r.Context())
+		p.Commands = s.commands()
+	}
 	if s.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), s.Store)
 	}
@@ -309,7 +365,14 @@ type frame struct {
 	Screen string `json:"screen,omitempty"`
 	// Text goes the other way: it is what the composer sends up. Nothing is
 	// sent down as text any more — a screen is not a chunk.
-	Text  string `json:"text,omitempty"`
+	Text string `json:"text,omitempty"`
+	// Key is the other thing that goes up: one keypress, named, from the row
+	// above the composer. A pane can ask for a key rather than a sentence and
+	// the surface could not answer one (MUS-F-0080); MUS-Q-0072 chose this row
+	// over sending nothing and over becoming a full keyboard. It is a separate
+	// field rather than a reserved Text value so that nothing can type the word
+	// "escape" and have it pressed.
+	Key   string `json:"key,omitempty"`
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
 	// Agent is what the CLI's own pane says it is doing: working, waiting, or
@@ -328,6 +391,22 @@ type frame struct {
 	Agents  []subagentRow `json:"agents,omitempty"`
 	Running int           `json:"running,omitempty"`
 	None    bool          `json:"none,omitempty"`
+	// How many decisions are open, for the tab bar's count (MUS-F-0069). The
+	// bar is rendered once by the server and this page outlives that render by
+	// hours, so a question raised while somebody watches a session used to
+	// leave the badge saying what was true when the tab opened. A pointer
+	// rather than an int: dropping to zero is the update that matters most and
+	// omitempty would swallow it.
+	Waiting *int `json:"waiting,omitempty"`
+	// Prompt is the selection the pane is waiting on, read off the same capture
+	// the screen came from, and sent with every screen. Absent means there is
+	// none — the field goes with every hello and every screen frame, so a
+	// client that receives one of those and no prompt knows there is nothing to
+	// offer rather than that nothing was said (MUS-D-0142).
+	Prompt *session.Prompt `json:"prompt,omitempty"`
+	// Activity is what the CLI says it is doing, sent with every screen so its
+	// absence on one means nothing is running (MUS-F-0098).
+	Activity *session.Activity `json:"activity,omitempty"`
 }
 
 // A statusRow is the CLI's status line, ready to render.
@@ -412,9 +491,18 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 
 	// The first frame is the screen as it stands, and what the pane says the
 	// agent is doing — read out of the same capture rather than fetched again.
+	// Guarded the way render is: a Sessions with no store still serves the
+	// terminal, and the badge is simply not a thing it can count.
+	waitingNow := 0
+	if s.Store != nil {
+		waitingNow = OpenCount(conn, s.Store)
+	}
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
 		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
+		Prompt:   now.Prompt,
+		Activity: now.Activity,
+		Waiting:  waitingIf(s.Store != nil, &waitingNow),
 	}); err != nil {
 		return
 	}
@@ -435,6 +523,13 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	idle := time.NewTimer(IdleTimeout)
 	defer idle.Stop()
 
+	// The count in the tab bar, kept current for as long as the tab is open.
+	// Sent only when it moves, so a session nobody has raised a question from
+	// costs one list every ten seconds and no frames.
+	waiting := time.NewTicker(WaitingEvery)
+	defer waiting.Stop()
+	lastWaiting := waitingNow
+
 	go s.readInput(conn, cancel, c, project, s.actor(r), idle, send)
 
 	for {
@@ -447,6 +542,18 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			// and reconnects if anyone is still looking.
 			_ = c.Close(websocket.StatusNormalClosure, "idle")
 			return
+		case <-waiting.C:
+			if s.Store == nil {
+				continue
+			}
+			n := OpenCount(conn, s.Store)
+			if n == lastWaiting {
+				continue
+			}
+			lastWaiting = n
+			if err := send(frame{T: "waiting", Waiting: &n}); err != nil {
+				return
+			}
 		case <-agents.C:
 			// The agent's state used to be captured here, on its own timer.
 			// The poller already has the pane in hand and reads it out of the
@@ -485,12 +592,23 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			if err := send(frame{
 				T: "screen", Screen: f.HTML,
 				Agent: string(f.Agent), Status: statusChips(f.Status),
+				Prompt: f.Prompt, Activity: f.Activity,
 			}); err != nil {
 				return
 			}
 			resetIdle(idle, IdleTimeout)
 		}
 	}
+}
+
+// waitingIf keeps the frame honest about a count nobody took: a zero sent by a
+// server with no store is indistinguishable from a zero that was counted, and
+// the client would clear a badge the page had rendered correctly.
+func waitingIf(ok bool, n *int) *int {
+	if !ok {
+		return nil
+	}
+	return n
 }
 
 // resetIdle restarts the timer, draining it first so a reset that races the
@@ -514,17 +632,31 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 	defer cancel()
 	c.SetReadLimit(MaxInput)
 	last := time.Time{}
+	// Keys are paced separately, so holding an arrow down does not spend the
+	// composer's budget and a message does not have to wait behind one.
+	lastKey := time.Time{}
 	for {
 		_, data, err := c.Read(ctx)
 		if err != nil {
 			return
 		}
 		var f frame
-		if err := json.Unmarshal(data, &f); err != nil || f.T != "input" {
+		if err := json.Unmarshal(data, &f); err != nil {
+			continue
+		}
+		if f.T != "input" && f.T != "key" {
 			continue
 		}
 		text := strings.TrimSpace(f.Text)
-		if text == "" {
+		key := strings.TrimSpace(f.Key)
+		// A key frame carries a key and nothing else. Both empty is the
+		// composer's own dropped empty submit arriving anyway.
+		if f.T == "key" {
+			text = ""
+		} else {
+			key = ""
+		}
+		if text == "" && key == "" {
 			continue
 		}
 		// Every path out of here used to be silent: a message inside the rate
@@ -532,18 +664,30 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 		// Send closed it too. The owner saw a pill change and their text gone.
 		// frame.Error existed in this file the whole time and was never
 		// assigned; the client now has a branch for it and keeps the draft.
-		if now := s.now(); now.Sub(last) < InputEvery {
+		every, when := InputEvery, &last
+		if key != "" {
+			every, when = KeysEvery, &lastKey
+		}
+		if now := s.now(); now.Sub(*when) < every {
 			_ = say(frame{T: "error", Error: "sent too quickly; that one was not delivered"})
 			continue
 		} else {
-			last = now
+			*when = now
 		}
 		live, err := s.Adapter.Alive(ctx, project)
 		if err != nil || !live {
 			_ = say(frame{T: "error", Error: "that session is no longer running, so nothing was sent"})
 			return
 		}
-		if err := s.Adapter.Send(ctx, project, text); err != nil {
+		if key != "" {
+			// A rejected key is not a reason to drop the socket: the row is a
+			// handful of buttons and a name this server does not know means the
+			// page is older than the binary, not that the session is gone.
+			if err := s.Adapter.SendChoice(ctx, project, key); err != nil {
+				_ = say(frame{T: "error", Error: "the session did not take that key: " + err.Error()})
+				continue
+			}
+		} else if err := s.Adapter.Send(ctx, project, text); err != nil {
 			_ = say(frame{T: "error", Error: "the session did not take it: " + err.Error()})
 			return
 		}
@@ -569,8 +713,12 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      own rule wins and gives this page the width the rail leaves, which is now
      what every surface gets. It was set here first, for the terminal alone,
      before the owner asked for the rest. */
+  /* position: relative so the prompt anchors to this column rather than to the
+     viewport. Fixed would centre it on the screen, which on a wide layout is
+     beside the rail and not over the terminal it belongs to. */
   body { font: 17px/1.5 system-ui, sans-serif; margin: 0; max-width: 46rem;
          margin-inline: auto; display: flex; flex-direction: column;
+         position: relative;
          height: 100vh; height: 100dvh; }
   /* The chrome rows keep their own height. A flex item shrinks by default, so
      anything that grew — the sub-agent box did — took its room out of these
@@ -587,6 +735,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      would spill a long way past a short word. */
   header .ring { padding: 1.2px; }
   header .ring.live::before { width: 260%; }
+  /* The ring is a gradient in a padding box, so whatever it wraps has to be
+     opaque and painted above it, or the two bright arms sweep across the word
+     instead of around it (MUS-F-0068). .toggle was both and this was neither:
+     an unpositioned box loses to an absolutely positioned pseudo-element, and
+     --accent-soft is 12.5% alpha, so the gradient came through the fill as
+     well as over it. The on state layers the same token over the page rather
+     than replacing it, which keeps the tint and stops the light. */
+  header .ring > .pill { position: relative; background: var(--paper); }
+  header .ring > .pill.on { background:
+      linear-gradient(var(--accent-soft), var(--accent-soft)), var(--paper); }
   /* MUS-Q-0052: the account surface is reached from here rather than from
      a fifth tab, so MUS-D-0041's four stand. Rendered only when the server
      actually serves it — a link that goes nowhere is the failure the bar
@@ -594,6 +752,37 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
+  /* The start form. Plain and stacked: three fields, and two of them are
+     pickers because what they choose has to come from a list rather than a
+     keyboard (MUS-D-0146). */
+  .new { padding: 1rem; max-width: 30rem; margin-inline: auto; }
+  .new form { display: flex; flex-direction: column; gap: .7rem; }
+  .new label { display: flex; flex-direction: column; gap: .25rem;
+               font-size: .85em; opacity: .8; }
+  .new input, .new select { font: inherit; padding: .5rem; color: inherit;
+               border: 1px solid var(--edge); border-radius: .5rem;
+               background: var(--paper); box-sizing: border-box; }
+  .new button.primary { margin-top: .3rem; border: 1px solid var(--accent);
+               background: var(--accent-soft); padding: .6rem; font: inherit;
+               border-radius: .5rem; color: inherit; cursor: pointer; }
+  .new .said { border: 1px solid var(--accent); border-radius: .5rem;
+               padding: .5rem .7rem; font-size: .9em; }
+  /* A plus rather than the word: the rail is a row of controls and "New" was
+     the only one spelling itself out. Square, so the glyph sits in the middle
+     of it rather than on the left of a word-shaped box. */
+  /* Ending one. Beside the control that starts one, because that is where a
+     reader looks for what can be done to a session, and behind the same tick
+     the decision queue puts in front of Withdraw (MUS-D-0147). */
+  .endform { display: inline-flex; flex: 0 0 auto; }
+  .endform button { font: inherit; font-size: .82em; padding: .2rem .55rem;
+                    border: 1px solid var(--edge); border-radius: .45rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  .said.err { margin: .6rem 1rem 0; border: 1px solid var(--accent);
+              border-radius: .5rem; padding: .5rem .7rem; font-size: .9em; }
+  .newlink { font-size: 1em; line-height: 1; opacity: .7; text-decoration: none;
+             color: inherit; border: 1px solid var(--edge); border-radius: .45rem;
+             width: 1.9rem; height: 1.9rem; flex: 0 0 auto;
+             display: inline-flex; align-items: center; justify-content: center; }
   /* The strip that used to sit here said "live" across the whole width, and
      the pill in the header beside the project name already said "running".
      Two places saying one thing, one of them a full-width band above the
@@ -662,7 +851,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
           width: var(--shell-dock-width, 100%);
           z-index: 2; background: var(--paper);
           border-top: 1.4px solid var(--edge); }
-  #foot { padding: .4rem 1rem; background: #8881;
+  #foot { display: flex; align-items: center; gap: .45rem;
+         padding: .4rem 1rem; background: #8881;
           font-size: .82em; opacity: .75; }
   form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
          border-top: 1.4px solid var(--edge); }
@@ -677,6 +867,98 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   #kept { opacity: .75; font-style: italic; }
   /* Grows with what is typed, to a point, then scrolls. A phone keyboard eats
      half the screen, so the cap is small deliberately. */
+  /* The spinner beside what the session is doing. A ring turning at a constant
+     speed, painted once and rotated, which is the same technique the sub-agent
+     ring uses and costs a phone almost nothing. It replaces a character that
+     changed shape four times a second. */
+  .spin { width: .72em; height: .72em; flex: 0 0 auto; border-radius: 50%;
+          border: 2px solid var(--accent-soft); border-top-color: var(--accent);
+          animation: spin 900ms linear infinite; }
+  .spin[hidden] { display: none; }
+  @keyframes spin { to { transform: rotate(1turn) } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+  /* The prompt, in front of the session.
+
+     Anchored to the terminal's own box rather than to the viewport, so the bar
+     and the composer stay reachable underneath it — a dialog that covered the
+     composer would take the reply box away at the moment somebody most wants
+     to type instead of pressing. Scrolls inside itself: a picker with a dozen
+     rows must not push the box off the screen (MUS-F-0035 is what happens when
+     a box on this surface has no height cap). */
+  .dlg { position: absolute; inset: 0; bottom: var(--dock-h, 0px);
+         display: flex; align-items: flex-end; justify-content: center;
+         padding: .8rem; pointer-events: none; z-index: 5; }
+  /* An explicit display beats the browser's own [hidden] rule, so an element
+     that sets one and is hidden by attribute needs this or it never hides. It
+     shipped without it and the owner got an empty box over the terminal that
+     nothing would close. .chips and .drawer in this same file already carry the
+     guard, twelve lines apart, which is what makes this the third instance of a
+     lesson written down beside the code that had not learned it. */
+  .dlg[hidden] { display: none; }
+  .dlgbox { pointer-events: auto; width: 100%; max-width: 34rem;
+            max-height: 100%; overflow-y: auto; box-sizing: border-box;
+            background: var(--paper); border: 1.4px solid var(--accent);
+            border-radius: .7rem; padding: .8rem .9rem;
+            box-shadow: 0 .4rem 1.6rem rgba(0,0,0,.28); }
+  .dlghead { display: flex; align-items: center; gap: .5rem; }
+  .dlghead strong { flex: 1; min-width: 0; }
+  .dlghead button { font: inherit; line-height: 1; padding: .1rem .5rem;
+                    border: 1px solid var(--edge); border-radius: .4rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  .dlgbody { margin: .4rem 0 .7rem; opacity: .75; font-size: .88em; }
+  .dlgbody:empty { display: none; }
+  .dlgopts { display: flex; flex-direction: column; gap: .35rem; }
+  .dlgopts button { font: inherit; text-align: left; padding: .5rem .6rem;
+                    border: 1px solid var(--edge); border-radius: .5rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  /* The row the CLI's own cursor is on. Marked rather than pre-pressed: the
+     pane has a selection and this says which, and pressing is still a choice. */
+  .dlgopts button.on { border-color: var(--accent); background: var(--accent-soft); }
+  .dlgopts .num { opacity: .55; margin-right: .5rem; }
+  /* A row with nothing to press: it carries its state and the cursor says
+     which one the arrows are on. Not a button, because there is no press
+     (MUS-F-0101). */
+  .dlgopts .row { display: flex; align-items: center; gap: .4rem; width: 100%;
+                  padding: .5rem .6rem; border: 1px solid transparent;
+                  border-radius: .5rem; opacity: .85; text-align: left;
+                  background: transparent; color: inherit; cursor: pointer;
+                  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                  font-size: .86em; white-space: pre-wrap; }
+  /* The cycler's own two keys, on the row they change. */
+  .dlgopts .row .side { margin-left: auto; flex: 0 0 auto; font-size: .9em;
+                        padding: .1rem .45rem; }
+  .dlgopts .row .side + .side { margin-left: .25rem; }
+  .dlgopts .row.on { border-color: var(--accent); background: var(--accent-soft);
+                     opacity: 1; }
+  /* A legend entry naming more than one key. Text, not a control. */
+  .dlgkeys .hintkey { font-size: .82em; padding: .35rem .2rem; opacity: .6; }
+  .dlgkeys { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+  .dlgkeys button { font: inherit; font-size: .82em; padding: .35rem .6rem;
+                    border: 1px solid var(--edge); border-radius: .45rem;
+                    background: transparent; color: inherit; cursor: pointer; }
+  /* What it minimises into: a button in the key row that brings it back. */
+  .keys .dlgchip { border-color: var(--accent); background: var(--accent-soft); }
+  /* The key row. Scrolls sideways rather than wrapping, because a wrapped row
+     changes the dock's height and the output is positioned off it. */
+  .keys { display: flex; align-items: center; gap: .4rem; margin-bottom: .45rem;
+          overflow-x: auto; scrollbar-width: none; }
+  .keys::-webkit-scrollbar { display: none; }
+  .keys button { font: inherit; font-size: .8em; line-height: 1;
+                 padding: .4rem .6rem; min-width: 2.2rem; flex: 0 0 auto;
+                 border: 1px solid var(--edge); border-radius: .45rem;
+                 background: var(--paper); color: inherit; cursor: pointer; }
+  .keys button:active { background: var(--accent-soft); border-color: var(--accent); }
+  /* The four arrows read as one control, so they are joined into one. */
+  .keys .pad { display: inline-flex; flex: 0 0 auto; }
+  .keys .pad button { border-radius: 0; margin-left: -1px; }
+  .keys .pad button:first-child { border-radius: .45rem 0 0 .45rem; margin-left: 0; }
+  .keys .pad button:last-child { border-radius: 0 .45rem .45rem 0; }
+  /* Ctrl-C ends a turn. It sits apart from the keys that move around inside
+     one, which is the whole of the distinction this draws -- there is no tick
+     in front of it, because a row of seven buttons that each need confirming
+     is not a row anybody would use. */
+  .keys .stopish { margin-left: auto; opacity: .8; }
   textarea { flex: 1; min-width: 0; font: inherit; padding: .55rem;
              border: 1px solid var(--edge); border-radius: .5rem;
              background: transparent; color: inherit; resize: none;
@@ -896,11 +1178,44 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
       {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
+  <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>
+  {{if .Project}}<form class="endform" method="post" action="/sessions/{{.Project}}/stop" id="endform">
+    <button type="submit" id="endbtn" data-project="{{.Project}}">Stop</button>
+  </form>{{end}}
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
     aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
     class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>
 </div>{{end}}
-{{if .Missing}}
+{{if .Error}}<p class="said err">{{.Error}}</p>{{end}}
+{{if .Start}}
+<!-- Starting a session (MUS-D-0146).
+
+     Three fields from three places. The name is typed, because it is a label
+     and nothing runs it. Where it runs is chosen from the repositories the
+     store holds a checkout for, so no path is ever submitted. What it runs is
+     chosen from a list the server holds, so a browser picks between known
+     things rather than naming a process. -->
+<div class="new">
+  {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
+  {{if .Missing}}<p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
+  <small>A session left running in a terminal is not here and will not appear.</small></p>{{end}}
+  {{if .Starting}}
+  <form method="post" action="/sessions">
+    <label>Name<input type="text" name="name" required autocomplete="off"
+      placeholder="Letters, digits, dash or underscore"
+      pattern="[A-Za-z0-9_-]+" title="Letters, digits, dash or underscore"></label>
+    <label>Where it runs<select name="repo">
+      {{range .Starting}}<option value="{{.ID}}">{{.Title}} &mdash; {{.Dir}}</option>{{end}}
+    </select></label>
+    <label>What it runs<select name="cmd">
+      {{range .Commands}}<option value="{{.}}">{{.}}</option>{{end}}
+    </select></label>
+    <button class="primary" type="submit">Start</button>
+  </form>
+  {{else}}<p class="none">No repository in the routing records has a checkout on this machine, so there is nowhere to start one.</p>{{end}}
+  <p><small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
+</div>
+{{else if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
 <small>A session left running in a terminal is not here and will not appear.</small><br>
 <small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
@@ -928,8 +1243,54 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   </aside>
 </div>
 <pre id="out"></pre>
+<!-- The prompt the pane is waiting on, in front of the session (MUS-Q-0077).
+
+     Empty and hidden until one is read. It sits over the terminal rather than
+     beside it because a dialog is the only thing that matters while it is up,
+     and it minimises into the key row rather than closing because the pane
+     underneath is the thing you minimise it to read. Nothing here is a
+     substitute for the terminal: the keys it offers are the keys the screen
+     says it has, and the screen is still behind it. -->
+<div class="dlg" id="dlg" hidden>
+  <div class="dlgbox" role="dialog" aria-live="polite" aria-labelledby="dlgt">
+    <div class="dlghead"><strong id="dlgt"></strong>
+      <button type="button" id="dlgmin" aria-label="Minimise">&minus;</button></div>
+    <p class="dlgbody" id="dlgb"></p>
+    <div class="dlgopts" id="dlgo"></div>
+    <div class="dlgkeys" id="dlgk"></div>
+  </div>
+</div>
 <div class="dock">
-<div id="foot">quiet 0s</div>
+<!-- What the session is doing, or how long it has not been.
+
+     The CLI animates its own line by redrawing one row of the screen, which
+     arrives here as a whole frame and renders as a character jumping between
+     shapes. That line comes off the output and lands here instead, where the
+     spinner turns in CSS and the numbers change without anything being
+     repainted under them (MUS-F-0098). With nothing running this is the quiet
+     counter it replaced. -->
+<div id="foot"><span class="spin" id="spin" hidden></span><span id="foottext">quiet 0s</span></div>
+<!-- The keys, above the composer where MUS-Q-0072 put them.
+
+     Rendered only where the composer is, because they go down the same socket
+     and are useless without it. They are buttons in a div rather than in the
+     form: a button inside it submits it, which is the defect this row exists
+     to be the opposite of.
+
+     Escape first because getting off a dialog is the case that produced the
+     question, the arrows grouped because they are one control, and Ctrl-C last
+     and apart because it ends a turn. -->
+<div class="keys" id="keys">
+  <button type="button" data-key="escape">Esc</button>
+  <span class="pad">
+    <button type="button" data-key="left" aria-label="Left">&larr;</button
+    ><button type="button" data-key="up" aria-label="Up">&uarr;</button
+    ><button type="button" data-key="down" aria-label="Down">&darr;</button
+    ><button type="button" data-key="right" aria-label="Right">&rarr;</button>
+  </span>
+  <button type="button" data-key="enter">Enter</button>
+  <button type="button" data-key="cancel" class="stopish">Ctrl-C</button>
+</div>
 <form id="say">
   <div class="dest"><span class="grow" id="dest">Send to {{.Project}}</span><a href="/compose" id="compose-link">Compose…</a><span id="kept" hidden>draft kept</span></div>
   <div class="row">
@@ -948,6 +1309,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
+<script src="/assets/bar.js"></script>
 {{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
 </body>
 </html>

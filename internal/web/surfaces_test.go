@@ -47,6 +47,10 @@ var notAPage = []struct {
 	{"a script is not a surface", func(p string) bool { return strings.HasPrefix(p, "/assets/") }},
 	{"a socket is not a page", func(p string) bool { return strings.HasSuffix(p, "/ws") }},
 	{"image bytes, not a page", func(p string) bool { return p == "/records/image/{id}" }},
+	// A number, for the badge every surface carries (MUS-Q-0078). Matched
+	// exactly rather than by prefix: this is one endpoint behind one control,
+	// and a rule that covered /questions/* would let a page through.
+	{"a count is not a page", func(p string) bool { return p == "/questions/count" }},
 }
 
 // served reads the routes the package actually registers.

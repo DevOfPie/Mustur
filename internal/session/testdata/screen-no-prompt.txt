@@ -1,0 +1,300 @@
+  conversation is a webview — the package contributes three webview views and no terminal at all.   
+  Permission prompts and dialogs are [1mprotocol messages[0m: the initialize response carries             
+  [38;5;153mpending_permission_requests[39m and [38;5;153mpending_user_dialog_requests[39m, which exist so a reconnecting client
+  gets handed the prompts still outstanding. Nothing is read off a screen.                       
+                                                                                                  
+  [1mThe IDE WebSocket isn't that channel and can't be made into it.[0m [38;5;153m~/.claude/ide/43013.lock[39m holds a
+  pid, workspace folders, [38;5;153m"ideName":"VSCodium"[39m and an auth token — the IDE hosts the socket and the 
+  CLI connects [3mout[0m to it. It carries ordinary MCP with the IDE as the server: [38;5;153mopenDiff[39m,            
+  [38;5;153mgetDiagnostics[39m, [38;5;153mselection_changed[39m, [38;5;153mat_mentioned[39m. That's how the CLI reaches the editor, not how it
+  asks you a question. So hosting one of these wouldn't give an interactive session a structured   
+  dialog channel.                                                                                   
+                                                                                                    
+  [1mAnd the protocol still costs the terminal.[0m [38;5;153mclaude --help[39m at 2.1.260 marks [38;5;153m--output-format[39m,        
+  [38;5;153m--input-format[39m and [38;5;153m--include-partial-messages[39m each [3m"only works with --print"[0m. That's exactly what 
+  MUS-D-0088 measured on 2026-08-22 and declined — still true thirteen days and several CLI versions
+  later.                                                                                            
+                                                                                                    
+  So this isn't a parser decision. It's [1mMUS-D-0016's premise: is a Mustur session a terminal?[0m That's
+  [1mMUS-Q-0076[0m, raised [38;5;153m--needed[39m because building further would be building on the answer:             
+                                                                                                    
+  - [1mStays a terminal[0m — nothing built is discarded, the parser finishes, and Mustur permanently reads
+    dialogs off a screen that exists as structured messages three feet away.                        
+  - [1mBecomes a client[0m — no scraping, no legend, nothing to misread; and nobody ever attaches to a    
+    Mustur session from a machine again. A rewrite of four milestones, and it breaks MUS-D-0091's   
+    vendor neutrality.                                                                              
+  - [1mBoth[0m — pays for both answers, in a product with one project and one owner.                      
+                                                                                                    
+  [38;5;153mMUS-W-0022[39m is paused, not abandoned — the parser is correct and reads a real picker. I withdrew   
+  [1mMUS-Q-0075[0m (where a prompt renders): it only matters if the prompt is scraped, and a protocol     
+  dialog has a title, a body and typed options and wouldn't be squeezed into a key row.             
+                                                                                                   
+  The gate is red on MUS-Q-0076, deliberately. Everything else green: 1429 links, 347 identifiers.  
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mBrewed for 3m 38s · done 4:52 AM[39m                                                                 
+                                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231mstays a terminal, build the parser[39m                                                                
+[49m                                                                                                    
+[38;5;231m●[39m Recording your answer with its provenance, then finishing the parser's send path.                 
+                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231mThe owner answered MUS-Q-0076: It stays a terminal; keep the pane and finish the parser[39m           
+
+[49m  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+
+[38;5;231m●[39m Only three events, all [38;5;153mwhippy[39m. That message is [1mmy own relay being typed back into this session[0m by
+  [38;5;153m--in Check[39m — not you answering again. And the delivery says "The owner answered" with nothing
+  marking it as relayed, which defeats what MUS-D-0126 exists for.                                  
+                                                                                   
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m3[0m[38;5;246m shell commands [39m                                                     
+
+[38;5;231m●[39m Now the send path the parser needs — a legend key can be a name or a single character like [38;5;153ms[39m.     
+                                                                                                    
+  [38;5;246mRan [1m7[0m[38;5;246m shell commands [39m                                                                            
+                                                                                                   
+[38;5;239m[48;5;237m❯ [38;5;231mThe counter badge on decisions still isn't updating until a page refresh so I did not notice a [39m   
+  [38;5;231mdecision was made for this[39m                                                                        
+
+[38;5;231m[49m●[39m That's the half I never tested — my test covered the [38;5;153mhello[39m frame and the client, never the ticker.
+  Reading the live path.                                                                       
+
+  [38;5;246mSearched for [1m2[0m[38;5;246m patterns, ran [1m2[0m[38;5;246m shell commands [39m                                                    
+
+[38;5;231m●[39m My grep pattern was JS syntax against the Go side — meaningless. Writing the end-to-end test
+  instead, which is what was missing in the first place.                                            
+                        
+  [38;5;246mRan [1m1[0m[38;5;246m shell command 
+[39m                                                                                                    
+[38;5;231m●[39m Server path works — that test passes, and it's the test that should have existed. So the badge
+  moves on the session view. Which means the gap is elsewhere.                                
+                                                        
+  [38;5;246mRan [1m1[0m[38;5;246m shell command 
+[39m                                                                                              
+[38;5;231m●[39m Found it. Three surfaces render the badge — intake, decisions, sessions — and [1monly sessions has a 
+[0m  [1msocket[0m. If you were sitting on the decisions page, the count is frozen until you navigate.    
+                                                              
+  [38;5;246mRan [1m2[0m[38;5;246m shell commands 
+[39m                                                                                                
+[38;5;231m●[39m I scoped that fix to the surface that reported it. Three pages render the badge — [1mintake, 
+[0m  [1mdecisions, sessions[0m — and only sessions has a socket. If you were sitting on the decisions page   
+  waiting, the count is frozen until you navigate. That's where somebody answering questions        
+  actually sits.
+                                                                                                    
+  [1mIf you were on the session view instead, tell me[0m — that's a different bug and the diagnosis above
+  is wrong.                                                                                 
+                                                                                                    
+  Worse than the miss: [1mnothing would have caught it.[0m The tests I wrote alongside MUS-F-0069 asserted
+  the [38;5;153mhello[39m frame carried a count and the client had the strings to handle one. The ticker — the 
+  part that carries a change while a socket is open, which is the whole feature — had no test. It   
+  could have been unreachable and every gate stays green.                                          
+                                                                                                    
+  That test exists now, and the live path passes: real socket, real tmux pane, a question appended  
+  with nothing reloading, count arrives as 1. [38;5;153mWaitingEvery[39m is a [38;5;153mvar[39m rather than a [38;5;153mconst[39m for exactly 
+  one reason and says so — a ticker a test can't shorten is a ticker no test covers. Verifying it
+  after your report rather than before is the wrong order, and it's why the report was needed.      
+                                                                                                    
+  [1mMUS-Q-0078[0m asks the real question: making the other two live costs a [38;5;153m<script>[39m on pages whose whole
+  design is working without one — MUS-Q-0053's territory.                                           
+                                                                                                    
+  - [1mBoth surfaces[0m (recommended) — ends the class, not the instance; degrades to today's behaviour 
+    when script is blocked                                                                          
+  - [1mOnly the decisions page[0m — one script instead of two, on the page with somebody sitting on it;   
+    the rule gets crossed anyway and the next report is intake                                      
+  - [1mLeave it[0m — no new scripted surface, and the answer to what you just hit is "that's how it works"
+                                                                                                    
+  Also fixed this turn, from the earlier work: [1mMUS-F-0085[0m — my own relay was typed back into this   
+  session as [3m"The owner answered MUS-Q-0076…"[0m. Only the event log gave it away: three amends, all   
+  [38;5;153mwhippy[39m, none yours. MUS-D-0126 exists so nobody reads a relay as you having been here, and the    
+  delivered line was the one copy that left the store with the provenance stripped. It carries it
+  now.                                                                                              
+                                                                                                    
+  [38;5;153mmake check[39m green: 1446 links, 352 identifiers.                                                    
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mBaked for 7m 12s · done 5:09 AM[39m                                                                   
+                                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231mThe owner answered MUS-Q-0077: A pop up in front of the session, that can be minimized into the [39m  
+  [38;5;231mbutton row[39m                                                                                        
+[49m                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+
+[38;5;231m●[39m Verified — you, 05:13:29, no relay. That's a fourth option, not one of my three. Building it.     
+
+  [38;5;246mSearched for [1m2[0m[38;5;246m patterns, ran [1m2[0m[38;5;246m shell commands [39m                                                    
+
+[38;5;231m●[39m [38;5;153mSplitChrome[39m does eat the legend — so reading from the raw capture was right, and now that's proven
+  rather than assumed. Wiring it through.
+
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+                                                                                               
+[38;5;231m●[39m Now the popup itself — over the terminal, minimizing into the key row.
+
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m7[0m[38;5;246m shell commands [39m                                                
+
+[38;5;231m●[39m Verified — you, 05:13:29, no relay. And that's a fourth option, not one of my three. It's better  
+  than all of them.                      
+
+  The panel was recommended because a picker's rows don't fit on a button, and it cost terminal
+  height. The row was cheap and threw away the column where a picker says what an option [3mdoes[0m. [1mA pop
+[0m  [1mup pays neither[0m — it takes the room a dialog needs because it's over the terminal, and gives it
+  back on demand because the pane underneath is what you want the room for. Minimising is the answer
+  to my own objection that a pop up covers what it's describing, which MUS-D-0143 says must hold.
+
+  Built:                                                                                            
+                                                                                                    
+  - [1mHeld above the dock.[0m A dialog covering the composer would take the reply box away exactly when
+    you want to type instead of press.                                                              
+  - [1mRebuilt only when the prompt changes.[0m A screen frame arrives on every redraw and a cursor blink 
+    is a redraw — rebuilding per frame would drop your minimised state several times a second. A    
+    prompt that changes while minimised [3mstays[0m minimised; you put it away to read the pane, and a    
+    redraw isn't a request to bring it back.                                                     
+  - [1mIts buttons send the same key frame the row does.[0m One path, one allowlist, one place it can be  
+    refused. The cursor's row is marked, not pre-pressed.                                           
+  - [1mAnchored to the session column[0m, not the viewport, so a wide layout puts it over the terminal    
+    rather than beside the rail.                                                                  
+                                                                                                    
+  One thing I'd assumed and now proved: the frame reads the prompt off the [1mraw[0m capture, because     
+  [38;5;153mSplitChrome[39m takes the legend off with the rest of the CLI's furniture. There's a test saying so 
+  rather than a comment claiming it.                                                                
+                                                                                                    
+  [38;5;153mreadInput[39m now resolves keys through [38;5;153mSendChoice[39m, which is what lets the picker's [38;5;153ms[39m be pressed at   
+  all.                                                                                              
+                                                                                                    
+  [38;5;153mmake check[39m green: 1446 links, 352 identifiers, 2241 table rows.                                
+                                                                                                    
+  Still open: [1mMUS-Q-0078[0m — whether the decision badge goes live on intake and the decisions page, at
+  the cost of a script tag on each.                                                                 
+                                                                                                    
+  Redeploy to see the pop up: [38;5;153m! make install && systemctl --user restart mustur[39m                    
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mBrewed for 4m 12s · done 5:17 AM[39m                                                                  
+                                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231mThe owner answered MUS-Q-0078: The badges should be live on every surface[39m                         
+  [38;5;231mMUS-Q-0078 was answered[39m                                                                           
+[49m                                                                                                    
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                              
+
+[38;5;231m●[39m Confirmed — you, 05:13:55. And it's worse than stale: [1msix surfaces render the bar and only three [0m 
+  [1mrender the count at all.[0m Account, compose and records show the tab with no badge.                 
+
+  [38;5;246mSearched for [1m2[0m[38;5;246m patterns, ran [1m4[0m[38;5;246m shell commands 
+[39m                                                                                                    
+[38;5;231m●[39m Now the three surfaces that render no badge at all, and the shared script tag on all six.
+
+  [38;5;246mSearched for [1m2[0m[38;5;246m patterns, ran [1m7[0m[38;5;246m shell commands [39m                                                    
+
+[38;5;231m●[39m Four tests assert those surfaces carry no script. That was the rule you just changed — they need  
+  to assert the new one, not be silenced.                                          
+
+  [38;5;246mRan [1m4[0m[38;5;246m shell commands [39m                                                                             
+                                                                                           
+[38;5;231m●[39m The surfaces gate fired on [38;5;153m/questions/count[39m — MUS-D-0133 working as designed. Checking what it
+  expects before I decide whether that's a brief or a gate gap.                                     
+                                                                                                    
+  [38;5;246mSearched for [1m1[0m[38;5;246m pattern, ran [1m5[0m[38;5;246m shell commands 
+[39m                                                                                                    
+[38;5;231m●[39m [38;5;153m{"waiting":0}[39m is correct — nothing is open right now, so an absent badge is right too. That proves
+  nothing about rendering. Testing against a store that has one.                                
+                                                                                                   
+  [38;5;246mRan [1m1[0m[38;5;246m shell command 
+[39m                                                                                                
+[38;5;231m●[39m All four render the badge server-side with the count, and the endpoint agrees. Now the doc claim
+  that's no longer true.                                                                            
+                                                                
+  [38;5;246mRan [1m3[0m[38;5;246m shell commands 
+[39m                                                                                                    
+[38;5;231m●[39m Verified — you, 05:13:55. And "every surface" was the right scope for a reason my question hadn't
+  found.                                                                                          
+                                                                                                    
+  [1mSix surfaces render the bar; only three rendered the count at all.[0m Records, compose and account
+  showed a Decisions tab with no badge. On those it wasn't stale, it was missing — polling the other
+  three would have fixed nothing.
+
+  All six now render it server-side and all six keep it live.                                      
+
+  [1mOne file writes a badge.[0m [38;5;153mbar.js[39m is loaded everywhere and exposes the writer; the session view's  
+  socket calls it instead of keeping its own copy. That copy is precisely how MUS-F-0086 happened — 
+  I fixed the badge once, on the surface that reported it, and the other five were never in the  
+  change. A second implementation of a shared control was the defect, not the surface count.        
+                                                                                                    
+  - Poll answered from a two-second cache — [38;5;153mOpenCount[39m lists every record, fine once, wasteful per   
+    tab per tick                                                                                    
+  - Returns a number, never [3mwhich[0m questions, so a reader learns something is waiting without       
+    learning what                                                                                   
+  - Stops asking on 401/403 — a page polling a sign-in screen every ten seconds is doing harm      
+  - Every surface still renders its count and works with script blocked; what stops is the number   
+    [3mchanging[0m                                                                                       
+                                                                                                   
+  [1mVerified against a scratch store with one open question:[0m [38;5;153m/questions/count[39m answers [38;5;153m{"waiting":1}[39m   
+  and all four public pages render [38;5;153mclass="cnt">1[39m and load [38;5;153mbar.js[39m.                                   
+                                                                                                    
+  Two things I had to change rather than silence. Four tests asserted those pages carried no script 
+  at all — that was the rule you just changed, so they now assert what's actually worth protecting:
+  each page loads the scripts it was [3mgiven[0m and no others, read from [38;5;153msrc[39m attributes rather than      
+  grepping [38;5;153m<script[39m, which stopped meaning anything once every page had one. And CLAUDE.md's "six    
+  pages carry script… that is still the rule" was simply false, so it says the new thing.        
+                                                                                                    
+  The surfaces gate fired on [38;5;153m/questions/count[39m and was right to — a served path with no brief.       
+  Excluded by exact path, not prefix, since [38;5;153m/questions/*[39m would let a real page through unbriefed.  
+                                                                                                    
+  [38;5;153mmake check[39m green: 1459 links, 354 identifiers. Nothing open.                                     
+                                                                                                   
+  Needs a redeploy — this one changes every page: [38;5;153m! make install && systemctl --user restart mustur[39m 
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCooked for 7m 1s · done 5:25 AM[39m                                                                  
+                                                                                                    
+[38;5;211m[48;5;59m! [38;5;231m make install && systemctl --user restart mustur[39m                                                  
+[38;5;246m[49m  ⎿  [39m  ok    /home/whippy/.local/bin/mustur 0.1.0                                                   
+                                                                                                   
+  [38;5;246mRan [1m1[0m[38;5;246m shell command [39m                                                                             
+
+[38;5;231m●[39m Live — PID 2228994. [38;5;153mbar.js[39m referenced by all seven templates, the shared writer and the count     
+  endpoint present, the prompt pop-up and its minimise chip in the binary. The endpoint answers 303 
+  to an unauthenticated request, same as every page, so the guard covers it.
+
+  Two things landed this round:                                                                     
+
+  [1mThe prompt pop-up[0m (MUS-D-0144) — when a Claude Code dialog appears in a session you're watching,
+  it renders in front of the terminal with the heading, the sentence, the numbered rows with the   
+  cursor marked, and the legend keys as buttons. Minimise collapses it into the key row; the chip
+  brings it back. It stays minimised across redraws, because you put it away to read the pane.      
+                                                                                                    
+  [1mThe badge[0m (MUS-D-0145) — live on all six surfaces, one file writing it, count rendered server-side
+  so the page is right before and without script.                                                   
+                                                                                                   
+  Nothing is open. Where the session stands:                                                      
+                                                                                                    
+  - [1mIntake empty.[0m Fourteen jots processed.                                                          
+  - [1mMUS-W-0022 built[0m — the prompt parser, written against a real capture from your [38;5;153mRing[39m session     
+    rather than a remembered format, which caught two defects a recollection wouldn't have.        
+  - [1mMUS-D-0143[0m records what the pane choice costs, so nobody rediscovers it: Mustur reads dialogs   
+    off a screen that exists as structured messages on a protocol the CLI already speaks. MUS-F-0084
+    is the escape hatch if that ever stops being worth it.                                         
+                                                                                                    
+  Still recorded and deliberately unbuilt: no way to end a session from a surface (MUS-F-0081), no
+  gate catching [38;5;153mrecords/[39m or [38;5;153mdecisions.md[39m drifting from the store (MUS-F-0011), viewer voting parked
+  against MUS-M-0008 (MUS-F-0078), and MUS-Q-0053 — what the scripted-surface rule counts — still   
+  open, with its numbers moved by yesterday's answer rather than settled.                           
+                                                                                                    
+[38;5;246m✻[39m [38;5;246mCooked for 24s · done 5:38 AM[39m                                                                     
+                                                                                                    
+[38;5;239m[48;5;237m❯ [38;5;231mThe prompt pop-up is showing but empty[39m                                                            
+[49m                                                                                                    
+[38;5;231m●[39m A false positive, most likely — parsing something that isn't a dialog. Let me capture the panes as
+  they are now and run the parser against them.                                                    
+
+[38;5;246m●[39m Running SP=/tmp/claude-1000/-home-whippy-repos-DevOfPie-M…                                        
+[38;5;246m  ⎿  $ SP=/tmp/claude-1000/-home-whippy-repos-DevOfPie-Mustur/5deaa93a-e914-4e67-880c-be3da7d07c0d/s
+[39m     [38;5;246mcratchpad
+[39m     [38;5;246mfor s in Check Ring; do tmux capture-pane -p -e -J -t "mustur/$s" > $SP/live-$s.txt; done[39m      
+     [38;5;246mcp $SP/live-Ring.txt internal/session/testdata/screen-no-prompt.txt
+[39m     [38;5;246mcat > /tmp/probe_test.go <<'GO'
+[39m     [38;5;246mpack…[39m                                                                                          
+
+[38;5;174m✽[39m [38;5;180mTransmuting…[38;5;174m [38;5;246m(30s · ↓[39m [38;5;246m1.9k tokens)[39m                                                                
+                                                            [38;5;114m✔ Update installed · Restart to update
+[38;5;244m────────────────────────────────────────────────────────────────────── mustur milestone resolution ─
+[38;5;246m❯ [39m                                                                                                  
+[38;5;244m────────────────────────────────────────────────────────────────────────────────────────────────────
+[39m  [38;5;220m⏵⏵ auto mode on[38;5;246m (shift+tab to cycle) · PR[39m [4m[38;5;220m]8;id=uzlkej;https://github.com/DevOfPie/Mustur/pull/38\#38[0m[38;5;246m]8;;\ · esc to interrupt · ← 1 agent · 1 feedback draft[39m   
+                                                                                               [38;5;114m]8;id=1oohvs6;https://claude.ai/code/session_011KzADsJf4bC7Q8SYjKeKDB?from=cli\/rc[39m]8;;\  

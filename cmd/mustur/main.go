@@ -224,28 +224,50 @@ func merge(old, in record.Record, set map[string]bool, drop names) record.Record
 	// A field is identified by its key: passing Status again replaces it, in
 	// the place it already had. Fields are rendered in order, so a correction
 	// that shuffles them is a diff nobody asked for.
-	incoming := map[string]record.Field{}
+	//
+	// A key can repeat -- Option does, once per answer the owner can pick -- so
+	// what is held per key is a list, and passing a key replaces every
+	// occurrence of it in order. The first version kept one field per key, so
+	// two --data Option= values collapsed to the last and then overwrote every
+	// existing row with it: a question with three options came back with three
+	// copies of the third, silently, from the command whose job is correcting
+	// records (MUS-F-0094).
+	incoming := map[string][]record.Field{}
+	var order []string
 	for _, f := range in.Data {
-		incoming[strings.ToLower(strings.TrimSpace(f.Key))] = f
+		key := strings.ToLower(strings.TrimSpace(f.Key))
+		if _, ok := incoming[key]; !ok {
+			order = append(order, key)
+		}
+		incoming[key] = append(incoming[key], f)
 	}
-	used := map[string]bool{}
+	taken := map[string]int{}
 	var data []record.Field
 	for _, f := range old.Data {
 		key := strings.ToLower(strings.TrimSpace(f.Key))
-		if now, ok := incoming[key]; ok {
-			f = now
-			used[key] = true
+		if list, ok := incoming[key]; ok {
+			// More of this key already here than were passed: the surplus is
+			// what the caller chose not to restate, and it goes.
+			if taken[key] >= len(list) {
+				continue
+			}
+			f = list[taken[key]]
+			taken[key]++
 		}
 		if gone(f.Key, f.Value) {
 			continue
 		}
 		data = append(data, f)
 	}
-	for _, f := range in.Data {
-		if used[strings.ToLower(strings.TrimSpace(f.Key))] || gone(f.Key, f.Value) {
-			continue
+	// Whatever is left over is new: a key the record did not carry, or more of
+	// one than it had.
+	for _, key := range order {
+		for _, f := range incoming[key][taken[key]:] {
+			if gone(f.Key, f.Value) {
+				continue
+			}
+			data = append(data, f)
 		}
-		data = append(data, f)
 	}
 	out.Data = data
 
@@ -479,6 +501,10 @@ func cmdExport(args []string) error {
 	fs := flag.NewFlagSet("export", flag.ContinueOnError)
 	db := dbFlag(fs)
 	out := fs.String("out", "records", "directory to render into")
+	// Off unless asked for. The running service exports records/ from a unit
+	// whose filesystem is read-only everywhere else, so the flag that writes
+	// into the checkout's root is passed by the Makefile and by nothing else.
+	decisions := fs.String("decisions", "", "also rewrite the generated tail of this hand-written decision log")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -498,6 +524,12 @@ func cmdExport(args []string) error {
 		return err
 	}
 	fmt.Printf("exported %d record(s) to %s\n", len(records), *out)
+	if *decisions != "" {
+		if err := export.Tail(*decisions, records); err != nil {
+			return err
+		}
+		fmt.Printf("rewrote the generated tail of %s\n", *decisions)
+	}
 	return nil
 }
 
@@ -562,6 +594,12 @@ func cmdServe(args []string) error {
 	// the other surfaces does not offer a tab to them: a tab that goes nowhere
 	// is an unbuilt capability described as existing.
 	withSessions := fs.Bool("sessions", false, "serve the session surface and let the composer reach sessions; both type into a running agent")
+	// What the surface may start, and nothing else. Repeatable; empty falls
+	// back to web.DefaultCommands. A browser picks from this list rather than
+	// naming a process, which is the whole of why starting a session from a
+	// page is not a shell behind Access (MUS-D-0146).
+	sessionCmds := &values{}
+	fs.Var(sessionCmds, "session-cmd", "a command the session surface may start, repeatable")
 	// The site as a browser sees it. A passkey is bound to it, which is what
 	// makes one unphishable — and what makes a wrong value fail silently, by
 	// making every registered passkey unusable rather than by erroring.
@@ -618,6 +656,9 @@ func cmdServe(args []string) error {
 	// Registered on the outer mux, ahead of the intake box's catch-all, so the
 	// queue is reachable at a hostname whose "/" belongs to intake.
 	questions.Routes(mux)
+	// One script for the bar every surface renders (MUS-Q-0078). Registered
+	// here rather than by a page type, because it belongs to all of them.
+	web.BarRoutes(mux)
 	// The hook directory is what makes a session's sub-agents visible: the
 	// adapter installs a hook pointing at it, and the surface reads it back.
 	hookDir := session.DefaultHookDir()
@@ -632,6 +673,7 @@ func cmdServe(args []string) error {
 			Hub: hub, Adapter: adapter, Store: s,
 			Actor: defaultActor(), HookDir: hookDir,
 			ShowAccount: showAccount,
+			Commands:    *sessionCmds,
 		}
 		sessions.Routes(mux)
 	}

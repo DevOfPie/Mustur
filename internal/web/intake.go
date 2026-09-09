@@ -508,7 +508,8 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <span class="why">{{.Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
 <form method="post" action="/intake" enctype="multipart/form-data">
-  <textarea name="jot" autofocus placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
+  <textarea name="jot" autofocus spellcheck="true" autocapitalize="sentences" autocorrect="on"
+            placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
   <label class="pic">A picture, if a picture says it faster
     <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
     <small>Held privately. The record carries what an agent reads in it, never the picture.</small>
@@ -537,6 +538,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
+<script src="/assets/bar.js"></script>
 </body>
 </html>
 `))

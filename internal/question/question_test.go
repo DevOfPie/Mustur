@@ -184,3 +184,68 @@ func TestGateNamesEveryBuriedQuestionAndTheRemedy(t *testing.T) {
 		t.Errorf("message names a surfaced question:\n%s", msg)
 	}
 }
+
+// The marker stays in the record and comes off the surface.
+//
+// MUS-F-0072: the owner asked for the recommendation to be a mark on the
+// option's row rather than text in its description, and it was both — the
+// prefix is what sets the flag, and the line was rendered with the word still
+// on the front of it.
+func TestSaysTakesTheMarkerOffAndKeepsTheSentence(t *testing.T) {
+	for _, c := range []struct{ line, want string }{
+		{"Recommended. A media query decides it", "A media query decides it"},
+		{"Recommended: one screen, not nine", "one screen, not nine"},
+		{"Recommended — the essays stay", "the essays stay"},
+		// The separator the existing questions in this store are written with.
+		{"Recommended · conformance runs on every push", "conformance runs on every push"},
+		{"Recommended the essays stay", "the essays stay"},
+		// Not recommended: untouched, including a line that merely mentions it.
+		{"one rule, no detection", "one rule, no detection"},
+		{"cheaper than the Recommended one", "cheaper than the Recommended one"},
+		// The whole line is the marker: there is nothing else to say, and an
+		// empty description would lose it silently.
+		{"Recommended", "Recommended"},
+	} {
+		o := Option{Label: "x", Line: c.line}
+		if got := o.Says(); got != c.want {
+			t.Errorf("Says(%q) = %q, want %q", c.line, got, c.want)
+		}
+	}
+	// The flag still comes from the raw line, so the record is unchanged.
+	if !(Option{Line: "Recommended. x"}).IsRecommended() {
+		t.Error("stripping broke the flag it is derived from")
+	}
+}
+
+// The recommendation has one place, and putting it elsewhere is refused.
+//
+// MUS-F-0095: thirteen questions in a row were raised with the marker at the
+// front of the paragraph rather than the line. IsRecommended never saw it, no
+// star ever drew, and the owner answered every one of them without being told
+// which was recommended — the asker had been saying so in prose instead, which
+// is why nothing surfaced it.
+func TestCheckOptionRefusesAMisplacedRecommendation(t *testing.T) {
+	err := CheckOption("A :: one line :: Recommended. the paragraph")
+	if err == nil {
+		t.Fatal("an option with the marker in its paragraph was accepted")
+	}
+	// The message has to carry the corrected option, or the next person writes
+	// it wrong again while reading about writing it wrong.
+	if !strings.Contains(err.Error(), `A :: Recommended. one line :: the paragraph`) {
+		t.Errorf("the refusal does not show the fix: %v", err)
+	}
+
+	for _, ok := range []string{
+		"A :: Recommended. one line :: the paragraph", // where it belongs
+		"A :: one line :: the paragraph",              // no marker at all
+		"A :: one line",                               // no paragraph to misplace it in
+		"A",                                           // a bare label
+		// The word inside the paragraph rather than at the front of it: prose
+		// about a recommendation is not a misplaced marker.
+		"A :: one line :: cheaper than the Recommended one",
+	} {
+		if err := CheckOption(ok); err != nil {
+			t.Errorf("CheckOption(%q) refused a well-formed option: %v", ok, err)
+		}
+	}
+}
