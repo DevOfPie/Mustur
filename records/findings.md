@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-121 record(s), by identifier.
+122 record(s), by identifier.
 
 ## The queue
 
@@ -131,6 +131,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0114](#mus-f-0114) | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |  |
 | [MUS-F-0115](#mus-f-0115) | A restored session shows a blank terminal with no sign that it is still loading |  |  |
 | [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong |  | unreviewed |
+| [MUS-F-0117](#mus-f-0117) | Two sessions started from the surface share one working tree, and nothing says so |  |  |
 
 ---
 
@@ -3068,3 +3069,25 @@ The session is restored not started over, the button text and descriptions are a
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0117
+
+**Two sessions started from the surface share one working tree, and nothing says so**
+
+finding · 2026-09-09
+
+decision: [MUS-D-0146](decisions.md#mus-d-0146)
+
+finding: [MUS-F-0066](#mus-f-0066)
+
+finding: [MUS-F-0065](#mus-f-0065)
+
+Observed on this machine at 01:37 on 2026-09-09. mustur/Build and mustur/Research are both running, both remembered with dir /home/whippy/repos/DevOfPie/Mustur, and it is one checkout: git worktree list shows a single tree, and while this session held sessions/survive-reboot the tree was on sessions/dialog-without-the-screen — the other session had branched under it.
+
+The surface cannot do anything else. MUS-D-0146 has the start form choose where a session runs from the repositories the store holds a checkout for, and a repository record carries one checkout per machine, so every session started for this project from a browser lands in the same directory. One session per *project* is enforced; two projects pointing at one tree is not, and Build and Research are exactly that.
+
+Nothing about it is visible. The picker shows two names, the session pages show two panes, and neither says the two are editing the same files. A git checkout in one moves the tree under the other, an uncommitted edit in one is in the other's diff, and make export from both conflicts in records/ — which is MUS-F-0066, filed for two branches and not for two sessions.
+
+The CLI can already avoid it: mustur session start takes --dir and will start a session anywhere, including a worktree. The surface offers no such choice, and the records that describe agents working in their own worktrees (MUS-F-0065) describe a thing the surface cannot ask for.

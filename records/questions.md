@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-88 record(s), by identifier.
+89 record(s), by identifier.
 
 ---
 
@@ -2017,3 +2017,25 @@ question · 2026-09-08
 | Answered | 2026-09-08 09:22 |
 | Delivered | typed into mustur/Build |
 | Surfaced | 2026-09-08 09:22 |
+
+---
+
+## MUS-Q-0089
+
+**Forty-seven commits sit on this machine and nothing since pull request 34 has been pushed**
+
+question · 2026-09-09
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing here. The work is committed, gated and deployed; what is unpushed is the review trail workflow.md asks for. |
+| Option | Push the branch and open one pull request for the lot :: Recommended :: one review of 47 commits, and the trail exists again :: workflow.md wants one topic per pull request, stacked. That was not done as the work went by, and slicing 47 commits into stacked branches after the fact is a rewrite of history nobody asked for. One branch, one pull request, reviewed as a whole, is the cheapest way to stop the gap growing — and the reviewers workflow.md names read the tree rather than the slices. |
+| Option | Stack them properly, after the fact :: hours of rebasing, and the trail matches the contract :: Cut a branch per topic from the commits already made and stack the pull requests the way the contract describes. Honest to the rule and expensive, and every rebase is a chance to lose a commit that is currently safe. |
+| Option | Leave them local for now :: nothing is published, and the gap keeps growing :: The machine holds the work and the deployment runs it. What is lost is the review step and anything a second pair of eyes would have caught; what is risked is one disk. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Push the branch and open one pull request for the lot |
+| Answered | 2026-09-09 01:40 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-09 01:40 |
