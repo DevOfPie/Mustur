@@ -19,8 +19,15 @@
 // sessions exist, which are alive and what they last printed, and it knows it a
 // second before any mirror would. So nothing here keeps a table of sessions:
 // listing is a live query, and the store holds only what outlives a session.
-// The cost, accepted rather than discovered: when the tmux server dies, so does
-// every session and everything Mustur knew about them.
+//
+// The cost was accepted rather than discovered — when the tmux server dies, so
+// does every session — and half of it has since been paid back. A reboot took
+// the owner's sessions and Mustur could not afterwards say they had existed, so
+// Start now writes down what it launched and Stop deletes what it ended
+// (MUS-Q-0083). That is a note about the past, not a mirror: **nothing here
+// reads it**, listing is still a live query, and what the note buys is a
+// surface that can offer a lost session back rather than a session that comes
+// back on its own. Mustur still restarts nothing.
 //
 // **Mustur starts sessions and never attaches to one it did not start**
 // (MUS-D-0007). Enforcement is by provenance, not by name: Start sets a tmux
@@ -143,6 +150,29 @@ type Adapter struct {
 	HookDir string
 	// Exe is the Mustur binary the hook calls back. Empty means this one.
 	Exe string
+	// DB is the store the SessionStart hook writes the CLI's conversation
+	// identifier into. Empty leaves the path off the hook's command line, so it
+	// falls back to this machine's default — which is right for every process
+	// that did not override it, and wrong to guess at for one that did.
+	DB string
+	// Remember is told what Start launched and what Stop ended, so a session
+	// lost with the machine can be offered back (MUS-Q-0083). Nil remembers
+	// nothing.
+	//
+	// It is not a mirror of what is running and nothing here reads it back:
+	// List, Alive and Stop still ask tmux, which is the source of truth
+	// (MUS-D-0062). This only writes down what was launched.
+	Remember Rememberer
+}
+
+// Rememberer is told what Start launched and what Stop ended.
+//
+// An interface rather than the store itself, so this package keeps shelling out
+// to tmux as its only dependency and a caller with no store open — the answer
+// path, the delivery path — passes nothing and remembers nothing.
+type Rememberer interface {
+	RememberSession(ctx context.Context, project, dir, cmd string) error
+	ForgetSession(ctx context.Context, project string) error
 }
 
 type execRunner struct{}
@@ -257,8 +287,29 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 	// runs, so the first hook to fire writes into an empty log rather than
 	// underneath rows belonging to a session that has already ended.
 	ForgetSubagents(a.HookDir, project)
-	args = append(args, withHook(cmd, a.exe(), a.HookDir, project))
-	if out, err := a.runner().Run(ctx, "tmux", args...); err != nil {
+	args = append(args, withHook(cmd, a.exe(), a.HookDir, project, a.DB))
+	// Where the server ends up is decided here, once, by whoever finds none
+	// running (MUS-Q-0088).
+	out, err := "", error(nil)
+	if prefix := a.scopePrefix(ctx); prefix != nil {
+		out, err = a.runner().Run(ctx, prefix[0], append(prefix[1:], append([]string{"tmux"}, args...)...)...)
+		if err != nil {
+			// Best effort, deliberately. systemd-run is missing on a host
+			// without systemd and can fail on one with it — no session bus in
+			// the environment, the scope name already held — and in every one
+			// of those cases the right outcome is the one that shipped before:
+			// tmux spawns the server itself, in this cgroup, and a deploy costs
+			// a press per session. Said out loud, because a session that
+			// quietly stops surviving deploys is a thing to find later.
+			fmt.Fprintf(os.Stderr,
+				"mustur: %s could not be given its own scope, so restarting the service will end it: %v: %s\n",
+				name, err, strings.TrimSpace(out))
+			out, err = a.runner().Run(ctx, "tmux", args...)
+		}
+	} else {
+		out, err = a.runner().Run(ctx, "tmux", args...)
+	}
+	if err != nil {
 		return Session{}, fmt.Errorf("tmux new-session: %w: %s", err, strings.TrimSpace(out))
 	}
 
@@ -281,7 +332,64 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 	if err := a.settle(ctx, project, name, cmd); err != nil {
 		return Session{}, err
 	}
+
+	// Written down after the session is believed in, so a command that died on
+	// startup is not offered back as something to restore. The command recorded
+	// is the one that was given, without the hook this function appended: the
+	// hook is rebuilt at the next start, and a stale one baked into a stored
+	// command line would outlive the binary that answers it.
+	//
+	// A failure to remember is not a failure to start. The session is running
+	// and saying otherwise would be worse than the thing that went wrong; what
+	// is lost is the offer to start it again after a reboot.
+	if a.Remember != nil {
+		if err := a.Remember.RememberSession(ctx, project, dir, cmd); err != nil {
+			fmt.Fprintf(os.Stderr, "mustur: %s started but was not written down, so a reboot will lose it: %v\n", name, err)
+		}
+	}
 	return Session{Name: name, Project: project}, nil
+}
+
+// Resume rewrites a command so it continues a conversation the CLI already has.
+//
+// Only a command this package recognises, for the reason withHook only appends
+// to one: the flag belongs to a vendor, and adding it to something else
+// produces a session that will not start.
+//
+// Any --resume or --continue already on the line is dropped first. A restored
+// session's stored command carries the one from last time, and two --resume
+// flags is a command that resumes the wrong thing or nothing at all.
+// A command carrying a quote is left exactly as it is. This walks the line as
+// whitespace-separated fields and rebuilds it, which is right for `claude` and
+// `claude --resume <id>` — everything this actually stores — and would quietly
+// re-word `--model "opus 5"`. A session that starts without its conversation is
+// a disappointment; a session that starts with its arguments rearranged is a
+// defect, so the disappointment is the one chosen.
+func Resume(cmd, cli string) string {
+	if !isClaude(cmd) || strings.ContainsAny(cmd, `"'`) {
+		return cmd
+	}
+	fields := strings.Fields(cmd)
+	out := fields[:0:0]
+	for i := 0; i < len(fields); i++ {
+		switch fields[i] {
+		case "--resume", "-r":
+			// The identifier is a separate argument, and skipping it is the
+			// point: left behind it becomes a prompt the CLI is asked to answer.
+			if i+1 < len(fields) && !strings.HasPrefix(fields[i+1], "-") {
+				i++
+			}
+			continue
+		case "--continue", "-c":
+			continue
+		}
+		out = append(out, fields[i])
+	}
+	cmd = strings.Join(out, " ")
+	if strings.TrimSpace(cli) == "" {
+		return cmd
+	}
+	return cmd + " --resume " + cli
 }
 
 // SettleFor is how long Start watches a new session before believing in it.
@@ -306,6 +414,63 @@ func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
 		case <-time.After(50 * time.Millisecond):
 		}
 	}
+}
+
+// TmuxScope is the transient unit the tmux server is put in when Mustur has to
+// spawn one.
+//
+// Named rather than random so a person can find it: `systemctl --user status
+// mustur-tmux.scope` says whether the sessions are outside the service or in
+// it. tmux uses a uuid for the scopes it makes per pane child, which is right
+// for something there are many of and wrong for the one there is only ever one
+// of.
+const TmuxScope = "mustur-tmux"
+
+// serverUp reports whether a tmux server is running at all — not whether it
+// holds any session of ours.
+//
+// An error that is not "no server running" answers yes. Spawning a server on a
+// tmux that failed for some other reason would be acting on a guess, and the
+// failure mode is a second server on the same socket, which is not a thing
+// tmux has an answer for.
+func (a *Adapter) serverUp(ctx context.Context) bool {
+	out, err := a.runner().Run(ctx, "tmux", "list-sessions", "-F", "#{session_name}")
+	if err != nil && noServer(out) {
+		return false
+	}
+	return true
+}
+
+// scopePrefix is the command prefix that puts a spawned tmux server outside
+// this unit's cgroup, or nil when there is already a server or no way to do it.
+//
+// **This is MUS-F-0106's fix.** mustur.service has systemd's default KillMode,
+// control-group: on stop, everything left in the unit's cgroup is killed. A
+// tmux server is spawned by whichever client first finds none running, so a
+// server first started by the serving process lived inside the unit, and every
+// deploy ended every session on it — measured, and matched to the journal for
+// the 2026-09-08 01:50 redeploy.
+//
+// tmux already does exactly this for each pane child, in `tmux-spawn-<uuid>`
+// scopes, and leaves the server where it was started. So the *first*
+// new-session runs inside a scope of Mustur's own, and the server it spawns
+// inherits that cgroup. Every later one connects to the server that is already
+// there and needs no prefix.
+//
+// It has to be the new-session and not `tmux start-server`: measured on this
+// machine, a server started with no session exits immediately — exit-empty is
+// on by default — so the scope emptied and the next client spawned a fresh
+// server back inside the unit. Turning exit-empty off would have worked and
+// changes a server-wide option on a socket that may not only be ours.
+//
+// **Only the server escapes.** Everything else Mustur spawns is still in the
+// unit's cgroup and still dies with it, which is what the stop path relies on.
+func (a *Adapter) scopePrefix(ctx context.Context) []string {
+	if a.serverUp(ctx) {
+		return nil
+	}
+	return []string{"systemd-run", "--user", "--scope", "--quiet", "--collect",
+		"--unit", TmuxScope}
 }
 
 // List returns every session Mustur started on this machine, and nothing else.
@@ -412,6 +577,18 @@ const (
 	// does not recognise. It is not "idle": a surface that treated it as idle
 	// would be asserting something about every CLI nobody has looked at.
 	AgentUnknown Agent = ""
+	// AgentStarting means the pane is running and has printed nothing at all.
+	//
+	// A CLI paints its first screen a second or two after it is launched, and a
+	// restored one has a conversation to read off disk before it can. Until
+	// then the capture is blank, which the silence timer reads as a session
+	// that has been quiet since it started — so the surface said "idle" about a
+	// session that had not yet drawn its first frame, with no sign that
+	// anything was coming (MUS-F-0115).
+	//
+	// A blank pane is the honest evidence for this and the only evidence
+	// available: nothing else here knows what a CLI does before it prints.
+	AgentStarting Agent = "starting"
 	// AgentWorking means a turn is in flight.
 	AgentWorking Agent = "working"
 	// AgentWaiting means the CLI is sitting at its prompt.
@@ -479,6 +656,11 @@ func (a *Adapter) Capture(ctx context.Context, project, from string) (string, er
 // DoingIn reads what the agent is up to out of a pane that has already been
 // captured, so a caller holding one does not fetch it twice.
 func DoingIn(pane string) Agent {
+	// Nothing on the screen at all. Before the marks below can say anything,
+	// there has to be a screen to look at.
+	if strings.TrimSpace(pane) == "" {
+		return AgentStarting
+	}
 	// Working first: the input box is drawn during a turn as well, so looking
 	// for the caret first would call every working session idle.
 	if strings.Contains(pane, workingMark) {
@@ -595,6 +777,14 @@ func (a *Adapter) Stop(ctx context.Context, project string) error {
 	}
 	if out, err := a.runner().Run(ctx, "tmux", "kill-session", "-t", name); err != nil {
 		return fmt.Errorf("tmux kill-session: %w: %s", err, strings.TrimSpace(out))
+	}
+	// A session the owner ended is finished, so it stops being offered back.
+	// That is the whole distinction the remembered table encodes: this is how a
+	// stop is told apart from a reboot.
+	if a.Remember != nil {
+		if err := a.Remember.ForgetSession(ctx, project); err != nil {
+			fmt.Fprintf(os.Stderr, "mustur: %s was stopped but is still written down: %v\n", name, err)
+		}
 	}
 	return nil
 }

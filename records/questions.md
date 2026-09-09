@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-82 record(s), by identifier.
+89 record(s), by identifier.
 
 ---
 
@@ -1860,7 +1860,7 @@ question · 2026-09-07
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0102 |
 | Option | Per session in the reply box; the composer keeps its single draft :: Recommended. The reply box is addressed to a session; the composer is addressed to a thought :: The session view's box holds a draft per session, so switching sessions shows what was written for that one and never somebody else's half-sentence. The composer keeps the shared draft, which is where MUS-D-0013's reasoning actually lives -- it is the surface for writing a thought before deciding where it goes, and its destination is a dropdown for exactly that reason. Each box then behaves like the thing it is. The cost is two rules instead of one, and a sentence started in the reply box no longer follows you to the composer. |
 | Option | Per session everywhere, including the composer :: One rule, and the composer stops protecting the case it was built for :: Every box keys its draft by where it is pointed. Simplest to hold in the head and simplest to explain. It also ends the thing MUS-D-0097 was written for: deciding mid-sentence that what you are writing belongs somewhere else, and having it survive the change of mind. On the composer that change of mind is a dropdown away and is the whole point of the screen. |
@@ -1868,3 +1868,174 @@ question · 2026-09-07
 | Asked by | whippy |
 | Session project | Check |
 | Surfaced | 2026-09-07 00:58 |
+| Answer | I am confused on this question, I thought I only asked for the session input to be separated. Not sure where the composer(I believe the intake tab) comes into this? |
+| Answered | 2026-09-07 12:23 |
+| Delivered | not delivered: Check has no session Mustur started, and Mustur never attaches to one it did not |
+
+---
+
+## MUS-Q-0083
+
+**A reboot takes every session and Mustur remembers nothing. Who brings them back?**
+
+question · 2026-09-07
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Whether Start records what it launched, and whether anything relaunches it after the machine comes back. |
+| Option | Remember them, offer them back, start nothing :: Recommended · one press per session, no unattended agent :: Start writes the name, directory, command and the CLI's own session id (read from a SessionStart hook, which is the only place the id is offered) into the store. After a reboot the sessions page lists what was running, each with a button that starts it again on its own transcript. Nothing runs without a person pressing it, so the standing rule is unchanged. It does not touch MUS-D-0062 either: the table is a history of what was started, not a second answer to what is running. |
+| Option | Restore them at boot :: the sessions are simply there when the machine comes back :: The same record, plus a restore path that runs when mustur starts and recreates every session that was running, each resumed on its own transcript. The cost is agents waking unattended: after a power cut every session comes back at once with whatever permissions it had, and CLAUDE.md's 'it does not restart anything' has to be rewritten to say where the line now sits. |
+| Option | Neither, and the cost stands :: nothing is built, the answer is written down :: MUS-Q-0013 accepted this in as many words — nothing survives a tmux server restart except what was already a record. Transcripts are on disk, and 'claude --resume <id>' in the right directory brings a conversation back by hand. What stays lost is knowing which sessions existed at all. |
+| Asked by | whippy |
+| Session project | Sessions_Lost |
+| Answer | Remember them, offer them back, start nothing |
+| Answered | 2026-09-07 12:23 |
+| Delivered | typed into mustur/Sessions_Lost |
+| Surfaced | 2026-09-07 12:24 |
+
+---
+
+## MUS-Q-0084
+
+**A redeploy takes every session. Should the tmux server stop dying with the unit?**
+
+question · 2026-09-08
+
+finding: [MUS-F-0106](findings.md#mus-f-0106)
+
+question: [MUS-Q-0083](#mus-q-0083)
+
+MUS-F-0106: mustur.service has no KillMode, so it has systemd's default, control-group. The tmux server is spawned by the serving process and stays in that cgroup, so systemctl stop kills it and every session on it. Proven in isolation on a separate socket, and matched to the journal for the 2026-09-08 01:50 redeploy, which ended three panes that had been running over thirteen hours. MUS-Q-0083 answered the reboot case; this is the same loss on a far more frequent event, and the deploy that shipped the offer-back feature was the deploy that could not use it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing is blocked. Every deploy of Mustur interrupts every agent running on this machine until this is answered. |
+| Option | Recommended :: Give the tmux server its own transient scope :: When Start has to spawn a server, put it in a scope of its own, the way tmux already puts each pane child in one. Only the server escapes the unit; everything else Mustur spawns still dies with it, so nothing about the stop path changes. The cost is code, a systemd dependency on the spawn path, and a decision about what a host without systemd does instead. |
+| Option | Set KillMode=process on the unit :: one line, today :: systemd stops the main process and leaves the rest of the cgroup alone, so the tmux server survives every restart from the next daemon-reload onward. The cost is that it is indiscriminate: everything else the unit ever leaks survives too, and the cgroup kill is currently what cleans up after a Mustur that did not exit gracefully. |
+| Option | Change nothing; the restore button is the answer :: a deploy costs one press per session :: Since 2026-09-07 a lost session is written down and offered back with its conversation, so a redeploy costs the owner a press each rather than the work. The cost is that a resumed session is not an uninterrupted one — the agent was mid-turn, and whatever it was part-way through is gone. |
+| Asked by | whippy |
+| Answer | Change nothing; the restore button is the answer |
+| Answered | 2026-09-08 02:07 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0085
+
+**Each vendor's best channel is a different channel. Does the session surface get a module boundary?**
+
+question · 2026-09-08
+
+what reading a transcript actually buys: [MUS-F-0111](findings.md#mus-f-0111)
+
+what a second agent costs each way: [MUS-F-0112](findings.md#mus-f-0112)
+
+the channel MUS-F-0084 missed: [MUS-F-0113](findings.md#mus-f-0113)
+
+why a module beats a protocol: [MUS-F-0114](findings.md#mus-f-0114)
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing yet: this is a direction for the session surface, and the pane still works. Every dialog shape the CLI adds is another parser edit until it is answered. |
+| Option | A module per vendor, composing whatever that vendor offers :: Recommended · the only route that uses each agent's best channel and keeps the terminal :: One interface written against what the surface needs -- start/list/stop, watch, send text, send a key, answer a dialog, report sub-agents -- and a module per vendor filling it however it can, declaring what it cannot. Claude's module composes three channels it already has half of: tmux for the pty, the CLI's PermissionRequest and MessageDisplay hooks for dialogs and live text (MUS-F-0113), the transcript for history. Gemini's is ACP, which is its native interface. Codex's is app-server, which is richer than ACP. Nothing is given up, MUS-D-0016 stands, and the permission half of the parser goes. The cost is the interface itself, and a module that fakes a capability being worse than one that refuses it. |
+| Option | One protocol for all of them: ACP :: simplest boundary, and on two of three it wraps something better :: One JSON-RPC client and adapters somebody else maintains. Dialogs become messages and the whole parser goes. But claude-agent-acp is the Agent SDK, so on Claude it is --print underneath and costs the terminal exactly as MUS-Q-0076 priced; and on Codex it exposes less than app-server does. Native and first-class on Gemini alone. |
+| Option | Take the hooks and change nothing else :: the smallest thing that reduces the churn :: Add PermissionRequest and MessageDisplay to the settings Mustur already injects for sub-agents (MUS-D-0087). Permission dialogs get answered from the surface instead of read off the screen, live text arrives structured, and if a hook times out the CLI draws its dialog as today. No module boundary, no second agent, no rewrite. The picker half of the parser stays, and so does everything vendor-specific about it. |
+| Option | Change nothing :: MUS-D-0143 was four days ago :: The pane is understood and the shapes seen so far are handled. Correct if no second agent is coming and the churn is cheaper than any of the above. |
+| Asked by | whippy |
+| Surfaced | 2026-09-08 02:23 |
+| Answer | Change nothing |
+| Answered | 2026-09-08 02:47 |
+| Note | Further research is needed before a final decision should be made |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0086
+
+**The picker change is committed and not live. Deploying it kills every session, including the one that built it**
+
+question · 2026-09-08
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing is blocked. The restore offer stays where MUS-F-0109 found it — behind the + on a page /sessions redirects past — until the unit restarts. |
+| Option | Deploy now, from this session :: Recommended :: this session dies mid-turn and comes back on its own conversation :: make deploy restarts the unit, the tmux server goes with it (MUS-F-0106) and every pane on it ends. The work is already committed, so nothing is lost but the turn. This session is then the first thing the new dropdown lists under Not running, with its transcript on disk, and one press brings it back — which exercises the path end to end on the event MUS-Q-0084 was answered about. |
+| Option | Later, by your hand :: the machine keeps the 01:50 binary until you run it :: Nothing changes now. You run make deploy when no session is mid-turn — which is the honest reading of MUS-Q-0084's answer, that a deploy costs a press per session and is therefore a thing you choose the moment for. |
+| Option | Later, and take MUS-F-0108 in the same deploy :: one more commit before anything restarts :: Hold the deploy, build the project name and the working/waiting state into the same dropdown, and restart once for both. Costs a second round of work before the fix for MUS-F-0109 is live. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Deploy now, from this session |
+| Answered | 2026-09-08 03:14 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-08 03:14 |
+
+---
+
+## MUS-Q-0087
+
+**Does a green change deploy itself, or does every deploy wait for you?**
+
+question · 2026-09-08
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing, until the next change is green. MUS-Q-0086 answered one deploy; it did not set a rule, and asking per change costs a prompt every time. |
+| Option | Deploy when the gates are green, without asking :: Recommended :: every deploy still kills every session :: make check passing is the bar the repository already sets for reporting work complete, and a change nobody can see is not delivered. The cost is real and unchanged: a restart takes the tmux server and every pane on it (MUS-F-0106), including whichever session you are reading at the time. That is the thing being authorised, not the deploy. |
+| Option | Ask every time :: a prompt per change, which is what today cost :: Each deploy is its own decision, because each one interrupts whatever is running. Safest, and it means a fix can sit built and undeployed while you are away — which is exactly the state MUS-F-0109 was found in. |
+| Option | Deploy without asking when nothing is running but this session :: no prompt in the common case, a prompt when it would cost you something :: Mustur already knows what is running. If this session is the only one, a restart costs the turn it is in and nothing else, so it goes ahead; if anything else is running, it asks. The cost is a rule with a condition in it, which is a rule I can get wrong. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Deploy when the gates are green, without asking |
+| Answered | 2026-09-08 09:08 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-08 09:08 |
+
+---
+
+## MUS-Q-0088
+
+**One session's deploy kills every other session's turn, and deploying no longer asks**
+
+question · 2026-09-08
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing is blocked, and it is already happening: the Research session was working at 09:09 and my deploy at 09:09:21 ended it. It is sitting under Not running, unrestored. |
+| Option | Give the tmux server its own transient scope :: Recommended :: a deploy stops killing sessions at all :: MUS-Q-0084's first option, declined when the cost was one press. With several sessions the cost is one lost turn each, taken without asking, several times an hour — and the thing that made 'change nothing' reasonable was that the loss was one press. Start would put the server in a scope of its own when it has to spawn one, the way tmux already does for each pane child; only the server escapes the unit, so nothing about the stop path changes. Costs code on the spawn path, a systemd dependency, and an answer for a host without systemd. |
+| Option | Narrow MUS-Q-0087: deploy unasked only when nothing else is running :: a prompt exactly when it would cost somebody something :: Mustur already knows what is live. One session running means a restart costs one turn and goes ahead; anything else running and it asks. The loss stays possible, it just stops being silent. This was option three on MUS-Q-0087 and it was not the one taken, in a world with one session. |
+| Option | Tell the others before the restart :: they still die, but they know why :: Before restarting, type a line into every other session saying a deploy is about to end it. A restored agent then reads, in its own transcript, that it was killed rather than that its last action completed. Cheapest of the three and it fixes the smaller half: the loss is unchanged, the confusion is not. |
+| Option | Change nothing :: N presses per deploy, and each restored agent believes its last action finished :: What MUS-Q-0084 chose, priced for one session. Every deploy ends every milestone in flight; each comes back with its conversation and the CLI's own 'Continue from where you left off', with no record that anything was interrupted. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Give the tmux server its own transient scope |
+| Answered | 2026-09-08 09:22 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-08 09:22 |
+
+---
+
+## MUS-Q-0089
+
+**Forty-seven commits sit on this machine and nothing since pull request 34 has been pushed**
+
+question · 2026-09-09
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing here. The work is committed, gated and deployed; what is unpushed is the review trail workflow.md asks for. |
+| Option | Push the branch and open one pull request for the lot :: Recommended :: one review of 47 commits, and the trail exists again :: workflow.md wants one topic per pull request, stacked. That was not done as the work went by, and slicing 47 commits into stacked branches after the fact is a rewrite of history nobody asked for. One branch, one pull request, reviewed as a whole, is the cheapest way to stop the gap growing — and the reviewers workflow.md names read the tree rather than the slices. |
+| Option | Stack them properly, after the fact :: hours of rebasing, and the trail matches the contract :: Cut a branch per topic from the commits already made and stack the pull requests the way the contract describes. Honest to the rule and expensive, and every rebase is a chance to lose a commit that is currently safe. |
+| Option | Leave them local for now :: nothing is published, and the gap keeps growing :: The machine holds the work and the deployment runs it. What is lost is the review step and anything a second pair of eyes would have caught; what is risked is one disk. |
+| Asked by | whippy |
+| Session project | Build |
+| Answer | Push the branch and open one pull request for the lot |
+| Answered | 2026-09-09 01:40 |
+| Delivered | typed into mustur/Build |
+| Surfaced | 2026-09-09 01:40 |

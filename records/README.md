@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 82 | [questions.md](questions.md) |
-| decision | 148 | [decisions.md](decisions.md) |
-| finding | 109 | [findings.md](findings.md) |
+| question | 89 | [questions.md](questions.md) |
+| decision | 151 | [decisions.md](decisions.md) |
+| finding | 122 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 2 | [investigations/index.md](investigations/index.md) |
@@ -141,6 +141,13 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0080](questions.md#mus-q-0080) | question | Ending a session from a surface: where does a control that kills a running agent live? |
 | [MUS-Q-0081](questions.md#mus-q-0081) | question | Warning before sending needs our own spellchecker, because no browser will lend us its one |
 | [MUS-Q-0082](questions.md#mus-q-0082) | question | A draft per session reverses MUS-D-0097, which chose one draft on purpose |
+| [MUS-Q-0083](questions.md#mus-q-0083) | question | A reboot takes every session and Mustur remembers nothing. Who brings them back? |
+| [MUS-Q-0084](questions.md#mus-q-0084) | question | A redeploy takes every session. Should the tmux server stop dying with the unit? |
+| [MUS-Q-0085](questions.md#mus-q-0085) | question | Each vendor's best channel is a different channel. Does the session surface get a module boundary? |
+| [MUS-Q-0086](questions.md#mus-q-0086) | question | The picker change is committed and not live. Deploying it kills every session, including the one that built it |
+| [MUS-Q-0087](questions.md#mus-q-0087) | question | Does a green change deploy itself, or does every deploy wait for you? |
+| [MUS-Q-0088](questions.md#mus-q-0088) | question | One session's deploy kills every other session's turn, and deploying no longer asks |
+| [MUS-Q-0089](questions.md#mus-q-0089) | question | Forty-seven commits sit on this machine and nothing since pull request 34 has been pushed |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -289,6 +296,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0146](decisions.md#mus-d-0146) | decision | A session is started from three places, and only one of them is typed |
 | [MUS-D-0147](decisions.md#mus-d-0147) | decision | A session is ended from its own page, behind a tick and a prompt that names it |
 | [MUS-D-0148](decisions.md#mus-d-0148) | decision | Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped |
+| [MUS-D-0149](decisions.md#mus-d-0149) | decision | A session lost with the machine is written down and offered back, and nothing starts on its own |
+| [MUS-D-0150](decisions.md#mus-d-0150) | decision | The picker carries what is not running, and the button is on the page it lands on |
+| [MUS-D-0151](decisions.md#mus-d-0151) | decision | The tmux server is spawned in a scope of its own, so a deploy stops ending every session |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -393,6 +403,19 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0102](findings.md#mus-f-0102) | finding | The text in the send box should be held per session, changing to a new session should show a… |
 | [MUS-F-0103](findings.md#mus-f-0103) | finding | The tick above Stop guarded a case the session view does not have |
 | [MUS-F-0104](findings.md#mus-f-0104) | finding | A dialog of toggles could be read and not used |
+| [MUS-F-0105](findings.md#mus-f-0105) | finding | An answer was delivered into a session that never saw it, and the record says it was typed in |
+| [MUS-F-0106](findings.md#mus-f-0106) | finding | Every redeploy kills every session, because the tmux server lives in the service's cgroup |
+| [MUS-F-0107](findings.md#mus-f-0107) | finding | There is still a divider line above the stop button where the checkbox was on top of |
+| [MUS-F-0108](findings.md#mus-f-0108) | finding | The selector drop-down on the session tab should show the name of each session and the project… |
+| [MUS-F-0109](findings.md#mus-f-0109) | finding | The offer to restore a lost session was on the one page a running session redirects past |
+| [MUS-F-0110](findings.md#mus-f-0110) | finding | The session picker did nothing on a page with no terminal, and had no submit button either |
+| [MUS-F-0111](findings.md#mus-f-0111) | finding | The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser |
+| [MUS-F-0112](findings.md#mus-f-0112) | finding | Every agent publishes a transcript in its own shape, and only ACP is the same shape twice |
+| [MUS-F-0113](findings.md#mus-f-0113) | finding | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal |
+| [MUS-F-0114](findings.md#mus-f-0114) | finding | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol |
+| [MUS-F-0115](findings.md#mus-f-0115) | finding | A restored session shows a blank terminal with no sign that it is still loading |
+| [MUS-F-0116](findings.md#mus-f-0116) | finding | The session is restored not started over, the button text and descriptions are all wrong |
+| [MUS-F-0117](findings.md#mus-f-0117) | finding | Two sessions started from the surface share one working tree, and nothing says so |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |

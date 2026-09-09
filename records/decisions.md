@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-148 record(s), by identifier.
+151 record(s), by identifier.
 
 ## Index
 
@@ -160,6 +160,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0146](#mus-d-0146) | A session is started from three places, and only one of them is typed | 2026-09-06 |
 | [MUS-D-0147](#mus-d-0147) | A session is ended from its own page, behind a tick and a prompt that names it | 2026-09-07 |
 | [MUS-D-0148](#mus-d-0148) | Spelling is left to the browser's underlines, and the server-side check is kept rather than dropped | 2026-09-07 |
+| [MUS-D-0149](#mus-d-0149) | A session lost with the machine is written down and offered back, and nothing starts on its own | 2026-09-07 |
+| [MUS-D-0150](#mus-d-0150) | The picker carries what is not running, and the button is on the page it lands on | 2026-09-08 |
+| [MUS-D-0151](#mus-d-0151) | The tmux server is spawned in a scope of its own, so a deploy stops ending every session | 2026-09-08 |
 
 ---
 
@@ -2715,3 +2718,112 @@ The note asking for this arrived containing a typo, which is the argument for it
 | --- | --- |
 | Now | spellcheck on the intake box, the session composer and the compose surface |
 | Kept for later | the check runs on the server when the form is posted, not in the browser; the affix rules are the cost, not the dictionary |
+
+---
+
+## MUS-D-0149
+
+**A session lost with the machine is written down and offered back, and nothing starts on its own**
+
+decision · 2026-09-07
+
+raised by: [MUS-Q-0083](questions.md#mus-q-0083)
+
+the rule this does not break: [MUS-D-0062](#mus-d-0062)
+
+answers: [MUS-Q-0083](questions.md#mus-q-0083)
+
+A reboot took the owner's sessions and Mustur could not afterwards say they had ever existed. tmux is the source of truth for what is running (MUS-D-0062) and tmux does not survive a reboot, so the three facts needed to open a conversation again — which project, where it ran, what it ran — went with the panes.
+
+The processes are not recoverable and never will be. The conversations are: the CLI keeps each one on disk, and `--resume` opens it. So Start now writes down what it launched and Stop deletes what it ended, and the difference between those two is the whole feature — a session the owner ended is finished, a session that went without being told to is offered back.
+
+**MUS-D-0062 is not reversed.** Nothing reads the table to answer what is running: List, Alive and Stop still ask tmux, and the surface subtracts the live list from what is remembered rather than trusting either alone. When tmux cannot be asked at all, nothing is offered, because with no live list every remembered session looks missing.
+
+The conversation's identifier comes from the CLI's SessionStart hook, which is the only place it is published — not the command line, not the pane. The hook records the transcript path with it, and the path is checked on disk before a restore resumes anything: the hook fires as the CLI starts and the file is not written until the conversation has something in it, so an identifier alone can name nothing. A session started and never spoken to comes back empty, and the page says which of the two it will be before the button is pressed.
+
+**Mustur still restarts nothing.** There is no boot path, no timer and no loop. The button is a person. That is the option the owner chose on MUS-Q-0083, in the decision queue, over sessions coming back by themselves after a power cut — which would have meant rewriting the standing rule that an agent CLI that crashed wants a person.
+
+One thing about the order is worth keeping, because it was luck rather than method. The owner answered in the queue at 12:23 and this was built from an instruction given in a session — 'recover the conversations still on disk and build anything needed' — by an agent that had not read the answer and had said, twice, that the question was still open. The answer was delivered into that same session and went unread; the first entry of this record repeated the claim. The two agreed, so nothing was built against the owner's choice. Nothing about the way it was done made that so: an agent proceeding on an instruction while a question it raised sits answered a command away is the shape of MUS-F-0074 wearing different clothes.
+
+The table is not a record: no identifier, never in the log, never exported, for the same reason a scratch filing is not one. It is operational state about one machine.
+
+Verified end to end on this machine rather than only in tests: a session started, its identifier and transcript path recorded by the hook, the pane killed the way a reboot kills it, the page offering it back, and the restored pane carrying the conversation it had before. The empty case was verified the same way, on a session that had never been spoken to.
+
+| Field | Value |
+| --- | --- |
+| Offered by | the page that starts a session |
+| Started by | a person pressing a button |
+
+---
+
+## MUS-D-0150
+
+**The picker carries what is not running, and the button is on the page it lands on**
+
+decision · 2026-09-08
+
+raised by: [MUS-F-0109](findings.md#mus-f-0109)
+
+finding: [MUS-F-0110](findings.md#mus-f-0110)
+
+decision: [MUS-D-0149](#mus-d-0149)
+
+question: [MUS-Q-0084](questions.md#mus-q-0084)
+
+the rule this does not break: [MUS-D-0062](#mus-d-0062)
+
+MUS-D-0149 wrote a lost session down and offered it back on the page that starts a session. That page is the one `/sessions` redirects past whenever anything is running (MUS-F-0109), so the offer was reachable only by someone who already knew where it was. The owner asked for the lost sessions to be in the session dropdown instead, and for recovery to work from there.
+
+**The dropdown lists them; it does not restart them.** Two `<optgroup>`s, Running and Not running, and choosing either only navigates. A `<select>` fires change on every option a keyboard arrows past and a phone's picker scrolls through them, so a select that started a process would restart an agent CLI on a gesture nobody meant as a press. The page a lost session lands on carries the button, which is the same POST the start page's list already used.
+
+That page is new only in what it says: where it ran, when it started, and whether the conversation comes back — the three things the list on the start form says, repeated because a session chosen out of a dropdown arrives with none of them on screen. It shows no Stop and no sub-agent drawer, because there is nothing behind it to stop or to have launched anything.
+
+The list on the start form stays. It is where the owner arrives when nothing at all is running, and it is the only place all of them are visible at once.
+
+**MUS-D-0062 is not reversed and the subtraction is unchanged.** tmux is still asked what is running; the difference is that the one answer now feeds both lists rather than being asked for twice. With tmux unanswering the dropdown carries no lost sessions at all, for the reason MUS-D-0149 gives: every remembered session would look missing.
+
+Two things had to move for it to work. The rail renders whenever there is anything to pick, rather than only when something is running, so a total loss still has a dropdown. And the picker's change handler moved above the script's terminal guard (MUS-F-0110), because the pages it now has to work on are exactly the ones with no terminal.
+
+| Field | Value |
+| --- | --- |
+| Offered by | the session picker, on every session page |
+| Started by | a person pressing a button |
+
+---
+
+## MUS-D-0151
+
+**The tmux server is spawned in a scope of its own, so a deploy stops ending every session**
+
+decision · 2026-09-08
+
+raised by: [MUS-Q-0088](questions.md#mus-q-0088)
+
+finding: [MUS-F-0106](findings.md#mus-f-0106)
+
+question: [MUS-Q-0084](questions.md#mus-q-0084)
+
+question: [MUS-Q-0087](questions.md#mus-q-0087)
+
+the rule this does not break: [MUS-D-0062](#mus-d-0062)
+
+MUS-Q-0084 asked whether the tmux server should stop dying with the unit and the owner chose the restore button, because the loss was one press. MUS-Q-0087 then authorised deploying whenever the gates are green, without asking. Together those two answers let any session end every other session's turn, several times an hour, and it happened before it was noticed: the Research session was working at 09:09 and a deploy from this one restarted the unit at 09:09:21.
+
+So the option MUS-Q-0084 recommended and did not take is taken now. When Start finds no tmux server running, the new-session that will spawn one runs inside `systemd-run --user --scope --unit mustur-tmux`. The server inherits that cgroup, which is not mustur.service's, and `systemctl stop` no longer reaches it. Every later session connects to the server already there and asks for nothing.
+
+**It has to be the new-session, not `tmux start-server`.** The first version ran start-server inside the scope and was measured failing: a server with no session exits immediately — exit-empty is on by default — so the scope emptied and the next client spawned a fresh server back inside the unit. Turning exit-empty off would have worked and changes a server-wide option on a socket that is not necessarily only ours.
+
+**Only the server escapes.** tmux already puts each pane child in a `tmux-spawn-<uuid>` scope of its own, and still does; everything else Mustur spawns stays in the unit's cgroup and still dies with it, which is what the stop path relies on.
+
+It is best effort. systemd-run is missing on a host without systemd and can fail on one with it, and then the plain spawn runs instead: the server lands in this cgroup, a deploy costs a press per session, and stderr says so. Refusing to start a session because systemd would not make a unit would be worse than the thing being avoided.
+
+Verified in isolation on this machine, on its own socket, the same way MUS-F-0106 was proven: a transient service starts a session through the scope, the service is stopped, and the server is still in mustur-tmux-probe.scope with its session running and its pane child in a tmux-spawn scope of its own.
+
+**One more deploy ends everything.** The server running now was spawned inside mustur.service and nothing moves a running process out; the restart that ships this takes it and every session on it. From the next session started after that, deploys stop costing anything.
+
+MUS-D-0062 is untouched: tmux is still asked what is running, and nothing here mirrors it.
+
+| Field | Value |
+| --- | --- |
+| Unit | mustur-tmux.scope |
+| Spawned by | the first session started when no server is running |

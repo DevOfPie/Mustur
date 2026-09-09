@@ -3,7 +3,9 @@ package session
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -315,5 +317,133 @@ func TestARefusedNameNamesWhatIsWrongWithIt(t *testing.T) {
 	}
 	if _, err := NameFor("Fine_name-1"); err != nil {
 		t.Errorf("a good name was refused: %v", err)
+	}
+}
+
+// serverless is a tmux with no server running until something creates a
+// session on it, which is the state that decides where the server is spawned.
+type serverless struct {
+	mu        sync.Mutex
+	calls     [][]string
+	up        bool
+	failScope bool
+	// existing is a session already on the server, so "a server is running"
+	// and "this project has a session" can be told apart.
+	existing string
+	made     string
+}
+
+func (s *serverless) Run(_ context.Context, name string, args ...string) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.calls = append(s.calls, append([]string{name}, args...))
+	joined := strings.Join(args, " ")
+	switch {
+	case strings.Contains(joined, "new-session"):
+		if name == "systemd-run" && s.failScope {
+			return "Failed to start transient scope unit: Access denied", fmt.Errorf("exit status 1")
+		}
+		if i := slices.Index(args, "-s"); i >= 0 && i+1 < len(args) {
+			s.made = args[i+1]
+		}
+		s.up = true
+		return "", nil
+	case strings.HasPrefix(joined, "list-sessions"):
+		if !s.up {
+			return "no server running on /tmp/tmux-1000/default", fmt.Errorf("exit status 1")
+		}
+		var lines []string
+		if s.existing != "" {
+			lines = append(lines, owned(s.existing, 1, false))
+		}
+		if s.made != "" {
+			lines = append(lines, owned(s.made, 1, false))
+		}
+		return strings.Join(lines, "\n"), nil
+	}
+	return "", nil
+}
+
+func (s *serverless) ran(name string) []string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, c := range s.calls {
+		if c[0] == name {
+			return c
+		}
+	}
+	return nil
+}
+
+// The first session on this machine spawns the tmux server, and where it
+// spawns is what decides whether a deploy takes every session with it.
+//
+// mustur.service kills its whole cgroup on stop, and a server spawned by the
+// serving process was in it (MUS-F-0106). The new-session that has to create
+// one therefore runs inside a scope of Mustur's own; the server inherits that
+// cgroup and outlives the unit. Proven against the real systemd separately —
+// this holds the argv that gets us there.
+func TestTheFirstSessionSpawnsTheServerInItsOwnScope(t *testing.T) {
+	run := &serverless{}
+	a := &Adapter{Run: run, Stat: func(string) error { return nil }}
+	if _, err := a.Start(context.Background(), "Scoped", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	scoped := run.ran("systemd-run")
+	if scoped == nil {
+		t.Fatal("the server was spawned inside the unit's cgroup, so a deploy will end it")
+	}
+	for _, want := range []string{"--user", "--scope", "--unit", TmuxScope, "tmux", "new-session"} {
+		if !slices.Contains(scoped, want) {
+			t.Errorf("the scope call is missing %q: %v", want, scoped)
+		}
+	}
+	// The command still runs inside it, whole: the scope is a prefix and not a
+	// rewrite.
+	if !strings.Contains(strings.Join(scoped, " "), "new-session -d -s mustur/Scoped -c /checkout claude") {
+		t.Errorf("the session's own argv did not survive the prefix: %v", scoped)
+	}
+}
+
+// A session joining a server that is already running asks for no scope: the
+// server's cgroup was decided by whoever started it, and asking again would
+// only fail on a unit name already held.
+func TestASessionJoiningARunningServerIsNotScoped(t *testing.T) {
+	run := &serverless{up: true, existing: "mustur/Already"}
+	a := &Adapter{Run: run, Stat: func(string) error { return nil }}
+	if _, err := a.Start(context.Background(), "Scoped", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if c := run.ran("systemd-run"); c != nil {
+		t.Errorf("a second session asked for a scope it cannot have: %v", c)
+	}
+}
+
+// A host that cannot make a scope still gets a session.
+//
+// systemd-run is missing without systemd and can fail with it — no session bus,
+// or the unit name already held. The right outcome then is the one that shipped
+// before: the server spawns in this cgroup and a deploy costs a press per
+// session. Refusing to start the session would be worse than the thing being
+// avoided.
+func TestAScopeThatCannotBeMadeStillStartsTheSession(t *testing.T) {
+	run := &serverless{failScope: true}
+	a := &Adapter{Run: run, Stat: func(string) error { return nil }}
+	if _, err := a.Start(context.Background(), "Scoped", "/checkout", "claude"); err != nil {
+		t.Fatalf("a scope that could not be made stopped the session: %v", err)
+	}
+	if run.ran("systemd-run") == nil {
+		t.Error("it did not try")
+	}
+	var plain bool
+	run.mu.Lock()
+	for _, c := range run.calls {
+		if c[0] == "tmux" && slices.Contains(c, "new-session") {
+			plain = true
+		}
+	}
+	run.mu.Unlock()
+	if !plain {
+		t.Error("it gave up instead of falling back to the plain spawn")
 	}
 }

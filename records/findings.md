@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-109 record(s), by identifier.
+122 record(s), by identifier.
 
 ## The queue
 
@@ -119,6 +119,19 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0102](#mus-f-0102) | The text in the send box should be held per session, changing to a new session should show a… |  | with the owner on MUS-Q-0082 |
 | [MUS-F-0103](#mus-f-0103) | The tick above Stop guarded a case the session view does not have | TestEndingASessionAsksFirstAndCarriesNoTick asserts the form is on the session's page and not the start page, that no sure field remains, that an origin-less and a cross-origin POST are still refused, and that the client confirmation names the session. | fixed |
 | [MUS-F-0104](#mus-f-0104) | A dialog of toggles could be read and not used | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. | fixed |
+| [MUS-F-0105](#mus-f-0105) | An answer was delivered into a session that never saw it, and the record says it was typed in |  |  |
+| [MUS-F-0106](#mus-f-0106) | Every redeploy kills every session, because the tmux server lives in the service's cgroup |  |  |
+| [MUS-F-0107](#mus-f-0107) | There is still a divider line above the stop button where the checkbox was on top of |  | unreviewed |
+| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… |  | unreviewed |
+| [MUS-F-0109](#mus-f-0109) | The offer to restore a lost session was on the one page a running session redirects past |  |  |
+| [MUS-F-0110](#mus-f-0110) | The session picker did nothing on a page with no terminal, and had no submit button either |  |  |
+| [MUS-F-0111](#mus-f-0111) | The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser | Twenty-five transcripts under ~/.claude/projects, 52,160 lines, on CLI 2.1.263. Twenty-three entry types appear and none is a dialog: assistant, user, attachment, queue-operation, last-prompt, ai-title, atis-latch, mode, permission-mode, agent-name, pr-link, agent-setting, relocated, worktree-state, bridge-session, file-history-delta, system, file-history-snapshot, frame-link, artifact-autoreact-ledger, cost-state, artifact-comment-monitor, continued-in. system carries only turn_duration, compact_boundary, away_summary and informational. Zero lines carry isSidechain:true across all twenty-five, so a sub-agent's own turns are not in its parent's file; what is there is the Agent tool_use with description, subagent_type, model and the whole prompt, and its result when it lands. Assistant content blocks are thinking, text, tool_use and usage. |  |
+| [MUS-F-0112](#mus-f-0112) | Every agent publishes a transcript in its own shape, and only ACP is the same shape twice | Claude Code 2.1.263 writes one flat JSONL per session under ~/.claude/projects/<cwd-slug>/<session-id>.jsonl, twenty-three undocumented entry types, no dialogs. Codex CLI writes rollout-<id>.jsonl under ~/.codex/sessions/YYYY/MM/DD/, a different partitioning and a different event stream that does carry approval decisions. Gemini CLI documents no transcript format and instead ships ACP natively -- docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio. ACP adapters exist for all three: claude-agent-acp, @zed-industries/codex-acp, and Gemini's own mode. |  |
+| [MUS-F-0113](#mus-f-0113) | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal | code.claude.com/docs/en/hooks lists PermissionRequest, PermissionDenied, Notification, MessageDisplay, Elicitation, ElicitationResult, TaskCreated and TaskCompleted among thirty-two events; all eight appear as exact strings in the shipped 2.1.263 binary. PreToolUse and PermissionRequest work in non---print sessions and decide permission through a decision object of allow, deny or ask. Command hooks default to a 600s timeout, are configurable per hook with timeout, and enforce none at all with async true. MessageDisplay fires while assistant text is displayed, has no matcher and a 10s default. |  |
+| [MUS-F-0114](#mus-f-0114) | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |  |
+| [MUS-F-0115](#mus-f-0115) | A restored session shows a blank terminal with no sign that it is still loading |  |  |
+| [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong |  | unreviewed |
+| [MUS-F-0117](#mus-f-0117) | Two sessions started from the surface share one working tree, and nothing says so |  |  |
 
 ---
 
@@ -2802,3 +2815,279 @@ What this does not do is make the dialog's own arrow-driven design go away. It m
 | Where | internal/web/assets/session.js |
 | Status | fixed |
 | Evidence | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. |
+
+---
+
+## MUS-F-0105
+
+**An answer was delivered into a session that never saw it, and the record says it was typed in**
+
+finding · 2026-09-08
+
+the question: [MUS-Q-0083](questions.md#mus-q-0083)
+
+the decision it answered: [MUS-D-0149](decisions.md#mus-d-0149)
+
+The owner answered MUS-Q-0083 in the decision queue at 12:23:51. The question named a session with `--in`, so the answer was delivered: `DeliverRelayed` found the session alive, sent `The owner answered MUS-Q-0083: Remember them, offer them back, start nothing`, and recorded `Delivered: typed into mustur/Sessions_Lost`.
+
+That session never saw it. The string is nowhere in the pane, the agent went on saying the question was open for another twenty minutes, and it built the answer's option from a separate instruction rather than from the answer. The delivery is the mechanism that exists so exactly that cannot happen, and it reported success.
+
+**What is proven:** the answer was written by the owner's account at 12:23:51, the delivery was recorded as typed in, the text is not in the pane, and the receiving agent acted as though nothing had arrived.
+
+**What is not proven, and is the first place to look:** at that second the session was showing a modal prompt — the CLI's own dialog, not its input box. Text pasted into a pane showing one goes to the dialog. `Send` writes a bracketed paste and has no way to ask what is on the screen first, and `DeliverRelayed` returns success on the write succeeding, which is a claim about tmux rather than about the agent.
+
+That is the shape of the bug either way: delivery reports on the write and not on the read, so a pane that swallows the paste is indistinguishable from one that acts on it. MUS-F-0085 corrected what the delivered line *says*; nothing has checked that it lands.
+
+Worth naming as the cost rather than the cause: an agent that raised a question and then proceeded on a separate instruction is one delivery away from building against the owner's choice. Here the two agreed. Nothing about the method made that so.
+
+| Field | Value |
+| --- | --- |
+| State | open |
+
+---
+
+## MUS-F-0106
+
+**Every redeploy kills every session, because the tmux server lives in the service's cgroup**
+
+finding · 2026-09-08
+
+question: [MUS-Q-0083](questions.md#mus-q-0083)
+
+decision: [MUS-D-0062](decisions.md#mus-d-0062)
+
+MUS-Q-0083 was answered as though a reboot were the event that takes a session. A restart of mustur.service is the same event, and it happens far more often.
+
+mustur.service carries no KillMode, so it has systemd's default, control-group: on stop, every process still in the unit's cgroup is killed. When Start shells out to `tmux new-session` and no tmux server is running, the server it spawns is a descendant of the serving process and inherits that cgroup. Nothing moves it out — tmux's own systemd support puts each new *pane child* in a transient scope (`tmux-spawn-<uuid>.scope`) and leaves the server where it was started.
+
+Observed on this machine. The tmux server was PID 55271, started 2026-09-07 12:17:45 — the same second the user D-Bus came up to answer tmux's scope request, and no login scope was created anywhere near it. Three pane scopes outlived everything else on that server. The unit was stopped and started at 2026-09-08 01:50:00 for a redeploy, and the journal has all three scopes ending at 01:50:00 and 01:50:01:
+
+  tmux-spawn-4660637d....scope: Consumed 8min 38.259s CPU time over 13h 32min 14.887s wall clock time
+  tmux-spawn-01e465a4....scope: Consumed 4min 39.920s CPU time over 13h 23min 23.868s wall clock time
+  tmux-spawn-94fd4ddc....scope: Consumed 5min 4.451s CPU time over 13h 23min 24.539s wall clock time
+
+Reproduced in isolation, on its own socket, so the mechanism is not inferred from the timing: a transient user service that runs `tmux -L cgtest new-session -d`, stopped with `systemctl --user stop`, leaves `no server running on /tmp/tmux-1000/cgtest`.
+
+The consequence is not only the sessions. It is that deploying the thing that offers a lost session back is itself the event that loses them — so the feature will be exercised on every deploy, by the deploy.
+
+---
+
+## MUS-F-0107
+
+**There is still a divider line above the stop button where the checkbox was on top of**
+
+finding · 2026-09-08
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+There is still a divider line above the stop button where the checkbox was on top of. This should be removed
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0108
+
+**The selector drop-down on the session tab should show the name of each session and the project…**
+
+finding · 2026-09-08
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The selector drop-down on the session tab should show the name of each session and the project it is for. Once another project is added it will be impossible to tell projects apart unless they are all named perfectly.
+
+It would also be nice to know which sessions are actively working, and which are awaiting input from the drop-down
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0109
+
+**The offer to restore a lost session was on the one page a running session redirects past**
+
+finding · 2026-09-08
+
+decision: [MUS-D-0149](decisions.md#mus-d-0149)
+
+question: [MUS-Q-0084](questions.md#mus-q-0084)
+
+finding: [MUS-F-0106](#mus-f-0106)
+
+MUS-D-0149 put the lost sessions on the page that starts a session. `/sessions` redirects straight into the first running session whenever one exists (internal/web/sessions.go, the list handler), so that page is reached only through the unlabelled `+` beside the picker.
+
+The case this fails is the common one and the one MUS-Q-0084 was answered on. A redeploy kills every session (MUS-F-0106); the owner then starts one, or restores one, and from that moment the other lost sessions are three taps away behind a control that looks like 'new', on a page whose subject is starting something fresh. The owner reported not seeing the button at all.
+
+Answering MUS-Q-0084 with 'the restore button is the answer' made the button's reachability the whole of the mitigation, and nothing had measured it.
+
+---
+
+## MUS-F-0110
+
+**The session picker did nothing on a page with no terminal, and had no submit button either**
+
+finding · 2026-09-08
+
+internal/web/assets/session.js is one IIFE that returns early when the page has no `#out`, because the rest of it is a socket painting a screen. The picker's change handler was bound after that return, so on every page without a terminal — a project Mustur never started, and now a session that is not running — the dropdown moved and nothing happened.
+
+There is no fallback on those pages. The submit button beside the picker lives in a `<noscript>`, so a browser with script has already left it out (MUS-F-0046 is why it is drawn that way). Script on and no terminal was therefore a control with no behaviour and no alternative.
+
+Found by building on it rather than by it failing: the picker only had to work on such a page once a lost session got one.
+
+---
+
+## MUS-F-0111
+
+**The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser**
+
+finding · 2026-09-08
+
+The transcript is the conversation. It is not the session.
+
+What it carries beats the pane in three ways: thinking blocks the pane folds away, per-turn duration and usage the pane never showed, and a sub-agent paired to its launching call by identity rather than by MUS-D-0090's thirty-second window, which is a bound on a guess and known to be wrong sometimes.
+
+What it does not carry is everything the parser was written for. No permission prompt, no model picker, no toggles, no legend -- a dialog is drawn, not messaged, so MUS-F-0083, MUS-F-0088, MUS-F-0089, MUS-F-0091, MUS-F-0100, MUS-F-0101 and MUS-F-0104 are all defects in code the transcript cannot replace. No status line, so MUS-F-0053's chips and MUS-D-0130's running-or-idle stay read off the screen. No partial message, so a turn appears when it lands rather than as it is written, and the accent ring still comes from the pane. No local command output and no CLI error, because those are printed rather than sent.
+
+And it is read-only. Nothing is delivered through a transcript, so every line of the input path stands: send-keys, the bracketed paste of MUS-D-0096, the seven keys of MUS-D-0141.
+
+So reading the transcript is a second source beside the first, not a replacement for it. It buys a clean conversation column. It retires no parser, and the parser is where the tweaking is.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Twenty-five transcripts under ~/.claude/projects, 52,160 lines, on CLI 2.1.263. Twenty-three entry types appear and none is a dialog: assistant, user, attachment, queue-operation, last-prompt, ai-title, atis-latch, mode, permission-mode, agent-name, pr-link, agent-setting, relocated, worktree-state, bridge-session, file-history-delta, system, file-history-snapshot, frame-link, artifact-autoreact-ledger, cost-state, artifact-comment-monitor, continued-in. system carries only turn_duration, compact_boundary, away_summary and informational. Zero lines carry isSidechain:true across all twenty-five, so a sub-agent's own turns are not in its parent's file; what is there is the Agent tool_use with description, subagent_type, model and the whole prompt, and its result when it lands. Assistant content blocks are thinking, text, tool_use and usage. |
+
+---
+
+## MUS-F-0112
+
+**Every agent publishes a transcript in its own shape, and only ACP is the same shape twice**
+
+finding · 2026-09-08
+
+The question of a second agent is where the two routes separate, and they separate the opposite way from how they look.
+
+Reading transcripts costs one reverse-engineered parser per vendor, over formats that are not merely different but differently shaped -- one file per session against date-partitioned rollouts, approvals present in one and absent in the other, and in Gemini's case no documented file at all. And because a transcript is read-only, each of those vendors still needs its own pane parser for its dialogs and its own key map for input. Two bespoke modules per agent, both against undocumented surfaces.
+
+ACP costs one client and an adapter per vendor that somebody else maintains. Permissions, tool calls, plans and modes arrive as messages; there is no screen to read and no keys to map.
+
+The asymmetry worth naming: ACP costs the terminal on Claude, because claude-agent-acp goes through the Agent SDK and that is --print underneath. On Gemini it costs nothing -- ACP is the documented interface. So MUS-Q-0076's price is a Claude price, not an ACP price, and it falls with every agent added rather than rising.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Claude Code 2.1.263 writes one flat JSONL per session under ~/.claude/projects/<cwd-slug>/<session-id>.jsonl, twenty-three undocumented entry types, no dialogs. Codex CLI writes rollout-<id>.jsonl under ~/.codex/sessions/YYYY/MM/DD/, a different partitioning and a different event stream that does carry approval decisions. Gemini CLI documents no transcript format and instead ships ACP natively -- docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio. ACP adapters exist for all three: claude-agent-acp, @zed-industries/codex-acp, and Gemini's own mode. |
+
+---
+
+## MUS-F-0113
+
+**The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal**
+
+finding · 2026-09-08
+
+MUS-F-0084 looked at the extension and found the structured channel behind --print. It is not the only one. The CLI publishes a second structured channel that works in an ordinary interactive terminal, and Mustur is already using a corner of it: MUS-D-0087 installs SubagentStart and SubagentStop through --settings on the command line Start builds.
+
+The corner is small and the channel is not. A PermissionRequest hook fires exactly when the CLI is about to draw a permission dialog, receives the tool and its input as JSON, and returns allow, deny or ask. With a timeout measured in minutes -- 600 seconds by default and unbounded with async -- that hook can hand the request to Mustur's surface, wait for the owner, and answer. The dialog is never read off a screen because it is never drawn. If nobody answers in time the CLI draws it as it does today, which makes the fallback the thing already built rather than a failure.
+
+MessageDisplay closes the transcript's gap: text as it is displayed rather than when the turn lands, which is what MUS-F-0111 says the file cannot give.
+
+What it does not cover is the half of the dialogs the owner starts rather than the agent -- the model picker, the effort cycler, the toggles of MUS-F-0101. Those are drawn on a keypress and no hook fires. So this retires the permission half of the parser and leaves the picker half, which is a smaller claim than it first looks and still the largest reduction available without giving up the terminal.
+
+| Field | Value |
+| --- | --- |
+| Evidence | code.claude.com/docs/en/hooks lists PermissionRequest, PermissionDenied, Notification, MessageDisplay, Elicitation, ElicitationResult, TaskCreated and TaskCompleted among thirty-two events; all eight appear as exact strings in the shipped 2.1.263 binary. PreToolUse and PermissionRequest work in non---print sessions and decide permission through a decision object of allow, deny or ask. Command hooks default to a 600s timeout, are configurable per hook with timeout, and enforce none at all with async true. MessageDisplay fires while assistant text is displayed, has no matcher and a 10s default. |
+
+---
+
+## MUS-F-0114
+
+**Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol**
+
+finding · 2026-09-08
+
+The owner's proposal is right and the reason is sharper than convenience.
+
+ACP is one protocol across three agents, and on two of them it is a wrapper over something better. Codex's app-server is stateful, bidirectional and carries more than ACP exposes; Claude's hooks reach a running terminal that ACP cannot address at all, because claude-agent-acp is the Agent SDK and that is --print. Only on Gemini is ACP the native thing.
+
+So a module per vendor is not a way of tolerating differences. It is the only way to use each vendor's best channel, and it is also the only way to compose several -- tmux for the pty, hooks for the dialogs, the transcript for history, all three behind one interface, which no single protocol offers.
+
+What that costs is the interface itself. It has to be written against what the surface needs rather than against what any vendor offers, and it has to let a module say what it cannot do, because a module that fakes a capability is worse than one that refuses it. Six things the surface asks for today: start, list and stop; watch output; send text; send a key; answer a dialog; report sub-agents. A vendor that cannot do one says so, and the surface hides the control rather than offering a button that does nothing.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |
+
+---
+
+## MUS-F-0115
+
+**A restored session shows a blank terminal with no sign that it is still loading**
+
+finding · 2026-09-08
+
+decision: [MUS-D-0130](decisions.md#mus-d-0130)
+
+decision: [MUS-D-0150](decisions.md#mus-d-0150)
+
+question: [MUS-Q-0083](questions.md#mus-q-0083)
+
+Pressing Start it again launches the CLI with --resume, and the CLI reads the conversation off disk before it paints anything. Measured on this machine: the pane is entirely blank from launch until 1.15s and fully painted by 1.40s, resuming a 6.3MB transcript into a 300x100 pane on its own tmux socket. A larger conversation is longer, and the largest transcript here is 53MB.
+
+For that whole window the surface shows an empty black terminal. Nothing on it says a session is starting.
+
+What it actually says is worse than nothing, and not what I first assumed. DoingIn returned AgentUnknown for a blank pane, so the client fell through to its silence timer — and the silence timer had just been told the screen changed a moment ago, so the pill read **running** with the accent ring turning, over an empty terminal, and the dock counted 'quiet 0s'. Running was a coincidence of the fallback rather than a reading of the pane: past the three-minute threshold the same blank screen reads idle, so a slow enough resume would have said idle about a session that had not drawn its first frame.
+
+MUS-D-0130 fixed the vocabulary for this: unknown is not idle, because a surface treating it as idle asserts something about a CLI nobody has looked at. A blank pane is a third thing again, and it is the one state the pane can be read for without knowing any vendor's strings.
+
+---
+
+## MUS-F-0116
+
+**The session is restored not started over, the button text and descriptions are all wrong**
+
+finding · 2026-09-08
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+The session is restored not started over, the button text and descriptions are all wrong
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0117
+
+**Two sessions started from the surface share one working tree, and nothing says so**
+
+finding · 2026-09-09
+
+decision: [MUS-D-0146](decisions.md#mus-d-0146)
+
+finding: [MUS-F-0066](#mus-f-0066)
+
+finding: [MUS-F-0065](#mus-f-0065)
+
+Observed on this machine at 01:37 on 2026-09-09. mustur/Build and mustur/Research are both running, both remembered with dir /home/whippy/repos/DevOfPie/Mustur, and it is one checkout: git worktree list shows a single tree, and while this session held sessions/survive-reboot the tree was on sessions/dialog-without-the-screen — the other session had branched under it.
+
+The surface cannot do anything else. MUS-D-0146 has the start form choose where a session runs from the repositories the store holds a checkout for, and a repository record carries one checkout per machine, so every session started for this project from a browser lands in the same directory. One session per *project* is enforced; two projects pointing at one tree is not, and Build and Research are exactly that.
+
+Nothing about it is visible. The picker shows two names, the session pages show two panes, and neither says the two are editing the same files. A git checkout in one moves the tree under the other, an uncommitted edit in one is in the other's diff, and make export from both conflicts in records/ — which is MUS-F-0066, filed for two branches and not for two sessions.
+
+The CLI can already avoid it: mustur session start takes --dir and will start a session anywhere, including a worktree. The surface offers no such choice, and the records that describe agents working in their own worktrees (MUS-F-0065) describe a thing the surface cannot ask for.

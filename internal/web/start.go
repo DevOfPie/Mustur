@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/DevOfPie/Mustur/internal/session"
+	"github.com/DevOfPie/Mustur/internal/store"
 )
 
 // DefaultCommands is what the surface offers to start when nothing else is
@@ -80,6 +81,126 @@ func expandHome(p string) string {
 		return filepath.Join(home, strings.TrimPrefix(strings.TrimPrefix(p, "~"), "/"))
 	}
 	return p
+}
+
+// A lostRow is a session Mustur started that is no longer running, offered back.
+//
+// "Lost" rather than "stopped", and the distinction is the whole feature: a
+// session the owner ended is deleted from the store when it is ended, so what
+// is left here went without being told to — the machine rebooted, the tmux
+// server died, something killed the pane. Those are the ones worth offering.
+type lostRow struct {
+	Project string
+	Dir     string
+	// Resumes reports whether the conversation comes back with the session.
+	// False means there is nothing on disk to bring back — the CLI never said
+	// what its conversation was called, or said so and never wrote the file —
+	// and the session starts again in the same place and empty. The page says
+	// which, rather than promising a transcript it cannot fetch.
+	Resumes bool
+	When    string
+	// Here marks the one being looked at, so the picker shows it selected the
+	// way a running session does.
+	Here bool
+}
+
+// lost is what was started and is not running, given what is.
+//
+// The subtraction only means anything against a live list, so the caller passes
+// one it has already asked tmux for; with no answer there is no call to make
+// here at all, because every remembered session would look missing and a page
+// offering to start six that are all already running is worse than a page
+// offering none.
+func (s *Sessions) lost(ctx context.Context, running map[string]bool, here string) []lostRow {
+	if s.Store == nil {
+		return nil
+	}
+	remembered, err := s.Store.RememberedSessions(ctx)
+	if err != nil || len(remembered) == 0 {
+		return nil
+	}
+	now := s.now()
+	var out []lostRow
+	for _, r := range remembered {
+		if running[r.Project] {
+			continue
+		}
+		when := ""
+		if !r.Started.IsZero() {
+			when = since(now.Sub(r.Started)) + " ago"
+		}
+		out = append(out, lostRow{
+			Project: r.Project, Dir: r.Dir,
+			Resumes: resumes(r) != r.Cmd,
+			When:    when,
+			Here:    r.Project == here,
+		})
+	}
+	return out
+}
+
+// resumes is the command that starts a session again, with its conversation
+// where there is one to have.
+//
+// The transcript is looked for on disk rather than assumed from the identifier.
+// The hook that reports one fires as the CLI starts and the file is not written
+// until the conversation has something in it, so a session started and never
+// spoken to has an identifier naming nothing — and `--resume` on that is a
+// command that exits at once, which arrives as "the session died on startup"
+// two steps from anything that explains it. Better to bring the session back
+// empty, which is what it was.
+//
+// Deliberately stat rather than an existence flag written at start time: the
+// file appears after the row does, and a flag would have to be refreshed by
+// something. Nothing here has anything to refresh it with.
+func resumes(r store.Remembered) string {
+	if r.CLI == "" || r.Transcript == "" {
+		return r.Cmd
+	}
+	if _, err := os.Stat(r.Transcript); err != nil {
+		return r.Cmd
+	}
+	return session.Resume(r.Cmd, r.CLI)
+}
+
+// restore starts a session again, on the conversation it was having.
+//
+// Nothing about what runs comes from the browser: the project names a row, and
+// the row carries where it ran, what it ran and which conversation it was
+// having. That is the same rule the start form follows for the same reason — a
+// field naming a process is a shell behind Access — and it is stricter here,
+// because there is not even a list to choose from.
+//
+// **This is not a restart loop and is not on a timer.** It runs when somebody
+// presses it. An agent CLI that crashed still wants a person, and this is the
+// person (MUS-Q-0083).
+func (s *Sessions) restore(w http.ResponseWriter, r *http.Request) {
+	if !sameOrigin(r) {
+		http.Error(w, "that did not come from this site", http.StatusForbidden)
+		return
+	}
+	project := r.PathValue("project")
+	if s.Store == nil {
+		s.startFailed(w, r, "nothing here remembers what was running")
+		return
+	}
+	remembered, err := s.Store.RememberedSessions(r.Context())
+	if err != nil {
+		s.startFailed(w, r, "what was running could not be read back")
+		return
+	}
+	for _, row := range remembered {
+		if row.Project != project {
+			continue
+		}
+		if _, err := s.Adapter.Start(r.Context(), project, row.Dir, resumes(row)); err != nil {
+			s.startFailed(w, r, err.Error())
+			return
+		}
+		http.Redirect(w, r, "/sessions/"+project, http.StatusSeeOther)
+		return
+	}
+	s.startFailed(w, r, "Mustur is not holding a session by that name")
 }
 
 func (s *Sessions) commands() []string {
