@@ -10,8 +10,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 94 | [questions.md](questions.md) |
-| decision | 151 | [decisions.md](decisions.md) |
-| finding | 126 | [findings.md](findings.md) |
+| decision | 153 | [decisions.md](decisions.md) |
+| finding | 128 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 3 | [investigations/index.md](investigations/index.md) |
@@ -304,6 +304,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0149](decisions.md#mus-d-0149) | decision | A session lost with the machine is written down and offered back, and nothing starts on its own |
 | [MUS-D-0150](decisions.md#mus-d-0150) | decision | The picker carries what is not running, and the button is on the page it lands on |
 | [MUS-D-0151](decisions.md#mus-d-0151) | decision | The tmux server is spawned in a scope of its own, so a deploy stops ending every session |
+| [MUS-D-0152](decisions.md#mus-d-0152) | decision | The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary |
+| [MUS-D-0153](decisions.md#mus-d-0153) | decision | Mustur gates the tools it names, and never allows what the CLI would have asked about |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -425,6 +427,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0119](findings.md#mus-f-0119) | finding | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses |
 | [MUS-F-0120](findings.md#mus-f-0120) | finding | PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog |
 | [MUS-F-0121](findings.md#mus-f-0121) | finding | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog |
+| [MUS-F-0122](findings.md#mus-f-0122) | finding | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had |
+| [MUS-F-0123](findings.md#mus-f-0123) | finding | The captured panes are all one version, and two of them are trials the write-up never names |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

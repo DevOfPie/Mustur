@@ -10,7 +10,11 @@ shows the rule preceding the finding, the same protocol
 and **2.1.266** for the confirmation, because the CLI updated itself in the
 middle of the run. That is recorded rather than tidied away: the result holds
 across the update, and it was not measured on one version and claimed for the
-other. [MUS-F-0084](../../records/findings.md#mus-f-0084) was measured at 2.1.260
+other. **The committed panes do not support that split** — all three print
+2.1.266, including the one whose working directory is trial 11, which is one of
+the five. Which version ran those trials cannot now be recovered;
+[MUS-F-0123](../../records/findings.md#mus-f-0123) records it, and what the
+result did not depend on is [below](#the-fallback-re-measured-on-the-version-under-test). [MUS-F-0084](../../records/findings.md#mus-f-0084) was measured at 2.1.260
 and none of its numbers are inherited here.
 **Run during:** the session-channel work proposed as milestone 8. **That
 milestone is deliberately not in [Plan.md](../../Plan.md#milestones) yet**, and
@@ -141,7 +145,7 @@ terminal survives it — through `PreToolUse`, not through `PermissionRequest`.*
 | | Result |
 | --- | --- |
 | **Interceptable** | Yes, on every one of seven firings. The payload names the tool and carries its input — `{"tool_name":"Bash","tool_input":{"command":"touch ran-the-tool","description":"Create empty file ran-the-tool"}}` — plus `session_id`, `transcript_path` and `tool_use_id`. Captured whole in [captured/payload-pretooluse.json](0003-harness/captured/payload-pretooluse.json). **This row also said the payload carried `permission_suggestions` that are literally the drawn dialog's own options, and it does not** — that field is `PermissionRequest`'s, and the cited file never held it. [Corrected below](#corrected-after-the-verdict), where what each event actually says is measured |
-| **Answerable** | Yes, both directions. `allow` ran the tool and drew no dialog; `deny` stopped it and the reason reached the agent verbatim — *"the tool call came back with \"Refused by investigation 0003\" rather than running"* ([captured/pane-deny.txt](0003-harness/captured/pane-deny.txt)) |
+| **Answerable** | Yes, both directions. `allow` ran the tool and drew no dialog; `deny` stopped it and the reason reached the agent verbatim — *"the tool call came back with \"Refused by investigation 0003\" rather than running"* ([captured/pane-deny.txt](0003-harness/captured/pane-deny.txt), which is **trial 3** rather than one of the five) |
 | **Terminal-preserving** | Yes, checked after every trial. A second client attached over a separate tmux socket, rendered the whole conversation and the CLI's input box, and typed into it — the typed marker appeared in the inner pane on all five |
 
 Five consecutive trials, 11 through 15, all three properties, no trial requiring
@@ -158,7 +162,11 @@ dialog** — 21.3s, 24s and 20s from the hook firing.
 That is the outcome that makes this shippable. The fallback for an owner who is
 asleep is the pane parser that already exists, so the feature degrades into
 today rather than into a hung session or a silent refusal.
-[captured/pane-timeout-fallback.txt](0003-harness/captured/pane-timeout-fallback.txt).
+[captured/pane-timeout-fallback.txt](0003-harness/captured/pane-timeout-fallback.txt),
+which is **trial 24** rather than one of the three; no committed artefact carries
+the three numbers themselves. The re-run at
+[captured/hold-2.1.267.txt](0003-harness/captured/hold-2.1.267.txt) does, which
+is the only reason they can be checked at all.
 
 ### The event the question named does not work
 
@@ -266,3 +274,13 @@ shortened 20s timeout: **the CLI waits out the hook and draws its own dialog**,
 at 21.2s, 21.4s and 21.3s.
 [captured/hold-2.1.267.txt](0003-harness/captured/hold-2.1.267.txt). Unchanged,
 and now measured on the version this repository would build against.
+
+### What the harness will and will not reproduce
+
+`trial.sh` changed shape between the first trials and the last: one hardcoded
+event became an argument, `--model haiku` became `--model opus`, and `hook.sh`
+renamed the `PermissionRequest` deny key. So the early trials do not re-run from
+the scripts beside them without being told what they were.
+[0003-harness/README.md](0003-harness/README.md) is the table of which arguments
+produce which trial, written because a reviewer found the gap rather than because
+anybody noticed while running them.
