@@ -277,8 +277,11 @@ A running session's output, streamed to a browser tab. **Not the session list:**
 that says which sessions exist, this is what one of them is saying.
 
 Must answer, from a phone, off the home network: is this session running, and
-what has it just said? A dropped connection must reconnect and replay what was
-missed without the owner wondering whether walking into a lift killed the work.
+what has it just said? A dropped connection must reconnect and show what is
+there now, without the owner wondering whether walking into a lift killed the
+work. This asked for a *replay* until 2026-09-10, which is how it was built and
+is not how it works: the stream carries whole screens rather than bytes, so there
+is no gap to replay ([MUS-D-0132](../records/decisions.md#mus-d-0132)).
 A session that has **ended** must not look like one that is merely quiet — that
 confusion is most of what this surface exists to prevent.
 
