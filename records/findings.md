@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-129 record(s), by identifier.
+130 record(s), by identifier.
 
 ## The queue
 
@@ -139,6 +139,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0122](#mus-f-0122) | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |  |
 | [MUS-F-0123](#mus-f-0123) | The captured panes are all one version, and two of them are trials the write-up never names | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
 | [MUS-F-0124](#mus-f-0124) | An agent read a prompt's return value as permission to rewrite a published branch | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
+| [MUS-F-0125](#mus-f-0125) | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog | MUS-Q-0094 through MUS-Q-0097 all recorded as typed into mustur/Milestone_Work; that session's transcript at ~/.claude/projects/.../de5be2c5-....jsonl contains no delivered answer. Probe on 2026-09-10: an answer delivered into a pane showing the model picker was absent from the screen afterwards and the picker had been pressed |  |
 
 ---
 
@@ -3283,3 +3284,39 @@ Two things made it possible and only one is about carelessness. The prompt is a 
 | Evidence | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards |
 | Status | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
 | What it is not | a records defect. MUS-Q-0094 was answered through Mustur by the owner's own account at 16:56:19Z and is unaffected |
+
+---
+
+## MUS-F-0125
+
+**Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog**
+
+finding · 2026-09-10
+
+the same thing, seen once: [MUS-F-0105](#mus-f-0105)
+
+the other silent channel: [MUS-F-0074](#mus-f-0074)
+
+what to do about the collision: [MUS-Q-0098](questions.md#mus-q-0098)
+
+The owner answered four questions in Mustur's queue on 2026-09-10 -- MUS-Q-0094, 0095, 0096 and 0097. Each named this session with --in. Each was recorded "Delivered: typed into mustur/Milestone_Work". None of them arrived: the session's own transcript contains no delivered answer at all, and the owner eventually said so in the terminal, which is the only reason it was found.
+
+MUS-F-0105 saw this once on 2026-09-08 and named the first place to look: a modal on the screen. That was right, and it is worse than it guessed.
+
+**Measured, against the real CLI.** A probe session was put in front of the model picker and an answer delivered into it. Afterwards the answer text was nowhere on the screen -- and the picker had been pressed: "Set model to Opus 5 and saved as your default for new sessions". Send is a paste followed by Enter. A pane showing a dialog reads both: the text goes into the dialog, where nothing will ever read it, and the Enter presses whatever the dialog had selected.
+
+So delivery into a dialog does not merely fail. It operates the dialog. The one on the screen may be a permission prompt, and the Enter behind a lost answer would be answering it -- which is the exact harm milestone 8 exists to prevent, arriving through Mustur's own delivery path.
+
+**Why all four, and not one.** Every one was answered within seconds of this session putting up an AskUserQuestion prompt -- which is a modal in the CLI's own UI. The prompt exists to point the owner at the Mustur question; while it is up, the answer to that question cannot arrive. The two channels the contract requires collide, and the collision is silent in both directions: the prompt returns its first option whether or not anybody touched it (MUS-F-0074), and the delivery reports success whether or not anybody sees it.
+
+The delivery half is fixed here: Deliver reads the pane first and refuses while a dialog is up, recording what the dialog is and that the answer is in the queue. A pane that cannot be read is treated as clear, because refusing on a failed read would make an unreadable screen and a dialog the same thing.
+
+The other half is not a code question and is MUS-Q-0098.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/deliver.go, and every question answered while the raising session had a prompt on screen |
+| Evidence | MUS-Q-0094 through MUS-Q-0097 all recorded as typed into mustur/Milestone_Work; that session's transcript at ~/.claude/projects/.../de5be2c5-....jsonl contains no delivered answer. Probe on 2026-09-10: an answer delivered into a pane showing the model picker was absent from the screen afterwards and the picker had been pressed |
+| Fixed | delivery refuses while a dialog is up and says which; two tests, including that an unreadable pane is still delivered into |
+| Not fixed | the collision between the prompt rule and the delivery path, which is MUS-Q-0098 |
+| No harm on the probe | the picker's selected row was the default already, so the press re-set the same model |

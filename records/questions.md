@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-97 record(s), by identifier.
+98 record(s), by identifier.
 
 ---
 
@@ -2276,3 +2276,32 @@ MUS-Q-0087 says a green change deploys itself without asking, and this one is gr
 | Answered | 2026-09-10 17:59 |
 | Delivered | typed into mustur/Milestone_Work |
 | Surfaced | 2026-09-10 17:59 |
+
+---
+
+## MUS-Q-0098
+
+**The prompt and the answer cannot both use the pane. Which one gives way?**
+
+question · 2026-09-10
+
+what a delivery into a dialog actually does: [MUS-F-0125](findings.md#mus-f-0125)
+
+the first sighting: [MUS-F-0105](findings.md#mus-f-0105)
+
+the prompt returning what nobody chose: [MUS-F-0074](findings.md#mus-f-0074)
+
+Four answers today were recorded as delivered into this session and none arrived, because each was answered while this session had an AskUserQuestion prompt on screen and a paste into a dialog goes into the dialog (MUS-F-0125). The prompt exists to point you at the Mustur question; while it is up, the answer to that question cannot land. Delivery now refuses rather than pressing whatever the dialog had selected, which stops the harm and does not stop the collision.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Every question raised from a Mustur-owned session, which is most of them. |
+| Option | Mustur is the prompt, in its own sessions :: Recommended - stop putting the question in an AskUserQuestion prompt when the session is one Mustur started :: The question goes to the queue, the badge goes live on every surface, the pane stays clear, and the answer lands the moment you give it. It also retires the channel that has twice returned an option nobody chose (MUS-F-0074), because there is no longer a prompt to return anything. What it costs is real: the prompt is what makes a question findable on the device you are holding, and a badge on a page you are not looking at is not the same thing. It also reads as an amendment to the rule at the bottom of CLAUDE.md, which says every decision goes in a prompt -- so it is your sentence to change, not mine. |
+| Option | Keep the prompt, and poll for the answer :: the agent stops relying on delivery and reads the queue itself :: Both channels stay. The agent raises the question, shows the prompt, ignores what the prompt returns, and asks Mustur every few seconds whether the question has been answered. It is the only option that keeps the prompt's findability and does not depend on the pane being clear. The cost is that every raising session is polling a local server on a loop, and that the prompt on the screen is then furniture -- it says a question exists and cannot answer it, which is a thing to explain to whoever reads the screen next. |
+| Option | Keep both, deliver later :: Mustur holds the answer and types it in when the dialog clears :: The queue keeps what it could not deliver and retries once the pane is clear, so nothing is lost and nothing is polled. It is the most machinery of the three and the least honest about time: an answer arrives whenever the screen happens to be free, which may be after the agent has moved on and acted without it -- and an agent acting without an answer it was owed is the failure this whole mechanism exists to prevent. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Surfaced | 2026-09-10 18:13 |
+| How it was surfaced | deliberately not in an AskUserQuestion prompt. A prompt on this session's pane is what stopped the last four answers arriving, so raising one for this question would block its own answer (MUS-F-0125). It was put in front of the owner in the terminal instead, and this line is here because the contract says a conflict is a bug to name rather than a choice to make silently. |
