@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-125 record(s), by identifier.
+126 record(s), by identifier.
 
 ## The queue
 
@@ -135,6 +135,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0118](#mus-f-0118) | Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. | not yet reviewed |
 | [MUS-F-0119](#mus-f-0119) | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. | not yet reviewed |
 | [MUS-F-0120](#mus-f-0120) | PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog | Investigation 0003, trials 0 and 1 on Claude Code 2.1.263. A PermissionRequest hook received a full payload and returned the documented object -- hookSpecificOutput with hookEventName PermissionRequest and decision allow -- and the pane drew 'Do you want to proceed?' anyway and was still drawing it minutes later. Retried with the exact key names the documentation quotes, including permissionDecisionReason on the deny path. Same result. PreToolUse with permissionDecision allow suppressed the dialog on the first attempt and on all seven firings after: trials 2, 11 through 15 on 2.1.263 and trial 26 on 2.1.266. Payloads and panes in docs/investigations/0003-harness/captured/. |  |
+| [MUS-F-0121](#mus-f-0121) | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
 
 ---
 
@@ -3164,3 +3165,32 @@ Whether PermissionRequest's decision object works where a permission host exists
 | Field | Value |
 | --- | --- |
 | Evidence | Investigation 0003, trials 0 and 1 on Claude Code 2.1.263. A PermissionRequest hook received a full payload and returned the documented object -- hookSpecificOutput with hookEventName PermissionRequest and decision allow -- and the pane drew 'Do you want to proceed?' anyway and was still drawing it minutes later. Retried with the exact key names the documentation quotes, including permissionDecisionReason on the deny path. Same result. PreToolUse with permissionDecision allow suppressed the dialog on the first attempt and on all seven firings after: trials 2, 11 through 15 on 2.1.263 and trial 26 on 2.1.266. Payloads and panes in docs/investigations/0003-harness/captured/. |
+
+---
+
+## MUS-F-0121
+
+**permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog**
+
+finding · 2026-09-10
+
+the event that does not work: [MUS-F-0120](#mus-f-0120)
+
+the investigation it corrects: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+the milestone it re-prices: [MUS-Q-0094](questions.md#mus-q-0094)
+
+Investigation 0003's verdict credits PreToolUse with carrying `permission_suggestions` that are "literally options 2 and 3 of the dialog the CLI would have drawn", and cites captured/payload-pretooluse.json for it. That file does not contain the field. captured/payload-permissionrequest.json does, and it is the only payload in the harness that ever did — so the sentence attributes one event's evidence to another, in the row that establishes the property the whole route turns on.
+
+Measured again on 2026-09-10 at Claude Code 2.1.267, both hooks installed in one session and the hook returning nothing so the CLI's own permission flow decided: six trials, three on a tool call the CLI prompts on (Bash) and three on one it does not (Read of a file in the working directory). PreToolUse fired on all six. PermissionRequest fired on the three that prompt and on none of the three that do not, carrying permission_suggestions each time.
+
+So the two events say different things. **PermissionRequest is the event that means a dialog is pending** -- and its decision is the one the CLI ignores (MUS-F-0120). **PreToolUse is the event that can answer** -- and it fires on every tool call, so a firing carries no information about whether a person would ever have been asked.
+
+This does not falsify the verdict's three properties. Every trial that established them used a tool call that does prompt, so interceptable, answerable and terminal-preserving all hold as measured. What it falsifies is the sentence describing what the payload carries, and with it the assumption a milestone could have been built on: that a surface fed by PreToolUse alone knows which calls the owner would have been asked about. It does not. It would either ask about every tool call, or hold a permission policy of its own, or pair the two events.
+
+| Field | Value |
+| --- | --- |
+| Where | docs/investigations/0003-dialog-without-the-screen.md, the Interceptable row of the verdict, and MUS-I-0003's Result |
+| Evidence | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh |
+| Also true before this run | internal/session/testdata/hook-payloads.jsonl holds five real PreToolUse captures in permission_mode auto, none carrying permission_suggestions and none drawing a dialog |
+| Status | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |

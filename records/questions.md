@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-91 record(s), by identifier.
+94 record(s), by identifier.
 
 ---
 
@@ -2056,12 +2056,17 @@ The default is stated here rather than as a fourth option, because an option tha
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | LinkCtrl's side of the transition; MUS-M-0009 |
 | Asked by | whippy |
 | Option | Declare adoption now :: Recommended — one hand-written strucgu.yaml in LinkCtrl, carrying the deviations its audit will report, before any record moves :: Mustur's record shape IS StrucGu's roles, so a tree that declares none has nothing for milestone 7 to read, and the mapping stops being a document and becomes a checkable claim. Five DevOfPie trees declare adoption and LinkCtrl does not. The cost, stated: LinkCtrl acquires a conformance obligation and a review cadence before anything has moved, and it commits the largest and most active corpus to a spec whose only runner is a service one person maintains — Mustur's own known limitation, not an argument invented here. The recommendation comes from the actor that would also write the file, which is worth discounting. |
 | Option | Map it, declare nothing :: The survey document stands, no claim is made, and milestone 7 derives what it needs when it starts :: Costs nothing now and keeps LinkCtrl free of an obligation it may never need if milestone 7 is never reached. What it costs later is precisely what Plan.md warned about: the mapping is re-derived by whoever runs milestone 7, from a tree they did not build, which is the lift-and-shift the assignment to 'that repository's agents' was avoiding. |
 | Option | Declare it and gate it :: strucgu.yaml plus mustur audit wired into make check :: The strongest version — a claim that cannot rot, because the gate reads it every run. It also puts an external binary and a StrucGu checkout into a gate that is already six steps long, on a repository whose CI is its release path, and it means a Mustur outage or a catalog bump can fail a LinkCtrl build. Mustur itself declined to gate its own audit until someone asked (MUS-D-0032); doing it here first would be odd. |
+| Surfaced | 2026-09-09 02:27 |
+| Answer | None of the three options. The premise is wrong: the goal is to remove all agent documentation from the LinkCtrl repository. StrucGu maps roles at files in the tree, so an adoption record declaring roles at docs/build-notes/ would be declaring roles at files that are leaving. Adoption, if it is declared at all, is declared where the records end up — which is what MUS-D-0034 already did for Mustur, mapping the roles at the export rather than at the prose a person edits. LinkCtrl gets no strucgu.yaml. |
+| Answered | 2026-09-09 02:27 |
+| Relayed | written down by whippy, from a terminal prompt in the LinkCtrl session that raised it, 2026-09-09 |
+| Delivered | not delivered: the question names no session |
 
 ---
 
@@ -2077,9 +2082,109 @@ The default is stated here rather than as a fourth option, because an option tha
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | LinkCtrl's side of the transition; MUS-M-0009 |
 | Option | Cutover at a date :: Recommended — Mustur holds LNK records from the transition date forward; the 947 existing ones freeze where they are and stay in the repository :: Nothing is retrofitted, which is what Mustur's own non-goal asks for, and the split has a rule a reader can state in one sentence: before the date it is in a file, after it it has an identifier. The cost is real and permanent — two places to look for a decision, forever, and the standing rule that nothing leaves a tracker silently now spans a file and a store. It is also the only option that does not depend on a number: LNK already works, since mustur add --project takes a prefix and the store already carries five IDW-F records. |
 | Option | Import everything :: 947 records, of which 381 findings and 173 decisions get addresses they were never written with :: The only option that makes success criterion 4 true for LinkCtrl's whole history — a record from six months ago retrieved by identifier without knowing its file. It is also exactly the retrofit Plan.md's non-goals refuse: every one of the 381 findings is a table row with no address at all, so importing them means minting 381 identifiers for rows nobody wrote one for. And the export would rewrite a 42,587-line append-only file, which is a different claim about that file than the one it makes about itself. |
 | Option | Import what is already addressed :: the 271 heading-addressable decisions and the 74 milestone files; the 381 findings and the 173 unheaded decisions freeze :: Cheapest honest import — it moves only records that already have the property Mustur requires, so nothing is retrofitted and roughly three-fifths of the decision log becomes addressable. The cost is that the split is by shape rather than by date, so 'is D14 in Mustur' has no rule a reader can predict without checking, and the file and the store then interleave across the same range of identifiers. |
 | Asked by | whippy |
+| Surfaced | 2026-09-09 02:27 |
+| Answer | Import everything. All 947 records, including the 381 findings that are table rows with no address and the 173 decisions with no heading of their own. Chosen over the recommendation with the retrofit cost stated in the option, and it is the only one of the three consistent with MUS-Q-0090's answer: cutover-at-a-date freezes the existing records in place, and there is no place to freeze them if the files leave the repository. |
+| Answered | 2026-09-09 02:27 |
+| Relayed | written down by whippy, from a terminal prompt in the LinkCtrl session that raised it, 2026-09-09 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0092
+
+**Where is the boundary of 'all agent documentation' in LinkCtrl: the records, the rules too, or the scope contract as well?**
+
+question · 2026-09-09
+
+If the answer is 'you decide': records only. It removes 99% of the bytes, it is MUS-D-0023 applied unchanged, and it is the only option that needs nothing new built in Mustur first. It is also the option that can be extended later — moving the rules afterwards costs one commit, and moving them back does not.
+
+The default is stated here rather than as a fourth option, because an option that is not a choice gets recorded as the answer. MUS-F-0079 is that defect.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | LinkCtrl's side of the transition; MUS-M-0009; whether Mustur needs a kind it does not have |
+| Option | Records only :: Recommended — 4.94 MB and 947 records leave; the seven rule and reader files stay, about 101 KB :: decisions.md, deferred-findings.md, upcoming-decisions.md, workflow-changes.md, phase-details/, the two phase-N-candidates and docs/adr/ become Mustur records. workflow.md, phase-loop.md, work-loop.md, planning.md, commands.md, README.md and development.md stay as files. This is MUS-D-0023 applied unchanged — the store holds records, the contract files keep their prose — and Mustur maps the same triage_doc role at a file in its own tree, so it is the only option Mustur can hold today without inventing a kind. The cost, stated plainly: 'all agent documentation' is then not literally met. About 101 KB of agent-facing process prose stays in the repository, and the recommendation comes from the actor that would also do the move. |
+| Option | Records and rules :: Everything under docs/build-notes/ leaves except development.md :: The literal reading. development.md is contributor setup — Go version, Docker, ports — and is not agent documentation whatever its path says, so it stays and moves out of build-notes/. Two costs. Mustur models no rule document at all: its own triage_doc role points at workflow.md in its own tree, so LinkCtrl's five rule files would go somewhere Mustur does not currently have, which is a build there before a move here. And the repository README's 'how this project is built' table loses five of its six rows, so a reviewer with no Mustur account can no longer see how this repository is built — which is what that table exists for. |
+| Option | Everything, Plan.md included :: The scope contract goes too; the repository keeps product documentation only :: The cleanest tree, and the strongest reading of the goal. Plan.md is 101 KB and its milestone rows are already milestone records, so roughly half of it has a home. The other half does not: its scope tables, non-goals and known limitations are records of no kind, and the known-limitations rows in particular are product documentation wearing a plan's path — they are what an operator reads to find out what LinkCtrl deliberately does not do. README.md links Plan.md twice, including for exactly that. |
+| Asked by | whippy |
+| Surfaced | 2026-09-09 02:29 |
+| Answer | Records only |
+| Answered | 2026-09-09 04:11 |
+| Note | I expect everything that Mustur is built to handle is no longer in the repo for LinkCtrl, if that does not align with the records only option let me know |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0093
+
+**Records only does not align with the note, in two places: Plan.md carries milestone rows Mustur handles, and three trackers have no kind at all**
+
+question · 2026-09-09
+
+answers the note on: [MUS-Q-0092](#mus-q-0092)
+
+MUS-Q-0092's note asks that everything Mustur is built to handle stop being in the LinkCtrl repository. Checked against the tree, 'records only' as the option was framed misses that test twice, in opposite directions.
+
+**Plan.md carries 18 milestone rows.** Eighteen table rows begin with a link to a phase-details file — the Phase 4 ordering table and the Not-in-Phase tables — and 'milestone' is a kind Mustur already holds, as MUS-M-0001 to MUS-M-0012. Under records-only they stay. They also point at the files that leave, so the link gate fails on them either way.
+
+**Three trackers have no kind in Mustur.** workflow-changes.md, 47 rows, and the two phase-N-candidates files, 56 KB between them. The option listed them as leaving; there is nothing there to hold them. Mustur excludes its own records/questions.md from adoption for exactly this reason — no module describes that shape — and MUS-F-0013 records that four of StrucGu's five roles are record kinds and nobody has asked for the fifth.
+
+Nothing else moved. The seven rule and reader files that stay under records-only — workflow.md, phase-loop.md, work-loop.md, planning.md, commands.md, README.md, development.md — are a kind Mustur handles in none of its nine, so those pass the note's test as framed. The rest of Plan.md passes too: its scope tables, data model, architecture, performance targets, privacy, known limitations and success criteria are records of no kind, and its phase sections are prose and pointers rather than tables.
+
+If the answer is 'you decide': the first option. It is the note's own test applied in both directions rather than only the convenient one, and it needs nothing built in Mustur first.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | LinkCtrl's side of the transition; MUS-M-0009 |
+| Option | Apply the note's test both ways :: Recommended — Plan.md's 18 milestone rows leave as well; the three homeless trackers stay until Mustur has a kind :: The note read literally and symmetrically. The ordering table becomes a pointer into Mustur the way the Phase 2 and Phase 3 sections are already pointers into phase-details, so Plan.md keeps saying what is true and stops holding records. The cost is real and is Plan.md's: a reader loses the at-a-glance ordering beside the scope tables, and the repository keeps about 97 KB of records-shaped files in three trackers that the goal wanted gone, with the standing rule 'nothing leaves a tracker silently' then spanning a store and a file. |
+| Option | Grow the kind, move everything :: Mustur builds a kind for a process-change queue and a candidate list, and then all of it leaves :: The only option that meets the note with nothing left over. It is a build in Mustur before anything can move here, on a kind with exactly one adopter — which is the argument StrucGu used to decline IdeaWarehouse's consumed-queue form, and MUS-F-0013 already records that nobody has asked for the fifth role. It also delays the move by whatever that build costs, and the 4.94 MB that is ready to go waits on the 97 KB that is not. |
+| Option | Leave Plan.md alone, and the three stay too :: Records only exactly as framed, and the note's test is accepted as not quite literal :: Defensible on its own terms: the ordering table is read as scope rather than as records, it sits beside the scope tables because that is where a reader needs it, and pulling it out to satisfy a kind boundary makes the plan worse to read. The cost is that Mustur then does not hold LinkCtrl's milestone ordering, so a session that asks Mustur what comes next gets 74 definitions of done and no order to build them in — which is the one thing the ordering table is for. |
+| Asked by | whippy |
+| Surfaced | 2026-09-09 04:13 |
+| Answer | Apply the note's test both ways |
+| Answered | 2026-09-09 04:15 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## MUS-Q-0094
+
+**Investigation 0003 came back a pass. Does the session channel become milestone 8, and in which shape?**
+
+question · 2026-09-10
+
+the investigation: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+the event that does not work: [MUS-F-0120](findings.md#mus-f-0120)
+
+the question this re-asks: [MUS-Q-0085](#mus-q-0085)
+
+the surface a dialog already has: [MUS-D-0144](decisions.md#mus-d-0144)
+
+what re-priced the first option: [MUS-F-0121](findings.md#mus-f-0121)
+
+MUS-Q-0085 was answered 'change nothing', with a note that further research was needed before a final decision. That research is investigation 0003 and it passed: PreToolUse carries all three properties on five consecutive trials, PermissionRequest's decision is ignored, and a hook nobody answers times out into the CLI drawing its own dialog. The row was deliberately kept out of Plan.md until this returned. Writing it in is scope, which is yours.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Milestone 8. Nothing else: the pane parser works and the surface it feeds is shipping. |
+| Option | Hooks on this vendor :: Recommended - the pop up stops reading permission dialogs off the screen and starts being told :: PreToolUse joins the settings JSON Mustur already builds per session for sub-agents (MUS-D-0087), so nothing of your configuration is touched. A pending tool call then reaches the surface as a payload naming the tool and carrying its input, and your press returns allow or deny rather than a keypress aimed at the pane. The pop up of MUS-D-0144 is the surface, so nothing new is drawn and MUS-F-0027's pattern is not repeated. What it does not touch: the model picker, the effort cycler and the toggles of MUS-F-0101 are drawn on your own keypress, no hook fires, and that half of the parser stays exactly as it is. It is Claude Code's hook names by construction and buys a second CLI nothing. Two costs, both measured. An unanswered hook times out and the CLI draws its own dialog - 21.2s, 21.4s and 21.3s at 2.1.267 - so the parser stays as the fallback rather than being retired. And PreToolUse fires on every tool call, not only the ones you would have been asked about (MUS-F-0121), so this either asks you about all of them, keeps a permission policy of Mustur's own, or pairs PreToolUse with PermissionRequest, which fires only when a dialog is pending and is the one whose decision the CLI ignores. Which of those three is a design question inside the milestone, not another question for you. |
+| Option | The module boundary :: MUS-Q-0085's option 1, with its Claude half now measured rather than read :: One interface written against what the surface needs - start, list, stop, watch, send text, send a key, answer a dialog, report sub-agents - and a module per vendor filling it however it can while declaring what it cannot. Claude's module composes what this investigation proved plus the pane it already has. The cost is the interface itself, shaped against one adopter: this repository declined a fifth StrucGu role on that argument (MUS-F-0013) and priced a kind with one adopter the same way on MUS-Q-0093. Nothing here has measured Gemini's ACP or Codex's app-server against such an interface, so two thirds of its shape would come from documentation. |
+| Option | Not a milestone yet :: MUS-Q-0085's answer stands, this time with the research its note asked for behind it :: The parser handles every shape seen so far, and answering a dialog off the screen has been shipping since MUS-D-0143. What it costs is what MUS-Q-0085 already priced: every dialog shape the CLI adds is another parser edit, and MUS-F-0088, MUS-F-0091 and MUS-F-0104 are each the same sentence - the dialog was there and could not be used. The harness in docs/investigations/0003-harness/ also ages out as the CLI moves, so a later yes costs the measurement again. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Surfaced | 2026-09-10 16:56 |
+| Re-priced | 2026-09-10. The first option said the payload carries the dialog's own suggestions. It does not - that is PermissionRequest's field, and MUS-F-0121 is the correction. What changed in the option is what it costs, not what it is. |
+| Answer | Hooks on this vendor |
+| Answered | 2026-09-10 16:56 |
+| Delivered | typed into mustur/Milestone_Work |
