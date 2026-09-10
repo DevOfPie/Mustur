@@ -3460,3 +3460,35 @@ The number is a constant rather than a flag, deliberately: --gate already says w
 | Answer | five minutes, chosen on MUS-Q-0096 after shipping unchosen |
 | After it expires | the CLI draws its own dialog, the pane parser reads it, and the same pop-up offers it as a keypress |
 | Not built | anything that makes the session do other work while it waits; that is the CLI's |
+
+### MUS-D-0156
+
+**In a session Mustur started, Mustur is the prompt**
+
+decision · 2026-09-10
+
+answers: MUS-Q-0098
+
+what a delivery into a dialog does: MUS-F-0125
+
+the channel it retires here: MUS-F-0074
+
+MUS-Q-0098 asked which of two channels gives way, after four answers in one day were recorded as delivered into this session and none arrived. The owner chose the first option: in a session Mustur started, Mustur is the prompt.
+
+The reason is mechanical rather than aesthetic. An answer reaches the raising session by being typed into its pane. A pane showing a dialog reads the paste as input to the dialog and the Enter behind it as a press (MUS-F-0125). An AskUserQuestion prompt is a dialog. So a prompt raised to point the owner at the queue is exactly the thing that stops the queue's answer landing -- and the two failures are silent in opposite directions, because the prompt returns its first option whether or not anybody touched it (MUS-F-0074) and delivery reported success whether or not anybody saw it.
+
+**So raising the question is showing it.** mustur ask --in <a live Mustur session> now records the question as surfaced by the raising, and says so instead of telling the caller to go and put it in a prompt. The queue holds it, the badge that counts it is live on every surface (MUS-D-0145), and the pane stays clear for the answer.
+
+**Outside a session Mustur started, nothing changes.** There is no pane to deliver into and no session watching the badge, so a prompt is still owed and mustur surfaced still records that it happened. That is most questions raised from a terminal somebody is sitting at.
+
+What this costs, stated because the option said it and the owner took it anyway: a prompt is what makes a question findable on whatever device the owner is holding, and a badge on a page they are not looking at is not the same thing. The bet is that a question that arrives late is better than an answer that never arrives at all.
+
+What it retires, quietly and worth naming: the channel that has twice returned an option nobody chose. In a Mustur session there is no longer a prompt to return anything, so MUS-F-0074's failure has nowhere left to happen.
+
+The gate is unchanged in what it enforces. --needed still blocks on being answered rather than on being asked, and a question raised outside a Mustur session and never prompted still fails make check.
+
+| Field | Value |
+| --- | --- |
+| Changed | mustur ask --in a live Mustur session marks the question surfaced by the raising; CLAUDE.md's mandate and workflow.md's trigger say so |
+| Unchanged | a question raised outside such a session still owes an AskUserQuestion prompt and mustur surfaced; --needed still blocks on the answer |
+| Why | a prompt is a dialog, and an answer delivered into a pane showing one is eaten by it |

@@ -171,9 +171,24 @@ Three rules bind every session in this repository:
 - **No file in any other project is touched.** Not read for restructuring, not
   edited, not migrated. Onboarding another project is a milestone with its own
   verdict.
-- **Every decision or question for the owner goes in a prompt**, never in prose,
-  a report or a pull request body. A pull request out of draft says work needs
+- **Every decision or question for the owner goes in Mustur**, never in prose, a
+  report or a pull request body. A pull request out of draft says work needs
   review; it never asks a decision.
+
+  **In a session Mustur started, Mustur is the prompt.** Raising the question is
+  showing it: it is on the queue, the badge that counts it is live on every
+  surface, and — this is the point — the pane stays clear for the answer to land
+  in. A prompt on the screen is a dialog, and an answer delivered into a session
+  showing one goes into the dialog rather than to the agent, and the Enter behind
+  it presses whatever the dialog had selected
+  ([MUS-F-0125](records/findings.md#mus-f-0125),
+  [MUS-D-0156](records/decisions.md#mus-d-0156)). So `mustur ask --in <this
+  session>` records the question as surfaced by the raising, and raising a
+  second prompt for it is how the answer gets lost.
+
+  Outside a session Mustur started there is nothing to deliver into and no badge
+  the owner is watching, so a prompt is still owed and `mustur surfaced <ID>`
+  still says it happened.
 
   This one is enforced rather than trusted. Raise it with
 
@@ -188,7 +203,8 @@ Three rules bind every session in this repository:
   outcome for a question raised outside a session Mustur started — and the
   common one, since most are.
 
-  then put it in a prompt and `mustur surfaced <ID>`. **Give it options.** You
+  then, if the session is not one Mustur started, put it in a prompt and
+  `mustur surfaced <ID>`. **Give it options.** You
   have just finished weighing the alternatives — that is why you are blocked —
   and a bare question makes the owner reconstruct them. Prefix one option's line
   with `Recommended` if you have a view. Omit them only when the question

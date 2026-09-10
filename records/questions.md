@@ -2295,7 +2295,7 @@ Four answers today were recorded as delivered into this session and none arrived
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Every question raised from a Mustur-owned session, which is most of them. |
 | Option | Mustur is the prompt, in its own sessions :: Recommended - stop putting the question in an AskUserQuestion prompt when the session is one Mustur started :: The question goes to the queue, the badge goes live on every surface, the pane stays clear, and the answer lands the moment you give it. It also retires the channel that has twice returned an option nobody chose (MUS-F-0074), because there is no longer a prompt to return anything. What it costs is real: the prompt is what makes a question findable on the device you are holding, and a badge on a page you are not looking at is not the same thing. It also reads as an amendment to the rule at the bottom of CLAUDE.md, which says every decision goes in a prompt -- so it is your sentence to change, not mine. |
 | Option | Keep the prompt, and poll for the answer :: the agent stops relying on delivery and reads the queue itself :: Both channels stay. The agent raises the question, shows the prompt, ignores what the prompt returns, and asks Mustur every few seconds whether the question has been answered. It is the only option that keeps the prompt's findability and does not depend on the pane being clear. The cost is that every raising session is polling a local server on a loop, and that the prompt on the screen is then furniture -- it says a question exists and cannot answer it, which is a thing to explain to whoever reads the screen next. |
@@ -2305,3 +2305,6 @@ Four answers today were recorded as delivered into this session and none arrived
 | Session project | Milestone_Work |
 | Surfaced | 2026-09-10 18:13 |
 | How it was surfaced | deliberately not in an AskUserQuestion prompt. A prompt on this session's pane is what stopped the last four answers arriving, so raising one for this question would block its own answer (MUS-F-0125). It was put in front of the owner in the terminal instead, and this line is here because the contract says a conflict is a bug to name rather than a choice to make silently. |
+| Answer | Mustur is the prompt, in its own sessions |
+| Answered | 2026-09-10 18:18 |
+| Delivered | typed into mustur/Milestone_Work |

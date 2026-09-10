@@ -117,6 +117,37 @@ func cmdAsk(args []string) error {
 		return err
 	}
 	fmt.Println(written.ID)
+
+	// **In a session Mustur started, Mustur is the prompt.**
+	//
+	// The owner took that on MUS-Q-0098 after four answers in one day were
+	// recorded as delivered and never arrived: each was answered while the
+	// raising session had a prompt on its screen, and a paste into a dialog
+	// goes into the dialog (MUS-F-0125). The prompt existed to point at the
+	// queue, and while it was up the queue could not answer.
+	//
+	// So raising it here is showing it: it is on the queue, the badge that
+	// counts it is live on every surface (MUS-D-0145), and the pane stays clear
+	// for the answer to land in. A question with no --in, or one naming a
+	// session Mustur did not start, still owes a prompt and says so.
+	if p := strings.TrimSpace(*inProject); p != "" {
+		live, err := (&session.Adapter{}).Alive(ctx, p)
+		if err == nil && live {
+			when, err := stamped("", time.Now())
+			if err == nil {
+				err = setField(*db, written.ID, *actor, func(r *record.Record) error {
+					question.MarkSurfaced(r, when)
+					return nil
+				})
+			}
+			if err == nil {
+				fmt.Fprintln(os.Stderr, "raised, and on the queue "+p+" is watching. Mustur is the prompt in its own sessions (MUS-D-0156); do not raise a second one.")
+				return nil
+			}
+			fmt.Fprintln(os.Stderr, "raised, but not marked surfaced: "+err.Error())
+			return nil
+		}
+	}
 	fmt.Fprintln(os.Stderr, "raised, and not yet surfaced. Put it in a prompt, then: mustur surfaced "+written.ID)
 	return nil
 }
