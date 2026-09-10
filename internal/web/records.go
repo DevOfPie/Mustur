@@ -376,7 +376,7 @@ func (rr *Records) render(w http.ResponseWriter, r *http.Request, p recordsPage)
 	w.Header().Set("Cache-Control", "no-store")
 	// Set here rather than at three call sites, because a page built without
 	// them renders a bar missing a tab and says nothing about it.
-	p.ShowSessions = rr.ShowSessions
+	p.ShowSessions = rr.ShowSessions && CanWrite(r)
 	p.ShowAccount = rr.ShowAccount
 	if rr.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), rr.Store)

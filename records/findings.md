@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-130 record(s), by identifier.
+131 record(s), by identifier.
 
 ## The queue
 
@@ -140,6 +140,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0123](#mus-f-0123) | The captured panes are all one version, and two of them are trials the write-up never names | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
 | [MUS-F-0124](#mus-f-0124) | An agent read a prompt's return value as permission to rewrite a published branch | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
 | [MUS-F-0125](#mus-f-0125) | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog | MUS-Q-0094 through MUS-Q-0097 all recorded as typed into mustur/Milestone_Work; that session's transcript at ~/.claude/projects/.../de5be2c5-....jsonl contains no delivered answer. Probe on 2026-09-10: an answer delivered into a pane showing the model picker was absent from the screen afterwards and the picker had been pressed |  |
+| [MUS-F-0126](#mus-f-0126) | A reader was offered the one tab that refuses them, because no surface knew who was reading it | a reader's records page carries no /sessions link and keeps the other three; an owner's carries it; a server with no guard carries it. Mutation-checked |  |
 
 ---
 
@@ -3320,3 +3321,34 @@ The other half is not a code question and is MUS-Q-0098.
 | Fixed | delivery refuses while a dialog is up and says which; two tests, including that an unreadable pane is still delivered into |
 | Not fixed | the collision between the prompt rule and the delivery path, which is MUS-Q-0098 |
 | No harm on the probe | the picker's selected row was the default already, so the press re-set the same model |
+
+---
+
+## MUS-F-0126
+
+**A reader was offered the one tab that refuses them, because no surface knew who was reading it**
+
+finding · 2026-09-10
+
+the refusal that stands: [MUS-Q-0048](questions.md#mus-q-0048)
+
+the tab bar it waited on: [MUS-D-0131](decisions.md#mus-d-0131)
+
+the milestone it is in the way of: [MUS-M-0008](milestones.md#mus-m-0008)
+
+The guard has refused a reader correctly since milestone 5b: /sessions and /compose answer 403 to an account that can read but not write. What no surface knew was who was reading it, so the tab bar above every page offered the Sessions tab to everybody. A reader pressed it and got a plain-text refusal.
+
+This was a queue line on 2026-08-25, deferred with a reason that has since expired -- the tab bar's final shape was open then and MUS-D-0131 settled it. It is filed now rather than left as a line because there is a second person on this deployment with a reader role and a passkey, so it is a defect somebody can actually hit.
+
+The refusals are untouched. MUS-Q-0048 settled that a control refuses and explains itself at the moment it is pressed rather than warning first, and that stands: what changed is navigation, not a control. A link into a page this account cannot open is not a control refusing, it is a broken route wearing a tab.
+
+The role now travels on the request, put there by the guard that already computes it, and every page that renders the bar asks whether the viewer can write before offering the tab. **A request carrying no role can write**, which is the server running without --accounts -- there is nobody to be a reader there and every surface is the owner's. Defaulting the other way would have hidden the session tab from everybody who has not turned accounts on, including a fresh clone.
+
+Left alone deliberately: the intake box still takes a reader's jot and refuses the POST. Making that refusal a rendered page rather than plain text is a change to the guard's behaviour on every write path -- including a socket, which has no page to render -- and it is its own piece of work rather than this one.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/guard.go and every page that renders the tab bar |
+| Fixed | the guard puts the viewer's role on the request; the bar offers Sessions only to an account that can write, and to everybody when accounts are off |
+| Evidence | a reader's records page carries no /sessions link and keeps the other three; an owner's carries it; a server with no guard carries it. Mutation-checked |
+| Not fixed | the intake box still takes a reader's jot and refuses the POST in plain text |
