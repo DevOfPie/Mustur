@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/session"
+	"strings"
 )
 
 func cmdSession(args []string) error {
@@ -39,6 +40,7 @@ func cmdSession(args []string) error {
 		fs := flag.NewFlagSet("session start", flag.ContinueOnError)
 		dir := fs.String("dir", "", "the checkout the session runs in")
 		cmd := fs.String("cmd", "", "the CLI to run; the adapter has no default of its own")
+		gate := fs.String("gate", "", "tools to hold in front of the owner; empty for the default set, \"none\" for no gate")
 		db := dbFlag(fs)
 		project, err := parseWithPositional(fs, rest, "session start needs a project")
 		if err != nil {
@@ -52,6 +54,7 @@ func cmdSession(args []string) error {
 			defer st.Close()
 			a.Remember, a.DB, ctx = st, *db, sctx
 		}
+		a.Gate = gateFlag(*gate)
 		s, err := a.Start(ctx, project, *dir, *cmd)
 		if err != nil {
 			return err
@@ -181,5 +184,22 @@ func cmdSession(args []string) error {
 
 	default:
 		return fmt.Errorf("session has no verb %q: start, list, stop", verb)
+	}
+}
+
+// gateFlag reads what --gate was given.
+//
+// Three states rather than two, because "the default set" and "no gate at all"
+// are different answers and an empty string has to mean one of them. Unset is
+// the default set; the word "none" is a session that holds nothing, which is
+// the opt-out MUS-D-0153 promises; anything else is the list.
+func gateFlag(s string) []string {
+	switch strings.TrimSpace(s) {
+	case "":
+		return nil
+	case "none":
+		return []string{}
+	default:
+		return session.ParseGate(s)
 	}
 }

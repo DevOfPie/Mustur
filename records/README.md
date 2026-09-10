@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 95 | [questions.md](questions.md) |
-| decision | 153 | [decisions.md](decisions.md) |
+| question | 96 | [questions.md](questions.md) |
+| decision | 154 | [decisions.md](decisions.md) |
 | finding | 129 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
@@ -154,6 +154,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0093](questions.md#mus-q-0093) | question | Records only does not align with the note, in two places: Plan.md carries milestone rows Mustur handles, and three trackers have no kind at all |
 | [MUS-Q-0094](questions.md#mus-q-0094) | question | Investigation 0003 came back a pass. Does the session channel become milestone 8, and in which shape? |
 | [MUS-Q-0095](questions.md#mus-q-0095) | question | A stacked branch needs its remote rewritten every time its base gains a fix. Is a force push mine to make? |
+| [MUS-Q-0096](questions.md#mus-q-0096) | question | How long does a held tool call wait for you before the session takes it back? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -307,6 +308,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0151](decisions.md#mus-d-0151) | decision | The tmux server is spawned in a scope of its own, so a deploy stops ending every session |
 | [MUS-D-0152](decisions.md#mus-d-0152) | decision | The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary |
 | [MUS-D-0153](decisions.md#mus-d-0153) | decision | Mustur gates the tools it names, and never allows what the CLI would have asked about |
+| [MUS-D-0154](decisions.md#mus-d-0154) | decision | The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

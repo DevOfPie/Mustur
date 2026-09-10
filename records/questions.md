@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-95 record(s), by identifier.
+96 record(s), by identifier.
 
 ---
 
@@ -2215,3 +2215,33 @@ workflow.md says rebase, never merge back down. So when a base branch gains a re
 | Answered | 2026-09-10 17:23 |
 | Delivered | typed into mustur/Milestone_Work |
 | Surfaced | 2026-09-10 17:24 |
+
+---
+
+## MUS-Q-0096
+
+**How long does a held tool call wait for you before the session takes it back?**
+
+question · 2026-09-10
+
+the milestone it belongs to: [MUS-D-0152](decisions.md#mus-d-0152)
+
+the rule it is part of: [MUS-D-0153](decisions.md#mus-d-0153)
+
+A reviewer found that every number you were priced on when you chose milestone 8 was 20 seconds - the investigation shortened the hook timeout so the fallback could be watched in seconds, and said so. The build ships 300. No record, no prompt and no measurement names 300; it is a number I picked in a code comment that called it a number you feel, which is the argument for it being yours.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing: 300s is shipped on the branch and is a number nobody chose. It blocks the milestone being accepted with an unmeasured number in it. |
+| Option | Five minutes :: Recommended - what shipped, and the middle of the three :: Long enough that a phone in a pocket is reachable, short enough that a Mustur that is down costs five minutes a call rather than ten. What happens at the end of it is not the call failing: the CLI draws the dialog it would have drawn, which also waits for a person, so the timeout decides how long the buttons on your phone own the question rather than whether the work continues. |
+| Option | One minute :: the pane gets it back quickly, and a phone often will not make it :: Best when you are at the terminal, because the structured pop-up gets out of the way fast and the CLI's own dialog - answerable from the key row - takes over. Worst when you are not: a minute is not long enough to notice a notification, open the tab and read what the tool wants to do. It is also the kindest to a Mustur that is down, which is the case nobody plans for: one minute per gated call rather than five. |
+| Option | Ten minutes, the CLI's own default :: the longest the buttons can own it, and the worst when nothing is listening :: Matches what the CLI would do with no timeout set at all, so it is the one number that is not Mustur's invention. The cost is the other side of the same coin: with Mustur down, or the tab closed, every gated call stalls ten minutes before the pane's dialog appears - and if you are attached to the terminal, that is ten minutes of a session looking hung. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Answer | Five minutes |
+| Answered | 2026-09-10 17:44 |
+| Note | The question should always be answered through Mustur for Mustur Sessions. When the timer expires the session can try other work or just idle until the prompt is answered in Mustur |
+| Delivered | typed into mustur/Milestone_Work |
+| Surfaced | 2026-09-10 17:44 |

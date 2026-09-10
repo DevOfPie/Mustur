@@ -235,3 +235,43 @@ func TestTheGateRidesInOnTheCommandLine(t *testing.T) {
 		t.Errorf("turning the gate off turned the rows off with it: %s", settings)
 	}
 }
+
+// A press that arrives after the CLI gave up on the hook.
+//
+// The file is still there — the hook was killed, so nothing removed it — and
+// statting it was the whole of the check that shipped for one commit. The
+// dialog is on the pane by then and this is not the way to answer it.
+func TestAPressAfterTheTimeoutIsRefused(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Now()
+	if err := RaiseAsk(dir, "P", Ask{ID: "t1", Tool: "Bash", At: now.Add(-GateTimeout - time.Minute)}); err != nil {
+		t.Fatalf("raise: %v", err)
+	}
+	err := AnswerAsk(dir, "P", "t1", Answer{Decision: "allow", At: now})
+	if err == nil {
+		t.Fatal("a call that waited out its timeout took an answer anyway")
+	}
+	if !strings.Contains(err.Error(), "waited out its timeout") {
+		t.Errorf("the refusal does not say what happened: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(AskDir(dir, "P"), "t1.answer")); err == nil {
+		t.Error("an answer was written for a call nobody is holding")
+	}
+}
+
+// Both directions carry a reason, because only one allow object was ever
+// measured and it had one.
+func TestAnAllowIsTheShapeThatWasMeasured(t *testing.T) {
+	var got struct {
+		Out struct {
+			Dec    string `json:"permissionDecision"`
+			Reason string `json:"permissionDecisionReason"`
+		} `json:"hookSpecificOutput"`
+	}
+	if err := json.Unmarshal([]byte(Decision(Answer{Decision: "allow"})), &got); err != nil {
+		t.Fatalf("not JSON: %v", err)
+	}
+	if got.Out.Dec != "allow" || got.Out.Reason == "" {
+		t.Errorf("allow = %+v; want the shape investigation 0003 validated, which carried a reason", got.Out)
+	}
+}

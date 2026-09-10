@@ -219,12 +219,12 @@ type subagentRow struct {
 	Said    string `json:"said,omitempty"`
 }
 
-// subagents reads what the hook recorded for this session.
-//
-// The rows are server-rendered like everything else on this surface bar the
-// output stream: a sub-agent starting is not a keystroke-latency event, and the
-// page is already reloaded to see one. Nothing here reaches the socket.
 // held is the call this session is holding in front of the owner, if any.
+//
+// Unlike subagents below it, this does reach the socket: it goes with the hello
+// frame and on every tick of it. That is worth saying because this function was
+// inserted directly under subagents' own doc comment, which says the opposite,
+// and for one commit that comment read as this function's.
 //
 // At most one: the gate declines a sub-agent's own tool calls, and the main
 // conversation runs its tools one at a time. If that ever stops being true the
@@ -241,6 +241,11 @@ func (s *Sessions) held(project string) *askRow {
 	return &askRow{ID: a.ID, Tool: a.Tool, Summary: a.Summary, Input: a.Input, At: a.At.Unix()}
 }
 
+// subagents reads what the hook recorded for this session.
+//
+// The rows are server-rendered like everything else on this surface bar the
+// output stream: a sub-agent starting is not a keystroke-latency event, and the
+// page is already reloaded to see one. Nothing here reaches the socket.
 func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 	if s.HookDir == "" || project == "" {
 		return nil, 0
@@ -583,6 +588,12 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	if s.Store != nil {
 		waitingNow = OpenCount(conn, s.Store)
 	}
+	// What the hello says about a held call is also where the ticker starts
+	// comparing from. Without that the tick's idea of "last sent" was empty
+	// while the tab had a call on screen, so a call that cleared before the
+	// first tick changed nothing the tick could see and the pop-up kept
+	// offering it — a test written for the timeout case found this one.
+	helloAsk := s.held(project)
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
 		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
@@ -592,7 +603,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 		// A held call goes with the hello, so a tab that opens or reconnects
 		// while one is waiting sees it rather than waiting for the next tick to
 		// change something.
-		Ask: s.held(project),
+		Ask: helloAsk,
 	}); err != nil {
 		return
 	}
@@ -603,7 +614,11 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	// checked first, so a quiet session costs one stat per tick and no parse.
 	agents := time.NewTicker(AgentsEvery)
 	defer agents.Stop()
-	var lastAgents, lastStamp, lastAsk string
+	var lastAgents, lastStamp string
+	lastAsk := ""
+	if helloAsk != nil {
+		lastAsk = helloAsk.ID
+	}
 
 	// Reset on activity. The timer used to be created once and never touched,
 	// which made it a cap on the connection's age rather than on its idleness:
@@ -649,10 +664,22 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			// raises no sub-agent event, so a tick that returned early on that
 			// stamp would never notice one — which is how the badge came to be
 			// live on one surface out of three (MUS-F-0086).
-			if stamp := session.AskStamp(s.HookDir, project); stamp != lastAsk {
+			// Every tick, not only when the directory changes. A hook the CLI
+			// killed leaves its file behind and changes nothing, so a stamp
+			// that only counts filenames would leave the pop-up saying
+			// "waiting on you" for a process that is gone — and hide the
+			// dialog the CLI drew in its place, which is the fallback the
+			// whole design rests on. The read is one small directory; the
+			// comparison below is what keeps the socket quiet.
+			held := s.held(project)
+			stamp := ""
+			if held != nil {
+				stamp = held.ID
+			}
+			if stamp != lastAsk {
 				lastAsk = stamp
 				f := frame{T: "ask"}
-				if held := s.held(project); held != nil {
+				if held != nil {
 					f.Ask = held
 				} else {
 					f.NoAsk = true
@@ -1067,6 +1094,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
                     background: transparent; color: inherit; cursor: pointer; }
   .dlgbody { margin: .4rem 0 .7rem; opacity: .75; font-size: .88em; }
   .dlgbody:empty { display: none; }
+  /* The whole call, behind a disclosure. Shut, because the summary is the
+     question most of the time and a wall of JSON over the terminal is not; open,
+     because allowing a command you have seen the first 400 characters of is a
+     different decision from the one the agent asked for. */
+  .askmore { margin-top: .4rem; }
+  .askmore summary { cursor: pointer; opacity: .8; }
+  .askraw { margin: .4rem 0 0; max-height: 9rem; overflow: auto;
+            white-space: pre-wrap; word-break: break-word;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: .82em; opacity: .9; }
   .dlgopts { display: flex; flex-direction: column; gap: .35rem; }
   .dlgopts button { font: inherit; text-align: left; padding: .5rem .6rem;
                     border: 1px solid var(--edge); border-radius: .5rem;

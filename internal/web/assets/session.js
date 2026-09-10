@@ -963,6 +963,17 @@
 
     dlgT.textContent = a.tool ? a.tool + " is waiting on you" : "A tool call is waiting on you";
     dlgB.textContent = a.summary || "";
+    // The whole call, where the summary is not the whole call. A command past
+    // the summary's length is shown clipped, and allowing a command you have
+    // only seen the first part of is a different decision from the one the
+    // agent asked for -- so the rest is here, closed, rather than nowhere.
+    if (a.input && a.input !== a.summary) {
+      var more = el("details", "askmore");
+      var sum = el("summary", "", "the whole call");
+      more.appendChild(sum);
+      more.appendChild(el("pre", "askraw", a.input));
+      dlgB.appendChild(more);
+    }
     dlgO.textContent = "";
     dlgO.appendChild(answerButton("allow", "Allow"));
     dlgO.appendChild(answerButton("deny", "Deny"));

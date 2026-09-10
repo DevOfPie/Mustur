@@ -3406,3 +3406,29 @@ What is not built, and is a real refinement rather than an oversight: Mustur cou
 | Default set | Bash, Edit, Write, NotebookEdit |
 | Never | allow or deny without a press; a widened gate; a session in a mode the CLI does not prompt in |
 | Falls back to | the hook's own timeout, and the CLI drawing the dialog it would have drawn |
+
+### MUS-D-0154
+
+**The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer**
+
+decision · 2026-09-10
+
+the rule it extends: MUS-D-0153
+
+the milestone: MUS-D-0152
+
+MUS-D-0153 states the rule as two clauses -- a named tool, and a permission mode where the CLI prompts. The build has four, and a reviewer reading the decision against the code is what turned the other two up. decisions.md is append-only, so this says what shipped rather than editing what was written.
+
+**A call with no tool_use_id is declined.** The identifier is what a file is named after and what a button answers; inventing one would make two calls share a button, and the CLI has supplied one on every payload measured.
+
+**A sub-agent's own tool calls are declined.** The owner is answering for the session, and a sub-agent is a call inside one whose shape the surface does not show. Holding those would put a button in front of work that has no row on the screen yet. This was a scope decision living in a Go comment until now, which is what the reviewer objected to rather than the choice itself.
+
+Two defects the same review found are fixed rather than recorded as their own findings, because neither shipped past this branch. A held call whose hook the CLI killed was never cleared from an open tab -- the tick only looked when the directory changed, and the expiry lived behind that look -- so the pop-up offered a call nobody was holding and covered the dialog the CLI had drawn in its place, which is the fallback the whole design rests on. And pressing on one reported success: the check was that a file existed, and the file was still there. AnswerAsk now refuses a call that waited out its timeout, and the tick reads the directory every time rather than only when a filename changes.
+
+Writing the test for that found a third: the hello frame carried a held call and left the ticker's idea of what it had last sent empty, so a call that cleared before the first tick changed nothing the tick could see.
+
+| Field | Value |
+| --- | --- |
+| Declined as well as MUS-D-0153's two clauses | a call with no tool_use_id; a tool call inside a sub-agent |
+| Fixed in the same branch | a stale held call is cleared within a tick; a press after the timeout is refused and says why; the hello frame seeds what the ticker compares against |
+| Found by | the done-when and shipped-claims reviewers, and by a test written for the first of them |

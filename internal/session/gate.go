@@ -17,11 +17,12 @@ package session
 // would have drawn. The fallback is today's behaviour, which is what makes this
 // safe to ship rather than something that has to be right.
 //
-// The rendezvous is two files rather than a port. The hook is a short-lived
-// process the CLI starts; the surface is a long-lived one holding a socket;
-// they share a directory under the owner's own state and nothing else. No
-// credential is needed for a file, and a hook that had to authenticate to a
-// server would fail in exactly the case the gate exists for.
+// The rendezvous is two files rather than a port. The hook is a process the CLI
+// starts and this package keeps alive while a call is held; the surface is a
+// long-lived one holding a socket; they share a directory under the owner's own
+// state and nothing else. No credential is needed for a file, and a hook that
+// had to authenticate to a server would fail in exactly the case the gate
+// exists for.
 
 import (
 	"context"
@@ -225,10 +226,26 @@ func AnswerAsk(dir, project, id string, ans Answer) error {
 	if ans.Decision != "allow" && ans.Decision != "deny" {
 		return fmt.Errorf("gate: a decision is allow or deny, not %q", ans.Decision)
 	}
-	if _, err := os.Stat(filepath.Join(AskDir(dir, project), id+".json")); err != nil {
+	// Not just "is there a file". A hook the CLI killed at its timeout leaves
+	// one behind, and the dialog is on the pane by then — so a press that
+	// arrives late has to be refused rather than written into a file no process
+	// will ever read. Statting alone shipped, briefly, and said a call had been
+	// answered when nothing was listening.
+	b, err := os.ReadFile(filepath.Join(AskDir(dir, project), id+".json"))
+	if err != nil {
 		return fmt.Errorf("gate: nothing is waiting on %s", id)
 	}
-	b, err := json.Marshal(ans)
+	var held Ask
+	if err := json.Unmarshal(b, &held); err != nil {
+		return fmt.Errorf("gate: nothing is waiting on %s", id)
+	}
+	if ans.At.IsZero() {
+		ans.At = time.Now()
+	}
+	if ans.At.Sub(held.At) > GateTimeout {
+		return fmt.Errorf("gate: %s waited out its timeout, so the session is drawing its own dialog", id)
+	}
+	b, err = json.Marshal(ans)
 	if err != nil {
 		return err
 	}
@@ -281,6 +298,13 @@ func DropAsk(dir, project, id string) {
 // which is the difference between a refusal it can work around and one it
 // cannot see.
 func Decision(a Answer) string {
+	// Both directions carry a reason. The only allow object investigation 0003
+	// validated had a non-empty one, and shipping a variation on the single
+	// shape that was measured is how a hook comes to be ignored in a way
+	// nothing here would notice.
+	if a.Reason == "" {
+		a.Reason = "Allowed from Mustur's session view"
+	}
 	out := map[string]any{
 		"hookSpecificOutput": map[string]any{
 			"hookEventName":            "PreToolUse",

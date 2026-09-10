@@ -2108,3 +2108,108 @@ func TestTheHeldCallSharesThePopUpAndSendsADecision(t *testing.T) {
 		t.Error("the pop-up does not say what happens if the owner does not press")
 	}
 }
+
+// The defect a reviewer found: a held call whose hook was killed stayed on the
+// screen forever, because the tick only looked when the directory changed and
+// the expiry lived behind that look. It also hid the CLI's own dialog, which is
+// the fallback the whole design rests on.
+func TestAHeldCallThatWaitedOutItsTimeoutClearsWithoutAReload(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzWebGateStale"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 60'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	if err := session.RaiseAsk(dir, project, session.Ask{ID: "toolu_stale", Tool: "Bash", At: time.Now()}); err != nil {
+		t.Fatal(err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	type askFrame struct {
+		T     string `json:"t"`
+		NoAsk bool   `json:"noask"`
+		Ask   *struct {
+			ID string `json:"id"`
+		} `json:"ask"`
+	}
+	var f askFrame
+	for f.Ask == nil {
+		_, data, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("the held call never arrived: %v", err)
+		}
+		if err := json.Unmarshal(data, &f); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// The CLI kills the hook at its timeout, so the deferred cleanup never
+	// runs and the file stays exactly as it is. Aged in place, which is what
+	// that looks like from here.
+	if err := session.RaiseAsk(dir, project, session.Ask{
+		ID: "toolu_stale", Tool: "Bash", At: time.Now().Add(-session.GateTimeout - time.Minute),
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	// AgentsEvery is a constant, so this waits out real ticks rather than a
+	// shortened one: a couple of them, not twenty.
+	deadline := time.Now().Add(12 * time.Second)
+	for time.Now().Before(deadline) {
+		_, data, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("the socket closed before the stale call cleared: %v", err)
+		}
+		var g askFrame
+		if err := json.Unmarshal(data, &g); err != nil {
+			t.Fatal(err)
+		}
+		if g.T == "ask" && g.NoAsk {
+			return
+		}
+	}
+	t.Fatal("a held call nobody is holding stayed on the screen, over the dialog the CLI drew in its place")
+}
+
+// The whole call travels and is rendered, because allowing a command you have
+// seen the first 400 characters of is a different decision from the one the
+// agent asked for.
+func TestThePopUpCanShowTheWholeCallAndNotOnlyItsSummary(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(js), "a.input") {
+		t.Error("the client never reads the input it is sent, so a clipped command is all there is")
+	}
+	css, err := os.ReadFile("sessions.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(css), ".askraw") {
+		t.Error("the whole call has no style, so it renders as an unwrapped line over the terminal")
+	}
+}

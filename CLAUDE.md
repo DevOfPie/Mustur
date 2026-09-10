@@ -106,10 +106,21 @@ the mandate could not both be on — measured, not reasoned.
 `mustur account tokens` says which exist; a session refused with 403 on `/mcp`
 is missing one rather than looking at a stopped server.
 
-Nothing below 5c is built; do not describe any of it in the present tense.
+**Milestone 8 is built and not merged**: a tool call in a named set reaches the
+session view because the CLI's own hook told Mustur about it, and the owner's
+press returns a decision the CLI honours rather than a keypress aimed at the
+pane. Nothing is allowed without a press, and an unanswered call times out into
+the dialog the CLI would have drawn, so the pane parser is the fallback rather
+than retired ([MUS-D-0152](records/decisions.md#mus-d-0152),
+[MUS-D-0153](records/decisions.md#mus-d-0153),
+[MUS-D-0154](records/decisions.md#mus-d-0154)). Nothing below milestone 8 is
+built; do not describe any of it in the present tense.
 
-**Every page carries a script now, and two kinds carry a second.** The badge in
-the tab bar is live on every surface since
+**Every page that draws the tab bar carries a script now, and two kinds carry a
+second.** Sign-in and accepting an invitation draw no bar and carry only the
+ceremony script; the page shown when an invitation has already been used carries
+nothing at all. The badge in the tab bar is live on every surface that has one,
+since
 [MUS-Q-0078](records/questions.md#mus-q-0078): a page left open used to show the
 count it was rendered with, and the owner missed a question being raised because
 of it. `bar.js` polls `/questions/count` and writes the badge, and it is the only
@@ -128,9 +139,9 @@ took, never a precedent set by building it: the composer on
 
 **What the rule counts is still open** on
 [MUS-Q-0053](records/questions.md#mus-q-0053), and MUS-Q-0078 moved the numbers
-rather than settling it: the count of pages shipping a `<script>` tag is now all
-of them, and the count that matters — pages that stop working without one — is
-unchanged at two.
+rather than settling it: the count of pages shipping a `<script>` tag is now
+every page that draws the bar, and the count that matters — pages that stop
+working without one — is unchanged at two.
 
 They are not the same kind of exception. The session view cannot be
 server-rendered at all: it is a live terminal, and neither can the passkey

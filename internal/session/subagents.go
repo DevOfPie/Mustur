@@ -379,6 +379,11 @@ func tail(path string, n int64) ([]byte, error) {
 // short-lived processes per tool call in the session — the pair is what lets a
 // row distinguish a sub-agent inside a tool from one between tools, which the
 // first version claimed to do with only the first half.
+//
+// **Short-lived stopped being true of one of them at milestone 8.** The
+// PreToolUse process also carries the gate, so a call the gate holds keeps that
+// process alive until the owner presses or the CLI times it out (MUS-D-0153).
+// Every other call still returns in milliseconds, and PostToolUse always does.
 func HookSettings(exe, dir, project, db string, gate []string) (string, error) {
 	call := fmt.Sprintf("%s session subagent-event --dir %s --project %s",
 		shellQuote(exe), shellQuote(dir), shellQuote(project))

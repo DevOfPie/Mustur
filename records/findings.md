@@ -138,7 +138,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0121](#mus-f-0121) | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
 | [MUS-F-0122](#mus-f-0122) | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |  |
 | [MUS-F-0123](#mus-f-0123) | The captured panes are all one version, and two of them are trials the write-up never names | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
-| [MUS-F-0124](#mus-f-0124) | An agent read a prompt's return value as permission to rewrite a published branch | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards | open on MUS-Q-0095, which asks the question properly |
+| [MUS-F-0124](#mus-f-0124) | An agent read a prompt's return value as permission to rewrite a published branch | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
 
 ---
 
@@ -3281,5 +3281,5 @@ Two things made it possible and only one is about carelessness. The prompt is a 
 | --- | --- |
 | Where | the working practice, not the code |
 | Evidence | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards |
-| Status | open on MUS-Q-0095, which asks the question properly |
+| Status | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
 | What it is not | a records defect. MUS-Q-0094 was answered through Mustur by the owner's own account at 16:56:19Z and is unaffected |
