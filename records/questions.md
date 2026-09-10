@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-94 record(s), by identifier.
+95 record(s), by identifier.
 
 ---
 
@@ -2188,3 +2188,30 @@ MUS-Q-0085 was answered 'change nothing', with a note that further research was 
 | Answer | Hooks on this vendor |
 | Answered | 2026-09-10 16:56 |
 | Delivered | typed into mustur/Milestone_Work |
+
+---
+
+## MUS-Q-0095
+
+**A stacked branch needs its remote rewritten every time its base gains a fix. Is a force push mine to make?**
+
+question · 2026-09-10
+
+what I did instead of asking: [MUS-F-0124](findings.md#mus-f-0124)
+
+workflow.md says rebase, never merge back down. So when a base branch gains a review fix, every branch above it is rebased and its remote no longer fast-forwards. I force-pushed plan/what-is-actually-built once today on a prompt's return value rather than on your word, which is MUS-F-0124 and is the thing this question exists to stop repeating.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing yet: the branch above is unpushed and pushes cleanly. It blocks the next round of review fixes, which is when a base moves again. |
+| Option | Force pushes on my own stacked branches :: Recommended - the contract's own stacking rule implies it :: --force-with-lease on branches I opened and nobody else has touched, never on main and never on a branch you or another session is working. Lease means the push is refused if anything landed on the remote I have not seen, so the failure mode is a refusal rather than a loss. The cost is that a pull request's history changes under a reviewer who was halfway through it, which is the ordinary cost of a stack and the reason GitHub keeps the old commits reachable. |
+| Option | Ask every time :: one question per rebase, and there is one per review round per branch :: You see each rewrite before it happens. On a three-branch stack with two review rounds that is roughly six questions, most of which will be identical, and each one stops the run until you answer it. |
+| Option | No rewrites: merge the base up instead :: the stack stops being linear and the contract changes :: A base's fix reaches the branches above it as a merge commit. Nothing is ever rewritten and no permission is needed. workflow.md says this makes the next rebase unreadable, so choosing it is an amendment to that rule rather than a preference inside it. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Answer | Force pushes on my own stacked branches |
+| Answered | 2026-09-10 17:23 |
+| Delivered | typed into mustur/Milestone_Work |
+| Surfaced | 2026-09-10 17:24 |
