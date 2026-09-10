@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-95 record(s), by identifier.
+98 record(s), by identifier.
 
 ---
 
@@ -2215,3 +2215,96 @@ workflow.md says rebase, never merge back down. So when a base branch gains a re
 | Answered | 2026-09-10 17:23 |
 | Delivered | typed into mustur/Milestone_Work |
 | Surfaced | 2026-09-10 17:24 |
+
+---
+
+## MUS-Q-0096
+
+**How long does a held tool call wait for you before the session takes it back?**
+
+question · 2026-09-10
+
+the milestone it belongs to: [MUS-D-0152](decisions.md#mus-d-0152)
+
+the rule it is part of: [MUS-D-0153](decisions.md#mus-d-0153)
+
+A reviewer found that every number you were priced on when you chose milestone 8 was 20 seconds - the investigation shortened the hook timeout so the fallback could be watched in seconds, and said so. The build ships 300. No record, no prompt and no measurement names 300; it is a number I picked in a code comment that called it a number you feel, which is the argument for it being yours.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing: 300s is shipped on the branch and is a number nobody chose. It blocks the milestone being accepted with an unmeasured number in it. |
+| Option | Five minutes :: Recommended - what shipped, and the middle of the three :: Long enough that a phone in a pocket is reachable, short enough that a Mustur that is down costs five minutes a call rather than ten. What happens at the end of it is not the call failing: the CLI draws the dialog it would have drawn, which also waits for a person, so the timeout decides how long the buttons on your phone own the question rather than whether the work continues. |
+| Option | One minute :: the pane gets it back quickly, and a phone often will not make it :: Best when you are at the terminal, because the structured pop-up gets out of the way fast and the CLI's own dialog - answerable from the key row - takes over. Worst when you are not: a minute is not long enough to notice a notification, open the tab and read what the tool wants to do. It is also the kindest to a Mustur that is down, which is the case nobody plans for: one minute per gated call rather than five. |
+| Option | Ten minutes, the CLI's own default :: the longest the buttons can own it, and the worst when nothing is listening :: Matches what the CLI would do with no timeout set at all, so it is the one number that is not Mustur's invention. The cost is the other side of the same coin: with Mustur down, or the tab closed, every gated call stalls ten minutes before the pane's dialog appears - and if you are attached to the terminal, that is ten minutes of a session looking hung. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Answer | Five minutes |
+| Answered | 2026-09-10 17:44 |
+| Note | The question should always be answered through Mustur for Mustur Sessions. When the timer expires the session can try other work or just idle until the prompt is answered in Mustur |
+| Delivered | typed into mustur/Milestone_Work |
+| Surfaced | 2026-09-10 17:44 |
+
+---
+
+## MUS-Q-0097
+
+**The gate is built and green. Does it go live on your own sessions, and on by default?**
+
+question · 2026-09-10
+
+the rule about deploying: [MUS-Q-0087](#mus-q-0087)
+
+what the gate holds: [MUS-D-0153](decisions.md#mus-d-0153)
+
+how long it waits: [MUS-D-0155](decisions.md#mus-d-0155)
+
+MUS-Q-0087 says a green change deploys itself without asking, and this one is green. It is also the first change that alters what your own agents do rather than what a page shows: with the default set on, every Bash, Edit, Write and NotebookEdit call in a session started from the surface waits for your press, for up to five minutes, before the CLI draws its own dialog. That is the milestone working as designed and it is still a different thing from a fix going live, which is why it is a question rather than a deploy.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Deploying milestone 8. Nothing else: the branch is green and the service is running the code it was running this morning. |
+| Option | Live, gate on :: Recommended - the milestone as built, on your machine, where it can actually be judged :: mustur serve keeps its default set. The next session you start from the surface holds its first Bash call and waits for you. If the pop-up turns out to be unusable on a phone -- which no test here can tell you and which is the one thing left to find out -- the cost is five minutes of an agent waiting, then the dialog it would have drawn anyway, answerable from the key row as it is today. A deploy no longer ends running sessions (MUS-D-0151), so this costs nothing that is already in flight. |
+| Option | Live, gate off :: the fixes ship, the gate waits :: mustur serve --gate none. Everything else on the branch goes live and sessions behave exactly as they do this morning. It is the honest choice if you would rather look at the pop-up in a browser before it stands between you and an agent, and the flag is one word to remove later. What it costs is that the milestone sits built and unexercised, which is how 2b and 3 have sat since August. |
+| Option | Not yet :: nothing is deployed until the stack merges :: The service keeps running this morning's binary. Cheapest and slowest: the branch is reviewed, fixed and measured, and none of that is on the machine you actually use. It also means the next thing deployed carries four topics at once rather than one. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Answer | Live, gate on |
+| Answered | 2026-09-10 17:59 |
+| Delivered | typed into mustur/Milestone_Work |
+| Surfaced | 2026-09-10 17:59 |
+
+---
+
+## MUS-Q-0098
+
+**The prompt and the answer cannot both use the pane. Which one gives way?**
+
+question · 2026-09-10
+
+what a delivery into a dialog actually does: [MUS-F-0125](findings.md#mus-f-0125)
+
+the first sighting: [MUS-F-0105](findings.md#mus-f-0105)
+
+the prompt returning what nobody chose: [MUS-F-0074](findings.md#mus-f-0074)
+
+Four answers today were recorded as delivered into this session and none arrived, because each was answered while this session had an AskUserQuestion prompt on screen and a paste into a dialog goes into the dialog (MUS-F-0125). The prompt exists to point you at the Mustur question; while it is up, the answer to that question cannot land. Delivery now refuses rather than pressing whatever the dialog had selected, which stops the harm and does not stop the collision.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Every question raised from a Mustur-owned session, which is most of them. |
+| Option | Mustur is the prompt, in its own sessions :: Recommended - stop putting the question in an AskUserQuestion prompt when the session is one Mustur started :: The question goes to the queue, the badge goes live on every surface, the pane stays clear, and the answer lands the moment you give it. It also retires the channel that has twice returned an option nobody chose (MUS-F-0074), because there is no longer a prompt to return anything. What it costs is real: the prompt is what makes a question findable on the device you are holding, and a badge on a page you are not looking at is not the same thing. It also reads as an amendment to the rule at the bottom of CLAUDE.md, which says every decision goes in a prompt -- so it is your sentence to change, not mine. |
+| Option | Keep the prompt, and poll for the answer :: the agent stops relying on delivery and reads the queue itself :: Both channels stay. The agent raises the question, shows the prompt, ignores what the prompt returns, and asks Mustur every few seconds whether the question has been answered. It is the only option that keeps the prompt's findability and does not depend on the pane being clear. The cost is that every raising session is polling a local server on a loop, and that the prompt on the screen is then furniture -- it says a question exists and cannot answer it, which is a thing to explain to whoever reads the screen next. |
+| Option | Keep both, deliver later :: Mustur holds the answer and types it in when the dialog clears :: The queue keeps what it could not deliver and retries once the pane is clear, so nothing is lost and nothing is polled. It is the most machinery of the three and the least honest about time: an answer arrives whenever the screen happens to be free, which may be after the agent has moved on and acted without it -- and an agent acting without an answer it was owed is the failure this whole mechanism exists to prevent. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Surfaced | 2026-09-10 18:13 |
+| How it was surfaced | deliberately not in an AskUserQuestion prompt. A prompt on this session's pane is what stopped the last four answers arriving, so raising one for this question would block its own answer (MUS-F-0125). It was put in front of the owner in the terminal instead, and this line is here because the contract says a conflict is a bug to name rather than a choice to make silently. |
+| Answer | Mustur is the prompt, in its own sessions |
+| Answered | 2026-09-10 18:18 |
+| Delivered | typed into mustur/Milestone_Work |

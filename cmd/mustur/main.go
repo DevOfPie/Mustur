@@ -600,6 +600,11 @@ func cmdServe(args []string) error {
 	// page is not a shell behind Access (MUS-D-0146).
 	sessionCmds := &values{}
 	fs.Var(sessionCmds, "session-cmd", "a command the session surface may start, repeatable")
+	// Which tool calls a session started from here holds in front of the owner
+	// rather than letting the CLI draw its own dialog for (MUS-D-0153). The
+	// empty string is a session that gates nothing, which is the opt-out the
+	// decision promises; unset is the default set.
+	gate := fs.String("gate", "", "tools a started session holds in front of the owner; empty for the default set, \"none\" for no gate")
 	// The site as a browser sees it. A passkey is bound to it, which is what
 	// makes one unphishable — and what makes a wrong value fail silently, by
 	// making every registered passkey unusable rather than by erroring.
@@ -667,7 +672,7 @@ func cmdServe(args []string) error {
 	// told which store to report the CLI's conversation identifier to. The path
 	// is passed rather than defaulted, because a server told to use another
 	// store would otherwise have its hooks write to the machine's usual one.
-	adapter := &session.Adapter{HookDir: hookDir, DB: *db, Remember: s}
+	adapter := &session.Adapter{HookDir: hookDir, DB: *db, Remember: s, Gate: gateFlag(*gate)}
 	hub := &session.Hub{Adapter: adapter}
 	// Readers hold a fifo and a tmux pipe-pane each; without this a server that
 	// goes down leaves both behind, with tmux still writing into a pipe nobody

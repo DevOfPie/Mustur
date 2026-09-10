@@ -557,13 +557,19 @@
       // Sent with every hello and every screen, so its absence on one of those
       // means there is no prompt rather than that nothing was said.
       if (f.t === "hello" || f.t === "screen") {
-        drawPrompt(f.prompt || null);
+        panePrompt = f.prompt || null;
+        refreshDialog();
         // Sent with the same frames as the prompt, so its absence on one of
         // them means the turn ended rather than that nothing was said.
         doingNow = f.activity || null;
         showFoot();
       }
       if (f.t === "hello") {
+        // A call the CLI is holding goes with the hello, so a tab that opens
+        // or reconnects while one is waiting is shown it rather than waiting
+        // for the next tick to change something.
+        held = f.ask || null;
+        refreshDialog();
         // The first frame carries the screen as it stands, so a reconnect
         // paints immediately rather than waiting for the session to move.
         if (typeof f.screen === "string") paint(f.screen);
@@ -594,6 +600,12 @@
           grow();
           showKept();
         }
+      } else if (f.t === "ask") {
+        // A tool call the CLI is holding while the owner decides. Unlike the
+        // prompt beside it, this was not read off the screen: the hook was told
+        // the tool and its input, and told the server.
+        held = f.ask || null;
+        refreshDialog();
       } else if (f.t === "agents") {
         agents = f.agents || [];
         drawAgents();
@@ -791,6 +803,11 @@
   var dlgK = document.getElementById("dlgk");
   var dlgMin = document.getElementById("dlgmin");
   var lastPrompt = null;
+  // The two things that can be in the pop-up, kept apart. A held tool call is
+  // the owner's to answer and wins; the pane's own prompt is what is drawn when
+  // there is no call waiting, and it is still there when the call clears.
+  var panePrompt = null;
+  var held = null;
   // The prompt as last drawn, so a click knows where the cursor is without
   // keeping a second copy of it.
   var lastDrawn = null;
@@ -919,6 +936,78 @@
     else showPrompt();
   }
 
+  // A tool call the CLI is holding, drawn in the same pop-up the pane's own
+  // prompts use.
+  //
+  // The same box on purpose: there is one place a session asks the owner for
+  // something, and it is already the one that can be minimised out of the way
+  // of the terminal (MUS-D-0144). What is different is where the words came
+  // from -- the hook was told the tool and its input by the CLI, so nothing
+  // here was read off a screen -- and what the buttons do. They send a decision
+  // the CLI reads back, not a keypress aimed at the pane.
+  function drawHeld(a) {
+    if (!dlg) {
+      if (!toldStale) {
+        toldStale = true;
+        note("this tab is older than the server: reload it to see held calls");
+      }
+      return;
+    }
+    var sig = "ask:" + a.id;
+    if (sig === lastPrompt) return;
+    var wasMinimised = minimised && lastPrompt !== "";
+    lastPrompt = sig;
+    // Not a pane prompt, so nothing in the click path should walk a cursor
+    // through it.
+    lastDrawn = null;
+
+    dlgT.textContent = a.tool ? a.tool + " is waiting on you" : "A tool call is waiting on you";
+    dlgB.textContent = a.summary || "";
+    // The whole call, where the summary is not the whole call. A command past
+    // the summary's length is shown clipped, and allowing a command you have
+    // only seen the first part of is a different decision from the one the
+    // agent asked for -- so the rest is here, closed, rather than nowhere.
+    if (a.input && a.input !== a.summary) {
+      var more = el("details", "askmore");
+      var sum = el("summary", "", "the whole call");
+      more.appendChild(sum);
+      more.appendChild(el("pre", "askraw", a.input));
+      dlgB.appendChild(more);
+    }
+    dlgO.textContent = "";
+    dlgO.appendChild(answerButton("allow", "Allow"));
+    dlgO.appendChild(answerButton("deny", "Deny"));
+    dlgK.textContent = "";
+    // What happens if nobody presses, said rather than left to be discovered.
+    dlgK.appendChild(el("span", "hintkey", "no answer \u00b7 the session draws its own dialog"));
+
+    if (wasMinimised) hidePrompt(dlgT.textContent);
+    else showPrompt();
+  }
+
+  function answerButton(decision, label) {
+    var b = el("button", decision === "allow" ? "on" : "", label);
+    b.type = "button";
+    b.setAttribute("data-answer", decision);
+    return b;
+  }
+
+  // What the pop-up should be showing. A held call wins: the pane's prompt can
+  // wait, and a tool call cannot -- it has a timeout running.
+  function refreshDialog() {
+    if (held) drawHeld(held);
+    else drawPrompt(panePrompt);
+  }
+
+  function sendAnswer(id, decision) {
+    if (!ws || ws.readyState !== 1) {
+      note("not sent: still reconnecting.");
+      return;
+    }
+    if (closed) return;
+    ws.send(JSON.stringify({ t: "answer", id: id, decision: decision }));
+  }
+
   if (dlgMin) {
     dlgMin.addEventListener("click", function () {
       hidePrompt(dlgT ? dlgT.textContent : "");
@@ -994,6 +1083,14 @@
     if (!box) return;
     box.addEventListener("click", function (e) {
       if (!e.target.closest) return;
+      // The held call's two buttons. Checked first because they are not keys
+      // and must never fall through to a path that presses one.
+      var ans = e.target.closest("button[data-answer]");
+      if (ans) {
+        e.stopPropagation();
+        if (held) sendAnswer(held.id, ans.getAttribute("data-answer"));
+        return;
+      }
       // A key on the row — the cycler's arrows — is that key and not a move.
       var k = e.target.closest("button[data-key]");
       if (k) {

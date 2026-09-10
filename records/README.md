@@ -9,11 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 95 | [questions.md](questions.md) |
-| decision | 153 | [decisions.md](decisions.md) |
-| finding | 129 | [findings.md](findings.md) |
+| question | 98 | [questions.md](questions.md) |
+| decision | 156 | [decisions.md](decisions.md) |
+| finding | 130 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 22 | [work-units/index.md](work-units/index.md) |
+| work-unit | 23 | [work-units/index.md](work-units/index.md) |
 | investigation | 3 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -59,6 +59,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020) | work-unit | Accounts of Mustur's own |
 | [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
 | [MUS-W-0022](work-units/MUS-W-0022.md#mus-w-0022) | work-unit | A CLI's prompt, read off the pane and offered as controls |
+| [MUS-W-0023](work-units/MUS-W-0023.md#mus-w-0023) | work-unit | The gate, and what it was measured against |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -154,6 +155,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0093](questions.md#mus-q-0093) | question | Records only does not align with the note, in two places: Plan.md carries milestone rows Mustur handles, and three trackers have no kind at all |
 | [MUS-Q-0094](questions.md#mus-q-0094) | question | Investigation 0003 came back a pass. Does the session channel become milestone 8, and in which shape? |
 | [MUS-Q-0095](questions.md#mus-q-0095) | question | A stacked branch needs its remote rewritten every time its base gains a fix. Is a force push mine to make? |
+| [MUS-Q-0096](questions.md#mus-q-0096) | question | How long does a held tool call wait for you before the session takes it back? |
+| [MUS-Q-0097](questions.md#mus-q-0097) | question | The gate is built and green. Does it go live on your own sessions, and on by default? |
+| [MUS-Q-0098](questions.md#mus-q-0098) | question | The prompt and the answer cannot both use the pane. Which one gives way? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -307,6 +311,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0151](decisions.md#mus-d-0151) | decision | The tmux server is spawned in a scope of its own, so a deploy stops ending every session |
 | [MUS-D-0152](decisions.md#mus-d-0152) | decision | The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary |
 | [MUS-D-0153](decisions.md#mus-d-0153) | decision | Mustur gates the tools it names, and never allows what the CLI would have asked about |
+| [MUS-D-0154](decisions.md#mus-d-0154) | decision | The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer |
+| [MUS-D-0155](decisions.md#mus-d-0155) | decision | A held call waits five minutes, and when it stops being held the question is still Mustur's to answer |
+| [MUS-D-0156](decisions.md#mus-d-0156) | decision | In a session Mustur started, Mustur is the prompt |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -431,6 +438,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0122](findings.md#mus-f-0122) | finding | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had |
 | [MUS-F-0123](findings.md#mus-f-0123) | finding | The captured panes are all one version, and two of them are trials the write-up never names |
 | [MUS-F-0124](findings.md#mus-f-0124) | finding | An agent read a prompt's return value as permission to rewrite a published branch |
+| [MUS-F-0125](findings.md#mus-f-0125) | finding | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

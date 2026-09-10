@@ -219,6 +219,28 @@ type subagentRow struct {
 	Said    string `json:"said,omitempty"`
 }
 
+// held is the call this session is holding in front of the owner, if any.
+//
+// Unlike subagents below it, this does reach the socket: it goes with the hello
+// frame and on every tick of it. That is worth saying because this function was
+// inserted directly under subagents' own doc comment, which says the opposite,
+// and for one commit that comment read as this function's.
+//
+// At most one: the gate declines a sub-agent's own tool calls, and the main
+// conversation runs its tools one at a time. If that ever stops being true the
+// oldest is the one shown, because it is the one whose timeout runs out first.
+func (s *Sessions) held(project string) *askRow {
+	if s.HookDir == "" || project == "" {
+		return nil
+	}
+	waiting, err := session.Asks(s.HookDir, project, s.now())
+	if err != nil || len(waiting) == 0 {
+		return nil
+	}
+	a := waiting[0]
+	return &askRow{ID: a.ID, Tool: a.Tool, Summary: a.Summary, Input: a.Input, At: a.At.Unix()}
+}
+
 // subagents reads what the hook recorded for this session.
 //
 // The rows are server-rendered like everything else on this surface bar the
@@ -451,6 +473,31 @@ type frame struct {
 	// Activity is what the CLI says it is doing, sent with every screen so its
 	// absence on one means nothing is running (MUS-F-0098).
 	Activity *session.Activity `json:"activity,omitempty"`
+	// Ask is a tool call the CLI is holding while the owner decides, which is
+	// the whole of milestone 8. Unlike Prompt it was not read off the screen:
+	// the hook was told the tool and its input and told Mustur, so this row is
+	// what the CLI said rather than what a parser made of what it drew.
+	Ask *askRow `json:"ask,omitempty"`
+	// NoAsk clears one. A held call that was answered, or that timed out into
+	// the CLI's own dialog, has to be able to say so — and a nil Ask with
+	// omitempty is indistinguishable from a frame about something else.
+	NoAsk bool `json:"noask,omitempty"`
+	// ID and Decision go up: which held call, and what was pressed.
+	ID       string `json:"id,omitempty"`
+	Decision string `json:"decision,omitempty"`
+}
+
+// An askRow is a held tool call, ready to render.
+//
+// The input is carried whole as well as summarised, because the owner is being
+// asked to allow something and a truncated command is a different question from
+// the one the agent asked.
+type askRow struct {
+	ID      string `json:"id"`
+	Tool    string `json:"tool"`
+	Summary string `json:"summary"`
+	Input   string `json:"input,omitempty"`
+	At      int64  `json:"at"`
 }
 
 // A statusRow is the CLI's status line, ready to render.
@@ -541,12 +588,22 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	if s.Store != nil {
 		waitingNow = OpenCount(conn, s.Store)
 	}
+	// What the hello says about a held call is also where the ticker starts
+	// comparing from. Without that the tick's idea of "last sent" was empty
+	// while the tab had a call on screen, so a call that cleared before the
+	// first tick changed nothing the tick could see and the pop-up kept
+	// offering it — a test written for the timeout case found this one.
+	helloAsk := s.held(project)
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
 		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
 		Prompt:   now.Prompt,
 		Activity: now.Activity,
 		Waiting:  waitingIf(s.Store != nil, &waitingNow),
+		// A held call goes with the hello, so a tab that opens or reconnects
+		// while one is waiting sees it rather than waiting for the next tick to
+		// change something.
+		Ask: helloAsk,
 	}); err != nil {
 		return
 	}
@@ -558,6 +615,10 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	agents := time.NewTicker(AgentsEvery)
 	defer agents.Stop()
 	var lastAgents, lastStamp string
+	lastAsk := ""
+	if helloAsk != nil {
+		lastAsk = helloAsk.ID
+	}
 
 	// Reset on activity. The timer used to be created once and never touched,
 	// which made it a cap on the connection's age rather than on its idleness:
@@ -599,6 +660,34 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		case <-agents.C:
+			// The gate, first and outside the short-circuit below. A held call
+			// raises no sub-agent event, so a tick that returned early on that
+			// stamp would never notice one — which is how the badge came to be
+			// live on one surface out of three (MUS-F-0086).
+			// Every tick, not only when the directory changes. A hook the CLI
+			// killed leaves its file behind and changes nothing, so a stamp
+			// that only counts filenames would leave the pop-up saying
+			// "waiting on you" for a process that is gone — and hide the
+			// dialog the CLI drew in its place, which is the fallback the
+			// whole design rests on. The read is one small directory; the
+			// comparison below is what keeps the socket quiet.
+			held := s.held(project)
+			stamp := ""
+			if held != nil {
+				stamp = held.ID
+			}
+			if stamp != lastAsk {
+				lastAsk = stamp
+				f := frame{T: "ask"}
+				if held != nil {
+					f.Ask = held
+				} else {
+					f.NoAsk = true
+				}
+				if err := send(f); err != nil {
+					return
+				}
+			}
 			// The agent's state used to be captured here, on its own timer.
 			// The poller already has the pane in hand and reads it out of the
 			// same text, so this tick is back to being only about sub-agents.
@@ -686,6 +775,35 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 		}
 		var f frame
 		if err := json.Unmarshal(data, &f); err != nil {
+			continue
+		}
+		if f.T == "answer" {
+			// The gate's own frame: which held call, and what was pressed. It
+			// is not a keypress and not text — nothing is sent to the pane at
+			// all. The hook is holding the tool call and reads the answer from
+			// the file this writes (MUS-D-0153).
+			if now := s.now(); now.Sub(lastKey) < KeysEvery {
+				_ = say(frame{T: "error", Error: "sent too quickly; that one was not delivered"})
+				continue
+			} else {
+				lastKey = now
+			}
+			id, decision := strings.TrimSpace(f.ID), strings.TrimSpace(f.Decision)
+			err := session.AnswerAsk(s.HookDir, project, id, session.Answer{
+				Decision: decision,
+				Reason:   answerReason(decision, actor),
+				At:       s.now(),
+			})
+			if err != nil {
+				// The common case is a call that timed out while the owner was
+				// deciding: the hook is gone, the CLI has drawn its own dialog,
+				// and the terminal underneath is where the answer goes now.
+				_ = say(frame{T: "error", Error: "that call is no longer waiting: " + err.Error()})
+				_ = say(frame{T: "ask", NoAsk: true})
+				continue
+			}
+			_ = say(frame{T: "ask", NoAsk: true})
+			resetIdle(idle, IdleTimeout)
 			continue
 		}
 		if f.T != "input" && f.T != "key" {
@@ -976,6 +1094,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
                     background: transparent; color: inherit; cursor: pointer; }
   .dlgbody { margin: .4rem 0 .7rem; opacity: .75; font-size: .88em; }
   .dlgbody:empty { display: none; }
+  /* The whole call, behind a disclosure. Shut, because the summary is the
+     question most of the time and a wall of JSON over the terminal is not; open,
+     because allowing a command you have seen the first 400 characters of is a
+     different decision from the one the agent asked for. */
+  .askmore { margin-top: .4rem; }
+  .askmore summary { cursor: pointer; opacity: .8; }
+  .askraw { margin: .4rem 0 0; max-height: 9rem; overflow: auto;
+            white-space: pre-wrap; word-break: break-word;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: .82em; opacity: .9; }
   .dlgopts { display: flex; flex-direction: column; gap: .35rem; }
   .dlgopts button { font: inherit; text-align: left; padding: .5rem .6rem;
                     border: 1px solid var(--edge); border-radius: .5rem;
@@ -1441,3 +1569,18 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 </body>
 </html>
 `))
+
+// answerReason is what the agent is told when a call is refused.
+//
+// A denial reaches the agent verbatim — investigation 0003 watched the words
+// come back inside the tool result — so it says who refused it and where. An
+// allowed call is told nothing, because there is nothing to explain.
+func answerReason(decision, actor string) string {
+	if decision != "deny" {
+		return ""
+	}
+	if actor == "" {
+		return "Refused from Mustur's session view"
+	}
+	return "Refused by " + actor + " from Mustur's session view"
+}

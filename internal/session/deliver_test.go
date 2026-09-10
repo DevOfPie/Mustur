@@ -13,7 +13,14 @@ type sender struct {
 	sendErr error
 	sent    string
 	project string
+	// dialog is what the pane is showing. Empty is the ordinary case; a
+	// non-empty one is the case MUS-F-0125 measured, where a paste and its
+	// Enter operate the dialog instead of reaching the agent.
+	dialog    string
+	dialogErr error
 }
+
+func (s *sender) Dialog(context.Context, string) (string, error) { return s.dialog, s.dialogErr }
 
 func (s *sender) Alive(context.Context, string) (bool, error) { return s.live, s.liveErr }
 
@@ -99,5 +106,35 @@ func TestARelayedAnswerDoesNotArriveWearingTheOwnersName(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("relayed text is missing %q: %q", want, got)
 		}
+	}
+}
+
+// A dialog on the screen eats the paste and is pressed by the Enter behind it,
+// so nothing is sent at all. Measured against the real CLI on 2026-09-10: the
+// answer was nowhere on the pane afterwards and the model picker had been
+// pressed.
+func TestNothingIsDeliveredIntoADialog(t *testing.T) {
+	s := &sender{live: true, dialog: "Select model"}
+	got := Deliver(context.Background(), s, "Mustur", "MUS-Q-0001", "Split it.")
+
+	if s.sent != "" {
+		t.Fatalf("typed %q into a pane showing a dialog", s.sent)
+	}
+	for _, want := range []string{"not delivered", "Select model", "in the queue"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("record says %q, want it to mention %q", got, want)
+		}
+	}
+}
+
+// A screen that cannot be read is not a dialog. Refusing on a failed read would
+// make an unreadable pane and a dialog the same thing, and the common case is
+// that there is no dialog at all.
+func TestAnUnreadablePaneIsDeliveredInto(t *testing.T) {
+	s := &sender{live: true, dialogErr: fmt.Errorf("no server running")}
+	got := Deliver(context.Background(), s, "Mustur", "MUS-Q-0001", "Split it.")
+
+	if s.sent == "" {
+		t.Fatalf("nothing was delivered because the pane could not be read: %q", got)
 	}
 }

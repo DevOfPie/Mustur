@@ -178,7 +178,7 @@ func TestResume(t *testing.T) {
 // The conversation identifier is offered in a hook payload and nowhere else, so
 // the hook has to ask for it.
 func TestTheHookAsksForTheConversationIdentifier(t *testing.T) {
-	settings, err := HookSettings("/usr/bin/mustur", "/state", "Mustur", "/var/mustur.db")
+	settings, err := HookSettings("/usr/bin/mustur", "/state", "Mustur", "/var/mustur.db", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,7 +196,7 @@ func TestTheHookAsksForTheConversationIdentifier(t *testing.T) {
 }
 
 func TestTheHookLeavesTheStorePathOutWhenThereIsNone(t *testing.T) {
-	settings, err := HookSettings("/usr/bin/mustur", "/state", "Mustur", "")
+	settings, err := HookSettings("/usr/bin/mustur", "/state", "Mustur", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

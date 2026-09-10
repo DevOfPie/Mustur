@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-153 record(s), by identifier.
+156 record(s), by identifier.
 
 ## Index
 
@@ -165,6 +165,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0151](#mus-d-0151) | The tmux server is spawned in a scope of its own, so a deploy stops ending every session | 2026-09-08 |
 | [MUS-D-0152](#mus-d-0152) | The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary | 2026-09-10 |
 | [MUS-D-0153](#mus-d-0153) | Mustur gates the tools it names, and never allows what the CLI would have asked about | 2026-09-10 |
+| [MUS-D-0154](#mus-d-0154) | The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer | 2026-09-10 |
+| [MUS-D-0155](#mus-d-0155) | A held call waits five minutes, and when it stops being held the question is still Mustur's to answer | 2026-09-10 |
+| [MUS-D-0156](#mus-d-0156) | In a session Mustur started, Mustur is the prompt | 2026-09-10 |
 
 ---
 
@@ -2889,3 +2892,95 @@ What is not built, and is a real refinement rather than an oversight: Mustur cou
 | Default set | Bash, Edit, Write, NotebookEdit |
 | Never | allow or deny without a press; a widened gate; a session in a mode the CLI does not prompt in |
 | Falls back to | the hook's own timeout, and the CLI drawing the dialog it would have drawn |
+
+---
+
+## MUS-D-0154
+
+**The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer**
+
+decision · 2026-09-10
+
+the rule it extends: [MUS-D-0153](#mus-d-0153)
+
+the milestone: [MUS-D-0152](#mus-d-0152)
+
+MUS-D-0153 states the rule as two clauses -- a named tool, and a permission mode where the CLI prompts. The build has four, and a reviewer reading the decision against the code is what turned the other two up. decisions.md is append-only, so this says what shipped rather than editing what was written.
+
+**A call with no tool_use_id is declined.** The identifier is what a file is named after and what a button answers; inventing one would make two calls share a button, and the CLI has supplied one on every payload measured.
+
+**A sub-agent's own tool calls are declined.** The owner is answering for the session, and a sub-agent is a call inside one whose shape the surface does not show. Holding those would put a button in front of work that has no row on the screen yet. This was a scope decision living in a Go comment until now, which is what the reviewer objected to rather than the choice itself.
+
+Two defects the same review found are fixed rather than recorded as their own findings, because neither shipped past this branch. A held call whose hook the CLI killed was never cleared from an open tab -- the tick only looked when the directory changed, and the expiry lived behind that look -- so the pop-up offered a call nobody was holding and covered the dialog the CLI had drawn in its place, which is the fallback the whole design rests on. And pressing on one reported success: the check was that a file existed, and the file was still there. AnswerAsk now refuses a call that waited out its timeout, and the tick reads the directory every time rather than only when a filename changes.
+
+Writing the test for that found a third: the hello frame carried a held call and left the ticker's idea of what it had last sent empty, so a call that cleared before the first tick changed nothing the tick could see.
+
+| Field | Value |
+| --- | --- |
+| Declined as well as MUS-D-0153's two clauses | a call with no tool_use_id; a tool call inside a sub-agent |
+| Fixed in the same branch | a stale held call is cleared within a tick; a press after the timeout is refused and says why; the hello frame seeds what the ticker compares against |
+| Found by | the done-when and shipped-claims reviewers, and by a test written for the first of them |
+
+---
+
+## MUS-D-0155
+
+**A held call waits five minutes, and when it stops being held the question is still Mustur's to answer**
+
+decision · 2026-09-10
+
+answers: [MUS-Q-0096](questions.md#mus-q-0096)
+
+the rule it belongs to: [MUS-D-0153](#mus-d-0153)
+
+the pop-up it hands over to: [MUS-D-0144](#mus-d-0144)
+
+MUS-Q-0096 asked how long a held tool call waits before the session takes it back. The owner chose five minutes, which is what shipped -- but it shipped as a number nobody had chosen, in a code comment calling it a number the owner feels, and a reviewer was right that this made it theirs rather than mine. It is now a number with a record.
+
+The answer carried a note that says more than the number does: **the question should always be answered through Mustur for Mustur's own sessions**, and when the timer expires the session can try other work or idle until it is answered there.
+
+That is already what happens, and it is worth writing down because it is not obvious from either half on its own. When the hook times out the CLI draws the dialog it would have drawn, and that dialog is on the pane -- which the surface already reads and offers as the same pop-up, answered by a keypress (MUS-D-0142, MUS-D-0144). So the question does not leave Mustur when the gate lets go of it; it changes channel, from a decision the CLI honours to a key sent to the terminal. The pop-up hands over rather than disappearing, and the client draws the pane's prompt the moment the held call clears.
+
+What Mustur does not do, and the note does not ask for, is make the session do something else in the meantime. What an agent does while it waits on its own dialog is the CLI's business.
+
+The number is a constant rather than a flag, deliberately: --gate already says which calls are held, and a second knob for how long each one waits is a setting nobody has asked for twice.
+
+| Field | Value |
+| --- | --- |
+| Answer | five minutes, chosen on MUS-Q-0096 after shipping unchosen |
+| After it expires | the CLI draws its own dialog, the pane parser reads it, and the same pop-up offers it as a keypress |
+| Not built | anything that makes the session do other work while it waits; that is the CLI's |
+
+---
+
+## MUS-D-0156
+
+**In a session Mustur started, Mustur is the prompt**
+
+decision · 2026-09-10
+
+answers: [MUS-Q-0098](questions.md#mus-q-0098)
+
+what a delivery into a dialog does: [MUS-F-0125](findings.md#mus-f-0125)
+
+the channel it retires here: [MUS-F-0074](findings.md#mus-f-0074)
+
+MUS-Q-0098 asked which of two channels gives way, after four answers in one day were recorded as delivered into this session and none arrived. The owner chose the first option: in a session Mustur started, Mustur is the prompt.
+
+The reason is mechanical rather than aesthetic. An answer reaches the raising session by being typed into its pane. A pane showing a dialog reads the paste as input to the dialog and the Enter behind it as a press (MUS-F-0125). An AskUserQuestion prompt is a dialog. So a prompt raised to point the owner at the queue is exactly the thing that stops the queue's answer landing -- and the two failures are silent in opposite directions, because the prompt returns its first option whether or not anybody touched it (MUS-F-0074) and delivery reported success whether or not anybody saw it.
+
+**So raising the question is showing it.** mustur ask --in <a live Mustur session> now records the question as surfaced by the raising, and says so instead of telling the caller to go and put it in a prompt. The queue holds it, the badge that counts it is live on every surface (MUS-D-0145), and the pane stays clear for the answer.
+
+**Outside a session Mustur started, nothing changes.** There is no pane to deliver into and no session watching the badge, so a prompt is still owed and mustur surfaced still records that it happened. That is most questions raised from a terminal somebody is sitting at.
+
+What this costs, stated because the option said it and the owner took it anyway: a prompt is what makes a question findable on whatever device the owner is holding, and a badge on a page they are not looking at is not the same thing. The bet is that a question that arrives late is better than an answer that never arrives at all.
+
+What it retires, quietly and worth naming: the channel that has twice returned an option nobody chose. In a Mustur session there is no longer a prompt to return anything, so MUS-F-0074's failure has nowhere left to happen.
+
+The gate is unchanged in what it enforces. --needed still blocks on being answered rather than on being asked, and a question raised outside a Mustur session and never prompted still fails make check.
+
+| Field | Value |
+| --- | --- |
+| Changed | mustur ask --in a live Mustur session marks the question surfaced by the raising; CLAUDE.md's mandate and workflow.md's trigger say so |
+| Unchanged | a question raised outside such a session still owes an AskUserQuestion prompt and mustur surfaced; --needed still blocks on the answer |
+| Why | a prompt is a dialog, and an answer delivered into a pane showing one is eaten by it |
