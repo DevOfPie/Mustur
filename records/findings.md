@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-122 record(s), by identifier.
+128 record(s), by identifier.
 
 ## The queue
 
@@ -132,6 +132,12 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0115](#mus-f-0115) | A restored session shows a blank terminal with no sign that it is still loading |  |  |
 | [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong |  | unreviewed |
 | [MUS-F-0117](#mus-f-0117) | Two sessions started from the surface share one working tree, and nothing says so |  |  |
+| [MUS-F-0118](#mus-f-0118) | Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. | not yet reviewed |
+| [MUS-F-0119](#mus-f-0119) | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. | not yet reviewed |
+| [MUS-F-0120](#mus-f-0120) | PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog | Investigation 0003, trials 0 and 1 on Claude Code 2.1.263. A PermissionRequest hook received a full payload and returned the documented object -- hookSpecificOutput with hookEventName PermissionRequest and decision allow -- and the pane drew 'Do you want to proceed?' anyway and was still drawing it minutes later. Retried with the exact key names the documentation quotes, including permissionDecisionReason on the deny path. Same result. PreToolUse with permissionDecision allow suppressed the dialog on the first attempt and on all seven firings after: trials 2, 11 through 15 on 2.1.263 and trial 26 on 2.1.266. Payloads and panes in docs/investigations/0003-harness/captured/. |  |
+| [MUS-F-0121](#mus-f-0121) | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
+| [MUS-F-0122](#mus-f-0122) | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |  |
+| [MUS-F-0123](#mus-f-0123) | The captured panes are all one version, and two of them are trials the write-up never names | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
 
 ---
 
@@ -2996,6 +3002,8 @@ The asymmetry worth naming: ACP costs the terminal on Claude, because claude-age
 
 finding · 2026-09-08
 
+corrected by: [MUS-F-0120](#mus-f-0120)
+
 MUS-F-0084 looked at the extension and found the structured channel behind --print. It is not the only one. The CLI publishes a second structured channel that works in an ordinary interactive terminal, and Mustur is already using a corner of it: MUS-D-0087 installs SubagentStart and SubagentStop through --settings on the command line Start builds.
 
 The corner is small and the channel is not. A PermissionRequest hook fires exactly when the CLI is about to draw a permission dialog, receives the tool and its input as JSON, and returns allow, deny or ask. With a timeout measured in minutes -- 600 seconds by default and unbounded with async -- that hook can hand the request to Mustur's surface, wait for the owner, and answer. The dialog is never read off a screen because it is never drawn. If nobody answers in time the CLI draws it as it does today, which makes the fallback the thing already built rather than a failure.
@@ -3091,3 +3099,155 @@ The surface cannot do anything else. MUS-D-0146 has the start form choose where 
 Nothing about it is visible. The picker shows two names, the session pages show two panes, and neither says the two are editing the same files. A git checkout in one moves the tree under the other, an uncommitted edit in one is in the other's diff, and make export from both conflicts in records/ — which is MUS-F-0066, filed for two branches and not for two sessions.
 
 The CLI can already avoid it: mustur session start takes --dir and will start a session anywhere, including a worktree. The surface offers no such choice, and the records that describe agents working in their own worktrees (MUS-F-0065) describe a thing the surface cannot ask for.
+
+---
+
+## MUS-F-0118
+
+**Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven**
+
+finding · 2026-09-09
+
+The row reads 'LinkCtrl carries 1,476 headings and only 10 of its 247 decision identifiers appear in one'. Both figures have moved and the ratio has moved further: 10 of 247 is 4%, and the measurement today is 271 of 444, which is 61%.
+
+The non-goal itself is not obviously wrong — records Mustur owns are addressable when written, and that stands. What is wrong is the evidence under it. The argument as written is that LinkCtrl is prose with no addresses in it; the tree says LinkCtrl adopted a per-decision heading convention at D16 and has held it for 428 decisions since. A milestone 7 that plans an import from this row will plan for a retrofit that is already three-fifths done.
+
+Where the row is still right, and by a wider margin than it claims, is findings: all 381 rows in deferred-findings.md are table rows and not one is addressable by a heading. The row does not mention findings at all.
+
+Filed from a LinkCtrl session preparing that repository's side of the transition. Nothing in Mustur was edited.
+
+| Field | Value |
+| --- | --- |
+| Where | Plan.md, Non-goals table, 'ID expansion as a rendering trick over someone else's prose' |
+| Evidence | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. |
+| Status | not yet reviewed |
+
+---
+
+## MUS-F-0119
+
+**Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses**
+
+finding · 2026-09-09
+
+same defect as: [MUS-F-0063](#mus-f-0063)
+
+answered by: [MUS-Q-0065](questions.md#mus-q-0065)
+
+Scope.md's own header says 'Authoritative. Where this table and prose elsewhere disagree, this table wins.' So the falsified row does not merely sit there being wrong — it outranks the CLAUDE.md paragraph that corrects it.
+
+This matters to milestone 7 rather than only to tidiness. The injection kit is what a second project receives, and a reader of the scope table will build LinkCtrl's as a committed .mcp.json — the exact file MUS-F-0063 found could only ever refuse, and on a repository that is also public. What LinkCtrl can actually receive is the mandate clause and nothing else, with the credential per-machine at user scope and surviving no clone.
+
+The fix is a row, not a rewrite: either the promise becomes 'a mandate clause, and a per-machine credential' or the row is struck and the capability restated. Which of those is a decision, so it is a finding and not an edit.
+
+Filed from a LinkCtrl session preparing that repository's side of the transition. Nothing in Mustur was edited.
+
+| Field | Value |
+| --- | --- |
+| Where | Plan.md, Scope table, row 'Repo-local injection kit — committed .mcp.json plus a mandate clause' |
+| Evidence | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. |
+| Status | not yet reviewed |
+
+---
+
+## MUS-F-0120
+
+**PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog**
+
+finding · 2026-09-09
+
+corrects: [MUS-F-0113](#mus-f-0113)
+
+MUS-F-0113 named the wrong event. It said PermissionRequest fires when a dialog is about to be drawn and takes back allow, deny or ask, and cited the documentation and eight event names in the binary. The events exist and the channel is real; the deciding event is PreToolUse.
+
+The distinction is not cosmetic. A module built on PermissionRequest would have fired correctly, logged correctly, answered correctly, and left the dialog on the screen -- which is the failure shape this repository keeps shipping and then finding, and the reason investigation 0003 had a rule before it had evidence.
+
+Whether PermissionRequest's decision object works where a permission host exists, which is --print and the SDK, was not established and is not needed. The route that works is the one that keeps the terminal.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Investigation 0003, trials 0 and 1 on Claude Code 2.1.263. A PermissionRequest hook received a full payload and returned the documented object -- hookSpecificOutput with hookEventName PermissionRequest and decision allow -- and the pane drew 'Do you want to proceed?' anyway and was still drawing it minutes later. Retried with the exact key names the documentation quotes, including permissionDecisionReason on the deny path. Same result. PreToolUse with permissionDecision allow suppressed the dialog on the first attempt and on all seven firings after: trials 2, 11 through 15 on 2.1.263 and trial 26 on 2.1.266. Payloads and panes in docs/investigations/0003-harness/captured/. |
+
+---
+
+## MUS-F-0121
+
+**permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog**
+
+finding · 2026-09-10
+
+the event that does not work: [MUS-F-0120](#mus-f-0120)
+
+the investigation it corrects: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+the milestone it re-prices: [MUS-Q-0094](questions.md#mus-q-0094)
+
+Investigation 0003's verdict credits PreToolUse with carrying `permission_suggestions` that are "literally options 2 and 3 of the dialog the CLI would have drawn", and cites captured/payload-pretooluse.json for it. That file does not contain the field. captured/payload-permissionrequest.json does, and it is the only payload in the harness that ever did — so the sentence attributes one event's evidence to another, in the row that establishes the property the whole route turns on.
+
+Measured again on 2026-09-10 at Claude Code 2.1.267, both hooks installed in one session and the hook returning nothing so the CLI's own permission flow decided: six trials, three on a tool call the CLI prompts on (Bash) and three on one it does not (Read of a file in the working directory). PreToolUse fired on all six. PermissionRequest fired on the three that prompt and on none of the three that do not, carrying permission_suggestions each time.
+
+So the two events say different things. **PermissionRequest is the event that means a dialog is pending** -- and its decision is the one the CLI ignores (MUS-F-0120). **PreToolUse is the event that can answer** -- and it fires on every tool call, so a firing carries no information about whether a person would ever have been asked.
+
+This does not falsify the verdict's three properties. Every trial that established them used a tool call that does prompt, so interceptable, answerable and terminal-preserving all hold as measured. What it falsifies is the sentence describing what the payload carries, and with it the assumption a milestone could have been built on: that a surface fed by PreToolUse alone knows which calls the owner would have been asked about. It does not. It would either ask about every tool call, or hold a permission policy of its own, or pair the two events.
+
+| Field | Value |
+| --- | --- |
+| Where | docs/investigations/0003-dialog-without-the-screen.md, the Interceptable row of the verdict, and MUS-I-0003's Result |
+| Evidence | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh |
+| Also true before this run | internal/session/testdata/hook-payloads.jsonl holds five real PreToolUse captures in permission_mode auto, none carrying permission_suggestions and none drawing a dialog |
+| Status | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
+
+---
+
+## MUS-F-0122
+
+**The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had**
+
+finding · 2026-09-10
+
+the events it builds on: [MUS-F-0121](#mus-f-0121)
+
+the investigation: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+the milestone it shapes: [MUS-D-0152](decisions.md#mus-d-0152)
+
+MUS-F-0121 established that PreToolUse fires on every tool call and PermissionRequest only when a dialog is pending, and that only PreToolUse's decision is honoured. That left one thing that decides the shape of the milestone: if the two hooks ran concurrently, Mustur could hold the answer channel open in PreToolUse and learn from PermissionRequest what the dialog is about, and answer it structurally.
+
+They do not run concurrently. Measured at 2.1.267 with a PreToolUse hook that never returns and a PermissionRequest hook that returns immediately: PermissionRequest fires 20.022s, 20.024s and 20.014s after PreToolUse, against a PreToolUse hook timeout of 20s. The CLI runs the permission flow only once the PreToolUse hook has been waited out.
+
+So while Mustur holds the one channel that can answer, it cannot be told whether anybody would ever have been asked. The three shapes MUS-Q-0094's option named are now two: ask about every tool call, or hold a policy of Mustur's own that decides which to ask about. Pairing the two events on the same call is not available.
+
+Two of the five trials are not in the numbers: on trials 51 and 53 the prompt was typed into the CLI's box and never submitted, so no tool was ever called and no hook fired. That is a harness race between send-keys and the CLI becoming ready, not a result, and it is recorded rather than dropped because a reader counting sessions in the captured file will find five.
+
+| Field | Value |
+| --- | --- |
+| Evidence | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |
+| What it rules out | holding PreToolUse open while PermissionRequest describes the dialog. The description arrives only after the answer channel has closed |
+| What it leaves | MUS-D-0153: Mustur gates a named set of tools and never widens what the CLI would have allowed |
+
+---
+
+## MUS-F-0123
+
+**The captured panes are all one version, and two of them are trials the write-up never names**
+
+finding · 2026-09-10
+
+the same failure, louder: [MUS-F-0121](#mus-f-0121)
+
+the investigation: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+Investigation 0003 says it was verified against Claude Code 2.1.263 for the five consecutive trials and 2.1.266 for the confirmation, which is more careful than most claims in this repository and is still not what the artefacts show. All three panes committed with it print 2.1.266, and one of them -- captured/pane-allow.txt -- has trial 11's working directory, which is one of the five.
+
+Either the panes were captured again after the CLI updated itself, or the attribution is wrong. Nothing in the harness can say which, and the session that ran it is gone. What can be said is that the result did not depend on it: trial 26 repeated the five-trial shape at 2.1.266 and passed, and on 2026-09-10 the timeout fallback was re-measured at 2.1.267 three times.
+
+Two citations name trials nothing else does. captured/pane-timeout-fallback.txt is trial 24, and the hold trials the write-up describes are 21 through 23. captured/pane-deny.txt is trial 3, which appears in no sentence of the document and in no list in MUS-F-0120. Neither is evidence of anything wrong having been measured; both are evidence that the write-up and the evidence directory were kept by hand and drifted, which is the same failure as MUS-F-0121 in a quieter form.
+
+No committed artefact carries the 21.3s, 24s and 20s the write-up reports for the hold trials. The only captured table of timeout numbers is the re-run, 40 through 42.
+
+| Field | Value |
+| --- | --- |
+| Where | docs/investigations/0003-dialog-without-the-screen.md, the Verified against header and the two capture citations |
+| Evidence | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 |
+| Status | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
+| Not evidence of | a wrong result. The rule was met at whichever version, and the fallback reproduces at 2.1.267 |

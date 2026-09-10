@@ -3350,3 +3350,59 @@ MUS-D-0062 is untouched: tmux is still asked what is running, and nothing here m
 | --- | --- |
 | Unit | mustur-tmux.scope |
 | Spawned by | the first session started when no server is running |
+
+### MUS-D-0152
+
+**The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary**
+
+decision · 2026-09-10
+
+answers: MUS-Q-0094
+
+the investigation it rests on: MUS-I-0003
+
+what it cannot do: MUS-F-0121
+
+the boundary it declines: MUS-Q-0085
+
+MUS-Q-0085 was answered 'change nothing' with a note asking for research first. The research is MUS-I-0003, it returned a pass, and MUS-Q-0094 put the scope question back with the result behind it. The owner took the first option: the hooks, on this vendor, with no module boundary.
+
+So milestone 8 exists and it is bounded by that answer. What it builds: PreToolUse joins the settings JSON Mustur already composes per session for sub-agents, and a permission dialog reaches the surface as something Mustur was told rather than something it read off the screen. What it does not build: an interface per vendor. MUS-Q-0085's option 1 stays available and unbuilt, and nothing here forecloses it -- what it loses is being the thing that pays for this milestone.
+
+Two costs came with the answer and were stated before it was given. The pane parser is not retired: an unanswered hook times out and the CLI draws its own dialog, measured at 21.2s, 21.4s and 21.3s on 2.1.267, so two paths to one dialog exist for as long as both do. And PreToolUse fires on every tool call rather than only the ones a person would have been asked about (MUS-F-0121), so the milestone has a design question of its own to settle inside itself.
+
+The picker half of the parser is untouched by any of this and was never in scope: the model picker, the effort cycler and the toggles of MUS-F-0101 are drawn on the owner's own keypress and fire no hook.
+
+| Field | Value |
+| --- | --- |
+| Answered through | Mustur's own decision queue, not a prompt's return value. MUS-D-0139 is why that distinction is recorded rather than assumed |
+| Bounded by | the option's own words: no interface, no second vendor, no retirement of the parser |
+
+### MUS-D-0153
+
+**Mustur gates the tools it names, and never allows what the CLI would have asked about**
+
+decision · 2026-09-10
+
+the milestone: MUS-D-0152
+
+why the pair is unavailable: MUS-F-0122
+
+what each event says: MUS-F-0121
+
+The two findings under this leave one shape available. PreToolUse is the only event whose decision the CLI honours (MUS-F-0120), it fires on every tool call rather than only the ones a person would be asked about (MUS-F-0121), and the CLI waits it out before running the permission flow, so nothing tells Mustur a dialog was coming while it can still answer (MUS-F-0122). Mustur therefore has to decide for itself which calls to put in front of the owner, with no way to ask the CLI what it would have done.
+
+The rule it decides by has two clauses and holds a call only when both are true: the tool is in a named set, and the session's permission_mode is one where the CLI prompts at all -- default, plan or manual, never auto, acceptEdits or bypassPermissions, which the payload carries. Everything else returns undecided, so the CLI's own permission flow runs exactly as it does today and the pane parser stays the path for it.
+
+**Mustur never returns allow on its own.** An allow is returned because the owner pressed allow and for no other reason; a deny likewise, and it carries the reason to the agent. If nobody presses, the hook times out and the CLI draws its own dialog, which is today's behaviour and is what makes this safe to ship rather than something that has to be right.
+
+The cost, stated because it is real and permanent while the rule is this one: a call in the named set that the CLI would have allowed without asking is now a call the owner is asked about. Mustur is adding a gate the CLI did not have, and the only alternative on offer -- asking about every tool call -- is worse. The set is small for that reason and is a flag, not a constant, so a session that wants none of this starts with an empty one.
+
+What is not built, and is a real refinement rather than an oversight: Mustur could learn the CLI's own answer by watching which calls raise PermissionRequest and gating only those next time. That trades a first occurrence through the pane for a gate that matches what the CLI actually asks about. It is one observation predicting the next, which is the shape of inference this repository has declined before (MUS-D-0090's pairing window is the closest thing it has allowed), and it is in queue.md rather than here.
+
+| Field | Value |
+| --- | --- |
+| Held when | tool in the named set AND permission_mode in default, plan, manual |
+| Default set | Bash, Edit, Write, NotebookEdit |
+| Never | allow or deny without a press; a widened gate; a session in a mode the CLI does not prompt in |
+| Falls back to | the hook's own timeout, and the CLI drawing the dialog it would have drawn |
