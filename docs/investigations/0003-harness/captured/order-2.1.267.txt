@@ -1,0 +1,7 @@
+trial  PreToolUse   PermissionRequest  delta        verdict
+50     yes          yes                +20.022s     sequential: the CLI waited for PreToolUse
+51     NO           never fired        -            the flow does not run at all while PreToolUse holds
+52     yes          yes                +20.024s     sequential: the CLI waited for PreToolUse
+trial  PreToolUse   PermissionRequest  delta        verdict
+53     NO           never fired        -            the flow does not run at all while PreToolUse holds
+54     yes          yes                +20.014s     sequential: the CLI waited for PreToolUse

@@ -17,6 +17,15 @@ date +%s.%N > "$DIR/fired-at-$N-$EVENT"
 
 [ "$MODE" = hold ] && sleep 86400
 
+# holdpre: hold PreToolUse open and let every other event through. It answers
+# one question -- whether the CLI runs the permission flow while a PreToolUse
+# hook is still thinking, or waits for it -- and that decides whether an answer
+# can be structural or has to be a keypress.
+if [ "$MODE" = holdpre ]; then
+  [ "$EVENT" = PreToolUse ] && sleep 86400
+  exit 0
+fi
+
 # pass: record that the event fired and return nothing, so the CLI's own
 # permission flow runs unaltered. It is how a firing is told apart from a
 # dialog: an event that fires on every tool call cannot be the signal that one
