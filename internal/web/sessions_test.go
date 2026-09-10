@@ -2213,3 +2213,28 @@ func TestThePopUpCanShowTheWholeCallAndNotOnlyItsSummary(t *testing.T) {
 		t.Error("the whole call has no style, so it renders as an unwrapped line over the terminal")
 	}
 }
+
+// When the gate lets go, the question stays Mustur's — the owner asked for that
+// on MUS-Q-0096's note. The CLI draws its own dialog on the pane, the pane is
+// parsed, and the same pop-up offers it as a keypress. Which only works if the
+// client kept the pane's prompt while the held call was covering it.
+func TestThePopUpHandsTheQuestionOverRatherThanDroppingIt(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, "panePrompt = f.prompt || null;") {
+		t.Fatal("the pane's prompt is not kept, so there is nothing to hand back to")
+	}
+	// Kept on every screen frame, not only when nothing is held: a prompt that
+	// arrived while a call was held is exactly the one the fallback needs.
+	at := strings.Index(src, "panePrompt = f.prompt || null;")
+	guard := strings.LastIndex(src[:at], "if (held)")
+	if guard > strings.LastIndex(src[:at], "if (f.t ===") {
+		t.Error("the pane's prompt is only kept while nothing is held, so the handover has nothing to draw")
+	}
+	if !strings.Contains(src, "if (held) drawHeld(held);") || !strings.Contains(src, "else drawPrompt(panePrompt);") {
+		t.Error("the pop-up does not fall back to the pane's prompt when the held call clears")
+	}
+}

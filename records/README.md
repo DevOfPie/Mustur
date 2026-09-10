@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 96 | [questions.md](questions.md) |
-| decision | 154 | [decisions.md](decisions.md) |
+| decision | 155 | [decisions.md](decisions.md) |
 | finding | 129 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
@@ -309,6 +309,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0152](decisions.md#mus-d-0152) | decision | The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary |
 | [MUS-D-0153](decisions.md#mus-d-0153) | decision | Mustur gates the tools it names, and never allows what the CLI would have asked about |
 | [MUS-D-0154](decisions.md#mus-d-0154) | decision | The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer |
+| [MUS-D-0155](decisions.md#mus-d-0155) | decision | A held call waits five minutes, and when it stops being held the question is still Mustur's to answer |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

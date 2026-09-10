@@ -48,6 +48,15 @@ var GateDefault = []string{"Bash", "Edit", "Write", "NotebookEdit"}
 // GateTimeout bounds how long a held call waits. It is the CLI's own hook
 // timeout, so what happens at the end of it is the CLI's decision and not
 // Mustur's: it draws the dialog it would have drawn.
+//
+// Five minutes, and the owner chose it on MUS-Q-0096 (MUS-D-0155). It shipped
+// for one commit as a number nobody had chosen, under a comment calling it a
+// number the owner feels — which is the argument for asking rather than for
+// writing that sentence.
+//
+// The question does not leave Mustur when this expires. The dialog the CLI
+// draws is on the pane, the pane is parsed, and the same pop-up offers it as a
+// keypress: the gate hands the question over rather than dropping it.
 const GateTimeout = 300 * time.Second
 
 // AskPoll is how often a held hook looks for its answer. A press should feel
