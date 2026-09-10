@@ -3492,3 +3492,31 @@ The gate is unchanged in what it enforces. --needed still blocks on being answer
 | Changed | mustur ask --in a live Mustur session marks the question surfaced by the raising; CLAUDE.md's mandate and workflow.md's trigger say so |
 | Unchanged | a question raised outside such a session still owes an AskUserQuestion prompt and mustur surfaced; --needed still blocks on the answer |
 | Why | a prompt is a dialog, and an answer delivered into a pane showing one is eaten by it |
+
+### MUS-D-0157
+
+**Milestone 6 is not met: the person exists and the reading has not happened**
+
+decision · 2026-09-10
+
+answers: MUS-Q-0099
+
+the milestone: MUS-M-0008
+
+what was fixed while waiting: MUS-F-0126
+
+MUS-Q-0099 asked whether milestone 6 is met, given that a second account exists on this deployment with a reader role and a passkey. The owner answered in their own words rather than from the three options: the account was created and signup finished, and they have not looked through Mustur yet as far as the owner knows.
+
+So the milestone is not met, and what is missing is exactly what Plan.md has said since it was written: the person. Everything else is there -- the invitation, the ceremony, the role, the reading surfaces, and now a tab bar that does not offer them the one page that refuses them.
+
+**What was done in the meantime, and why it was worth doing before the answer arrived.** A reader was being shown a Sessions tab that answers 403 (MUS-F-0126). That is a queue line from 2026-08-25 which had been deferred, and it was the first thing a second person would have hit -- the milestone's whole subject is somebody who is not the owner finding the thing usable. It is fixed and deployed, so their first look is of a surface that tells them the truth.
+
+**What is deliberately not done.** Nobody was asked to go and look. An invitation was already accepted; chasing the reading is the owner's to do or not, and a milestone that turns on somebody else's ten minutes is not one an agent can close by trying harder.
+
+The remaining evidence is unusual for this repository and worth naming: nothing in the store can prove a person read a page, because the server keeps no request log. So the verdict, when it comes, is the owner's word or that person's, in the way 2c's last clause was proven by the owner filing a jot from their own phone.
+
+| Field | Value |
+| --- | --- |
+| What is in place | an invitation accepted, a passkey registered, a reader role on MUS, the reading surfaces, and a tab bar that no longer offers what a reader cannot open |
+| What is missing | somebody who is not the owner reading a project's routing and records from their own device |
+| How it will be proven | the owner's word or that person's; the server keeps no request log and the store cannot show a page being read |

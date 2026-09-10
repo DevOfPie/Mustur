@@ -2323,7 +2323,7 @@ mustur account list shows contact@hesh925.net as a reader on MUS holding one pas
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Milestone 6's verdict, and whether the reader surface is fixed inside it or after it. |
 | Option | Fix the reader's surface, then call it :: Recommended - the milestone is one person's first ten minutes, and right now two of the four tabs lie to them :: The tab bar and the intake box learn the viewer's role: a reader sees what they can reach and is told plainly about what they cannot, rather than finding out by pressing it. It is a day's work at most and the plumbing is one context value the guard already computes. Then the clause is met by somebody actually doing it, which is yours or theirs to confirm. The cost is that milestone 6 stays open a little longer over a defect that is arguably milestone 5b's. |
 | Option | Call it met now, fix the surface after :: the person exists, holds a passkey and has a role; the rest is a separate defect :: Honest on the letter of the clause if they have in fact signed in and read something -- which is the part I cannot see and you can. The 403ing tab becomes an ordinary finding with its own line rather than a milestone blocker. The cost is that the milestone's whole point is somebody who is not you finding the thing usable, and signing off on that while two tabs refuse them is the kind of pass this repository has been careful not to give itself. |
@@ -2332,3 +2332,6 @@ mustur account list shows contact@hesh925.net as a reader on MUS holding one pas
 | Session | mustur/Milestone_Work |
 | Session project | Milestone_Work |
 | Surfaced | 2026-09-10 18:25 |
+| Answer | The account was created and signup finished, but they have not looked through Mustur yet as far as I know |
+| Answered | 2026-09-10 18:29 |
+| Delivered | typed into mustur/Milestone_Work |
