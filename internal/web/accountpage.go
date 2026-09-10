@@ -265,7 +265,7 @@ func (a *Accounts) people(w http.ResponseWriter, r *http.Request) {
 func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.Account, p accountPage) {
 	// Set here rather than at the call sites: a page built without it renders a
 	// nav with no way back to a running session, which is what MUS-F-0040 was.
-	p.ShowSessions = a.ShowSessions
+	p.ShowSessions = a.ShowSessions && CanWrite(r)
 	ctx := r.Context()
 	if a.Records != nil {
 		p.OpenQuestions = OpenCount(ctx, a.Records)

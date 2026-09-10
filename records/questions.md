@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-98 record(s), by identifier.
+99 record(s), by identifier.
 
 ---
 
@@ -2307,4 +2307,31 @@ Four answers today were recorded as delivered into this session and none arrived
 | How it was surfaced | deliberately not in an AskUserQuestion prompt. A prompt on this session's pane is what stopped the last four answers arriving, so raising one for this question would block its own answer (MUS-F-0125). It was put in front of the owner in the terminal instead, and this line is here because the contract says a conflict is a bug to name rather than a choice to make silently. |
 | Answer | Mustur is the prompt, in its own sessions |
 | Answered | 2026-09-10 18:18 |
+| Delivered | typed into mustur/Milestone_Work |
+
+---
+
+## MUS-Q-0099
+
+**There is a second person with a passkey. Is milestone 6 met, and what is left before it can be?**
+
+question · 2026-09-10
+
+the milestone: [MUS-M-0008](milestones.md#mus-m-0008)
+
+mustur account list shows contact@hesh925.net as a reader on MUS holding one passkey, so somebody who is not you has been invited, has registered, and can sign in. I did not look further: what the store could tell me next is another person's sign-in times, which is theirs rather than mine to read. Milestone 6's clause is that they sign in and read a project's routing and records from their own device, and only you or they can say whether that happened. What I can see is one thing standing in the way of it going well: no surface knows the role of whoever is reading it, so a reader is shown a Sessions tab that answers 403 and an intake box whose POST is refused. That is a queue line from 2026-08-25, deferred because the tab bar's shape was unsettled, and the tab bar has been settled since.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Milestone 6's verdict, and whether the reader surface is fixed inside it or after it. |
+| Option | Fix the reader's surface, then call it :: Recommended - the milestone is one person's first ten minutes, and right now two of the four tabs lie to them :: The tab bar and the intake box learn the viewer's role: a reader sees what they can reach and is told plainly about what they cannot, rather than finding out by pressing it. It is a day's work at most and the plumbing is one context value the guard already computes. Then the clause is met by somebody actually doing it, which is yours or theirs to confirm. The cost is that milestone 6 stays open a little longer over a defect that is arguably milestone 5b's. |
+| Option | Call it met now, fix the surface after :: the person exists, holds a passkey and has a role; the rest is a separate defect :: Honest on the letter of the clause if they have in fact signed in and read something -- which is the part I cannot see and you can. The 403ing tab becomes an ordinary finding with its own line rather than a milestone blocker. The cost is that the milestone's whole point is somebody who is not you finding the thing usable, and signing off on that while two tabs refuse them is the kind of pass this repository has been careful not to give itself. |
+| Option | Neither: it is met when they say so :: ask the person, record what they say, and do nothing else until then :: The cheapest and the most literal. It costs nothing and builds nothing, and it means the verdict waits on somebody who has no reason to hurry. Worth taking if you would rather not spend a day of my time on a surface you have not seen a complaint about. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Surfaced | 2026-09-10 18:25 |
+| Answer | The account was created and signup finished, but they have not looked through Mustur yet as far as I know |
+| Answered | 2026-09-10 18:29 |
 | Delivered | typed into mustur/Milestone_Work |

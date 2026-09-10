@@ -238,7 +238,11 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 			http.Error(w, "this account can read but not write", http.StatusForbidden)
 			return
 		}
-		next.ServeHTTP(w, r)
+		// The role travels with the request, so a page can stop offering what
+		// this reader cannot open. The guard refuses correctly and always did;
+		// what it could not do is tell the bar above the page, so a reader was
+		// shown a Sessions tab that answered 403 when pressed.
+		next.ServeHTTP(w, r.WithContext(withRole(r.Context(), role)))
 	})
 }
 
@@ -254,4 +258,34 @@ func (g *Guard) Reader(r *http.Request) (account.Account, account.Role, bool) {
 		return acct, "", false
 	}
 	return acct, role, true
+}
+
+// The viewer's role, carried on the request so a page can render what they can
+// actually reach.
+//
+// A tab is navigation, not a control. MUS-Q-0048 settled that a control refuses
+// and explains itself at the moment it is pressed rather than warning first, and
+// that stands — but a link into a page this account cannot open is not a control
+// refusing, it is a broken route dressed as a tab. So the refusals are untouched
+// and the navigation is what changes.
+type roleKey struct{}
+
+func withRole(ctx context.Context, role account.Role) context.Context {
+	return context.WithValue(ctx, roleKey{}, role)
+}
+
+// CanWrite says whether the viewer of this request may reach the surfaces that
+// type into a running agent.
+//
+// **A request carrying no role at all can write.** That is the server running
+// without --accounts, where there is nobody to be a reader and every surface is
+// the owner's — the state this deployment was in until 2026-08-26 and the state
+// a fresh clone is in. Defaulting the other way would hide the session tab from
+// everybody who has not turned accounts on.
+func CanWrite(r *http.Request) bool {
+	role, ok := r.Context().Value(roleKey{}).(account.Role)
+	if !ok {
+		return true
+	}
+	return role.CanWrite()
 }

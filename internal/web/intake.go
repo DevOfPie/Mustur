@@ -178,7 +178,7 @@ func (in *Intake) now() time.Time {
 
 func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	p := page{
-		ShowSessions: in.ShowSessions,
+		ShowSessions: in.ShowSessions && CanWrite(r),
 		ShowAccount:  in.ShowAccount,
 		Filed:        r.URL.Query().Get("filed"),
 		Routed:       r.URL.Query().Get("routed"),
@@ -218,7 +218,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// plus room for one picture and the multipart framing around it.
 	r.Body = http.MaxBytesReader(w, r.Body, MaxJot+store.MaxAttachment+(1<<16))
 	if err := r.ParseMultipartForm(1 << 20); err != nil && !errors.Is(err, http.ErrNotMultipart) {
-		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
 	text := r.PostFormValue("jot")
@@ -228,7 +228,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	if len(text) > MaxJot {
 		render(w, page{
 			Error:   "that is longer than this box takes; it is for a line, not a document",
-			Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+			Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
 		})
 		return
 	}
@@ -237,7 +237,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// does not leave a jot behind claiming to have one.
 	image, imageErr := readImage(r)
 	if imageErr != nil {
-		render(w, page{Error: imageErr.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		render(w, page{Error: imageErr.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
 	// Scratch: filed beside the records rather than among them. It takes no
@@ -247,7 +247,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		sc, err := in.Store.Scratched(r.Context(), text, in.actor(r))
 		if err != nil {
 			render(w, page{Error: err.Error(), Project: in.Project, Jot: text,
-				ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+				ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 			return
 		}
 		if len(image) > 0 {
@@ -255,7 +255,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 			// picture with the note rather than leaving it unreachable.
 			if _, err := in.Store.Attach(r.Context(), sc.ID, image, in.actor(r)); err != nil {
 				render(w, page{Error: "kept the note, but not the image: " + err.Error(),
-					Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+					Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 				return
 			}
 		}
@@ -277,7 +277,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		// failure this surface cannot have, above code that dropped it: the
 		// page had no field for it and the textarea came back empty. On a
 		// phone that is a thumb-typed paragraph gone.
-		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
 	if len(image) > 0 {
@@ -286,7 +286,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 			// what happened rather than losing the words to a failed image.
 			render(w, page{
 				Error:   "filed " + rec.ID + ", but the image was not stored: " + err.Error(),
-				Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+				Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
 			})
 			return
 		}

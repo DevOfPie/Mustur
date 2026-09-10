@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -87,6 +88,20 @@ func statusOf(t *testing.T, c *http.Client, url string) int {
 	}
 	defer res.Body.Close()
 	return res.StatusCode
+}
+
+func bodyOf(t *testing.T, c *http.Client, url string) string {
+	t.Helper()
+	res, err := c.Get(url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
 }
 
 func postTo(t *testing.T, c *http.Client, url string) int {
@@ -301,5 +316,74 @@ func TestRegistrationRequiresADiscoverableCredential(t *testing.T) {
 	if out.PublicKey.User.Name != "new@example.com" || out.PublicKey.User.DisplayName != "new@example.com" {
 		t.Errorf("the passkey would be offered as %q/%q rather than by address",
 			out.PublicKey.User.Name, out.PublicKey.User.DisplayName)
+	}
+}
+
+// A tab a reader cannot open is not a tab, it is a broken route wearing one.
+//
+// The guard refused correctly from the day it shipped and the bar above the page
+// never knew: a reader was shown a Sessions tab, pressed it, and got a plain 403.
+// That was a queue line from 2026-08-25, deferred while the bar's shape was
+// unsettled, and the bar has been settled since MUS-D-0131.
+//
+// The refusals themselves are untouched. MUS-Q-0048 settled that a control
+// explains itself at the moment it is pressed rather than warning first, and a
+// tab is navigation rather than a control.
+func TestAReaderIsNotOfferedTheTabTheyCannotOpen(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "roles.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	accounts := account.New(st.DB())
+
+	mux := http.NewServeMux()
+	records := &Records{Store: st, ShowSessions: true}
+	records.Routes(mux)
+	auth := &Auth{Accounts: accounts, Origin: "http://127.0.0.1"}
+	auth.Routes(mux)
+	guard := &Guard{Auth: auth, Project: "MUS"}
+	srv := httptest.NewServer(guard.Wrap(mux))
+	t.Cleanup(srv.Close)
+
+	reader := signedInAs(t, srv, accounts, "reader-tabs@example.com", "MUS", account.Reader)
+	owner := signedInAs(t, srv, accounts, "owner-tabs@example.com", "MUS", account.Owner)
+
+	body := bodyOf(t, reader, srv.URL+"/records")
+	if strings.Contains(body, `href="/sessions"`) {
+		t.Error("a reader is shown the Sessions tab, which answers 403 when pressed")
+	}
+	// Everything they can reach is still there.
+	for _, want := range []string{`href="/questions"`, `href="/intake"`, `href="/records"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("a reader lost %s along with the tab they cannot open", want)
+		}
+	}
+
+	if body := bodyOf(t, owner, srv.URL+"/records"); !strings.Contains(body, `href="/sessions"`) {
+		t.Error("the owner lost the Sessions tab")
+	}
+}
+
+// With no accounts at all there is nobody to be a reader, and every surface is
+// the owner's. A request carrying no role has to keep the tab, or turning
+// accounts off would hide the session surface from the only person there is.
+func TestWithNoAccountsTheTabStays(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "noaccounts.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+
+	mux := http.NewServeMux()
+	records := &Records{Store: st, ShowSessions: true}
+	records.Routes(mux)
+	srv := httptest.NewServer(mux) // No guard: this is a server without --accounts.
+	t.Cleanup(srv.Close)
+
+	if body := bodyOf(t, srv.Client(), srv.URL+"/records"); !strings.Contains(body, `href="/sessions"`) {
+		t.Error("a server with no accounts hid the Sessions tab from everybody")
 	}
 }
