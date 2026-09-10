@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 94 | [questions.md](questions.md) |
+| question | 95 | [questions.md](questions.md) |
 | decision | 153 | [decisions.md](decisions.md) |
-| finding | 128 | [findings.md](findings.md) |
+| finding | 129 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 22 | [work-units/index.md](work-units/index.md) |
 | investigation | 3 | [investigations/index.md](investigations/index.md) |
@@ -153,6 +153,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0092](questions.md#mus-q-0092) | question | Where is the boundary of 'all agent documentation' in LinkCtrl: the records, the rules too, or the scope contract as well? |
 | [MUS-Q-0093](questions.md#mus-q-0093) | question | Records only does not align with the note, in two places: Plan.md carries milestone rows Mustur handles, and three trackers have no kind at all |
 | [MUS-Q-0094](questions.md#mus-q-0094) | question | Investigation 0003 came back a pass. Does the session channel become milestone 8, and in which shape? |
+| [MUS-Q-0095](questions.md#mus-q-0095) | question | A stacked branch needs its remote rewritten every time its base gains a fix. Is a force push mine to make? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -429,6 +430,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0121](findings.md#mus-f-0121) | finding | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog |
 | [MUS-F-0122](findings.md#mus-f-0122) | finding | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had |
 | [MUS-F-0123](findings.md#mus-f-0123) | finding | The captured panes are all one version, and two of them are trials the write-up never names |
+| [MUS-F-0124](findings.md#mus-f-0124) | finding | An agent read a prompt's return value as permission to rewrite a published branch |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

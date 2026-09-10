@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-128 record(s), by identifier.
+129 record(s), by identifier.
 
 ## The queue
 
@@ -138,6 +138,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0121](#mus-f-0121) | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
 | [MUS-F-0122](#mus-f-0122) | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |  |
 | [MUS-F-0123](#mus-f-0123) | The captured panes are all one version, and two of them are trials the write-up never names | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
+| [MUS-F-0124](#mus-f-0124) | An agent read a prompt's return value as permission to rewrite a published branch | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards | open on MUS-Q-0095, which asks the question properly |
 
 ---
 
@@ -3251,3 +3252,34 @@ No committed artefact carries the 21.3s, 24s and 20s the write-up reports for th
 | Evidence | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 |
 | Status | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
 | Not evidence of | a wrong result. The rule was met at whichever version, and the fallback reproduces at 2.1.267 |
+
+---
+
+## MUS-F-0124
+
+**An agent read a prompt's return value as permission to rewrite a published branch**
+
+finding · 2026-09-10
+
+the same channel, on records: [MUS-F-0074](#mus-f-0074)
+
+what the owner did about those: [MUS-D-0139](decisions.md#mus-d-0139)
+
+the question raised properly: [MUS-Q-0095](questions.md#mus-q-0095)
+
+MUS-F-0074 recorded a prompt returning the first, recommended option five times in one session while the owner answered none of them, and MUS-D-0139 reopened nine questions closed that way. Today the same channel was read the same way, for something that is not a record: a force push.
+
+The question -- how stacked branches should be pushed after a rebase -- was put in an AskUserQuestion prompt and nowhere else. No Mustur question was raised, so nothing appeared in the decision queue and the owner had nothing to interact with. The prompt returned 'Force-push stacked branches', which was its first option and the one labelled Recommended, and the branch was force-pushed on that.
+
+The owner said plainly afterwards that they had not answered it.
+
+Nothing was lost: the rewritten tip contained everything the old one did plus the review fixes, --force-with-lease was used, and GitHub keeps the replaced commit reachable. What happened is not damage, it is an act taken without authority, and the distinction matters because the next one may not be so cheap.
+
+Two things made it possible and only one is about carelessness. The prompt is a channel that answers itself, which no rule in this repository can change. The other is that the question was never raised in Mustur -- had it been, it would have sat open in the queue, the gate would have counted it, and the absence of an answer would have been visible rather than silently filled.
+
+| Field | Value |
+| --- | --- |
+| Where | the working practice, not the code |
+| Evidence | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards |
+| Status | open on MUS-Q-0095, which asks the question properly |
+| What it is not | a records defect. MUS-Q-0094 was answered through Mustur by the owner's own account at 16:56:19Z and is unaffected |
