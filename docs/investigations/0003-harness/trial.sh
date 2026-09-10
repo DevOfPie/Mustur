@@ -13,7 +13,7 @@ N="${1:?trial number}"
 MODE="${2:-allow}"
 TIMEOUT="${3:-600}"
 WAIT="${4:-25}"
-EVENT="${5:-PreToolUse}"
+EVENT="${5:-PreToolUse}"   # one event, or several joined by +
 
 DIR="${H0003_DIR:?H0003_DIR unset}"
 SOCK=investigation0003
@@ -28,7 +28,12 @@ rm -f "$WORK/ran-the-tool"; rm -f "$DIR"/payload-"$N"-*.json "$DIR"/fired-at-"$N
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/hook.sh"
 ENTRY="[{\"hooks\":[{\"type\":\"command\",\"command\":\"$HOOK\",\"timeout\":$TIMEOUT}]}]"
-SETTINGS="{\"hooks\":{\"${EVENT:-PreToolUse}\":$ENTRY}}"
+HOOKS=""
+for e in ${EVENT//+/ }; do
+  [ -n "$HOOKS" ] && HOOKS="$HOOKS,"
+  HOOKS="$HOOKS\"$e\":$ENTRY"
+done
+SETTINGS="{\"hooks\":{$HOOKS}}"
 
 T kill-session -t "$SESSION" 2>/dev/null || true
 T new-session -d -s "$SESSION" -c "$WORK" -x 200 -y 60 \
@@ -53,7 +58,7 @@ for _ in $(seq 30); do
   sleep 1
 done
 
-T send-keys -t "$SESSION" -l 'Run exactly this with the Bash tool, nothing else: touch ran-the-tool'
+T send-keys -t "$SESSION" -l "${H0003_PROMPT:-Run exactly this with the Bash tool, nothing else: touch ran-the-tool}"
 T send-keys -t "$SESSION" Enter
 sleep "$WAIT"
 

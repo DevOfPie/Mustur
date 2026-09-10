@@ -17,6 +17,12 @@ date +%s.%N > "$DIR/fired-at-$N-$EVENT"
 
 [ "$MODE" = hold ] && sleep 86400
 
+# pass: record that the event fired and return nothing, so the CLI's own
+# permission flow runs unaltered. It is how a firing is told apart from a
+# dialog: an event that fires on every tool call cannot be the signal that one
+# is pending.
+[ "$MODE" = pass ] && exit 0
+
 case "$EVENT" in
   PreToolUse)
     if [ "$MODE" = deny ]; then

@@ -140,7 +140,7 @@ terminal survives it — through `PreToolUse`, not through `PermissionRequest`.*
 
 | | Result |
 | --- | --- |
-| **Interceptable** | Yes, on every one of seven firings. The payload names the tool and carries its input — `{"tool_name":"Bash","tool_input":{"command":"touch ran-the-tool","description":"Create empty file ran-the-tool"}}` — plus `session_id`, `transcript_path`, and `permission_suggestions` that are *literally options 2 and 3 of the dialog the CLI would have drawn*. Captured whole in [captured/payload-pretooluse.json](0003-harness/captured/payload-pretooluse.json) |
+| **Interceptable** | Yes, on every one of seven firings. The payload names the tool and carries its input — `{"tool_name":"Bash","tool_input":{"command":"touch ran-the-tool","description":"Create empty file ran-the-tool"}}` — plus `session_id`, `transcript_path` and `tool_use_id`. Captured whole in [captured/payload-pretooluse.json](0003-harness/captured/payload-pretooluse.json). **This row also said the payload carried `permission_suggestions` that are literally the drawn dialog's own options, and it does not** — that field is `PermissionRequest`'s, and the cited file never held it. [Corrected below](#corrected-after-the-verdict), where what each event actually says is measured |
 | **Answerable** | Yes, both directions. `allow` ran the tool and drew no dialog; `deny` stopped it and the reason reached the agent verbatim — *"the tool call came back with \"Refused by investigation 0003\" rather than running"* ([captured/pane-deny.txt](0003-harness/captured/pane-deny.txt)) |
 | **Terminal-preserving** | Yes, checked after every trial. A second client attached over a separate tmux socket, rendered the whole conversation and the CLI's input box, and typed into it — the typed marker appeared in the inner pane on all five |
 
@@ -206,3 +206,63 @@ socket was not touched, which is what the ordering was for.
 Route B was not re-run, as pre-registered. The one fact re-checked is unchanged:
 at 2.1.266 `--output-format`, `--input-format` and `--include-partial-messages`
 are all still marked *only works with --print*.
+
+## Corrected after the verdict
+
+**2026-09-10, at Claude Code 2.1.267.** The verdict's Interceptable row cited
+the wrong payload for the wrong event, and the sentence it built on that
+citation is the one a milestone would have been designed around. Both are
+corrected here rather than edited away, because how the error was found is part
+of what the reader needs: the file the row cites was opened while pricing the
+milestone, and the field the row names is not in it.
+
+### What each event actually says
+
+`permission_suggestions` is `PermissionRequest`'s field.
+[captured/payload-pretooluse.json](0003-harness/captured/payload-pretooluse.json)
+— the file the row cites, captured in trial 11 — carries
+`session_id`, `transcript_path`, `cwd`, `scratchpad_dir`, `prompt_id`,
+`permission_mode`, `effort`, `hook_event_name`, `tool_name`, `tool_input` and
+`tool_use_id`, and no suggestions at all.
+[captured/payload-permissionrequest.json](0003-harness/captured/payload-permissionrequest.json)
+is where they were seen.
+
+That left a question the five trials could not answer, because every one of them
+used a tool call the CLI prompts on: **does a `PreToolUse` firing mean a dialog
+was going to be drawn?** Six more trials, both hooks installed in one session and
+the hook returning nothing so the CLI's own permission flow decided:
+
+| Case | Prompt | `PreToolUse` | `PermissionRequest` | Carried suggestions |
+| --- | --- | --- | --- | --- |
+| prompts | `touch ran-the-tool` through Bash | 3 of 3 | 3 of 3 | 3 of 3 |
+| quiet | Read a file in the working directory | 3 of 3 | 0 of 3 | — |
+
+Trials 30 through 35, alternating, in
+[captured/signal-2.1.267.txt](0003-harness/captured/signal-2.1.267.txt); the
+quiet case's payload is
+[captured/payload-pretooluse-quiet.json](0003-harness/captured/payload-pretooluse-quiet.json)
+and the prompting case's is
+[captured/payload-permissionrequest-2.1.267.json](0003-harness/captured/payload-permissionrequest-2.1.267.json).
+Run by [signal.sh](0003-harness/signal.sh), which is `trial.sh` with two
+additions: an event list joined by `+`, so both hooks are installed at once, and
+a `pass` mode that records the firing and returns nothing.
+
+**So the event that says a dialog is pending is the one whose decision is
+ignored, and the event that can answer fires on every tool call.** Nothing here
+is evidence against the three properties — the trials that established them all
+used a call that prompts, and it held on every one. What it is evidence against
+is the design the verdict's wording invited: a surface fed by `PreToolUse` alone
+does not know which tool calls the owner would ever have been asked about. It
+would have to ask about all of them, keep a permission policy of its own, or use
+the two events as a pair. That is [MUS-F-0121](../../records/findings.md#mus-f-0121),
+and what it costs the milestone is [MUS-Q-0094](../../records/questions.md#mus-q-0094)'s
+to answer.
+
+### The fallback, re-measured on the version under test
+
+The result that makes this shippable was measured at 2.1.263 and the CLI has
+moved four patch versions since. Three more hold trials at 2.1.267, same
+shortened 20s timeout: **the CLI waits out the hook and draws its own dialog**,
+at 21.2s, 21.4s and 21.3s.
+[captured/hold-2.1.267.txt](0003-harness/captured/hold-2.1.267.txt). Unchanged,
+and now measured on the version this repository would build against.

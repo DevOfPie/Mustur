@@ -1,0 +1,7 @@
+trial  case           PreToolUse  tool   PermissionRequest  suggestions   dialog drawn
+30     prompts        yes         Bash   yes                yes           no
+31     quiet          yes         Read   NO                 -             no
+32     prompts        yes         Bash   yes                yes           no
+33     quiet          yes         Read   NO                 -             no
+34     prompts        yes         Bash   yes                yes           no
+35     quiet          yes         Read   NO                 -             no
