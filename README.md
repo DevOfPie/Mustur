@@ -29,8 +29,10 @@ built, refuses correctly, and is switched off until somebody holds a passkey. An
 agent, which has no browser and so no passkey, carries a token instead: one
 path, one project, revoked the moment you say so.
 
-Six surfaces carry a client layer: the session view, the composer, and the four
-authentication surfaces. Only two of them stop working without it — the session
+Every surface that draws the tab bar carries `bar.js`, which is what keeps the
+decision badge live rather than fixed at whatever it said when the page was
+rendered. Six carry a client layer of their own: the session view, the composer,
+and the four authentication surfaces. Only two of those stop working without it — the session
 view, because a live terminal cannot be server-rendered, and the passkey
 ceremony, because `navigator.credentials` is a browser API. Everywhere else the
 form posts and the script adds a convenience. What the rule should count is open
