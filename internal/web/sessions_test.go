@@ -1923,3 +1923,188 @@ func TestASessionThatHasPrintedNothingReadsAsStarting(t *testing.T) {
 		t.Errorf("the pane was not blank, so this measured nothing: %q", f.Screen)
 	}
 }
+
+// Milestone 8, end to end through the surface: a tool call the CLI is holding
+// reaches the tab, and the press reaches the process that is holding it.
+//
+// Against real tmux, because the socket only opens for a session the adapter
+// owns — the gate is not reachable at all for a session Mustur did not start,
+// which is the same boundary everything else on this page has.
+func TestAHeldCallReachesTheTabAndThePressReachesTheHook(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzWebGate"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 20'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	// The hook raises it before the tab opens, so the hello frame is what has
+	// to carry it.
+	ask := session.Ask{ID: "toolu_1", Tool: "Bash", Summary: "rm -rf /tmp/zzgate", At: time.Now()}
+	if err := session.RaiseAsk(dir, project, ask); err != nil {
+		t.Fatal(err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	var saw struct {
+		T   string `json:"t"`
+		Ask *struct {
+			ID      string `json:"id"`
+			Tool    string `json:"tool"`
+			Summary string `json:"summary"`
+		} `json:"ask"`
+	}
+	for saw.Ask == nil {
+		_, data, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("no held call ever reached the tab: %v", err)
+		}
+		if err := json.Unmarshal(data, &saw); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if saw.Ask.Tool != "Bash" || saw.Ask.Summary != "rm -rf /tmp/zzgate" {
+		t.Errorf("the tab was told %+v; want the tool and the command the CLI named", saw.Ask)
+	}
+
+	// The other half: the hook is a process blocked on the answer, and the
+	// press has to reach it. This stands in for that process exactly — the same
+	// call, on the same files.
+	got := make(chan session.Answer, 1)
+	go func() {
+		wait, cancelWait := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancelWait()
+		if ans, ok := session.AwaitAnswer(wait, dir, project, ask.ID); ok {
+			got <- ans
+		}
+		close(got)
+	}()
+
+	if err := c.Write(ctx, websocket.MessageText,
+		[]byte(`{"t":"answer","id":"`+ask.ID+`","decision":"deny"}`)); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case ans, ok := <-got:
+		if !ok {
+			t.Fatal("the held call was never answered")
+		}
+		if ans.Decision != "deny" {
+			t.Errorf("decision = %q, want the press", ans.Decision)
+		}
+		// The agent is told this verbatim, so it has to name who refused.
+		if !strings.Contains(ans.Reason, "pie") {
+			t.Errorf("reason = %q, want it to say who refused", ans.Reason)
+		}
+	case <-time.After(20 * time.Second):
+		t.Fatal("the press never reached the process holding the call")
+	}
+}
+
+// A press that arrives after the CLI has given up on the hook. The dialog is on
+// the pane by then and this is not the way to answer it, so the surface says so
+// rather than pretending.
+func TestAPressForACallNobodyIsHoldingSaysSo(t *testing.T) {
+	if _, err := exec.LookPath("tmux"); err != nil {
+		t.Skip("no tmux on PATH; this test only means something against the real thing")
+	}
+	dir := t.TempDir()
+	a := &session.Adapter{HookDir: dir}
+	project := "zzWebGateGone"
+	if _, err := a.Start(context.Background(), project, t.TempDir(), "sh -c 'sleep 20'"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = a.Stop(context.Background(), project) })
+
+	hub := &session.Hub{Adapter: a}
+	t.Cleanup(hub.Shutdown)
+	s := &Sessions{Hub: hub, Adapter: a, Actor: "pie", HookDir: dir}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	c, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(srv.URL, "http")+
+		"/sessions/"+project+"/ws", &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{srv.URL}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.CloseNow()
+
+	if err := c.Write(ctx, websocket.MessageText,
+		[]byte(`{"t":"answer","id":"never-existed","decision":"allow"}`)); err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(20 * time.Second)
+	for time.Now().Before(deadline) {
+		_, data, err := c.Read(ctx)
+		if err != nil {
+			t.Fatalf("the socket closed instead of saying so: %v", err)
+		}
+		var f struct {
+			T     string `json:"t"`
+			Error string `json:"error"`
+		}
+		if err := json.Unmarshal(data, &f); err != nil {
+			t.Fatal(err)
+		}
+		if f.T == "error" {
+			if !strings.Contains(f.Error, "no longer waiting") {
+				t.Errorf("error = %q, want it to say the call is gone", f.Error)
+			}
+			return
+		}
+	}
+	t.Fatal("no error frame arrived for a call nothing is holding")
+}
+
+// The held call is drawn in the pop-up the pane's prompts already use, and its
+// buttons are not keys.
+func TestTheHeldCallSharesThePopUpAndSendsADecision(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, `t: "answer"`) {
+		t.Error("the client sends no answer frame, so a held call cannot be answered")
+	}
+	if !strings.Contains(src, `data-answer`) {
+		t.Error("the held call's buttons are not marked as decisions")
+	}
+	// One box. A second dialog element would be a surface nobody drew, which is
+	// the pattern MUS-F-0027 exists to name.
+	if strings.Contains(src, `getElementById("askdlg")`) {
+		t.Error("the held call has a pop-up of its own rather than sharing MUS-D-0144's")
+	}
+	// What happens if nobody presses is on the screen, not only in a record.
+	if !strings.Contains(src, "draws its own dialog") {
+		t.Error("the pop-up does not say what happens if the owner does not press")
+	}
+}

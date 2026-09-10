@@ -150,6 +150,11 @@ type Adapter struct {
 	HookDir string
 	// Exe is the Mustur binary the hook calls back. Empty means this one.
 	Exe string
+	// Gate names the tools a session holds in front of the owner instead of
+	// letting the CLI draw its own dialog (MUS-D-0153). Nil is GateDefault; an
+	// empty non-nil slice is a session that gates nothing, which is how this is
+	// turned off without turning sub-agent rows off with it.
+	Gate []string
 	// DB is the store the SessionStart hook writes the CLI's conversation
 	// identifier into. Empty leaves the path off the hook's command line, so it
 	// falls back to this machine's default — which is right for every process
@@ -287,7 +292,8 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 	// runs, so the first hook to fire writes into an empty log rather than
 	// underneath rows belonging to a session that has already ended.
 	ForgetSubagents(a.HookDir, project)
-	args = append(args, withHook(cmd, a.exe(), a.HookDir, project, a.DB))
+	ForgetAsks(a.HookDir, project)
+	args = append(args, withHook(cmd, a.exe(), a.HookDir, project, a.DB, a.gate()))
 	// Where the server ends up is decided here, once, by whoever finds none
 	// running (MUS-Q-0088).
 	out, err := "", error(nil)

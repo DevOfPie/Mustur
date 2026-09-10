@@ -71,6 +71,7 @@ func cmdSession(args []string) error {
 		fs.SetOutput(io.Discard)
 		dir := fs.String("dir", "", "where sub-agent events are logged")
 		project := fs.String("project", "", "the session the event belongs to")
+		gate := fs.String("gate", "", "tools to hold in front of the owner, comma-separated")
 		if err := fs.Parse(rest); err != nil || *dir == "" || *project == "" {
 			return nil
 		}
@@ -78,7 +79,27 @@ func cmdSession(args []string) error {
 		if err != nil {
 			return nil
 		}
-		session.RecordHookEvent(*dir, *project, payload, time.Now())
+		now := time.Now()
+		session.RecordHookEvent(*dir, *project, payload, now)
+
+		// And the half that answers rather than records. A tool call in the
+		// gate is held here, in this process, until the owner presses on the
+		// surface or the CLI's own timeout kills this process and draws the
+		// dialog it would have drawn (MUS-D-0153). Everything else returns now
+		// and decides nothing, which is what every call did before milestone 8.
+		ask, ok := session.AskFromPayload(payload, now)
+		if !ok || !session.Gated(session.ParseGate(*gate), ask.Mode, ask.Tool) {
+			return nil
+		}
+		if err := session.RaiseAsk(*dir, *project, ask); err != nil {
+			return nil // Total, like the recording half: no gate beats no session.
+		}
+		defer session.DropAsk(*dir, *project, ask.ID)
+		answer, answered := session.AwaitAnswer(ctx, *dir, *project, ask.ID)
+		if !answered {
+			return nil
+		}
+		fmt.Println(session.Decision(answer))
 		return nil
 
 	case "cli-started":

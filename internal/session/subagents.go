@@ -379,9 +379,12 @@ func tail(path string, n int64) ([]byte, error) {
 // short-lived processes per tool call in the session — the pair is what lets a
 // row distinguish a sub-agent inside a tool from one between tools, which the
 // first version claimed to do with only the first half.
-func HookSettings(exe, dir, project, db string) (string, error) {
+func HookSettings(exe, dir, project, db string, gate []string) (string, error) {
 	call := fmt.Sprintf("%s session subagent-event --dir %s --project %s",
 		shellQuote(exe), shellQuote(dir), shellQuote(project))
+	if len(gate) > 0 {
+		call += " --gate " + shellQuote(strings.Join(gate, ","))
+	}
 	// One command for all three: every payload names its own event, so the hook
 	// does not need telling which one it is.
 	hooks := []any{map[string]any{"type": "command", "command": call}}
@@ -403,7 +406,16 @@ func HookSettings(exe, dir, project, db string) (string, error) {
 			"SessionStart":  []any{map[string]any{"hooks": []any{map[string]any{"type": "command", "command": started}}}},
 			"SubagentStart": []any{map[string]any{"hooks": hooks}},
 			"SubagentStop":  []any{map[string]any{"hooks": hooks}},
-			"PreToolUse":    []any{map[string]any{"matcher": "*", "hooks": hooks}},
+			// PreToolUse carries the gate as well as the row, so it is the one
+			// entry that can be left waiting. The timeout is stated rather than
+			// left at the CLI's default because it is a number the owner feels:
+			// it is how long a held call waits before the CLI draws the dialog
+			// it would have drawn (MUS-D-0153).
+			"PreToolUse": []any{map[string]any{"matcher": "*", "hooks": []any{map[string]any{
+				"type":    "command",
+				"command": call,
+				"timeout": int(GateTimeout / time.Second),
+			}}}},
 			// The pair, not just the start. A row that says which tool a
 			// sub-agent is in has to be able to say when it left one, or it is
 			// a claim about now that stops being true and never says so.
@@ -425,11 +437,11 @@ func HookSettings(exe, dir, project, db string) (string, error) {
 // something else would produce a session that fails to start, so a command this
 // package does not recognise is left exactly as it was given and simply shows
 // no sub-agents. Guessing wider would trade a working session for a row.
-func withHook(cmd, exe, dir, project, db string) string {
+func withHook(cmd, exe, dir, project, db string, gate []string) string {
 	if !isClaude(cmd) || exe == "" || dir == "" {
 		return cmd
 	}
-	settings, err := HookSettings(exe, dir, project, db)
+	settings, err := HookSettings(exe, dir, project, db, gate)
 	if err != nil {
 		return cmd
 	}

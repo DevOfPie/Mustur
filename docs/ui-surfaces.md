@@ -297,6 +297,21 @@ with no alternative. A live terminal cannot be server-rendered. The stack table 
 for everything else; a second surface wanting script is a new decision, not a
 precedent.
 
+**A held tool call arrives at milestone 8**, and it is not a new surface. It is
+drawn in the pop-up the pane's own prompts already use
+([MUS-D-0144](../records/decisions.md#mus-d-0144)), because a session has one
+place where it asks the owner for something and that place can already be
+minimised out of the way of the terminal. What differs is where the words came
+from and what the buttons do: the CLI's own hook was told the tool and its
+input, so nothing was read off a screen, and the two buttons return a decision
+the CLI honours rather than a keypress aimed at the pane.
+
+It must say what happens if nobody presses, because that is the case it will
+mostly be in: the hook times out and the CLI draws the dialog it would have
+drawn ([MUS-D-0153](../records/decisions.md#mus-d-0153)). A held call the owner
+answers too late must say so rather than appear to have worked — the terminal
+underneath is where the answer goes by then.
+
 **Sub-agents arrived at milestone 4c**, and not by the route this file expected.
 They moved out of 4b on MUS-Q-0017 because showing them requires Mustur to know
 a sub-agent exists, and reading one pane does not tell it. What settled the
