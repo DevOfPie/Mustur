@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 96 | [questions.md](questions.md) |
+| question | 97 | [questions.md](questions.md) |
 | decision | 155 | [decisions.md](decisions.md) |
 | finding | 129 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -156,6 +156,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0094](questions.md#mus-q-0094) | question | Investigation 0003 came back a pass. Does the session channel become milestone 8, and in which shape? |
 | [MUS-Q-0095](questions.md#mus-q-0095) | question | A stacked branch needs its remote rewritten every time its base gains a fix. Is a force push mine to make? |
 | [MUS-Q-0096](questions.md#mus-q-0096) | question | How long does a held tool call wait for you before the session takes it back? |
+| [MUS-Q-0097](questions.md#mus-q-0097) | question | The gate is built and green. Does it go live on your own sessions, and on by default? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |

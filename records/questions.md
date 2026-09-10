@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-96 record(s), by identifier.
+97 record(s), by identifier.
 
 ---
 
@@ -2245,3 +2245,34 @@ A reviewer found that every number you were priced on when you chose milestone 8
 | Note | The question should always be answered through Mustur for Mustur Sessions. When the timer expires the session can try other work or just idle until the prompt is answered in Mustur |
 | Delivered | typed into mustur/Milestone_Work |
 | Surfaced | 2026-09-10 17:44 |
+
+---
+
+## MUS-Q-0097
+
+**The gate is built and green. Does it go live on your own sessions, and on by default?**
+
+question · 2026-09-10
+
+the rule about deploying: [MUS-Q-0087](#mus-q-0087)
+
+what the gate holds: [MUS-D-0153](decisions.md#mus-d-0153)
+
+how long it waits: [MUS-D-0155](decisions.md#mus-d-0155)
+
+MUS-Q-0087 says a green change deploys itself without asking, and this one is green. It is also the first change that alters what your own agents do rather than what a page shows: with the default set on, every Bash, Edit, Write and NotebookEdit call in a session started from the surface waits for your press, for up to five minutes, before the CLI draws its own dialog. That is the milestone working as designed and it is still a different thing from a fix going live, which is why it is a question rather than a deploy.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Deploying milestone 8. Nothing else: the branch is green and the service is running the code it was running this morning. |
+| Option | Live, gate on :: Recommended - the milestone as built, on your machine, where it can actually be judged :: mustur serve keeps its default set. The next session you start from the surface holds its first Bash call and waits for you. If the pop-up turns out to be unusable on a phone -- which no test here can tell you and which is the one thing left to find out -- the cost is five minutes of an agent waiting, then the dialog it would have drawn anyway, answerable from the key row as it is today. A deploy no longer ends running sessions (MUS-D-0151), so this costs nothing that is already in flight. |
+| Option | Live, gate off :: the fixes ship, the gate waits :: mustur serve --gate none. Everything else on the branch goes live and sessions behave exactly as they do this morning. It is the honest choice if you would rather look at the pop-up in a browser before it stands between you and an agent, and the flag is one word to remove later. What it costs is that the milestone sits built and unexercised, which is how 2b and 3 have sat since August. |
+| Option | Not yet :: nothing is deployed until the stack merges :: The service keeps running this morning's binary. Cheapest and slowest: the branch is reviewed, fixed and measured, and none of that is on the machine you actually use. It also means the next thing deployed carries four topics at once rather than one. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Answer | Live, gate on |
+| Answered | 2026-09-10 17:59 |
+| Delivered | typed into mustur/Milestone_Work |
+| Surfaced | 2026-09-10 17:59 |
