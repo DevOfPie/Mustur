@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-131 record(s), by identifier.
+134 record(s), by identifier.
 
 ## The queue
 
@@ -141,6 +141,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0124](#mus-f-0124) | An agent read a prompt's return value as permission to rewrite a published branch | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
 | [MUS-F-0125](#mus-f-0125) | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog | MUS-Q-0094 through MUS-Q-0097 all recorded as typed into mustur/Milestone_Work; that session's transcript at ~/.claude/projects/.../de5be2c5-....jsonl contains no delivered answer. Probe on 2026-09-10: an answer delivered into a pane showing the model picker was absent from the screen afterwards and the picker had been pressed |  |
 | [MUS-F-0126](#mus-f-0126) | A reader was offered the one tab that refuses them, because no surface knew who was reading it | a reader's records page carries no /sessions link and keeps the other three; an owner's carries it; a server with no guard carries it. Mutation-checked |  |
+| [MUS-F-0127](#mus-f-0127) | Acceptance gates four rules, and nothing defines the act, records it, or tells the two states apart | eight rows in Plan.md read 'awaiting acceptance'; no mustur verb accepts anything; no milestone record carries an acceptance field; milestone 2's passed row and 2b's awaiting row describe the same evidence | open, and not fixed by an agent choosing a procedure for it |
+| [MUS-F-0128](#mus-f-0128) | If i try to select text in the sessions the selection jumps to include the start of the tmux… |  | unreviewed |
+| [MUS-F-0129](#mus-f-0129) | The gate cannot fire on the deployment it runs on, because the owner's default mode is one the CLI never prompts in | a session started from the surface on 2026-09-11 ran echo mustur-gate-test with no pop-up; its pane reads auto mode on; the settings file sets defaultMode auto | open on MUS-Q-0100 |
 
 ---
 
@@ -3352,3 +3355,78 @@ Left alone deliberately: the intake box still takes a reader's jot and refuses t
 | Fixed | the guard puts the viewer's role on the request; the bar offers Sessions only to an account that can write, and to everybody when accounts are off |
 | Evidence | a reader's records page carries no /sessions link and keeps the other three; an owner's carries it; a server with no guard carries it. Mutation-checked |
 | Not fixed | the intake box still takes a reader's jot and refuses the POST in plain text |
+
+---
+
+## MUS-F-0127
+
+**Acceptance gates four rules, and nothing defines the act, records it, or tells the two states apart**
+
+finding · 2026-09-11
+
+workflow.md uses "accepted" as a gate in four places: it is what the reviewers are a precondition for, it is what the repeat-or-stop table turns on twice, and Plan.md says plainly that "passed is a verdict acceptance makes". Nothing anywhere says what the act is.
+
+There is no verb for it. mustur has seed, export, verify, serve, list, get, rebuild, add, amend, reroute, ask, surfaced, answer, questions, session, account and audit, and nothing that accepts anything. No milestone record carries an acceptance field. No record kind marks one.
+
+So the state is a sentence in a table, written by whoever last edited Plan.md. Eight rows say "awaiting acceptance", the oldest since 2026-08-20.
+
+**And the two states are not distinguishable by their evidence.** Milestone 2's row says "passed 2026-08-20, reviewed by three agents that did not build it and every finding dispositioned". Milestone 2b's says "built and reviewed 2026-08-20; awaiting acceptance". Those describe the same thing. What made one passed and the other awaiting is not in the tree; it is presumably that the owner said so about one of them, somewhere that was not written down -- which is the thing this repository records everything else to avoid.
+
+The cost is not bookkeeping. The stop table tells an agent to start the next milestone when one is accepted, and to stop when the dispatch named a milestone and that milestone is accepted. Both rows read a state that no command sets and no record holds, so in practice an agent decides for itself what the owner has accepted, or ignores the rows.
+
+Found because the owner asked what accepting milestone 8 would mean, which is the right question and had no answer in the tree.
+
+| Field | Value |
+| --- | --- |
+| Where | workflow.md's gates and repeat-or-stop table; Plan.md's build-status column |
+| Evidence | eight rows in Plan.md read 'awaiting acceptance'; no mustur verb accepts anything; no milestone record carries an acceptance field; milestone 2's passed row and 2b's awaiting row describe the same evidence |
+| Status | open, and not fixed by an agent choosing a procedure for it |
+
+---
+
+## MUS-F-0128
+
+**If i try to select text in the sessions the selection jumps to include the start of the tmux…**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+If i try to select text in the sessions the selection jumps to include the start of the tmux window to my current selected position
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0129
+
+**The gate cannot fire on the deployment it runs on, because the owner's default mode is one the CLI never prompts in**
+
+finding · 2026-09-11
+
+the rule it obeys: [MUS-D-0153](decisions.md#mus-d-0153)
+
+the milestone: [MUS-D-0152](decisions.md#mus-d-0152)
+
+Milestone 8 holds a tool call only when the session is in a permission mode where the CLI would have prompted -- default, plan or manual (MUS-D-0153). The owner's settings carry permissions.defaultMode = "auto", and the surface starts plain claude, which reads those settings. So every session started from mustur.devofpie.com runs in auto mode, where the CLI never asks anyone anything, and the gate stands down exactly as specified.
+
+The capability is live, correct, and cannot fire on the only deployment it runs on. The owner found it in the first five minutes of trying it: they started a session, sent the command the gate was supposed to hold, and it ran.
+
+**Why no test caught it.** Every one of them set a prompting mode explicitly. The investigation harness passes --permission-mode manual, the two end-to-end runs pass it, and the unit tests hand Gated the mode as an argument. Not one exercised the mode a session started from the surface actually gets, which is the only mode that matters on this machine. A test that chooses its own input agrees with the code by construction; the fixture that would have caught this is the settings file, and nothing reads it.
+
+**The done-when reviewer was closer than it was credited for.** It said the gate's predicate is "neither necessary nor sufficient for a dialog" and named both directions. That was read as a wording problem in Plan.md's row and answered with better wording. One of the two directions was this, and it was not a wording problem.
+
+What to do is MUS-Q-0100 and is not an agent's to choose: gating a mode the owner set to auto means Mustur asking about calls the owner has said they do not want to be asked about, which is the one thing MUS-D-0153 exists to refuse.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/gate.go promptingModes, against ~/.claude/settings.json permissions.defaultMode |
+| Evidence | a session started from the surface on 2026-09-11 ran echo mustur-gate-test with no pop-up; its pane reads auto mode on; the settings file sets defaultMode auto |
+| Why the tests passed | all of them set a prompting mode explicitly, so none used the mode a surface-started session actually gets |
+| Status | open on MUS-Q-0100 |

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-99 record(s), by identifier.
+100 record(s), by identifier.
 
 ---
 
@@ -2334,4 +2334,33 @@ mustur account list shows contact@hesh925.net as a reader on MUS holding one pas
 | Surfaced | 2026-09-10 18:25 |
 | Answer | The account was created and signup finished, but they have not looked through Mustur yet as far as I know |
 | Answered | 2026-09-10 18:29 |
+| Delivered | typed into mustur/Milestone_Work |
+
+---
+
+## MUS-Q-0100
+
+**Your sessions run in auto mode, where the gate stands down. Should it hold calls there anyway?**
+
+question · 2026-09-11
+
+the finding: [MUS-F-0129](findings.md#mus-f-0129)
+
+the rule that makes it stand down: [MUS-D-0153](decisions.md#mus-d-0153)
+
+Your settings set permissions.defaultMode to auto, and the surface starts plain claude, so every session it starts runs in a mode where the CLI never asks anyone anything. The gate only holds a call in a mode where the CLI would have prompted, so it stands down -- which is the rule you were shown and it is working. The consequence is that nothing you start from your phone will ever raise the pop-up. I have left Gate-Test running in a prompting mode so you can see the thing itself; this question is about the ordinary case, not that one.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Whether milestone 8 does anything on this machine. It is live, correct, and inert. |
+| Option | Start surface sessions in a prompting mode :: Recommended - the surface passes --permission-mode default, and your terminal sessions are untouched :: One flag on the command the surface builds, so a session you start from a page asks about Bash, Edit and Write and a session you start in a terminal keeps auto exactly as it is today. The reasoning: auto is a choice you make when you are sitting in front of the session and can interrupt it; a session you start from a phone and walk away from is the case the gate was built for, and the two deserve different defaults. The cost is that it is Mustur deciding your permission mode for you, which is a thing no other part of this holds the right to do -- and if you disagree with that sentence, this is the wrong option. |
+| Option | Gate auto mode too :: the gate ignores the mode entirely and holds its four tools wherever it finds them :: Simplest to state and the most aggressive: Mustur becomes the permission system, and auto mode stops meaning what it says on any session Mustur started. It is defensible -- in auto mode nothing else is asking, so the gate is not adding a second prompt, it is adding the only one -- and it directly contradicts MUS-D-0153's own sentence about never adding a gate Mustur cannot justify. Taking it means amending that decision rather than working around it. |
+| Option | Leave it :: auto means do not ask me, and the gate respects that :: The honest reading of your own setting. The gate then fires only for somebody who has chosen a prompting mode, which today is nobody on this machine, and milestone 8 is a capability waiting for a use it may never get. It also makes the milestone's acceptance a strange thing to judge, since the only way to see it work is a session started by hand with a flag. |
+| Asked by | whippy |
+| Session | mustur/Milestone_Work |
+| Session project | Milestone_Work |
+| Surfaced | 2026-09-11 04:31 |
+| Answer | Leave it |
+| Answered | 2026-09-11 04:33 |
 | Delivered | typed into mustur/Milestone_Work |
