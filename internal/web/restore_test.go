@@ -384,3 +384,28 @@ func TestTheRestoreButtonSaysResumeWhenTheConversationComesBack(t *testing.T) {
 		t.Errorf("the page the picker lands on still offers a fresh start: %s", one)
 	}
 }
+
+// Where a session runs, in the picker.
+//
+// With one project every name is unambiguous and with two nothing but a
+// perfectly chosen name tells them apart (MUS-F-0108). The directory is already
+// in the store — Start writes it down — so this costs no extra call to tmux.
+func TestThePickerNamesTheTreeEachSessionRunsIn(t *testing.T) {
+	srv, st, ctx := restoreServer(t, fakeRunner{listing: owned("mustur/alive")})
+	if err := st.RememberSession(ctx, "alive", "/checkout/Mustur", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.RememberSession(ctx, "gone", "/checkout/TradeShop", "claude"); err != nil {
+		t.Fatal(err)
+	}
+
+	body := getFrom(t, srv, "/sessions/alive")
+	// The option's own text, not the page's: "Mustur" is on this page half a
+	// dozen ways and none of them is the picker.
+	if !strings.Contains(body, "alive &middot; Mustur<") {
+		t.Errorf("the running session's option does not say where it runs: %s", body)
+	}
+	if !strings.Contains(body, "gone &middot; TradeShop<") {
+		t.Errorf("the lost session's option does not say where it ran: %s", body)
+	}
+}
