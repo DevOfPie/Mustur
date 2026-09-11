@@ -101,10 +101,15 @@ it**, and whose screen has **not changed for thirty minutes**, every clause of
 which is the owner's on [MUS-Q-0104](records/questions.md#mus-q-0104). Whether a
 turn is in flight is read off the pane rather than timed, so the dwell is not
 guarding against that; it is the gap between a turn ending and whoever asked for
-it reading the answer. Whether anything is typed is read as a yes or no and
-never as text — what is half-written in that box is the owner's, and one was
-found sitting in a session every silence timer on this machine would have called
-idle. The sweep rides on `--sessions`: dropping the flag removes it along with
+it reading the answer. A terminal attached to the session counts the same as a
+tab, because it is the same presence by another route. Whether anything is typed
+into the *pane's* box is read as a yes or no and never as text — and that is a
+narrower guard than it first looks: a draft written in Mustur's composer lives
+in the browser until Send, so a restart cannot destroy it and never could. What
+the box catches is a line typed by somebody attached in a terminal. The box is
+also not empty when it looks empty, because the CLI draws a dim suggestion into
+it, and reading that as somebody's draft would have stopped the sweep ever
+firing ([MUS-F-0138](records/findings.md#mus-f-0138)). The sweep rides on `--sessions`: dropping the flag removes it along with
 the surface. It is the only code here that acts on a running agent with nobody
 pressing anything. tmux is still the only answer to what is *running*
 ([MUS-D-0062](records/decisions.md#mus-d-0062)): with tmux unreachable nothing

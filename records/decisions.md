@@ -3070,15 +3070,15 @@ the threshold: [MUS-Q-0104](questions.md#mus-q-0104)
 
 The owner's answer to MUS-Q-0101, with a note: wait until sessions have been idle for some time, to avoid interrupting work. The option they chose is the one the question argued against, and the note is why it is answerable at all -- the objection was that a restart ends a turn in flight, and a session that is idle has no turn in flight.
 
-This supersedes the clause in MUS-D-0149 that says a person presses it and never a timer, for this one case and no other. MUS-D-0149 stands for a session lost with the machine: a CLI that crashed still wants a person, because nothing here knows why it died. A CLI that has told the screen it installed an update and is sitting at its prompt is a different thing entirely -- it has said what it wants and it is not doing anything. CLAUDE.md's 'It does not restart anything' stops being true when this is built, and says so rather than being quietly left.
+This supersedes the clause in MUS-D-0149 that says a person presses it and never a timer, for this one case and no other. MUS-D-0149 stands for a session lost with the machine: a CLI that crashed still wants a person, because nothing here knows why it died. A CLI that has told the screen it installed an update and is sitting at its prompt is a different thing entirely -- it has said what it wants and it is not doing anything. CLAUDE.md's 'It does not restart anything' is corrected rather than quietly left.
 
-What idle has to mean is the whole of the risk, and it is not one number. Reading the three sessions on this machine while writing this: Research is at its prompt with the notice showing, which is the case this exists for. Milestone_Work is also at its prompt, and its input box holds a typed, unsent line -- 'milestone 8 is accepted' -- which a restart would destroy and which no silence timer can see. The CLI publishes that box and Mustur already strips it off the screen, so it can be read rather than guessed at. MUS-Q-0104 is what the threshold and the exemptions are, and it is needed rather than merely asked: a number chosen here would be an agent picking when to kill the owner's agents.
+What idle has to mean is the whole of the risk, and MUS-Q-0104 settled it: at the prompt, nothing typed, nobody present, and thirty minutes of an unchanged screen. Two of those clauses were got wrong first time and both were corrected by the owner rather than by a test. The typed guard read the CLI's own dim suggestion as somebody's draft, which would have stopped the sweep ever firing (MUS-F-0138). And it was justified as protecting a draft it never protected: what the owner types goes into Mustur's composer, which is held in the browser until Send, so a restart cannot destroy it. The box catches a line typed by somebody attached in a terminal, and an attached terminal now declines the restart on its own -- the owner's presence clause was about presence, not about which client it was reached from.
 
 | Field | Value |
 | --- | --- |
 | Supersedes | the never-a-timer clause of MUS-D-0149, for this case only |
 | Status | built; internal/session/sweep.go, riding on --sessions |
-| Threshold | MUS-Q-0104: at its prompt with nothing typed, no browser tab open on it, and the screen unchanged for thirty minutes |
+| Threshold | MUS-Q-0104: at its prompt with nothing typed, nobody present -- no browser tab and no attached terminal -- and the screen unchanged for thirty minutes |
 
 ---
 

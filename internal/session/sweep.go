@@ -14,10 +14,14 @@ package session
 // because the sweep would otherwise destroy something:
 //
 //   - a turn in flight — read off the pane, not timed (MUS-D-0130)
-//   - a line typed into the box and not sent — read as a boolean and never as
-//     text; found on this machine while the question was being written, sitting
-//     in a session that every silence timer would have called idle
-//   - a browser tab open on the session — somebody is reading it
+//   - a browser tab open on the session, or a terminal attached to it — either
+//     way somebody is there, and the owner's clause is about presence rather
+//     than about which client they used
+//   - a line typed into the pane's own box and not sent — read as a boolean and
+//     never as text. Note what this is not: a draft written in Mustur's
+//     composer lives in the browser until Send, so a restart cannot destroy it
+//     and never could. This catches a line typed by somebody attached in a
+//     terminal, which is the only way text sits in that box unsent
 //   - a screen that moved inside the dwell — the turn ended, and the person who
 //     asked for it has not read the answer yet
 //
@@ -138,6 +142,14 @@ func (s *Sweeper) Sweep(ctx context.Context) {
 	running := make(map[string]bool, len(live))
 	for _, sn := range live {
 		running[sn.Project] = true
+		// Attached is somebody sitting in the session in a terminal. The
+		// owner's clause was "no browser tab open on it", and a terminal is the
+		// same presence reached another way -- tmux already reports it, so
+		// refusing on it costs nothing and asking only about tabs would have
+		// restarted a session with a person looking straight at it.
+		if sn.Attached {
+			continue
+		}
 		s.consider(ctx, sn.Project)
 	}
 	// A session that has gone takes its dwell with it, or a name started again

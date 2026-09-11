@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-142 record(s), by identifier.
+143 record(s), by identifier.
 
 ## The queue
 
@@ -152,6 +152,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |  | open on the server; the client stopped repainting on such a frame and stopped counting it as activity, and the server still sends it |
 | [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
 | [MUS-F-0137](#mus-f-0137) | A question answered with a question is recorded as answered, and leaves the queue settled | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
+| [MUS-F-0138](#mus-f-0138) | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. | fixed before the sweep ran anywhere |
 
 ---
 
@@ -3644,3 +3645,29 @@ The cost is precisely that the gate stops working. make check fails while an ope
 | Where | the answer path; observed on MUS-Q-0102 |
 | Evidence | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. |
 | Status | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
+
+---
+
+## MUS-F-0138
+
+**The guard against restarting over somebody's draft read the CLI's own suggestion as a draft**
+
+finding · 2026-09-11
+
+the sweep it guards: [MUS-D-0159](decisions.md#mus-d-0159)
+
+the threshold it implements: [MUS-Q-0104](questions.md#mus-q-0104)
+
+MUS-D-0159's sweep refuses to restart a session with a line typed into the pane's input box. The first version read the box by stripping the escapes and asking whether anything was left, which is true of the dim suggestion the CLI draws into an empty box. Every session showing one would have been refused forever, so the feature would have done nothing on the only machine it runs on.
+
+The owner found it by saying they had typed nothing into a session this called typed. Measured afterwards: the CLI renders its suggestion with SGR 2 and a person's text with no SGR at all after the caret -- not colour 231, which is what the transcript above the box uses. Both cases are now fixtures taken from the real CLI, the second by starting a throwaway session and typing into it without pressing Enter, because nothing in the tree had a capture of a box with something in it.
+
+The test is written as 'not dim' rather than 'is the input colour', and the direction is the point: if the CLI restyles its suggestion a suggestion reads as typed and an update goes untaken, and if it restyles its input the other test would read a draft as an empty box and the restart would destroy it. One costs a version, the other costs what somebody wrote.
+
+The owner also pointed out that the guard was never protecting what it claimed. A draft written in Mustur's composer is held in the browser under mustur.draft and only reaches the pane when Send is pressed, so a restart cannot destroy it. What the box catches is a line typed by somebody attached to the session in a terminal -- and tmux already reports an attached client, so the sweep now declines on that too, which is the owner's 'no browser tab open on it' clause reached by the other route.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/chrome.go, internal/session/sweep.go |
+| Evidence | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. |
+| Status | fixed before the sweep ran anywhere |

@@ -38,12 +38,20 @@ type Status struct {
 	Hint string
 	// Update is that same line when it is an update notice instead.
 	Update string
-	// Typed reports whether anything is sitting in the input box, and never
-	// what. The text is the owner's -- half a thought, on their screen, and no
-	// business of a record or a socket frame -- but whether it is there decides
-	// whether a session can be restarted under them (MUS-Q-0104). A session at
-	// an empty prompt has nothing to lose; one with a line typed and unsent
-	// loses it, and no silence timer can see the difference.
+	// Typed reports whether anything is sitting in the pane's input box, and
+	// never what. The text is somebody's -- half a thought, on their screen, and
+	// no business of a record or a socket frame.
+	//
+	// This is *not* where a draft written in Mustur's own composer lives. That
+	// one is held in the browser and only reaches the pane when Send is pressed,
+	// so restarting a session cannot destroy it. What this catches is a line
+	// typed by somebody attached to the tmux session in a terminal, which is the
+	// only way text sits in this box unsent.
+	//
+	// The box also is not empty when it looks empty: the CLI draws a dim
+	// suggestion of its own into it. Telling that from a person's line is what
+	// isGhost is for, and getting it wrong in the safe direction means the sweep
+	// declines to restart rather than destroying anything.
 	Typed bool
 }
 
@@ -103,7 +111,12 @@ func readStatus(chrome []string) Status {
 			// session's, and it is already in front of them. Whether there is
 			// anything there is a different question from what it says, and
 			// only the first is carried.
-			if strings.TrimSpace(strings.TrimPrefix(trimmed, caret)) != "" {
+			//
+			// The box is not empty when it looks empty: the CLI draws a dim
+			// suggestion in it, and stripping the escapes first destroys the
+			// only thing that tells the two apart. The owner caught this by
+			// saying they had typed nothing into a session this read as typed.
+			if strings.TrimSpace(strings.TrimPrefix(trimmed, caret)) != "" && !isGhost(raw) {
 				st.Typed = true
 			}
 		case isStatusLine(trimmed):
@@ -117,6 +130,26 @@ func readStatus(chrome []string) Status {
 		}
 	}
 	return st
+}
+
+// isGhost reports whether the input box is showing the CLI's own suggestion
+// rather than something a person typed.
+//
+// Measured across the seven captured panes in testdata, taken from the real CLI
+// at different moments: every line carrying typed text renders it in colour 231
+// and none of them carries SGR 2, and the dim suggestion carries SGR 2 and no
+// colour. So dim is the discriminator.
+//
+// Written as "not dim" rather than "is colour 231" deliberately, and the
+// direction is the whole point. If the CLI restyles its suggestion, a
+// suggestion reads as typed and the sweep leaves a session alone that it could
+// have restarted -- a wasted update. If it restyles its *input*, a "colour 231"
+// test would read typed text as an empty box and the sweep would restart a
+// session with a draft in it, destroying work. One of those failures costs a
+// version and the other costs a paragraph the owner wrote, so the test is the
+// one that fails towards doing nothing.
+func isGhost(raw string) bool {
+	return strings.Contains(raw, "\x1b[2m")
 }
 
 // readStatusLine splits "⏵⏵ auto mode on (shift+tab to cycle) · PR #31 · ← 1
