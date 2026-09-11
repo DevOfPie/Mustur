@@ -1058,11 +1058,12 @@
 
   // Ending the session.
   //
-  // The owner asked for a confirmation prompt as well as the tick (MUS-Q-0080's
-  // note), so there are two things in front of it that fail differently: the
-  // tick is the server's and is refused without, and this is the browser's and
-  // names the session before anything is submitted. With script blocked the
-  // tick is the whole guard, which is the standing Withdraw already has.
+  // The owner asked for a confirmation prompt rather than the tick that first
+  // shipped here (MUS-Q-0080's note, and MUS-F-0103 for why the tick was wrong
+  // on this surface). So this is the only thing in front of Stop that a person
+  // sees, and it names the session before anything is submitted. The guards
+  // that do not depend on script are the origin check on the POST and the
+  // owner-only rule on any write -- neither of which the tick ever was.
   var endForm = document.getElementById("endform");
   if (endForm) {
     endForm.addEventListener("submit", function (e) {

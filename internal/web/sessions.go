@@ -957,9 +957,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      the only one spelling itself out. Square, so the glyph sits in the middle
      of it rather than on the left of a word-shaped box. */
   /* Ending one. Beside the control that starts one, because that is where a
-     reader looks for what can be done to a session, and behind the same tick
-     the decision queue puts in front of Withdraw (MUS-D-0147). */
-  .endform { display: inline-flex; flex: 0 0 auto; }
+     reader looks for what can be done to a session, and behind the confirmation
+     that names it (MUS-D-0147, as MUS-F-0103 amended it -- the tick is gone).
+
+     border-top undoes the bare form rule below, which was written for the
+     composer and lands on every form on the page. It is what drew a line across
+     the rail above Stop, where the tick used to sit, and went on drawing it
+     after the tick was removed (MUS-F-0107). The same rule also reaches .pick
+     and .new form, which is a leak rather than an intent, but neither is what
+     the owner reported and both would change a layout nobody has looked at. */
+  .endform { display: inline-flex; flex: 0 0 auto; border-top: 0; }
   .endform button { font: inherit; font-size: .82em; padding: .2rem .55rem;
                     border: 1px solid var(--edge); border-radius: .45rem;
                     background: transparent; color: inherit; cursor: pointer; }
