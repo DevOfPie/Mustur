@@ -395,6 +395,26 @@ func kindNames() []string {
 // defaultActor names who wrote a record. The log distinguishes what the
 // bootstrap imported from what has been written since, so an unattributed
 // record would erase the one thing that distinction is for.
+// remembered adapts the store to what the update sweep reads back.
+//
+// The command it hands over is the resume command, not the recorded one, by the
+// same rule the restore button follows and through the same function.
+type remembered struct{ store *store.Store }
+
+func (r remembered) Remembered(ctx context.Context, project string) (string, string, bool) {
+	rows, err := r.store.RememberedSessions(ctx)
+	if err != nil {
+		return "", "", false
+	}
+	for _, row := range rows {
+		if row.Project != project {
+			continue
+		}
+		return row.Dir, session.ResumeIfWritten(row.Cmd, row.CLI, row.Transcript), true
+	}
+	return "", "", false
+}
+
 func defaultActor() string {
 	if who := os.Getenv("MUSTUR_ACTOR"); who != "" {
 		return who
@@ -686,6 +706,17 @@ func cmdServe(args []string) error {
 			Commands:    *sessionCmds,
 		}
 		sessions.Routes(mux)
+
+		// The update sweep, which is the only thing here that acts on a running
+		// agent without a person pressing anything (MUS-D-0159). It rides on
+		// --sessions rather than a flag of its own: it restarts sessions, and
+		// the flag that decides whether this server touches sessions at all is
+		// the one already being read. Dropping --sessions removes the surface
+		// and the sweep together, which is the knob to reach for.
+		sweep := &session.Sweeper{Adapter: adapter, Recall: remembered{s}, Watch: hub}
+		sweepCtx, stopSweep := context.WithCancel(context.Background())
+		defer stopSweep()
+		go sweep.Run(sweepCtx)
 	}
 	// The composer is served whatever the flag says, and offers sessions only
 	// when they are being served.

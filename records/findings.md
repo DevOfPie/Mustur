@@ -148,7 +148,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0131](#mus-f-0131) | The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the… | Three screenshots of /records in Chrome on the owner's phone, 1080px wide. The first is the page as it loads, fitted to the window: the content column fills the left 55% of the screen and the rest is empty background. The third, at 100%, shows the same page with no tab bar on the screen at all. The second is a full-page scrolling capture in which the content fills the width and the bar's icons sit at the very foot. Measured against a throwaway store in chrome-headless-shell 1237, driven over the DevTools protocol with mobile emulation: at a 390x844 viewport documentElement.scrollWidth was 625 where clientWidth is 390, and the fixed bar's bounding rect bottom was 1353. After the fix, 390 and 844 -- the bar on the screen's bottom edge -- and no visible element exceeding the viewport. The same before and after at 360px, 625 to 360. /sessions, /intake and /questions measure 390 at 390px, so nothing moved to a surface nobody had looked at. | fixed |
 | [MUS-F-0132](#mus-f-0132) | The second picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
 | [MUS-F-0133](#mus-f-0133) | The third picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
-| [MUS-F-0134](#mus-f-0134) | How do we handle stopping and restarting sessions around claude updates? |  | with the owner on MUS-Q-0101 |
+| [MUS-F-0134](#mus-f-0134) | How do we handle stopping and restarting sessions around claude updates? |  | answered on MUS-Q-0101 and built on MUS-D-0159; the threshold is MUS-Q-0104's |
 | [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |  | open on the server; the client stopped repainting on such a frame and stopped counting it as activity, and the server still sends it |
 | [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
 
@@ -3562,12 +3562,16 @@ Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
 raised as: [MUS-Q-0101](questions.md#mus-q-0101)
 
+the decision: [MUS-D-0159](decisions.md#mus-d-0159)
+
+what idle means: [MUS-Q-0104](questions.md#mus-q-0104)
+
 Asked by the owner through the intake box. What is true today: the CLI installs an update and goes on running the version it started on, says so on its own status line, and Mustur reads that line off the pane and shows it as a chip (internal/session/chrome.go, the Update branch of SplitChrome). Taking the update is ending the session and bringing it back, which the restore path does. Whether that gets a control of its own is MUS-Q-0101.
 
 | Field | Value |
 | --- | --- |
 | Evidence |  |
-| Status | with the owner on MUS-Q-0101 |
+| Status | answered on MUS-Q-0101 and built on MUS-D-0159; the threshold is MUS-Q-0104's |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |

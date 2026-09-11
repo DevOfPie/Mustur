@@ -371,6 +371,28 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 // re-word `--model "opus 5"`. A session that starts without its conversation is
 // a disappointment; a session that starts with its arguments rearranged is a
 // defect, so the disappointment is the one chosen.
+// ResumeIfWritten is Resume with the check that the conversation exists.
+//
+// The transcript is looked for on disk rather than assumed from the identifier.
+// The hook that reports one fires as the CLI starts and the file is not written
+// until the conversation has something in it, so a session started and never
+// spoken to has an identifier naming nothing -- and --resume on that is a
+// command that exits at once, which arrives as "the session died on startup"
+// two steps from anything that explains it. Better to bring the session back
+// empty, which is what it was.
+//
+// One implementation, because there are now two callers: the restore button a
+// person presses, and the update sweep that presses nothing (MUS-D-0159).
+func ResumeIfWritten(cmd, cli, transcript string) string {
+	if cli == "" || transcript == "" {
+		return cmd
+	}
+	if _, err := os.Stat(transcript); err != nil {
+		return cmd
+	}
+	return Resume(cmd, cli)
+}
+
 func Resume(cmd, cli string) string {
 	if !isClaude(cmd) || strings.ContainsAny(cmd, `"'`) {
 		return cmd
@@ -781,8 +803,8 @@ func (a *Adapter) Stop(ctx context.Context, project string) error {
 	if !live {
 		return fmt.Errorf("%s has no session Mustur started", project)
 	}
-	if out, err := a.runner().Run(ctx, "tmux", "kill-session", "-t", name); err != nil {
-		return fmt.Errorf("tmux kill-session: %w: %s", err, strings.TrimSpace(out))
+	if err := a.kill(ctx, name); err != nil {
+		return err
 	}
 	// A session the owner ended is finished, so it stops being offered back.
 	// That is the whole distinction the remembered table encodes: this is how a
@@ -791,6 +813,38 @@ func (a *Adapter) Stop(ctx context.Context, project string) error {
 		if err := a.Remember.ForgetSession(ctx, project); err != nil {
 			fmt.Fprintf(os.Stderr, "mustur: %s was stopped but is still written down: %v\n", name, err)
 		}
+	}
+	return nil
+}
+
+// Kill ends a session and leaves it written down.
+//
+// The half of Stop that the update sweep wants, and the half it must not have
+// is the forgetting. A session taken for a CLI update is coming straight back,
+// so the row has to survive: dropping it would make the restart look like a
+// reboot on the way out and put the session in the list of things that went
+// without being told to (MUS-D-0149, MUS-D-0159).
+//
+// Not exported as a general capability. The surface's Stop is Stop; this exists
+// for a caller that is starting the same session again in the next breath.
+func (a *Adapter) Kill(ctx context.Context, project string) error {
+	name, err := NameFor(project)
+	if err != nil {
+		return err
+	}
+	live, err := a.Alive(ctx, project)
+	if err != nil {
+		return err
+	}
+	if !live {
+		return fmt.Errorf("%s has no session Mustur started", project)
+	}
+	return a.kill(ctx, name)
+}
+
+func (a *Adapter) kill(ctx context.Context, name string) error {
+	if out, err := a.runner().Run(ctx, "tmux", "kill-session", "-t", name); err != nil {
+		return fmt.Errorf("tmux kill-session: %w: %s", err, strings.TrimSpace(out))
 	}
 	return nil
 }
