@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 99 | [questions.md](questions.md) |
-| decision | 157 | [decisions.md](decisions.md) |
-| finding | 131 | [findings.md](findings.md) |
+| question | 100 | [questions.md](questions.md) |
+| decision | 158 | [decisions.md](decisions.md) |
+| finding | 134 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 23 | [work-units/index.md](work-units/index.md) |
 | investigation | 3 | [investigations/index.md](investigations/index.md) |
@@ -159,6 +159,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0097](questions.md#mus-q-0097) | question | The gate is built and green. Does it go live on your own sessions, and on by default? |
 | [MUS-Q-0098](questions.md#mus-q-0098) | question | The prompt and the answer cannot both use the pane. Which one gives way? |
 | [MUS-Q-0099](questions.md#mus-q-0099) | question | There is a second person with a passkey. Is milestone 6 met, and what is left before it can be? |
+| [MUS-Q-0100](questions.md#mus-q-0100) | question | Your sessions run in auto mode, where the gate stands down. Should it hold calls there anyway? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -316,6 +317,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0155](decisions.md#mus-d-0155) | decision | A held call waits five minutes, and when it stops being held the question is still Mustur's to answer |
 | [MUS-D-0156](decisions.md#mus-d-0156) | decision | In a session Mustur started, Mustur is the prompt |
 | [MUS-D-0157](decisions.md#mus-d-0157) | decision | Milestone 6 is not met: the person exists and the reading has not happened |
+| [MUS-D-0158](decisions.md#mus-d-0158) | decision | The gate respects the permission mode, and is therefore inert in ordinary use here |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -442,6 +444,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0124](findings.md#mus-f-0124) | finding | An agent read a prompt's return value as permission to rewrite a published branch |
 | [MUS-F-0125](findings.md#mus-f-0125) | finding | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog |
 | [MUS-F-0126](findings.md#mus-f-0126) | finding | A reader was offered the one tab that refuses them, because no surface knew who was reading it |
+| [MUS-F-0127](findings.md#mus-f-0127) | finding | Acceptance gates four rules, and nothing defines the act, records it, or tells the two states apart |
+| [MUS-F-0128](findings.md#mus-f-0128) | finding | If i try to select text in the sessions the selection jumps to include the start of the tmux… |
+| [MUS-F-0129](findings.md#mus-f-0129) | finding | The gate cannot fire on the deployment it runs on, because the owner's default mode is one the CLI never prompts in |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

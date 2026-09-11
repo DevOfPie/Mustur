@@ -3520,3 +3520,32 @@ The remaining evidence is unusual for this repository and worth naming: nothing 
 | What is in place | an invitation accepted, a passkey registered, a reader role on MUS, the reading surfaces, and a tab bar that no longer offers what a reader cannot open |
 | What is missing | somebody who is not the owner reading a project's routing and records from their own device |
 | How it will be proven | the owner's word or that person's; the server keeps no request log and the store cannot show a page being read |
+
+### MUS-D-0158
+
+**The gate respects the permission mode, and is therefore inert in ordinary use here**
+
+decision · 2026-09-11
+
+answers: MUS-Q-0100
+
+the finding: MUS-F-0129
+
+the rule it leaves alone: MUS-D-0153
+
+MUS-Q-0100 asked whether the gate should hold calls in auto mode, given that the owner's settings make auto the mode every session started from the surface runs in, and that the gate therefore never fires there. The owner chose to leave it: auto means do not ask me, and the gate respects that.
+
+So MUS-D-0153's two clauses stand unchanged, and the consequence is written down here rather than left to be rediscovered: **milestone 8 does nothing in the ordinary use of this deployment.** A session started from mustur.devofpie.com inherits permissions.defaultMode = auto, the CLI asks nobody anything, and Mustur holds nothing. The pop-up appears only in a session someone deliberately started in a prompting mode.
+
+That is not the milestone failing. It is the milestone declining to override a setting the owner made on purpose, which is the sentence MUS-D-0153 was written around -- Mustur never adds a gate it cannot justify, and a mode that says do not ask is the clearest possible instruction not to.
+
+**What it costs, said plainly because it is the whole of what was bought.** The capability is built, measured, reviewed and deployed, and on the machine it runs on it will sit unused until the owner starts a session in a prompting mode. Whether that ever happens is theirs. An agent should not read this decision as an invitation to widen the gate later on its own judgement; widening it is MUS-Q-0100 being answered differently, which is the owner's to do.
+
+**How to see it work**, for anyone judging the milestone or reproducing it: start a session whose command sets a prompting mode -- mustur session start X --dir DIR --cmd "claude --permission-mode default" -- and ask it to run a shell command. That is how the end-to-end evidence in MUS-W-0023 was taken, and it is now also the only way to watch it happen here.
+
+| Field | Value |
+| --- | --- |
+| Unchanged | MUS-D-0153's two clauses |
+| Consequence | no session started from the surface will raise the pop-up while the owner's default mode is auto |
+| How to exercise it | start a session with --permission-mode default, as MUS-W-0023's evidence did |
+| Not an invitation | widening the gate later is MUS-Q-0100 answered differently, which is the owner's |
