@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-103 record(s), by identifier.
+104 record(s), by identifier.
 
 ---
 
@@ -2377,7 +2377,7 @@ The CLI installs an update and keeps running the version it started on. It says 
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0134. Nothing is built either way; the answer decides whether anything is |
 | Option | Leave it at Stop then Resume :: Recommended. Nothing new is built, the chip already says an update is waiting, and two presses already do it. :: The pieces exist and compose. What the owner loses is that the two presses are on different screens -- Stop is on the session, the Resume button is on the page you land on afterwards -- so it is two presses and a navigation rather than two presses. |
 | Option | A restart control on the session's own page :: One press instead of two and a navigation, and one more destructive button on the surface. :: Stop, remember, restore, without leaving the session view. It is the existing stop path and the existing restore path behind one button, so it is small. It is also a second button that kills a running agent, next to the first one, and MUS-D-0147 put a confirmation in front of that for a reason. |
@@ -2385,6 +2385,10 @@ The CLI installs an update and keeps running the version it started on. It says 
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 05:01 |
+| Answer | Mustur restarts the session when it sees the notice |
+| Answered | 2026-09-11 07:25 |
+| Note | Wait until sessions have been idle for some time to avoid interrupting work |
+| Delivered | typed into mustur/Intake |
 
 ---
 
@@ -2394,18 +2398,30 @@ The CLI installs an update and keeps running the version it started on. It says 
 
 question · 2026-09-11
 
+what idle is read from: [MUS-D-0130](decisions.md#mus-d-0130)
+
+the sweep that would share it: [MUS-D-0159](decisions.md#mus-d-0159)
+
 Naming the tree each session runs in is the half of MUS-F-0108 that costs nothing, because Start already writes down where each session runs and the page that lists them was reading that row and discarding the directory. The other half was 'nice to know', and it is not free. Whether a session is working or waiting is read out of the CLI's own pane (MUS-D-0130), and the picker is rendered on the server with nothing captured -- so every session in the list means one more tmux capture-pane, on every page load of every session.
+
+The owner asked whether the tmux sessions only run while a session is being viewed. They do not: a session runs in tmux from the moment Start creates it until something stops it, and since MUS-D-0151 the tmux server sits in a systemd scope of its own so even a redeploy of Mustur does not end one. What is gated on a viewer is the *reader*, not the session -- Hub.Watch counts viewers and the poller stops two minutes after the last one leaves (LingerAfter in internal/session/screen.go). So the screen is polled only while somebody is looking at it, and the session runs regardless.
+
+That distinction is what the fourth option below is: their suggestion, which none of the first three offered. Keep a poller on every owned session all the time, rather than starting one per viewer, and the picker reads state that is already in memory. It changes what this costs from a tmux call per session per page render into a fixed background cost per running session -- and it is the same machinery MUS-D-0159 needs to notice an update notice on a session nobody is looking at.
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | the second half of MUS-F-0108. The first half -- the tree each session runs in -- is built and needs no answer |
-| Option | Leave the picker naming only where each session runs :: Recommended. Nothing further is built or spent; the state stays on the session's own page, where the pill already says it. :: The pill is live and correct for the session being looked at. What the picker cannot then tell you is which of the others is waiting for you, which is the thing that was asked for -- so this is declining the nice-to-know rather than satisfying it cheaply. |
-| Option | Read every session's pane on every render :: One tmux capture-pane per running session, per page load, run one after another. :: With three sessions that is three subprocesses before the page draws, and it grows with the list. The reading itself is code that exists (session.Doing). It is the honest version: the picker says what is true at the moment it is drawn. |
-| Option | Read them, but no more often than every few seconds :: Same reading, shared between page loads, at the cost of a picker that can be a few seconds behind. :: One capture per session per interval rather than per render, held in memory. A session that finished two seconds ago still reads as working. That is the same trade the pill does not have to make, and it is the only version whose cost does not grow with how often the page is loaded. |
+| Option | Leave the picker naming only where each session runs :: Recommended when this was asked, and superseded by the fourth if that is taken. :: The pill is live and correct for the session being looked at. What the picker cannot then tell you is which of the others is waiting for you, which is the thing that was asked for. |
+| Option | Read every session's pane on every render :: One tmux capture-pane per running session, per page load, run one after another. :: With three sessions that is three subprocesses before the page draws, and it grows with the list. It is the honest version: the picker says what is true at the moment it is drawn. |
+| Option | Read them, but no more often than every few seconds :: Same reading, shared between page loads, at the cost of a picker that can be a few seconds behind. :: One capture per session per interval rather than per render, held in memory. A session that finished two seconds ago still reads as working. |
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 05:01 |
+| Answer | Are the Tmux sessions only running when a session is being viewed? Would it not be better to always have the Tmux live on the machine and only transit the selected session? |
+| Answered | 2026-09-11 07:29 |
+| Delivered | typed into mustur/Intake |
+| Option | Poll every owned session always, not only the watched one :: The owner's own suggestion. A fixed background cost per running session, and the picker's state becomes free. :: Today a poller is started by a viewer and stops two minutes after the last one leaves, so nothing knows what an unwatched session is doing. Polling all of them makes the picker's state something already in memory rather than something fetched, removes the per-render cost entirely, and is the same sweep MUS-D-0159 needs to see an update notice on a session nobody has open. The cost is one capture-pane per running session every 400ms forever, whether or not anyone is looking -- which is the thing LingerAfter exists to avoid, made permanent. |
 
 ---
 
@@ -2419,7 +2435,7 @@ MUS-D-0119 set the picture ceilings on purpose -- ten megabytes, four raster for
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | nothing; it ships at six and MUS-F-0130 is fixed either way. What the answer changes is the ceiling and how it is expressed |
 | Option | Six, as built :: Recommended. Double what the report that asked for it needed, and nothing further to do. :: MUS-F-0131 arrived as three records. Six leaves room without being a number chosen to sound generous. The cost is the ceiling: a request can carry sixty megabytes of pictures, where before it could carry ten. |
 | Option | Three :: The measured number, and the body cap stays at thirty megabytes. :: Three is what the report that prompted this actually needed, which is the only measurement there is. It is tighter on the ingress and it will be the wrong number the first time somebody has four screenshots of one defect. |
@@ -2427,3 +2443,31 @@ MUS-D-0119 set the picture ceilings on purpose -- ten megabytes, four raster for
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 05:22 |
+| Answer | Six, as built |
+| Answered | 2026-09-11 07:27 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0104
+
+**What counts as idle enough to restart a session under you, and what is never restarted?**
+
+question · 2026-09-11
+
+Your note on MUS-Q-0101 was to wait until sessions have been idle for some time. Some time is the whole of the risk and I will not pick it. What is already exact: the CLI prints 'esc to interrupt' while a turn is in flight and sits at a bare prompt otherwise, and Mustur reads that off the pane rather than timing silence (MUS-D-0130), so 'no turn in flight' needs no timer at all. What a timer is for is the person -- the gap between finishing a turn and typing the next thing. Read while writing this: Research is at its prompt with the update notice showing, which is the case this exists for, and Milestone_Work is also at its prompt with 'milestone 8 is accepted' typed into its input box and not sent. A restart destroys that line, and no silence timer can see it -- but the CLI publishes the input box and Mustur already strips it off the screen, so it can be read. Every option below therefore refuses to restart a session with anything typed in its box; they differ in how long and in what else counts as you being present.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-D-0159. The mechanism is built and does nothing without a threshold; a number chosen here would be an agent picking when to kill your agents |
+| Needed to proceed | yes |
+| Option | Prompt empty, quiet thirty minutes, and no browser tab open on it :: Recommended. The slowest to take an update and the only one that cannot interrupt you. :: Three conditions, all of them things Mustur can already see: no turn in flight, nothing typed, no viewer holding a socket on that session, and half an hour since the screen last changed. A session you walked away from yesterday is taken on the next sweep; one you are reading is never taken while you are reading it. The cost is that an update can sit for a day on a session you keep glancing at, which is the cost of the version of this that cannot surprise you. |
+| Option | Prompt empty and quiet five minutes :: Takes the update promptly; can restart a session you are looking at but not typing in. :: Two conditions. Five minutes is long enough that a session mid-task is safe -- a turn in flight is excluded by the pane, not the clock -- and short enough that the update is taken the same working session. What it does not know is whether you are watching: a tab open on the screen counts for nothing, so a session you are reading can restart under you between one glance and the next. |
+| Option | Prompt empty, and that is all :: Takes the update the moment the turn ends. No dwell at all. :: This is your answer read literally, with only the typed-text guard on it. The moment a turn finishes and the box is empty, the session goes and comes back on its conversation. Fastest, and the one where finishing a turn and reaching for the keyboard is a race -- the pane says idle the instant the reply lands, and you have not read it yet. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 07:28 |
+| Answer | Prompt empty, quiet thirty minutes, and no browser tab open on it |
+| Answered | 2026-09-11 07:30 |
+| Delivered | typed into mustur/Intake |

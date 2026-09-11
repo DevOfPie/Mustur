@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-158 record(s), by identifier.
+160 record(s), by identifier.
 
 ## Index
 
@@ -170,6 +170,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0156](#mus-d-0156) | In a session Mustur started, Mustur is the prompt | 2026-09-10 |
 | [MUS-D-0157](#mus-d-0157) | Milestone 6 is not met: the person exists and the reading has not happened | 2026-09-10 |
 | [MUS-D-0158](#mus-d-0158) | The gate respects the permission mode, and is therefore inert in ordinary use here | 2026-09-11 |
+| [MUS-D-0159](#mus-d-0159) | Mustur restarts a session to take a CLI update, which is the first thing it does on its own | 2026-09-11 |
+| [MUS-D-0160](#mus-d-0160) | A jot takes six pictures, and six is the owner's number rather than the agent's | 2026-09-11 |
 
 ---
 
@@ -3047,3 +3049,57 @@ That is not the milestone failing. It is the milestone declining to override a s
 | Consequence | no session started from the surface will raise the pop-up while the owner's default mode is auto |
 | How to exercise it | start a session with --permission-mode default, as MUS-W-0023's evidence did |
 | Not an invitation | widening the gate later is MUS-Q-0100 answered differently, which is the owner's |
+
+---
+
+## MUS-D-0159
+
+**Mustur restarts a session to take a CLI update, which is the first thing it does on its own**
+
+decision · 2026-09-11
+
+the question it answers: [MUS-Q-0101](questions.md#mus-q-0101)
+
+the clause it supersedes: [MUS-D-0149](#mus-d-0149)
+
+the jot that raised it: [MUS-F-0134](findings.md#mus-f-0134)
+
+what idle is read from: [MUS-D-0130](#mus-d-0130)
+
+the threshold: [MUS-Q-0104](questions.md#mus-q-0104)
+
+The owner's answer to MUS-Q-0101, with a note: wait until sessions have been idle for some time, to avoid interrupting work. The option they chose is the one the question argued against, and the note is why it is answerable at all -- the objection was that a restart ends a turn in flight, and a session that is idle has no turn in flight.
+
+This supersedes the clause in MUS-D-0149 that says a person presses it and never a timer, for this one case and no other. MUS-D-0149 stands for a session lost with the machine: a CLI that crashed still wants a person, because nothing here knows why it died. A CLI that has told the screen it installed an update and is sitting at its prompt is a different thing entirely -- it has said what it wants and it is not doing anything. CLAUDE.md's 'It does not restart anything' stops being true when this is built, and says so rather than being quietly left.
+
+What idle has to mean is the whole of the risk, and it is not one number. Reading the three sessions on this machine while writing this: Research is at its prompt with the notice showing, which is the case this exists for. Milestone_Work is also at its prompt, and its input box holds a typed, unsent line -- 'milestone 8 is accepted' -- which a restart would destroy and which no silence timer can see. The CLI publishes that box and Mustur already strips it off the screen, so it can be read rather than guessed at. MUS-Q-0104 is what the threshold and the exemptions are, and it is needed rather than merely asked: a number chosen here would be an agent picking when to kill the owner's agents.
+
+| Field | Value |
+| --- | --- |
+| Supersedes | the never-a-timer clause of MUS-D-0149, for this case only |
+| Status | decided, with the threshold answered on MUS-Q-0104; the sweep it needs is built next |
+| Threshold | MUS-Q-0104: at its prompt with nothing typed, no browser tab open on it, and the screen unchanged for thirty minutes |
+
+---
+
+## MUS-D-0160
+
+**A jot takes six pictures, and six is the owner's number rather than the agent's**
+
+decision · 2026-09-11
+
+the question it answers: [MUS-Q-0103](questions.md#mus-q-0103)
+
+the ceiling it sits beside: [MUS-D-0119](#mus-d-0119)
+
+the fix it sizes: [MUS-F-0130](findings.md#mus-f-0130)
+
+the report that needed three: [MUS-F-0131](findings.md#mus-f-0131)
+
+MUS-Q-0103 answered: six, as built. The ceiling stands where MUS-F-0130's fix put it, and the point of asking was never that six was likely wrong -- it was that the request body cap is computed from it, so the number decides what one POST can push through the ingress, and MUS-D-0119 had already had the owner choose once in that class. A contract reviewer found it taken in a code comment, which is where it should not have been settled.
+
+Three was the only measured number in it: MUS-F-0131 arrived as three records because the box took one picture each. Six is double that, and it is now double that on the owner's word.
+
+| Field | Value |
+| --- | --- |
+| Status | decided; nothing changes in the code and the comment stops saying the question is open |
