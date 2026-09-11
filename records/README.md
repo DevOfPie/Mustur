@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 102 | [questions.md](questions.md) |
+| question | 103 | [questions.md](questions.md) |
 | decision | 158 | [decisions.md](decisions.md) |
 | finding | 141 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
@@ -162,6 +162,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0100](questions.md#mus-q-0100) | question | Your sessions run in auto mode, where the gate stands down. Should it hold calls there anyway? |
 | [MUS-Q-0101](questions.md#mus-q-0101) | question | Claude updates itself under a running session. Does taking the update get a control, or stay two presses? |
 | [MUS-Q-0102](questions.md#mus-q-0102) | question | Should the session picker say which sessions are working and which are waiting? |
+| [MUS-Q-0103](questions.md#mus-q-0103) | question | A jot takes six pictures, which multiplies what one request can carry by six. Is six yours? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |

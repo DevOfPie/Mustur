@@ -243,8 +243,11 @@ holds up a milestone from one that holds up a sentence.
 
 **Built at milestone 2c, without a visual plan**, and published at
 `mustur.devofpie.com` behind Cloudflare Access at 2c's end. What exists is one
-textarea, one button and a list of what was filed in the last hour. It is the
-baseline a plan should argue with rather than a design anyone chose.
+textarea, a file field taking up to six pictures, a destination select, one
+button, and a list of what was filed in the last hour. The first three words of
+that sentence used to be the whole of it; the picture field arrived on
+MUS-D-0119 and the select on MUS-D-0121, and the description had not caught up.
+It is the baseline a plan should argue with rather than a design anyone chose.
 
 One box. Append a line and leave. Under fifteen seconds, and it must never
 require a decision to file — naming a thing requires understanding it, and at
