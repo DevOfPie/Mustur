@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-134 record(s), by identifier.
+141 record(s), by identifier.
 
 ## The queue
 
@@ -121,8 +121,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0104](#mus-f-0104) | A dialog of toggles could be read and not used | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. | fixed |
 | [MUS-F-0105](#mus-f-0105) | An answer was delivered into a session that never saw it, and the record says it was typed in |  |  |
 | [MUS-F-0106](#mus-f-0106) | Every redeploy kills every session, because the tmux server lives in the service's cgroup |  |  |
-| [MUS-F-0107](#mus-f-0107) | There is still a divider line above the stop button where the checkbox was on top of |  | unreviewed |
-| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… |  | unreviewed |
+| [MUS-F-0107](#mus-f-0107) | There is still a divider line above the stop button where the checkbox was on top of | A bare form rule sets border-top and padding for the composer, which declares neither of its own. .endform declared display and flex and nothing else, so the border applied to it -- which is also why the removed tick sat on top of the button rather than beside it, the column direction coming from the same rule. TestNothingDrawsALineAboveStop asserts .endform undoes it. | fixed |
+| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… | Every option was the session's name and nothing else, on all three of the template's option sites. The name is free text typed on the start form; nothing else was on the option to tell two apart. Where a session runs was already in the store -- Start writes the project, the directory and the command down and the row survives until the session is deliberately stopped -- and the page was already reading those rows to work out which sessions are lost, and throwing the directory away. | fixed for where each session runs; which are working and which are waiting is with the owner on MUS-Q-0102 |
 | [MUS-F-0109](#mus-f-0109) | The offer to restore a lost session was on the one page a running session redirects past |  |  |
 | [MUS-F-0110](#mus-f-0110) | The session picker did nothing on a page with no terminal, and had no submit button either |  |  |
 | [MUS-F-0111](#mus-f-0111) | The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser | Twenty-five transcripts under ~/.claude/projects, 52,160 lines, on CLI 2.1.263. Twenty-three entry types appear and none is a dialog: assistant, user, attachment, queue-operation, last-prompt, ai-title, atis-latch, mode, permission-mode, agent-name, pr-link, agent-setting, relocated, worktree-state, bridge-session, file-history-delta, system, file-history-snapshot, frame-link, artifact-autoreact-ledger, cost-state, artifact-comment-monitor, continued-in. system carries only turn_duration, compact_boundary, away_summary and informational. Zero lines carry isSidechain:true across all twenty-five, so a sub-agent's own turns are not in its parent's file; what is there is the Agent tool_use with description, subagent_type, model and the whole prompt, and its result when it lands. Assistant content blocks are thinking, text, tool_use and usage. |  |
@@ -130,7 +130,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0113](#mus-f-0113) | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal | code.claude.com/docs/en/hooks lists PermissionRequest, PermissionDenied, Notification, MessageDisplay, Elicitation, ElicitationResult, TaskCreated and TaskCompleted among thirty-two events; all eight appear as exact strings in the shipped 2.1.263 binary. PreToolUse and PermissionRequest work in non---print sessions and decide permission through a decision object of allow, deny or ask. Command hooks default to a 600s timeout, are configurable per hook with timeout, and enforce none at all with async true. MessageDisplay fires while assistant text is displayed, has no matcher and a 10s default. |  |
 | [MUS-F-0114](#mus-f-0114) | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |  |
 | [MUS-F-0115](#mus-f-0115) | A restored session shows a blank terminal with no sign that it is still loading |  |  |
-| [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong |  | unreviewed |
+| [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong | The POST path calls Adapter.Start with resumes(row), which strips any --resume already on the command and appends the conversation identifier when the transcript is on disk; restore_test asserts the argv both ways. The button read Start it again in both cases, on both templates, directly above a line saying the conversation comes back. | fixed; the behaviour was always the restore and only the word was wrong |
 | [MUS-F-0117](#mus-f-0117) | Two sessions started from the surface share one working tree, and nothing says so |  |  |
 | [MUS-F-0118](#mus-f-0118) | Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. | not yet reviewed |
 | [MUS-F-0119](#mus-f-0119) | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. | not yet reviewed |
@@ -142,8 +142,15 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0125](#mus-f-0125) | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog | MUS-Q-0094 through MUS-Q-0097 all recorded as typed into mustur/Milestone_Work; that session's transcript at ~/.claude/projects/.../de5be2c5-....jsonl contains no delivered answer. Probe on 2026-09-10: an answer delivered into a pane showing the model picker was absent from the screen afterwards and the picker had been pressed |  |
 | [MUS-F-0126](#mus-f-0126) | A reader was offered the one tab that refuses them, because no surface knew who was reading it | a reader's records page carries no /sessions link and keeps the other three; an owner's carries it; a server with no guard carries it. Mutation-checked |  |
 | [MUS-F-0127](#mus-f-0127) | Acceptance gates four rules, and nothing defines the act, records it, or tells the two states apart | eight rows in Plan.md read 'awaiting acceptance'; no mustur verb accepts anything; no milestone record carries an acceptance field; milestone 2's passed row and 2b's awaiting row describe the same evidence | open, and not fixed by an agent choosing a procedure for it |
-| [MUS-F-0128](#mus-f-0128) | If i try to select text in the sessions the selection jumps to include the start of the tmux… |  | unreviewed |
+| [MUS-F-0128](#mus-f-0128) | If i try to select text in the sessions the selection jumps to include the start of the tmux… | paint writes out.innerHTML on every frame, which destroys the node a selection is anchored in; the browser re-anchors the range to the container at offset 0 while the focus follows the pointer, which is the reported symptom exactly. Nothing in any of the five asset files calls getSelection on the terminal. The server polls tmux every 400ms and broadcasts whenever the capture changes. | fixed, with a consequence: the screen is stale for as long as a selection is held in it |
 | [MUS-F-0129](#mus-f-0129) | The gate cannot fire on the deployment it runs on, because the owner's default mode is one the CLI never prompts in | a session started from the surface on 2026-09-11 ran echo mustur-gate-test with no pop-up; its pane reads auto mode on; the settings file sets defaultMode auto | open on MUS-Q-0100 |
+| [MUS-F-0130](#mus-f-0130) | I cannot submit multiple pictures in one intake jot | MUS-F-0131 is the report that needed it: three screenshots of one defect arrived as three records, two of which say nothing but Pic 2 and Pic 3. The store was never the limit -- attachment is keyed by record_id and indexed on it, and Attachments already returns a slice. The form input had no multiple attribute and r.FormFile reads the first part and no other. | fixed |
+| [MUS-F-0131](#mus-f-0131) | The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the… | Three screenshots of /records in Chrome on the owner's phone, 1080px wide. The first is the page as it loads, fitted to the window: the content column fills the left 55% of the screen and the rest is empty background. The third, at 100%, shows the same page with no tab bar on the screen at all. The second is a full-page scrolling capture in which the content fills the width and the bar's icons sit at the very foot. Measured afterwards against a throwaway store, in chrome-headless-shell 1237 driven over the DevTools protocol with mobile emulation at a 390x844 viewport: documentElement.scrollWidth 625 where clientWidth is 390, and the fixed bar's bounding rect bottom at 1353. The three widest elements are record bodies; the widest is MUS-F-0089's, whose body is a captured CLI dialog drawn in box-drawing characters with no break opportunity in it. | open; the bar is a consequence and the overflow is the cause |
+| [MUS-F-0132](#mus-f-0132) | The second picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
+| [MUS-F-0133](#mus-f-0133) | The third picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
+| [MUS-F-0134](#mus-f-0134) | How do we handle stopping and restarting sessions around claude updates? |  | with the owner on MUS-Q-0101 |
+| [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |  | open on the server; the sum wants taking over the split body rather than the capture |
+| [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open |
 
 ---
 
@@ -2892,15 +2899,20 @@ finding · 2026-09-08
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+the rule that leaked, and the two forms still carrying it: [MUS-F-0136](#mus-f-0136)
+
+the tick that used to sit on the line: [MUS-F-0103](#mus-f-0103)
+
 There is still a divider line above the stop button where the checkbox was on top of. This should be removed
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | A bare form rule sets border-top and padding for the composer, which declares neither of its own. .endform declared display and flex and nothing else, so the border applied to it -- which is also why the removed tick sat on top of the button rather than beside it, the column direction coming from the same rule. TestNothingDrawsALineAboveStop asserts .endform undoes it. |
+| Status | fixed |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go |
 
 ---
 
@@ -2912,17 +2924,22 @@ finding · 2026-09-08
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+the half that is not free: [MUS-Q-0102](questions.md#mus-q-0102)
+
+two sessions can share one tree: [MUS-F-0117](#mus-f-0117)
+
 The selector drop-down on the session tab should show the name of each session and the project it is for. Once another project is added it will be impossible to tell projects apart unless they are all named perfectly.
 
 It would also be nice to know which sessions are actively working, and which are awaiting input from the drop-down
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | Every option was the session's name and nothing else, on all three of the template's option sites. The name is free text typed on the start form; nothing else was on the option to tell two apart. Where a session runs was already in the store -- Start writes the project, the directory and the command down and the row survives until the session is deliberately stopped -- and the page was already reading those rows to work out which sessions are lost, and throwing the directory away. |
+| Status | fixed for where each session runs; which are working and which are waiting is with the owner on MUS-Q-0102 |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, internal/web/start.go |
 
 ---
 
@@ -3078,11 +3095,12 @@ The session is restored not started over, the button text and descriptions are a
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | The POST path calls Adapter.Start with resumes(row), which strips any --resume already on the command and appends the conversation identifier when the transcript is on disk; restore_test asserts the argv both ways. The button read Start it again in both cases, on both templates, directly above a line saying the conversation comes back. |
+| Status | fixed; the behaviour was always the restore and only the word was wrong |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go |
 
 ---
 
@@ -3392,15 +3410,18 @@ finding · 2026-09-11
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+the frames it also stops repainting: [MUS-F-0135](#mus-f-0135)
+
 If i try to select text in the sessions the selection jumps to include the start of the tmux window to my current selected position
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | paint writes out.innerHTML on every frame, which destroys the node a selection is anchored in; the browser re-anchors the range to the container at offset 0 while the focus follows the pointer, which is the reported symptom exactly. Nothing in any of the five asset files calls getSelection on the terminal. The server polls tmux every 400ms and broadcasts whenever the capture changes. |
+| Status | fixed, with a consequence: the screen is stale for as long as a selection is held in it |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/assets/session.js |
 
 ---
 
@@ -3430,3 +3451,161 @@ What to do is MUS-Q-0100 and is not an agent's to choose: gating a mode the owne
 | Evidence | a session started from the surface on 2026-09-11 ran echo mustur-gate-test with no pop-up; its pane reads auto mode on; the settings file sets defaultMode auto |
 | Why the tests passed | all of them set a prompting mode explicitly, so none used the mode a surface-started session actually gets |
 | Status | open on MUS-Q-0100 |
+
+---
+
+## MUS-F-0130
+
+**I cannot submit multiple pictures in one intake jot**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the report that needed it: [MUS-F-0131](#mus-f-0131)
+
+I cannot submit multiple pictures in one intake jot. Multiple pictures help to provide linked actions and confirm testing paths and need to be available
+
+| Field | Value |
+| --- | --- |
+| Evidence | MUS-F-0131 is the report that needed it: three screenshots of one defect arrived as three records, two of which say nothing but Pic 2 and Pic 3. The store was never the limit -- attachment is keyed by record_id and indexed on it, and Attachments already returns a slice. The form input had no multiple attribute and r.FormFile reads the first part and no other. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/intake.go |
+
+---
+
+## MUS-F-0131
+
+**The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the…**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+second picture: [MUS-F-0132](#mus-f-0132)
+
+third picture: [MUS-F-0133](#mus-f-0133)
+
+the same failure on a different element: [MUS-F-0033](#mus-f-0033)
+
+The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the whole page loads bigger than the screen size.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Three screenshots of /records in Chrome on the owner's phone, 1080px wide. The first is the page as it loads, fitted to the window: the content column fills the left 55% of the screen and the rest is empty background. The third, at 100%, shows the same page with no tab bar on the screen at all. The second is a full-page scrolling capture in which the content fills the width and the bar's icons sit at the very foot. Measured afterwards against a throwaway store, in chrome-headless-shell 1237 driven over the DevTools protocol with mobile emulation at a 390x844 viewport: documentElement.scrollWidth 625 where clientWidth is 390, and the fixed bar's bounding rect bottom at 1353. The three widest elements are record bodies; the widest is MUS-F-0089's, whose body is a captured CLI dialog drawn in box-drawing characters with no break opportunity in it. |
+| Status | open; the bar is a consequence and the overflow is the cause |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/records.go |
+
+---
+
+## MUS-F-0132
+
+**The second picture of MUS-F-0131, filed as its own record because a jot took one**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+report: [MUS-F-0131](#mus-f-0131)
+
+why there are three: [MUS-F-0130](#mus-f-0130)
+
+Not a finding of its own. The owner had three screenshots of the same defect and the intake box took one picture per jot, so the report arrived as three records. What this one showed is written into MUS-F-0131 with the other two.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | not a finding of its own; the picture is described in MUS-F-0131 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0133
+
+**The third picture of MUS-F-0131, filed as its own record because a jot took one**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+report: [MUS-F-0131](#mus-f-0131)
+
+why there are three: [MUS-F-0130](#mus-f-0130)
+
+Not a finding of its own. The owner had three screenshots of the same defect and the intake box took one picture per jot, so the report arrived as three records. What this one showed is written into MUS-F-0131 with the other two.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | not a finding of its own; the picture is described in MUS-F-0131 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0134
+
+**How do we handle stopping and restarting sessions around claude updates?**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+raised as: [MUS-Q-0101](questions.md#mus-q-0101)
+
+Asked by the owner through the intake box. What is true today: the CLI installs an update and goes on running the version it started on, says so on its own status line, and Mustur reads that line off the pane and shows it as a chip (internal/session/chrome.go, the Update branch of SplitChrome). Taking the update is ending the session and bringing it back, which the restore path does. Whether that gets a control of its own is MUS-Q-0101.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | with the owner on MUS-Q-0101 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0135
+
+**The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame**
+
+finding · 2026-09-11
+
+found while fixing: [MUS-F-0128](#mus-f-0128)
+
+the state the timer stands in for: [MUS-D-0130](decisions.md#mus-d-0130)
+
+the clause it measures false: [MUS-D-0132](decisions.md#mus-d-0132)
+
+A frame is suppressed when the SHA-256 of the capture matches the last one (the sum in internal/session/screen.go's read path). The sum is taken over raw, before SplitChrome and SplitActivity take the CLI's own input box, dividers and status line off the screen. Those lines move on their own: a spinner turns, a token count ticks. So the server broadcasts a frame whose rendered HTML is byte-identical to the one before it, as often as the poll runs -- PollEvery is 400ms in screen.go, so up to two and a half times a second while an agent is working. MUS-D-0132 says the screen is re-rendered 'only when the screen has actually changed', and that clause is what this measures false; the decision stands uncorrected and this record is the correction's evidence. The client's screen branch also treats every arrival as activity, which is what the fallback silence counter counts.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/screen.go, the sha256 over raw in the read path |
+| Status | open on the server; the sum wants taking over the split body rather than the capture |
+
+---
+
+## MUS-F-0136
+
+**A bare form rule written for the composer draws a line across three forms that never asked for one**
+
+finding · 2026-09-11
+
+what was reported: [MUS-F-0107](#mus-f-0107)
+
+internal/web/sessions.go declares a bare form rule for the composer, which has no rule of its own: display flex, direction column, gap, padding .7rem 1rem and border-top 1.4px solid var(--edge). A bare element selector reaches every form on the page. .endform wears the line above Stop, which is what the owner reported as MUS-F-0107. .pick undoes the rule's direction and padding and not its border; .new form undoes none of it. The fix for the class is to move the border and the padding onto the composer, which is the only form that wants them. Line numbers move, so the rule is named rather than numbered: it is the one bare form selector in the stylesheet.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, the bare form selector in the session stylesheet |
+| Status | open |
