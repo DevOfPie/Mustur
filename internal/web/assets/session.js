@@ -171,11 +171,49 @@
   //
   // The HTML is the server's — every character of the pane was escaped there,
   // and the only markup in it is the spans it wrote for colour.
+  //
+  // Replacing it destroys whatever the browser had a selection anchored in, so
+  // a drag across the pane was re-anchored to the top of it on the next frame
+  // and the selection ran from there to the pointer (MUS-F-0128). Two guards,
+  // and they do different work. The first is free: a frame whose HTML is what
+  // is already on screen is not written at all, which covers the frames the
+  // server sends because the spinner turned. The second holds a changed frame
+  // back while the selection is inside #out, and paints it when the selection
+  // goes away.
+  var painted = null;
+  var pending = null;
+
+  function selecting() {
+    var sel = window.getSelection && window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return false;
+    return out.contains(sel.anchorNode) || out.contains(sel.focusNode);
+  }
+
+  // Answers whether the frame carried a change, which is a different question
+  // from whether it was drawn. A frame held back for a selection did carry one.
   function paint(html) {
+    if (html === painted || html === pending) return false;
+    // The screen is stale for as long as the selection is held, deliberately:
+    // a terminal that repaints under the thumb cannot be copied from, and the
+    // pill and the chips go on saying what the session is doing meanwhile.
+    if (selecting()) {
+      pending = html;
+      return true;
+    }
+    pending = null;
+    painted = html;
     var stick = atBottom();
     out.innerHTML = html;
     if (stick) out.scrollTop = out.scrollHeight;
+    return true;
   }
+
+  // Nothing else clears a selection, so this is where the held frame lands.
+  // selectionchange fires on collapse and on a click anywhere in the document,
+  // which is every way a selection ends.
+  document.addEventListener("selectionchange", function () {
+    if (pending !== null && !selecting()) paint(pending);
+  });
 
   // Something Mustur has to say about the session, as opposed to something the
   // session said. Appended under the screen rather than into it, because the
@@ -581,13 +619,17 @@
         // Now that the real silence is known, the pill can be honest about it.
         refreshState();
       } else if (f.t === "screen") {
-        paint(f.screen || "");
+        var moved = paint(f.screen || "");
         if (typeof f.agent === "string") doing = f.agent;
         drawChips(f.status);
-        // A frame only arrives when the screen actually changed, so its arrival
-        // is the activity. There is no replay to tell apart any more: the
-        // server has no backlog to send.
-        lastOutput = Date.now();
+        // The arrival of a frame is not the activity, which is what this used
+        // to say. The server hashes the pane before it strips the CLI's own
+        // status line, so a turning spinner is broadcast as a frame whose
+        // screen is identical to the last one (MUS-F-0135) -- and the silence
+        // counter, which is the fallback when the pane cannot be read at all,
+        // was counting those. What paint answers is whether the screen moved.
+        // There is still no replay to tell apart: the server has no backlog.
+        if (moved) lastOutput = Date.now();
         refreshState();
       } else if (f.t === "error") {
         // The server discarded a message and said so. The draft is put back,

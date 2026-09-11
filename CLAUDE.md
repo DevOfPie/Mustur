@@ -34,7 +34,10 @@ question named one with `--in`, which is the only way delivery has a target.
 It shows a running session's screen in a browser tab and notices when one ends
 — the screen tmux has already assembled, polled and re-rendered when it
 changes, rather than the pane's raw byte protocol appended to a log
-([MUS-D-0132](records/decisions.md#mus-d-0132)). There is no pipe, no byte
+([MUS-D-0132](records/decisions.md#mus-d-0132)). The one time it is not
+re-rendered is while you have a selection held inside it, which is what makes
+the terminal something text can be copied out of
+([MUS-F-0128](records/findings.md#mus-f-0128)). There is no pipe, no byte
 offset and no replay: a tab that reconnects is handed the screen as it stands.
 Sessions Mustur starts are **100x300**, because an agent CLI runs on the
 alternate screen and tmux keeps no scrollback for one — a tall pane is the only
