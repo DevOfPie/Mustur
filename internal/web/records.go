@@ -421,8 +421,20 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   article .line { display: flex; align-items: baseline; gap: .5rem;
                   flex-wrap: wrap; font-size: .8em; opacity: .65; }
   article .line a { color: inherit; }
-  article h3 { font-size: .98rem; font-weight: 600; margin: .15rem 0 .3rem; }
-  article p { margin: .3rem 0; font-size: .93em; }
+  /* The same rule as .fields .v below, on the text that is not a field value.
+     MUS-F-0033 gave field values somewhere to break and left titles, bodies and
+     summaries alone, which held until a record body carried a pasted terminal
+     box: an unbroken run of box-drawing characters has no break opportunity, so
+     it set the width of the document and the fixed tab bar went off the bottom
+     of the screen with it (MUS-F-0131, measured at 390px: 625px of document
+     before, 390 after). h3 and summary are the same risk class and are covered
+     here rather than waiting for the record that proves it a third time.
+     The cost, and it is real: a body that is deliberate ASCII art wraps mid
+     frame and reads as broken. A scroll container of its own is what would keep
+     it, and that is a design decision rather than this fix. */
+  article h3 { font-size: .98rem; font-weight: 600; margin: .15rem 0 .3rem;
+               overflow-wrap: anywhere; }
+  article p { margin: .3rem 0; font-size: .93em; overflow-wrap: anywhere; }
   .fields { font-size: .86em; margin: .4rem 0 0; }
   /* A field row wraps rather than widening the page. A long value — a work
      unit's "Done means" runs to paragraphs — used to push the row past the
@@ -434,7 +446,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .fields .k { opacity: .55; flex: 0 0 9rem; }
   .fields .v { flex: 1; min-width: 0; overflow-wrap: anywhere; }
   details { margin: .25rem 0; font-size: .88em; }
-  summary { cursor: pointer; opacity: .8; }
+  summary { cursor: pointer; opacity: .8; overflow-wrap: anywhere; }
   details .inner { margin: .3rem 0 .5rem 1rem; padding-left: .6rem;
                    border-left: 2px solid var(--edge); }
   /* Attached pictures. Shown here and nowhere else: this surface is behind
