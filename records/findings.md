@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-141 record(s), by identifier.
+142 record(s), by identifier.
 
 ## The queue
 
@@ -151,6 +151,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0134](#mus-f-0134) | How do we handle stopping and restarting sessions around claude updates? |  | answered on MUS-Q-0101 and built on MUS-D-0159; the threshold is MUS-Q-0104's |
 | [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |  | open on the server; the client stopped repainting on such a frame and stopped counting it as activity, and the server still sends it |
 | [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
+| [MUS-F-0137](#mus-f-0137) | A question answered with a question is recorded as answered, and leaves the queue settled | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
 
 ---
 
@@ -3613,3 +3614,33 @@ internal/web/sessions.go declares a bare form rule for the composer, which has n
 | --- | --- |
 | Where | internal/web/sessions.go, the bare form selector in the session stylesheet |
 | Status | open for .pick and .new form; fixed for .endform, which is the one that was reported |
+
+---
+
+## MUS-F-0137
+
+**A question answered with a question is recorded as answered, and leaves the queue settled**
+
+finding · 2026-09-11
+
+the question it closed: [MUS-Q-0102](questions.md#mus-q-0102)
+
+re-raised as: [MUS-Q-0105](questions.md#mus-q-0105)
+
+an answer is a choice: [MUS-D-0055](decisions.md#mus-d-0055)
+
+an answer keeps its choice and gains a note: [MUS-D-0137](decisions.md#mus-d-0137)
+
+the button that dims until one is chosen: [MUS-Q-0071](questions.md#mus-q-0071)
+
+MUS-Q-0102 offered three options. The owner replied 'Are the Tmux sessions only running when a session is being viewed? Would it not be better to always have the Tmux live on the machine and only transit the selected session?' -- which chooses none of them and asks something back. It was recorded as the answer, the question's status went to answered, the badge stopped counting it and mustur questions reports no open questions. Nothing is wrong with the owner's reply; what is wrong is that the path cannot tell a choice from a question and treats free text as a settlement.
+
+MUS-D-0055 says an answer is a choice between options rather than a text box, and MUS-D-0137 says an answer keeps its choice and gains a note. Between them there is no shape for 'I am not answering this yet, here is what I want to know first' -- so the text lands in the answer field, which is the one field that closes the record. MUS-Q-0071 disabled the Answer button until an option is chosen, which covers the queue's own form; this arrived through the session view's box, where the text is the whole of the message.
+
+The cost is precisely that the gate stops working. make check fails while an open question has never been surfaced, and a question closed by a question is not open, so the one thing that stops work being reported around an unanswered decision cannot see it.
+
+| Field | Value |
+| --- | --- |
+| Where | the answer path; observed on MUS-Q-0102 |
+| Evidence | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. |
+| Status | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |

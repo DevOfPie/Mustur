@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 104 | [questions.md](questions.md) |
+| question | 105 | [questions.md](questions.md) |
 | decision | 160 | [decisions.md](decisions.md) |
-| finding | 141 | [findings.md](findings.md) |
+| finding | 142 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 23 | [work-units/index.md](work-units/index.md) |
 | investigation | 3 | [investigations/index.md](investigations/index.md) |
@@ -164,6 +164,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0102](questions.md#mus-q-0102) | question | Should the session picker say which sessions are working and which are waiting? |
 | [MUS-Q-0103](questions.md#mus-q-0103) | question | A jot takes six pictures, which multiplies what one request can carry by six. Is six yours? |
 | [MUS-Q-0104](questions.md#mus-q-0104) | question | What counts as idle enough to restart a session under you, and what is never restarted? |
+| [MUS-Q-0105](questions.md#mus-q-0105) | question | Re-asking what the picker should say, with your premise correction folded in and a fourth option |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -460,6 +461,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0134](findings.md#mus-f-0134) | finding | How do we handle stopping and restarting sessions around claude updates? |
 | [MUS-F-0135](findings.md#mus-f-0135) | finding | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |
 | [MUS-F-0136](findings.md#mus-f-0136) | finding | A bare form rule written for the composer draws a line across three forms that never asked for one |
+| [MUS-F-0137](findings.md#mus-f-0137) | finding | A question answered with a question is recorded as answered, and leaves the queue settled |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-104 record(s), by identifier.
+105 record(s), by identifier.
 
 ---
 
@@ -2471,3 +2471,24 @@ Your note on MUS-Q-0101 was to wait until sessions have been idle for some time.
 | Answer | Prompt empty, quiet thirty minutes, and no browser tab open on it |
 | Answered | 2026-09-11 07:30 |
 | Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0105
+
+**Re-asking what the picker should say, with your premise correction folded in and a fourth option**
+
+question · 2026-09-11
+
+Your question first, because it has an answer. tmux sessions do not only run while a session is being viewed -- a session runs from Start until something stops it, and since MUS-D-0151 the tmux server sits in a systemd scope of its own so even a redeploy of Mustur leaves them running. What is gated on a viewer is the reader: Hub.Watch counts viewers and the poller stops two minutes after the last one leaves. So the screen is polled only while somebody is looking, and the session runs regardless. Your suggestion is therefore about the poller, not the sessions, and it is the fourth option -- which none of the first three offered, and which is now the one I would take.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | the second half of MUS-F-0108, which is undecided: MUS-Q-0102 was closed by a reply that asked rather than chose (MUS-F-0137) |
+| Option | Poll every owned session always, not only the watched one :: Recommended, and it is your suggestion. One capture per running session on a fixed interval, and the picker's state becomes free. :: The cost stops scaling with page loads and starts scaling with sessions, which is the right way round -- there are three sessions and there could be a hundred page loads. It also makes the picker's state something already in memory rather than something fetched, and it is close to what the update sweep built on MUS-D-0159 already does on its own slower timer. The two could share one loop. What it gives up is LingerAfter's whole point, which was not polling a session nobody is reading. |
+| Option | Leave the picker naming only where each session runs :: Nothing further is built or spent. The state stays on the session's own page. :: The pill is live and correct for whichever session is open. What the picker cannot tell you is which of the others is waiting for you, which is what you asked for. |
+| Option | Read every session's pane on each page render :: One tmux capture-pane per running session, per page load, run one after another. :: Honest -- the picker says what is true at the moment it is drawn -- and the only option whose cost grows with how often you open a page rather than with how many sessions exist. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 07:38 |
