@@ -38,11 +38,18 @@ type Status struct {
 	Hint string
 	// Update is that same line when it is an update notice instead.
 	Update string
+	// Typed reports whether anything is sitting in the input box, and never
+	// what. The text is the owner's -- half a thought, on their screen, and no
+	// business of a record or a socket frame -- but whether it is there decides
+	// whether a session can be restarted under them (MUS-Q-0104). A session at
+	// an empty prompt has nothing to lose; one with a line typed and unsent
+	// loses it, and no silence timer can see the difference.
+	Typed bool
 }
 
 // Empty reports whether anything was read at all.
 func (s Status) Empty() bool {
-	return s.Mode == "" && len(s.Items) == 0 && s.Note == "" && s.Hint == "" && s.Update == ""
+	return s.Mode == "" && len(s.Items) == 0 && s.Note == "" && s.Hint == "" && s.Update == "" && !s.Typed
 }
 
 // caret is the input prompt, and the anchor everything else is found from.
@@ -93,7 +100,12 @@ func readStatus(chrome []string) Status {
 			// shows in its own header.
 		case strings.HasPrefix(trimmed, caret):
 			// What is half-typed into the box is the owner's, not the
-			// session's, and it is already in front of them.
+			// session's, and it is already in front of them. Whether there is
+			// anything there is a different question from what it says, and
+			// only the first is carried.
+			if strings.TrimSpace(strings.TrimPrefix(trimmed, caret)) != "" {
+				st.Typed = true
+			}
 		case isStatusLine(trimmed):
 			readStatusLine(trimmed, &st)
 		case isRightAligned(raw):

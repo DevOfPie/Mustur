@@ -208,13 +208,7 @@ func (s *Sessions) lost(ctx context.Context, running map[string]bool, here strin
 // file appears after the row does, and a flag would have to be refreshed by
 // something. Nothing here has anything to refresh it with.
 func resumes(r store.Remembered) string {
-	if r.CLI == "" || r.Transcript == "" {
-		return r.Cmd
-	}
-	if _, err := os.Stat(r.Transcript); err != nil {
-		return r.Cmd
-	}
-	return session.Resume(r.Cmd, r.CLI)
+	return session.ResumeIfWritten(r.Cmd, r.CLI, r.Transcript)
 }
 
 // restore starts a session again, on the conversation it was having.

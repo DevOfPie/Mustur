@@ -3575,7 +3575,7 @@ What idle has to mean is the whole of the risk, and it is not one number. Readin
 | Field | Value |
 | --- | --- |
 | Supersedes | the never-a-timer clause of MUS-D-0149, for this case only |
-| Status | decided, with the threshold answered on MUS-Q-0104; the sweep it needs is built next |
+| Status | built; internal/session/sweep.go, riding on --sessions |
 | Threshold | MUS-Q-0104: at its prompt with nothing typed, no browser tab open on it, and the screen unchanged for thirty minutes |
 
 ### MUS-D-0160

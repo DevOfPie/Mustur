@@ -77,17 +77,36 @@ the command line Mustur builds. The session picker is a dropdown for the same
 reason the intake destinations are
 ([MUS-D-0121](records/decisions.md#mus-d-0121)): a row that scrolls sideways
 hides its last choice behind a swipe.
-**It does not restart anything** — an agent CLI that crashed wants a person, not
-a loop. A reboot ends every session and no process survives one, so what Mustur
-does instead is remember: since 2026-09-07 `Start` writes down which project,
-where and what it ran, and the CLI's own `SessionStart` hook adds the identifier
-of the conversation it is having, which is the only place that identifier is
-published ([MUS-D-0149](records/decisions.md#mus-d-0149), on the owner's answer
+**It restarts exactly one thing, and a crash is not it.** An agent CLI that died
+wants a person, not a loop: nothing here knows why it died, so nothing here can
+know that starting it again is right. A reboot ends every session and no process
+survives one, so what Mustur does instead is remember: since 2026-09-07 `Start`
+writes down which project, where and what it ran, and the CLI's own
+`SessionStart` hook adds the identifier of the conversation it is having, which
+is the only place that identifier is published
+([MUS-D-0149](records/decisions.md#mus-d-0149), on the owner's answer
 to [MUS-Q-0083](records/questions.md#mus-q-0083)). The page that starts
 a session then lists what is written down and no longer running, with a button
 that starts each one again on its own transcript — a person pressing it, never a
 timer. Stopping a session deletes its row, so what is offered back is only what
-went without being told to. tmux is still the only answer to what is *running*
+went without being told to.
+
+The exception the owner granted is a **CLI update**
+([MUS-D-0159](records/decisions.md#mus-d-0159), on
+[MUS-Q-0101](records/questions.md#mus-q-0101)). A CLI that has printed `Update
+installed · Restart to update` has said what it wants, and Mustur already reads
+that line off the pane. So a sweep takes it — but only for a session that is at
+its prompt with **nothing typed into the box**, with **no browser tab open on
+it**, and whose screen has **not changed for thirty minutes**, every clause of
+which is the owner's on [MUS-Q-0104](records/questions.md#mus-q-0104). Whether a
+turn is in flight is read off the pane rather than timed, so the dwell is not
+guarding against that; it is the gap between a turn ending and whoever asked for
+it reading the answer. Whether anything is typed is read as a yes or no and
+never as text — what is half-written in that box is the owner's, and one was
+found sitting in a session every silence timer on this machine would have called
+idle. The sweep rides on `--sessions`: dropping the flag removes it along with
+the surface. It is the only code here that acts on a running agent with nobody
+pressing anything. tmux is still the only answer to what is *running*
 ([MUS-D-0062](records/decisions.md#mus-d-0062)): with tmux unreachable nothing
 is offered rather than everything.
 

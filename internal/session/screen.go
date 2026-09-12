@@ -261,6 +261,26 @@ func (h *Hub) lastActive(ctx context.Context, project string) time.Time {
 	return time.Time{}
 }
 
+// Watching reports whether any viewer is holding this session open.
+//
+// The refcount the poller is already keeping, read rather than re-derived. The
+// update sweep asks because the owner's threshold includes it: a session with a
+// tab open on it is one somebody is reading, and it is not restarted under them
+// (MUS-Q-0104). A lingering poller with no viewers left answers false, which is
+// right -- linger is about not tearing down a reader somebody may come back to,
+// not about somebody being there.
+func (h *Hub) Watching(project string) bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	p, ok := h.panes[project]
+	if !ok {
+		return false
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.refs > 0
+}
+
 // Shutdown stops every poller. Used when the server is going down.
 func (h *Hub) Shutdown() {
 	h.mu.Lock()
