@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-105 record(s), by identifier.
+106 record(s), by identifier.
 
 ---
 
@@ -2494,4 +2494,28 @@ Your question first, because it has an answer. tmux sessions do not only run whi
 | Surfaced | 2026-09-11 07:38 |
 | Answer | Poll every owned session always, not only the watched one |
 | Answered | 2026-09-11 16:49 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0106
+
+**The seven rebased branches need landing without rewriting anything you would mind rewriting**
+
+question · 2026-09-11
+
+Correcting the premise first, because it changes the choice: nothing was ever going to be force-pushed to main. Main is protected, this token has no bypass, and a727af5 records that. The push targets seven intake/* feature branches that exist only to carry pull requests 46 to 52, and every one of them goes through a PR to its neighbour. What makes a rewrite necessary at all is that two reviewers found gate failures after those branches were pushed, and the fixes belong inside the commits that caused them rather than in a commit that apologises for them. If you would rather nothing published is rewritten at all, the third option does that and costs seven pull request numbers. One thing worth knowing about the middle option: in a stack, adding a correction commit to a lower branch means every branch above it has to take that commit too, and workflow.md forbids merging back down -- so it ends in either a rewrite anyway or a tangle of merge commits.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | ten branches of fixes, none of which can be reviewed until their PRs show the corrected commits |
+| Option | Force-push the seven intake/* branches, with --force-with-lease :: Recommended. PRs 46 to 52 keep their numbers and re-diff; main is untouched and would refuse anyway. :: This is what MUS-Q-0095 already answered -- force pushes on my own stacked branches, with lease -- and it is the ordinary way a stacked pull request takes review feedback. --force-with-lease refuses if anything landed on the branch that I have not seen. Nothing outside those seven refs moves, and none of them is main or has ever been merged. |
+| Option | Close 46 to 52 and open seven fresh branches with the corrected commits :: Nothing published is rewritten. Costs seven new PR numbers and leaves seven abandoned branches on the remote. :: The only option where no existing ref changes at all. The review comments already posted on 52 stay on a closed pull request, so the record of what two reviewers found and what was done about it is one link removed from the work. Everything else is identical. |
+| Option | Leave 46 to 52 as they are and put every correction in one more PR on top :: No rewrite and no new branches, but the commits stay wrong on the record. :: Commit 38639da keeps five present-tense claims about code that lands four commits later, which is a gate in workflow.md's own before-committing table, and each commit stops being self-consistent. It is the repository's correct-it-forward idiom applied to something that idiom was not written for -- it is for records, where nothing is deleted, not for a commit that can simply be correct. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 17:17 |
+| Answer | Force-push the seven intake/* branches, with --force-with-lease |
+| Answered | 2026-09-12 01:53 |
 | Delivered | typed into mustur/Intake |

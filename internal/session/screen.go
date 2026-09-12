@@ -116,9 +116,13 @@ type Sub struct {
 type pane struct {
 	project string
 
-	mu        sync.Mutex
-	last      Frame
-	sum       [32]byte
+	mu       sync.Mutex
+	last     Frame
+	bodySum  [32]byte
+	frameSum [32]byte
+	// changedAt is when the screen last said something different. Measured on
+	// the body with the CLI's furniture stripped off, so a turning spinner does
+	// not reset it (MUS-F-0135).
 	changedAt time.Time
 	ended     bool
 	subs      map[chan Frame]struct{}
@@ -329,24 +333,16 @@ func (p *pane) read(ctx context.Context, a *Adapter, now time.Time) Frame {
 		return p.last
 	}
 
-	sum := sha256.Sum256([]byte(raw))
-	p.mu.Lock()
-	// The zero sum never matches a real capture, so the first read always
-	// produces a frame — but it must not claim the screen changed just now,
-	// because all that happened is that somebody started watching.
-	first := p.sum == [32]byte{}
-	if !first && sum == p.sum {
-		// Nothing moved. The agent's state can still have changed underneath a
-		// screen that looks the same, but it cannot: it is read out of this
-		// same text.
-		last := p.last
-		p.mu.Unlock()
-		return last
-	}
-	p.sum = sum
-	if !first || p.changedAt.IsZero() {
-		p.changedAt = now
-	}
+	// Split before hashing, not after, which is the whole of MUS-F-0135.
+	//
+	// This used to take the sum over the capture and suppress a frame when it
+	// matched. The capture includes the CLI's own status line, and that line
+	// moves on its own -- a spinner turns, a token count ticks -- so a screen
+	// that had said nothing for an hour produced a new frame several times a
+	// second, and anything reading "the capture changed" as "the session did
+	// something" was reading a spinner. Two sums now, because there are two
+	// different questions and they had been answered by one.
+	//
 	// The CLI's own furniture comes off before anything is rendered, so the
 	// output is what the session said and the hundred blank rows a tall pane
 	// leaves above the input box become trailing blanks that trim away.
@@ -354,15 +350,45 @@ func (p *pane) read(ctx context.Context, a *Adapter, now time.Time) Frame {
 	// The live line is furniture too: it is the CLI redrawing one row to move a
 	// glyph, and every redraw is a frame. Off the output, into the dock.
 	body, act := SplitActivity(body)
+	agent, prompt := DoingIn(raw), ReadPrompt(raw)
+
+	// Did the *screen* change? Only the body counts, so this is what a dwell
+	// can honestly be measured on (MUS-D-0159's sweep reads it).
+	bodySum := sha256.Sum256([]byte(body))
+	// Is there anything new to send? The chips and the dock are drawn from the
+	// furniture, so a status line that moved is a frame worth sending even
+	// though the screen did not change. Hashing the body alone here would have
+	// frozen the chips.
+	frameSum := sha256.Sum256([]byte(body + "\x00" + fmt.Sprint(st, act, agent, prompt)))
+
+	p.mu.Lock()
+	// The zero sum never matches a real capture, so the first read always
+	// produces a frame — but it must not claim the screen changed just now,
+	// because all that happened is that somebody started watching.
+	first := p.frameSum == [32]byte{}
+	if !first && frameSum == p.frameSum {
+		last := p.last
+		p.mu.Unlock()
+		return last
+	}
+	p.frameSum = frameSum
+	if first {
+		if p.changedAt.IsZero() {
+			p.changedAt = now
+		}
+	} else if bodySum != p.bodySum {
+		p.changedAt = now
+	}
+	p.bodySum = bodySum
 	f := Frame{
 		HTML:     ansi.HTML(trimBlank(body)),
 		Status:   st,
 		Activity: act,
-		Agent:    DoingIn(raw),
+		Agent:    agent,
 		// Read from the raw capture rather than from body: SplitChrome takes
 		// the CLI's own furniture off, and a dialog's legend is furniture by
 		// every test that function applies.
-		Prompt: ReadPrompt(raw),
+		Prompt: prompt,
 		At:     now,
 	}
 	p.last = f
