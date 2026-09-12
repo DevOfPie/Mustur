@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-102 record(s), by identifier.
+103 record(s), by identifier.
 
 ---
 
@@ -2406,3 +2406,24 @@ Naming the tree each session runs in is the half of MUS-F-0108 that costs nothin
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 05:01 |
+
+---
+
+## MUS-Q-0103
+
+**A jot takes six pictures, which multiplies what one request can carry by six. Is six yours?**
+
+question · 2026-09-11
+
+MUS-D-0119 set the picture ceilings on purpose -- ten megabytes, four raster formats, nosniff, a closed content policy. MUS-F-0130 asked for more than one picture per jot and said why. It did not say how many, and the number is the one part of this an agent should not have picked on its own: the request body cap is computed from it, so six pictures is a POST of up to sixty megabytes reaching the box through the ingress from a phone.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | nothing; it ships at six and MUS-F-0130 is fixed either way. What the answer changes is the ceiling and how it is expressed |
+| Option | Six, as built :: Recommended. Double what the report that asked for it needed, and nothing further to do. :: MUS-F-0131 arrived as three records. Six leaves room without being a number chosen to sound generous. The cost is the ceiling: a request can carry sixty megabytes of pictures, where before it could carry ten. |
+| Option | Three :: The measured number, and the body cap stays at thirty megabytes. :: Three is what the report that prompted this actually needed, which is the only measurement there is. It is tighter on the ingress and it will be the wrong number the first time somebody has four screenshots of one defect. |
+| Option | A total-bytes ceiling instead of a count :: Any number of pictures up to one budget, at the cost of a refusal that is harder to predict. :: The thing worth bounding is what a request carries, not how many parts it has. Ten megabytes total would mean six small screenshots pass and two large photographs do not, which is the honest limit and the one nobody can guess before pressing send. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 05:22 |

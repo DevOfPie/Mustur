@@ -339,3 +339,145 @@ func TestAScratchFilingIsNeverExported(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// fileJotWith posts a jot carrying several pictures, the way the form does now.
+func fileJotWith(t *testing.T, srv *httptest.Server, text string, images [][]byte) *http.Response {
+	t.Helper()
+	var body bytes.Buffer
+	mw := multipart.NewWriter(&body)
+	if err := mw.WriteField("jot", text); err != nil {
+		t.Fatal(err)
+	}
+	for i, data := range images {
+		part, err := mw.CreateFormFile("image", "shot"+string(rune('a'+i))+".png")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := part.Write(data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := mw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	res, err := srv.Client().Post(srv.URL+"/intake", mw.FormDataContentType(), &body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return res
+}
+
+// One report, three pictures, one record.
+//
+// MUS-F-0131 arrived as three records — the defect, then "Pic 2" and "Pic 3" —
+// because the box took one picture per jot. The store always could hold many;
+// the form and the parse were what stopped at one (MUS-F-0130).
+func TestAJotCanCarrySeveralPictures(t *testing.T) {
+	srv, st := serve(t)
+	defer srv.Close()
+	ctx := context.Background()
+
+	res := fileJotWith(t, srv, "the records tab loads wider than the screen",
+		[][]byte{aPNG(t, 40, 30), aPNG(t, 41, 30), aPNG(t, 42, 30)})
+	res.Body.Close()
+
+	all, err := st.List(ctx, "finding")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 1 {
+		t.Fatalf("%d findings; three pictures must not make three records", len(all))
+	}
+	shots, err := st.Attachments(ctx, all[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(shots) != 3 {
+		t.Fatalf("%d attachments on %s; all three were sent", len(shots), all[0].ID)
+	}
+	for i, s := range shots {
+		if s.MediaType != "image/png" {
+			t.Errorf("picture %d stored as %q", i, s.MediaType)
+		}
+	}
+}
+
+// The ceiling is a number, and it refuses rather than truncating.
+func TestMorePicturesThanAJotTakesAreRefusedWholesale(t *testing.T) {
+	srv, st := serve(t)
+	defer srv.Close()
+	ctx := context.Background()
+
+	many := make([][]byte, MaxImages+1)
+	for i := range many {
+		many[i] = aPNG(t, 20+i, 20)
+	}
+	res := fileJotWith(t, srv, "too many", many)
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), "a jot takes") {
+		t.Errorf("the refusal does not say what the limit is: %q", firstLines(string(body)))
+	}
+	all, err := st.List(ctx, "finding")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 0 {
+		t.Errorf("%d findings filed; a refused picture must not leave a jot behind", len(all))
+	}
+}
+
+// A phone that opens the picker and cancels submits an empty part. Not an
+// error, and not a picture either.
+func TestAnEmptyFilePartIsNotAPicture(t *testing.T) {
+	srv, st := serve(t)
+	defer srv.Close()
+	ctx := context.Background()
+
+	res := fileJotWith(t, srv, "no picture, just the words", [][]byte{{}})
+	res.Body.Close()
+
+	all, err := st.List(ctx, "finding")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 1 {
+		t.Fatalf("%d findings; the words must still be filed", len(all))
+	}
+	shots, err := st.Attachments(ctx, all[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(shots) != 0 {
+		t.Errorf("%d attachments; an empty part is not a picture", len(shots))
+	}
+}
+
+// The form has to ask for more than one, or nothing above is reachable from a
+// phone.
+func TestTheIntakeFormTakesMoreThanOnePicture(t *testing.T) {
+	srv, _ := serve(t)
+	defer srv.Close()
+
+	body := getFrom(t, srv, "/intake")
+	if !strings.Contains(body, `name="image"`) {
+		t.Fatal("no file input on the intake form")
+	}
+	i := strings.Index(body, `name="image"`)
+	tag := body[strings.LastIndex(body[:i], "<input"):]
+	tag = tag[:strings.Index(tag, ">")+1]
+	if !strings.Contains(tag, "multiple") {
+		t.Errorf("the file input does not take more than one: %s", tag)
+	}
+}
+
+// firstLines keeps a failure message readable when the body is a whole page.
+func firstLines(s string) string {
+	if len(s) > 300 {
+		return s[:300] + "…"
+	}
+	return s
+}
