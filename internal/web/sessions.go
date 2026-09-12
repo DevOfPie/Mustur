@@ -164,6 +164,8 @@ type sessionRow struct {
 	Project string
 	Here    bool
 	State   string
+	// Where is the tree it is running in, named for the picker (MUS-F-0108).
+	Where string
 }
 
 type sessionPage struct {
@@ -321,6 +323,7 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 	rows := make([]sessionRow, 0, len(live))
 	running := make(map[string]bool, len(live))
 	found := false
+	place := s.places(ctx)
 	for _, sn := range live {
 		if sn.Project == here {
 			found = true
@@ -330,7 +333,7 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 		if sn.Attached {
 			state = "running · attached"
 		}
-		rows = append(rows, sessionRow{Project: sn.Project, Here: sn.Project == here, State: state})
+		rows = append(rows, sessionRow{Project: sn.Project, Here: sn.Project == here, State: state, Where: place[sn.Project]})
 	}
 	return rows, s.lost(ctx, running, here), found
 }
@@ -1387,10 +1390,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <form class="pick" method="get" action="/sessions">
     <select name="p" id="pick" aria-label="Session">
       {{if .Lost}}{{if .Rows}}<optgroup label="Running">
-        {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
+        {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}</option>{{end}}
       </optgroup>{{end}}<optgroup label="Not running">
-        {{range .Lost}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
-      </optgroup>{{else}}{{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}{{end}}
+        {{range .Lost}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}</option>{{end}}
+      </optgroup>{{else}}{{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}</option>{{end}}{{end}}
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
   <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>

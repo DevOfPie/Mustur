@@ -83,6 +83,54 @@ func expandHome(p string) string {
 	return p
 }
 
+// placeOf names the tree a session was started in, for a label a person can
+// tell two sessions apart by.
+//
+// The repository record's title when the directory is one this machine holds a
+// checkout of, and the directory's own last segment when it is not — a session
+// started somewhere no record knows about still has a place, and saying nothing
+// about it would be the one case the label is for. Empty only when nothing was
+// remembered about where it ran.
+//
+// Two sessions can share one working tree (MUS-F-0117), so this narrows what
+// has to be read off the name rather than replacing it.
+func placeOf(dir string, repos []startable) string {
+	if dir == "" {
+		return ""
+	}
+	for _, rp := range repos {
+		if rp.Dir == dir {
+			return rp.Title
+		}
+	}
+	return filepath.Base(dir)
+}
+
+// places maps every session Mustur has started to where it was started.
+//
+// Read from the same table the lost list is read from: Start writes the project,
+// the directory and the command down (MUS-D-0149) and the row survives until the
+// session is deliberately stopped, so a *running* session's directory is already
+// in the store and was being read and thrown away. No extra tmux call, and no
+// per-session capture.
+func (s *Sessions) places(ctx context.Context) map[string]string {
+	if s.Store == nil {
+		return nil
+	}
+	remembered, err := s.Store.RememberedSessions(ctx)
+	if err != nil || len(remembered) == 0 {
+		return nil
+	}
+	repos := s.startables(ctx)
+	out := make(map[string]string, len(remembered))
+	for _, r := range remembered {
+		if where := placeOf(r.Dir, repos); where != "" {
+			out[r.Project] = where
+		}
+	}
+	return out
+}
+
 // A lostRow is a session Mustur started that is no longer running, offered back.
 //
 // "Lost" rather than "stopped", and the distinction is the whole feature: a
@@ -92,6 +140,10 @@ func expandHome(p string) string {
 type lostRow struct {
 	Project string
 	Dir     string
+	// Where is the tree it ran in, named for the picker. The owner's point:
+	// with one project every name is unambiguous, and with two nothing but a
+	// perfectly chosen name tells them apart (MUS-F-0108).
+	Where string
 	// Resumes reports whether the conversation comes back with the session.
 	// False means there is nothing on disk to bring back — the CLI never said
 	// what its conversation was called, or said so and never wrote the file —
@@ -120,6 +172,7 @@ func (s *Sessions) lost(ctx context.Context, running map[string]bool, here strin
 		return nil
 	}
 	now := s.now()
+	repos := s.startables(ctx)
 	var out []lostRow
 	for _, r := range remembered {
 		if running[r.Project] {
@@ -131,6 +184,7 @@ func (s *Sessions) lost(ctx context.Context, running map[string]bool, here strin
 		}
 		out = append(out, lostRow{
 			Project: r.Project, Dir: r.Dir,
+			Where:   placeOf(r.Dir, repos),
 			Resumes: resumes(r) != r.Cmd,
 			When:    when,
 			Here:    r.Project == here,
