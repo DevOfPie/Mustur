@@ -409,3 +409,26 @@ func TestThePickerNamesTheTreeEachSessionRunsIn(t *testing.T) {
 		t.Errorf("the lost session's option does not say where it ran: %s", body)
 	}
 }
+
+// Which sessions are working and which are waiting, in the picker.
+//
+// The half of MUS-F-0108 that MUS-Q-0102 said cost a tmux capture per session
+// per page render. It costs nothing now: the hub polls every owned session
+// whether or not anybody is watching (MUS-Q-0105), so this is a map lookup.
+// A session nothing has polled yet says nothing, which is not the same as idle.
+func TestThePickerSaysWhichSessionsAreWorking(t *testing.T) {
+	srv, st, ctx := restoreServer(t, fakeRunner{listing: owned("mustur/alive")})
+	if err := st.RememberSession(ctx, "alive", "/checkout/Mustur", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	body := getFrom(t, srv, "/sessions/alive")
+	// Nothing has polled it, so the option names the tree and says no more.
+	if !strings.Contains(body, "alive &middot; Mustur<") {
+		t.Errorf("the option does not name the tree: %s", body)
+	}
+	for _, guess := range []string{"working", "waiting"} {
+		if strings.Contains(body, "alive &middot; Mustur &middot; "+guess) {
+			t.Errorf("a session nothing has polled was called %q", guess)
+		}
+	}
+}

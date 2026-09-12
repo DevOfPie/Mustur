@@ -166,6 +166,10 @@ type sessionRow struct {
 	State   string
 	// Where is the tree it is running in, named for the picker (MUS-F-0108).
 	Where string
+	// Doing is working or waiting, read from the hub's own poller rather than
+	// captured here (MUS-Q-0105). Empty when nothing has polled it yet, which
+	// is not the same as idle and is drawn as nothing rather than as a guess.
+	Doing string
 }
 
 type sessionPage struct {
@@ -333,7 +337,19 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 		if sn.Attached {
 			state = "running · attached"
 		}
-		rows = append(rows, sessionRow{Project: sn.Project, Here: sn.Project == here, State: state, Where: place[sn.Project]})
+		row := sessionRow{Project: sn.Project, Here: sn.Project == here, State: state, Where: place[sn.Project]}
+		// The other half of MUS-F-0108, and it costs nothing now: the hub polls
+		// every owned session, so this is a map lookup rather than the
+		// capture-pane per session per render that MUS-Q-0102 was about.
+		if s.Hub != nil {
+			switch s.Hub.Doing(sn.Project) {
+			case session.AgentWorking, session.AgentStarting:
+				row.Doing = "working"
+			case session.AgentWaiting:
+				row.Doing = "waiting"
+			}
+		}
+		rows = append(rows, row)
 	}
 	return rows, s.lost(ctx, running, here), found
 }
@@ -1390,10 +1406,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <form class="pick" method="get" action="/sessions">
     <select name="p" id="pick" aria-label="Session">
       {{if .Lost}}{{if .Rows}}<optgroup label="Running">
-        {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}</option>{{end}}
+        {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}{{if .Doing}} &middot; {{.Doing}}{{end}}</option>{{end}}
       </optgroup>{{end}}<optgroup label="Not running">
         {{range .Lost}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}</option>{{end}}
-      </optgroup>{{else}}{{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}</option>{{end}}{{end}}
+      </optgroup>{{else}}{{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}{{if .Doing}} &middot; {{.Doing}}{{end}}</option>{{end}}{{end}}
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
   <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>

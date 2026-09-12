@@ -716,6 +716,11 @@ func cmdServe(args []string) error {
 		sweep := &session.Sweeper{Adapter: adapter, Recall: remembered{s}, Watch: hub}
 		sweepCtx, stopSweep := context.WithCancel(context.Background())
 		defer stopSweep()
+		// One poller per owned session, watched or not (MUS-Q-0105). It is what
+		// lets the picker say which session is working without a tmux capture
+		// per session per page render, and what gives the sweep above a dwell
+		// measured continuously rather than seeded whenever a tab opens.
+		go hub.Supervise(sweepCtx)
 		go sweep.Run(sweepCtx)
 	}
 	// The composer is served whatever the flag says, and offers sessions only

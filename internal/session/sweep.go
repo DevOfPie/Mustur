@@ -30,17 +30,9 @@ package session
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log/slog"
 	"time"
 )
-
-// digest is what "the screen is unchanged" is decided on.
-func digest(body string) string {
-	sum := sha256.Sum256([]byte(body))
-	return hex.EncodeToString(sum[:])
-}
 
 // Quiet is how long a session's screen must have been unchanged before an
 // update is taken. The owner's number, on MUS-Q-0104.
@@ -65,11 +57,24 @@ type Recaller interface {
 	Remembered(ctx context.Context, project string) (dir, cmd string, ok bool)
 }
 
-// Watching reports whether a browser tab is holding this session open. The Hub
-// answers it; a nil Watcher means nothing is watching anything, which is the
-// safe answer for a server with no session surface.
+// Watcher is what the hub knows about a session it is polling.
+//
+// Since MUS-Q-0105 the hub keeps a poller on every owned session, so everything
+// the sweep needs about a screen is already in memory and captured once for all
+// readers rather than once per reader. The sweep does no tmux capture of its
+// own any more; a nil Watcher means nothing is being polled, and the sweep then
+// restarts nothing, which is the right answer for a server with no session
+// surface.
 type Watcher interface {
+	// Watching reports whether a browser tab is holding this session open.
 	Watching(project string) bool
+	// Doing is what the CLI's own pane last said the session was up to.
+	Doing(project string) Agent
+	// Quiet is how long the screen has been unchanged, and whether that is
+	// known at all. Not known means the poller has not seen it twice yet.
+	Quiet(project string, now time.Time) (time.Duration, bool)
+	// Furniture is what the CLI's status line last said.
+	Furniture(project string) (Status, bool)
 }
 
 // A Sweeper restarts idle sessions that have announced a CLI update.
@@ -81,17 +86,6 @@ type Sweeper struct {
 
 	// Now is the clock, injectable so a test does not wait half an hour.
 	Now func() time.Time
-
-	// quiet is when each project's screen was last seen to differ. Held here
-	// rather than read from tmux: session_activity is not when the session last
-	// did anything (MUS-F-0051), and the Hub's own record of it exists only
-	// while somebody is watching — which is precisely the case this excludes.
-	quiet map[string]seen
-}
-
-type seen struct {
-	sum  string
-	when time.Time
 }
 
 func (s *Sweeper) now() time.Time {
@@ -136,12 +130,7 @@ func (s *Sweeper) Sweep(ctx context.Context) {
 		// every other path gives to the same silence (MUS-D-0062).
 		return
 	}
-	if s.quiet == nil {
-		s.quiet = map[string]seen{}
-	}
-	running := make(map[string]bool, len(live))
 	for _, sn := range live {
-		running[sn.Project] = true
 		// Attached is somebody sitting in the session in a terminal. The
 		// owner's clause was "no browser tab open on it", and a terminal is the
 		// same presence reached another way -- tmux already reports it, so
@@ -152,51 +141,36 @@ func (s *Sweeper) Sweep(ctx context.Context) {
 		}
 		s.consider(ctx, sn.Project)
 	}
-	// A session that has gone takes its dwell with it, or a name started again
-	// later inherits a staleness it never had.
-	for project := range s.quiet {
-		if !running[project] {
-			delete(s.quiet, project)
-		}
-	}
 }
 
 func (s *Sweeper) consider(ctx context.Context, project string) {
-	raw, err := s.Adapter.Capture(ctx, project, ScreenLines)
-	if err != nil {
-		return
+	if s.Watch == nil {
+		return // nothing is polling, so nothing is known
 	}
-	body, st := SplitChrome(raw)
-	now := s.now()
-
-	// The dwell is measured on the body, not the capture: the CLI's own status
-	// line moves on its own — a spinner turns, a token count ticks — so a screen
-	// that has said nothing for an hour still has a changing capture
-	// (MUS-F-0135). Hashing what the furniture was stripped from is what makes
-	// "unchanged" mean what it says here.
-	sum := digest(body)
-	last, known := s.quiet[project]
-	if !known || last.sum != sum {
-		s.quiet[project] = seen{sum: sum, when: now}
-		return
+	st, seen := s.Watch.Furniture(project)
+	if !seen {
+		return // the poller has not read this session yet
 	}
-
 	if st.Update == "" {
 		return // nothing to take
 	}
-	if DoingIn(raw) != AgentWaiting {
+	if s.Watch.Doing(project) != AgentWaiting {
 		return // a turn is in flight, or the pane has not started
 	}
 	if st.Typed {
 		return // a line typed and not sent, which a restart would destroy
 	}
-	if s.Watch != nil && s.Watch.Watching(project) {
+	if s.Watch.Watching(project) {
 		return // somebody has it open
 	}
-	if now.Sub(last.when) < Quiet {
-		return // the screen moved too recently
+	// The dwell comes from the poller, which measures it on the body with the
+	// CLI's furniture stripped off -- so a turning spinner does not reset it
+	// (MUS-F-0135). Not known means the screen has not been read twice yet,
+	// which is not the same as unchanged, and it waits.
+	quiet, known := s.Watch.Quiet(project, s.now())
+	if !known || quiet < Quiet {
+		return
 	}
-
 	s.restart(ctx, project, st.Update)
 }
 
@@ -232,5 +206,4 @@ func (s *Sweeper) restart(ctx context.Context, project, notice string) {
 	}
 	s.log().Info("session restarted to take a CLI update",
 		"project", project, "notice", notice)
-	delete(s.quiet, project)
 }

@@ -10,7 +10,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 106 | [questions.md](questions.md) |
-| decision | 160 | [decisions.md](decisions.md) |
+| decision | 161 | [decisions.md](decisions.md) |
 | finding | 143 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 23 | [work-units/index.md](work-units/index.md) |
@@ -326,6 +326,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0158](decisions.md#mus-d-0158) | decision | The gate respects the permission mode, and is therefore inert in ordinary use here |
 | [MUS-D-0159](decisions.md#mus-d-0159) | decision | Mustur restarts a session to take a CLI update, which is the first thing it does on its own |
 | [MUS-D-0160](decisions.md#mus-d-0160) | decision | A jot takes six pictures, and six is the owner's number rather than the agent's |
+| [MUS-D-0161](decisions.md#mus-d-0161) | decision | The hub polls every owned session, and the reader stops being a thing a viewer starts |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
