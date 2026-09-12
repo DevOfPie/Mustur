@@ -2277,3 +2277,22 @@ func TestTheTerminalIsNotRepaintedUnderASelection(t *testing.T) {
 		t.Error("nothing paints the frame held back while a selection was up")
 	}
 }
+
+// Nothing draws a line across the rail above Stop.
+//
+// The tick that used to sit there was removed (MUS-F-0103) and the rule that
+// drew the line under it was not: a bare form selector written for the composer
+// reaches every form on the page, and .endform declares no border of its own to
+// beat it. The owner reported the leftover line (MUS-F-0107).
+func TestNothingDrawsALineAboveStop(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+	i := strings.Index(body, ".endform {")
+	if i < 0 {
+		t.Fatal("no .endform rule on the session page")
+	}
+	block := body[i : i+strings.Index(body[i:], "}")]
+	if !strings.Contains(block, "border-top: 0") {
+		t.Errorf(".endform does not undo the bare form rule's border: %s", block)
+	}
+}

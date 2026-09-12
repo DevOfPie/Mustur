@@ -150,7 +150,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0133](#mus-f-0133) | The third picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
 | [MUS-F-0134](#mus-f-0134) | How do we handle stopping and restarting sessions around claude updates? |  | with the owner on MUS-Q-0101 |
 | [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |  | open on the server; the client stopped repainting on such a frame and stopped counting it as activity, and the server still sends it |
-| [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open |
+| [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
 
 ---
 
@@ -3608,4 +3608,4 @@ internal/web/sessions.go declares a bare form rule for the composer, which has n
 | Field | Value |
 | --- | --- |
 | Where | internal/web/sessions.go, the bare form selector in the session stylesheet |
-| Status | open |
+| Status | open for .pick and .new form; fixed for .endform, which is the one that was reported |
