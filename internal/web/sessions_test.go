@@ -2238,3 +2238,42 @@ func TestThePopUpHandsTheQuestionOverRatherThanDroppingIt(t *testing.T) {
 		t.Error("the pop-up does not fall back to the pane's prompt when the held call clears")
 	}
 }
+
+// A frame does not repaint the terminal out from under a selection.
+//
+// Replacing #out's markup destroys the node the browser's selection is anchored
+// in, so a drag was re-anchored to the top of the pane and ran from there to
+// the pointer (MUS-F-0128). Two guards: an identical frame is not written at
+// all, and a changed one waits while a selection is held.
+func TestTheTerminalIsNotRepaintedUnderASelection(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	for _, want := range []string{
+		"function selecting()",
+		"getSelection",
+		"selectionchange",
+		"if (html === painted || html === pending) return false;",
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("the paint path has no %q; a frame can still land mid-selection", want)
+		}
+	}
+	// The silence counter is the fallback when the CLI's pane cannot be read at
+	// all, and it was being advanced by frames that carried no change -- the
+	// server broadcasts one whenever the spinner turns (MUS-F-0135). What paint
+	// answers is whether the screen moved, and only that advances the counter.
+	if !strings.Contains(src, "if (moved) lastOutput = Date.now();") {
+		t.Error("a frame that changed nothing still counts as activity")
+	}
+	if strings.Contains(src, "A frame only arrives when the screen actually changed") {
+		t.Error("the comment that claim was read off is still there")
+	}
+	// The held frame has to be painted by something, or the screen never comes
+	// back after a selection is let go.
+	if !strings.Contains(src, "if (pending !== null && !selecting()) paint(pending);") {
+		t.Error("nothing paints the frame held back while a selection was up")
+	}
+}
