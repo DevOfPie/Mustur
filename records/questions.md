@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-100 record(s), by identifier.
+102 record(s), by identifier.
 
 ---
 
@@ -2364,3 +2364,45 @@ Your settings set permissions.defaultMode to auto, and the surface starts plain 
 | Answer | Leave it |
 | Answered | 2026-09-11 04:33 |
 | Delivered | typed into mustur/Milestone_Work |
+
+---
+
+## MUS-Q-0101
+
+**Claude updates itself under a running session. Does taking the update get a control, or stay two presses?**
+
+question · 2026-09-11
+
+The CLI installs an update and keeps running the version it started on. It says so itself -- 'Update installed - Restart to update' -- and Mustur reads that line off the pane and shows it as a chip on the session (internal/session/chrome.go, the Update branch of SplitChrome). Taking the update means ending the session and bringing it back, which the restore path already does: it starts the recorded command with the conversation identifier appended when the transcript is on disk.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0134. Nothing is built either way; the answer decides whether anything is |
+| Option | Leave it at Stop then Resume :: Recommended. Nothing new is built, the chip already says an update is waiting, and two presses already do it. :: The pieces exist and compose. What the owner loses is that the two presses are on different screens -- Stop is on the session, the Resume button is on the page you land on afterwards -- so it is two presses and a navigation rather than two presses. |
+| Option | A restart control on the session's own page :: One press instead of two and a navigation, and one more destructive button on the surface. :: Stop, remember, restore, without leaving the session view. It is the existing stop path and the existing restore path behind one button, so it is small. It is also a second button that kills a running agent, next to the first one, and MUS-D-0147 put a confirmation in front of that for a reason. |
+| Option | Mustur restarts the session when it sees the notice :: No press at all, and it ends somebody's turn without asking. :: The update chip is already parsed, so Mustur could act on it. MUS-D-0149 says an agent CLI that stopped wants a person rather than a loop, and this is the same shape pointed at a session that has not stopped -- it would end a turn in flight to take a version nobody was waiting for. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 05:01 |
+
+---
+
+## MUS-Q-0102
+
+**Should the session picker say which sessions are working and which are waiting?**
+
+question · 2026-09-11
+
+Naming the tree each session runs in is the half of MUS-F-0108 that costs nothing, because Start already writes down where each session runs and the page that lists them was reading that row and discarding the directory. The other half was 'nice to know', and it is not free. Whether a session is working or waiting is read out of the CLI's own pane (MUS-D-0130), and the picker is rendered on the server with nothing captured -- so every session in the list means one more tmux capture-pane, on every page load of every session.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | the second half of MUS-F-0108. The first half -- the tree each session runs in -- is built and needs no answer |
+| Option | Leave the picker naming only where each session runs :: Recommended. Nothing further is built or spent; the state stays on the session's own page, where the pill already says it. :: The pill is live and correct for the session being looked at. What the picker cannot then tell you is which of the others is waiting for you, which is the thing that was asked for -- so this is declining the nice-to-know rather than satisfying it cheaply. |
+| Option | Read every session's pane on every render :: One tmux capture-pane per running session, per page load, run one after another. :: With three sessions that is three subprocesses before the page draws, and it grows with the list. The reading itself is code that exists (session.Doing). It is the honest version: the picker says what is true at the moment it is drawn. |
+| Option | Read them, but no more often than every few seconds :: Same reading, shared between page loads, at the cost of a picker that can be a few seconds behind. :: One capture per session per interval rather than per render, held in memory. A session that finished two seconds ago still reads as working. That is the same trade the pill does not have to make, and it is the only version whose cost does not grow with how often the page is loaded. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 05:01 |
