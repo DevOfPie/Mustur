@@ -122,7 +122,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0105](#mus-f-0105) | An answer was delivered into a session that never saw it, and the record says it was typed in |  |  |
 | [MUS-F-0106](#mus-f-0106) | Every redeploy kills every session, because the tmux server lives in the service's cgroup |  |  |
 | [MUS-F-0107](#mus-f-0107) | There is still a divider line above the stop button where the checkbox was on top of | A bare form rule sets border-top and padding for the composer, which declares neither of its own. .endform declared display and flex and nothing else, so the border applied to it -- which is also why the removed tick sat on top of the button rather than beside it, the column direction coming from the same rule. TestNothingDrawsALineAboveStop asserts .endform undoes it. | fixed |
-| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… | Every option was the session's name and nothing else, on all three of the template's option sites. The name is free text typed on the start form; nothing else was on the option to tell two apart. Where a session runs was already in the store -- Start writes the project, the directory and the command down and the row survives until the session is deliberately stopped -- and the page was already reading those rows to work out which sessions are lost, and throwing the directory away. | fixed for where each session runs; which are working and which are waiting is with the owner on MUS-Q-0102 |
+| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… | Every option was the session's name and nothing else, on all three of the template's option sites. The name is free text typed on the start form; nothing else was on the option to tell two apart. Where a session runs was already in the store -- Start writes the project, the directory and the command down and the row survives until the session is deliberately stopped -- and the page was already reading those rows to work out which sessions are lost, and throwing the directory away. | fixed, both halves; the tree on MUS-Q-0104's branch and the working/waiting state on MUS-D-0161 |
 | [MUS-F-0109](#mus-f-0109) | The offer to restore a lost session was on the one page a running session redirects past |  |  |
 | [MUS-F-0110](#mus-f-0110) | The session picker did nothing on a page with no terminal, and had no submit button either |  |  |
 | [MUS-F-0111](#mus-f-0111) | The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser | Twenty-five transcripts under ~/.claude/projects, 52,160 lines, on CLI 2.1.263. Twenty-three entry types appear and none is a dialog: assistant, user, attachment, queue-operation, last-prompt, ai-title, atis-latch, mode, permission-mode, agent-name, pr-link, agent-setting, relocated, worktree-state, bridge-session, file-history-delta, system, file-history-snapshot, frame-link, artifact-autoreact-ledger, cost-state, artifact-comment-monitor, continued-in. system carries only turn_duration, compact_boundary, away_summary and informational. Zero lines carry isSidechain:true across all twenty-five, so a sub-agent's own turns are not in its parent's file; what is there is the Agent tool_use with description, subagent_type, model and the whole prompt, and its result when it lands. Assistant content blocks are thinking, text, tool_use and usage. |  |
@@ -2930,6 +2930,8 @@ the half that is not free: [MUS-Q-0102](questions.md#mus-q-0102)
 
 two sessions can share one tree: [MUS-F-0117](#mus-f-0117)
 
+the poller that made the second half free: [MUS-D-0161](decisions.md#mus-d-0161)
+
 The selector drop-down on the session tab should show the name of each session and the project it is for. Once another project is added it will be impossible to tell projects apart unless they are all named perfectly.
 
 It would also be nice to know which sessions are actively working, and which are awaiting input from the drop-down
@@ -2937,11 +2939,11 @@ It would also be nice to know which sessions are actively working, and which are
 | Field | Value |
 | --- | --- |
 | Evidence | Every option was the session's name and nothing else, on all three of the template's option sites. The name is free text typed on the start form; nothing else was on the option to tell two apart. Where a session runs was already in the store -- Start writes the project, the directory and the command down and the row survives until the session is deliberately stopped -- and the page was already reading those rows to work out which sessions are lost, and throwing the directory away. |
-| Status | fixed for where each session runs; which are working and which are waiting is with the owner on MUS-Q-0102 |
+| Status | fixed, both halves; the tree on MUS-Q-0104's branch and the working/waiting state on MUS-D-0161 |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
-| Where | internal/web/sessions.go, internal/web/start.go |
+| Where | internal/web/sessions.go, internal/web/start.go, internal/session/screen.go |
 
 ---
 

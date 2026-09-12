@@ -3599,3 +3599,31 @@ Three was the only measured number in it: MUS-F-0131 arrived as three records be
 | Field | Value |
 | --- | --- |
 | Status | decided; nothing changes in the code and the comment stops saying the question is open |
+
+### MUS-D-0161
+
+**The hub polls every owned session, and the reader stops being a thing a viewer starts**
+
+decision · 2026-09-12
+
+the question it answers: MUS-Q-0105
+
+the question it closed badly: MUS-Q-0102
+
+the sweep that shares it: MUS-D-0159
+
+the half of the finding it completes: MUS-F-0108
+
+what had to be fixed first: MUS-F-0135
+
+The owner's answer to MUS-Q-0105, which was their own suggestion re-raised after MUS-Q-0102 was closed by a question rather than a choice (MUS-F-0137). A session runs in tmux from Start until something stops it; what was gated on a viewer was the reader. Hub.Watch counted viewers and the poller stopped two minutes after the last one left, so nothing knew what an unwatched session was doing -- and the picker had to choose between saying nothing and paying a tmux capture per session on every page render.
+
+Now one poller per owned session, adopted on a five-second tick and kept while the session runs. The cost moves from per page load to per running session, which is the right way round: there are three sessions here and there can be a hundred page loads. What it gives up is LingerAfter's whole point, which was not polling a session nobody is reading, and the owner took that knowingly.
+
+Three things fall out of it. The picker says working or waiting, which is the half of MUS-F-0108 that was not free and now is. MUS-D-0159's sweep stops capturing panes of its own and reads what the poller already holds. And the dwell that sweep turns on is maintained continuously per session rather than seeded from tmux's session_activity whenever a tab happens to open, which MUS-F-0051 established is not when the session last did anything.
+
+None of that would have been safe before MUS-F-0135 was fixed at the source: while the poller hashed the capture rather than what it renders, changedAt was reset by every turn of a spinner, so a dwell read off it would have been a dwell that never elapsed.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/session/screen.go Supervise, and the picker and the sweep both read it |

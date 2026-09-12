@@ -131,6 +131,57 @@ type pane struct {
 	linger *time.Timer
 	stop   func()
 	done   chan struct{}
+
+	// pinned marks a poller the hub keeps running whether or not anybody is
+	// watching (MUS-Q-0105). Without it the linger teardown removes a poller
+	// two minutes after the last tab closes, and the next supervise tick builds
+	// a new one that has to guess when the screen last changed -- from tmux's
+	// session_activity, which is not when the session last did anything
+	// (MUS-F-0051). Keeping the poller is what keeps the dwell honest.
+	pinned bool
+}
+
+// ensureLocked returns the poller for a project, starting one if there is none.
+// Called with h.mu held, by the viewer path and by the hub's own supervision.
+func (h *Hub) ensureLocked(ctx context.Context, project string) *pane {
+	if h.panes == nil {
+		h.panes = map[string]*pane{}
+	}
+	p := h.panes[project]
+	// A pane that has ended is not this session's, whatever it is keyed by. A
+	// session stopped and restarted under the same project inside the linger
+	// window used to hand the new viewer the dead one's last screen.
+	if p != nil && p.hasEnded() {
+		p.shut()
+		delete(h.panes, project)
+		p = nil
+	}
+	if p != nil {
+		return p
+	}
+	p = &pane{project: project, subs: map[chan Frame]struct{}{}, done: make(chan struct{})}
+	// Give it a height worth scrolling. Once per poller rather than per
+	// tick: it costs two tmux calls and the CLI redraws when it changes.
+	if err := h.Adapter.Fit(ctx, project); err != nil {
+		// Not fatal. A pane that could not be resized is a short pane, not
+		// an unreadable one.
+		log.Printf("session %s: %v", project, err)
+	}
+	// Seeded from tmux, or the first frame would say a session silent since
+	// Sunday had just this moment moved.
+	//
+	// This is MUS-F-0042 in its third form. The poller learns when the
+	// screen changed by watching it change, which is the right answer for
+	// every moment after the first and no answer at all for the first —
+	// exactly the case the counter exists for. tmux has known all along:
+	// session_activity is already read by List for the route row's default.
+	//
+	// Since MUS-Q-0105 the hub adopts every owned session, so for most panes
+	// this seed is used once at startup and the poller maintains it after.
+	p.changedAt = h.lastActive(ctx, project)
+	h.panes[project] = p
+	h.start(p)
+	return p
 }
 
 // Watch starts reading a project's pane and returns the screen as it stands.
@@ -150,39 +201,7 @@ func (h *Hub) Watch(ctx context.Context, project string) (*Sub, Frame, error) {
 	}
 
 	h.mu.Lock()
-	if h.panes == nil {
-		h.panes = map[string]*pane{}
-	}
-	p := h.panes[project]
-	// A pane that has ended is not this session's, whatever it is keyed by. A
-	// session stopped and restarted under the same project inside the linger
-	// window used to hand the new viewer the dead one's last screen.
-	if p != nil && p.hasEnded() {
-		p.shut()
-		delete(h.panes, project)
-		p = nil
-	}
-	if p == nil {
-		p = &pane{project: project, subs: map[chan Frame]struct{}{}, done: make(chan struct{})}
-		// Give it a height worth scrolling. Once per poller rather than per
-		// tick: it costs two tmux calls and the CLI redraws when it changes.
-		if err := h.Adapter.Fit(ctx, project); err != nil {
-			// Not fatal. A pane that could not be resized is a short pane, not
-			// an unreadable one.
-			log.Printf("session %s: %v", project, err)
-		}
-		// Seeded from tmux, or the first frame would say a session silent since
-		// Sunday had just this moment moved.
-		//
-		// This is MUS-F-0042 in its third form. The poller learns when the
-		// screen changed by watching it change, which is the right answer for
-		// every moment after the first and no answer at all for the first —
-		// exactly the case the counter exists for. tmux has known all along:
-		// session_activity is already read by List for the route row's default.
-		p.changedAt = h.lastActive(ctx, project)
-		h.panes[project] = p
-		h.start(p)
-	}
+	p := h.ensureLocked(ctx, project)
 	if p.linger != nil {
 		p.linger.Stop()
 		p.linger = nil
@@ -236,15 +255,144 @@ func (sub *Sub) Close() {
 	if p.refs > 0 || p.linger != nil {
 		return
 	}
+	if p.pinned {
+		// The hub is polling this one for everybody, not for this viewer.
+		return
+	}
 	p.linger = time.AfterFunc(LingerAfter, func() {
 		h.mu.Lock()
 		defer h.mu.Unlock()
-		if p.refs > 0 {
+		if p.refs > 0 || p.pinned {
 			return
 		}
 		p.shut()
 		delete(h.panes, p.project)
 	})
+}
+
+// SuperviseEvery is how often the hub looks for owned sessions it is not yet
+// polling. Coarse on purpose: it decides how soon a session started elsewhere
+// starts being watched, not how fresh any screen is, which is PollEvery's job.
+var SuperviseEvery = 5 * time.Second
+
+// Supervise keeps a poller on every session Mustur owns, watched or not.
+//
+// The owner's answer to MUS-Q-0105, and their own suggestion: a session runs in
+// tmux from Start until something stops it, but the reader was started by a
+// viewer and stopped two minutes after the last one left -- so nothing knew
+// what an unwatched session was doing. The picker had to choose between saying
+// nothing and paying a tmux capture per session on every page render.
+//
+// Polling all of them moves that cost from "per page load" to "per running
+// session", which is the right way round: there are three sessions here and
+// there can be a hundred page loads. What it gives up is LingerAfter's whole
+// point, which was not polling a session nobody is reading. That is the trade
+// the owner took, knowing it.
+//
+// It also gives MUS-D-0159's sweep an honest dwell for free: changedAt is now
+// maintained continuously per session rather than seeded from tmux whenever a
+// tab happens to open.
+func (h *Hub) Supervise(ctx context.Context) {
+	t := time.NewTicker(SuperviseEvery)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			h.adopt(ctx)
+		}
+	}
+}
+
+// adopt starts a poller for every owned session and drops the ones that have
+// gone.
+func (h *Hub) adopt(ctx context.Context) {
+	if h.Adapter == nil {
+		return
+	}
+	live, err := h.Adapter.List(ctx)
+	if err != nil {
+		// tmux could not be asked. Nothing is adopted and nothing is dropped:
+		// a listing that failed is not a machine with no sessions on it
+		// (MUS-D-0062).
+		return
+	}
+	running := make(map[string]bool, len(live))
+	for _, sn := range live {
+		running[sn.Project] = true
+		h.mu.Lock()
+		p := h.ensureLocked(ctx, sn.Project)
+		if p != nil {
+			p.pinned = true
+		}
+		h.mu.Unlock()
+	}
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for project, p := range h.panes {
+		if running[project] || p.refs > 0 {
+			continue
+		}
+		// Gone, and nobody is holding it. A tab still open on a dead session
+		// keeps its pane so the viewer is told it ended rather than finding an
+		// empty page.
+		p.shut()
+		delete(h.panes, project)
+	}
+}
+
+// Doing is what the CLI's own pane last said this session was up to.
+//
+// Read from the poller's last frame rather than captured on the spot, which is
+// the whole of what MUS-Q-0105 buys: the picker can say which session is
+// working and which is waiting without a tmux call per session per render. An
+// unknown answer means nothing has polled it yet, not that it is idle.
+func (h *Hub) Doing(project string) Agent {
+	h.mu.Lock()
+	p := h.panes[project]
+	h.mu.Unlock()
+	if p == nil {
+		return AgentUnknown
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.last.Agent
+}
+
+// Quiet is how long this session's screen has been unchanged, and whether that
+// is known at all. Read from the poller, which has been maintaining it since
+// the session was adopted.
+func (h *Hub) Quiet(project string, now time.Time) (time.Duration, bool) {
+	h.mu.Lock()
+	p := h.panes[project]
+	h.mu.Unlock()
+	if p == nil {
+		return 0, false
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.changedAt.IsZero() {
+		return 0, false
+	}
+	return now.Sub(p.changedAt), true
+}
+
+// Furniture is what the CLI's own status line last said, for a caller that
+// needs to know whether an update is waiting or something is typed.
+func (h *Hub) Furniture(project string) (Status, bool) {
+	h.mu.Lock()
+	p := h.panes[project]
+	h.mu.Unlock()
+	if p == nil {
+		return Status{}, false
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.last.At.IsZero() {
+		return Status{}, false
+	}
+	return p.last.Status, true
 }
 
 // lastActive asks tmux when this session last did anything. A zero time means
