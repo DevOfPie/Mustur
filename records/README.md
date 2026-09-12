@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 105 | [questions.md](questions.md) |
 | decision | 160 | [decisions.md](decisions.md) |
-| finding | 142 | [findings.md](findings.md) |
+| finding | 143 | [findings.md](findings.md) |
 | repository, machine, project | 4 | [routing.md](routing.md) |
 | work-unit | 23 | [work-units/index.md](work-units/index.md) |
 | investigation | 3 | [investigations/index.md](investigations/index.md) |
@@ -462,6 +462,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0135](findings.md#mus-f-0135) | finding | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |
 | [MUS-F-0136](findings.md#mus-f-0136) | finding | A bare form rule written for the composer draws a line across three forms that never asked for one |
 | [MUS-F-0137](findings.md#mus-f-0137) | finding | A question answered with a question is recorded as answered, and leaves the queue settled |
+| [MUS-F-0138](findings.md#mus-f-0138) | finding | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

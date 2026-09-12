@@ -9,6 +9,8 @@ package session
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -286,5 +288,71 @@ func TestWhatIsTypedIsNeverCarried(t *testing.T) {
 	}
 	if strings.Contains(st.Mode+strings.Join(st.Items, " ")+st.Note+st.Hint+st.Update, "milestone 8") {
 		t.Error("what was typed reached the status; it is the owner's and belongs on their screen only")
+	}
+}
+
+// The input box is not empty when it looks empty.
+//
+// The CLI draws its own dim suggestion into the box. The first version of this
+// guard read that as a person's draft, so a session showing a suggestion would
+// never have taken an update and the feature would have done nothing on the one
+// machine it runs on. The owner caught it by saying they had typed nothing into
+// a session this called typed.
+//
+// Both fixtures are real captures, because nothing in the tree had one: the
+// ghost came off mustur/Milestone_Work, and the typed one was measured by
+// starting a throwaway session, typing into it and not pressing Enter. What it
+// showed is that typed text carries no SGR at all after the caret -- it is not
+// colour 231, which is what the transcript above the box uses -- so "dim" is
+// the only thing separating the two, and the test says so in both directions.
+func TestTheCLIsOwnSuggestionIsNotSomebodyTyping(t *testing.T) {
+	for _, tc := range []struct {
+		file  string
+		typed bool
+		why   string
+	}{
+		{"prompt-ghost-suggestion.txt", false, "the CLI's own dim suggestion was read as a person's draft, so this session would never take an update"},
+		{"prompt-typed-draft.txt", true, "a real typed draft was read as an empty box, and a restart would destroy it"},
+	} {
+		raw, err := os.ReadFile(filepath.Join("testdata", tc.file))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, st := SplitChrome(string(raw)); st.Typed != tc.typed {
+			t.Errorf("%s: Typed=%v, want %v -- %s", tc.file, st.Typed, tc.typed, tc.why)
+		}
+	}
+}
+
+// An empty box is an empty box, whatever else is on the screen.
+func TestAnEmptyPromptIsNotTyped(t *testing.T) {
+	for _, name := range []string{"screen-working.txt", "screen-no-prompt.txt", "prompt-scrolled-past.txt"} {
+		raw, err := os.ReadFile(filepath.Join("testdata", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, st := SplitChrome(string(raw)); st.Typed {
+			t.Errorf("%s: an empty box read as typed", name)
+		}
+	}
+}
+
+// Somebody attached in a terminal is somebody present.
+//
+// The owner's clause was "no browser tab open on it". A terminal is the same
+// presence by another route, and tmux already reports it.
+func TestASessionSomebodyIsAttachedToIsLeftAlone(t *testing.T) {
+	run := &sweepRunner{
+		listing: owned("mustur/Research", 1, true),
+		after:   owned("mustur/Research", 1, true),
+		pane:    map[string]string{"Research": screen("done.", updateNotice, "", waitingLine)},
+	}
+	s, c := sweeperFor(t, run, recall{dir: "/checkout", cmd: "claude"}, watching(false))
+	settle(context.Background(), s, c)
+	if run.ran("kill-session") {
+		t.Errorf("restarted a session somebody was attached to: %v", run.calls)
+	}
+	if run.ran("capture-pane") {
+		t.Error("an attached session's pane was read at all; the listing already said to leave it")
 	}
 }

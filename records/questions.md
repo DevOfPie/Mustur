@@ -2484,7 +2484,7 @@ Your question first, because it has an answer. tmux sessions do not only run whi
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | the second half of MUS-F-0108, which is undecided: MUS-Q-0102 was closed by a reply that asked rather than chose (MUS-F-0137) |
 | Option | Poll every owned session always, not only the watched one :: Recommended, and it is your suggestion. One capture per running session on a fixed interval, and the picker's state becomes free. :: The cost stops scaling with page loads and starts scaling with sessions, which is the right way round -- there are three sessions and there could be a hundred page loads. It also makes the picker's state something already in memory rather than something fetched, and it is close to what the update sweep built on MUS-D-0159 already does on its own slower timer. The two could share one loop. What it gives up is LingerAfter's whole point, which was not polling a session nobody is reading. |
 | Option | Leave the picker naming only where each session runs :: Nothing further is built or spent. The state stays on the session's own page. :: The pill is live and correct for whichever session is open. What the picker cannot tell you is which of the others is waiting for you, which is what you asked for. |
@@ -2492,3 +2492,6 @@ Your question first, because it has an answer. tmux sessions do not only run whi
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 07:38 |
+| Answer | Poll every owned session always, not only the watched one |
+| Answered | 2026-09-11 16:49 |
+| Delivered | typed into mustur/Intake |
