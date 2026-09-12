@@ -149,7 +149,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0132](#mus-f-0132) | The second picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
 | [MUS-F-0133](#mus-f-0133) | The third picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
 | [MUS-F-0134](#mus-f-0134) | How do we handle stopping and restarting sessions around claude updates? |  | answered on MUS-Q-0101 and built on MUS-D-0159; the threshold is MUS-Q-0104's |
-| [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |  | open on the server; the client stopped repainting on such a frame and stopped counting it as activity, and the server still sends it |
+| [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame | The sum was taken over the capture, which carries the CLI's status line; PollEvery is 400ms, so a turning spinner produced a frame up to two and a half times a second on a screen that had said nothing. changedAt was reset by every one of them. TestATurningSpinnerIsSentAndDoesNotCountAsTheScreenChanging holds both halves of the fix. | fixed at the source; two sums, one over the body and one over everything rendered |
 | [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
 | [MUS-F-0137](#mus-f-0137) | A question answered with a question is recorded as answered, and leaves the queue settled | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
 | [MUS-F-0138](#mus-f-0138) | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. | fixed before the sweep ran anywhere |
@@ -3596,8 +3596,9 @@ A frame is suppressed when the SHA-256 of the capture matches the last one (the 
 
 | Field | Value |
 | --- | --- |
-| Where | internal/session/screen.go, the sha256 over raw in the read path |
-| Status | open on the server; the client stopped repainting on such a frame and stopped counting it as activity, and the server still sends it |
+| Where | internal/session/screen.go, the pane read path |
+| Status | fixed at the source; two sums, one over the body and one over everything rendered |
+| Evidence | The sum was taken over the capture, which carries the CLI's status line; PollEvery is 400ms, so a turning spinner produced a frame up to two and a half times a second on a screen that had said nothing. changedAt was reset by every one of them. TestATurningSpinnerIsSentAndDoesNotCountAsTheScreenChanging holds both halves of the fix. |
 
 ---
 

@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
 	"strings"
 	"testing"
@@ -173,5 +174,82 @@ func TestTrimBlankDropsThePadding(t *testing.T) {
 	}
 	if got := trimBlank("only"); got != "only" {
 		t.Errorf("a single line was trimmed to %q", got)
+	}
+}
+
+// The poller answers two questions, and they used to be one.
+//
+// It hashed the capture and suppressed a frame when the hash matched. The
+// capture carries the CLI's own status line, which moves on its own -- a
+// spinner turns, a token count ticks -- so a screen that had said nothing for
+// an hour produced a new frame several times a second, and changedAt was reset
+// by every one of them (MUS-F-0135). Two sums now: one over the body, which is
+// what "the screen changed" means and what a dwell can be measured on, and one
+// over everything rendered, which is what "there is something to send" means.
+//
+// Hashing the body alone would have been the obvious fix and the wrong one: the
+// chips are drawn from the furniture, so they would have frozen.
+func TestATurningSpinnerIsSentAndDoesNotCountAsTheScreenChanging(t *testing.T) {
+	run := &sweepRunner{pane: map[string]string{"zz": ""}}
+	a := &Adapter{Run: run, Stat: func(string) error { return nil }}
+	p := &pane{project: "zz", subs: map[chan Frame]struct{}{}}
+	ctx := context.Background()
+	t0 := time.Date(2026, 9, 12, 9, 0, 0, 0, time.UTC)
+
+	set := func(body, status string) {
+		run.mu.Lock()
+		defer run.mu.Unlock()
+		run.pane["zz"] = screen(body, "", "", status)
+	}
+
+	set("the session said this", waitingLine+" · 41.2k tokens")
+	first := p.read(ctx, a, t0)
+	if first.HTML == "" {
+		t.Fatal("the first read produced nothing")
+	}
+	started := p.changedAt
+
+	// Only the CLI's own status line moves.
+	set("the session said this", waitingLine+" · 41.9k tokens")
+	spun := p.read(ctx, a, t0.Add(time.Minute))
+	if fmt.Sprint(spun.Status) == fmt.Sprint(first.Status) {
+		t.Error("a moved status line produced no new frame; the chips would freeze")
+	}
+	if !p.changedAt.Equal(started) {
+		t.Error("a turning spinner reset the dwell, which is MUS-F-0135 exactly")
+	}
+
+	// Now the session actually says something.
+	set("the session said this\nand then this", waitingLine+" · 41.9k tokens")
+	said := p.read(ctx, a, t0.Add(2*time.Minute))
+	if !strings.Contains(said.HTML, "and then this") {
+		t.Fatalf("the new line did not reach the frame: %s", said.HTML)
+	}
+	if p.changedAt.Equal(started) {
+		t.Error("the screen changed and the dwell was not reset")
+	}
+}
+
+// Nothing at all moved, so nothing is sent.
+func TestAStillScreenProducesNoNewFrame(t *testing.T) {
+	run := &sweepRunner{pane: map[string]string{"zz": screen("still", "", "", waitingLine)}}
+	a := &Adapter{Run: run, Stat: func(string) error { return nil }}
+	p := &pane{project: "zz", subs: map[chan Frame]struct{}{}}
+	ctx := context.Background()
+	t0 := time.Date(2026, 9, 12, 9, 0, 0, 0, time.UTC)
+
+	p.read(ctx, a, t0)
+	before := p.changedAt
+	ch := make(chan Frame, 4)
+	p.mu.Lock()
+	p.subs[ch] = struct{}{}
+	p.mu.Unlock()
+
+	p.read(ctx, a, t0.Add(time.Hour))
+	if len(ch) != 0 {
+		t.Error("a still screen was broadcast")
+	}
+	if !p.changedAt.Equal(before) {
+		t.Error("a still screen reset the dwell")
 	}
 }
