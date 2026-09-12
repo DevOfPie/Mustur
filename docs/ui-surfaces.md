@@ -290,8 +290,10 @@ confusion is most of what this surface exists to prevent.
 
 **A session Mustur started and is no longer running has this page too**, and it
 is not a terminal: where it ran, when it started, whether the conversation comes
-back, and one button that starts it again
-([MUS-D-0150](../records/decisions.md#mus-d-0150)). No Stop and no sub-agent
+back, and one button that says which of those two it is doing — **Resume it**
+where there is a conversation on disk, **Start it again** where there is not
+([MUS-D-0150](../records/decisions.md#mus-d-0150),
+[MUS-F-0116](../records/findings.md#mus-f-0116)). No Stop and no sub-agent
 drawer, because there is nothing behind it. A project Mustur never started is
 still nothing to show.
 

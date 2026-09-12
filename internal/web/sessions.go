@@ -1424,7 +1424,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
        ran and which conversation it was having. -->
   <div class="lost">
     <h2>Not running</h2>
-    <p class="none"><small>Mustur started these and they are gone. A reboot ends every session; nothing here restarts one on its own.</small></p>
+    <p class="none"><small>Mustur started these and they are gone. A reboot ends every session; nothing here brings one back on its own.</small></p>
     <ul>
       {{range .Lost}}<li>
         <form method="post" action="/sessions/{{.Project}}/restore">
@@ -1433,7 +1433,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
             <small>{{.Dir}}{{if .When}} &middot; started {{.When}}{{end}}</small>
             <small>{{if .Resumes}}Comes back with the conversation it was having.{{else}}Starts again here, empty: there is no conversation on disk to bring back.{{end}}</small>
           </div>
-          <button type="submit">Start it again</button>
+          <button type="submit">{{if .Resumes}}Resume it{{else}}Start it again{{end}}</button>
         </form>
       </li>{{end}}
     </ul>
@@ -1472,10 +1472,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
         <small>{{.Recover.Dir}}{{if .Recover.When}} &middot; started {{.Recover.When}}{{end}}</small>
         <small>{{if .Recover.Resumes}}Comes back with the conversation it was having.{{else}}Starts again here, empty: there is no conversation on disk to bring back.{{end}}</small>
       </div>
-      <button type="submit">Start it again</button>
+      <button type="submit">{{if .Recover.Resumes}}Resume it{{else}}Start it again{{end}}</button>
     </form>
   </li></ul>
-  <p class="none"><small>Nothing here restarts on its own. <a href="/sessions?new=1">Start something else</a>.</small></p>
+  <p class="none"><small>Nothing here comes back on its own. <a href="/sessions?new=1">Start something else</a>.</small></p>
 </div>
 {{else if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>

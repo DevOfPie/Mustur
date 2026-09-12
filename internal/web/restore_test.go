@@ -351,3 +351,36 @@ func TestThePickerIsBoundBeforeTheTerminalGuard(t *testing.T) {
 		t.Error("the picker is bound after the script returns, so it is dead on every page with no terminal")
 	}
 }
+
+// The button says which of the two things pressing it does.
+//
+// It read "Start it again" in both cases, above a line saying the conversation
+// comes back — so the control and the sentence above it disagreed, and the
+// owner pressed it expecting a fresh session (MUS-F-0116). The behaviour was
+// always the restore; only the word was wrong.
+func TestTheRestoreButtonSaysResumeWhenTheConversationComesBack(t *testing.T) {
+	srv, st, ctx := restoreServer(t, fakeRunner{})
+	if err := st.RememberSession(ctx, "withtalk", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.NoteSessionCLI(ctx, "withtalk", "abc-123", transcript(t, "abc-123")); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.RememberSession(ctx, "empty", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+
+	body := getFrom(t, srv, "/sessions?new=1")
+	if !strings.Contains(body, "Resume it") {
+		t.Error("a session whose conversation comes back is offered as a fresh start")
+	}
+	if !strings.Contains(body, "Start it again") {
+		t.Error("a session with no conversation on disk must still say it starts again")
+	}
+	// The page the picker lands on says the same thing, and it is a second
+	// template rather than the same one.
+	one := getFrom(t, srv, "/sessions/withtalk")
+	if !strings.Contains(one, "Resume it") {
+		t.Errorf("the page the picker lands on still offers a fresh start: %s", one)
+	}
+}
