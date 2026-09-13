@@ -4,6 +4,7 @@ import (
 	"context"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/DevOfPie/Mustur/internal/question"
@@ -78,5 +79,64 @@ func TestAQuestionRaisedIntoAMusturSessionIsSurfacedByBeingRaised(t *testing.T) 
 	}
 	if question.Surfaced(alone) {
 		t.Error("a question naming no session was surfaced by nothing at all")
+	}
+}
+
+// A target nothing can deliver to is refused when the question is raised.
+//
+// It used to be checked at delivery, which is far too late: the question looked
+// fine until the owner pressed Answer, and then the answer was recorded, the
+// question closed, and the session that asked never heard it. The owner met it
+// as "not delivered" on an answer they had already given (MUS-F-0141). The
+// raiser now finds out while the fix is still "type the command again".
+func TestAskRefusesATargetNothingCanBeDeliveredTo(t *testing.T) {
+	db := filepath.Join(t.TempDir(), "q.db")
+	if err := run([]string{"seed", "--db", db}); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	err := run([]string{"ask", "--db", db, "--title", "Into a name with a space",
+		"--in", "two words", "--option", "yes :: a :: b"})
+	if err == nil {
+		t.Fatal("a question was raised with a target nothing can reach")
+	}
+	if !strings.Contains(err.Error(), "cannot be delivered to") {
+		t.Errorf("the refusal does not say what is wrong: %v", err)
+	}
+
+	s, ctx, openErr := openStore(db)
+	if openErr != nil {
+		t.Fatal(openErr)
+	}
+	defer s.Close()
+	if _, getErr := s.Get(ctx, "MUS-Q-0001"); getErr == nil {
+		t.Error("the question was filed anyway; a refused ask must leave nothing behind")
+	}
+}
+
+// The session name tmux hands out is accepted, and stored as the project.
+//
+// This is the shape the owner actually hit: a session knows itself as
+// "mustur/Hoard_Work" because that is what tmux reports, and passing that
+// through --in produced a question whose answer could never arrive.
+func TestAskTakesTheTmuxSessionNameAndStoresTheProject(t *testing.T) {
+	db := filepath.Join(t.TempDir(), "q.db")
+	if err := run([]string{"seed", "--db", db}); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	if err := run([]string{"ask", "--db", db, "--title", "Raised from a session that knows its tmux name",
+		"--in", session.Prefix + "Hoard_Work", "--option", "yes :: a :: b"}); err != nil {
+		t.Fatalf("ask: %v", err)
+	}
+	s, ctx, err := openStore(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	rec, err := s.Get(ctx, "MUS-Q-0001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := question.ProjectOf(rec); got != "Hoard_Work" {
+		t.Errorf("stored target is %q, want Hoard_Work -- delivery prepends the prefix itself", got)
 	}
 }

@@ -41,6 +41,10 @@ func DeliverRelayed(ctx context.Context, s Sender, project, id, answer, relayed 
 	if strings.TrimSpace(project) == "" {
 		return "not delivered: the question names no session"
 	}
+	// Records written before MUS-F-0141 was fixed hold the tmux session name
+	// rather than the project, and they are still deliverable -- the answer is
+	// worth more than the shape of the field it was recorded against.
+	project = ProjectFrom(project)
 	if _, err := NameFor(project); err != nil {
 		return fmt.Sprintf("not delivered: %v", err)
 	}

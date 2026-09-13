@@ -159,7 +159,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0138](#mus-f-0138) | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. | fixed before the sweep ran anywhere |
 | [MUS-F-0139](#mus-f-0139) | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body | open |
 | [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
-| [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. | open |
+| [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
 | [MUS-F-0142](#mus-f-0142) | One project's unsurfaced question fails every other project's commit gate | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. | fixed for the gate; the export still carries every project's records |
 | [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… |  | unreviewed |
 
@@ -3819,8 +3819,8 @@ Deliver normalises too rather than only ask, so a record written before this is 
 
 | Field | Value |
 | --- | --- |
-| Evidence | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. |
-| Status | open |
+| Evidence | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. |
+| Status | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
