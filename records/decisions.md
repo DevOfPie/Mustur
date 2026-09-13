@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-179 record(s), by identifier.
+182 record(s), by identifier.
 
 ## Index
 
@@ -23,6 +23,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [HRD-D-0009](#hrd-d-0009) | The Docker build cache on whippy-vm is pruned when Hoard's builds need the room | 2026-09-13 |
 | [HRD-D-0010](#hrd-d-0010) | Draft PRs run the cheap CI, ready PRs build and test on ubuntu, tags run every platform | 2026-09-13 |
 | [HRD-D-0011](#hrd-d-0011) | Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope | 2026-09-13 |
+| [HRD-D-0012](#hrd-d-0012) | Groups is its own route under Hoard Saves | 2026-09-13 |
+| [HRD-D-0013](#hrd-d-0013) | Sharing starts from both the Library row and the Dashboard card menu | 2026-09-13 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -191,6 +193,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0166](#mus-d-0166) | Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it | 2026-09-13 |
 | [MUS-D-0167](#mus-d-0167) | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number | 2026-09-13 |
 | [MUS-D-0168](#mus-d-0168) | Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured | 2026-09-13 |
+| [MUS-D-0169](#mus-d-0169) | A milestone LinkCtrl cites and never defines becomes a stub in its place in the order | 2026-09-13 |
 
 ---
 
@@ -341,6 +344,34 @@ d: [HRD-D-0010](#hrd-d-0010)
 w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 Pie on 2026-09-13: follow the same CI change path as the other DevOfPie projects. That path is LinkCtrl's, adopted by TradeShop (ci/README.md) and Mustur (ci/proposed/README.md): a change to .github/workflows is committed as ci/proposed/<name>.yml with a README, the owner applies it with git mv, and the PAT deliberately lacks the Workflows permission because a workflow's own permissions block overrides the repository default. The earlier request for that scope on HRD-W-0001 is withdrawn.
+
+---
+
+## HRD-D-0012
+
+**Groups is its own route under Hoard Saves**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0014](questions.md#hrd-q-0014)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0014. The desktop gets a /groups route with a sidebar entry beside Library and Dashboard in the Hoard Saves group (App.svelte navEntries, APP_ROUTE_PREFIXES, lazy loader), as drawn in the visual plan plan-523b4a30c7d3409b: group cards with owner actions, member rows, the shared worlds with their lease pill, and a join-by-token form at the bottom.
+
+---
+
+## HRD-D-0013
+
+**Sharing starts from both the Library row and the Dashboard card menu**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0016](questions.md#hrd-q-0016)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0016: both. One ShareWorldModal, two entry points: the first icon in the Library tracked row's action row (Unshare when already shared) and a Share item in the SaveGameCard overflow menu beside Rename, Pause and History. Drawn in plan-523b4a30c7d3409b.
 
 ---
 
@@ -3460,3 +3491,24 @@ One consequence stated rather than left in a code comment: the import copies bod
 | Field | Value |
 | --- | --- |
 | Corrects | MUS-D-0163's store clause and MUS-D-0164's reconciliation target |
+
+---
+
+## MUS-D-0169
+
+**A milestone LinkCtrl cites and never defines becomes a stub in its place in the order**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0114](questions.md#mus-q-0114)
+
+amends: [MUS-D-0167](#mus-d-0167)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+MUS-Q-0114 asked what happens to milestone numbers cited in LinkCtrl and defined nowhere, 18 of them cited 40 times, since MUS-D-0167 asked that every reference point at its new number and renumbering could not start at the beginning without them. The owner chose to stub the cited ones. Each gets a milestone record in its place in LinkCtrl's order, holding only that LinkCtrl cites it and defines it nowhere, dated by the earliest record citing it, with its old number in the LinkCtrl field. Every reference then points at a record, and the records citing it say what LinkCtrl meant. Numbers neither defined nor cited (M1, M2, M3, M5, M6 and M10) get nothing. Stubs have no work unit, and every milestone after the first stub moves up by the stubs before it.
+
+| Field | Value |
+| --- | --- |
+| Applies to | milestone numbers cited in imported LinkCtrl records with no file, phase-1 row or heading |
+| Costs | 18 milestone records with no content beyond their citations |

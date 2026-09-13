@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-132 record(s), by identifier.
+133 record(s), by identifier.
 
 ---
 
@@ -373,13 +373,16 @@ Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d340
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Phase 3 desktop slice, step 2 (the Groups route) |
 | Option | Its own route under Hoard Saves :: Recommended: a sidebar entry beside Library and Dashboard, as drawn :: One more nav item; groups are a first-class thing you visit, with members, invites and the shared worlds' lease state on one page. |
 | Option | A card on the Account page :: no new nav entry; the self-hosted branch of Account gains a Groups card :: Less discoverable, and Account is already a long page of cards. |
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | Hoard_Work |
+| Answer | Its own route under Hoard Saves |
+| Answered | 2026-09-13 07:35 |
+| Delivered | typed into mustur/Hoard_Work |
 
 ---
 
@@ -397,7 +400,7 @@ Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d340
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Phase 3 desktop slice, step 5 (the claim modal) |
 | Option | A modal over the app :: Recommended: dismissible, one row per world with Host / View, Not playing in the footer with the 60 s countdown, as drawn :: The game is in front anyway; the app shows the question when you look. Host is disabled where another member holds the lease. |
 | Option | A bell notification with buttons :: non-blocking and it persists :: A three-way answer per world does not fit a notification row, and the countdown would be text only. |
@@ -405,6 +408,9 @@ Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d340
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | Hoard_Work |
+| Answer | I believe I saw that hoard has an overlay, in which case we should use that and any other options already available in the app. |
+| Answered | 2026-09-13 07:37 |
+| Delivered | typed into mustur/Hoard_Work |
 
 ---
 
@@ -420,7 +426,7 @@ Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d340
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Phase 3 desktop slice, step 3 (the share dialog) |
 | Option | Library row icon :: Recommended: first icon in the tracked row's action row, as drawn :: Library is where a save's identity is managed today (rename, untrack, history). |
 | Option | Dashboard card overflow menu :: beside Rename, Pause, History :: Closer to play, but that card is about version state, not membership. |
@@ -428,6 +434,39 @@ Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d340
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | Hoard_Work |
+| Answer | Both |
+| Answered | 2026-09-13 07:38 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0017
+
+**Re-asking how the claim prompt appears, with what the overlay can and cannot do**
+
+question · 2026-09-13
+
+supersedes: [HRD-Q-0015](#hrd-q-0015)
+
+f: [MUS-F-0137](findings.md#mus-f-0137)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The overlay exists and is not a dialog. hoard-screen is a window-capture compositor (crates/hoard-screen/src/lib.rs:1-30): panels of captured windows, a crosshair, a magnifier. Its window is click-through and it never receives clicks; input is a polled global key or mouse binding (input.rs:3-13). It is Pro-only and gated by cloud entitlements (Feature::Screen, cloud/entitlements.rs; the nav entry is cloud-only), so on the self-hosted fork it does not run today. A prompt in it means un-gating it for self-hosted in the fork, adding a text panel source, and binding keys for Host, View and Not playing, with Wayland capture permissions as a known snag. What the app already has: Modal.svelte (every confirm today), the bell store with action buttons, toasts without a warning level, and hoardd's OS notification, which already fires a nudge on WorldClaimWanted (Linux today; Windows and macOS sinks are stubs). The engine auto-hosts after 60 s regardless, so the prompt only shortens the wait.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 desktop slice, step 5 (the claim prompt); HRD-Q-0015 was closed by a reply that asked about the overlay rather than choosing |
+| Option | Modal in the app now, overlay later :: Recommended: the modal as drawn, plus the OS nudge hoardd already sends; an overlay notice with hotkeys becomes its own phase after the fork un-gates the overlay for self-hosted :: Ships with the rest of phase 3 and needs nothing outside the app. The overlay work is real: un-gating, a text source, key bindings, platform testing. |
+| Option | Overlay notice with hotkeys, modal as fallback :: the fork un-gates hoard-screen for self-hosted and adds a notice panel and three key bindings; the modal shows when the overlay is not running :: The answer arrives in-game without alt-tab. Costs a phase of overlay work before the prompt exists at all, and Windows and macOS need the OS notification sinks finished to nudge. |
+| Option | OS notification with action buttons, modal as fallback :: hoardd's notification gains Host and View actions where the platform supports them (Linux now), the app shows the modal otherwise :: Cheaper than the overlay, but Windows and macOS sinks are stubs today, so most of your testers would only ever see the modal. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | This seems false, with Alt+H there is an overlay that I can interact with that shows the log and my saves |
+| Answered | 2026-09-13 07:41 |
+| Delivered | typed into mustur/Hoard_Work |
 
 ---
 
@@ -3166,7 +3205,7 @@ Found by the done-when review of MUS-M-0009. LinkCtrl's tree has a source for M1
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | The live import: the answer shifts every milestone's new serial |
 | Needed to proceed | yes |
 | Option | Stub the cited ones :: Recommended: each of the 18 gets a milestone record in its place in the order, saying it is cited and never defined, and every reference then points at a record :: Meets your answer as given: numbering starts at M0.5, every one of the 40 references resolves, and the stub says honestly that LinkCtrl holds nothing more. Costs 18 records with no content beyond where they are cited, and every milestone after M0.5 moves up by the stubs before it. |
@@ -3175,6 +3214,9 @@ Found by the done-when review of MUS-M-0009. LinkCtrl's tree has a source for M1
 | Session | mustur/LinkCtrl_Target |
 | Session project | LinkCtrl_Target |
 | Surfaced | 2026-09-13 07:29 |
+| Answer | Stub the cited ones |
+| Answered | 2026-09-13 07:39 |
+| Delivered | typed into mustur/LinkCtrl_Target |
 
 ---
 

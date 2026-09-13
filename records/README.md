@@ -9,8 +9,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 132 | [questions.md](questions.md) |
-| decision | 179 | [decisions.md](decisions.md) |
+| question | 133 | [questions.md](questions.md) |
+| decision | 182 | [decisions.md](decisions.md) |
 | finding | 162 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 25 | [work-units/index.md](work-units/index.md) |
@@ -37,6 +37,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0014](questions.md#hrd-q-0014) | question | Desktop UI: where does the Groups screen live? |
 | [HRD-Q-0015](questions.md#hrd-q-0015) | question | Desktop UI: how does the claim prompt appear when the game starts? |
 | [HRD-Q-0016](questions.md#hrd-q-0016) | question | Desktop UI: where does sharing a world start? |
+| [HRD-Q-0017](questions.md#hrd-q-0017) | question | Re-asking how the claim prompt appears, with what the overlay can and cannot do |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -48,6 +49,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-D-0009](decisions.md#hrd-d-0009) | decision | The Docker build cache on whippy-vm is pruned when Hoard's builds need the room |
 | [HRD-D-0010](decisions.md#hrd-d-0010) | decision | Draft PRs run the cheap CI, ready PRs build and test on ubuntu, tags run every platform |
 | [HRD-D-0011](decisions.md#hrd-d-0011) | decision | Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope |
+| [HRD-D-0012](decisions.md#hrd-d-0012) | decision | Groups is its own route under Hoard Saves |
+| [HRD-D-0013](decisions.md#hrd-d-0013) | decision | Sharing starts from both the Library row and the Dashboard card menu |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
@@ -383,6 +386,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0166](decisions.md#mus-d-0166) | decision | Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it |
 | [MUS-D-0167](decisions.md#mus-d-0167) | decision | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number |
 | [MUS-D-0168](decisions.md#mus-d-0168) | decision | Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured |
+| [MUS-D-0169](decisions.md#mus-d-0169) | decision | A milestone LinkCtrl cites and never defines becomes a stub in its place in the order |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

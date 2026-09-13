@@ -3771,3 +3771,22 @@ One consequence stated rather than left in a code comment: the import copies bod
 | Field | Value |
 | --- | --- |
 | Corrects | MUS-D-0163's store clause and MUS-D-0164's reconciliation target |
+
+### MUS-D-0169
+
+**A milestone LinkCtrl cites and never defines becomes a stub in its place in the order**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0114
+
+amends: MUS-D-0167
+
+milestone: MUS-M-0009
+
+MUS-Q-0114 asked what happens to milestone numbers cited in LinkCtrl and defined nowhere, 18 of them cited 40 times, since MUS-D-0167 asked that every reference point at its new number and renumbering could not start at the beginning without them. The owner chose to stub the cited ones. Each gets a milestone record in its place in LinkCtrl's order, holding only that LinkCtrl cites it and defines it nowhere, dated by the earliest record citing it, with its old number in the LinkCtrl field. Every reference then points at a record, and the records citing it say what LinkCtrl meant. Numbers neither defined nor cited (M1, M2, M3, M5, M6 and M10) get nothing. Stubs have no work unit, and every milestone after the first stub moves up by the stubs before it.
+
+| Field | Value |
+| --- | --- |
+| Applies to | milestone numbers cited in imported LinkCtrl records with no file, phase-1 row or heading |
+| Costs | 18 milestone records with no content beyond their citations |
