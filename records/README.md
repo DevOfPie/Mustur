@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 134 | [questions.md](questions.md) |
 | decision | 185 | [decisions.md](decisions.md) |
-| finding | 163 | [findings.md](findings.md) |
+| finding | 164 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 25 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -540,6 +540,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0146](findings.md#mus-f-0146) | finding | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records |
 | [MUS-F-0147](findings.md#mus-f-0147) | finding | I can't click or ctrl+click on links in the session |
 | [MUS-F-0148](findings.md#mus-f-0148) | finding | Push up replacing the visual plan mcp |
+| [MUS-F-0149](findings.md#mus-f-0149) | finding | The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

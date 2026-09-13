@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-163 record(s), by identifier.
+164 record(s), by identifier.
 
 ## The queue
 
@@ -173,6 +173,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0146](#mus-f-0146) | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation | raised as MUS-Q-0112 and MUS-Q-0113 |
 | [MUS-F-0147](#mus-f-0147) | I can't click or ctrl+click on links in the session |  | unreviewed |
 | [MUS-F-0148](#mus-f-0148) | Push up replacing the visual plan mcp |  | unreviewed |
+| [MUS-F-0149](#mus-f-0149) | The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives | mustur_route repository=DevOfPie/LinkCtrl returned 50.5 KB (Claude Code persisted it as a file); mustur list counts the live store and the rehearsal store | open |
 
 ---
 
@@ -4095,3 +4096,22 @@ Push up replacing the visual plan mcp. Te plan proposed in `https://plan.agent-n
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0149
+
+**The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives**
+
+finding · 2026-09-13
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+decision: [MUS-D-0170](decisions.md#mus-d-0170)
+
+mustur_route with no identifier returns the routing and an index line for every record in the store, whatever repository is named. Called for DevOfPie/LinkCtrl on 2026-09-13 it returned about 50 KB, with the store holding 531 records. The rehearsed import brings the store to about 2,025, so the same call would return roughly four times as much, and it is the call every session in every registered repository must make before any other action. Nothing scopes the index to the repository named, and nothing pages it. This is not a defect in the import, and it does not block MUS-M-0009, but a LinkCtrl session reaching mustur_route is part of that milestone's done-when (MUS-D-0170), and a mandated call that floods the context is a cost every session pays.
+
+| Field | Value |
+| --- | --- |
+| Evidence | mustur_route repository=DevOfPie/LinkCtrl returned 50.5 KB (Claude Code persisted it as a file); mustur list counts the live store and the rehearsal store |
+| Status | open |
