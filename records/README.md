@@ -11,7 +11,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | milestone | 12 | [milestones.md](milestones.md) |
 | question | 116 | [questions.md](questions.md) |
 | decision | 167 | [decisions.md](decisions.md) |
-| finding | 150 | [findings.md](findings.md) |
+| finding | 151 | [findings.md](findings.md) |
 | repository, machine, project | 6 | [routing.md](routing.md) |
 | work-unit | 24 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -490,6 +490,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0139](findings.md#mus-f-0139) | finding | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository |
 | [MUS-F-0140](findings.md#mus-f-0140) | finding | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute |
 | [MUS-F-0141](findings.md#mus-f-0141) | finding | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered |
+| [MUS-F-0142](findings.md#mus-f-0142) | finding | One project's unsurfaced question fails every other project's commit gate |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

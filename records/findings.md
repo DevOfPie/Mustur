@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-150 record(s), by identifier.
+151 record(s), by identifier.
 
 ## The queue
 
@@ -160,6 +160,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0139](#mus-f-0139) | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body | open |
 | [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
 | [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
+| [MUS-F-0142](#mus-f-0142) | One project's unsurfaced question fails every other project's commit gate | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. | fixed for the gate; the export still carries every project's records |
 
 ---
 
@@ -3823,3 +3824,29 @@ Deliver normalises too rather than only ask, so a record written before this is 
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
 | Where | internal/session/session.go, internal/session/deliver.go, cmd/mustur/questions.go |
+
+---
+
+## MUS-F-0142
+
+**One project's unsurfaced question fails every other project's commit gate**
+
+finding · 2026-09-13
+
+the decision that let a second project in: [MUS-D-0162](decisions.md#mus-d-0162)
+
+the collision it shares: [MUS-F-0066](#mus-f-0066)
+
+The questions gate reads the exported tree and fails while any open question has never been surfaced. That was exactly right while the store held one project. A second moved in on MUS-D-0162, and within minutes a Mustur commit was blocked by HRD-Q-0007 and HRD-Q-0008 -- raised by the session onboarding Hoard, surfaceable only by that session, and answerable only by the owner.
+
+The gate exists so a session cannot report its own work complete around its own unanswered question. Another project's question is not that. Left alone it would block every Mustur commit until an unrelated session got round to its prompts, and the obvious way out -- surfacing somebody else's question to unblock yourself -- is the gate being walked around rather than kept.
+
+So the gate takes a prefix and the Makefile names this project's. Run by hand with no prefix it still shows the whole store, which is what a person wants to see. The prefix is matched with its dash, so MU does not match MUS.
+
+What this does not solve is the same collision everywhere else: one store and a whole-tree export means every branch commits every project's records, which is MUS-F-0066 and is now worse rather than different.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/questions.go, internal/question/question.go, Makefile |
+| Evidence | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. |
+| Status | fixed for the gate; the export still carries every project's records |

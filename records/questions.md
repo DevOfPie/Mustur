@@ -185,7 +185,7 @@ Your question: which option is least disruptive while sharing only the files the
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Phase 2 backup and restore scope; HRD-Q-0002 was closed by a reply that asked rather than chose |
 | Option | Per-save include filter :: Recommended: a glob list on the save, set from a per-game template when the world is shared; player data excluded unless the template says the game stores it in the world :: Meets the constraint for both cases you named with one mechanism. Costs a filter in walk_source and the restore merge, a state field, a wire field with a golden fixture, and the Valheim template. |
 | Option | Subfolder save :: track worlds_local as its own save, no new mechanism :: Zero new code, but every world in the folder shares one lease and nothing inside can be excluded, so it cannot meet the constraint. |
@@ -193,6 +193,9 @@ Your question: which option is least disruptive while sharing only the files the
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | mustur/Hoard_Work |
+| Answer | Per-save include filter |
+| Answered | 2026-09-13 04:45 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
 
 ---
 
@@ -210,7 +213,7 @@ The plan at .local/group-sharing/plan.md is revised for HRD-D-0001 to 0005. Phas
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Writing code; the plan is complete apart from HRD-Q-0007, which only touches phase 2 |
 | Option | Start now :: Recommended: phase 1 begins in this session on a branch from main, PR opened as draft when green :: Fastest; the plan is on disk to read alongside the diff, and a draft PR is where a schema objection is cheapest to act on. |
 | Option | After you read the plan :: this session stops; phase 1 starts when you say so :: Costs a round trip and buys a read of the plan before any migration exists. |
@@ -218,6 +221,9 @@ The plan at .local/group-sharing/plan.md is revised for HRD-D-0001 to 0005. Phas
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | mustur/Hoard_Work |
+| Answer | After you read the plan |
+| Answered | 2026-09-13 04:46 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
 
 ---
 
