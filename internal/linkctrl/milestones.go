@@ -119,7 +119,7 @@ func Milestones(src MilestoneSources, cited map[string]Citation, today string) (
 			// The old number sits in code spans: Rewrite and Cite skip code, so
 			// the stub does not rename or cite itself.
 			ms.Title = "`M" + n + "`, cited in LinkCtrl and defined nowhere"
-			ms.Body = fmt.Sprintf("LinkCtrl cites `M%s` %d time(s) and its tree holds no file, table row or heading for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.", n, c.Count)
+			ms.Body = fmt.Sprintf("LinkCtrl cites `M%s` %d time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.", n, c.Count)
 			ms.At = c.At
 			if ms.At == "" {
 				ms.At = today

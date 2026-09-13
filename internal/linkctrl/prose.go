@@ -71,9 +71,10 @@ func Questions(text, today string) ([]record.Record, error) {
 		status := "open"
 		if a := answered.FindStringSubmatch(b); a != nil {
 			status, rec.At = "answered", a[1]
-			for _, l := range strings.Split(b, "\n") {
-				if strings.Contains(l, a[0]) {
-					rec.Data = append(rec.Data, record.Field{Key: "Answer", Value: delink(strings.TrimSpace(l))})
+			// The answer is the paragraph holding the marker; LinkCtrl wraps it.
+			for _, para := range strings.Split(b, "\n\n") {
+				if strings.Contains(para, a[0]) {
+					rec.Data = append(rec.Data, record.Field{Key: "Answer", Value: delink(strings.Join(strings.Fields(para), " "))})
 					break
 				}
 			}

@@ -24,7 +24,7 @@ func TestInvestigationTakesItsNumberStatusAndDate(t *testing.T) {
 
 const questionsFixture = "# Upcoming decisions\n\n" +
 	"## Open — a milestone needs this\n\n" +
-	"### M55 — Does the update checker default on or off?\n\n**Answered 2026-08-08** by the owner.\n\n" +
+	"### M55 — Does the update checker default on or off?\n\n**Answered 2026-08-08** by the owner, as\n[D149](../../Plan.md#phase-3-decisions): off by default.\n\n" +
 	"## Open — nothing forces this\n\n" +
 	"### An 'All Workspaces' dashboard scope — which phase?\n\n**Needed by:** nothing.\n\n" +
 	"### <milestone> — <the question in one sentence>\n\n**Needed by:**\n\n```\n"
@@ -40,7 +40,7 @@ func TestQuestionsSkipTheTemplateAndReadAnswered(t *testing.T) {
 	if s, _ := got[0].Get("Status"); s != "answered" || got[0].At != "2026-08-08" {
 		t.Fatalf("first: %s at %s", s, got[0].At)
 	}
-	if a, _ := got[0].Get("Answer"); !strings.Contains(a, "Answered 2026-08-08") {
+	if a, _ := got[0].Get("Answer"); !strings.HasSuffix(a, "by the owner, as D149: off by default.") {
 		t.Fatalf("answer %q", a)
 	}
 	if r, _ := got[0].Get("Relayed"); r == "" {
