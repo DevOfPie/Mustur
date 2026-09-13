@@ -78,7 +78,7 @@ Authoritative. Where this table and prose elsewhere disagree, this table wins.
 | Routing registry — repositories, machines, cross-repo projects | yes | | |
 | System of record for milestones, findings and decisions, addressable by identifier | yes | | |
 | Records and routing behind one repo-scoped tool call | yes | | |
-| Repo-local injection kit — a mandate clause in `CLAUDE.md`, with the server registered at user scope | yes | | |
+| Repo-local injection kit — a mandate clause in the project's `CLAUDE.md`, and a per-machine token with the server registered at user scope ([MUS-D-0165](records/decisions.md#mus-d-0165)) | yes | | |
 | Decision enforcement — block on unsurfaced decisions, route the answer back | yes | | |
 | Intake — capture from any device into Mustur's own `findings-queue`, with routing hints | yes | | |
 | Conformance audit over the records Mustur owns, against StrucGu's check vocabulary | yes | | |
