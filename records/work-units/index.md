@@ -24,6 +24,81 @@ is a copy that will drift.
 | Unit | Title | Date |
 | --- | --- | --- |
 | [HRD-W-0001](HRD-W-0001.md) | Group save sharing in the DevOfPie fork | 2026-09-13 |
+| [LNK-W-0016](LNK-W-0016.md) | Audit log: behavior, retention, growth alerting | 2026-09-13 |
+| [LNK-W-0017](LNK-W-0017.md) | Notifications: in-app behavior | 2026-09-13 |
+| [LNK-W-0018](LNK-W-0018.md) | Cross-replica cache invalidation (pub/sub) | 2026-08-01 |
+| [LNK-W-0019](LNK-W-0019.md) | Shared rate limits (credentials and API) | 2026-09-13 |
+| [LNK-W-0020](LNK-W-0020.md) | Dark mode | 2026-07-31 |
+| [LNK-W-0022](LNK-W-0022.md) | Workspace and organization switcher | 2026-07-31 |
+| [LNK-W-0023](LNK-W-0023.md) | Mailer: optional SMTP delivery | 2026-09-13 |
+| [LNK-W-0024](LNK-W-0024.md) | Dashboard header: identity menu and notification bell | 2026-07-31 |
+| [LNK-W-0025](LNK-W-0025.md) | Bounded Redis failure, when the server never answers | 2026-07-31 |
+| [LNK-W-0026](LNK-W-0026.md) | Organizations: invitations and joining | 2026-08-01 |
+| [LNK-W-0027](LNK-W-0027.md) | Team management, workspaces, and org creation | 2026-08-01 |
+| [LNK-W-0028](LNK-W-0028.md) | Organization deletion and tenancy teardown | 2026-08-01 |
+| [LNK-W-0029](LNK-W-0029.md) | Self-serve signup, switchable at runtime | 2026-08-01 |
+| [LNK-W-0030](LNK-W-0030.md) | Destination blocking: tiers and logging | 2026-08-01 |
+| [LNK-W-0032](LNK-W-0032.md) | Blocked-attempt disputes and owner review | 2026-08-01 |
+| [LNK-W-0033](LNK-W-0033.md) | Opt-in reputation and malware feeds | 2026-08-01 |
+| [LNK-W-0034](LNK-W-0034.md) | Bot blocking, per domain and per link | 2026-07-31 |
+| [LNK-W-0036](LNK-W-0036.md) | Mid-phase adversarial review | 2026-09-13 |
+| [LNK-W-0037](LNK-W-0037.md) | Deep-link path forwarding | 2026-09-13 |
+| [LNK-W-0038](LNK-W-0038.md) | A demo that shows the phase, not just its links | 2026-08-01 |
+| [LNK-W-0039](LNK-W-0039.md) | Routing rules: conditions and first-match evaluation | 2026-09-13 |
+| [LNK-W-0040](LNK-W-0040.md) | Gated links: password, signed, one-time, max-click | 2026-08-04 |
+| [LNK-W-0041](LNK-W-0041.md) | Split testing: weighted, percentage, sequential, fallback, flags | 2026-09-13 |
+| [LNK-W-0042](LNK-W-0042.md) | Dimension visualizations, with the rollup cadence fixed first | 2026-08-10 |
+| [LNK-W-0043](LNK-W-0043.md) | Folders: API and tree UI | 2026-08-05 |
+| [LNK-W-0044](LNK-W-0044.md) | Per-domain ownership | 2026-09-13 |
+| [LNK-W-0045](LNK-W-0045.md) | Custom domains: verification and serving | 2026-08-04 |
+| [LNK-W-0046](LNK-W-0046.md) | QR codes and campaigns | 2026-09-13 |
+| [LNK-W-0047](LNK-W-0047.md) | Webhooks | 2026-08-04 |
+| [LNK-W-0048](LNK-W-0048.md) | Automation rules | 2026-08-04 |
+| [LNK-W-0049](LNK-W-0049.md) | API keys: rotation automation and scope choice | 2026-09-13 |
+| [LNK-W-0051](LNK-W-0051.md) | Pre-release adversarial review | 2026-09-13 |
+| [LNK-W-0052](LNK-W-0052.md) | Deferred findings, documentation pass, and the 0.2.0 release | 2026-07-31 |
+| [LNK-W-0053](LNK-W-0053.md) | The shell, the navigation, and the links list | 2026-08-02 |
+| [LNK-W-0054](LNK-W-0054.md) | A browser an agent can drive, and a test that outlives it | 2026-08-11 |
+| [LNK-W-0055](LNK-W-0055.md) | The workspace pair reads as one control | 2026-08-11 |
+| [LNK-W-0056](LNK-W-0056.md) | The link page, taken apart | 2026-08-06 |
+| [LNK-W-0057](LNK-W-0057.md) | What every tab says about itself | 2026-08-11 |
+| [LNK-W-0058](LNK-W-0058.md) | On-demand panels, and what stops being buried | 2026-08-06 |
+| [LNK-W-0059](LNK-W-0059.md) | QR codes sized in pixels, and a PNG to download | 2026-08-07 |
+| [LNK-W-0060](LNK-W-0060.md) | More than one QR code per link, told apart in the analytics | 2026-08-12 |
+| [LNK-W-0061](LNK-W-0061.md) | The first file this product accepts | 2026-08-06 |
+| [LNK-W-0062](LNK-W-0062.md) | A logo in the middle of a QR code | 2026-08-07 |
+| [LNK-W-0063](LNK-W-0063.md) | The QR tab stops costing more attention than it is worth | 2026-08-12 |
+| [LNK-W-0064](LNK-W-0064.md) | The QR tab's third report, and the first script the dashboard depends on | 2026-08-14 |
+| [LNK-W-0065](LNK-W-0065.md) | Account recovery: a forgotten password stops being permanent | 2026-08-07 |
+| [LNK-W-0066](LNK-W-0066.md) | Mid-phase adversarial review | 2026-08-07 |
+| [LNK-W-0067](LNK-W-0067.md) | Account deletion and subject erasure | 2026-08-07 |
+| [LNK-W-0068](LNK-W-0068.md) | A second factor: TOTP, enrolment, and recovery codes | 2026-08-07 |
+| [LNK-W-0069](LNK-W-0069.md) | An API key belongs to an account, not to one organization | 2026-08-05 |
+| [LNK-W-0070](LNK-W-0070.md) | An update checker, and the fifth thing that leaves this product | 2026-08-06 |
+| [LNK-W-0071](LNK-W-0071.md) | High availability: the failover contract | 2026-08-06 |
+| [LNK-W-0072](LNK-W-0072.md) | High availability: measured, and still one container | 2026-08-06 |
+| [LNK-W-0073](LNK-W-0073.md) | The six the close left behind | 2026-08-11 |
+| [LNK-W-0074](LNK-W-0074.md) | Pre-release adversarial review | 2026-08-11 |
+| [LNK-W-0075](LNK-W-0075.md) | Deferred findings, documentation pass, and the 0.3.0 release | 2026-08-07 |
+| [LNK-W-0078](LNK-W-0078.md) | Process debt: the gates that were not watching | 2026-08-18 |
+| [LNK-W-0079](LNK-W-0079.md) | The host: a module loads, or is refused | 2026-08-18 |
+| [LNK-W-0080](LNK-W-0080.md) | The ABI: what an add-on may import, written down and versioned | 2026-08-18 |
+| [LNK-W-0081](LNK-W-0081.md) | Declared permissions: an add-on gets what it named and nothing else | 2026-08-19 |
+| [LNK-W-0082](LNK-W-0082.md) | An add-on's tables: a schema of its own, migrated by the host | 2026-08-20 |
+| [LNK-W-0083](LNK-W-0083.md) | An add-on reaches the page: routes, templates, config | 2026-08-30 |
+| [LNK-W-0084](LNK-W-0084.md) | Mid-phase adversarial review | 2026-08-11 |
+| [LNK-W-0085](LNK-W-0085.md) | The authentication hook: a session minted on an add-on's word | 2026-08-21 |
+| [LNK-W-0086](LNK-W-0086.md) | Add-ons on the redirect path: two classes, a deadline, and a promise rescoped | 2026-08-23 |
+| [LNK-W-0087](LNK-W-0087.md) | Instances are reused, so a visitor stops paying for a cold start | 2026-08-23 |
+| [LNK-W-0088](LNK-W-0088.md) | Runtime lifecycle: an add-on arrives and leaves without a reboot | 2026-08-18 |
+| [LNK-W-0089](LNK-W-0089.md) | The Add-on manager | 2026-08-18 |
+| [LNK-W-0090](LNK-W-0090.md) | An add-on reaches outward, and only where the operator pointed it | 2026-08-25 |
+| [LNK-W-0091](LNK-W-0091.md) | A module arrives from a URL, because that was always the intention | 2026-08-25 |
+| [LNK-W-0092](LNK-W-0092.md) | The OIDC add-on: the foundation's acceptance test | 2026-08-18 |
+| [LNK-W-0093](LNK-W-0093.md) | Somebody can start the sign-in an add-on made possible | 2026-08-27 |
+| [LNK-W-0094](LNK-W-0094.md) | Pre-release adversarial review | 2026-08-30 |
+| [LNK-W-0095](LNK-W-0095.md) | Deferred findings, documentation pass, 0.4.0 | 2026-08-25 |
+| [LNK-W-0096](LNK-W-0096.md) | W48: this repository's records move to Mustur | 2026-09-13 |
 | [MUS-W-0001](MUS-W-0001.md) | An identifier scheme records can be addressed by | 2026-08-19 |
 | [MUS-W-0002](MUS-W-0002.md) | An insert-only store with a materialized latest | 2026-08-19 |
 | [MUS-W-0003](MUS-W-0003.md) | A seed that puts what already exists into the store | 2026-08-19 |

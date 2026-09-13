@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-134 record(s), by identifier.
+138 record(s), by identifier.
 
 ---
 
@@ -497,6 +497,133 @@ The HUD is lib/overlay/Overlay.svelte: a second transparent, always-on-top, maxi
 | Answer | The HUD, raised when the game asks |
 | Answered | 2026-09-13 07:44 |
 | Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0019
+
+**The demo is down on v1.1.7 because its database is ahead of the release. Which way up?**
+
+question · 2026-09-13
+
+f: [HRD-F-0011](findings.md#hrd-f-0011)
+
+d: [HRD-D-0015](decisions.md#hrd-d-0015)
+
+hoard-server 1.1.7 refuses to start: migration 22 was applied but the binary stops at 21 (HRD-F-0011). Dropping the six sharing tables and their six migration rows would fix it in place, keeping your account, your token and everything you synced, but the auto-mode permission classifier refused that command from me because it drops tables. A copy of the current database, sharing tables and all, is already the test instance's database at ~/hoard-test, so nothing is lost either way. Choose how the demo comes back.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The demo server at hoard.killerofpie.com; it restarts in a loop until the database matches the binary |
+| Needed to proceed | yes |
+| Option | Allow the in-place rollback :: Recommended: I stop the demo, back up hoard.db, drop the seven sharing tables and delete the migration rows 22 to 27, start it; your account, token and synced saves stay; needs you to approve the command when this session asks again, or a permission rule for sqlite3 on ~/hoard-demo :: Five minutes, no re-login. The backup file stays beside the database. |
+| Option | Start the demo from an empty data directory :: I move ~/hoard-demo/data aside, let 1.1.7 create a fresh database, recreate the user pie with the same password and mint a new desktop token :: No permission needed, but your desktop must be signed in again with the new token, and the demo's synced snapshots start from zero. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Allow the in-place rollback |
+| Answered | 2026-09-13 08:08 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## LNK-Q-0001
+
+**LNK-M-0070 — Does the update checker default on or off?**
+
+question · 2026-08-08
+
+cites: [LNK-M-0070](milestones.md#lnk-m-0070)
+
+cites: [LNK-D-0149](decisions.md#lnk-d-0149)
+
+cites: [LNK-M-0075](milestones.md#lnk-m-0075)
+
+**Answered 2026-08-08** by the owner, as
+D149 — recorded in
+decisions.md
+with the date it was given, and read by LNK-M-0070, which
+carries what it obliges. The question, its three options and its recommendation
+are in the history of this file; they are not restated here, because a question
+whose answer exists is no longer a question.
+
+Two entries link to this heading and were written while it was open —
+the Phase 3 area-scoping decision
+and phase-3-candidates.md. Both say the default *is
+deliberately not decided here*, which was true when written; D149 is the later
+entry that corrects them, and neither is edited.
+
+**LNK-M-0070 has landed, and this heading stays anyway — checked at
+LNK-M-0075's documentation pass rather than left to be
+noticed.** The rule above says a heading leaves for good once its milestone has
+landed *and the references have moved with it*. The milestone landed; one of the
+two references cannot move. It sits inside an entry in
+decisions.md, which is append-only — *never edit an entry; a
+later entry corrects an earlier one* — so repointing it is not available, and
+deleting this heading would break a link that
+`make check-links` is there to catch.
+
+That is not a conflict between the two rules; it is this section doing the one
+job it was created for, and the first time it has had to. The heading is a
+pointer and holds no answer, which is the whole of what it is permitted to be.
+It leaves when `decisions.md` no longer points at it, which will be never, so in
+practice it is permanent — said plainly here so that a later reader does not
+find an *awaiting the milestone* heading for a shipped milestone and take it for
+an oversight.
+
+| Field | Value |
+| --- | --- |
+| Answer | **Answered 2026-08-08** by the owner, as D149 — recorded in decisions.md with the date it was given, and read by LNK-M-0070, which carries what it obliges. The question, its three options and its recommendation are in the history of this file; they are not restated here, because a question whose answer exists is no longer a question. |
+| Relayed | imported from LinkCtrl's upcoming-decisions.md, where the answer is recorded; not answered in Mustur |
+| Status | answered |
+
+---
+
+## LNK-Q-0002
+
+**An 'All Workspaces' dashboard scope — which phase, and whose milestone?**
+
+question · 2026-08-01
+
+cites: [LNK-M-0075](milestones.md#lnk-m-0075)
+
+cites: [LNK-M-0038](milestones.md#lnk-m-0038)
+
+cites: [LNK-M-0039](milestones.md#lnk-m-0039)
+
+cites: [LNK-M-0042](milestones.md#lnk-m-0042)
+
+cites: [LNK-M-0052](milestones.md#lnk-m-0052)
+
+**Needed by:** nothing yet. It is the feature half of a queue row split on
+2026-08-01; the other half — *the dashboard should show only the selected
+workspace* — turned out to be already built, so only this remains.
+
+The dashboard and links pages scope to the acting workspace and always have.
+What does not exist anywhere is a way to see **across** workspaces at once: no
+handler, no query and no UI takes an all-workspaces scope, and
+`actor.WorkspaceID` is a single value threaded through the service layer rather
+than a filter that could be widened.
+
+| Option | Buys | Costs |
+| --- | --- | --- |
+| **Phase 4, beside *Moving links between workspaces*** *(recommended)* | The two cross-workspace capabilities land together, and they share the hard part — every scoped query in `internal/link` and `internal/analytics` assumes one workspace id. Neither Phase 2 nor Phase 3 has a milestone this belongs inside | Somebody with several workspaces keeps switching to compare until it lands. *(This option read **Phase 3** until LNK-M-0075. Phase 3 is closing without it, and its companion — Plan.md's `Moving links between workspaces` — was deferred to Phase 4 by the owner on 2026-08-07, so the option now names the phase its companion is actually in. The question itself is still open and still the owner's; the two remaining options are Phase 2's and are kept as the record of what was weighed.)* |
+| A Phase 2 milestone of its own | The demo LNK-M-0038 is about to make multi-workspace instances the normal thing to look at, which is exactly when the gap gets noticed | It is a new scope row late in a phase whose remaining milestones are already substrate for each other, and it widens a query path LNK-M-0039–LNK-M-0042 are about to build on |
+| Fold into LNK-M-0042 | LNK-M-0042 is the dashboard milestone, so the surface is already being touched | LNK-M-0042 is about how a *dimension* is visualized, not which workspaces are in scope. Different question wearing the same page |
+
+**Default if unanswered:** it stays unbuilt and unscheduled, which is the status
+quo and costs nothing until somebody asks for it a second time.
+
+**Assumes:** that the dashboard and links pages remain workspace-scoped — true
+and verified on 2026-08-01 by reproduction, not by reading — and that no
+milestone between here and LNK-M-0052 introduces a cross-workspace view for its own
+reasons.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Surfaced | 2026-09-13 08:09 |
 
 ---
 
@@ -3299,4 +3426,36 @@ Found by the shipped-claims review. MUS-M-0009 started 2026-09-13; LinkCtrl's tr
 | Surfaced | 2026-09-13 07:30 |
 | Answer | Reword it |
 | Answered | 2026-09-13 07:42 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0117
+
+**The import has its verdict. Do you approve W48, LinkCtrl's change that moves its records out, as it really is?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0164](decisions.md#mus-d-0164)
+
+follows: [MUS-D-0170](decisions.md#mus-d-0170)
+
+Three reviewers and a second read are dispositioned on Mustur PR 69; the importer yields 1,499 records and a rehearsal on a copy of the live store passes Mustur's gates. LinkCtrl's workflow-changes.md makes approval of a W row yours alone. W48 as drafted on 2026-09-09 is uncommitted in LinkCtrl's main checkout on an already-merged branch, and understates the change: every LinkCtrl rule that files into decisions.md, deferred-findings.md, phase-details or upcoming-decisions.md has to file into Mustur instead, 446 links from staying files are rewritten, test/docs/decisions_index_test.go goes, and check-links.sh and doc-cost.sh stop naming the leaving paths. The live import would run immediately before the change is made, so LinkCtrl's files and Mustur's copy never sit apart.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The live import and all of LinkCtrl's side of MUS-M-0009 |
+| Needed to proceed | yes |
+| Option | Approve it as restated :: Recommended: W48 is restated to the change above and made by LinkCtrl's own workflow loop in a Mustur-started LinkCtrl session on a task branch, with the live import run just before; your approval is recorded on the row and as a LinkCtrl decision in Mustur :: The move happens under LinkCtrl's own process, one actor, gates green, as a pull request you merge. One departure from LinkCtrl's rule, stated: approval normally gets a decisions.md entry in the same commit, and decisions.md is the file leaving, so the entry is written in Mustur instead. Costs the largest diff LinkCtrl has taken that is not product code. |
+| Option | Restate it first, approve after reading :: the LinkCtrl session commits W48's restated row as a proposal and stops, and you approve it there :: You read the exact row before anything moves, at the cost of one more round with you; nothing is imported until you do. |
+| Option | Not yet :: nothing is imported and nothing in LinkCtrl changes; MUS-M-0009 stays open with its importer built :: Keeps LinkCtrl free to keep writing its files. Every LinkCtrl record written meanwhile is one the importer reads at whatever commit it finally runs against, so nothing is lost, but the milestone cannot be accepted. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:57 |
+| Answer | Approve it as restated |
+| Answered | 2026-09-13 08:08 |
 | Delivered | typed into mustur/LinkCtrl_Target |

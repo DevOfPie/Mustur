@@ -140,9 +140,11 @@ project · 2026-09-13
 
 milestone: [MUS-M-0009](milestones.md#mus-m-0009)
 
-The second project with a corpus of its own, measured at LinkCtrl 230771a and reconciled in MUS-D-0168: 381 findings, 946 decisions (505 dated log entries and 441 issued D numbers), 95 milestones (77 with a source, 18 stubs for numbers cited and defined nowhere, MUS-D-0169) with 74 work units, 2 questions and 1 investigation, 1,499 records. Its records file under the prefix LNK. The Prefix field is withheld until the live import lands, because intake files a jot under the prefix of whatever project is picked, and a jot filed under LNK first would take a number LinkCtrl's own records need and make the import refuse the store. Moving in is MUS-M-0009, on the boundary MUS-Q-0090 to MUS-Q-0093 settled: no StrucGu adoption in LinkCtrl, everything imports, and a part leaves LinkCtrl if and only if Mustur has a kind that holds it.
+The second project with a corpus of its own, imported on 2026-09-13 from LinkCtrl 230771a and reconciled in MUS-D-0168 and MUS-D-0169: 381 findings, 946 decisions (505 dated log entries and 441 issued D numbers), 95 milestones (77 with a source, 18 stubs for numbers cited and defined nowhere) with 74 work units, 2 questions and 1 investigation, 1,499 records. Records file under LNK, and a decision filed after the import continues past serial 949. Moving in is MUS-M-0009, on the boundary MUS-Q-0090 to MUS-Q-0093 settled: no StrucGu adoption in LinkCtrl, everything imports, and a part leaves LinkCtrl if and only if Mustur has a kind that holds it.
 
 | Field | Value |
 | --- | --- |
 | Repositories | MUS-R-0003 |
 | Machines | MUS-H-0001 |
+| Prefix | LNK |
+| Aliases | linkctrl, link ctrl |

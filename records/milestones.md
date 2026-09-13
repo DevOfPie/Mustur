@@ -4,7 +4,8145 @@
 
 What the project has promised to do, and what counts as done.
 
-12 record(s), by identifier.
+107 record(s), by identifier.
+
+---
+
+## LNK-M-0001
+
+**`M0.5`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-29
+
+LinkCtrl cites `M0.5` 4 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M0.5 |
+
+---
+
+## LNK-M-0002
+
+**`M4`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-08-02
+
+LinkCtrl cites `M4` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M4 |
+
+---
+
+## LNK-M-0003
+
+**`M7`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-31
+
+LinkCtrl cites `M7` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M7 |
+
+---
+
+## LNK-M-0004
+
+**`M8`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-08-07
+
+LinkCtrl cites `M8` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M8 |
+
+---
+
+## LNK-M-0005
+
+**`M9`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-08-04
+
+LinkCtrl cites `M9` 2 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M9 |
+
+---
+
+## LNK-M-0006
+
+**`M11`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-30
+
+LinkCtrl cites `M11` 3 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M11 |
+
+---
+
+## LNK-M-0007
+
+**`M12`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-30
+
+LinkCtrl cites `M12` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M12 |
+
+---
+
+## LNK-M-0008
+
+**`M13`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-30
+
+LinkCtrl cites `M13` 3 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M13 |
+
+---
+
+## LNK-M-0009
+
+**`M14`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-30
+
+LinkCtrl cites `M14` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M14 |
+
+---
+
+## LNK-M-0010
+
+**`M15`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-30
+
+LinkCtrl cites `M15` 5 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M15 |
+
+---
+
+## LNK-M-0011
+
+**`M16`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-30
+
+LinkCtrl cites `M16` 2 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M16 |
+
+---
+
+## LNK-M-0012
+
+**`M17`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-30
+
+LinkCtrl cites `M17` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M17 |
+
+---
+
+## LNK-M-0013
+
+**separate management and link hostnames**
+
+milestone · 2026-09-13
+
+**Done.** `APP_BASE_URL` and `LINK_BASE_URL` both default to `BASE_URL`, so an existing single-host deployment is unaffected; set to different hosts, the router dispatches on `Host` and each tree answers only its own paths. A wrong-host request is `404`, never a cross-host redirect. `short_url` is built from the link origin, the CSRF trusted origin follows the dashboard host, and `/healthz` and `/readyz` answer on every hostname including ones never configured, because probes do not know the operator's names. Reserved aliases stay enforced on both hosts.
+
+| Field | Value |
+| --- | --- |
+| Status | **Done.** `APP_BASE_URL` and `LINK_BASE_URL` both default to `BASE_URL`, so an existing single-host deployment is unaffected; set to different hosts, the router dispatches on `Host` and each tree answers only its own paths. A wrong-host request is `404`, never a cross-host redirect. `short_url` is built from the link origin, the CSRF trusted origin follows the dashboard host, and `/healthz` and `/readyz` answer on every hostname including ones never configured, because probes do not know the operator's names. Reserved aliases stay enforced on both hosts. |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M18 |
+
+---
+
+## LNK-M-0014
+
+**post-release defect fixes, and a demo seeder**
+
+milestone · 2026-09-13
+
+cites: [LNK-D-0010](decisions.md#lnk-d-0010)
+
+cites: [LNK-M-0048](#lnk-m-0048)
+
+cites: [LNK-D-0012](decisions.md#lnk-d-0012)
+
+cites: [LNK-M-0052](#lnk-m-0052)
+
+The three defects, each with what "fixed" means:
+
+| Defect | Fix |
+| --- | --- |
+| `links.status` is never set to `expired` | Only `active` and `archived` are ever written. The redirect path is correct — it reads `expires_at` and answers `410` — but the management surface reports an expired link as `"status":"active"`, and the UI's *Expired* filter is an option that can never match a row. operations.md tells an operator diagnosing an unexpected `410` to check the link's status, which will tell them the link is fine. Fixed by deriving effective status in one place that both the list and the resolver agree with, rather than by adding a job to write a column that is stale the moment it is written. `disabled` is in the same enum and the same position; it is out of scope only because nothing offers to set it either — and stays that way by decision D10, see LNK-M-0048. |
+| The `visitors` table is dead | Nothing writes it and nothing reads it, and `click_events.is_first_visit` is the same one column down: always `false`, under a comment claiming the rollup computes it, which no rollup does. The milestone forced a choice; the choice taken was neither of the two it offered. Both stay dormant and both stay under partition maintenance and retention, because the alternative fails in the direction that matters — a table dropped from those lists that later acquires a writer puts its rows in the default partition, which retention never drops, making the dormant table the one place raw visitor data is kept forever. What was actually wrong was the description, so the comments now say dormant instead of describing work that does not happen. They stay dormant through Phase 2 as well (decision D12); LNK-M-0052 trues up the remaining comments. |
+| The deletion notice promises a button that does not exist | The UI says "Link deleted. It stays restorable for 30 days." usage.md is straight about the truth — "recovery inside the 30 days is a database operation, not a button" — and `RestoreLink` is guarded by `deleted_at IS NULL`, so it refuses soft-deleted rows by design. Fixed by making the notice say what recovery is. Adding a trash view instead would be a scope change, and Phase 1 already decided against it. |
+
+| Field | Value |
+| --- | --- |
+| Status | **Done.** Effective status is derived rather than stored, so an expired link reports as expired everywhere and `?status=expired` matches it. `visitors` and `is_first_visit` are documented as dormant instead of described as working, and stay under partition maintenance and retention so the day something writes to them the guarantees already apply. The deletion notice says what recovery is. `lctl demo` / `make demo` fills an instance with a workspace worth looking at. |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M19 |
+
+---
+
+## LNK-M-0015
+
+**root redirect on the link domain**
+
+milestone · 2026-09-13
+
+cites: [LNK-M-0013](#lnk-m-0013)
+
+cites: [LNK-M-0044](#lnk-m-0044)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+LNK-M-0013 gave the instance a second public hostname and left its root a bare `404`:
+`/{alias}` does not match `/`, and the dashboard routes that used to answer there
+moved to the other host. Anyone who trimmed a short link back to the domain, or
+typed it out of curiosity, got nothing. Every commercial shortener points that
+page somewhere, and the operator is the only party who knows where.
+
+An operator can now set a destination for `https://lnk.example.com/`, and every
+row below holds:
+
+| Requirement | Why it is stated |
+| --- | --- |
+| Stored on the domain row, as an additive column | It is a property of the hostname, not of a workspace or a link. The `domains` table already exists and already has the row this describes. |
+| Guarded by a new `domains.write` permission, granted to owner and admin | Phase 1 has no per-domain owner to check: the default domain is instance-wide with a null organization, so "the domain owner" resolves to whoever administers the instance. The permission is the honest form of that, and it becomes a real ownership check in Phase 2 when a workspace can bring its own hostname — LNK-M-0044. |
+| Only in effect when the hosts are actually separate | On a single-host deployment `/` is the dashboard, and a root redirect there would take the dashboard away from the person who set it. Refused rather than silently ignored. |
+| Destination validated by `ValidateDestination`, unchanged | Same scheme allowlist and same private, loopback and metadata refusals as any other destination. A root redirect that skipped them would be a cleaner SSRF than the one the validator exists to stop, because it needs no link and no alias. |
+| `302`, like every other redirect here | Same reason: a `301` cached in browsers and intermediaries cannot be recalled, and this is the destination most likely to be changed later. |
+| Unset stays `404` | The current behaviour, and the one that reveals nothing. No default marketing page, no "powered by" — an instance that says nothing is a valid choice. |
+| Resolved from cache, never a query per request | It sits on the redirect tree under the same 20ms budget as an alias, and the root of a link domain is a page crawlers and scanners hit often. Cached with invalidation on change, the way a link snapshot already is. |
+| Not counted as a click | There is no link, so there is no `link_id` to attribute it to. Root visits stay out of `click_events` rather than acquiring a synthetic link to hang off. |
+| Changing it is an audit-log event once the audit log has behavior | It is a setting that redirects every stray visitor to the whole domain, which is exactly the class of change worth being able to ask about afterwards. Discharged by LNK-M-0016. |
+
+| Field | Value |
+| --- | --- |
+| Status | **Done.** Every requirement below holds, verified live and under test. |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M20 |
+
+---
+
+## LNK-M-0016
+
+**Audit log: behavior, retention, growth alerting**
+
+milestone · 2026-09-13
+
+cites: [LNK-M-0015](#lnk-m-0015)
+
+cites: [LNK-D-0018](decisions.md#lnk-d-0018)
+
+cites: [LNK-D-0005](decisions.md#lnk-d-0005)
+
+cites: [LNK-M-0017](#lnk-m-0017)
+
+cites: [LNK-D-0019](decisions.md#lnk-d-0019)
+
+cites: [LNK-M-0023](#lnk-m-0023)
+
+- An internal audit writer exists. Every event carries `actor_label` as a
+  snapshot and `ip_prefix` only — never a full address — asserted by test.
+- Changing the root redirect writes an audit event, discharging Plan.md's LNK-M-0015 row.
+- `GET /api/v1/audit` lists events org-scoped with keyset pagination, gated by a
+  new `audit.read` permission. That permission is **non-delegable** to an API key
+  under decision D18's first limb — reading the trail exposes an actor's identity
+  tied to a `/24`. `NonDelegableScopes` is the only mechanism: the endpoint
+  authorizes on the permission like every other endpoint and nothing branches on
+  whether the caller holds a session.
+- `LINKCTRL_AUDIT_RETENTION_DAYS` takes effect. `audit_logs` joins partition
+  retention under its own window, separate from analytics retention, verified by
+  a partition-drop test. **Default is 0 = keep forever** (decision D5): an upgrade
+  must never silently delete history an operator assumed permanent.
+- Because the default is unbounded, growth is observable: a Prometheus metric for
+  audit partition size plus a documented alert recipe in
+  operations.md. The owner-facing notification reading that
+  metric lands in LNK-M-0017, which is where notification behavior exists, and
+  is on by default at 5 GB (decision D19); it is emailed too when LNK-M-0023's
+  mailer is configured.
+- The `partitions.go` comment and the operations doc are updated to the new truth.
+- Event metadata stays jsonb.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | Security scope row *Audit log — behavior*; |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M21 |
+
+---
+
+## LNK-M-0017
+
+**Notifications: in-app behavior**
+
+milestone · 2026-09-13
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-D-0005](decisions.md#lnk-d-0005)
+
+cites: [LNK-D-0019](decisions.md#lnk-d-0019)
+
+cites: [LNK-M-0032](#lnk-m-0032)
+
+cites: [LNK-M-0026](#lnk-m-0026)
+
+cites: [LNK-M-0048](#lnk-m-0048)
+
+cites: [LNK-D-0018](decisions.md#lnk-d-0018)
+
+- A notification service writes rows to the existing `notifications` table with
+  **zero DDL** — structure goes in the `data` jsonb, per the dormant-table rule.
+- `GET /api/v1/notifications` and a mark-read operation exist.
+- The nav shows an unread count backed by the existing partial unread index; a
+  notifications page renders, with a `pageData` entry and render tests.
+- The reserved alias `notifications` already covers the route;
+  `TestReservedListCoversRegisteredRoutes` passes unchanged.
+- Named consumers wired or ready: audit-log growth threshold (LNK-M-0016,
+  decisions D5 and D19), dispute filed and dispute resolved (LNK-M-0032),
+  invite accepted (LNK-M-0026), automation notify action (LNK-M-0048).
+- The audit-growth consumer is wired here, not merely ready: a configurable size
+  threshold over the audit partitions, **on by default at 5 GB** (D19), raises an
+  owner notification. Default-on is the point — D5's keep-forever is only safe on
+  an instance nobody configured, so the warning cannot require configuring.
+  Tested at both edges of the threshold, and it does not re-notify on every run.
+- Any permission this milestone adds records which limb of D18 it matched, or
+  that it matched neither. A per-user inbox likely matches neither; that is a
+  recorded line, not a prompt.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | the *notification* leg of the Security |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M22 |
+
+---
+
+## LNK-M-0018
+
+**Cross-replica cache invalidation (pub/sub)**
+
+milestone · 2026-08-01
+
+cites: [LNK-D-0020](decisions.md#lnk-d-0020)
+
+cites: [LNK-M-0045](#lnk-m-0045)
+
+- `InvalidateAlias` and `InvalidateRoot` publish on Redis pub/sub; every replica's
+  subscriber clears its in-process tiers — both the alias memCache and the
+  separate root-redirect cache.
+- With Redis absent or down, behaviour degrades to today's TTL staleness, nothing
+  errors, and the degradation is documented. A Redis-down integration test proves
+  redirects and invalidation still work.
+- A dropped subscriber connection reconnects and degrades to TTL in the meantime —
+  never to silence mistaken for freshness. Tested.
+- **On reconnect, both in-process tiers are flushed** (decision D20). Pub/sub does
+  not replay, so invalidations published during the gap are unrecoverable and the
+  replica cannot know which keys they named; flushing ends the stale window at
+  reconnect rather than at each entry's TTL. A test proves an entry cached before
+  the drop is gone after the reconnect, not merely expired later.
+- The hostname cache LNK-M-0045 adds joins this mechanism; that dependency is
+  stated there.
+- SLO re-verified: the subscriber is off the request path, tripwire tests pass
+  unmodified, cached p99 under 20ms.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | the known limitation *Cache invalidation |
+| Status | done |
+| LinkCtrl | M23 |
+
+---
+
+## LNK-M-0019
+
+**Shared rate limits (credentials and API)**
+
+milestone · 2026-09-13
+
+- Login and API limiters gain a Redis-shared backend that falls back to the
+  existing per-instance buckets on any Redis error, preserving fail-open and the
+  `linkctrl_rate_limit_overflow_total` counter.
+- The `redirect_404` limiter **deliberately stays in-process**: sharing it would
+  put a network round trip on the 20ms hot path and make an optional dependency
+  load-bearing.
+- The scope row in Plan.md is annotated to say exactly which limiters are shared
+  and which are not. A row that reads as fully delivered when one limiter is
+  deliberately excluded is the kind of quiet narrowing this project polices.
+- The known-limitations rows are rewritten to state what is and is not shared,
+  including the N-times-limit behaviour during a Redis outage.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | Security scope row *Rate limiting: shared |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M24 |
+
+---
+
+## LNK-M-0020
+
+**Dark mode**
+
+milestone · 2026-07-31
+
+cites: [LNK-M-0043](#lnk-m-0043)
+
+cites: [LNK-D-0021](decisions.md#lnk-d-0021)
+
+cites: [LNK-M-0023](#lnk-m-0023)
+
+cites: [LNK-M-0046](#lnk-m-0046)
+
+cites: [LNK-M-0022](#lnk-m-0022)
+
+- With no stored preference, every dashboard page follows `prefers-color-scheme`.
+  No account, cookie or JavaScript is involved on this path.
+- An explicit override — system / light / dark — is settable from the dashboard,
+  persisted in a cookie, and rendered as an attribute on `<html>` **by the
+  server**. The initial response is already in the chosen theme, so there is no
+  correcting script and no flash of the wrong theme to correct — the defect is
+  unrepresentable rather than suppressed. Asserted by template test at all three
+  cookie states.
+- The override works without JavaScript (plain form POST), in the same
+  progressive-enhancement idiom as LNK-M-0043's tree.
+- The preference is per-browser by design, not a `users` column: it works on the
+  login page, and two browsers on one account may disagree. Deliberate.
+- Template colors move behind semantic theme tokens defined once in `input.css`.
+  A test walks the embedded templates and **fails on any raw palette utility
+  outside the token set** — the scan covers `fill-` and `stroke-` (the SVG
+  charts) as well as `bg-`, `text-`, `border-` and `ring-`. That test, not
+  review vigilance, is what holds every later milestone's UI to both themes.
+- `color-scheme` is declared per theme, so native form controls and scrollbars
+  follow without per-control styling.
+- Every token pair meets WCAG AA contrast (4.5:1 for body text) in both themes,
+  recorded next to the token definitions. **Where a pair cannot clear AA at
+  today's light value, the light value moves** (decision D21) and the change is
+  recorded beside those contrast figures. The dashboard's light appearance is
+  therefore allowed to shift; an AA claim that exempts the theme already shipped
+  would not be one.
+- Deliberately not themed: `/docs` — the vendored, checksum-pinned Swagger UI
+  stays light; transactional email (LNK-M-0023); and any artifact a machine
+  reads rather than a person — LNK-M-0046's QR codes stay dark-on-light in
+  both themes, because the theme is chrome, never output.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. The edge to LNK-M-0022 is an *ordering preference*: |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-07-31, |
+| Status | done |
+| LinkCtrl | M24.5 |
+
+---
+
+## LNK-M-0021
+
+**`M24.6`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-31
+
+LinkCtrl cites `M24.6` 6 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M24.6 |
+
+---
+
+## LNK-M-0022
+
+**Workspace and organization switcher**
+
+milestone · 2026-07-31
+
+cites: [LNK-D-0022](decisions.md#lnk-d-0022)
+
+cites: [LNK-M-0026](#lnk-m-0026)
+
+- Identity resolves a deterministic default workspace and organization:
+  **last-used** (decision D22). The switcher persists the last selection and that
+  becomes the default on the next session.
+- A user setting pins an explicit workspace instead, overriding last-used. Its
+  control offers *Last-Used* and defaults to it, so the derived behaviour stays
+  the default and the override exists for anyone it annoys. Owner-added scope,
+  2026-07-31.
+- A switcher exists in UI and API, so a second membership — once LNK-M-0026 can
+  create one — is reachable rather than invisible.
+- All four `GetDefaultWorkspaceForUser` call sites are converted and tested.
+- Behaviour for today's single-membership users is byte-identical. This is the
+  claim that matters: every existing instance has exactly one membership per user,
+  so the whole milestone must be a no-op for them. Last-used does not weaken it —
+  with one membership, last-used and only-used resolve to the same workspace.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | groundwork for LNK-M-0026 and |
+| Status | done |
+| LinkCtrl | M25 |
+
+---
+
+## LNK-M-0023
+
+**Mailer: optional SMTP delivery**
+
+milestone · 2026-09-13
+
+cites: [LNK-D-0023](decisions.md#lnk-d-0023)
+
+- SMTP delivery is configurable and **off by default**. An instance with no
+  mailer configured behaves exactly as it does today, tested.
+- Configuration follows the existing discipline: documented in
+  configuration.md, every variable takes effect,
+  connection details validated at boot with a clear failure mode.
+- Sends happen **off the request path** with bounded retry, via **an outbox table
+  and a scheduler job** (decision D23) on the scheduler that already runs
+  partition maintenance. Queued mail survives a restart; an invite lost to a
+  deploy would be invisible on both ends. The migration is additive and the
+  redirect tree is untouched.
+- Message bodies are plain-text-first, owned by the `ui` package's conventions
+  (stdlib-only), and every mail renders untrusted input inert — the same
+  hostile-input stance as the review queue.
+- With the mailer unconfigured, **every consumer degrades to its mail-free
+  behaviour rather than erroring**, tested — including that nothing accumulates
+  in the outbox. This is the claim that keeps the mailer optional rather than
+  quietly required.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | decisions.md's statement that "every one |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M26 |
+
+---
+
+## LNK-M-0024
+
+**Dashboard header: identity menu and notification bell**
+
+milestone · 2026-07-31
+
+cites: [LNK-F-0006](findings.md#lnk-f-0006)
+
+cites: [LNK-F-0007](findings.md#lnk-f-0007)
+
+cites: [LNK-M-0017](#lnk-m-0017)
+
+cites: [LNK-M-0043](#lnk-m-0043)
+
+cites: [LNK-M-0020](#lnk-m-0020)
+
+cites: [LNK-M-0022](#lnk-m-0022)
+
+cites: [LNK-M-0026](#lnk-m-0026)
+
+##### The identity menu (F6)
+
+- The signed-in address becomes a control rather than an inert `<span>`, opening
+  a menu that holds **Account** and **Sign out**. Both leave the top-level nav,
+  which drops from five items to four.
+- Sign out stays a form POST. It is a state-changing action and moving it inside
+  a menu must not quietly turn it into a link — asserted by test, because this is
+  the regression that would not be visible by looking.
+
+##### The notification bell (F7)
+
+- Notifications leave the nav for a bell beside the identity menu, keeping the
+  existing unread count.
+- Opening it shows a bounded preview — the most recent unread notifications, cut
+  at a fixed small number — and a **View all** link to `/notifications`, which is
+  unchanged and remains the full surface. The preview never becomes the only way
+  to reach one.
+- The preview reads from the same service LNK-M-0017 already exposes. No new
+  query shape, and the shell's existing unread lookup is extended rather than
+  joined by a second one — asserted by a test that fails if rendering a page
+  issues more notification queries than it did before.
+- Empty state renders. A bell opening onto nothing is the common case for a new
+  account and must not be a blank box.
+
+##### Both, and the constraint that shapes them
+
+- **No JavaScript.** `ui` is stdlib-only, the CSP forbids inline handlers, and
+  neither is being amended for this. Both menus use the **Popover API** — a
+  `<button popovertarget>` invoker and a `popover` panel — which is declarative,
+  needs no script and no CSP waiver, and is keyboard-operable. It replaces the
+  `<details>`/`<summary>` this milestone first specified, for the reason recorded
+  in decisions.md: a disclosure cannot close on Escape, and the bullet below
+  asks for exactly that. Same progressive-enhancement spirit as LNK-M-0043's
+  tree and LNK-M-0020's theme control.
+- An open popover sits in the **top layer**, whose containing block is the
+  viewport rather than an ancestor, so `position: absolute` inside the header
+  does not anchor the panel to it. Positioning is therefore explicit and
+  verified in a browser at each engine, not assumed from the markup. The
+  supported floor rises to Chrome 114, Safari 17 and Firefox 125.
+- Both menus close on Escape and are reachable by keyboard alone, asserted by
+  test against the rendered markup rather than by inspection.
+- The theme tokens apply, so both render correctly in light and dark. LNK-M-0020's
+  template scan already fails a raw palette utility; this milestone adds no
+  exemption.
+- Exactly one identity menu and one bell render per page, asserted the way
+  LNK-M-0020 asserts its appearance control — the count is exact
+  everywhere, because "move" is one edit away from "copy" and that mistake has
+  been made in this header once already.
+- The workspace switcher LNK-M-0022 put in this bar keeps working and keeps
+  its place. It is organization-scoped rather than identity-scoped, so it does
+  **not** move inside the identity menu.
+
+##### Deliberately not in this milestone
+
+- **No mobile navigation rework.** The bar hides the address below `sm` today and
+  will continue to. A responsive nav is a larger piece of work and folding it in
+  here would make the diff unreviewable against the two findings this closes.
+- **No notification grouping, filtering or per-kind icons.** The preview is the
+  most recent unread, in order. "High importance" as a concept does not exist in
+  LNK-M-0017's model — there is no severity column — and inventing one here
+  would be a schema change riding on a layout milestone.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. The edge to LNK-M-0026 is an *ordering preference*: |
+| Discharges | deferred-findings.md F6 and F7, both |
+| Status | done |
+| LinkCtrl | M26.5 |
+
+---
+
+## LNK-M-0025
+
+**Bounded Redis failure, when the server never answers**
+
+milestone · 2026-07-31
+
+cites: [LNK-M-0034](#lnk-m-0034)
+
+cites: [LNK-M-0039](#lnk-m-0039)
+
+- **The mechanism is measured, not assumed.** The table above is a hypothesis
+  until the milestone confirms it by attribution — which layer contributes what —
+  against the blackholed proxy already available as
+  `redisProxy.blackholed(true)` in `test/integration/invalidation_test.go`. If
+  the arithmetic is wrong, the finding is corrected and the correction is
+  recorded; a fix aimed at the wrong layer would leave the defect and remove the
+  evidence.
+- **A total budget exists and is enforced**, rather than a per-attempt one that
+  multiplies. Invalidating an alias against a stalled Redis completes within a
+  stated bound; the bound is a number in the milestone's decision entry, chosen
+  against `HTTP_REQUEST_TIMEOUT` rather than picked for feel.
+- **Asserted by test at the boundary that matters**: an edit against a
+  blackholed Redis returns within the bound, and the edit itself still succeeds.
+  Correctness never depended on the cache and must not start now — a bounded
+  failure is still a failure to invalidate, and the existing log line saying the
+  previous destination may be served until TTL stays.
+- **The redirect path is checked for the same compounding, and the answer is
+  written down either way.** `MaxRetries` and the dial timeout are client-wide,
+  so they apply to the hot path too. The comment at `redis.go` claims a stalled
+  Redis "costs a little latency and then falls through to Postgres"; if
+  compounding retries make that false, it is a shipped claim that is false and
+  fixing it is in spec here. If an established pooled connection makes it true,
+  that is recorded as the reason rather than left as an assumption.
+- **If the redirect path changes at all**, the docs/slo.md k6
+  measurement is re-run on the built image and cached p99 stays under 20ms, per
+  the inherited rule. If it does not change, the milestone says so explicitly so
+  the next reader knows the omission was decided rather than forgotten.
+- Any new or changed configuration variable takes effect, is documented in
+  configuration.md, and appears in `.env.example` —
+  the discipline every other setting follows.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. The edges to LNK-M-0034, LNK-M-0039 and |
+| Discharges |  |
+| Status | done |
+| LinkCtrl | M26.6 |
+
+---
+
+## LNK-M-0026
+
+**Organizations: invitations and joining**
+
+milestone · 2026-08-01
+
+cites: [LNK-M-0023](#lnk-m-0023)
+
+cites: [LNK-D-0006](decisions.md#lnk-d-0006)
+
+cites: [LNK-M-0027](#lnk-m-0027)
+
+cites: [LNK-D-0016](decisions.md#lnk-d-0016)
+
+cites: [LNK-D-0007](decisions.md#lnk-d-0007)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-M-0017](#lnk-m-0017)
+
+cites: [LNK-M-0022](#lnk-m-0022)
+
+- A new **live** `invitations` table exists — typed columns, not a 00600 dormant
+  table. Token stored hashed like session tokens, with a TTL, single-use, and
+  revocable.
+- Invite create / list / revoke are gated by `members.write`, its first
+  enforcement, with the API-key delegability decision recorded and tested.
+- Delivery: emailed when LNK-M-0023's mailer is configured; a copyable invite
+  link exists either way. Both paths tested.
+- **Redemption creates membership only** (decision D6): the invited user joins
+  the inviter's organization and does *not* receive an auto-provisioned personal
+  org or workspace. The "one personal org per user" invariant is deliberately
+  broken here, and the signup-form label differs per path accordingly.
+- The invited account remains capable of owning an organization later **without
+  needing a second account** — it is an ordinary account, and any role or
+  permission can be granted to it by the ordinary path. This is the requirement
+  D6 attached to membership-only. The `orgs.create` permission itself is
+  LNK-M-0027's to build, with its own seed migration and delegability
+  decision (decision D16); LNK-M-0026 owes the *capability*, not the permission, and
+  proves it by granting an invited account an owner role and checking it then
+  holds an owner-only permission.
+  *(Amended 2026-08-01 at step 3.4 — the bullet said the permission "exists",
+  present tense, and it does not. See decisions.md.)*
+- **With `LINKCTRL_SIGNUP_MODE=closed`, no invite creates a new account**
+  (decision D7): under `closed`, invites may only add users who already exist.
+  The environment ceiling stays absolute, matching the recorded rule that no
+  session can open a closed instance. With mode `invite` or above, a new
+  registrant is admitted through the invite into the inviter's org, and
+  configuration.md's "invite behaves as closed" sentence is deleted because it is
+  no longer true.
+- Redemption and its error paths reveal nothing about whether an email has an
+  account — no enumeration oracle, matching the login rule.
+- Invite issued / revoked / redeemed are audit events (LNK-M-0016); an accepted
+  invite notifies the inviter in-app (LNK-M-0017).
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0016 LNK-M-0017 LNK-M-0022 LNK-M-0023. |
+| Discharges | Collaboration scope row *Organizations: sharing, invites, team |
+| Status | done |
+| LinkCtrl | M27 |
+
+---
+
+## LNK-M-0027
+
+**Team management, workspaces, and org creation**
+
+milestone · 2026-08-01
+
+cites: [LNK-D-0030](decisions.md#lnk-d-0030)
+
+cites: [LNK-D-0015](decisions.md#lnk-d-0015)
+
+cites: [LNK-D-0016](decisions.md#lnk-d-0016)
+
+cites: [LNK-D-0108](decisions.md#lnk-d-0108)
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-M-0028](#lnk-m-0028)
+
+cites: [LNK-M-0026](#lnk-m-0026)
+
+##### Members
+
+- Member list, role change, and removal exist in API and UI, gated by
+  `members.read` / `members.write` — now both enforced.
+- Role assignment is rank-bounded: nobody grants a role binding tighter than
+  their own. The rank semantics, including whether admins may manage admins, are
+  written as a table in this file *before* code, then tested. Ambiguity here
+  becomes a privilege-escalation bug.
+
+  **The table, written 2026-08-01 at LNK-M-0027's validation, from decision D30 —
+  before any code.** Ranks are `owner` 10, `admin` 20, `editor` 30, `viewer` 40;
+  lower binds tighter. *Manage* means re-role or remove, and is gated by
+  `members.write`.
+
+  | Actor | May manage | May not | Why |
+  | --- | --- | --- | --- |
+  | **owner** (10) | owner, admin, editor, viewer — every rank, its own included | remove or demote **the last owner** | D30's single exception to *strictly below*. An owner already holds everything, so the escalation argument has nothing left to protect; the last-owner refusal is what stops an org being orphaned |
+  | **admin** (20) | editor, viewer | **another admin**, and owner | Strictly below. An admin managing an admin is lateral, and lateral is how an admin removes the peer who would have stopped them |
+  | **editor** (30) | nobody | — | Holds no `members.write` (`00700_seed.sql`) |
+  | **viewer** (40) | nobody | — | Same |
+
+  Two consequences worth stating because a test must pin them. An admin cannot
+  demote *themselves* — self is not strictly below self — so an admin who wants
+  out asks an owner. And "strictly below" is evaluated on rank, not on identity,
+  so a second `owner` is managed by the first without either being special.
+- Removing the last owner of an org is refused, tested.
+- Workspace-scoped memberships (`workspace_id` set) are issuable and the evaluator
+  resolves them — the COALESCE uniqueness and rank machinery from 00200 finally
+  has a writer.
+
+##### Workspaces (decision D15)
+
+- Workspace create / rename / delete within an org, permission-gated. Deleting a
+  workspace that holds links is refused or requires explicit confirmation — the
+  decision is recorded, not left to the implementation.
+
+##### Organizations (decision D16)
+
+- A new `orgs.create` permission, with its seed migration and delegability
+  decision.
+- **Granted by default to self-registered users only.** On a default instance —
+  where `closed` is the shipped ceiling and everyone else arrives by invite — that
+  means the owner from the setup form, and nobody else until they grant it.
+- Creating an org provisions it with a workspace and an owner membership, in one
+  transaction, reusing the `Register` path's tenancy semantics rather than a
+  second implementation of them.
+- The permission is the call site a future entitlement check would hang on —
+  **unscheduled**. Phase 3 declined commercial work as an area (D108) and it
+  stays a candidate in
+  phase-3-candidates.md.
+  Nothing in this milestone is billing-shaped.
+  *(Amended 2026-08-10 at LNK-M-0075. It read "(Phase 3+, see Plan.md)",
+  which describes unscheduled work as scheduled. This is the **second** of two
+  anchors for one seam — the first is `CreateOrganization`'s doc in
+  `internal/team/organization.go`, corrected earlier in the same milestone — and
+  the candidates file's Area G close-out counted one. A count, so a fact.)*
+
+- Member added / removed / re-roled, workspace created, renamed or deleted, and
+  organization **created**, are all audit events (LNK-M-0016).
+  *(Amended 2026-08-01 at step 3.4. The bullet read "workspace and org created
+  or deleted"; organization deletion does not exist anywhere in the product and
+  no other bullet asks for it, so this one was requiring a feature from inside
+  a list of audit events. The owner scheduled it as LNK-M-0028 rather
+  than building it here. See decisions.md.)*
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0026. |
+| Discharges | Collaboration scope row |
+| Status | done |
+| LinkCtrl | M28 |
+
+---
+
+## LNK-M-0028
+
+**Organization deletion and tenancy teardown**
+
+milestone · 2026-08-01
+
+cites: [LNK-M-0027](#lnk-m-0027)
+
+cites: [LNK-D-0018](decisions.md#lnk-d-0018)
+
+cites: [LNK-D-0034](decisions.md#lnk-d-0034)
+
+cites: [LNK-D-0037](decisions.md#lnk-d-0037)
+
+cites: [LNK-D-0032](decisions.md#lnk-d-0032)
+
+cites: [LNK-D-0036](decisions.md#lnk-d-0036)
+
+cites: [LNK-D-0031](decisions.md#lnk-d-0031)
+
+cites: [LNK-D-0016](decisions.md#lnk-d-0016)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-D-0005](decisions.md#lnk-d-0005)
+
+cites: [LNK-F-0028](findings.md#lnk-f-0028)
+
+##### The operation
+
+- `DELETE /api/v1/organizations/{id}` and a UI path, gated by `org.delete` —
+  its first enforcement. `org.delete` is held by the `owner` role only, and
+  LNK-M-0027's rank rules already forbid an admin from acquiring it.
+- Its API-key delegability is decided and recorded against
+  D18,
+  naming which limb it matched or that it matched neither, per the inherited
+  permission rule.
+- Deletion is one transaction. A partially deleted organization is the one
+  outcome worse than an undeletable one, because it leaves members resolving
+  into workspaces that no longer exist — the state
+  D34
+  exists to prevent.
+
+##### What it refuses
+
+Each refusal is asserted by its own test, and each names what an operator does
+instead.
+
+- **An organization still holding links** — refused, archived links included
+  (**D37**, answered 2026-08-01, mirroring
+  D32).
+  An org-level cascade through the same links would make D32 bypassable by
+  deleting one level up. The workspaces must be emptied first, and with no bulk
+  delete until 2+ that is a link at a time — a cost this milestone states rather
+  than hides.
+- **The instance's last organization**, on the same reasoning that refuses the
+  last owner and the last workspace: an instance with no organization has no
+  path back that does not involve SQL.
+- **It does *not* refuse on account of orphaned members.** See D36 below — that
+  case was answered the other way, and it is what makes this milestone large.
+
+##### Belonging to nothing, which D36 makes a real state
+
+Answered 2026-08-01, before code, as this file required. Deletion proceeds even
+when a member has no other organization. Consequently:
+
+- The account **survives** with no membership. Nothing deletes an account as a
+  side effect of deleting an organization.
+- `ResolveWorkspaceForUser` currently treats *no workspace* as a broken
+  instance. It must treat it as an **empty state**, and every signed-in surface
+  must render that state rather than erroring — asserted by test, not by
+  clicking around. This is the session path
+  D31
+  deliberately left untouched during LNK-M-0027, so it is handled here with
+  its own tests rather than as a side effect.
+- On next sign-in the account is **prompted to create an organization**, and can
+  take no other action until it has one — asserted by a test that signs in as an
+  orphaned account and finds every other surface refused.
+- **First-organization creation must be reachable by an account holding no
+  permissions.** An account with no membership holds no role, so it holds no
+  `orgs.create`, which
+  D16
+  grants through the `owner` role and which `POST /organizations` enforces
+  today. The milestone **records which mechanism it used** and why that is not a
+  second authorization axis — D16's rule is that the permission is a grant
+  rather than a check on *how an account was made*, and a membership count is a
+  check on present state. Getting this wrong is how RBAC quietly grows a
+  parallel path, so it is named here rather than left to the build.
+
+##### What it leaves behind
+
+- **Audit rows survive the organization they describe.** `organization.deleted`
+  is emitted (LNK-M-0016), and the trail for a deleted organization stays
+  readable — a tenancy teardown that erased its own record is the one shape an
+  audit log must not have. The retention rule stays D5's.
+- **The aliases of trashed links that had received traffic survive**, in
+  `reserved_aliases`, written in the transaction that deletes them. Nothing else
+  does. The reason the *link guard* does not already settle this is the whole of
+  F28 and is written out under the reopening below: the guard counts live links
+  and excludes soft-deleted ones on purpose, so a teardown reaches the cascade
+  still holding trashed links for the rest of their trash window, and the purge
+  job — the only other writer of `reserved_aliases` — never sees them. The
+  threshold is `PurgeExpiredLinks`', so an alias that never received a click is
+  released rather than reserved.
+
+##### Enforcement
+
+- The refusals are asserted by tests that fail when the guard is removed, not by
+  review. Each guard locks the rows it counts before counting, the way LNK-M-0027's
+  last-owner refusal does, so two administrators acting at once cannot each pass
+  a check the other invalidates.
+- `organization.deleted` joins `internal/audit`'s action vocabulary, and the
+  comment at `audit.go` explaining why it was absent is removed rather than left
+  to contradict the code beneath it.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0027. The edge is hard: deleting an organization means |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-01, |
+| Status | done |
+| LinkCtrl | M28.5 |
+
+---
+
+## LNK-M-0029
+
+**Self-serve signup, switchable at runtime**
+
+milestone · 2026-08-01
+
+cites: [LNK-D-0038](decisions.md#lnk-d-0038)
+
+cites: [LNK-D-0001](decisions.md#lnk-d-0001)
+
+cites: [LNK-D-0007](decisions.md#lnk-d-0007)
+
+cites: [LNK-M-0026](#lnk-m-0026)
+
+cites: [LNK-D-0006](decisions.md#lnk-d-0006)
+
+cites: [LNK-M-0023](#lnk-m-0023)
+
+- **`LINKCTRL_SIGNUP_MODE` is the mode, and the only way to set it** (decision
+  D38, 2026-08-01). There is no `settings` table, no `settings.write`
+  permission, and no runtime toggle in the UI or the API. Changing how an
+  instance admits accounts is an operator action — an `.env` edit and a
+  restart — and a test proves no session or API call can change the effective
+  mode at all.
+- **`open` requires a configured mailer** (decision D1): registration in open mode
+  verifies the address before the account is usable, and with no mailer configured
+  the effective mode is `invite`. That derivation is stated in
+  configuration.md beside the variable, and surfaced
+  on the signup page rather than discovered at submit time. Both behaviours
+  tested.
+- **`closed` admits no new account by any path** (decision D7), including invite
+  redemption — see LNK-M-0026.
+- The signup form states what an account gets. Wording follows decision D6: a
+  self-registered account gets its own organization and workspace; an invited
+  one gets membership in the inviter's org and nothing else.
+- A browser signup page exists and works without JavaScript. The alias is already
+  reserved.
+- `POST /api/v1/auth/register` honours the effective mode. Registration is
+  rate-limited like login.
+- The shipped default stays `closed`, and the docs say why.
+
+*(Amended 2026-08-01 at step 3.4. The milestone originally specified a runtime
+toggle held in a `settings` table, gated by an owner-only `settings.write`, with
+`LINKCTRL_SIGNUP_MODE` as a ceiling above it. The build showed "owner-only" does
+not name a small set — every self-registered account owns the organization
+registration provisions for it, so under an `open` ceiling every account that
+signed up could move the toggle. The owner chose the operator-only form instead.
+See decisions.md, D38.)*
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0023 LNK-M-0026. |
+| Discharges | Collaboration scope |
+| Status | done |
+| LinkCtrl | M29 |
+
+---
+
+## LNK-M-0030
+
+**Destination blocking: tiers and logging**
+
+milestone · 2026-08-01
+
+cites: [LNK-D-0013](decisions.md#lnk-d-0013)
+
+cites: [LNK-M-0033](#lnk-m-0033)
+
+cites: [LNK-M-0039](#lnk-m-0039)
+
+cites: [LNK-M-0041](#lnk-m-0041)
+
+cites: [LNK-M-0047](#lnk-m-0047)
+
+cites: [LNK-M-0052](#lnk-m-0052)
+
+cites: [LNK-F-0014](findings.md#lnk-f-0014)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+##### The three tiers
+
+| Tier | Contents | Overruled by |
+| --- | --- | --- |
+| Unappealable | Phase 1's SSRF refusals, untouched | Nothing |
+| High confidence | Curated embedded exact-host list, shipped like `reserved.txt` | Editing the list and rebuilding |
+| Low confidence | Heuristics + a runtime-mutable Postgres blocklist | The instance owner, from the review queue |
+
+- A test asserts **no configuration, list entry, or future review path can accept
+  a metadata or private address**. The unappealable tier shares no override switch
+  with anything.
+- Heuristics never write into the embedded tier — asserted structurally, not by
+  convention. Confining that tier to exact matches is what keeps a false positive
+  there from costing a rebuild often enough that operators route around it.
+- Low-confidence heuristics: punycode homographs, credentials in the URL,
+  shortener chains. **Freshly-registered domains is excluded** (decision D13): it
+  needs a domain-age data source, which means egress, which collides with the
+  no-destination-leaves-the-box promise. Noted as exactly what LNK-M-0033's
+  opt-in feed path can supply. The scope row is annotated rather than silently
+  shipped short.
+- `LINKCTRL_DESTINATION_BLOCKLIST` seeds the runtime Postgres list and keeps
+  feeding it — the env list keeps working.
+- Every refusal's 422 carries a reason code naming its tier and rule.
+
+##### Coverage and logging
+
+- The check runs at every destination-writing surface that exists when this ships:
+  link create, link update, and the root redirect — all three `ValidateDestination`
+  call sites, kept by test. Re-checking already-accepted links is **not** included
+  (Plan.md calls it a separate job and a separate decision).
+- **Every later milestone that adds a destination-writing surface declares this
+  one as a dependency and passes the full tier check**, asserted by its own tests:
+  LNK-M-0039 rule destinations, LNK-M-0041 split-test variants,
+  LNK-M-0047 webhook targets. This closes the bypass the plan review found in
+  two of three candidate orderings.
+- A blocked attempt writes an audit event with `ip_prefix` and the attempted URL
+  stored as evidence. Wherever that URL is displayed it is escaped and defanged —
+  a test plants a `javascript:` URL and an HTML-bearing URL and proves both
+  render inert.
+
+  *(Amended 2026-08-05 on LNK-M-0052's F14. It read
+  "**Every** blocked attempt writes an audit event", which is no longer true and
+  was the defect: this is the only audited action recording something that did
+  **not** happen, so unlike every other one it has no successful state change
+  bounding how often a caller can provoke it — a holder of an ordinary editor
+  role could loop link creation against `http://127.0.0.1/` and add a row per
+  request, on an instance whose audit retention defaults to keep-forever. The
+  write is now bounded per actor **and per refusal code**, `BlockedAuditRatePerMin`
+  in `internal/link/blocking.go`. The per-code half is what keeps it a bound
+  rather than a suppression tool: a refusal code nobody has provoked before is
+  always recorded, however hard another is being hammered. The block itself is
+  untouched — the bound is on the row, never on the refusal.)*
+- Blocking runs only on the management path. The redirect tree is untouched and
+  its tripwire tests pass unmodified.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0016. |
+| Discharges | Link-management row *Malicious |
+| Status | done |
+| LinkCtrl | M30 |
+
+---
+
+## LNK-M-0031
+
+**`M30.5`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-31
+
+LinkCtrl cites `M30.5` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M30.5 |
+
+---
+
+## LNK-M-0032
+
+**Blocked-attempt disputes and owner review**
+
+milestone · 2026-08-01
+
+cites: [LNK-M-0017](#lnk-m-0017)
+
+cites: [LNK-M-0052](#lnk-m-0052)
+
+cites: [LNK-D-0098](decisions.md#lnk-d-0098)
+
+cites: [LNK-F-0137](findings.md#lnk-f-0137)
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+- A dispute entity exists (new table), creatable **only from a low-confidence
+  refusal**. Unappealable and embedded-tier refusals have no dispute path at all,
+  tested — the party those tiers protect is not the party appealing.
+- The review queue page and API render every disputed destination defanged and
+  **never as an anchor element**, asserted against the rendered HTML. The defang
+  test is sabotage-verified before this milestone claims done.
+- **No code path fetches, previews, or screenshots a submitted URL** — verified by
+  test and by a grep gate over the queue's packages for outbound HTTP. A preview
+  fetch would be exactly the SSRF the validator exists to refuse, arriving as a
+  convenience feature.
+- Review decisions (allow / uphold) act only on the runtime low-confidence list,
+  are audit events, and notify the disputing creator in-app; a newly filed dispute
+  notifies **whoever holds review** in-app. Both via LNK-M-0017.
+  *(Amended 2026-08-05 at LNK-M-0052's step 3.4 — it read "Owner decisions" and "notifies
+  the owner", which named the holder rather than the role. D98 moved
+  `destinations.review` off the organization owner to the instance principal and
+  its appointees, so the word was a fact about who held it in 2026-08-01 and is
+  now wrong; what the bullet asserts — a filing tells the people who review it — is
+  unchanged and is what F137's fix made true for the first time. See decisions.md.)*
+- Review is gated by a new permission with its seed migration and delegability
+  decision.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0030 LNK-M-0017. |
+| Discharges | Link-management row |
+| Status | done |
+| LinkCtrl | M31 |
+
+---
+
+## LNK-M-0033
+
+**Opt-in reputation and malware feeds**
+
+milestone · 2026-08-01
+
+cites: [LNK-D-0040](decisions.md#lnk-d-0040)
+
+cites: [LNK-D-0038](decisions.md#lnk-d-0038)
+
+cites: [LNK-D-0001](decisions.md#lnk-d-0001)
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+cites: [LNK-M-0032](#lnk-m-0032)
+
+- With the feature off — the default — **zero destination URLs leave the
+  instance**, asserted by test.
+- Enabling requires explicit configuration naming the feed. Both the docs and a
+  **read-only instance page** disclose plainly that destinations are sent to
+  that third party (decision D40, 2026-08-01).
+
+  The page **has no controls and accepts no POST**, asserted by test. That is
+  the whole of what makes it safe to add one milestone after
+  D38
+  deleted the settings page: D38's finding was that this product has no
+  instance-level principal, so nothing instance-wide may be *changed* from the
+  dashboard. Reading is not changing. A control appearing here later would
+  reverse D38 without anybody deciding to, so the test is the mechanism and not
+  the convention.
+
+  It states which third party, what is sent, when it is sent, and that only the
+  operator can change it.
+- Feed verdicts act only as **low-confidence signals**: disputable,
+  owner-overridable, never promoted to the embedded tier. A test proves every
+  built-in tier behaves identically with feeds on, off, or erroring — the feeds
+  are never the mechanism the built-in tiers depend on.
+- Feed failures fail open to the built-in tiers, with a counted metric.
+- Plan.md's no-destination-leaves-the-box promise is updated to state the opt-in
+  exception precisely, rather than being quietly falsified.
+- Ships with a single generic HTTP feed adapter. Which feeds get first-class
+  support is a later product call, not a blocker.
+- **Addendum (decision D1):** with the mailer configured, dispute outcomes are
+  also emailed. In-app delivery remains the baseline.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0030 LNK-M-0032. |
+| Discharges | Security scope row |
+| Status | done |
+| LinkCtrl | M32 |
+
+---
+
+## LNK-M-0034
+
+**Bot blocking, per domain and per link**
+
+milestone · 2026-07-31
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-M-0018](#lnk-m-0018)
+
+cites: [LNK-D-0108](decisions.md#lnk-d-0108)
+
+cites: [LNK-M-0037](#lnk-m-0037)
+
+cites: [LNK-M-0039](#lnk-m-0039)
+
+##### The switch
+
+- A link carries a bot-blocking setting with three states: **off**, **on**, and
+  **inherited from the domain** — the default, so an existing link's behaviour is
+  whatever its domain says, which today is off.
+- A domain carries two settings: whether bot blocking is on, and whether it is
+  **enforced**. Enforced means every link under that domain blocks regardless of
+  its own setting, and a link-level *off* under an enforcing domain is refused at
+  the API and disabled in the UI rather than silently overridden. Asserted by
+  test at both surfaces.
+- Precedence is one function with one table-driven test covering all nine
+  combinations of link state × domain state. There is no second place that
+  decides this.
+- Both settings are readable and writable through the API as well as the UI, per
+  the inherited every-UI-feature-has-API-support rule, and land in
+  `api/openapi.yaml`.
+- Changing either setting writes an audit event (LNK-M-0016) and invalidates
+  the affected cache entries (LNK-M-0018) — a domain-level change invalidates
+  every link under it, which is the expensive case and the one the test covers.
+
+##### On the redirect path
+
+This milestone puts a decision on the hot path, which nothing before it has done.
+The inherited redirect rules are the specification here, not background:
+
+- The bot decision uses **`analytics.Classify`**, the same pure user-agent
+  function the recorder already uses at
+  `ingest.go`, called on the request
+  instead of duplicated. No new classifier, and no divergence between what is
+  blocked and what is counted as a bot.
+- **No new I/O on the redirect path**, asserted structurally: the blocking
+  decision reads only fields already carried by the resolved-and-cached link and
+  domain. A test fails if resolving a redirect issues a query it did not issue
+  before.
+- No session lookup, no CSRF check, **no template rendering**. A blocked request
+  gets a static, pre-rendered response — status and a short fixed body, built at
+  init and not per request. The tripwire tests pass unmodified.
+- The docs/slo.md k6 measurement is re-run on the built image
+  with the seeded dataset, blocking enabled on the measured link, and the cached
+  p99 stays under 20ms. The figure is recorded with the date and the image it was
+  taken on, per the standing rule against unmeasured numbers.
+- A blocked attempt is **counted, not audited**: it increments a metric and is
+  recorded as a click event with `is_bot` already true. Audit is for
+  administrative change, and a crawler hitting a link ten thousand times would
+  otherwise write ten thousand audit rows, which is the growth
+  LNK-M-0016's own threshold exists to warn about.
+
+##### What a blocked bot receives
+
+- **403, with a body that names no destination.** A refusal that echoed the URL
+  would make the shortener a confirmation oracle for a link's existence and
+  target; the whole point is that the crawler learns nothing.
+- **For a blocked bot, the response is identical whether the link is live,
+  expired, or archived** — one 403, byte for byte, asserted by test across all
+  three states. Blocking therefore adds no enumeration signal the redirect path
+  does not already give: existence was already distinguishable before this
+  milestone (302 or 410 versus 404), and collapsing three states into one
+  response removes signal rather than adding it.
+
+  *(Amended 2026-08-01 at step 3.4. The bullet read "the response is identical
+  whether the link exists, is expired, or is blocked for a bot… comparing the
+  three responses byte for byte", which the same bullet's own **403**
+  requirement makes impossible — 403, 404 and 410 differ in status by
+  construction. See decisions.md.)*
+
+##### Deliberately not in this milestone
+
+- **No human check, bypass, or dispute path.** A person misclassified as a bot
+  gets a 403 and no recourse. That half of the request is **unscheduled**,
+  because a challenge is a rendered, stateful, interactive surface on the one
+  tree this project keeps free of session lookups and templates — it is a
+  milestone, not a bullet. *(Read `parked for Phase 3 (see Plan.md's Not in
+  Phase 2)` until M58. Phase 3 declined the redirect-path work area
+  outright — D108 — and Plan.md's list no
+  longer carries the row, so the pointer named a place the promise had left. The
+  reason it keeps being deferred is unchanged and is the sentence above.)*
+- **No per-bot allowlist.** Blocking is all-or-nothing per link. Letting Slack
+  unfurl through while refusing scrapers needs a taxonomy the classifier does not
+  have — it returns one boolean.
+- **No new detection.** `Classify`'s marker list is untouched. Improving it is a
+  separate change with a separate false-positive argument, and doing it here
+  would silently change every existing analytics figure at the same time.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. The edges to LNK-M-0037 and LNK-M-0039 are |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-07-31; the |
+| Status | done |
+| LinkCtrl | M32.5 |
+
+---
+
+## LNK-M-0035
+
+**`M32.6`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-31
+
+LinkCtrl cites `M32.6` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M32.6 |
+
+---
+
+## LNK-M-0036
+
+**Mid-phase adversarial review**
+
+milestone · 2026-09-13
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-M-0034](#lnk-m-0034)
+
+cites: [LNK-M-0018](#lnk-m-0018)
+
+- Every milestone from LNK-M-0016 to LNK-M-0034 is re-read **against its own claims**, not
+  against the code's intent. The test is the definition of done in its file: does
+  the implementation actually do what the file says, or only something reasonable?
+- The review covers multiple dimensions independently — at minimum correctness,
+  security, privacy, tenancy isolation, and documentation truth. A single pass
+  over everything finds the same class of thing repeatedly.
+- **Every finding is put to an adversarial verifier that tries to refute it**, and
+  only confirmed findings are reported. Phase 1's second review ran 86 raw → 73
+  distinct → 71 confirmed, 2 refuted; unverified findings waste the fix budget on
+  things that are not real.
+- Findings are triaged by the standing rule, not by convenience: anything making a
+  shipped milestone's *own claim* false is in spec and fixed now; everything else
+  becomes a row in deferred-findings.md for owner
+  review.
+- Specific things to look for, because they are this phase's structural risks:
+  audit events actually emitted by every milestone that claims them; notification
+  delivery degrading correctly with no mailer; invalidation reaching every replica
+  including the caches added after LNK-M-0018; the `closed`-means-no-new-accounts
+  rule holding on every path; and the unappealable blocking tier being genuinely
+  unreachable from configuration, list entry, or review.
+- The review's own output is recorded — what was checked, what was found, what was
+  refuted — so a later reader can tell coverage from luck.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0016–LNK-M-0034. |
+| Discharges | nothing on the |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M32.9 |
+
+---
+
+## LNK-M-0037
+
+**Deep-link path forwarding**
+
+milestone · 2026-09-13
+
+cites: [LNK-M-0039](#lnk-m-0039)
+
+- An additive `links.forward_path` column, default off, exposed in API and UI,
+  mirroring `forward_query` in shape and default.
+- The router gains `/{alias}/{rest...}` on the redirect tree. Multi-segment
+  requests to unknown or non-forwarding aliases flow through the normal miss
+  path — the custom 404 page and the 404-probe limiter both apply, tested.
+- Reserved top-level routes are unaffected;
+  `TestReservedListCoversRegisteredRoutes` passes.
+- The snapshot gains one additive field that decodes as zero from existing
+  payloads, proved by a test decoding a pre-change payload. **The claim is
+  "additive within the current cache-key version", and it holds only because this
+  milestone precedes LNK-M-0039's v2 bump — that ordering is part of the
+  claim, not an incidental scheduling choice.**
+- Path joining is encoding-safe: a property test covers re-encode mangling and
+  traversal into a different origin.
+- SLO re-verified; tripwire tests pass.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing, but **must land before LNK-M-0039** — see the |
+| Discharges | Redirect scope row *Deep-link path |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M33 |
+
+---
+
+## LNK-M-0038
+
+**A demo that shows the phase, not just its links**
+
+milestone · 2026-08-01
+
+cites: [LNK-M-0027](#lnk-m-0027)
+
+cites: [LNK-M-0022](#lnk-m-0022)
+
+cites: [LNK-M-0026](#lnk-m-0026)
+
+cites: [LNK-M-0017](#lnk-m-0017)
+
+cites: [LNK-M-0024](#lnk-m-0024)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+cites: [LNK-M-0032](#lnk-m-0032)
+
+cites: [LNK-M-0034](#lnk-m-0034)
+
+cites: [LNK-M-0033](#lnk-m-0033)
+
+cites: [LNK-D-0001](decisions.md#lnk-d-0001)
+
+cites: [LNK-D-0027](decisions.md#lnk-d-0027)
+
+cites: [LNK-D-0007](decisions.md#lnk-d-0007)
+
+cites: [LNK-M-0037](#lnk-m-0037)
+
+cites: [LNK-M-0036](#lnk-m-0036)
+
+##### What the seeder produces
+
+Each of these is a row a person evaluating this instance can actually reach
+through the product, not a fixture. That is the dashboard for all but one of
+them — the audit log has no page and is read at `GET /api/v1/audit`, which is
+deliberate and is what README.md documents:
+
+- **A second and third account, and memberships**, so the members page has more
+  than one row and the rank rules from LNK-M-0027 have something to act on —
+  including at least one non-owner, so *manage only strictly below your own
+  rank* is visible rather than theoretical.
+- **A second workspace with links of its own**, so the switcher
+  LNK-M-0022 built has something to switch between and the scoping is
+  observable. Today's demo has one workspace, which is exactly the state in
+  which the switcher renders nothing.
+- **An outstanding invitation and a redeemed one** (LNK-M-0026), so the
+  invitations page shows both halves of the lifecycle.
+- **Notifications, some unread** (LNK-M-0017), so the bell
+  LNK-M-0024 added is not permanently empty.
+- **Audit rows spanning several actions** (LNK-M-0016), so `GET /api/v1/audit`
+  returns a trail rather than one root-redirect change.
+- **A blocked destination and a dispute in each state** — open, allowed,
+  upheld (LNK-M-0030, LNK-M-0032) — so the review queue can be looked at.
+  The blocked attempt is seeded through the same service the product uses, so
+  the stored URL is defanged the way a real one would be.
+- **Bot blocking switched on for exactly one link** (LNK-M-0034), so the
+  setting is discoverable and its precedence is visible against links that
+  inherit.
+
+##### What it must not do
+
+- **No reputation feed is enabled, ever.** Feeds send destinations to a third
+  party (LNK-M-0033); a demo instance that quietly did that would be the
+  worst possible violation of the promise the feature was built to qualify.
+  Asserted by test.
+- **No mailer is required.** The seeder runs on a default instance with no SMTP
+  configured, and the invitation it creates is reachable by its copyable link
+  (D1, D27). A demo that needed a relay would not run for most people.
+- **`LINKCTRL_SIGNUP_MODE` is not changed.** The extra accounts are written by
+  the seeder directly, not by opening registration — D7 says `closed` admits
+  nobody by any path, and a seeder that flipped the mode to let itself in would
+  be making that false to save itself a query.
+
+##### That it stays true
+
+- **A test enumerates the features the demo is expected to show, and fails when
+  one has no seeded rows.** The list is explicit and lives with the test, so
+  extending it is a deliberate line in a later milestone's diff rather than
+  something noticed by whoever next opens the demo. This is the mechanism; a
+  note asking people to remember is not.
+
+  The *rule* already exists — a milestone that adds something visible extends
+  the seeder, inherited from
+  README.md and checked by
+  workflow.md's `Demo` gate since 2026-08-01. It landed before this milestone on
+  purpose, because LNK-M-0037 sits in between and would otherwise ship in the
+  window where the obligation exists and nothing enforces it. What LNK-M-0038 adds is
+  the enforcement.
+- `make demo-update` still refuses a dirty tree, still rebuilds from the commit
+  just made, and remains **idempotent under `--reset`** — running it twice
+  produces the same demo, which is what makes it safe to run at every milestone.
+- The seeder's runtime does not grow enough to make `make demo-update`
+  unpleasant at a milestone boundary. The figure is measured and recorded, not
+  asserted.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0036. The edge is an *ordering preference* and it is |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-01, |
+| Status | done |
+| LinkCtrl | M33.5 |
+
+---
+
+## LNK-M-0039
+
+**Routing rules: conditions and first-match evaluation**
+
+milestone · 2026-09-13
+
+cites: [LNK-D-0002](decisions.md#lnk-d-0002)
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+cites: [LNK-M-0018](#lnk-m-0018)
+
+cites: [LNK-M-0037](#lnk-m-0037)
+
+##### Rules
+
+- `routing_rules` gains queries, service, API and UI for `kind='match'` rules —
+  priority-ordered, lower wins, first match short-circuits, `enabled` honoured.
+- Conditions supported in the jsonb: country, region, city, language, browser, OS,
+  device, date/time, referrer, query params, UTM, and returning-visitor.
+- Date/time is evaluated at request time against the clock, **never baked into the
+  cached value** — tested across a boundary.
+- **Returning-visitor uses within-day semantics** (decision D2): "seen earlier
+  today", computed from the same daily-salted visitor hash analytics already uses.
+  Cookie-free. The check is a Redis set-membership test keyed by
+  (link, day, truncated hash), maintained off the hot path by the existing ingest
+  pipeline and expiring with the day, consistent with salt-deletion
+  de-identification. With Redis absent the condition evaluates to *not returning*,
+  documented and tested. The UI and docs label the semantics honestly: a visitor
+  from yesterday is new again.
+- **The cookies condition is refused** with a documented reason code (decision D2),
+  and the scope row is annotated so a 13-condition row is never silently shipped
+  as 12.
+
+##### Geography
+
+- `internal/geoip` gains `Region()` and `City()`, called on the redirect path only
+  when a link's rules need them.
+- The values are **never stored**: `click_events.region` and `city` stay null,
+  asserted by test. This executes the Analytics row's "resolvable, deliberately not
+  stored" decision, recorded in decisions.md.
+- City-level conditions need the operator's City database; mmap lookup cost is
+  **measured, not assumed**, inside the 20ms budget.
+
+##### Hot path
+
+- Rule evaluation adds **no database query per request**. Inputs are the request,
+  the snapshot, and — for returning-visitor only — the Redis check above. Tested.
+- The snapshot grows to carry rules and the destination list; `CacheKeyVersion`
+  bumps to v2, with the cold-cache-on-upgrade consequence stated in the CHANGELOG.
+- UA classification is reused on the hot path only for links carrying rules.
+- Every rule destination passes the full LNK-M-0030 tier check.
+- Rule CRUD invalidates snapshots across replicas (LNK-M-0018).
+- SLO re-verified with rules seeded on hot links; links *without* rules resolve
+  through the unchanged fast path, tested.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0018 LNK-M-0030 LNK-M-0037. |
+| Discharges | Redirect |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M34 |
+
+---
+
+## LNK-M-0040
+
+**Gated links: password, signed, one-time, max-click**
+
+milestone · 2026-08-04
+
+cites: [LNK-M-0041](#lnk-m-0041)
+
+cites: [LNK-M-0039](#lnk-m-0039)
+
+- The 422 `not_implemented` stubs are gone. `password`, `one_time` and
+  `max_clicks` are settable via API and UI, and the contract test that asserted
+  those 422s is updated — sabotage-verified.
+- **Password links.** The redirect tree serves an embedded, template-engine-free
+  challenge page and accepts a POST for verification. The tripwire tests are
+  deliberately amended to allow exactly that one POST route and nothing else; the
+  amendment is recorded, restored by counter-edit discipline, and needs owner
+  sign-off before it lands. argon2id verification runs only on the submit path and
+  reads the hash from Postgres — **the cached snapshot carries only `HasPassword`,
+  never the hash**, asserted by test.
+- **Signed URLs.** Per-workspace signing secret in additive storage, HMAC
+  verification on the hot path, expiring signatures, documented format.
+- **One-time and max-click.** A durable Postgres counter consumed transactionally —
+  **built here, once; LNK-M-0041 reuses it.** Redis is cache-only and cannot
+  count, which is why this is Postgres. Engaged only for links whose snapshot flags
+  require it; exceeded serves 410; correct with Redis disabled entirely, tested,
+  including a real-concurrency race test on the one-time counter.
+- `links.click_count` stays untouched and approximate.
+- SLO re-verified: **ungated** links stay under 20ms cached p99. Gated-path latency
+  is measured and documented separately in slo.md — the extra write
+  is paid only by links that asked for it.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0039 — **an ordering choice, not a hard dependency.** The |
+| Discharges | Security scope row *Password links, one-time links, max-click |
+| Status | done |
+| LinkCtrl | M35 |
+
+---
+
+## LNK-M-0041
+
+**Split testing: weighted, percentage, sequential, fallback, flags**
+
+milestone · 2026-09-13
+
+cites: [LNK-D-0008](decisions.md#lnk-d-0008)
+
+cites: [LNK-M-0040](#lnk-m-0040)
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+cites: [LNK-M-0018](#lnk-m-0018)
+
+cites: [LNK-M-0039](#lnk-m-0039)
+
+- Kinds `weighted` (percentage splits are weights), `sequential` and `fallback` are
+  implemented. Feature-flagging is the `enabled` toggle surfaced per rule.
+- Weights live in `destinations.weight` (decision recorded). Selection is
+  in-process RNG over the snapshot with **no added query**.
+- The `sync_link_primary_url` trigger and the single-destination fast path are
+  preserved: **a link without rules resolves byte-identically to Phase 1**, tested.
+- **Sequential is strict** (decision D8): it reuses LNK-M-0040's durable
+  Postgres counter, giving true global order across replicas and restarts. The
+  write cost lands only on links actually using `sequential`; every other link
+  keeps the unchanged fast path. Documented as strict, because "approximately
+  sequential" is a support ticket.
+- Every variant destination passes the full LNK-M-0030 tier check.
+- `click_events` gains an additive `destination_id` column written at ingest,
+  honouring the partitioned-DDL rules. The link detail page and API expose a
+  per-destination breakdown, so an A/B test can actually be read — a split with no
+  attribution is a coin flip with extra steps.
+- Rule and destination changes invalidate snapshots across replicas
+  (LNK-M-0018).
+- SLO re-verified: cached p99 under 20ms.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0039 LNK-M-0040 LNK-M-0030. |
+| Discharges | Redirect scope row |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M36 |
+
+---
+
+## LNK-M-0042
+
+**Dimension visualizations, with the rollup cadence fixed first**
+
+milestone · 2026-08-10
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+cites: [LNK-F-0160](findings.md#lnk-f-0160)
+
+cites: [LNK-F-0195](findings.md#lnk-f-0195)
+
+cites: [LNK-F-0210](findings.md#lnk-f-0210)
+
+cites: [LNK-M-0074](#lnk-m-0074)
+
+cites: [LNK-M-0051](#lnk-m-0051)
+
+##### First, the rollup
+
+- Dimension rollups move to a **longer cadence** than link and workspace totals —
+  the recorded split-cadence option, chosen over a narrower window.
+- A staleness metric exists, with a documented alert recipe in
+  operations.md.
+- A re-measurement at the 5.7M-event seed shows the dimension job no longer
+  exceeding its interval, recorded in slo.md. The narrower-window
+  option is the recorded fallback if cadence alone does not hold.
+
+##### Then, the presentation
+
+- A country choropleth rendered as **server-computed inline SVG** from a vendored,
+  pinned, checksummed world-map path asset, acquired like htmx via a
+  `scripts/get-*.sh`. Licensing and size are checked before it is committed — it
+  is the product's first vendored data file.
+- Shaded by share of clicks, with a unique-visitors layer that carries the
+  daily-estimate caveat **verbatim**. Shading by an estimate without repeating the
+  caveat would launder an estimate into a fact.
+- With no GeoIP database configured the map states data is unavailable, exactly as
+  the ranked list already does — tested. No world uniformly coloured "unknown".
+  *(Narrowed 2026-08-10 at LNK-M-0075, by
+  F160 and not by a change of mind here. The
+  test the bullet asked for was written against the **configuration**, and an
+  instance holding resolved country history with no database — the demo among
+  them — was shown the sentence over data that was present. Both surfaces now
+  follow the data: the sentence is reached only when no country resolved **for
+  that link in the window on screen** and no database is configured, which is the
+  state this bullet was describing. *Window* rather than *history* is a
+  correction to this note made 2026-08-10 in the same milestone — it read "no
+  country in the history", which is wider than the predicate, and the residual
+  behaviour is F195. What the bullet claimed of
+  that state is unchanged and still tested.)*
+- The ranked list stays one click away from every visualization: it is the view
+  that answers "exactly how many".
+- Richer charts for the other dimensions follow the existing Go-computed-geometry
+  idiom.
+- **No new columns.** `link_dimension_daily` already carries clicks and unique
+  visitors per value per day.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | Analytics scope row *Dimension |
+| Status | done *(reopened and closed again 2026-08-11 — F210's antimeridian bands; mapgen now splits crossing rings, and the reopening is LNK-M-0074's to review, per the note on LNK-M-0051's row)* |
+| LinkCtrl | M37 |
+
+---
+
+## LNK-M-0043
+
+**Folders: API and tree UI**
+
+milestone · 2026-08-05
+
+- Folder CRUD and a move operation exist.
+- **A folder can never become its own descendant** — cycle test. *(True of one move and false of two, until the reopening below.)*
+- Sibling-name uniqueness and a depth cap are enforced in the service, with the
+  decision recorded. *(Enforced against a snapshot no lock protected on the
+  create path, until the second reopening below.)*
+- Deleting a folder leaves its links intact via the existing `SET NULL` semantics,
+  tested. Losing links because a container was deleted is the failure this names.
+- Links are assignable to folders in API and UI; the links list filters by folder.
+- The tree UI is progressive-enhancement htmx: click-to-move via POST forms, **no
+  custom drag-and-drop JavaScript**, works without JS. Drag-and-drop is
+  deliberately out unless asked for.
+- Permission decision recorded: reuse `links.*`, or a new `folders.*` with its seed
+  migration and delegability call.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | Link-management scope row *Folders — API |
+| Status | done |
+| LinkCtrl | M38 |
+
+---
+
+## LNK-M-0044
+
+**Per-domain ownership**
+
+milestone · 2026-09-13
+
+cites: [LNK-M-0015](#lnk-m-0015)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+- `domains` gains additive workspace ownership. The column choice — a new column
+  versus the existing nullable `organization_id` versus a join table — is the
+  schema decision Phase 3 inherits, and gets a decisions.md entry **before** code.
+- Domain CRUD API and UI let a workspace register a hostname, stored **unverified**.
+- The host router still refuses to serve it: unknown hosts remain ops-only 404,
+  asserted by the existing hosts test **unchanged**. A registered-but-unverified
+  hostname is not a routing target.
+- `domains.write` becomes the real ownership check LNK-M-0015's row promised: a workspace
+  admin manages only their own domains, another workspace's admin gets 403, tested.
+  The instance-wide default domain stays administrable only by instance
+  owner/admin.
+- Domain create / update / delete are audit events (LNK-M-0016) — the unowned
+  audit events the plan review found missing in rival orderings.
+- Reserved aliases stay enforced per domain; both existing tests intact.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0016. |
+| Discharges | Security scope row *Per-domain |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M39 |
+
+---
+
+## LNK-M-0045
+
+**Custom domains: verification and serving**
+
+milestone · 2026-08-04
+
+cites: [LNK-D-0003](decisions.md#lnk-d-0003)
+
+cites: [LNK-M-0018](#lnk-m-0018)
+
+cites: [LNK-M-0044](#lnk-m-0044)
+
+##### Verification
+
+- A DNS TXT challenge — token per domain, additive columns — checked by a
+  leader-elected job and on demand.
+- **Only after `verified_at` is set** does the host router resolve aliases on that
+  hostname. An unverified or unknown host stays ops-only 404, and a wrong-host
+  request is never a cross-host redirect. Both tested.
+- Re-verification runs on a cadence. The **deleted-CNAME plan** is implemented and
+  documented: serving stops or degrades per the recorded decision, never silently
+  persists.
+
+##### Serving
+
+- **TLS is operator-managed via Caddy on-demand TLS** (decision D3), with a
+  documented config block including an ask endpoint that answers only for verified
+  domains. The app tracks `ssl_status` only and never speaks ACME itself — built-in
+  ACME would contradict the no-third-party-calls posture.
+- Link creation can target an owned verified domain; `short_url` builds from it.
+- Alias uniqueness stays `(domain_id, alias)`; reserved aliases apply on every host.
+- Hostname-to-domain resolution on the redirect path is cached **with invalidation
+  wired into LNK-M-0018's pub/sub** — no per-request query, and no replica
+  serving a domain that was just unverified. This is the cross-replica staleness
+  gap the plan review found in both rival orderings. *(True except for two
+  windows in the cache's own scheduler, until the reopening below.)*
+- `GetDefaultDomainSettings` gains the domain filter its own comment promises, and
+  the links list gains a domain filter.
+- Per-domain root redirect works via the existing `root_redirect_url` column and is
+  an audit event.
+- SLO re-verified: cached p99 under 20ms.
+- Deployment docs gain the custom-domain runbook.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0044 LNK-M-0018. |
+| Discharges | Other-surfaces scope |
+| Status | done |
+| LinkCtrl | M40 |
+
+---
+
+## LNK-M-0046
+
+**QR codes and campaigns**
+
+milestone · 2026-09-13
+
+cites: [LNK-D-0011](decisions.md#lnk-d-0011)
+
+cites: [LNK-M-0042](#lnk-m-0042)
+
+##### QR codes
+
+- A QR endpoint returns a code for any link, generated by a **pure-Go encoder** —
+  no Node, no CDN. The dependency choice is recorded.
+- **SVG only** (decision D11). No PNG, so no image encoder joins the dependency
+  set. If PNG download is wanted later it is an additive change.
+- Style stored in the existing `qr_codes.style` jsonb.
+- The contract test validates the non-JSON response by hand, following the
+  existing YAML-endpoint pattern.
+- Scans are attributed as ordinary clicks, distinguished by a documented source
+  query parameter flowing through existing dimensions — **no new analytics schema**.
+- `scan_count` is either wired or dropped from the UI. **Decided, not hedged**: a
+  definition of done containing an either/or cannot be checked.
+
+##### Campaigns
+
+- CRUD API and UI; links assignable via the existing `campaign_id`; the links list
+  filterable by campaign; slug uniqueness per workspace honoured.
+- **Campaign analytics stays 2+ and is not started.** Campaign rollups would stack
+  new load on a rollup job whose fix (LNK-M-0042) should prove itself at scale
+  first.
+
+- Permission decisions and seed migrations for both surfaces.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. |
+| Discharges | the QR and campaigns components of the |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M41 |
+
+---
+
+## LNK-M-0047
+
+**Webhooks**
+
+milestone · 2026-08-04
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+- Webhook CRUD, with subscription events from a documented, deliberately small
+  vocabulary: link lifecycle plus blocked-attempt events.
+- Every webhook URL passes `ValidateDestination` with the unappealable tier
+  enforced — a metadata-IP target is refused, tested.
+- **The delivery client re-validates resolved addresses at connection time and
+  follows no redirect to a private address.** A target that passed validation at
+  creation can rebind to a private address before delivery; checking only at
+  registration is the gap the plan review found in both rival orderings.
+- The chosen DNS-rebinding posture for server-initiated fetches is **stated
+  explicitly** rather than inherited from the redirect path's accepted gap. The
+  redirect path sends a *visitor's browser* somewhere; this sends *the server*,
+  and the two do not get the same answer by default.
+- Payloads are HMAC-signed with the per-webhook secret; the scheme is documented
+  for receivers.
+- Delivery rides the existing `webhook_deliveries` table using its pending index,
+  claimed via `FOR UPDATE SKIP LOCKED` or a dedicated advisory-lock job (decision
+  recorded), with backoff via `next_attempt_at`, abandonment after a documented
+  attempt count, per-attempt timeouts, and response codes recorded.
+- **Redis stays cache-only** because the queue is Postgres. This dispositions the
+  Redis Streams upgrade path: it remains unexercised rather than adopted.
+- Deliveries are pruned by age under a documented setting.
+- Delivery-outcome metrics stay within the cardinality rules.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0030. |
+| Discharges | the webhooks component of the |
+| Status | done |
+| LinkCtrl | M42 |
+
+---
+
+## LNK-M-0048
+
+**Automation rules**
+
+milestone · 2026-08-04
+
+cites: [LNK-M-0040](#lnk-m-0040)
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+cites: [LNK-M-0017](#lnk-m-0017)
+
+cites: [LNK-M-0047](#lnk-m-0047)
+
+cites: [LNK-D-0010](decisions.md#lnk-d-0010)
+
+- `automation_rules` CRUD with a small documented trigger set: link expired,
+  max-clicks reached (LNK-M-0040), blocked attempt on the workspace
+  (LNK-M-0030).
+- Action set: in-app notification (LNK-M-0017), webhook event (LNK-M-0047),
+  and **archive link**.
+- **No `disabled` action** (decision D10). `archived` and `disabled` produce the
+  identical outcome on the redirect path — `snapshot.go` maps both to
+  `OutcomeNotFound`, deliberately, so a scanner cannot tell them apart. `disabled`
+  would therefore add a fourth status with no behavioural difference and **no
+  restore affordance**, since restore targets archived: automation would create
+  links in a state the UI offers no way out of. Plan.md's record that nothing sets
+  `disabled` stands.
+- Evaluation runs on the leader-elected scheduler, **never the request path**, with
+  bounded per-run cost.
+- `last_fired_at` is maintained. **A rule cannot trigger itself or loop**, tested —
+  an automation that fires a webhook that fires an automation is the failure this
+  names.
+- Structure stays in the existing jsonb columns.
+- Rule changes are audit events.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0017 LNK-M-0040 LNK-M-0047. |
+| Discharges |  |
+| Status | done |
+| LinkCtrl | M43 |
+
+---
+
+## LNK-M-0049
+
+**API keys: rotation automation and scope choice**
+
+milestone · 2026-09-13
+
+cites: [LNK-D-0009](decisions.md#lnk-d-0009)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+##### Rotation (decision D9 — self-rotation with a grace window)
+
+- A key may rotate **only itself**, into a successor with identical-or-narrower
+  scopes and the same workspace binding. It cannot mint an unrelated key, and it
+  cannot widen anything.
+- A bounded grace window during which both secrets verify, after which the
+  predecessor is auto-revoked.
+- **The existing non-delegability test passes unmodified** —
+  `TestNonDelegableScopesCoverKeyManagement` in `internal/auth/apikey_test.go`.
+  `apikeys.*` never becomes a key scope.
+- Rotation events are audited. The grace window and the 30s `last_used_at` flush
+  tolerance are documented.
+- The accepted trade is stated in the docs, not buried: **a leaked key can persist
+  across rotations**, because the leaked credential can rotate itself. The grace
+  window is bounded, which is what keeps that finite.
+- Plan.md's known-limitation row is rewritten to the decided truth.
+
+##### Scope choice
+
+- Key creation offers the workspace-scope choice the `apikey.go` comment promises:
+  bound to one workspace, or org-wide via a NULL `workspace_id`.
+- Permission-gated, and **defaulting to the current single-workspace behaviour** —
+  org-wide is not something to grant by default, which is what the comment already
+  says.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0016. |
+| Discharges | the known limitation *API keys |
+| Status | done |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M44 |
+
+---
+
+## LNK-M-0050
+
+**`M44.5`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-07-31
+
+LinkCtrl cites `M44.5` 4 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M44.5 |
+
+---
+
+## LNK-M-0051
+
+**Pre-release adversarial review**
+
+milestone · 2026-09-13
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-M-0049](#lnk-m-0049)
+
+cites: [LNK-M-0036](#lnk-m-0036)
+
+cites: [LNK-M-0014](#lnk-m-0014)
+
+cites: [LNK-M-0052](#lnk-m-0052)
+
+cites: [LNK-M-0042](#lnk-m-0042)
+
+cites: [LNK-M-0074](#lnk-m-0074)
+
+- The whole phase is re-read against its claims, LNK-M-0016 through LNK-M-0049, with LNK-M-0036's
+  findings confirmed as actually fixed rather than assumed.
+- Multi-dimension and adversarially verified, exactly as
+  LNK-M-0036 specifies. Only confirmed findings are reported.
+- **Beyond code, three things are verified live** rather than by test, because
+  Phase 1 learned that reading code against its own intent and *using the product*
+  reach different bugs — its LNK-M-0014 exists entirely because someone stood up a fresh
+  instance and used it:
+  - a fresh instance, set up from scratch, exercising signup / invite / team /
+    workspace / org creation end to end;
+  - an upgrade from 0.1.0 to this build, confirming migrations are additive, the
+    v3 cache key cold-starts without error, and no configuration became silently
+    required;
+  - the redirect SLO re-measured on the final build, not on an intermediate one.
+- Every in-spec finding is fixed; every out-of-spec one lands in
+  deferred-findings.md for the owner review that
+  LNK-M-0052 then acts on.
+- Anything the review changes re-triggers validation from the top, per workflow.md.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0016–LNK-M-0049, and LNK-M-0036 having already |
+| Discharges | nothing on the scope tables; it is the gate |
+| Status | done *(LNK-M-0042's 2026-08-11 reopening is inside this range and is deliberately covered by LNK-M-0074's re-run instead — reopening a released phase's review to read one diff was declined; recorded in decisions.md)* |
+| Dated | on import: nothing dates it |
+| LinkCtrl | M44.9 |
+
+---
+
+## LNK-M-0052
+
+**Deferred findings, documentation pass, and the 0.2.0 release**
+
+milestone · 2026-07-31
+
+cites: [LNK-F-0001](findings.md#lnk-f-0001)
+
+cites: [LNK-M-0047](#lnk-m-0047)
+
+cites: [LNK-D-0012](decisions.md#lnk-d-0012)
+
+cites: [LNK-D-0002](decisions.md#lnk-d-0002)
+
+cites: [LNK-D-0004](decisions.md#lnk-d-0004)
+
+cites: [LNK-M-0051](#lnk-m-0051)
+
+##### Findings
+
+- Every row in deferred-findings.md has been
+  owner-reviewed. Each approved row is fixed to the milestone-claim standard and
+  sabotage-verified where it adds tests. Unapproved rows are explicitly carried or
+  closed by the owner, and the file reflects that.
+- **F1 is fixed and verified before the tag is pushed, not by pushing it.**
+  Release-notes extraction in `.github/workflows/release.yml` runs `awk` from
+  `## [<version>]` to the next `## [` heading. At 0.1.0 there was no next
+  heading — it was the only release section — so the run continued to end of
+  file and swept up the trailing link-reference definitions into the published
+  body. It is cosmetic: Markdown renders link *definitions* as nothing, which is
+  why it survived a release unnoticed.
+
+  *(Amended 2026-08-06, at the release itself. This bullet read "the newest
+  section is always last in CHANGELOG.md" and "it will recur on every release,
+  because the newest section is last every time". Both are false, and the tree
+  says so: CHANGELOG.md runs newest-first — `[Unreleased]`, `[0.2.0]`,
+  `[0.1.0]` — so the newest section is at the **top** and the link-reference
+  block at the bottom is reachable only when extracting the **oldest** one. That
+  is exactly the shape 0.1.0 had, as the only release, and it is why the bug bit
+  then. From 0.2.0 on, `## [0.1.0]` sits below the newest section and the
+  `## ` exit fires first, so **F1 cannot recur** and [W29's
+  link-reference exit is dormant insurance rather than the load-bearing fix. A
+  fact, not an assertion: what this bullet requires — verify before tagging —
+  is unchanged, and the verification below still ran. See decisions.md.)*
+
+  This is the one finding that cannot be scheduled anywhere but here, and the
+  reason is a trap rather than a preference: the extraction only executes inside
+  the release workflow, after a tag exists. A fix confirmed by releasing is
+  confirmed once 0.2.0's notes are already public and the tag is immutable. So
+  the check is the `awk` run directly against CHANGELOG.md **as it will be at
+  0.2.0**, with the 0.2.0 section written and the reference block in place,
+  asserting that the extracted body ends at the last prose line and carries no
+  `[…]: https://…` definitions. That happens in the documentation pass below,
+  while the CHANGELOG is being written and before anything is tagged.
+
+##### The long-promised document
+
+- `docs/data-model.md` exists at last — the ERD and per-entity implementation
+  status that both Plan.md and the `00600` migration header have pointed at since
+  Phase 1.
+
+##### Comment truth
+
+Every "Phase 2" promise this plan deliberately did not build is updated, so no
+comment describes unscheduled work as scheduled:
+
+- The broker-backed recorder note in `cmd/linkctrl/recorder.go` — the analytics
+  recorder keeps its in-process queue; Redis Streams stays an unexercised upgrade
+  path (LNK-M-0047 puts webhook delivery on Postgres instead).
+- The `visitors` / `click_events.is_first_visit` new-versus-returning comments in
+  `internal/analytics/ingest.go` and `internal/store/migrations/00400_analytics.sql`
+  (decision D12: they stay dormant). Both stay under partition maintenance and
+  retention, so the day something writes to them the guarantees already apply.
+
+##### Documentation pass
+
+The full workflow.md pass, on every file and not only the ones this phase touched:
+
+- Plan.md scope tables, build status, milestone rows and known limitations true as
+  of now — the pub/sub, shared-limit and rotation rows rewritten or removed.
+- **README's "Not built yet" section reconciled.** It currently lists folders,
+  custom domains, QR codes, audit-log behaviour, password/one-time links and the
+  signup page as unbuilt. Every one of those ships in this phase, so the section
+  is false by LNK-M-0052 and has to be rewritten to what is *still* true — the D2 cookies
+  refusal, the D12 dormant `visitors` split, the per-instance 404-probe limiter,
+  and whatever the deferred-findings queue leaves open. The README status line
+  moves from "released as 0.1.0" to 0.2.0 at the same time. Deleting the section
+  is not an option: a release with no honest limitations list is the thing that
+  section exists to prevent.
+- CHANGELOG (with limitations), configuration, usage, operations, deployment,
+  CLI, SECURITY all verified against actual behaviour.
+- decisions.md appended, never edited — and its index at the top extended with
+  this phase's entries.
+- `scripts/check-links.sh` passes, as it must at every commit.
+- **The always-read contract's growth is judged, not just regenerated.**
+  `make doc-cost` is run, and the phase's growth in the files read on every task
+  is either defended or paid for by trimming. It is a real number:
+  `phase-loop.md` grew from 16725 to 21941 bytes on 2026-07-31 alone — two new
+  rules, nothing removed — and its realized cost fell to 0.39 of the file, which
+  says the reader skims it. Regenerating the file records the number; this bullet
+  is the decision the number exists to force.
+
+##### Release
+
+- `make release-check VERSION=v0.2.0`, `make check`, `make test-integration` all
+  green; live verification against a force-recreated compose stack.
+- **Tagged 0.2.0** (decision D4). 1.0.0 stays a later phase's promise, and the
+  CHANGELOG's "pre-1.0 while Phase 2 is outstanding" wording is updated to say what
+  is now outstanding instead.
+
+| Field | Value |
+| --- | --- |
+| Depends on | every milestone, and LNK-M-0051 having run to completion. |
+| Discharges | the phase-end process obligations in |
+| Status | done |
+| LinkCtrl | M45 |
+
+---
+
+## LNK-M-0053
+
+**The shell, the navigation, and the links list**
+
+milestone · 2026-08-02
+
+cites: [LNK-M-0022](#lnk-m-0022)
+
+cites: [LNK-F-0006](findings.md#lnk-f-0006)
+
+cites: [LNK-F-0007](findings.md#lnk-f-0007)
+
+cites: [LNK-D-0103](decisions.md#lnk-d-0103)
+
+cites: [LNK-M-0020](#lnk-m-0020)
+
+cites: [LNK-F-0172](findings.md#lnk-f-0172)
+
+cites: [LNK-M-0066](#lnk-m-0066)
+
+cites: [LNK-M-0056](#lnk-m-0056)
+
+##### You can always tell where you are
+
+- **The current workspace and its organization are named in the header at every
+  membership count, including one.** Today `workspace_switch`
+  (`partials/nav.html:37-50`) is guarded by `{{if gt (len .Workspaces) 1}}` and
+  renders *nothing* below two — so on a single-membership instance the shell
+  names neither. A test asserts the header names both with exactly one
+  membership, which is the case that renders nothing today.
+- The LNK-M-0022 decision that produced that guard is **honoured, not reversed**: *"a
+  control that cannot do anything"* stays absent. What replaces it is a label,
+  not a dropdown with one entry. The decision was about the control; the gap was
+  always the label, and the candidate row already said so.
+- The switcher offers the workspaces you can move to. Whether the current one
+  remains a selected option or is removed from the list is decided in this
+  milestone and recorded — **and task 9 is the criterion**, not tidiness. The
+  owner asked for the current workspace to be removed from the switcher *and*
+  could not otherwise determine which workspace they were in; the selected
+  option is the only place it appears today, so removing it without adding the
+  label first makes task 9 impossible rather than merely hard.
+
+##### The top-level destinations are re-decided rather than assumed
+
+- Today the nav holds Dashboard, Links, API keys — exactly three by F6 and F7,
+  asserted by `TestTopLevelNavHoldsThreeDestinations`
+  (`internal/ui/header_test.go:107`). The owner looked for API keys in the
+  identity menu first.
+- The destination set is re-derived against that evidence. If it changes, F6 and
+  F7's outcome is **amended with a reason and the test is updated to the new
+  count** — never deleted. If it does not change, the milestone says why the
+  evidence was not enough, because *we looked and kept it* and *we never looked*
+  are different answers.
+- Campaigns and Folders are reachable today only as two text links at the top of
+  the links page (`pages/links.html:9-10`), which the owner had *"not even
+  noticed … existed until now"*. They become navigation of the links area
+  proper. The comment at `pages/links.html:4-7` that explains the current
+  placement is updated to describe whatever replaces it — a comment left
+  defending a layout that no longer exists is the failure this project keeps
+  finding.
+
+##### The links list stops trapping the first click
+
+- **The search input is the first interactive element on the page.** Today the
+  *Create a link* form (`pages/links.html:17-56`) sits above the filter bar
+  (`:58-123`), so the first text input is the destination URL box — and the
+  owner *"accidentally clicked on the create a link destination URL box instead
+  of the search box a few times"*. That is a structural trap, not a slip.
+- Creating a link stays reachable in one action from this page. Demoting it must
+  not mean burying it; this milestone is not permitted to fix one complaint by
+  causing the other.
+- **The filter bar becomes one or two controls plus one that holds the rest**,
+  which is the owner's own prescription: *"only leave 1-2 hot controls on the
+  page and add a filter control that displays all the filter controls including
+  the hot ones."* Six exist today — search, status, folder, campaign, domain,
+  sort — and the concern is about the seventh.
+- Which two are hot is decided from what the tasks reached for, and recorded.
+- The `<noscript>` submit (`pages/links.html:122`) keeps working. **Not because
+  the dashboard degrades without JavaScript — D103
+  answered that the other way on 2026-08-05: it requires JavaScript, and that is
+  written down.** The reason is narrower and survives D103: that fallback exists
+  today on this page, and a milestone whose subject is decluttering has no
+  business removing a capability while it is moving controls around. Taking it
+  away is a decision to put separately, not a side effect of a filter redesign.
+  *(Corrected 2026-08-07, from review. This bullet asserted the opposite of D103
+  as its justification.)*
+
+##### Nothing scrolls sideways
+
+- At 360px the shell does not scroll horizontally. Today it does: *"page needs
+  to be scrolled to the side to see anything past half of the workspace
+  switcher."*
+- Enforced by a scan in LNK-M-0020's idiom rather than by looking: every
+  `<table>` and every `<pre>` is inside a container that scrolls on its own,
+  asserted over **every rendered page** so a page added later cannot reintroduce
+  it. **What that leaves unenforced is stated rather than implied**: the header
+  bar, which has its own assertion in
+  `TestTheHeaderCannotPushThePageSideways`, and everything else that can exceed
+  the viewport without saying so in its markup — a flex row of six controls, an
+  unbroken URL in a table cell, a fixed-width SVG. None of those is
+  distinguishable from markup that is fine, which is why the scan does not claim
+  them. *(Amended 2026-08-08, on this milestone's reopening —
+  F172, found by LNK-M-0066. It read "any
+  element that can exceed the viewport — tables first — is inside a container
+  that scrolls on its own, asserted across every page template". The scan checks
+  two tags, over rendered pages rather than template sources, and
+  `internal/ui/overflow_test.go:21-28` had said so since the day it landed while
+  citing this milestone's own Risks section as licensing the narrowing. The
+  narrowing was written into the test and not into the bullet, which is the one
+  direction that section forbids. See decisions.md.)*
+- **This is the shell, not the mobile navigation rework**, which stays parked
+  in Plan.md's *Not in Phase 2* with its reason. A nav that reflows for a phone
+  is a bigger thing than a shell that does not overflow one, and conflating them
+  is how this milestone becomes two.
+
+##### Behaviour does not change
+
+The same falsifiable claim LNK-M-0056 makes, for the same reason: **every
+existing integration test touching these pages passes unmodified.** Routes, form
+field names and query parameters are unchanged; the OpenAPI document is
+untouched. A test that needs changing means a behaviour change, which is either
+reverted or justified in the commit.
+
+##### Deliberately not done
+
+- **No new component framework.** `ui` stays stdlib-only — no Node, no CDN, CSP
+  unchanged. The inherited rule, restated because a shell rewrite is exactly
+  where the argument for one gets made.
+- **No per-page rework.** Members, domains, folders and notifications keep their
+  current pages. They came back irritating and they are not in this milestone.
+- **No new capability anywhere.** Orientation and ordering only.
+
+##### Demo
+
+Nothing new to seed; the demo already has two workspaces, which is what makes
+the switcher and the header label visible at all. `demoCoverage()` is unchanged,
+stated rather than omitted.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. It is the phase's first milestone, and every other |
+| Discharges | the *workspace selector should always render* candidate row |
+| Status | done |
+| LinkCtrl | M46 |
+
+---
+
+## LNK-M-0054
+
+**A browser an agent can drive, and a test that outlives it**
+
+milestone · 2026-08-11
+
+cites: [LNK-F-0206](findings.md#lnk-f-0206)
+
+cites: [LNK-M-0056](#lnk-m-0056)
+
+##### The CLI is installed, pinned, and reachable
+
+- `@playwright/cli` is pinned exactly in a tracked manifest with a tracked
+  lockfile, in the idiom `tools/render-verify/package.json` already uses and for
+  the reason its README gives — *so somebody else can run the same check and get
+  the same answer*.
+- **Its engine revision is reconciled with `tools/render-verify`'s**, or the
+  divergence is recorded with its cost. Measured 2026-08-11: the CLI at 0.1.18
+  bundles `playwright-core` 1.63.0-alpha and asked for `firefox-1539` against the
+  `firefox-1538` that 1.62.1 installed, and installing its chromium took the
+  engine cache from **1.2G to 1.9G**. Two pinned browser stacks in one tree needs
+  an argument or an alignment; this bullet is where it is made.
+- A config file names the **bundled chromium**, because the CLI defaults to
+  branded Chrome at `/opt/google/chrome/chrome`, which is not on this machine and
+  is not among `--browser`'s values. The working form is
+  `{"browser":{"browserName":"chromium"}}` passed to `open --config=`; the session
+  persists and later commands take no flag.
+- A `make` target invokes it, and **that target downloads nothing silently** —
+  `Makefile:242` states that refusal for `verify-render` and `:254` is the
+  mechanism; the same applies here.
+
+##### F206 first, so the cheapest assertion is available
+
+- **htmx's CSP violation is fixed here, not in LNK-M-0056.** htmx 2.0.9 injects a
+  `.htmx-indicator` stylesheet at load and `style-src 'self'` blocks it, on every
+  page in every browser. One `<meta name="htmx-config"
+  content='{"includeIndicatorStyles":false}'>` in the layout — CSP-safe, being a
+  meta tag rather than inline script.
+- It is here because **this milestone's kept spec names a clean console as one of
+  the two things it may assert**, and a permanent error makes that assertion
+  impossible. The owner approved the fix into LNK-M-0056; the plan review found that LNK-M-0056
+  runs *after* this milestone, so the console would not have been clean for the
+  spec that needs it. The fix moves; the decision does not.
+- Widening the CSP is not available: the inherited rule forbids `unsafe-` waivers
+  and `test/integration/web_test.go:593-594` asserts the main policy carries none.
+
+##### One kept spec, proving the loop terminates
+
+- **At least one Playwright spec is committed and runs**, asserting something no
+  template scan can: a rendered geometry or a clean console on a real page. The
+  exploration that produced it is not the deliverable — *the spec is*, and that is
+  the half that three recorded discards skipped.
+- It reads through `--reporter=json` filtered to failures, so a green run costs
+  the agent nothing and a red one costs the assertion.
+- **Sabotage-verified**: break what it protects, confirm red, restore by
+  counter-edit. Never `git checkout`.
+- It drives a **real instance**, not a committed copy of the markup —
+  `tools/render-verify`'s README already refuses the latter in as many words.
+  Which instance, and whether an ephemeral one is brought up, is settled by the
+  bullet below.
+
+##### The traps are handled, not discovered
+
+Each was found by driving the running test instance on 2026-08-11 and each is
+recorded so the next reader does not rediscover it:
+
+- **Origin CSRF does not bite.** `http.NewCrossOriginProtection` refuses a form
+  POST without a matching `Origin`; a browser navigating same-origin satisfies it.
+  Proved: the sign-in POST returned **401, not 403** — evaluated, not refused. No
+  exemption is needed and none is added.
+- **Element refs die on every htmx swap.** Observed: `e11` became `f1e12` after a
+  swap and a fill against the old ref went nowhere silently. The spec
+  re-snapshots after a swap or targets by role and name.
+- **The driver is classified as a bot by the product itself.**
+  `internal/analytics/useragent.go:45` lists `playwright`, `puppeteer`,
+  `selenium`, `headlesschrome`. This matters only on the redirect path; a spec
+  touching it says how it handles that.
+- **`make css` must have run.** `app.css` is generated and gitignored, so an
+  unstyled page is the default failure. The target checks or says so.
+
+##### The obligation is written into the contract
+
+- **`X.9` reviews carry a browser check**, stated in
+  phase-loop.md's review section — owner-set 2026-08-11, over
+  four CI shapes that were offered and declined. A review is a milestone the
+  orchestrator runs, so this needs nothing from `.github/workflows/`, which this
+  repository cannot push.
+- The wording says **what the check must answer**, not which commands to type, so
+  it survives the tool being replaced.
+- A `workflow-changes.md` *Made* row, and a decisions.md entry with **no
+  milestone number** — a contract change is not a milestone's decision.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. It adds tooling and touches no product code, which is |
+| Discharges | no scope row and no known limitation. **Owner-added scope, |
+| Status | done |
+| LinkCtrl | M46.5 |
+
+---
+
+## LNK-M-0055
+
+**The workspace pair reads as one control**
+
+milestone · 2026-08-11
+
+cites: [LNK-M-0053](#lnk-m-0053)
+
+cites: [LNK-M-0022](#lnk-m-0022)
+
+cites: [LNK-D-0036](decisions.md#lnk-d-0036)
+
+cites: [LNK-M-0054](#lnk-m-0054)
+
+cites: [LNK-M-0020](#lnk-m-0020)
+
+cites: [LNK-F-0204](findings.md#lnk-f-0204)
+
+##### One boundary, two elements, nothing restructured
+
+- `workspace_label` and `workspace_switch` render inside **one bordered
+  container** that reads as a single control: label, a hairline divider, then
+  the select. Structurally the pair survives — still the label `<p>` and the
+  form-wrapped `<select>`, side by side — because shape (b)'s whole argument
+  was *changes nothing structural*, and the three recorded owner answers it
+  preserves are the point:
+  - the current workspace is **never an option** in the switcher (blind task 9,
+    LNK-M-0053's comment at `nav.html:41-56` at `ddd5798`);
+  - the switcher still renders **only above one membership** (LNK-M-0022 — no control
+    that can do nothing);
+  - the label still names the workspace **whenever one is current**.
+- **The select's closed face is the chevron alone.** Owner-amended from B1 as
+  drawn: no "Switch" text, no placeholder text visible when closed. Its
+  accessible name stays *Switch workspace* — `aria-label` already carries it —
+  and the opened list keeps its order — disabled placeholder first, then every
+  workspace that is not current — with the placeholder's **label empty**,
+  because the chevron-only face forbids it text: a three-engine probe showed
+  `color: transparent` erases the native arrow in Chromium and Firefox, so the
+  empty-labelled placeholder is the only cross-engine mechanism. *(Amended at
+  acceptance, 2026-08-11 — this bullet first said "the opened list is
+  unchanged", which the mechanism this file's own Risks section sanctions
+  cannot satisfy; see decisions.md.)* A sighted reader gets the affordance
+  from the boundary and the arrow; a screen reader loses nothing.
+- **At one membership the container renders with the label alone** — no
+  divider, no select, no dead affordance. The account stays named in the same
+  box, so the shell reads identically whether or not there is anywhere to go.
+- **At zero memberships the container does not render at all.** An account
+  belonging to nothing has no workspace to name (D36) — the label already
+  emits nothing and the switcher already emits nothing, and the container must
+  not survive them as an empty bordered box. Three states, all specified:
+  none, one, several.
+- **Focus stays visible inside the shared boundary.** The select remains the
+  only focusable element of the pair — the label is a `<p>` — and a keyboard
+  user tabbing to it must see focus indicated within the fused control, not
+  suppressed by the shared border. The existing `focus:border-accent` idiom
+  applied to the container or the segment is the expected mechanism; whichever
+  is chosen is visible in every engine at the `X.9` check.
+
+##### Asserted by test, in all three membership states
+
+- A `internal/ui` test renders the nav at **zero**, **one** and **two**
+  memberships and asserts: the shared container present at one and two and
+  **absent at zero** — including the divider, present only at two; the select
+  present only at two; the current workspace never among the options; the
+  label text present at one and two. The existing assertions this design
+  preserves — `workspace_test.go:60-64` (never offers current), `:68-71`
+  (disabled placeholder), `:135` (label present when a workspace is current)
+  and `:150-156` (label **absent** on `organization_new`), cited at `ddd5798`
+  — encode recorded owner answers (blind task 9, LNK-M-0022, D36). **Changing any of
+  them is a prompt**, because it reverses a recorded answer; any other test
+  adjustment is called out and justified in the commit.
+- **A kept browser assertion, in LNK-M-0054's idiom**, asserts what the template
+  test cannot: the select's closed face shows **no visible text** — the
+  chevron alone — and the header does **not overflow a 360px viewport**,
+  which is where the 360px bound below is measured. Extends or sits beside
+  `tools/agent-browser`'s kept spec; sabotage-verified like everything else.
+- A test that passes first try is sabotage-verified: break the thing it
+  protects, confirm red, restore by counter-edit. Never `git checkout`.
+
+##### Behaviour does not change
+
+- Switching still posts `workspace_id` on change through htmx to
+  `/workspace/switch` with the hidden `next`; the handler is untouched. This
+  is a restyle of two template definitions, not a mechanics change.
+- Truncation survives restyling: `min-w-0` and `truncate` on both label
+  halves, the pair repeated in `title`, and the fused control must not push
+  the header past 360px — the constraint that shaped the label in the first
+  place (`nav.html:27-29` at `ddd5798`), measured by the kept browser
+  assertion above.
+- Both themes via the theme tokens; LNK-M-0020's template scan applies
+  unchanged — **and its limit is stated rather than leaned on**: the scan
+  matches raw palette utilities and cannot see a hex colour inside a
+  `background-image` data URI, which is the standard way to draw a chevron on
+  an `appearance-none` select. So the chevron's colour comes from
+  `currentColor` or a theme token, never a literal hex the scan is blind to;
+  and the CSP is `style-src 'self'` with no waivers, so nothing here arrives
+  as an inline `style=` attribute — whatever clips the closed face's text
+  lives in `app.css`.
+
+##### Demo
+
+- **Nothing new to seed.** The demo already shows the pair wherever it shows
+  the shell; the restyle is visible on every page. `demoCoverage()` gains no
+  row. Stated so the omission reads as considered.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0053, which built both halves of the pair, and |
+| Discharges | F204. **Owner-added scope, |
+| Status | done |
+| LinkCtrl | M46.6 |
+
+---
+
+## LNK-M-0056
+
+**The link page, taken apart**
+
+milestone · 2026-08-06
+
+cites: [LNK-M-0020](#lnk-m-0020)
+
+cites: [LNK-M-0058](#lnk-m-0058)
+
+cites: [LNK-M-0059](#lnk-m-0059)
+
+cites: [LNK-M-0053](#lnk-m-0053)
+
+##### The page leads with what somebody came to do
+
+- The destination and the alias are reachable **without scrolling** at a
+  1280×800 viewport, asserted by a test that renders the page and checks the
+  edit control's position rather than by looking at it.
+- Analytics stop being the first thing on a configuration page. Where they go —
+  below, behind a tab, on their own route — is the milestone's to decide and to
+  record; that they no longer sit between the reader and the edit form is not.
+- The eight sections are re-ordered by **how often somebody needs them**, and
+  the ordering is written down with what it was derived from, so a later
+  reader can disagree with the evidence rather than with a preference.
+
+##### The monolith becomes composable, and a test keeps it that way
+
+- The page is decomposed into named partials under
+  `internal/ui/templates/partials/`, in the convention the tree already uses —
+  `links_table`, `breakdown`, `series_chart` and `worldmap` are all already
+  separate files invoked with the `dict` helper.
+- **A template scan asserts the decomposition holds**, in the idiom
+  LNK-M-0020 established when it made raw palette utilities fail the
+  build: `pages/link_detail.html` may not exceed a stated line count, and a
+  section added later goes in a partial or breaks the build. The number is
+  chosen when the decomposition is done and is recorded with its reasoning —
+  enforcement is a mechanism here, not review vigilance.
+- `loadLinkDetail`'s ~220 lines are split along the same seams. A partial whose
+  data is assembled by a quarter of a 250-line function is not decomposed, it is
+  relocated.
+
+##### Behaviour does not change, and that is the falsifiable claim
+
+This is a restructure. The strongest way to say so is a test result rather than
+an intention:
+
+- **Every existing integration test touching the link page passes unmodified.**
+  Form field names, routes, redirect targets and flash behaviour are unchanged.
+- The OpenAPI document is untouched, and the contract test passes without
+  regeneration.
+- If a test does need changing, that is a behaviour change, and it is either
+  reverted or it is called out and justified in the commit. There is no third
+  option where a test is quietly adjusted to match a new page.
+
+##### The one label that changes, because the tasks proved it does not work
+
+`max_clicks` renders as *Click limit (empty = none)*
+(`pages/link_detail.html:211`), with `{{.Link.ClicksConsumed}} used so far.`
+immediately below it at `:217`. In the blind task the owner set a limit and then
+wrote: *"Unsure if done properly as nothing notes whether the field is setting
+for additional clicks or total clicks. Current clicks was 416, was setting the
+field to 50 or 466 correct?"*
+
+The answer is 466 — `MaxClicks` is an absolute limit, and `withBudget`
+(`internal/link/gates.go:167`) fills the consumed count beside it. **Both facts
+were already on the page, adjacent, and still did not compose.** So:
+
+- The control states the total it is setting and what has already been spent
+  against it, in one sentence rather than in two elements a reader has to
+  relate.
+- A test asserts the rendered text names both numbers. The gate's behaviour is
+  **not** changed — `MaxClicks` stays absolute, because changing it would
+  silently redefine every limit already set.
+
+##### Deliberately not done
+
+- **No new component framework, no client-side rendering.** `ui` stays
+  stdlib-only, no Node, no CDN, CSP unchanged — the inherited rule, restated
+  only because a page this size invites the argument that it needs one.
+- **No behaviour, no new capability.** The QR panel's rework is
+  LNK-M-0058; the QR settings vocabulary is LNK-M-0059; everything else on
+  this page keeps doing exactly what it does.
+- **No dark-mode exception.** New markup uses the theme tokens and LNK-M-0020's
+  template scan applies unchanged.
+
+##### Demo
+
+Nothing new to seed — this page already shows every feature the demo has. The
+`demoCoverage()` table is unchanged, which is stated rather than left blank so
+the omission reads as considered.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0053. The edge is hard: this page inherits the shell, |
+| Discharges | the first of the three complaints recorded on 2026-08-06 — the |
+| Status | done |
+| LinkCtrl | M47 |
+
+---
+
+## LNK-M-0057
+
+**What every tab says about itself**
+
+milestone · 2026-08-11
+
+cites: [LNK-F-0211](findings.md#lnk-f-0211)
+
+cites: [LNK-M-0054](#lnk-m-0054)
+
+cites: [LNK-M-0056](#lnk-m-0056)
+
+cites: [LNK-F-0205](findings.md#lnk-f-0205)
+
+##### Every tab carries its state
+
+Owner-set 2026-08-11. State lives **on the tab**, because the badge is then both
+the answer and the way in — you read `Routing 2` and click `Routing 2`.
+
+- Five positions, and **every position draws its chip in both states — the same
+  kind, set or empty** — so configuring a value never adds or removes a chip,
+  the strip does not reflow as a link is configured, and two links compare
+  position by position. Width moves only as a count gains digits. *(Amended at
+  acceptance, 2026-08-11 — the bullet read "every tab holds the same width
+  whether set or empty", which a two-digit count cannot honour without
+  digit-padding nobody chose; the constant chip is the mechanism the sentence
+  bought. See decisions.md.)* *(Amended again at the reopening below,
+  2026-08-11 — it read "Six positions"; the Edit badge went with
+  F211, and five remain.)*
+- **Counts** — QR, Routing, and Analytics — read `0` when empty, in a muted
+  badge rather than no badge. A missing badge and a badge reading zero are
+  different claims and a reader cannot tell them apart. *(Amended at the
+  reopening below, 2026-08-11 — the list read "QR, Routing, Analytics, and the
+  Edit tab's protections"; F211.)*
+- **Edit carries no badge.** It joins Danger as a deliberately bare tab.
+  *(Amended at the reopening below, 2026-08-11 — the bullet read "**Edit
+  carries a count of protections that are on**, out of the five booleans in
+  its form: password, one-time, require-signature, forward-query, forward-path
+  (`link_edit.html:107,120,146,188,197`). Owner-set over leaving it unbadged
+  or splitting a Protection tab out of the form." The owner reversed that
+  answer in use — F211 — and the superseding entry is in decisions.md.)*
+- **Signed** is genuinely binary — `link_signed.html:12` is `{{if .SignedURL}}`
+  with no third state — so it takes a **checkmark** when set and the cross when
+  not. It is the only badge carrying colour, because signed access is a security
+  property worth reading at a glance.
+- **Split** takes the glyph pair below. It is **not** binary: `SplitKinds`
+  (`internal/domain/routing.go:646`) is exactly `weighted` and `sequential`, and
+  `Kind` is `""` when a link has none — three states, counted from the source.
+- **Danger** takes no badge. It has no state; deletability is a permission.
+- The **cross means the section is empty**, not *no*. Written down as that,
+  because it now serves two tabs and a third meaning would make it lie.
+
+##### The glyphs, and the first icon set this product has
+
+- **Unequal shares** for weighted, **equal shares** for sequential: two blocks of
+  different heights against three blocks of the same height, on one baseline.
+  They are one feature in two modes and the difference between the modes is the
+  whole mark, carried twice — by equality and by count — so losing one signal at
+  small size leaves the other.
+- **Four rotation marks were tried and rejected** at badge size before this pair:
+  a single arc read as *refresh*, stops-in-a-row read as the `…` more-options
+  icon, and a ring and a ring-with-stops were not recognisable. Recorded so they
+  are not redrawn. The cause is not the drawing — a 9px glyph carries three or
+  four distinguishable features and *a cycle, through discrete stops, in order*
+  needs more.
+- **Stroke alignment is checked arithmetically, not by eye.** SVG centres a stroke
+  on its path, so the outlined share hung below the filled one until it was inset
+  by half its stroke width. It was wrong in two consecutive drafts and the eye
+  missed it both times; both outer bottoms now compute to the same baseline.
+- Glyphs ship as **inline SVG** inheriting `currentColor` — the CSP is
+  `style-src 'self'` and there is no font or sprite to add. Every icon-only badge
+  carries a `title` and screen-reader text.
+- **They live somewhere deliberate**, not inline in one partial. These four —
+  cross, check, weighted, sequential — are the seed of this product's icon
+  vocabulary, and the next milestone wanting an icon reaches for the same place.
+
+##### The size is measured, not chosen
+
+- **`linkDetailPrefixPixelBudget = 160`** (`internal/ui/link_detail_test.go:154`)
+  and the QR thumbnail already spends 96, leaving **64** for every inline `<svg>`
+  before `id="url"`. Arbitrary utilities are refused (`:103-105`), so the real
+  choices are **`h-2.5` (10px)** and **`h-3` (12px)** — not the 9 and 11 the
+  wireframes drew.
+- Which one is answered by **LNK-M-0054's browser check, in three
+  engines**, and the answer is recorded. Judging a glyph's legibility from a
+  mockup is the evidence LNK-M-0056 shipped on the first time.
+- **A kept spec** asserts the chosen size renders and the strip does not wrap at
+  360px. Sabotage-verified.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0056, hard — there is no strip to badge until it exists — |
+| Discharges | the second half of F205. LNK-M-0056 answers |
+| Status | done |
+| LinkCtrl | M47.5 |
+
+---
+
+## LNK-M-0058
+
+**On-demand panels, and what stops being buried**
+
+milestone · 2026-08-06
+
+cites: [LNK-D-0103](decisions.md#lnk-d-0103)
+
+cites: [LNK-F-0021](findings.md#lnk-f-0021)
+
+cites: [LNK-M-0063](#lnk-m-0063)
+
+cites: [LNK-F-0224](findings.md#lnk-f-0224)
+
+cites: [LNK-M-0066](#lnk-m-0066)
+
+cites: [LNK-M-0056](#lnk-m-0056)
+
+##### The panel, and the rule that stops it becoming two patterns
+
+- One mechanism, used by **at least two** surfaces in this milestone: the link
+  page's QR area and the blocked-destinations reviewer list. A pattern with one
+  caller is a component with extra steps. *(Superseded 2026-08-11 by the
+  reopening below: the QR popup folded into the QR tab, so the mechanism keeps
+  **one** popup caller — the reviewer list. The "at least two" floor was this
+  milestone's evidence that it was building a pattern, and it fell with the QR
+  popup; "defined once" is what survives, asserted over however many callers
+  exist. The QR contents keep their page form at `/links/{id}/qr`.)*
+- **Its contents stay reachable without JavaScript.** The panel is a route that
+  renders as an ordinary page when opened directly, and the popup is what the
+  browser does with it when it can. This is stated as a requirement because the
+  shell is already inconsistent about it — `pages/links.html:65` has a
+  `<noscript>` submit, and the workspace switcher deliberately does not
+  (D103/F21, `partials/nav.html:41-95`) — and a milestone that adds a third
+  answer makes the inconsistency worse. Asserted by a test that fetches the
+  route directly and gets a complete page.
+- No modal framework, no CDN, no Node. `ui` stays stdlib-only and the CSP is
+  unchanged; htmx is what is already in the tree.
+
+##### The QR code stops being a scroll
+
+- A small rendered code appears in the link page's upper region, and opening it
+  gives the settings and the download. The owner's own description, built as
+  described. *(Superseded 2026-08-11 by the reopening below: opening it now
+  opens the **QR tab**, where the settings and the download render in flow.
+  The pop-up in the owner's description predated the tabs that un-buried the
+  section, and the owner's verdict on it was that everything it held belongs
+  on the tab.)*
+- **The download control gets an icon and keeps its text.** The note was
+  *"the download button being text instead of an icon"* — the fix is an icon
+  beside the label, not an icon replacing it, because an unlabelled icon is a
+  guess for anybody who does not already know what it does.
+  *(**Superseded 2026-08-14 at LNK-M-0063 — by the owner, not by a
+  build.** The QR tab's download controls are now one unlabelled icon per code
+  opening a menu, which is the opposite of what this bullet argued and is
+  F224(d) in the owner's own words: *"the download
+  buttons in the QR list 'PNG' and 'SVG' should be replaced with a single button
+  using the download icon that provides a dropdown to choose."* The reasoning
+  above is not withdrawn — an unlabelled icon **is** a guess for a reader who
+  does not know it — and what answers it is that the icon carries an accessible
+  name and sits in a row whose other controls are also icons, so the guess is
+  made once for the tab rather than once for the button. This bullet's scope was
+  the QR tab's download pair and nothing else, so nothing outside that tab is
+  affected. Marked rather than reopened: LNK-M-0058 built what it claimed, and a later
+  milestone was told to change it.)*
+- The retrieval path is measured against the blind task that produced it: task 1
+  took ~26 seconds, and the milestone records the new figure the same way rather
+  than asserting an improvement. LNK-M-0066 re-runs the task.
+
+##### The reviewer list moves
+
+- Managing dispute reviewers leaves the blocked-destinations page body and moves
+  into the panel. The list stays visible in summary; changing it is the part
+  that is uncommon.
+- Permissions are unchanged. This is placement, and a panel that quietly widened
+  who may edit a reviewer set would be a permission change wearing a layout
+  milestone's clothes.
+
+##### Notifications lead somewhere
+
+Folded in here rather than given their own milestone, and the reason is that
+they are the same complaint: a notification you cannot act on is buried in
+exactly the way a QR code eight screens down is.
+
+- **Clicking a notification navigates to the thing it is about, and marks it
+  read.** The mapping is one function from `kind` plus `data` to a URL, with a
+  test per kind.
+- **No schema change**, asserted by a test that this milestone adds no
+  migration. `notifications.data` is already a jsonb carrying the subject's
+  identifier — the demo's rows hold `dispute_id`, `rule_id` and `hostname` — and
+  `read_at` is already nullable (`00600_phase2_dormant.sql:116-126`), so
+  marking one unread is setting a column back to `NULL`.
+- **Every kind is enumerated**, and a kind with no sensible destination says so
+  explicitly rather than falling through a default. An unknown kind lands on the
+  notifications list rather than erroring, and a test asserts every declared kind
+  constant has a mapping — so a kind added in a later phase breaks the build
+  instead of silently becoming unclickable.
+- A read notification can be marked unread. The owner's note is the whole
+  justification: *"No way to mark a read message as unread if it was
+  accidentally marked as read"*, and the accident is caused by the click-through
+  this milestone is adding.
+
+##### Deliberately not done
+
+- **Folders, organization switching, and API key scope grouping.** All three
+  came out of round two, none has a defect behind it, and the owner chose on
+  2026-08-07 to keep the phase at fifteen rather than buy them a slot. They are
+  Phase 4 candidates with their reasons recorded, not forgotten asks.
+- **No new notification kinds, no severity, no grouping.** Severity and grouping
+  are a schema change and stay on Plan.md's *Not in Phase 2* row with their
+  reason.
+- **No bulk actions on notifications** beyond the *mark all read* that exists.
+
+##### Demo
+
+The demo already seeds four notification kinds — `automation.fired`,
+`dispute.filed`, `dispute.decided`, `invite.accepted` — so the click-through
+has something to exercise without new seeding. `demoCoverage()` gains a row only
+if a kind ends up with no seeded example; whether it does is settled during the
+work rather than guessed here, and the answer is written down either way.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0056. The edge is hard: the panel pattern is applied to |
+| Discharges | the second of the three complaints recorded on 2026-08-06 — |
+| Status | done |
+| LinkCtrl | M48 |
+
+---
+
+## LNK-M-0059
+
+**QR codes sized in pixels, and a PNG to download**
+
+milestone · 2026-08-07
+
+cites: [LNK-D-0182](decisions.md#lnk-d-0182)
+
+cites: [LNK-D-0179](decisions.md#lnk-d-0179)
+
+cites: [LNK-D-0011](decisions.md#lnk-d-0011)
+
+cites: [LNK-D-0072](decisions.md#lnk-d-0072)
+
+cites: [LNK-M-0062](#lnk-m-0062)
+
+cites: [LNK-D-0184](decisions.md#lnk-d-0184)
+
+cites: [LNK-D-0187](decisions.md#lnk-d-0187)
+
+cites: [LNK-F-0232](findings.md#lnk-f-0232)
+
+cites: [LNK-F-0223](findings.md#lnk-f-0223)
+
+cites: [LNK-M-0046](#lnk-m-0046)
+
+cites: [LNK-M-0058](#lnk-m-0058)
+
+##### The vocabulary
+
+- The form's size control is **one number: output size in pixels.** Quiet zone
+  and module size leave the interface entirely; they stay as the arithmetic
+  behind it.
+- Colours stay — foreground and background are a choice a person makes and can
+  see the result of.
+- **Error-correction level leaves the UI and stays in the API.** It is a
+  scannability tradeoff that a dashboard user has no basis to make and a script
+  might. The split is deliberate and is the milestone's answer to *"the rest
+  handled in the background"*: background means chosen well, not made
+  unreachable.
+- `qr.Style` keeps `Margin`, `Scale` and `Level` as the generator's parameters.
+  The change is what the *surface* asks for, not what the renderer accepts.
+
+##### The size is snapped, and the interface says so
+
+> *(**This whole subsection is superseded**, 2026-08-13, at the second
+> reopening — D182. Nothing snaps: the requested size is exact at every value,
+> and there is no reported pair because there is no discrepancy to report. It is
+> left standing rather than rewritten because it is the record of what shipped
+> and of what the owner then rejected, and because the paragraph immediately
+> below is the sharpest thing in this file — it files the answer that eventually
+> shipped under *rejected*, and the reason it gives is **not** the reason D182
+> found. Marked once here rather than six times inside; every sentence below is
+> past tense as of this note.)*
+
+A QR grid is a whole number of modules, so an arbitrary pixel size does not
+divide evenly — 300px over 29 modules is 10.34 pixels per module. This milestone
+**snaps to the nearest size that keeps modules whole** and reports the size it
+actually produced beside the one that was asked for.
+
+The alternative — honour the requested size exactly and let modules land on
+fractional boundaries — is recorded and rejected here: it makes the SVG and the
+PNG round differently, which is precisely the claim below that must hold.
+
+> *(**And that rejection was right about its own alternative and wrong about the
+> space.** Fractional module boundaries would indeed make the two encoders
+> disagree, and D182 does not do that: the **symbol** still lands on whole
+> modules and the two encoders still round identically. What D182 changes is the
+> **quiet zone**, which is white space and needs no grid at all — a third option
+> neither this paragraph nor D179 considered. `size = modules·scale +
+> 2·margin_px`. The claim below still holds and is still asserted.)*
+
+- The snap is asserted by test across the module counts the content lengths in
+  this product actually produce.
+- The quiet zone stays at or above the 4 modules the specification requires. It
+  is derived, never below the floor, and a test asserts the floor across the
+  size range. *(Amended 2026-08-13 at the second reopening: the floor is **three**
+  modules since D182, which is below what the specification requires and is
+  measured through `make verify-scan` rather than assumed. `MinMarginModules = 3`
+  is what a test now asserts across the range.)*
+
+##### The claim that the two outputs match
+
+**A test asserts the SVG and the PNG describe the same image at the same
+requested size.** This is the owner's expectation stated as a mechanism:
+
+- Both are generated from the same module matrix, the same snapped
+  pixels-per-module and the same origin offset — one arithmetic, two encoders,
+  asserted by construction rather than by eye.
+- The test parses the SVG's rects and, for every module in the grid, checks that
+  the pixel at that module's centre in the PNG carries the colour the SVG's
+  coverage implies. Foreground and background both. It fails if either encoder
+  drifts.
+- The SVG is emitted with explicit pixel `width` and `height` rather than
+  relying on a viewBox alone, so *rendered at the set pixel size* is what a
+  browser actually does with it.
+
+Stating the limit as well: this asserts the **module geometry** matches. It does
+not assert a rasteriser's antialiasing of the SVG is byte-identical to the PNG,
+which is not true of any two rasterisers and is not what was asked for.
+
+##### PNG, and why D11 reverses cleanly
+
+- `image/png` from the standard library. **No new module dependency**, asserted
+  by a test on `go.mod`'s require block.
+- D11 said SVG only *because no image encoder was in the dependency set and
+  nothing should rasterise on a request*.
+  D72
+  sharpened it, rejecting a QR library for pulling `image/png` and
+  `compress/zlib` in *"for a PNG path this product will never call"*. The
+  premise of both is that the path is never called. This milestone makes it
+  called, on request, by a person who asked for a file — so the reversal honours
+  the reasoning rather than overriding it. The package doc at
+  `internal/qr/qr.go:3-5` already anticipated it: *"A PNG download, if it is ever
+  wanted, is an additive change here and nowhere else."*
+- **Rasterising on a request gets a bound, because that is what D11 was
+  protecting.** Output size is capped, the cap is stated as a number with the
+  resulting maximum allocation, and a request above it is refused rather than
+  clamped. The QR endpoints are dashboard and API surfaces, not the redirect
+  path, so no SLO re-verification is owed — said explicitly so the omission is
+  visible.
+- The PNG endpoint carries the same caching treatment the SVG has
+  (`internal/httpx/api_qr.go:33`), and a download disposition, because a file
+  somebody can save is the point.
+
+##### Stored styles keep working
+
+`qr_codes.style` is a jsonb blob holding a marshalled `qr.Style`
+(`00600_phase2_dormant.sql:60`, `internal/link/qr.go:118`). Rows written before
+this milestone carry `Margin` and `Scale` and no size.
+
+- They are read forward: an existing style resolves to the output size its
+  margin and scale already produce, so no stored code changes appearance.
+  Asserted by a test that writes a pre-milestone style, reads it after, and
+  compares the rendered bytes.
+  *(**Superseded, 2026-08-13, at LNK-M-0062's second reopening — not
+  falsified by a defect.** D184 makes the
+  error-correction level a rule and D187 makes it a floor
+  under every code, so a stored style that drew at `M` now draws at the
+  strongest free level: the same module count, the same width to the pixel, a
+  different arrangement of modules — which is what more correction is. A style
+  naming `L` changes size as well, and that is F232.
+  The owner approved the appearance change in as many words when they scheduled
+  F223 — *"the old QR should still resolve as
+  long as the link stays the same so a change in the new code shouldn't be an
+  issue"* — and again by choosing the floor over the build's recommendation, so
+  this is a claim overtaken by a later decision rather than a milestone to
+  reopen. What survives unchanged is the half this bullet exists for: no
+  migration touches the blob, and a style without a size is still drawn by the
+  margin and scale it carries.)*
+- **The demo already carries a stored style, so it exercises this path on the
+  day the milestone lands.** `cmd/lctl/demo_phase2.go` seeds one
+  (`Level: qr.LevelQ, Margin: 4, Scale: 10`), and `demoCoverage()`'s LNK-M-0046 row *A
+  QR code somebody has styled* (`cmd/lctl/demo_coverage_test.go:522`) requires
+  it. *(Corrected 2026-08-07, from review. This bullet read "The demo has no
+  stored QR styles today — every panel renders at defaults", which was drawn
+  from a query over the twelve oldest links and generalised to the table. The
+  demo holds two `qr_codes` rows. The correction matters: the read-forward
+  behaviour is demonstrated rather than only asserted, and that is a stronger
+  position than the one the file claimed.)*
+
+##### Demo
+
+**No new `demoCoverage()` row.** The LNK-M-0046 row above already requires a styled
+code and is bounded `Min: 1, Max: 1`, so a second row asserting the same table
+would either duplicate it or contradict its ceiling. What this milestone changes
+is the *seeded style itself*: it carries an explicit output size, so the demo
+shows a sized code and a working PNG download rather than a default nobody
+chose. If that turns out to need its own row, it amends the LNK-M-0046 row rather than
+sitting beside it — and the milestone records which it did.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0058, and the edge is an *ordering preference* that is |
+| Discharges | Plan.md's *Not in Phase 2* row **A PNG QR code**, and the third |
+| Status | done |
+| LinkCtrl | M49 |
+
+---
+
+## LNK-M-0060
+
+**More than one QR code per link, told apart in the analytics**
+
+milestone · 2026-08-12
+
+cites: [LNK-D-0073](decisions.md#lnk-d-0073)
+
+cites: [LNK-M-0042](#lnk-m-0042)
+
+cites: [LNK-M-0072](#lnk-m-0072)
+
+cites: [LNK-M-0074](#lnk-m-0074)
+
+cites: [LNK-M-0058](#lnk-m-0058)
+
+cites: [LNK-M-0040](#lnk-m-0040)
+
+cites: [LNK-M-0059](#lnk-m-0059)
+
+##### Several codes, each with an identity
+
+- `qr_codes_link_key` (`02700:48`) is dropped and the non-unique index returns,
+  in migration `037xx`. Every existing row is already unique per link, so no
+  data changes.
+- Each code carries a short, workspace-visible **label** and a stable
+  **identifier that appears in its payload**. The label is what a person reads
+  in the interface; the identifier is what the redirect sees.
+- A per-workspace cap on codes per link, in the idiom of
+  `domain.MaxCampaignsPerWorkspace`. A link with a thousand codes is a link
+  whose analytics page cannot be drawn.
+- Deleting a link cascades its codes, which the existing foreign key already
+  does (`00600:57`).
+
+##### The payload, and the closed vocabulary it must not break
+
+`internal/domain/attribution.go` defines `ClickSourceParam = "src"` (`:36`),
+`ClickSourceQR = "qr"` (`:39`) and a **closed vocabulary** at `:44`. A code
+identity cannot ride inside `src` without opening that vocabulary to
+user-controlled values, which is the property it was closed to have.
+
+- The identity therefore travels in **its own parameter**, alongside
+  `src=qr` rather than inside it. The vocabulary stays closed and a test asserts
+  it still rejects everything outside the enumerated set.
+- The parameter's value is validated against the codes that exist for the link
+  resolved. An unrecognised value is recorded as *no code* rather than stored —
+  otherwise the parameter is an open write surface reachable by anybody who can
+  read a URL.
+- `link.QRContent` (`internal/link/qr.go:718-730`) is what builds it, so the
+  encoded payload and the redirect's expectation cannot drift apart.
+
+##### Counts, without the column D73 removed
+
+`02700:34` dropped `qr_codes.scan_count` because a write per scan does not fit a
+20ms redirect budget and because a scan is already an ordinary click carrying
+`?src=qr`. **That reasoning is not reversed.**
+
+- Per-code counts are read from `click_events` through the existing analytics
+  path, the same way every other dimension is. No counter column returns.
+- The read is bounded the way the other dimension reads are, and the milestone
+  states which existing query shape it follows rather than inventing one.
+- **Campaign analytics stays deferred.** A per-campaign rollup was kept out of
+  this phase because it is a new pass over `click_events` grouped by a mostly-null
+  column, stacked on the job LNK-M-0042 was rewritten to fit. Per-code counts are a
+  filter on an existing dimension, not a new rollup, and the milestone must stay
+  on the right side of that line — if it turns out to need a rollup, that is a
+  finding and a prompt, not a quiet addition.
+
+##### The redirect path, and what it owes
+
+Parsing a second query parameter happens on the hot path, so the inherited rule
+applies without exception: **the docs/slo.md k6 measurement is
+re-run on the built image and cached p99 stays under 20ms.** This is one of the
+phase's **three** k6 runs; the others are LNK-M-0072's rolling-deploy
+measurement and LNK-M-0074's re-measurement on the final build.
+
+- The parse is a lookup against data already resolved for the redirect. If it
+  turns out to need a query, it does not ship in this form.
+- The tripwire tests that keep the redirect tree free of session lookups and
+  template rendering pass unmodified.
+
+##### Surface
+
+- The link's QR area lists its codes, each with its label, its size and its
+  download. The list lives inside whatever LNK-M-0058 decided an on-demand
+  panel is; this milestone does not invent a second pattern for it.
+- The API gains create, list, update and delete over codes, replayed by the
+  contract test per the inherited rule. The existing single-code endpoints
+  (`internal/httpx/api_qr.go`) either grow an identifier or stay as the
+  default-code shorthand, and **which one is decided in this milestone and
+  recorded** — silently changing the meaning of a shipped endpoint is the thing
+  the contract test exists to catch.
+
+##### Deliberately not done
+
+- **No per-code destination.** A code that points somewhere else is a link, and
+  this product already has links.
+- **No dynamic re-pointing of a printed code** beyond what changing the link's
+  destination already does — which is the entire point of the product and needs
+  nothing here.
+- **No per-code expiry or gating.** Gates belong to the link
+  (LNK-M-0040); giving a code its own would put two answers on one redirect.
+
+##### Demo
+
+`demoCoverage()` gains a row: one seeded link carries two codes with different
+labels and click history against both, because a feature whose whole value is
+*telling two things apart* shows nothing when only one exists.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0059, and the edge is **hard**. LNK-M-0059 rewrites what a QR |
+| Discharges | Plan.md's *Not in Phase 2* row **More than one QR code per link, |
+| Status | done |
+| LinkCtrl | M50 |
+
+---
+
+## LNK-M-0061
+
+**The first file this product accepts**
+
+milestone · 2026-08-06
+
+cites: [LNK-D-0075](decisions.md#lnk-d-0075)
+
+cites: [LNK-D-0018](decisions.md#lnk-d-0018)
+
+cites: [LNK-D-0087](decisions.md#lnk-d-0087)
+
+cites: [LNK-D-0180](decisions.md#lnk-d-0180)
+
+cites: [LNK-M-0059](#lnk-m-0059)
+
+cites: [LNK-D-0134](decisions.md#lnk-d-0134)
+
+cites: [LNK-M-0072](#lnk-m-0072)
+
+cites: [LNK-M-0060](#lnk-m-0060)
+
+cites: [LNK-M-0067](#lnk-m-0067)
+
+cites: [LNK-M-0062](#lnk-m-0062)
+
+##### The endpoint
+
+- One upload operation against a QR code, and one to clear it. Both land in
+  `api/openapi.yaml` and are replayed by the contract test, per the inherited
+  API-parity rule — **and the contract test has no multipart shape today**, so
+  teaching it one is part of this milestone rather than a discovery during it.
+- Authorization is `links.update`, the permission that already governs QR style
+  (D75, `internal/httpx/api_qr.go:24-26`). **No new permission**, so there is no
+  D18 delegability question to answer — an earlier draft promised one and there
+  was nothing to run it against.
+- It is **not** `requireSessionActor`-gated. An API key that may edit a link's
+  style may upload its logo; the subject is the link, not the person, so D87's
+  limb does not apply. Stated because the earlier draft said *session-
+  authenticated* and *a key may hold it* in the same bullet, which cannot both
+  be true.
+- Uploads are rate-limited. A new write surface that accepts megabytes needs a
+  bucket, and the milestone names which.
+
+##### Bounded before anything is allocated
+
+This ordering is the milestone's most important claim, and the earlier draft
+got it backwards — it said *a byte cap on the request body, then a dimension cap
+on the decoded image*, which caps after the allocation it was meant to bound. A
+decompression bomb is a small file that declares an enormous image.
+
+1. A **byte cap** on the request body, enforced by `http.MaxBytesReader`.
+2. **`image.DecodeConfig`** reads the header only and yields dimensions without
+   decoding pixels. The dimension cap is enforced **here** *(the pixel-count cap
+   was too, until this milestone's 2026-08-12 reopening made it the size a
+   stored logo is fitted to rather than a refusal — D180)*.
+3. Only then is the image decoded.
+
+Every cap is **a number, stated in the file, with the maximum allocation it
+implies** — the standard LNK-M-0059 set for its own output cap. A test feeds
+a file that passes step 1 and fails step 2, and asserts nothing was decoded.
+
+##### What is accepted, and what is stored
+
+- **Raster only. An SVG upload is refused.** An SVG is a document that can carry
+  script and external references; accepting one means sanitising markup this
+  product would then serve. PNG and JPEG decode to pixels, which is a smaller
+  thing to be wrong about.
+- The decoder is chosen by **sniffing the input bytes**, never by the filename
+  or the client's declared type. A test uploads a file whose extension, declared
+  type and content disagree.
+- What is stored is **re-encoded to PNG by this product**, never the received
+  bytes. That kills polyglot files and strips metadata as a side effect, and it
+  means what is served is bytes this product produced.
+- **Stored names are server-generated.** No component of a storage path or key
+  derives from user input, asserted by test — the risk section named path escape
+  and no bullet forbade it.
+
+##### Where it is stored — answered, before this milestone started
+
+**A `bytea` column on `qr_codes`. Owner-set 2026-08-07, and it is
+D134.** This is no longer the milestone's
+to pick: the question was filed on 2026-08-06 and answered at
+step 1 before any of this was built, which is what
+the filing was for. Build against D134 and do not re-derive it.
+
+**What the answer obliges, and it is not nothing.** D134 rests on an assumption
+nobody could check when it was given — *that the caps this milestone sets keep a
+stored image small enough for a column to be uncontroversial* — because the caps
+are this milestone's to choose. So **the cap is stated as a number with the
+worst-case bytes per row it implies**, the same standard the *Bounded before
+anything is allocated* section already sets and the same one LNK-M-0059 met
+for its rasteriser. A cap chosen without that arithmetic written down would make
+D134 true by assertion.
+
+The three constraints the options were weighed against, kept because they are
+what makes the answer legible: `docker-compose.yml` mounts only `pgdata`, so a filesystem path
+needs a volume that does not exist and that `make demo-update` must not lose;
+LNK-M-0072 plans a conformance test asserting a single container with **no
+new required dependency**, which an object store would be; and a column puts
+binary in the row and in every backup.
+
+The entry has left upcoming-decisions.md, which is
+the only way an entry ever leaves it, and the reasoning is in decisions.md under
+its `D` number with both dates — filed 2026-08-06, answered 2026-08-07.
+
+##### Removal, replacement, and orphans
+
+The earlier draft covered cascade and nothing else. A stored artefact outlives
+its row unless something deletes it:
+
+- **Clearing** a logo removes the artefact, not just the reference.
+- **Replacing** one removes the artefact it replaced.
+- **Deleting the code** (LNK-M-0060 adds that operation), the link, the
+  workspace or the organization removes its artefacts. Only the `bytea` option
+  gets this from a cascade; the others need explicit removal, which is one of
+  the reasons the storage choice is not free.
+- An **orphan sweep** runs in the existing hourly `housekeeping` pass, because
+  every one of the paths above can fail between the row and the bytes. It is
+  idempotent, and it is what makes the claims above recoverable rather than
+  merely intended.
+
+##### Erasure, corrected
+
+LNK-M-0067 gains a limb for uploaded content, and **its reach is narrower
+than an earlier draft claimed**. Logos hang off `qr_codes` → `links` →
+workspaces and organizations, never off `users`; and LNK-M-0067 refuses to delete an
+account that is the sole owner of a surviving organization. So the organizations
+an account belongs to survive its deletion, and **account erasure reaches no
+logos at all**. What reaches them is container deletion and the orphan sweep,
+both above. LNK-M-0067's section is written to say that rather than the reverse.
+
+##### Security
+
+`docs/SECURITY.md` gains a row: the formats accepted, the caps as numbers, that
+decoding happens off the redirect path, that the stored artefact is re-encoded
+rather than passed through, and that names are server-generated. The decoders
+are standard library — `image/png` arrives with LNK-M-0059, `image/jpeg`
+here — so the dependency set does not grow.
+
+##### Demo
+
+`demoCoverage()` gains a row: one seeded QR code carries an uploaded image, with
+the seeder supplying its own bytes rather than depending on a file in the
+repository. What the demo *shows* is LNK-M-0062's; what it proves here is
+that the upload path ran.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0060, and the edge is **hard**. The image this |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-07, |
+| Status | done |
+| LinkCtrl | M50.5 |
+
+---
+
+## LNK-M-0062
+
+**A logo in the middle of a QR code**
+
+milestone · 2026-08-07
+
+cites: [LNK-D-0141](decisions.md#lnk-d-0141)
+
+cites: [LNK-D-0140](decisions.md#lnk-d-0140)
+
+cites: [LNK-D-0181](decisions.md#lnk-d-0181)
+
+cites: [LNK-M-0059](#lnk-m-0059)
+
+cites: [LNK-F-0223](findings.md#lnk-f-0223)
+
+cites: [LNK-D-0187](decisions.md#lnk-d-0187)
+
+cites: [LNK-M-0058](#lnk-m-0058)
+
+cites: [LNK-M-0061](#lnk-m-0061)
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+##### The code still scans, and the claim is geometric and stated
+
+A logo occludes modules. Error correction is what makes that survivable, and
+level H corrects roughly 30% of codewords — but occlusion is **spatially
+correlated**, so the safe fraction is well below that headline number.
+
+- Error correction is forced to **level H** whenever a logo is set.
+  *(Built: forced in two places — `internal/link` writes H into the row on
+  upload and on every style write to a code that has a logo, so a `GET` reports
+  it; `internal/qr` forces it again at the renderer, so the geometric claim
+  below holds for any row whatever it says. D141.)*
+- The occluded area is capped, **as a number, with the derivation from H's
+  correction budget written down**. Any fraction satisfies a bullet that says
+  "capped as a fraction"; this one states which and why.
+  *(Built: **a centred square one fifth of the symbol's width — 4% of its
+  area**, rounded down to an odd number of modules so it centres on the grid.
+  The derivation is `internal/qr/composite.go`'s package comment: H recovers
+  ⌊0.30·C⌋ codewords, a centred k×k occlusion destroys at most
+  ⌈(k+1)/2⌉·⌈(k+3)/4⌉ of them, and the rule is that it may spend **half** the
+  budget — the other half pays for uneven distribution across Reed-Solomon
+  blocks, for print and optics, and for the logo's own edge. D140.
+  **Superseded at the 2026-08-12 reopening** — three tenths of the width, 9% of
+  the area, spending at most three quarters of the budget. D181.)*
+- The logo is centred, and the cap is on a centred region — the derivation does
+  not hold for an arbitrary placement, so arbitrary placement is not offered.
+  *(Built: `LogoBoxModules` takes the symbol's module count and nothing else,
+  and there is no placement argument anywhere to pass.)*
+- Asserted geometrically: the occluded module count against the symbol's
+  codeword budget, for every symbol version the product's content lengths
+  produce.
+  *(Built: `TestTheOcclusionCapFitsHsCorrectionBudget`. The version range is
+  derived from the encoder — the shortest payload this product can build and
+  `qr.MaxContent`, with monotonicity checked between them — and comes to
+  **versions 3 to 36**. `TestTheCodewordCountIsTheStandardsOwn` holds the
+  codeword arithmetic to ISO/IEC 18004's own table. *(Amended 2026-08-12: this
+  read "the tightest version is 4, spending 24 codewords of a 30-codeword
+  budget's half", which named neither version's numbers — 24 is twice version
+  5's destroyed count and 30 is version 4's budget. Under the half rule the
+  tightest was version 5 at 12 of 40; under the three quarters the reopening
+  ships it is version 5 again, at 24 of 40. The test now finds the tightest
+  version itself and fails if this sentence disagrees with it.)*)*
+
+##### The decoder question, decided rather than assumed
+
+An earlier draft required that every logo'd code "is read back by a decoder and
+yields the original payload". **There is no QR decoder in this tree** — `go.mod`
+carries `boombuler/barcode`, which encodes — and adding one is a new module
+whose require-block entry collides with LNK-M-0059's assertion that it adds
+no dependency.
+
+The milestone resolves that explicitly rather than importing it in a sub-clause:
+
+- The **shipping** assertion is the geometric one above. It needs nothing new.
+- A decode check is run **once, by hand, against real scanners** — a phone
+  camera and one desktop reader — over the symbol versions and the cap, and the
+  result is recorded in the milestone with what was tested. A capability this
+  product cannot assert in CI is verified the way its SLO numbers are: measured,
+  written down, and honest about being a measurement rather than a gate.
+- **If a decoder module is wanted as a permanent gate, that is a decision to
+  take, not a side effect of this milestone.** LNK-M-0059's no-new-dependency
+  assertion is scoped to LNK-M-0059 and does not forbid a later phase adding one; but
+  adding it here without saying so would make LNK-M-0059's claim read as broken.
+
+###### The decode check, as run — 2026-08-07
+
+*(Amended 2026-08-12 at the reopening: everything in this subsection was measured
+at the **one-fifth** cap and is a record of that check, not of the product as it
+now draws. The reopening replaced the hand-run check with `make verify-scan`,
+whose corpus is by a different composition — logo'd at versions 3–36 and control
+at 2–36, not this section's 34 × 6 × 4. *(It was 816 in two halves of 408 when
+this note was written and is **1360** in two halves of 680 since LNK-M-0059's second
+reopening added the quiet-zone band's low end at both ends of the scale range —
+so the 816 this section reports and the 816 the gate reported are unrelated
+twice over.)* The figures below are left as they were run rather than
+restated, because a record of a check is not a claim about the tree. What the
+tree does now is D181.)*
+
+**Both halves are done, and the bullet is met.** The desktop half is below. The
+phone half was the owner's — nobody else here has a camera pointed at this, and a
+hand check somebody else says they ran is not a measurement — and it came back on
+2026-08-07: **four of four, byte-identical to the corpus manifest.**
+
+**The phone half, as run.** Four images from the corpus below, chosen for what
+they are worth rather than for coverage: `v03`, `v07`, `v32` and `v36`, all the
+opaque disc logo at the full cap. `v03` and `v36` are the ends of the product's
+version range; **`v07` and `v32` are two of the three versions that failed
+`zbarimg` before `logoInsetModules` went in**, which is the whole reason a
+four-image sample is worth anything. Every one resolved, and each returned
+payload was compared against `manifest.tsv` as a string rather than read by
+eye — 22, 59, 791 and 984 characters, all exact, including the `?src=qr` the
+redirect counts on.
+
+What this does **not** establish is stated with it: one camera, one reader, one
+lighting condition, four of 816 images. It is a measurement and not a gate, the
+same way docs/slo.md's numbers are, and the risk section's
+sentence stands — if a logo'd code fails on some other reader, no test in this
+repository will say so.
+
+**Reader:** `zbarimg` 0.23.93 (`/usr/bin/zbarimg`), ZBar's own QR decoder. It is
+a system package and not a Go module, so `go.mod` is untouched and LNK-M-0059's
+no-new-dependency assertion is unaffected. It is also not a gate: nothing in
+`make check` or `make test-integration` invokes it, and CI has no such binary.
+
+**Corpus:** 816 images, every one produced by `qr.RenderPNGWithLogo` — the
+shipping path, not a fixture.
+
+- **34 symbol versions**, 3 through 36: one payload length per version, from
+  `qr.MinProductContent` (22 bytes, the shortest short URL this product can
+  build) to `qr.MaxContent` (1024). That is every version the product's content
+  lengths reach at level H.
+- **6 logos**: an opaque black square, an opaque red square, an opaque white
+  square, the demo's transparent disc, a 4:1 wordmark, and a 16-pixel image
+  drawn up into a large box.
+- **4 styles**: quiet zone 4 at 8, 4 and 3 pixels per module, and quiet zone 6
+  at 8 pixels with a non-default foreground and background.
+
+**Result: 816 of 816 decoded to the exact payload.** 136 of 136 for each of the
+six logo shapes.
+
+**And the check changed the build**, which is the reason it is worth running at
+all rather than performing. Composited with the logo filling the whole occluded
+box, the same corpus failed **three versions of thirty-four** — 7, 8 and 32 —
+with a fully opaque logo. A box-size sweep showed the failures were **not
+monotonic in the box's size**: version 10 failed at three modules and read
+cleanly at eleven. That is a detector losing the sampling grid rather than error
+correction running out, so shrinking the cap would have been superstition.
+Holding the logo back by **one module of the code's own background inside the
+box** took it to 34 of 34 for both an opaque black and an opaque red logo. That
+inset is now `logoInsetModules`, and it costs the cap nothing: the ring is
+painted background, so the modules under it are destroyed exactly as the ones
+under the image are, and every number above is measured against the box.
+
+##### Both renderers composite the same image
+
+LNK-M-0059 asserts the SVG at a set pixel size and the PNG describe the same
+image, checked by walking the module grid. A logo composites as a `data:` URI in
+one and a raster in the other, so that claim gets harder rather than staying
+still.
+
+- The grid check runs **outside** the logo's bounding box, unchanged.
+- The box itself is asserted to occupy **the same modules** in both outputs.
+  *(Both built into `TestTheLogoOccupiesTheSameModulesInBothOutputs`. The box is
+  read back out of each output independently — as a rect in module units from
+  the SVG, and as the bounding box of the logo's own colour from the raster —
+  rather than compared against the function that placed it. It also asserts that
+  no module inside the box still draws the code, which is what makes the cap a
+  cap on the right region.)*
+- `img-src 'self' data:` already permits the embedded form
+  (`internal/httpx/middleware.go:271`). **A test pins `img-src`**, because
+  nothing pins it today — the existing CSP tests check `script-src` and the
+  absence of `unsafe-` — so a later quiet widening to `blob:` or a host would
+  pass every assertion this product has.
+  *(Built: `TestTheImageSourceIsSelfAndDataAndNothingElse`. It compares the whole
+  directive rather than searching for a substring, because
+  `strings.Contains(csp, "img-src 'self' data:")` is true of
+  `img-src 'self' data: https://cdn.example` too.)*
+
+##### The API contract for level, decided
+
+LNK-M-0059 keeps `Level` in the API on purpose while taking it out of the
+interface. Forcing H when a logo is present is a **partial reversal** of that,
+and it raises a contract question an earlier draft left open: what a request
+setting `level=L` together with a logo gets back.
+
+The milestone decides it and records it — refuse, or accept-and-override — and
+whichever it picks, a `GET` after a `PUT` returns what the server actually
+applied. Silent drift between what was sent and what is stored is the one
+outcome the contract test exists to catch.
+
+*(Decided: **accept and override**, D141. `PUT /links/{id}/qr` replaces the
+style whole and an omitted `level` means the default, so refusing would answer
+`422` to a caller changing a colour on a code whose logo it never mentioned —
+and the invariant wanted is "a code with a logo is at H", which overriding makes
+true by construction where refusing only makes it true at one entry point. The
+response and every later `GET` report `H`, and
+`TestALogoRaisesTheCodeToLevelHAndSaysSo` reads the `qr_codes` row directly
+rather than through the service, because the service reports the level a code is
+*drawn* at and would be green for a row that still said `L`. Clearing a logo
+leaves the level at H: lowering it would redraw a picture that may already be
+printed, and H is the safer of the two to be left at.)*
+
+*(**Amended 2026-08-13 at the second reopening.** The last sentence above is
+what that reopening reverses — it is the premise
+F223 was filed against, and the owner
+overruled it in as many words: the payload does not change, so the printed
+picture still resolves, and H on an uncovered code is ~30% more modules a side
+than it needs. Clearing a logo now recomputes the level by the rule. The rest
+of the parenthesis stands, including why the test reads the row — though the
+`L` in that explanation is no longer reachable, since D187
+makes the level a floor and nothing is drawn at `L` whatever the row says.)*
+
+##### Surface
+
+The logo control lives in whatever LNK-M-0058 decided an on-demand panel is.
+This milestone does not invent a second pattern for it.
+
+*(Built: no new control at all. LNK-M-0061's upload form and removal button are where
+they were, in `link_qr_body`; what changed is the wording on both — the
+paragraph and the notice said nothing drew the logo yet, and this milestone is
+what made that false, so this milestone replaced them. The panel's inline
+drawing and the link page's thumbnail both composite, so the picture on the
+dashboard is the picture the downloads produce.)*
+
+##### Deliberately not done
+
+- **No shapes, eye styles or gradients.** `00600:59` also promises *shape*;
+  nothing builds it, and LNK-M-0075's sweep trues that word up.
+- **No arbitrary logo placement**, per the cap's derivation above.
+- **No workspace logo library.** A logo belongs to the code that uses it.
+
+##### Demo
+
+The seeded code from LNK-M-0061 renders with its logo, so the demo shows
+the feature rather than proving only that an upload succeeded.
+`demoCoverage()`'s row is LNK-M-0061's; this milestone adds none, which is stated
+rather than left blank.
+
+*(Built: the seeder is unchanged — LNK-M-0061 put the upload there so this milestone
+would find something to composite, which is the whole reason the seam is where
+it is. The second code on the seeded QR link now draws the disc in the middle of
+it at level H. LNK-M-0061's `demoCoverage()` row is reworded to say what a reader now sees
+rather than what LNK-M-0062 was going to do with it, and **LNK-M-0062 adds no row**: there
+is one thing to look at and one row pointing at it.)*
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0061, and the edge is **hard** — this milestone |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-07. It |
+| Status | done |
+| LinkCtrl | M50.6 |
+
+---
+
+## LNK-M-0063
+
+**The QR tab stops costing more attention than it is worth**
+
+milestone · 2026-08-12
+
+cites: [LNK-D-0024](decisions.md#lnk-d-0024)
+
+cites: [LNK-D-0183](decisions.md#lnk-d-0183)
+
+cites: [LNK-M-0064](#lnk-m-0064)
+
+cites: [LNK-F-0238](findings.md#lnk-f-0238)
+
+cites: [LNK-D-0190](decisions.md#lnk-d-0190)
+
+cites: [LNK-F-0216](findings.md#lnk-f-0216)
+
+cites: [LNK-D-0189](decisions.md#lnk-d-0189)
+
+cites: [LNK-M-0059](#lnk-m-0059)
+
+cites: [LNK-D-0193](decisions.md#lnk-d-0193)
+
+cites: [LNK-D-0195](decisions.md#lnk-d-0195)
+
+cites: [LNK-F-0244](findings.md#lnk-f-0244)
+
+cites: [LNK-M-0062](#lnk-m-0062)
+
+cites: [LNK-M-0061](#lnk-m-0061)
+
+cites: [LNK-M-0060](#lnk-m-0060)
+
+cites: [LNK-F-0224](findings.md#lnk-f-0224)
+
+##### The list is one click target, and the destructive control is not next to it
+
+Today's row is `partials/link_qr.html:125-160`: a name `<a>` at `:127`, a meta
+line at `:129`, then a cluster holding **PNG**, **SVG**, **Make default** (when
+the row is not the default) and **Remove** (when the link has more than one
+code), the last two being submits in one form at `:143`.
+
+- **A row selects on its whole area**, not only on the name. Today only the
+  name `<a>` at `:127` is clickable while the row paints a selected background
+  across its full width (`:125`) — the affordance is wider than the target.
+  *Enforced by:* a template test asserting the row's selecting element spans
+  the row and that the action cluster is excluded from it, **and** a case in
+  the kept browser suite that clicks a row's blank area and asserts the panel
+  changed code. The template half asserts a class string; only the browser
+  half asserts that a click lands, which is the precedent
+  D24 — *"a top-layer element ignores its
+  ancestor's containing block, so positioning is verified in a browser rather
+  than asserted from markup"* — and m47.5.md:91-94's kept spec both
+  set.
+- **The action cluster has dead space before it.** Today `gap-2` at `:132`
+  puts a destructive **Remove** 8px from a download button on a ~22px-tall
+  row.
+  *Enforced by:* the same template test, asserting a separating margin class
+  on the cluster, and the same browser case asserting the gap is non-zero in
+  the rendered box.
+- **Remove becomes a `−` icon button**, with an accessible name. Owner-set.
+  *Enforced by:* a template test asserting the row renders `icon_minus` and
+  that its accessible name still says what it removes.
+- **Download becomes one icon button with a menu**, PNG and SVG inside it, so
+  a third format later costs a menu entry rather than a third button.
+  *Enforced by:* a template test asserting one download control per row and
+  both formats reachable from it, plus a browser case opening one row's menu
+  and following one entry.
+- **Make default becomes an icon on *every* row, filled on the default and
+  empty on the rest.** Owner-set 2026-08-13, over both shapes offered — a
+  labelled button beside the menu, and an entry inside it. What the owner asked
+  for is neither: *"an icon button on every row, it becomes filled in when the
+  row is the default and empty when it isn't. It should update all the icons
+  when any of the icons is changed."*
+
+  Three things follow, and each is a thing to build rather than a gloss:
+
+  - **The default's row gains a control it does not have today.** `:146`
+    renders **Make default** only `{{if not .Default}}`; the icon renders
+    always, and on the default row it is the filled one. What it does there is
+    nothing — the flag is already its own — so it is inert rather than a second
+    way to write the value that is already written.
+  - **The set is exclusive and it is drawn that way.** One filled icon per
+    list, always exactly one, because a link always has a default
+    (D183). That is a radio group's semantics, so each icon
+    carries an accessible name naming *its* code and the pressed state is
+    exposed rather than left to the fill.
+    *(Amended 2026-08-14 at LNK-M-0064's step 3.4, fact-level and
+    owner-set: the name is on the **button** and no longer names its code. It
+    reads `Default QR Code` / `Make Default QR Code`, F238(i) having asked for
+    exactly that, and the icon is drawn decoratively because a `<title>` inside
+    it would draw a second, native tooltip over the page's own. The pressed
+    state is still exposed. See decisions.md.)*
+  - **Every icon updates when any one is clicked**, which is what the owner
+    asked for and which today's flow already gives: the control posts to
+    `/links/{id}/qr` and the handler answers a redirect
+    (`internal/httpx/web_qr.go:198`, the `make_default` branch), so the list
+    re-renders whole and every icon in it is drawn from the row that now holds
+    the flag. **No swap and no script are needed for this**, and the milestone
+    does not add either. If a build finds it needs one, that is a change to
+    this bullet and a prompt.
+
+  - **It renders for a reader who cannot change it**, as the static pair with
+    no form around it. Owner-answered 2026-08-14,
+    D190, after the first attempt put the whole set inside
+    `{{if $.Identity.Can "links.update"}}` — where the **Make default** button
+    it replaces correctly lived, and where this wrongly does, because what the
+    icon buys is legibility rather than an action. A `links.read` viewer was
+    back to reading the sentence in the meta line, which is the thing the icon
+    exists to replace.
+
+  *Enforced by:* a template test asserting the list renders exactly one filled
+  icon and `len(codes)-1` empty ones, that the filled one is on the row holding
+  the flag, and that each carries an accessible name *(amended 2026-08-14 at
+  LNK-M-0064: the name is asserted of the button, the icon being
+  decorative since that milestone)*; a second rendering the
+  list **without** `links.update` and asserting the same counts with no form;
+  plus a browser case clicking an empty icon and asserting the fill moved.
+
+###### What the menu actually costs
+
+The plan review priced this at zero and it is not zero. The owner's answer of
+2026-08-13 was to keep LNK-M-0063 as **one** milestone with that cost written into
+the plan rather than split at the seam the review drew, so it is written here.
+
+- The mechanism is a **popover**, the one the header's menus already use, so
+  `script-src 'self'` is untouched and no script is added.
+- It is **not an ARIA menu**, and this file does not call it one.
+  m26.5.md:89 settled that for the header's popovers and the same
+  reasoning holds: the entries are links and submits, and `role="menu"` would
+  promise keyboard semantics nothing here implements.
+- **Anchoring is the part that is new.** The existing pattern uses a single
+  named anchor — `[anchor-name:--linkctrl-workspace]` at `nav.html:41`, with
+  `[position-anchor:--linkctrl-workspace]` and `supports-[…]` guards at
+  `nav.html:173` — and m46.6.md:230-235 calls that the
+  least-exercised part of the pattern. Twenty rows need twenty **distinct
+  anchors**, or every menu anchors to the same element.
+
+  *(**Amended 2026-08-14 at step 3.4, both halves, and they did not cost the
+  same.** As it stood: "Twenty rows need **twenty distinct anchor names**,
+  generated per row from the code's slug, or every menu anchors to the same
+  element. Where `anchor-name` is unsupported the existing fallback is
+  viewport-pinned, which is meaningless for a control halfway down a list, so
+  the fallback for these is the row itself."*
+
+  *The **first half was wrong on a fact**: the disjunction has a third limb the
+  bullet did not know about. `anchor-scope` confines one `anchor-name` to a
+  subtree, so a single name declared once and scoped per row gives twenty
+  distinct anchors with no generated names at all — which is what shipped
+  (`internal/ui/static/css/input.css:178-181`, `partials/link_qr.html:162`,
+  asserted at `internal/ui/link_qr_test.go:707-729`). The stated mechanism was
+  also unbuildable here: Tailwind generates only what it scans (F216) and
+  `style-src 'self'` refuses the inline attribute, so a slug-built name reaches
+  no stylesheet. Corrected, logged, carried on — D189.*
+
+  *The **second half was an assertion**, and it went to the owner rather than
+  being corrected: "the fallback for these is the row itself" is not
+  buildable — an open popover sits in the top layer and its containing block is
+  the viewport (`partials/nav.html:209`) — but **which** fallback to take was a
+  real choice between three. Owner-answered 2026-08-14, D190:
+  **the UA's own centred placement**, over the header's fixed viewport pin and
+  over keeping today's two-button row alive as a fallback layout. The first was
+  refused because a pin reads as deliberate at the top of a page and as a bug
+  halfway down a list; the second because that row is the thing this milestone
+  exists to remove.)*
+- **A kept browser spec is part of this milestone, not a nicety.** Twenty
+  popovers on one page is exactly the case the template tests cannot see.
+
+##### What saves, saves once
+
+- **Rename goes** from the dashboard. The name field stays and the one save
+  control writes it along with the style. Owner-set: *"the 'Rename' button
+  should be removed with the 'Save the style' button taking up all saving
+  functions."*
+  *Enforced by:* a template test asserting no control posts `rename`, and an
+  assertion that saving the style with a changed name writes the name.
+- **The server action stays**, owner-set 2026-08-13 over deleting it with the
+  button. With no control posting `rename` the branch is unreachable from the
+  dashboard, so **the milestone leaves a comment saying it is deliberately
+  unreachable and what still reaches the same write** — otherwise the next
+  reader deletes it as dead code, which is the outcome asking about it was
+  meant to avoid. `internal/httpx/web_qr.go:206` handles a
+  `rename` post and `:569` writes its notice; the API already ships the fold's
+  shape (`api/openapi.yaml:2115-2124` — *"Replace a named code's label and
+  style … that applies to the label as well as to the style"*). Removing a
+  *control* is not removing a
+  capability, and *every UI feature has API support* — the inherited rule in
+  README.md — does not run
+  backwards into *every API operation needs a control*. What must not survive
+  is a dashboard path that posts it.
+- **That control reads `Save`.** Owner-set, from three offered.
+  *Enforced by:* a template test reading the button's text.
+- **`Restore defaults` is always drawn**, disabled with a reason when there is
+  nothing stored rather than absent — today it renders only `{{if .QRStored}}`
+  (`:365-375`), so an unstyled link shows no control and no explanation.
+  *Enforced by:* a template test rendering both states, asserting the control
+  is present in each **and** that the stored-less state carries both the
+  `disabled` attribute and the sentence saying why. The plan review caught that
+  the earlier wording asserted presence and left the promised half untested.
+
+##### The tab says less
+
+- **The `N/20` counter goes near the top**, and the prose that carried the cap
+  goes (`:194` today).
+  *Enforced by:* a template test asserting the counter renders with both
+  numbers and that the sentence is gone.
+- **It does not duplicate the tab badge, and both stand.** The strip's QR badge
+  is `attachTabBadges`' bare count (`internal/httpx/web_links.go:836`), whose
+  governing comment says a badge reads the value its section renders rather
+  than a second copy of it. Owner-answered 2026-08-13: they are **different
+  quantities** — the badge says how many codes exist, the counter says how much
+  of the cap is spent — and the maximum is unnecessary in a strip where space
+  is scarce. The counter reads the same `len(QRCodes)` the badge does, so there
+  is one value and two renderings of it, which is what that comment asks for.
+- **The encoded URL under the picture goes.** Owner-set.
+  *(The paragraph under the preview is **already gone** — LNK-M-0059's third reopening
+  deleted it and `TestTheQRPreviewSaysWhichSizeIsServed` with it, at `fc9aeef`.
+  This milestone no longer claims that work; the bullet is kept, struck to its
+  remaining half, so a reader of the owner's report can still find where each
+  item went.)*
+- **The duplicated download pair below the preview goes** (`:258-266`). It hits
+  the same two URLs as the row's controls — both are `qrDownloadPath`
+  (`internal/httpx/web_links.go:1257`) — and the row is where a per-code action
+  belongs.
+  *Enforced by:* a template test asserting the panel renders exactly one
+  download control per code.
+- **The remaining explanatory paragraphs go or shrink.** What survives is what
+  a reader cannot deduce from the control it sits beside.
+
+###### The prose bound is a number, measured
+
+*Enforced by:* a template test bounding the tab's rendered prose, so the
+reduction is a number rather than an impression. The plan review's finding was
+that a test with no number in the milestone is satisfied by any number at all.
+
+**Method**: prose characters in `partials/link_qr.html`, counted as the text
+inside `<p>` elements with template actions, comments and tags removed,
+whitespace collapsed, and paragraphs under 40 characters ignored as labels
+rather than prose.
+
+**Measured 2026-08-13 at `d7107b1`: 1906 characters across seven paragraphs** —
+analytics 208, code meta 153, last-code 171, second-code 179, cap 85, size and
+contrast 391, logo 719. *(Reproduced independently by this milestone's reviewer,
+paragraph for paragraph, which is what verified the method rather than the
+number.)*
+
+**The 40-character floor has a hole in it, named here rather than left to be
+found**: the sentence this milestone requires beside a disabled **Restore
+defaults** — *"This code has no stored style yet."* — is 34 characters, so the
+method does not count it. Counting it would put the tab at 911 against a bound
+of 900. The floor stays as it is, because raising it to catch one required
+sentence would start counting the meta line's fragments as prose; what is
+recorded is that the bound has ~23 characters of headroom and one required
+sentence sitting just under the floor.
+
+**The bound is 900**, owner-set 2026-08-13 over 1200 and 1500. Its derivation:
+the cap sentence goes whole (−85), the logo paragraph — the one the owner called
+five sentences — loses at least 350, the analytics and second-code paragraphs
+halve (−190), **and the size-and-contrast paragraph is cut too** (−200 of its
+391). That reaches 1081, so 900 is a bound the build has to work at rather than
+one it clears by doing the obvious.
+
+**What the owner accepted by choosing it**, stated because it was named in the
+question and taking the option is not the same as not having been told: the
+*contrast* half of that paragraph explains a refusal that still exists and that
+no control on the tab states. Cutting toward 900 spends words a reader cannot
+deduce from anything beside them. The build keeps the contrast sentence and
+finds the characters elsewhere if it can; if it cannot, it says which
+explanation it dropped and why, in the commit and in a decision entry.
+
+A build that lands above 900 with a reason states the reason and moves the
+number in this file; a build that hits it silently has done the work.
+
+*(**Amended twice on 2026-08-14, at LNK-M-0064's step 3.4 and again at
+its reopening's. Fact-level both times, and the number now is 300.** First move:
+LNK-M-0064 deleted two paragraphs on the owner's instruction and re-measured by the
+method above — four paragraphs at 100, 153, 191 and 271, so 715, bound 750.
+**Second move, hours later**: the tab's fourth report took three more, leaving
+**two** paragraphs — the meta line at 61 and the contrast sentence at 191, so
+**252**, rounded up to **300**. Headroom is 48. The instruction one paragraph up
+is what obliged both moves, and it is recorded here that the first amendment had
+to be re-amended within the day: a bound written into a file that is not the one
+being edited goes stale at the speed the tab is being reported, which is now
+four reports in three days. Nothing about the method, the 40-character floor or
+the owner's choice of 900 over 1200 and 1500 is withdrawn; 900 was the right
+bound for the tab LNK-M-0063 left behind. **The 911-against-900 arithmetic above is
+spent** — it was computed against paragraphs that no longer exist. See
+decisions.md, D193 and D195.)*
+
+**The logo paragraph is inside this bound and its controls are still not
+restructured.** *(Amended 2026-08-14 at LNK-M-0064's reopening, fact-level: neither
+half is true any more. The logo paragraph was removed on the owner's instruction,
+F244(f), so it is inside no bound; and its controls **were** restructured, F244(g)
+moving the picker above the style form. What the sentence argued — that leaving
+the controls alone was not a contradiction — is spent with them.)* That was not a
+contradiction and the plan review was right to
+ask: LNK-M-0062's second reopening rewrote its level sentence four hours before this
+was re-cited, so the shrink is against `d7107b1`'s wording, and shrinking prose
+beside a control is not restructuring the control.
+
+##### Icons
+
+Four icons are new — a download glyph, a minus, and the filled and empty pair
+the default toggle needs. They go in
+`partials/icons.html`, which is where m47.5.md:79-81 put the first
+four and said the next milestone wanting one reaches for the same place. They
+follow that file's shape exactly: `h-3 w-3 shrink-0`, `viewBox="0 0 24 24"`,
+`role="img"`, an `aria-label` and a `<title>` fed from the template argument.
+*(Amended 2026-08-14 at LNK-M-0064, fact-level: the shape now has two
+forms and the file draws whichever the argument asks for. Given an empty dot it
+draws the glyph **decoratively** — `aria-hidden="true"`, no `aria-label`, no
+`<title>` — because a control carrying one of the page's own tooltips would
+otherwise show two, one of them the browser's. `icon_default_on`,
+`icon_default_off`, `icon_plus` and the disabled `icon_minus` are called that
+way; every other caller passes a name and gets the shape as written above. See
+decisions.md.)*
+
+*Enforced by:* the template tests above, which name `icon_download`,
+`icon_minus`, `icon_default_on` and `icon_default_off` rather than asserting
+inline SVG. Two defines rather than one taking a fill argument, because that is
+what m47.5.md:79-81 established and a milestone re-laying-out a
+surface is the wrong place to invent a second convention for it.
+
+##### Deliberately not done
+
+- **No new capability.** Nothing here adds a format, a setting or a route; a
+  menu that will hold PDF later holds PNG and SVG today.
+- **The logo *controls* are not restructured.** The survey found the same
+  shapes there — a worded destructive button, a redundant label over a
+  self-submitting file input — and they are left alone, because the logo
+  surface belongs to LNK-M-0061 and touching it here would put two
+  milestones' work in one commit. Its prose is in the bound above; its buttons
+  are not in this milestone.
+- **No demo seeder row.** LNK-M-0060's and LNK-M-0061's rows already
+  seed a link with several codes and a logo, which is what this milestone
+  re-lays-out; a row asserting the same table would duplicate theirs.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0059 *(**third** reopening, landed `fc9aeef` — the size |
+| Discharges | F224, owner-approved as work |
+| Status | done |
+| LinkCtrl | M50.7 |
+
+---
+
+## LNK-M-0064
+
+**The QR tab's third report, and the first script the dashboard depends on**
+
+milestone · 2026-08-14
+
+cites: [LNK-M-0063](#lnk-m-0063)
+
+cites: [LNK-D-0193](decisions.md#lnk-d-0193)
+
+cites: [LNK-M-0060](#lnk-m-0060)
+
+cites: [LNK-D-0183](decisions.md#lnk-d-0183)
+
+cites: [LNK-D-0189](decisions.md#lnk-d-0189)
+
+cites: [LNK-F-0237](findings.md#lnk-f-0237)
+
+cites: [LNK-M-0061](#lnk-m-0061)
+
+cites: [LNK-M-0062](#lnk-m-0062)
+
+cites: [LNK-F-0238](findings.md#lnk-f-0238)
+
+##### The list stops moving under the reader
+
+- **Codes are listed alphabetically by name, case-insensitively**, and the
+  order does not change when the default moves. Owner-set:
+  *"Selecting a different default code re-orders the list of codes which can
+  make it seem like the selection didn't change."*
+- **This reverses `ListQRCodes`' stated design.** `internal/store/query/campaigns.sql:167`
+  is `ORDER BY (NOT (q.is_default OR q.slug = '')), q.created_at, q.id`, and the
+  comment above it defends the re-order in as many words — *"the list re-orders
+  when the reader moves it, which is the visible half of what setting a default
+  does"*. That argument is not withdrawn; it is answered. The filled icon
+  LNK-M-0063 put on every row is what makes the change visible now, so the sort no
+  longer has to carry that job, and carrying it was what made the change look
+  like nothing happened.
+  *Enforced by:* an **integration** test asserting the returned order for a set
+  whose alphabetical and creation orders differ, **and** that moving the default
+  does not change it. The sort is `lower(q.label)` with a stable tie-break, so
+  it matches `ORDER BY lower(c.name), c.id` at `:49` rather than inventing a
+  second collation for the same product.
+  *(Amended at step 3.4: this read "an `internal/link` test". The order is SQL —
+  a unit test there would have to fake `dbgen.Querier` whole and would assert
+  the fake. The test drives `link.Service.ListQRCodes`, the surface this bullet
+  names, against Postgres. D193 argues it.)*
+- **The default is still identifiable without reading**, which is what the
+  sort used to buy: the filled icon (`partials/link_qr.html:257`) and the meta
+  line's *"the default"* both stay.
+- **Three records cite the old order and are part of this milestone, not
+  cleanup.** `internal/store/query/campaigns.sql:169-176` justifies promoting
+  the oldest code by *"the promoted code is the one at the top of the list the
+  reader is looking at"* — which alphabetical breaks —
+  `internal/link/qr.go:247` says the service *"returns every code a link
+  carries, default first"*, and `internal/httpx/web_links.go:675` says the same
+  of the view field it fills from that service: *"The link's codes (LNK-M-0060),
+  default first"*. **The promotion rule itself does not change**: D183
+  set it to the oldest and nothing here reverses that; what changes is the
+  sentence explaining why it looks natural, which stops being true. All three
+  are corrected in this milestone's diff. *(The first two were found by the plan
+  review as a hidden edge; the third by the milestone's reviewer, and the count
+  was amended at step 3.4 — see decisions.md.)*
+
+##### The size control tells the truth while it moves
+
+- **The slider and the number follow each other, live, in both directions.**
+  Owner-set: *"Dragging the Size slider doesn't change the number next to it
+  until you save. The number should change with the slider as well as the
+  reverse."*
+- **This is the first script this product's dashboard depends on**, owner-decided
+  2026-08-14 over dropping one of the two inputs. *(Not the first script it
+  writes: `internal/ui/static/js/docs.js` is 34 hand-written lines booting
+  Swagger UI on `/docs`, written because the CSP forbids inline script. The plan
+  review caught the overclaim. The edge that is real, and the one the precedent
+  argument rests on, is that no script has ever driven a **control on the
+  dashboard** — docs.js boots a vendored viewer on a page of its own.)*
+- **It reverses a written argument**, which this milestone names wherever it
+  does one: `partials/link_qr.html:485-489` says *"Nothing in this browser can
+  copy a dragged slider into the box beside it: this dashboard runs htmx and no
+  script of its own, and a `script-src 'self'` page is not the place to
+  introduce one for a form control."* That is the sentence the owner overruled.
+  What it defends — the arbitration between `size_shown` and the requested
+  size — **must survive as the script-blocked path**, which is the degradation
+  bullet below.
+- **What it does not cost.** A served file under `script-src 'self'`: the CSP is
+  **unchanged**, no `unsafe-` waiver, no Node, no CDN, no build step, which is
+  the whole of what the inherited *`ui` stays stdlib-only* rule asks.
+  `htmx.min.js` and `docs.js` are already served from the same directory.
+  *Enforced by:* a case in the kept browser suite dragging the slider and
+  reading the number, and typing in the number and reading the slider. **A unit
+  test cannot see this** — it is the one claim in this milestone that only a
+  browser can make, and it is why the suite is the enforcement rather than a
+  template assertion.
+- **It degrades to today's behaviour with the script blocked.** The number
+  input keeps its own value and the form still submits it, so a reader with
+  JavaScript off loses the live echo and nothing else.
+  *Enforced by:* a template test asserting both inputs still carry `name=` and
+  their values, and a browser case with scripts disabled asserting the form
+  still saves.
+
+##### A save returns you to where you were
+
+- **A style write lands back at the QR tab's scroll position**, not at the top
+  of the page. Owner-set: *"The whole page resets to the top every time the
+  save button is used… a force to top is jarring and bad UX."*
+- Every write redirects through `qrReturn` (`internal/httpx/web_qr.go:103`) and
+  none of them carries a fragment, so the browser lands at the document top.
+  **The milestone does not specify the mechanism** — a fragment on the redirect
+  and a scroll restoration in the script are both available, and which is right
+  depends on whether the tab's position or the control's is what a reader
+  expects to return to. The build chooses, argues it in a decision entry, and
+  says what it rejected.
+  *Enforced by:* a browser case scrolling down the tab, saving, and asserting
+  the reader is still where they were.
+  *(Amended at step 3.4: this read "scrolling to the size control … asserting
+  the control is still in the viewport". The case scrolls to and asserts the
+  **Save** button, which is the control a reader is actually on when a write
+  happens and is what makes the assertion distinguish a restored position from
+  the `#qr` fragment's own landing. The claim — a save returns you to where you
+  were — is unchanged and is what the case tests.)*
+
+##### The tab says less, again
+
+- **Two sentences go**, both owner-set and both quoted here so the diff is
+  checkable against the report rather than against a summary:
+  - `partials/link_qr.html:346` — *"What a second code buys is knowing which one people
+    scanned."* Owner: *"this is something that would only be appropriate on a
+    help page."*
+  - `partials/link_qr.html:316` — *"A link always has a QR code, so this one cannot be
+    removed. Add a second and either becomes removable."*
+- **The prose bound moves down with them.** LNK-M-0063's bound is 900
+  characters by a stated method and the tab measures 877. Measured by that same
+  method against the tree at `ea656bd`, `:316` is **102** characters and `:346`
+  is **60**, and the logo section's prose moves rather than leaves. *(The plan
+  first said 171 and 60. 171 is the **pre-LNK-M-0063** last-code paragraph from the
+  `d7107b1` baseline — a stale number attached to the wrong sentence, caught by
+  the plan review.)* **The build re-measures by LNK-M-0063's method and sets the new bound to
+  the measured figure rounded up to the next fifty**, so the number stays one a
+  later milestone has to work at rather than one it clears by accident.
+  *Enforced by:* `TestTheQRTabsProseIsUnderItsBound`, with its number updated
+  and its reasoning beside it.
+
+##### The last code's remove button is disabled rather than absent
+
+- **The button renders on every row**, and is `disabled` on a link's only code
+  with a tooltip reading *"Every link must have at least 1 QR code."*
+  Owner-set, and the sentence is the owner's wording.
+- **This reverses what `partials/link_qr.html:266-269` argues** — *"Absent rather than
+  disabled: the sentence below the list is where the reason goes, because a
+  disabled control with no explanation reads as a bug."* The reversal is
+  narrow and it is the good kind: that comment's objection is to a disabled
+  control **with no explanation**, and this gives it one. The sentence it
+  points at is the one being deleted above, so after this milestone the
+  explanation lives on the control instead of below the list.
+  *Enforced by:* a template test rendering a one-code link and a two-code link,
+  asserting the button is present in both and `disabled` with its reason in the
+  first. `Restore defaults` ships the nearest thing to this shape
+  (`partials/link_qr.html:716-717`) — but its reason is a visible `<p>` beside it
+  at `:719`, not a tooltip, so this milestone follows its *disabled with a
+  reason* principle rather than copying its markup. The plan review caught the
+  overclaim.
+  *(Line numbers amended at step 3.4, twice over: they read `:545` and
+  `:546-548`, written against `d7107b1` and stale before this milestone began.
+  Its own diff then moved them a further seven lines. This is the citation
+  hazard the last run recorded from the other direction — a citation written
+  against a diff in flight goes stale before the diff lands, so it is re-read
+  after the diff rather than during it.)*
+
+##### Adding a code is a prompt, not a form in the page
+
+- **A `+` icon button beside the `N/20` counter** opens a prompt carrying a
+  text field and an add button. It replaces the *Add another code* label, text
+  field and *Add the code* submit at `partials/link_qr.html:331-337`.
+- **The mechanism is the popover LNK-M-0063 already built**, not a new one:
+  `partials/link_qr.html`'s row menus and `partials/nav.html`'s header menus are
+  both `popovertarget`/`popover="auto"`, and this is a third instance of the
+  same idiom rather than a dialog. It anchors to the counter, which is a single
+  element, so it needs no `anchor-scope` — that machinery exists because twenty
+  rows needed twenty anchors (D189) and one counter needs
+  one.
+  *Enforced by:* a template test asserting one add control, that the old label
+  and submit are gone, and that the field posts what the handler reads; plus a
+  browser case opening it and adding a code.
+- **The recorded popover exception widens, and the milestone says so rather
+  than letting the assertions notice.** `internal/ui/link_qr_test.go`'s
+  `TestTheQRSettingsRenderInTheTabsFlow` and `internal/ui/panel_test.go`'s
+  `strayPopoversIn`/`qrRowMenusIn` all refuse a popover inside `<main>` whose id
+  is not prefixed `qr-download-`, which is D189's exception
+  as written. This add prompt is a third popover on the surface, so those three
+  assertions are amended **in this milestone's diff** to name it — the same
+  silent-extension shape D189 was itself written to prevent. Widening them by
+  discovering a red test is not the same as widening them on purpose.
+  F237 warns the matcher is fragile to any new
+  popover spelling, which is a reason to check the new one is seen rather than
+  a reason to close that row here.
+- **The `+` icon is new** and goes in `partials/icons.html` on that file's
+  shape, which is m47.5.md:79-81's convention and LNK-M-0063's
+  precedent for four more.
+
+##### The controls answer the pointer
+
+- **Hover feedback is visible on the selected row.** `partials/link_qr.html:162` paints
+  the selected `<li>` `bg-sunken` and the row's controls all hover to
+  `hover:bg-sunken` (`:211`, `:261`, `:278`), so on the row a reader is most
+  likely to be on, the two controls they use most give no feedback at all.
+  Owner-reported. **This one is a defect rather than a preference** — the
+  affordance is written and does not appear.
+  *Enforced by:* a template test asserting the row's controls do not resolve to
+  the selected row's own background, and a browser case hovering a control on
+  the selected row and comparing the computed background against the row's.
+- **The default control's tooltip reads `Default QR Code` and
+  `Make Default QR Code`.** Owner-set, replacing
+  *"%s is the default code"* / *"Make %s the default code"*
+  (`partials/link_qr.html:257`, `:262`).
+  **There are two such pairs and this bullet named one**, amended at step 3.4
+  from an enumeration of two sites to one of four: the `links.read` branch
+  renders the same control unwritable at `:301` and `:306`, reading
+  *"%s is the default code"* / *"%s is not the default code"*. It moves with the
+  editor's pair — leaving it behind would put two naming conventions on one
+  list, and the glyph goes decorative on both branches alike, so the read-only
+  buttons would otherwise have to name themselves in the wording being replaced.
+  Its second string has no owner wording to copy, `Not the Default QR Code`
+  being the build's, since the owner's report names only a control they can
+  press. See decisions.md.
+  **The name loses the code's name and that is the owner's call**, taken
+  knowing a screen-reader user hears the same string on twenty rows; the row's
+  own link carries the name immediately before it.
+  **This reverses assertions LNK-M-0063 wrote**, which is the fourth written argument
+  this milestone overturns: `internal/ui/link_qr_test.go` asserts the current
+  strings at `:798-799`, `:882-883` and `:889`. They are amended in this
+  milestone's diff, named here rather than discovered as three red tests.
+- **The tooltip's hover zone is the whole button.** Today the tooltip is a
+  `<title>` inside the icon, which `partials/icons.html` draws at `h-3 w-3`
+  inside a `p-1.5` button — a ~12px target inside a ~30px control, which is why
+  it is hard to show. Owner-set: *"anywhere a click on the button would be
+  accepted should also show the tooltip."*
+  *Enforced by:* a template test asserting the tooltip is on the button rather
+  than only inside the icon, and a browser case hovering the button's edge —
+  inside the control, outside the glyph — and asserting the tooltip appears.
+
+##### The logo folds into the style section
+
+- **The `Logo` heading and its section go**, and the upload moves into the
+  style **section**. Owner-set: *"Upload a logo should be moved into the style
+  section and the header/text/section it is currently in should be fully
+  removed."*
+- **Section, not form, and the distinction is load-bearing.** `partials/link_qr.html:582-587`
+  argues the upload must be its own `<form>`: *"A file needs
+  `enctype="multipart/form-data"`, which the style form above cannot carry
+  without every one of its other buttons arriving in a body the handler does not
+  read."* HTML forbids nested forms, so the input cannot sit *inside* the style
+  form without `form=` attribute machinery nothing here asks for. It moves under
+  the style heading, in the same visual section, still posting to its own route.
+  *(Corrected at the plan review, which caught this bullet asserting a structure
+  the tree argues is impossible — it read "the file input is inside the style
+  form". The owner's word was section.)*
+- The heading is `partials/link_qr.html:635` and the input `:678`.
+  **This is LNK-M-0061's and LNK-M-0062's surface**, which
+  LNK-M-0063 deliberately did not restructure — *"touching it here would
+  put two milestones' work in one commit"*. That reasoning does not bind this
+  milestone, which is scheduled to touch it; what carries over is that the
+  logo's **behaviour** is not this milestone's, only its placement.
+  *Enforced by:* a template test asserting no `Logo` heading renders, that the
+  file input renders within the style section's markup, that it still carries
+  `enctype="multipart/form-data"` on its own form, and that the logo's own
+  controls — upload, replace, remove — all still render and still post where
+  they did.
+
+##### Deliberately not done
+
+- **No contrast warning icon.** F238(d) asks for a warning icon with a tooltip
+  when the two colours are too close, replacing the sentence that advises it.
+  It is **not in this milestone**: the product has no contrast metric — `grep
+  -rn -i contrast` over `internal/qr`, `internal/link` and `internal/httpx`
+  returns nothing, and its one hit anywhere in non-test Go is a comment at
+  `cmd/lctl/demo_phase2.go:1329` — so it is a computation to
+  choose and defend, not a control to draw, and choosing between a WCAG ratio
+  and a QR-specific luminance delta is a decision the owner has not been asked.
+  The advisory sentence at `partials/link_qr.html:573` **stays** until it is. Filed as
+  its own row rather than half-built here.
+- **No change to what a logo does**, only to where its control sits.
+- **No demo seeder row.** LNK-M-0060's and LNK-M-0061's rows already
+  seed a link with several codes and a logo, which is what this re-lays-out.
+- **No second script.** The file this milestone adds does one thing — bind two
+  inputs, and restore a scroll position if the build chooses that mechanism.
+  Anything else wanting script is a decision, not a follow-on.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0063 *(hard — eight of the ten limbs edit controls |
+| Discharges | F238, owner-approved as work |
+| Status | done |
+| LinkCtrl | M50.8 |
+
+---
+
+## LNK-M-0065
+
+**Account recovery: a forgotten password stops being permanent**
+
+milestone · 2026-08-07
+
+cites: [LNK-M-0060](#lnk-m-0060)
+
+cites: [LNK-M-0061](#lnk-m-0061)
+
+cites: [LNK-M-0068](#lnk-m-0068)
+
+cites: [LNK-D-0001](decisions.md#lnk-d-0001)
+
+cites: [LNK-F-0032](findings.md#lnk-f-0032)
+
+cites: [LNK-D-0087](decisions.md#lnk-d-0087)
+
+cites: [LNK-D-0009](decisions.md#lnk-d-0009)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-D-0038](decisions.md#lnk-d-0038)
+
+cites: [LNK-M-0023](#lnk-m-0023)
+
+cites: [LNK-F-0141](findings.md#lnk-f-0141)
+
+##### The mechanism
+
+- A `password_resets` table in the next free migration, **`03900`**, modelled on
+  `pending_registrations` (`01400_signup.sql:26`) rather than invented: a
+  `token_hash bytea` unique index, an `expires_at`, a `consumed_at`, and a
+  partial index on unconsumed rows so the purge is not a sequential scan.
+  Numbering note: the identity schema is `00200`, which is an area marker and
+  **not** a free band — the next free number is what this uses. *(Amended
+  2026-08-07: this file said `037xx`, which was the next free number when it was
+  written. LNK-M-0060 took `03700` and LNK-M-0061 took `03800` earlier
+  in this same run, so the next free number is `03900`. The reasoning — take the
+  next number, do not read the leading digits as a band — is what the note
+  asserts and it is unchanged.)*
+- The token is minted by `auth.NewOpaqueToken` and stored only as
+  `auth.HashOpaqueToken` (`internal/auth/session.go:113`, `:124`). No reversible
+  form of it is written anywhere, asserted by a test that greps the row for the
+  plaintext it just issued.
+- Two routes, joining the public block at `internal/httpx/router.go:532-572` and
+  therefore under the same `guard(...)` login limiter — the one on
+  `POST /login` at `router.go:535`:
+  `GET/POST /forgot` and `GET/POST /reset/{token}`. The API gets the same pair,
+  because *every UI feature has API support* is an inherited rule and this is not
+  an exception to it.
+- Consuming a reset writes the new hash through the same argon2 path
+  `POST /account/password` uses (`internal/httpx/web_keys.go:272`), so there is
+  one password-writing code path in the product and not two.
+
+##### What it refuses, each asserted by its own test
+
+- **A consumed token, an expired token, or a token for a second time** — 404,
+  not 410, so the three are indistinguishable to a caller enumerating.
+- **An account whose `status` is not `active`** (`internal/auth/service.go:374`).
+  A suspended account is not recoverable by the person who lost the password;
+  saying so is the operator's job, not the reset form's.
+- **An account with a null `password_hash`** — the SSO-only seam at
+  `internal/auth/service.go:378-379`. Nothing builds SSO this phase, so today
+  this branch is unreachable in practice; it is refused rather than left to do
+  something surprising when LNK-M-0068 or a later phase makes it reachable.
+- **The request, when no mailer is configured.** `mail.Enqueuer` is nil when
+  `SMTP_HOST` is unset (`internal/config/config.go:340` declares it;
+  `cmd/linkctrl/main.go:368` is where the nil is produced — *"no sender, no job,
+  and a nil Enqueuer at every consumer"*), and a reset request
+  that silently succeeds into a void is worse than the lockout it was meant to
+  cure. The form says the instance has no mailer and names the operator's route.
+  This is the one place the milestone deliberately breaks the *degrades
+  mail-free* pattern D1 established, and it breaks it by refusing loudly rather
+  than by degrading into nothing.
+
+##### Enumeration
+
+- The response to `POST /forgot` is byte-identical whether or not the address has
+  an account, and the same for timing to within the noise of an argon2 hash the
+  handler performs either way.
+- An address with no account receives a **mail saying so**, mirroring
+  `account-exists.txt` at signup (`internal/signup/signup.go:99`) rather than
+  inventing a second stance. The reasoning is the one already recorded for
+  signup: the channel that proves the address exists is the mailbox, and the
+  person holding the mailbox is entitled to know somebody tried.
+  **Stated cost:** this sends mail to addresses that never registered, which is
+  what an attacker gets for free. It is bounded by the login limiter and it is
+  the same bound signup already accepted.
+
+##### The token in a mail body
+
+- The reset mail is a new template under `internal/ui/templates/mail/`, parsed
+  with `missingkey=error` and beginning with `Subject:` like the other five
+  (`internal/ui/mail.go:49`, `:77`).
+- The body carries a live token, so it depends on `03200_mail_body_scrub.sql:47`
+  — `CHECK (status = 'pending' OR body = '')` — to erase itself at terminal
+  status. **This is asserted here, not assumed:** a test drives a reset mail to
+  `sent` and reads the row back to confirm the body is empty. F32 is why that
+  constraint exists; this is the first milestone whose secret depends on it.
+
+##### Blast radius of a successful reset
+
+- Every session for that account is revoked, and every outstanding reset token
+  for it is consumed. A recovery that leaves the thief's session alive has
+  recovered nothing.
+- API keys are **not** revoked. A key is a separate credential with its own
+  rotation story (D87, D9), and revoking them on a password reset would make
+  recovery an outage. Stated so the omission is a decision rather than a gap.
+- The reset is audited (`audit` depends on LNK-M-0016), with the actor
+  recorded as the account itself and the metadata naming the request's IP prefix
+  only — the privacy stance is inherited and this is not where it bends.
+
+##### Purge
+
+- Expired and consumed rows are deleted by the existing hourly `housekeeping`
+  pass under `advisoryLockKeyMaintenance` (`cmd/linkctrl/jobs.go:743`), batched
+  at the established `purgeBatch = 1000`, beside `DeleteExpiredSessions` and the
+  signup purge. **No new job family**, because a new advisory key and a new
+  goroutine to delete a handful of rows an hour is cost without a reason.
+
+##### Deliberately not done
+
+- **No recovery for the instance principal as such.** `lctl instance principal
+  move` (D98, F140) already repairs *who administers
+  the box*, and it is a different question from *who knows this password*.
+- **No security questions, no backup email, no admin-initiated reset.** The
+  first two are worse than the mailbox; the third is a permission model
+  question, and inventing one inside a recovery milestone is what D38 declined
+  to do in a signup milestone.
+- **No rate limit of its own.** The shared login bucket is the limiter, on
+  purpose: a per-route bucket would let an attacker burn one without touching
+  the other.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing hard. LNK-M-0023 built the mailer this needs and it |
+| Discharges | F141, and Plan.md's *Not in Phase 2* |
+| Status | done |
+| LinkCtrl | M51 |
+
+---
+
+## LNK-M-0066
+
+**Mid-phase adversarial review**
+
+milestone · 2026-08-07
+
+cites: [LNK-M-0053](#lnk-m-0053)
+
+cites: [LNK-M-0065](#lnk-m-0065)
+
+cites: [LNK-M-0036](#lnk-m-0036)
+
+cites: [LNK-D-0114](decisions.md#lnk-d-0114)
+
+cites: [LNK-D-0121](decisions.md#lnk-d-0121)
+
+cites: [LNK-D-0124](decisions.md#lnk-d-0124)
+
+cites: [LNK-D-0126](decisions.md#lnk-d-0126)
+
+cites: [LNK-M-0074](#lnk-m-0074)
+
+cites: [LNK-M-0059](#lnk-m-0059)
+
+- LNK-M-0053 through LNK-M-0065 re-read against their claims, to LNK-M-0036's method.
+- **Three things are verified by use rather than by test**, because this is the
+  half of the phase where using the product and reading the code reach different
+  bugs, and the redesign is the milestone type where that gap is widest:
+  - ~~the **eighteen** blind tasks that produced the redesign's definition of
+    done are re-run against the built tree, by somebody given the task and no
+    instructions~~ — **struck 2026-08-08, owner-answered: the tasks cannot be
+    re-run because they are not written down.** Only their *numbers* and the
+    notes they produced survive, scattered through
+    D114,
+    four milestone files and six deferred rows — task 1, 2, 4, 6, 7 and 9 are
+    each cited by what they *found*, and none of the eighteen prompts exists in
+    this repository. What replaces the bullet is the by-use record below and
+    nothing more: **D121's section ordering and D124/D126's QR placement go
+    un-rechecked this phase**, which is the cost of the answer and is stated
+    rather than absorbed. LNK-M-0074 inherits nothing here — it cannot
+    re-run them either. *(Said seven until 2026-08-07: that is round one, which
+    targeted the link page alone.)*;
+  - a fresh instance with **one** membership, because the workspace selector
+    renders nothing in that case today (`partials/nav.html:38`). LNK-M-0053
+    decides that a header **label** must render at every membership count and
+    asserts it by test, so what this checks is whether that decision survived
+    contact with the build — not, as this bullet once said, whether the redesign
+    decides the question at all;
+  - account recovery end to end on an instance **with** a mailer and on one
+    **without**, since LNK-M-0065 deliberately refuses on the second and a refusal is
+    the easiest thing in the phase to ship broken.
+- The QR claim from LNK-M-0059 — that an SVG at the set pixel size matches
+  the PNG — is checked by rendering both and looking at them, not only by the
+  test that asserts it. A geometric assertion can be true of two images that
+  both look wrong.
+- Every in-spec finding is fixed; every out-of-spec one lands in
+  deferred-findings.md for owner review.
+- Anything the review changes re-triggers validation from the top, per
+  workflow.md.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0053–LNK-M-0065. |
+| Discharges | nothing on the scope tables. It is the first of the phase's two |
+| Status | done *(range re-covered by LNK-M-0074)* |
+| LinkCtrl | M51.9 |
+
+---
+
+## LNK-M-0067
+
+**Account deletion and subject erasure**
+
+milestone · 2026-08-07
+
+cites: [LNK-D-0038](decisions.md#lnk-d-0038)
+
+cites: [LNK-M-0028](#lnk-m-0028)
+
+cites: [LNK-D-0087](decisions.md#lnk-d-0087)
+
+cites: [LNK-D-0098](decisions.md#lnk-d-0098)
+
+cites: [LNK-D-0036](decisions.md#lnk-d-0036)
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+cites: [LNK-D-0148](decisions.md#lnk-d-0148)
+
+cites: [LNK-F-0044](findings.md#lnk-f-0044)
+
+cites: [LNK-F-0187](findings.md#lnk-f-0187)
+
+cites: [LNK-M-0061](#lnk-m-0061)
+
+cites: [LNK-D-0134](decisions.md#lnk-d-0134)
+
+cites: [LNK-M-0065](#lnk-m-0065)
+
+##### The three dormant columns get an answer, and none of them stays dormant
+
+This is the falsified claim, so it is the first bullet. `users` carries
+`status` (`'active' | 'suspended' | 'deleted'`), `deleted_at` and
+`anonymized_at` (`00200_identity.sql:23-24`, `:54`, `:49` respectively), and **not one of
+them has a writer**. After this milestone:
+
+- `deleted_at` and `status = 'deleted'` are written by the deletion path. They
+  are what `users_email_key` — partial, on `deleted_at IS NULL` (`:57`) — has
+  always been shaped for: an address becomes reusable when its account is gone.
+- `anonymized_at` is written by the erasure pass, and marks the row whose
+  residue has been scrubbed. It is *not* a synonym for `deleted_at`; a row can
+  be deleted and not yet erased, and the gap between them is the job's lag.
+- `status = 'suspended'` **stays without a writer**, and this milestone says so
+  rather than leaving a reader to discover it. Suspension is a moderation
+  feature nobody has asked for; it is not erasure and it is not being smuggled
+  in here. A test asserts the enum still admits it and that nothing writes it,
+  so the next reader meets a stated absence.
+
+##### The operation
+
+- `DELETE /api/v1/account` and a UI path from the account page, acting on the
+  **acting account only**. There is no administrative delete-somebody-else in
+  this milestone: that is a permission-model question and D38's precedent is
+  that inventing one inside another milestone is the wrong place.
+- One transaction, on LNK-M-0028's reasoning: a partially deleted account leaves
+  sessions resolving to a person who no longer exists.
+- Confirmation is the account's own password, re-verified through
+  `internal/auth/service.go`'s existing path. `requireSessionActor` applies —
+  an API key may not delete the person who owns it (D87's limb: the subject is
+  the person, not the credential).
+
+##### What it refuses, each asserted by its own test
+
+- **The instance principal** (`03400_instance_principal.sql`, D98). Deleting the
+  account that administers the box leaves no path back that does not involve
+  SQL. `lctl instance principal move --to <email>` exists and is what the
+  refusal names.
+- **The sole owner of an organization that still exists.** LNK-M-0028 refuses
+  deleting the last owner for the same reason; this is the same refusal
+  approached from the other side. The account empties or hands over the
+  organization first, and the message says which organizations are blocking.
+- **Nothing else.** In particular it does **not** refuse an account that would
+  be left orphaned — belonging to nothing is a real state D36 already made real,
+  and `internal/auth/service.go:425-433` already handles it.
+
+##### What is removed
+
+By statements in the deleting transaction, one per table, asserted here rather
+than assumed: `memberships` (`00200:141`), `sessions` (`00200:162`), `api_keys`
+(`00500:5`), `notifications` (`00600:118`), `password_resets` (`03900:44`) and
+`instance_grants` (`03400:31`). A test counts rows before and after for an
+account holding at least one of each.
+
+*(Amended 2026-08-08 at step 3.4. This read "by
+foreign-key cascade, already in the schema" and named the first four. **A soft
+delete fires no foreign key** — every one of those clauses triggers on `DELETE`,
+and the deletion this milestone builds is an `UPDATE`, which the rest of the
+file requires: `anonymized_at` marks a row that survives, and the partial
+`users_email_key` exists to release an address a surviving row still holds. The
+last two joined the list because their own schema comments assert an outstanding
+reset token and an instance grant cannot outlive the account, and the soft
+delete would have made both false. A fact, not an assertion — nobody could have
+decided otherwise, since the alternative mechanism contradicts three other
+bullets in this file.)*
+
+##### What survives, and is erased in place instead
+
+The rows with no foreign key to `users`, which is deliberate in both cases.
+*(Still what **this milestone** scrubs, and no longer the criterion the sweep
+runs on: LNK-M-0075 widened it to `notifications` and `invitations`, which do
+carry a foreign key — to a different reader — and the criterion that holds over
+all four is now "a record about this person that ending the account does not
+remove". The enumeration lives on `EraseDeletedAccounts` in
+`internal/store/query/accounts.sql`. Noted here rather than rewritten, because
+what LNK-M-0067 built is what LNK-M-0067 built.)*
+
+- **`audit_logs`.** `actor_user_id` has no FK by design (`00600:137`, `:150`) —
+  an audit trail that vanishes with its actor is not an audit trail. The
+  identifying residue is the actor snapshot label
+  (`internal/audit/audit.go:532-556`), which holds an address. Erasure replaces
+  it with a stable tombstone that keeps the *same* actor distinguishable from
+  other actors across entries, and identifies nobody. A test asserts two entries
+  by the same erased actor still correlate and that the address is absent.
+  **D148 settles what the tombstone is**,
+  owner-set 2026-08-08 and answered before any of this was written: a
+  **constant** label, with `actor_user_id` surviving, so correlation is the id
+  on `audit_logs_actor_idx` and nothing is derived from anything. Two
+  consequences the bullets above do not carry — `docs/SECURITY.md` claims the
+  residue identifies nobody *from inside this instance* rather than that it is
+  anonymous, and the audit surface needs something id-derived beside the label,
+  because under a constant every erased actor renders the same.
+- **`destination_disputes`.** `created_by` has no FK and the table's own comment
+  says the row must stay readable after the account is gone
+  (`01600_destination_disputes.sql:53-63`). It holds **two** address-bearing
+  snapshots, not one — `created_by_label` (`:64`) for whoever filed the dispute
+  and `decided_by_label` (`:68`) for whoever decided it — and each has its own
+  id column to find rows by (`created_by` `:60`, `decided_by` `:67`). F44 names
+  it as the second table with **no deletion path of any kind**. Erasure scrubs
+  **both**, because an account is as identifiable as the moderator of a dispute
+  as it is as the filer of one; the dispute and its outcome stay.
+
+  **Both, in one statement, within one batch** — added 2026-08-10 by this
+  milestone's reopening, which
+  F187 forced. *Erasure scrubs both* was what
+  this bullet asserted and what the pass did not do: the two columns were written
+  by two data-modifying CTEs, `scrubbed_filed` and `scrubbed_decided`, and
+  Postgres applies one of two such statements against a single row and silently
+  drops the other. A row is in both halves of one batch in two ordinary
+  situations — a dispute somebody filed and then ruled on themselves, and two
+  accounts deleted within the same hour where one decided the other's dispute —
+  and both leave the pass stamped `anonymized_at`, so nothing came back for the
+  address that survived. One `UPDATE`, two `CASE`s, joined against the `batch`
+  CTE, which is the shape `scrubbed_audit` had already been corrected into.
+  **The bullet was not wrong; the tree was**, which is why this is a reopening
+  rather than an amendment. Asserted by
+  `TestErasureScrubsBothDisputeLabelsWhenOneBatchTakesBothAccounts`, which erases
+  three accounts in one pass and carries a third dispute whose decider survives,
+  because a single statement setting both columns unconditionally would satisfy
+  the claim above while destroying a live person's record.
+
+`click_events` and `visitors` need nothing: the privacy stance means there is
+no account identity in them to erase, and they age out by partition at
+`ANALYTICS_RETENTION_DAYS`.
+
+##### Uploaded content, which a foreign key does not reach
+
+**Added 2026-08-07 by LNK-M-0061**, which gives this product its first
+user-uploaded file — a QR logo. It lives in `qr_codes.logo`, a `bytea` column
+(D134, owner-set 2026-08-07 and built
+against by LNK-M-0061), so removal comes from the foreign keys already there rather
+than from a statement this milestone has to write. *(Corrected from "whether it
+lives in a column, on a filesystem path or in an object store is LNK-M-0061's
+decision" — the question was answered before LNK-M-0061 was built.)*
+
+**Account erasure reaches no logos, and saying so is the point.** An earlier
+draft of this section claimed deletion removes every logo belonging to the
+account's workspaces and organizations. It cannot: logos hang off `qr_codes` →
+`links` → workspaces and organizations
+(`00600_phase2_dormant.sql:55-57`), never off `users` — and the refusal above
+means an account that is the sole owner of a surviving organization **cannot be
+deleted at all**. So every organization the account belongs to outlives it, and
+a bullet that deleted their logos would be destroying a surviving tenant's data.
+
+What this milestone therefore owes is narrower and checkable:
+
+- **Nothing.** No logo is removed by account deletion, and a test asserts it —
+  an account is deleted while a co-owned organization holds a logo, and the
+  bytes are still there afterwards. The claim worth protecting is that erasure
+  does not over-reach, which is the direction this could have failed in.
+- Logos are removed by **container deletion** — the code, the link, the
+  workspace, the organization — and by LNK-M-0061's **orphan sweep**, both of which
+  are that milestone's to build and test.
+- The erasure sweep's own idempotence is unaffected: it has no file limb.
+
+*(Corrected 2026-08-07, from review. The original bullet was wrong in the
+dangerous direction, and its test could not have been written: a logo needs an
+organization, a deletable account is not that organization's sole owner, so
+another owner exists and the logo has to survive.)*
+
+##### The erasure pass
+
+- A batched sweep inside the existing hourly `housekeeping` pass under
+  `advisoryLockKeyMaintenance` (`cmd/linkctrl/jobs.go:743`), at the established
+  `purgeBatch = 1000`. **No new job family**, for the reason LNK-M-0065 gives: a new
+  advisory key for a sweep that usually finds nothing is cost without a reason.
+- It is idempotent and re-entrant, because the two-leader window during a
+  rolling deploy is a stated property of this scheduler
+  (`cmd/linkctrl/jobs.go:117-127`) and not something this milestone gets to
+  assume away. Asserted by running the pass twice and diffing.
+- The lag between `deleted_at` and `anonymized_at` is bounded by the hourly
+  cadence and is **documented as a number in `docs/SECURITY.md`**, because a
+  compliance reader is entitled to know that erasure is not instantaneous. Access
+  ends inside the deleting transaction; only the residue waits.
+
+##### Documentation this milestone must true up
+
+Six sites currently assert the absence, and every one of them becomes wrong on
+the day this lands. They are part of the milestone, not cleanup for LNK-M-0075:
+`00200_identity.sql:35-49`, `00400_analytics.sql:10,13`,
+`00600_phase2_dormant.sql:141`, `docs/SECURITY.md`'s *What is not defended*
+(`:81-95`) and its audit-log row (`:52`), `internal/audit/audit.go:532-556`, and
+`docs/data-model.md:94`, `:150-152`. **Counted, not recalled** — the enumeration
+rule exists because four wording rows once turned out to have more sites than
+they listed, and F44's own line numbers went stale between being written and
+being read.
+
+##### Demo
+
+`demoCoverage()` gains a row. A deleted account shows nothing by construction,
+so what the demo seeds is the **residue**: an audit entry whose actor is an
+erased tombstone, sitting beside entries from live actors, which is exactly what
+an evaluator should see before trusting the feature.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0065, as an *ordering preference* rather than a hard |
+| Discharges | F44, and Plan.md's *Not in Phase 2* |
+| Status | done |
+| LinkCtrl | M52 |
+
+---
+
+## LNK-M-0068
+
+**A second factor: TOTP, enrolment, and recovery codes**
+
+milestone · 2026-08-07
+
+cites: [LNK-D-0072](decisions.md#lnk-d-0072)
+
+cites: [LNK-M-0070](#lnk-m-0070)
+
+cites: [LNK-M-0067](#lnk-m-0067)
+
+cites: [LNK-M-0065](#lnk-m-0065)
+
+cites: [LNK-D-0087](decisions.md#lnk-d-0087)
+
+##### Scope, stated as a refusal first
+
+- **TOTP (RFC 6238) only.** No WebAuthn, no passkeys, no SMS, no push. Each is a
+  separate credential model with its own recovery story; SMS is worse than what
+  it replaces. The three are named here so their absence is a decision.
+- **No new module dependency.** RFC 6238 is HMAC over a time counter —
+  `crypto/hmac`, `crypto/sha1`, `encoding/base32`, all standard library. A test
+  asserts `go.mod`'s require block is unchanged by this milestone, in the idiom
+  D72 established when it refused a QR library for pulling stdlib packages in on
+  a path nothing called.
+- **No outbound connection.** `docs/SECURITY.md`'s egress row stays at whatever
+  count LNK-M-0070 leaves it at; this milestone adds nothing to it.
+
+  **The mechanism is a new scan, not an existing one**, and saying so is the
+  point. An earlier draft named the scan that guards the destination judge —
+  `TestThisPackageOpensNoSocketOfItsOwn` in `internal/link/feed_test.go:49` —
+  which reads `os.ReadDir(".")` and therefore only ever sees `internal/link`.
+  LNK-M-0068's code lands in `internal/auth` and `internal/httpx`, which that test
+  cannot reach, so it would have passed while the thing it was cited for went
+  unchecked. This milestone extends the scan to the packages it actually
+  touches, in the same shape: a source scan that fails the build on an
+  outbound-HTTP or name-resolution symbol. *(Corrected 2026-08-07, from review.
+  The template requires enforcement named as a mechanism — a test that fails,
+  not review vigilance — and the named test could not fail.)*
+
+##### Enrolment
+
+- The enrolment page renders the `otpauth://` URI as a QR code **through
+  `internal/qr`**, which is already in the tree and already renders SVG on a
+  request. This is the milestone's one deliberate reuse across work areas: the
+  QR generator built for links serves the second factor for free, and it is a
+  new call site rather than a new capability. `qr.MaxContent = 1024` bounds the
+  URI comfortably.
+- The secret is shown in text beside the QR, because a person enrolling from the
+  same device cannot scan their own screen.
+- `mfa_enabled_at` is written **only after a code from that secret verifies**.
+  An enrolment that is started and abandoned leaves the account exactly as it
+  was, asserted by test. Half-enrolled is not a state this product has.
+
+##### The secret at rest
+
+- `mfa_secret` is encrypted at rest, not hashed — TOTP needs the secret back.
+  The key comes from **its own configuration variable**, not from
+  `LINKCTRL_API_KEY_PEPPER`.
+- **The reason is stated because reuse is the tempting answer:** the pepper is
+  bound to retained API-key rows, and
+  instances.md already documents that rotating
+  it silently invalidates every issued key. Sharing it would mean rotating an
+  API-key secret also locks every account out of its second factor, coupling two
+  credential lifecycles that have nothing to do with each other.
+- Losing the new variable locks every enrolled account out of the second factor
+  and no further. That consequence is documented in `docs/configuration.md`
+  beside the variable, in the same terms the pepper's is.
+
+##### The login flow
+
+- The interposition is between `RecordSuccessfulLogin`
+  (`internal/auth/service.go:412`) and the session mint (`:449`, `s.q.CreateSession`)
+  — the password is verified, and no session token exists until the second factor
+  is. *(Amended 2026-08-08: the mint read `:430`, which is now a blank line.
+  LNK-M-0067 extracted `VerifyPassword` out of this file's password path and moved
+  everything below it down; `RecordSuccessfulLogin` at `:412` did not move.)*
+- Between the two steps the server holds a short-lived, single-use pending
+  token; the browser never holds the password past the first post. Its TTL is
+  minutes and is asserted by test.
+- Failed second-factor attempts count against the **same** lockout policy as
+  failed passwords (`internal/auth/session.go:223`). A separate counter would
+  give an attacker a fresh budget for having got the password right, which is
+  backwards.
+- The refusal is written through `writeSignInRefused`
+  (`internal/httpx/api_auth.go:148`) so the API and the web surface cannot
+  disagree about what a rejected sign-in looks like.
+- Replay is refused: a code that has just succeeded cannot succeed again inside
+  its own window. Asserted by test.
+
+##### Recovery codes
+
+- Ten single-use codes, issued at enrolment, stored with the same
+  `HashOpaqueToken` pattern the rest of the product uses
+  (`internal/auth/session.go:124`). Shown once. Regenerable, which invalidates
+  the previous set.
+- Using one is audited and notifies the account, because a recovery code being
+  spent is the signal that either the phone is gone or somebody else has it.
+
+##### How LNK-M-0065 and LNK-M-0068 interact, decided here rather than discovered
+
+- **A password reset does not bypass the second factor.** Proving control of a
+  mailbox is one factor; letting it stand in for the other makes MFA worth
+  exactly the mailbox. A reset therefore lands the account at the code prompt.
+- Which means an account that has lost both the password and the phone is
+  recovered by a **recovery code**, and an account that has lost all three is
+  recovered by the operator. That chain is documented, and it is the honest
+  answer rather than a fourth mechanism.
+- **API-key authentication is unaffected.** A key is not a person and has no
+  second factor; D87 already says the session is the authority for operations
+  whose subject is the person. Disabling MFA is such an operation, so
+  `requireSessionActor` guards it. Asserted by test.
+
+##### Disabling
+
+- Requires the password **and** a current code or a recovery code. Audited and
+  notified. Clearing `mfa_enabled_at` clears the secret and every unused
+  recovery code in the same transaction.
+
+##### Enforcement, deliberately absent
+
+There is no organization-level *require MFA for all members* policy. It needs a
+permission, an enforcement point on every session resolution, and an answer for
+members who cannot enrol — a policy feature wearing an authentication milestone's
+clothes. Named so a later reader knows it was considered.
+
+##### Demo
+
+`demoCoverage()` gains a row: one seeded account has MFA enabled, so the
+account page shows the enrolled state rather than an empty offer.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0065, and the edge is **hard**. A second factor makes |
+| Discharges | the *MFA, OAuth, OIDC, SSO, SCIM* row in Plan.md's *Not in Phase |
+| Status | done |
+| LinkCtrl | M53 |
+
+---
+
+## LNK-M-0069
+
+**An API key belongs to an account, not to one organization**
+
+milestone · 2026-08-05
+
+cites: [LNK-F-0103](findings.md#lnk-f-0103)
+
+cites: [LNK-M-0073](#lnk-m-0073)
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+cites: [LNK-F-0183](findings.md#lnk-f-0183)
+
+cites: [LNK-F-0178](findings.md#lnk-f-0178)
+
+cites: [LNK-M-0049](#lnk-m-0049)
+
+cites: [LNK-D-0043](decisions.md#lnk-d-0043)
+
+cites: [LNK-D-0087](decisions.md#lnk-d-0087)
+
+cites: [LNK-F-0075](findings.md#lnk-f-0075)
+
+cites: [LNK-M-0067](#lnk-m-0067)
+
+##### The model
+
+- `api_keys.organization_id` becomes **nullable** in migration `04200`. Null
+  means *every organization the owner belongs to*; non-null means *pinned to
+  this one*. Existing rows keep their organization, so no issued key changes
+  reach on the day of the migration — asserted by a test that resolves a key
+  minted before the migration and gets the same identity back.
+- Pinning stays available on purpose. Removing it would force a key issued for
+  one tenant to widen when its owner joins a second, and there is no way to
+  narrow it back.
+- `api_keys_org_idx` (`00500:36`) is rebuilt for a nullable column, and the
+  `OwnerIsMember` correlated subquery (`apikeys.sql:39-40`, `:84-85`) becomes a
+  membership test against the *resolved* organization rather than against the
+  key's column.
+
+##### Authority, resolved per request
+
+- A key's effective permissions in an organization are its stored scopes
+  **intersected with the owner's authority in that organization**, evaluated at
+  request time. The intersection is currently
+  taken against one role because there was only one; with several it is taken
+  against the role that applies where the request landed.
+
+  *(Amended 2026-08-08 at step 1's successor,
+  3.4. This named `LoadMembershipAuthority` as the
+  mechanism. That function takes **one** `permission string`
+  (`internal/auth/authority.go:66-68`) and answers authority for it, so routing a
+  whole scope set through it is one query per scope on the authentication path.
+  The assertion — the intersection, taken at request time, against the role that
+  applies where the request landed — is unchanged and is what the tree does. The
+  function is still used where the question genuinely is authority in an
+  organization the caller is not acting in.)*
+- Consequence, stated rather than left to be found: **the same key is more
+  powerful in one organization than another**, and a key whose owner is demoted
+  loses reach without being touched. Both are correct and both will surprise
+  somebody, so both are documented and asserted by test.
+- The owner having **no membership at all** in the resolved organization is
+  `ErrAPIKeyInvalid`, the same refusal `apikey.go:700` already makes.
+
+##### The two questions the scope row said must be decided
+
+- **A key reaches an organization its owner joined *after* the key was minted.**
+  Yes, for an account-wide key — that is what account-wide means, and the
+  alternative is a key whose reach is a snapshot of a membership list nobody can
+  see. Somebody who wants the snapshot pins the key. **This is the decision most
+  likely to be disagreed with**, so it is recorded with its alternative, not
+  merely stated.
+- **`workspace_id` keeps its meaning.** A workspace-scoped key is pinned by
+  construction, because a workspace belongs to exactly one organization. Setting
+  both a workspace and a null organization is refused by a check constraint
+  rather than by convention.
+
+##### The four reversals, each re-derived and each recorded
+
+Not one of these may be inherited. The milestone names which limb it matched, in
+the idiom the inherited permission rule requires.
+
+- **F103's bound** — a key's reads were bounded to
+  one organization *because the workspace switcher exists to cross organizations
+  and a key was issued for one*. The premise is what changes: a key is now
+  issued by an account, so the reasoning that justified the bound no longer
+  applies to an account-wide key. It still applies, unchanged, to a pinned one.
+  F103's row is amended, not deleted.
+
+  *(Amended 2026-08-11 at LNK-M-0073, recording what LNK-M-0075
+  changed. As written this said the bound no longer applies to an account-wide
+  key at all. Since LNK-M-0075 such a key's reads are bounded by the organizations it
+  has been **cut out of**: F183 found
+  `GET /api/v1/workspaces` still listing a barred organization to the revoked
+  key, and the tree now resolves both reaches through one predicate,
+  `Identity.keyReaches` (`internal/auth/service.go:105`, applied at
+  `internal/auth/workspace.go:145`), so a reach revocation stops the key
+  reading about the tenant as well as acting in it. Its companion
+  F178 put those bars on the owner's own key
+  list, so the narrowing is visible to the person it binds.)*
+- **LNK-M-0049's `organization_id` parameter on `ResolveWorkspaceForUser`** — it exists
+  so an organization-wide key cannot land in a tenant it was never issued for.
+  It stays, and for an account-wide key it is fed the organization the request
+  resolved to rather than the key's column.
+- **D43's
+  role cap** on key-issued invitations — re-derived per organization. The cap is
+  against the owner's role *there*, not against a role they hold elsewhere. A
+  key that could manufacture an interactive principal in a tenant where its
+  owner is a member has stepped around the permission map, which is the exact
+  thing D43 exists to stop.
+- **D87's
+  rotation rule** — rotation is authorized by the key's own token and must
+  produce an *identical-or-narrower* successor. Narrower now has a second axis:
+  a successor may not reach more organizations than its predecessor. An
+  account-wide key may rotate into a pinned one; a pinned key may not rotate
+  into an account-wide one. Asserted by test in both directions.
+
+##### F75's asymmetry, gone rather than filtered
+
+- `RevokeAPIKey` and `ListAPIKeysForUser` are both scoped to the owner alone.
+  The `204`-versus-`404` existence oracle against guessed key ids disappears
+  because the two statements no longer disagree.
+- `revokeInOrganization` (`apikey.go:609`) — the administrative path — stays
+  organization-scoped and gains an explicit rule for account-wide keys: an
+  administrator may revoke a key's **reach into their organization**, and may
+  not revoke a key belonging to somebody else's account outright. Whether that
+  is a row, a column or a refusal is the implementation's choice; that it is
+  distinguishable from a full revoke is not.
+
+##### Audit
+
+Every key-authenticated action keeps recording **which organization it acted
+in**, which it already does and which matters more now that the answer varies
+per request. Asserted by a test that drives one key through two organizations
+and reads two differently-attributed entries back.
+
+##### OpenAPI and the contract test
+
+The key-creation operation gains an optional organization, and the key
+representation gains its reach. Both are replayed by the contract test, per the
+inherited rule.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0067, and the edge is **hard but narrow**. |
+| Discharges | F75, and Plan.md's *Not in Phase 2* |
+| Status | done |
+| LinkCtrl | M54 |
+
+---
+
+## LNK-M-0070
+
+**An update checker, and the fifth thing that leaves this product**
+
+milestone · 2026-08-06
+
+cites: [LNK-M-0052](#lnk-m-0052)
+
+cites: [LNK-D-0098](decisions.md#lnk-d-0098)
+
+cites: [LNK-D-0149](decisions.md#lnk-d-0149)
+
+cites: [LNK-M-0017](#lnk-m-0017)
+
+##### The check
+
+- One `GET` to the GitHub releases API for this repository, at most once a day,
+  with a bounded timeout and no retry storm. A failure is logged at debug and is
+  never fatal, never surfaced to a user, and never blocks startup or shutdown.
+- It runs as its **own job family** in `cmd/linkctrl/jobs.go:231`'s
+  `families()` with its own advisory key from the block at `:145-155`, the next
+  after `advisoryLockKeyMaintenance` (`0x6c63_6a6f_6273_0105`). It could have
+  been a step inside the hourly `housekeeping` pass, and it deliberately is not:
+  this is the only scheduled work in the product that opens a socket outwards,
+  and putting it inside a family called *maintenance* is how egress stops being
+  auditable in one place.
+- It runs under leadership, so an eight-replica deployment makes one request a
+  day and not eight.
+
+##### What the request reveals, enumerated rather than summarized
+
+- The instance's source address, and the version string in the `User-Agent`.
+  **Nothing else.** No instance identifier, no deployment size, no link counts,
+  no configuration. Asserted by a test that captures the outgoing request and
+  compares it against an exact expected form — a test that fails when a field is
+  added, which is the point.
+- The response is read for a version and discarded. Nothing from it is stored
+  beyond the version string and the time of the check.
+
+##### It follows the rules the other two outbound clients already follow
+
+Both existing operator-facing clients refuse redirects — `internal/feed/feed.go:165-168`
+and `internal/webhook/client.go:50-54` — and the webhook dialer checks every
+resolved address before `connect(2)` (`client.go:44-48`). This client refuses
+redirects on the same reasoning. It does **not** get the address check, because
+the destination is a compile-time constant rather than something a user chose,
+and the milestone says so rather than leaving the difference unexplained.
+
+##### The egress row is re-counted
+
+`docs/SECURITY.md:78` enumerates four connections *"rather than counted, because
+this row said two until LNK-M-0052 and both of the missing ones were shipped
+features"*. This milestone makes it **five**, in the operator's group, which
+becomes three. The count is written by counting the enumeration, not by adding
+one to the previous sentence.
+
+The source scan that fails the build on outbound symbols in the destination
+judge (`internal/dnsx`) is not weakened. If the new client needs to be visible
+to it, it is added to the scan's allowlist explicitly, so a later *just check the
+host resolves* still cannot become undisclosed egress.
+
+##### Version comparison
+
+- The comparison is against `internal/build.Get().Version`
+  (`internal/build/build.go:40`). A build with no stamped version falls back
+  to the VCS stamp and then to `"dev"` (`:52-75`), and **a build reporting
+  `"dev"` never notifies** — a development binary telling its operator to
+  upgrade is noise.
+- Pre-releases and drafts are ignored.
+- An unparseable remote version is a no-op, not an error surface.
+
+##### The notification
+
+- One in-app notification to the **instance principal** (D98,
+  `03400_instance_principal.sql`), not to every account. Whether the box is up
+  to date is an operator's question; a workspace member cannot act on it.
+- It is not repeated for a version already notified. Asserted by test.
+- No mail. The audit-growth notification earned mail because it warns of
+  something that gets worse if ignored; a newer release does not.
+
+##### Configuration and documentation
+
+- One variable, documented in `docs/configuration.md` with its default and with
+  what the check sends — the enumeration above, not a summary of it.
+- `docs/deployment.md` gains the note for air-gapped and egress-restricted
+  deployments: what fails, how loudly, and how to turn it off.
+- `docs/SECURITY.md` gains the row described above.
+
+##### Demo
+
+`demoCoverage()` gains a row. That was the *default on* limb and D149 chose it,
+so the demo runs the check rather than seeding the notification directly — the
+other limb existed to avoid a demo that quietly enables a default-off feature,
+and there is no longer a default-off feature to misrepresent. The demo instance
+therefore makes an outbound request every day, which is now true of any instance
+whose operator answered the first-run prompt the same way.
+
+*(Four line references amended 2026-08-08 at step 1, none of them changing what
+this file asks for: `families()` `:210`→`:231`, the advisory-key block
+`:128-142`→`:145-155`, `build.Get()` `:17-21`→`:40`, and `docs/SECURITY.md`'s
+egress row `:73`→`:78` at both of its mentions. The decision log carries the
+tree facts.)*
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. The edge to LNK-M-0017 is backwards, into a phase |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-06, from |
+| Status | done |
+| LinkCtrl | M55 |
+
+---
+
+## LNK-M-0071
+
+**High availability: the failover contract**
+
+milestone · 2026-08-06
+
+cites: [LNK-D-0077](decisions.md#lnk-d-0077)
+
+cites: [LNK-M-0066](#lnk-m-0066)
+
+cites: [LNK-F-0173](findings.md#lnk-f-0173)
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+cites: [LNK-M-0072](#lnk-m-0072)
+
+cites: [LNK-D-0104](decisions.md#lnk-d-0104)
+
+cites: [LNK-M-0070](#lnk-m-0070)
+
+cites: [LNK-M-0018](#lnk-m-0018)
+
+##### The endpoints stop being an implementation detail and become a contract
+
+Today's behaviour is deliberate and undocumented as a promise:
+
+- `/healthz` touches neither Postgres nor Redis (`internal/httpx/health.go:55-61`),
+  because a database outage that failed every liveness probe would restart every
+  replica at once.
+- `/readyz` reports `draining` → 503, Postgres unreachable → `unavailable` 503,
+  Redis unreachable → `degraded` **200** (`health.go:66-72`, `:125-135`), cached
+  for one second (`readyCacheTTL`, `:42`, read at `:84`).
+
+This milestone pins all of it by test and writes it down as what an operator may
+rely on. Specifically:
+
+- **Liveness never depends on a dependency.** Asserted by a test that takes
+  Postgres away and confirms `/healthz` still answers 200.
+- **Readiness distinguishes *degraded* from *unavailable*, and the load balancer
+  contract is stated in those terms**: remove a replica from rotation on 503,
+  keep it on 200, and a `degraded` replica is a serving replica. An operator who
+  treats `degraded` as *remove* takes the whole deployment out during a Redis
+  outage, which is the exact failure this distinction exists to prevent.
+- **There is no startup probe, and that is now a stated choice** rather than an
+  omission. Migrations run before the listener binds, so *not yet ready* and
+  *not yet listening* are the same observable state.
+
+##### Failover of scheduled work
+
+- Leadership is already per job family via `pg_try_advisory_lock`
+  (`cmd/linkctrl/jobs.go:436-466`, the call at `:444`), and a lock is released
+  the instant its holder dies (`:136-140`). That is the failover mechanism, and this milestone tests it as
+  one: kill a leader mid-tick and assert a follower picks the family up within a
+  bounded time, with the work neither lost nor done twice.
+- The **two** jobs that deliberately run on every replica — `runHostReload`
+  (`jobs.go:647`) and `reportJobStaleness` (`:513`), neither of which calls
+  `withLeadership` — are documented as such with the reason. An operator reading
+  a metric that appears once per replica should not have to reverse-engineer
+  why. *(Amended 2026-08-08: this said **three** and named the audit-size gauge
+  as the third. The gauge runs inside `runMaintenance` under
+  `advisoryLockKeyMaintenance` — `jobs.go:792-794`, the
+  `"audit-growth-warning"` leadership call — so it is leader-only and belongs on
+  the other side of this distinction. Counted from the tree, not recalled.)*
+- `linkctrl_rollup_staleness_seconds` is named as the cross-replica liveness
+  signal to alert on, because a per-replica *job skipped* count is not one:
+  followers skip by design.
+
+##### Failover of in-flight work
+
+- **Webhook deliveries** are claimed with `FOR UPDATE SKIP LOCKED` under a 60s
+  lease (`internal/webhook/webhook.go:232-240`), so a killed replica's claims
+  return on their own. Asserted by a test that kills mid-drain and confirms the
+  delivery completes elsewhere without duplicating.
+- **The mail outbox** has the same shape and gets the same test.
+- **Analytics events** do not, and this milestone states the gap rather than
+  closing it: `internal/analytics/ingest.go:157-172` drops on a full queue and
+  loses whatever is buffered when the shutdown budget expires. It is a bounded,
+  measured, in-process queue by decision (D77), and making it durable is *Redis
+  Streams as a work queue* — a candidate this phase did not take. What the
+  contract says is therefore precise: **a replica killed without draining loses
+  at most its buffered click events, and nothing else.**
+
+##### Graceful shutdown, as a promise with a number
+
+`internal/platform/httpserver/server.go:73-127` already sequences
+`OnDrain` → `DrainDelay` → `Shutdown` → `OnShutdown`, with `/readyz` failing
+first (`docs/operations.md:30-32`). This milestone turns that into a stated
+contract: the drain delay must exceed the load balancer's health-check interval
+times its failure threshold, and the documentation gives the arithmetic rather
+than a recommended number, because the number belongs to the operator's load
+balancer and not to this product.
+
+##### Startup, which is the half the drain contract does not cover
+
+**Added 2026-08-08 from LNK-M-0066's triage, owner-scheduled.**
+F173 is a failover defect and this is the failover
+milestone, so it is worked here rather than waiting for LNK-M-0075: a
+configured but unreachable SMTP relay is probed *before* the HTTP listener
+starts, so a replica serves nothing for the whole of `LINKCTRL_SMTP_TIMEOUT` at
+every boot — **measured at 10.05 seconds**, which is the shipped default.
+
+- The probe stops gating the listener. Whether it moves after it or into a
+  goroutine is this milestone's to decide and to record; what it may not do is
+  keep a replica dark while a relay that this product does not depend on fails
+  to answer.
+- The claim the fix restores is the code's own, at `cmd/linkctrl/main.go:388-396`
+  — *"the relay being down is not a reason for a link shortener to stop serving
+  redirects"*. It is written there today and it is not true today.
+- **A rolling deploy is where it bites**, which is why it lands here: the new
+  replica is unready for the timeout at every start, and a health check whose
+  start period is shorter fails it outright. `docker compose up --wait` already
+  does, at a longer configured timeout — the run that found this is in F173's
+  evidence.
+- The drain contract above gets its mirror: shutdown has a number and startup
+  does not, and a failover contract that bounds only one end bounds nothing.
+
+##### What a single instance is promised
+
+Every mechanism above is either already present in a one-container deployment or
+optional in it:
+
+- Advisory locks work with one replica; the holder is always the only candidate.
+- Redis absent means invalidation is local and rate limits are per-replica, both
+  of which are already the documented degradation.
+- **No load balancer is required, no second Postgres is required, no external
+  coordinator is introduced.** This milestone adds no component.
+
+Asserted properly in LNK-M-0072; asserted here to the extent that the
+existing single-instance integration suite passes unmodified, which is a weaker
+claim and is labelled as one.
+
+##### Documentation
+
+`docs/deployment.md:636` — *"Scaling, honestly"* — is the section this
+milestone rewrites, and `:641` currently still says *"That was the limitation
+that made 0.1.0 a single-instance product"*. `docs/operations.md:10-32` gains the
+load-balancer contract beside the health-endpoint table (`:12-13`, and the
+degradation paragraph at `:15`). `Plan.md:374-375` were read and are
+unchanged deliberately — they are the *Cache* and *Queue* rows, both still true,
+and what this milestone creates is the invariant now sitting below them.
+
+**`README.md:117` does not follow here, and the sentence that said it did was
+wrong about process rather than about substance.** D104
+predates this file and settles it: README describes the *released* product, it is
+not in the commit gate, and the phase's features land in it at the close when the
+tag makes them released. Nothing LNK-M-0071 builds makes `:117`'s *Operations* row
+false — multi-replica support is an **addition** to it, which is exactly the case
+D104 defers. *(Amended 2026-08-08 at step 3.4. The worker met the sentence as
+written, reported the conflict with workflow.md's Docs gate verbatim, and
+touched nothing — which is what a worker does with a bullet it may not amend.)*
+
+##### Deliberately not done
+
+- **No leader identity metric or UI surface.** Knowing *which* replica holds a
+  family is an operational nicety; knowing the work is happening is
+  `linkctrl_rollup_staleness_seconds`, which exists.
+- **No automatic failover of anything stateful.** Postgres and Redis
+  availability are the deployment's problem, and this product's contribution is
+  to degrade predictably and say which state it is in.
+- **No session affinity requirement.** If one is discovered to be necessary, that
+  is a finding, not a feature.
+
+*(Nine line references amended 2026-08-08 at step 1,
+none of them changing what this file asks for. Most had drifted by tens of lines;
+`jobs.go`'s moved again the same day when LNK-M-0070 added an eighth job
+family, and `docs/deployment.md`'s *Scaling, honestly* had moved sixty. The
+decision log carries the tree facts. `README.md:117` and `Plan.md:374-375` were
+checked and still resolve.)*
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing in this phase. Backwards edges into LNK-M-0018 |
+| Discharges | the *high availability* half of Plan.md's *Other surfaces* row |
+| Status | done |
+| LinkCtrl | M56 |
+
+---
+
+## LNK-M-0072
+
+**High availability: measured, and still one container**
+
+milestone · 2026-08-06
+
+cites: [LNK-M-0060](#lnk-m-0060)
+
+cites: [LNK-M-0074](#lnk-m-0074)
+
+cites: [LNK-D-0107](decisions.md#lnk-d-0107)
+
+cites: [LNK-M-0071](#lnk-m-0071)
+
+cites: [LNK-M-0070](#lnk-m-0070)
+
+##### A rolling deploy, measured rather than asserted
+
+- A measured rolling replacement of every replica while traffic runs, using the
+  existing k6 harness from docs/slo.md against the composed
+  stack. The container must be recreated first — `docker compose up -d
+  --force-recreate --wait app` — or the run measures the previous image and
+  passes for the wrong reason.
+- Recorded, with the numbers written where the measurement was taken and not
+  summarized elsewhere: **requests failed**, **requests retried**, and **cached
+  p99 during the replacement** against the 20ms target the redirect path is held
+  to.
+- **The number is whatever it is.** If a rolling deploy drops requests, the
+  measurement says so and the finding is filed; a milestone that can only pass
+  by producing a good number is a milestone that will produce one.
+
+This is one of the phase's **three** k6 runs. The others are LNK-M-0060's,
+which parses a second query parameter on the redirect path, and
+LNK-M-0074's re-measurement on the final build. It is worth naming that
+phase-3-candidates.md excluded work area D partly
+because *every row there owes the `slo.md` k6 measurement* — that reasoning
+stands, because it was about six rows each owing one, and this phase pays for
+three. *(Corrected 2026-08-07, from review: this said two and so did LNK-M-0060, while
+LNK-M-0074 has always required a re-measurement on the final build. The count was
+load-bearing — it was part of the argument for declining area D — which is why
+it is corrected here rather than quietly.)*
+
+##### The two-leader window: closed, or measured and stated
+
+`cmd/linkctrl/jobs.go:145-155` states it plainly — during a rolling deploy the
+gen-0 binary holds the retired advisory key while the new binary holds the
+per-family keys, so **each family can have two leaders for the length of the
+deploy**. Separately, an advisory lock drops the instant its holder dies, so two
+leaders is *"a window, not an impossibility"* regardless of deploys.
+
+This milestone does exactly one of two things, and records which:
+
+- **Closes it**, if a mechanism exists that does not add a component — the
+  single-instance constraint forbids an external coordinator, and the
+  second-layer defences (`FOR UPDATE SKIP LOCKED` claims, idempotent whole-day
+  rollups, `IF NOT EXISTS` partitions, the compare-and-set automation watermark)
+  may already make the window harmless for every family, in which case the
+  finding is that D107's warning is stronger than the code requires.
+- **Or measures it**: how long the window is in a real rolling deploy, and what
+  each of the **eight** families actually does when it opens. Then the contract in
+  LNK-M-0071 gains a stated bound instead of a stated possibility.
+
+Either outcome is a decision that gets recorded. What is not acceptable is
+carrying the sentence forward unchanged for a third phase.
+
+##### The single-instance guarantee, as a test
+
+This is the owner's constraint, and an intention is not a guarantee. The
+mechanism:
+
+- A conformance test that brings the product up as **one container with no
+  Redis and no load balancer** and exercises the full surface — redirect,
+  dashboard, API, jobs, invalidation, rate limiting — asserting it works with
+  the documented degradations and no others.
+- It asserts **no new required dependency** was introduced by LNK-M-0071 or LNK-M-0072: the
+  required set is Postgres, and everything else is optional. A later milestone
+  that makes Redis load-bearing fails this test, which is the whole point of
+  writing it now rather than after something does.
+- It runs in CI beside the existing suites, so the guarantee survives the people
+  who made it.
+
+`docs/deployment.md` states the resulting promise in one sentence an operator
+can act on: **a single container remains a supported, tested configuration, and
+nothing in the high-availability work is required to run it.**
+
+##### What the measurement is allowed to conclude
+
+If the rolling-deploy measurement shows the product does *not* meet the contract
+LNK-M-0071 wrote, the contract changes — not the measurement. Per
+workflow.md, a defect that makes a shipped milestone's claim
+false reopens that milestone, so LNK-M-0071 comes back rather than LNK-M-0072 shipping beside
+a claim it just disproved.
+
+##### Documentation
+
+`docs/slo.md` gains the rolling-deploy run beside the redirect measurements.
+`docs/deployment.md` and `docs/operations.md` gain the measured numbers, which
+replace every adjective currently doing that job. Per the standing rule, no
+number appears without saying where it was measured.
+
+##### Demo
+
+Nothing. There is nothing to look at, which the inherited rule explicitly
+exempts, and `demoCoverage()` gains no row.
+
+*(Amended 2026-08-08 at step 1: **seven job
+families became eight** at both mentions, and the two-leader comment moved from
+`jobs.go:117-127` to `:145-155`. LNK-M-0070 added the `update-check` family
+earlier the same day — so the count this file has to prove something about grew
+between the file being written and the file being built, which is the shape the
+enumeration rule exists for. `cmd/linkctrl/jobs_test.go` asserts the number,
+and it is 8.)*
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0071. The edge is hard — this milestone measures the |
+| Discharges | the third clause of the 2026-08-06 negative, *"no measurement of |
+| Status | done |
+| LinkCtrl | M57 |
+
+---
+
+## LNK-M-0073
+
+**The six the close left behind**
+
+milestone · 2026-08-11
+
+cites: [LNK-F-0197](findings.md#lnk-f-0197)
+
+cites: [LNK-D-0065](decisions.md#lnk-d-0065)
+
+cites: [LNK-F-0160](findings.md#lnk-f-0160)
+
+cites: [LNK-F-0198](findings.md#lnk-f-0198)
+
+cites: [LNK-F-0199](findings.md#lnk-f-0199)
+
+cites: [LNK-D-0174](decisions.md#lnk-d-0174)
+
+cites: [LNK-F-0200](findings.md#lnk-f-0200)
+
+cites: [LNK-F-0191](findings.md#lnk-f-0191)
+
+cites: [LNK-F-0201](findings.md#lnk-f-0201)
+
+cites: [LNK-F-0167](findings.md#lnk-f-0167)
+
+cites: [LNK-F-0182](findings.md#lnk-f-0182)
+
+cites: [LNK-F-0202](findings.md#lnk-f-0202)
+
+cites: [LNK-F-0183](findings.md#lnk-f-0183)
+
+cites: [LNK-F-0178](findings.md#lnk-f-0178)
+
+cites: [LNK-M-0069](#lnk-m-0069)
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+##### F197 — Plan.md's D65 cell says one thing
+
+- The D65 row in Plan.md's Phase 3 decisions table states the
+  **data-driven** scope once. The sentence the F160 narrowing replaced — *the
+  list is now given nothing to rank when the instance cannot resolve a country* —
+  is gone, not left standing three clauses from its replacement. Verified by
+  reading the cell end to end, because that is how it survived: both halves are
+  individually true-sounding and only adjacency makes the contradiction visible.
+- The false audit line is **answered, not edited**. `decisions.md` records that
+  D65 was *checked and deliberately unchanged … the only statement that was
+  already exact*, while `git diff` shows the cell rewritten in the same commit.
+  decisions.md is append-only, so a new entry names that line, quotes it, and
+  says what the diff shows. **The original is not touched.**
+- **No mechanical enforcement, and that is stated rather than papered over.**
+  Nothing can test that a prose cell states one scope. What the milestone buys
+  here is the correction and the record of how it was missed, not a guard against
+  the next one.
+
+##### F198 — the gate sees the malformation that costs a whole table
+
+- `scripts/check-links.sh` compares each table's **delimiter row** against its
+  header and fails when the two disagree. A three-column header over a
+  two-column delimiter is the case GFM answers by dropping the entire table, and
+  it is the one the current check cannot see — it reads body rows against the
+  header and never reads the delimiter at all.
+- **Asserted by sabotage**: a table with a header wider than its delimiter is
+  added to a tracked file, `make check-links` is confirmed red naming the file
+  and the row, and the fixture is removed by counter-edit. Never `git checkout`.
+- **Fenced blocks are skipped**, so a document demonstrating a malformed row does
+  not fail the gate that documents it. Asserted by a fixture inside a fenced
+  block in a tracked file that stays there.
+- The gate runs on every `make check` and `make ci-build` already — that is
+  W41 and is **not** this milestone's work. This
+  bullet exists to record that the two halves are joined: a stricter check
+  matters exactly because something now runs it.
+
+##### F199 — the assertion its own comment calls load-bearing executes
+
+- **The unreachable branch goes, and the confinement claim stays.** The guard on
+  `symbol.Size == base.Size` cannot fire for any payload this product produces:
+  equal module counts at M and H hold only inside version 1 — 7 bytes, 10
+  alphanumeric, 17 numeric — and `QRContent` unconditionally appends `?src=qr`,
+  seven lowercase bytes that force byte mode. Measured, not reasoned: the
+  existing fixture is **29 modules (version 3) at M and 37 (version 5) at H**.
+  *(Owner-answered 2026-08-11. The bullet first asked for the branch to be
+  reached, which the encoder forbids.)*
+- What D174 bought the re-fit with is asserted on payloads the product actually
+  makes: the re-fit **changes the size when the symbol grew and changes nothing
+  else** — not the margin's relationship to the drawn size, not the stored style
+  beyond the size, not a code whose symbol did not grow.
+- The comment calling the removed branch load-bearing goes with it, and the test
+  says in one line why the no-growth case has no coverage: it is unreachable
+  through `QRContent`, and a test asserting it would be asserting a property of
+  `internal/qr` on input this product never produces.
+- **Asserted by sabotage**: `refitForLogo` is made to repaint unconditionally and
+  this test is confirmed red. On the fixture as it stands today that sabotage is
+  invisible, which is the finding.
+
+##### F200 — the QR fixtures carry what production emits
+
+- The two `internal/ui` QR fixtures carry the class `internal/qr` emits on every
+  SVG that stays in the dashboard — **by naming `qr.FluidClass`, not by spelling
+  it out**. The literal string is what the fixture must stop containing, so a
+  bullet demanding the literal would be satisfied by the defect.
+- **The fixture is derived from `qr.FluidClass` rather than retyped.** This is
+  the whole of the row: F191 filed these same two
+  fixtures for a different missing attribute, they were corrected by hand, and
+  the next attribute went missing the same way. A second hand-written copy is a
+  third recurrence waiting. `internal/qr` does not import `internal/ui`, so no
+  cycle prevents the import — `internal/ui/ui_test.go` **already imports
+  `internal/qr`**, and its `mfa` fixture already does this correctly, so the
+  pattern is in the file and the two QR fixtures are simply not using it. The
+  *stdlib-only* rule cited against it is about Node, CDNs and CSP, not about
+  package boundaries inside this module.
+
+##### F201 — the team and invitation fixtures pass what the handlers pass
+
+- `internal/ui/ui_test.go`'s team and invitation entries pass `Form` as the
+  struct the handler passes (`internal/httpx/web_team.go`,
+  `internal/httpx/web_invitations.go`), not as a `map[string]string`.
+- **This one is hand-typed, and that is not F200's mistake repeated.** The
+  handlers declare `Form` as an **anonymous** struct, and `internal/httpx`
+  imports `internal/ui`, so the test cannot import the handler package and there
+  is nothing to derive from. F200's rule is *do not copy what can be named*;
+  here there is no name. The shape is retyped as an anonymous struct literal,
+  and the milestone says so rather than leaving a reader to find the two bullets
+  disagreeing.
+- **Asserted by the template**: with the struct in place, a template referencing
+  a field the handler does not supply fails the render rather than silently
+  taking the else limb. The guard is **one-directional** — it catches a field the
+  handler gains, not one it loses — and that bound is stated rather than
+  discovered. That is F167's exact
+  mechanism, and these are the two forms F182 is
+  about — the ones that hand out authority.
+
+##### F202 — m54.md describes the tree that exists
+
+- m54.md carries a note naming **F183** and **F178** and what they
+  changed: an account-wide key's reads are now bounded by the organizations it
+  has been cut out of, resolved through `keyReaches`, where the milestone as
+  written says such a key is not bounded at all.
+- Written in the amendment idiom the other six milestone files this work touched
+  already use — what it said, what is true now, and the row that changed it — so
+  a reopening reading m54.md to decide whether LNK-M-0069 is still satisfied is reading
+  the tree rather than the plan it was written from.
+
+##### All six rows close
+
+- F197, F198, F199, F200, F201 and F202 are moved to *Closed* in
+  deferred-findings.md, each naming what closed it.
+  **F198 closes only its delimiter half**; its wiring half is already closed by
+  W41 and the row says so at both ends. A repair
+  milestone that leaves its rows open has not finished, and this bullet is here
+  because the first draft of this file did not have it.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0075, hard. Every row here was filed by LNK-M-0075's own build |
+| Discharges | no Plan.md scope row and no known limitation. **Owner-added |
+| Status | done |
+| LinkCtrl | M57.5 |
+
+---
+
+## LNK-M-0074
+
+**Pre-release adversarial review**
+
+milestone · 2026-08-11
+
+cites: [LNK-M-0053](#lnk-m-0053)
+
+cites: [LNK-M-0072](#lnk-m-0072)
+
+cites: [LNK-M-0066](#lnk-m-0066)
+
+cites: [LNK-M-0036](#lnk-m-0036)
+
+cites: [LNK-M-0014](#lnk-m-0014)
+
+cites: [LNK-M-0069](#lnk-m-0069)
+
+cites: [LNK-M-0075](#lnk-m-0075)
+
+- LNK-M-0053 through LNK-M-0072 re-read against their claims, with LNK-M-0066's findings confirmed
+  as actually fixed rather than assumed.
+- Multi-dimension and adversarially verified, per LNK-M-0036. Only confirmed findings
+  are reported.
+- **Verified live rather than by test**, on the reasoning Phase 1's LNK-M-0014
+  established — standing up a fresh instance and using it reaches bugs that
+  reading code against its own intent does not:
+  - a fresh instance set up from scratch, exercising signup, invite, team,
+    workspace and organization creation end to end against the redesigned
+    interface;
+  - **an upgrade from 0.2.0 to this build**, confirming migrations are additive,
+    that no configuration became silently required, and specifically that an API
+    key issued under 0.2.0 resolves to the same identity afterwards — LNK-M-0069's own
+    assertion, checked against a real upgraded database rather than a fresh one;
+  - the second factor enrolled, used, disabled, and recovered with a recovery
+    code, on a real authenticator rather than a test vector;
+  - an account deleted and its residue read back: audit entries still
+    correlating, the address gone, the dispute row still readable;
+  - the redirect SLO re-measured on the **final** build, not an intermediate
+    one.
+- **The single-instance conformance test from LNK-M-0072 is confirmed to
+  actually constrain something** — sabotaged by making a dependency required,
+  confirmed failing, restored by counter-edit. A guarantee nobody has seen fail
+  is a guarantee nobody has tested.
+- Every in-spec finding is fixed; every out-of-spec one lands in
+  deferred-findings.md for the owner review
+  LNK-M-0075 then acts on.
+- Anything the review changes re-triggers validation from the top.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0053–LNK-M-0072, and LNK-M-0066 having |
+| Discharges | nothing on the scope tables; it is the gate LNK-M-0075 closes |
+| Status | done *(reopened run, 2026-08-17)* |
+| LinkCtrl | M57.9 |
+
+---
+
+## LNK-M-0075
+
+**Deferred findings, documentation pass, and the 0.3.0 release**
+
+milestone · 2026-08-07
+
+cites: [LNK-F-0185](findings.md#lnk-f-0185)
+
+cites: [LNK-F-0069](findings.md#lnk-f-0069)
+
+cites: [LNK-F-0044](findings.md#lnk-f-0044)
+
+cites: [LNK-F-0075](findings.md#lnk-f-0075)
+
+cites: [LNK-F-0141](findings.md#lnk-f-0141)
+
+cites: [LNK-F-0103](findings.md#lnk-f-0103)
+
+cites: [LNK-M-0069](#lnk-m-0069)
+
+cites: [LNK-M-0068](#lnk-m-0068)
+
+cites: [LNK-M-0067](#lnk-m-0067)
+
+cites: [LNK-M-0046](#lnk-m-0046)
+
+cites: [LNK-M-0062](#lnk-m-0062)
+
+cites: [LNK-M-0052](#lnk-m-0052)
+
+cites: [LNK-D-0108](decisions.md#lnk-d-0108)
+
+cites: [LNK-M-0034](#lnk-m-0034)
+
+cites: [LNK-D-0104](decisions.md#lnk-d-0104)
+
+cites: [LNK-M-0070](#lnk-m-0070)
+
+cites: [LNK-D-0004](decisions.md#lnk-d-0004)
+
+cites: [LNK-M-0074](#lnk-m-0074)
+
+##### Findings
+
+- Every row **open in deferred-findings.md when this
+  milestone's findings step ran** has been owner-reviewed. Each approved row is
+  fixed to the milestone-claim standard and sabotage-verified where it adds
+  tests. Unapproved rows are explicitly carried or closed by the owner, and the
+  file reflects that. Rows **this milestone's own work files** are dispositioned
+  on their own and do not re-open the sweep. *(Amended 2026-08-09,
+  owner-answered. It read "Every row in deferred-findings.md has been
+  owner-reviewed", which is not satisfiable at any commit: fixing findings
+  generates findings. The assertion moved, so it was a prompt and not a
+  correction. **Amended twice more, on 2026-08-09 and 2026-08-10, and both times
+  only to move a number** — eight, then nine, then twelve — because the sentence
+  named a count of the rows this milestone had filed and the milestone went on
+  filing them, which is precisely what the amendment argues. The number is
+  therefore **gone**: the rows this milestone files run from F185 and are
+  counted by `grep -c '^| F' deferred-findings.md` against its own commit, not
+  by this file. F69 taught that lesson once, and this bullet is the second
+  fee.)*
+- The three rows this phase was built to close — F44,
+  F75 and F141 — are
+  confirmed closed by their milestones and not merely re-homed. A row pointing
+  at a milestone that shipped without closing it is the failure this bullet
+  exists to catch.
+- **F103's row is checked for having been amended
+  rather than deleted.** LNK-M-0069 reverses its bound for account-wide keys and leaves
+  it standing for pinned ones; a row that quietly disappeared would take the
+  reasoning with it.
+
+##### Comment truth
+
+Every "Phase 3" promise this plan deliberately did not build is updated, so no
+comment describes unscheduled work as scheduled. The known ones, counted rather
+than recalled:
+
+- `internal/store/migrations/00200_identity.sql:31-33` — the `mfa_*` columns are
+  marked `-- Phase 3.` and LNK-M-0068 gives them a writer, so the marker goes.
+- `internal/store/migrations/00200_identity.sql:20` and
+  `internal/auth/service.go:690` — both mention SSO-only accounts **and both
+  carry a `(Phase 3)` marker**. SSO is **not** built this phase; LNK-M-0068 discharges
+  only the MFA limb of that scope row. Those comments describe a
+  still-unscheduled thing and must say so. A third mention at
+  `internal/auth/service.go:410` — *"SSO-only or erased account."* — carries no
+  phase number and needs nothing; it is named so the sweep does not re-find it
+  and wonder. *(Amended 2026-08-09 at step 1: it read `:379`, which is a comment
+  about the registration oracle and mentions SSO nowhere.)*
+- `users.status = 'suspended'` stays without a writer by LNK-M-0067's explicit
+  decision, and the schema comment says that rather than implying a routine.
+- `cmd/linkctrl/recorder.go:19-21` and `internal/webhook/webhook.go:11-18` — the
+  Redis Streams upgrade path stays unexercised, which is still true and needs no
+  change. Verified rather than assumed.
+- **`internal/store/migrations/00600_phase2_dormant.sql:59`** describes the QR
+  style blob as *"colours, logo reference, error-correction level, margin,
+  shape"*. `qr.Style` has five fields and neither logo nor shape was among them;
+  LNK-M-0046 built the feature and left the comment describing a blob it did not fill.
+  **LNK-M-0062 makes the *logo reference* half true**, so what this sweep
+  trues up is the remaining word: *shape* is not built, nothing schedules it, and
+  the comment says so or it outlives a second phase. Found 2026-08-07 by an owner
+  question about logo support, not by the sweep that should have caught it at
+  LNK-M-0052 — which is the same lesson F44 taught and is why this list is counted
+  rather than recalled.
+- **The bot-bypass promises, which D108 falsified by declining area D.** Seven
+  sites say a human blocked as a bot gets recourse in Phase 3, and Phase 3 does
+  not build it: `internal/store/migrations/01800_bot_blocking.sql:29` (*"no way
+  past the refusal until Phase 3"*), `internal/link/domain_settings.go:276`
+  (*"the bypass is Phase 3"*), `Plan.md`'s *Known limitations* row (*"The bypass
+  is Phase 3, per Not in Phase 2"*), `docs/SECURITY.md`'s corresponding row,
+  **the assertion message in `test/integration/bots_test.go`**, and **both of
+  LNK-M-0034's** — its *deliberately not in this milestone* bullet and
+  its *Risks* paragraph. Each becomes a promise about a later phase or loses its
+  phase number. Two further mentions in decisions.md stay:
+  the log is append-only and *why the bypass was Phase 3* is a true statement
+  about a decision that was taken.
+  *(Added 2026-08-07, from review. This list was headed "counted rather than
+  recalled" and had not counted these — which is the failure mode
+  LNK-M-0067's own risk section warns about, reproduced inside the milestone
+  whose job is to prevent it. **Amended 2026-08-10: it read "Four sites", and
+  `git grep "Phase 3"` over the whole tracked tree, every hit read, returns
+  seven.** The failure it already confessed to happened a second time inside the
+  confession — which is the argument for a count taken against the tree rather
+  than against the sentence above it.)*
+
+##### The areas this phase did not take
+
+phase-3-candidates.md lists seven work areas and
+this phase took four. **C** (analytics and reporting), **D** (redirect path and
+routing) and **G** (commercial and entitlements) stay candidates — not dropped,
+not re-homed. That file is updated to say which of its rows shipped, which
+remain, and the ones this phase's work has changed the shape of. Nothing leaves
+a tracker silently, and *we stopped caring about this* is the decision this
+project keeps losing.
+
+##### Documentation pass
+
+The full pass from workflow.md, over every documentation file
+and not only the ones this phase touched. Three carry more than usual:
+
+- **`README.md`**, which per D104 changes **only here**, written against what
+  the tag will ship and drawn from `CHANGELOG.md`'s `[Unreleased]` section.
+- **`docs/SECURITY.md`**, which this phase moves in three places: the egress row
+  becomes five (LNK-M-0070), *What is not defended* loses its erasure entry
+  (LNK-M-0067) and gains the second-factor surface (LNK-M-0068), and the
+  API-key section is re-derived against a credential that now crosses tenancies
+  (LNK-M-0069).
+- **`docs/doc-cost.md`**, regenerated **and judged** — the growth defended or
+  paid for by trimming. *On record* is not *answered for*.
+
+##### The release
+
+- `CHANGELOG.md` carries the 0.3.0 entry with its limitations, and the `awk`
+  extraction is checked against the file **as it will be at 0.3.0** before
+  anything is tagged, per the trap LNK-M-0052 documented: the extraction only runs
+  after a tag exists, and a fix confirmed by releasing is confirmed once the
+  notes are already public.
+- Version is **0.3.0**. 1.0.0 stays a later phase's promise, as D4 established
+  for 0.2.0 and for the same reason.
+- Full validation per workflow.md, verified live against a force-recreated
+  container rather than the previous image.
+
+| Field | Value |
+| --- | --- |
+| Depends on | every milestone, and LNK-M-0074 having run to completion. |
+| Discharges | the phase-end process obligations in |
+| Status | done |
+| LinkCtrl | M58 |
+
+---
+
+## LNK-M-0076
+
+**`M58.5`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-08-11
+
+LinkCtrl cites `M58.5` 2 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M58.5 |
+
+---
+
+## LNK-M-0077
+
+**`M58.9`, cited in LinkCtrl and defined nowhere**
+
+milestone · 2026-08-11
+
+LinkCtrl cites `M58.9` 1 time(s) and its tree holds no phase-details file and no phase-1 table row for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.
+
+| Field | Value |
+| --- | --- |
+| Status | cited, never defined |
+| LinkCtrl | M58.9 |
+
+---
+
+## LNK-M-0078
+
+**Process debt: the gates that were not watching**
+
+milestone · 2026-08-18
+
+cites: [LNK-F-0255](findings.md#lnk-f-0255)
+
+cites: [LNK-D-0218](decisions.md#lnk-d-0218)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-F-0248](findings.md#lnk-f-0248)
+
+cites: [LNK-D-0214](decisions.md#lnk-d-0214)
+
+cites: [LNK-D-0269](decisions.md#lnk-d-0269)
+
+cites: [LNK-F-0291](findings.md#lnk-f-0291)
+
+cites: [LNK-F-0253](findings.md#lnk-f-0253)
+
+cites: [LNK-F-0304](findings.md#lnk-f-0304)
+
+cites: [LNK-F-0254](findings.md#lnk-f-0254)
+
+cites: [LNK-F-0251](findings.md#lnk-f-0251)
+
+- **F255 — a CI gate exists, and it joins an enforced chain rather than a
+  list.** A make target whose non-zero exit answers "is the branch's latest CI
+  run green" (`gh run list` or equivalent) — and it is invoked from
+  `make release-check` and named as a step of
+  phase-loop.md's land sequence, both edits in this
+  milestone's scope because they *are* the F255 repair. A gate that is only a
+  new row in workflow.md's pre-PR list is the link gate's Phase 2 history
+  repeated (`Makefile:161-163` records where a hand-remembered tool ends), and
+  is not this bullet satisfied. The nine-day red window in
+  F255's evidence (`Makefile:165-168`'s unpinned-shellcheck argument, and the
+  `SC2329,SC2317` suppressions on the trap-invoked `cleanup` in
+  `scripts/rolling-deploy.sh` and `scripts/single-instance-check.sh` — named
+  rather than cited by line, the way D218 withdrew a citation LNK-M-0079 moved) is the
+  case it must catch: local green,
+  remote red, caught at the next boundary rather than at a release PR.
+- **F248 — `check-links` learns table membership.** For links whose fragment is
+  a row-table anchor (`deferred-findings.md`'s `#open`/`#closed`,
+  `workflow-changes.md`'s `#proposed`/`#made`), the check verifies the row the
+  linking sentence names is in the table under that anchor. Per-file list of
+  which anchors are row tables, as F248's fix note says. The wrong links in
+  maintained files are corrected in the same diff — **83 of them across 14
+  files**, counted rather than trusted, of which **63 are inside
+  `deferred-findings.md` itself**; the 22 in `decisions.md` are left, that file
+  being append-only — each was true when written. *(Amended 2026-08-18, on a
+  fact: the bullet read “The 17 wrong links in maintained files (`Plan.md` ×3
+  and the **ten** milestone files F248 enumerates…)”. F248's count was taken
+  over links carrying an explicit path to `deferred-findings.md` and so never
+  looked inside that file. D214 carries the count and the recurring cost.)*
+- **F248 — sabotage-proof.** The new check is shown to fail on one of them
+  before they are fixed, or on a deliberate wrong-section link, then the tree is
+  restored by counter-edit. A membership check that has never failed has not
+  been shown to check membership.
+- **F248 — the membership check is not a pipeline.** *(Added 2026-08-20 by the
+  reopening, D269, on F291.)* The check as
+  shipped ran `cached_rows … | grep -qxF`, which is the shape
+  `scripts/check-links.sh` forbids in the comment above its `slugs`-based anchor
+  pass — named rather than cited by line, the way D218 withdrew a citation LNK-M-0079
+  moved, because there is no commit yet for a line number to be true at (W39).
+  `grep -q` exits at the first match, the writer upstream takes SIGPIPE, and
+  `pipefail` reports 141 for a pipeline that succeeded. Present rows were
+  therefore reported missing and the gate exited 1 on a clean tree — never the
+  other way, so nothing wrong ever passed, and the bullet above was false in the
+  direction that stops work rather than the direction that lets it through. Done
+  is: the cache is a file and is grepped as one, so no pass in this script pipes
+  into `grep -q`. The trigger is
+  this machine's `cat` — uutils coreutils, which `splice()`s and probes the pipe
+  again at EOF — and the defect is the script's on any `cat`.
+- **F248 — the reopening's fix is shown to change a red run to a green one.**
+  Intermittent is why: a fix never seen to fix anything is a claim, so the
+  failure is reproduced **first**, on the tree as shipped and under the load
+  F291's evidence names, and only then repaired and re-run under that same load.
+  The sabotage bullet above still binds afterwards — a check that stopped failing
+  on everything is also green.
+- **F253 — the direct form of `release-check` stops lying.** The owner chose
+  at planning (2026-08-18, recorded in
+  phase-4-candidates.md;
+  D number when this milestone lands): **the script derives
+  `COMPOSE_PROJECT_NAME` and `COMPOSE_ENV_FILES` itself** — the shape the
+  script's own history took for `TEST_DATABASE_URL` (`Makefile:694-701`),
+  which is exactly what left the direct form short. The accepted cost is a
+  drift pair: a Makefile change to either variable must reach the script, and
+  the milestone adds the check that keeps the two agreeing. Done is: both
+  documented forms, run against an up stack, run the integration tests —
+  verified by running them, not by reading them.
+- **F253 — and the guard in `release-check` is not a pipeline either.** *(Added
+  2026-08-20 by the reopening, D269.)* The step that decides whether the
+  integration tests run asked `docker compose ps --services` through a pipe into
+  `grep -qx postgres`, under the `set -uo pipefail` at the head of
+  `scripts/release-check.sh` — F291's shape, at one of the sites
+  F304 lists. A false 141 makes the `elif`
+  false, so the script prints `skip  Postgres is not running` on a machine where
+  it is running and cuts a release with the integration tests silently unrun:
+  a third cause for the exact lie the bullet above says stopped, which is why it
+  is in spec here — LNK-M-0078's own claim, not the subsystem. The other eight sites
+  F304 names stay deferred and F304's row is narrowed to them. Done is: the
+  guard is a herestring, with no writer left to kill, and **both** branches are
+  shown to fire — the tests run against an up stack, and a sabotaged service
+  name takes the skip.
+- **F254 — the fold/tag conflict gets one written owner.** workflow.md's Docs
+  row (`docs/build-notes/workflow.md:165`) requires `[Unreleased]` filled;
+  `scripts/release-check.sh:97-111` refuses a tag while it is. The owner chose
+  at planning (2026-08-18, same record as F253's answer, from F254's three
+  shapes): **the release-time gate is named in workflow.md's Docs row**, so a
+  worker between fold and tag meets the rule at the moment it binds them. The
+  stated cost is accepted — the conflict is documented rather than removed,
+  and a post-fold reopening still refills and re-folds by hand, as F251 did.
+  The losing shapes and their costs are in the planning record. After this
+  milestone, a worker following workflow.md cannot obey one document into
+  violating the other without a sentence telling them which wins.
+- **Deliberately not done:** pinning shellcheck. F255's evidence says the
+  unpinned argument's second half still holds; the fix is the gate, not the
+  pin. Also not done: any change to what CI itself runs —
+  `.github/workflows/` cannot be committed to, and nothing here needs a
+  proposal; the gate reads CI's verdict rather than changing it.
+
+| Field | Value |
+| --- | --- |
+| Depends on | nothing. First in the phase deliberately, owner-set 2026-08-18: |
+| Discharges | F248, |
+| Status | done |
+| Plan.md order | 1 |
+| Plan.md depends on | — |
+| Plan.md discharges | F248 · F253 · F254 · F255 |
+| LinkCtrl | M59 |
+
+---
+
+## LNK-M-0079
+
+**The host: a module loads, or is refused**
+
+milestone · 2026-08-18
+
+cites: [LNK-D-0218](decisions.md#lnk-d-0218)
+
+cites: [LNK-M-0094](#lnk-m-0094)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-D-0342](decisions.md#lnk-d-0342)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-M-0092](#lnk-m-0092)
+
+cites: [LNK-D-0315](decisions.md#lnk-d-0315)
+
+cites: [LNK-F-0286](findings.md#lnk-f-0286)
+
+cites: [LNK-D-0269](decisions.md#lnk-d-0269)
+
+cites: [LNK-D-0271](decisions.md#lnk-d-0271)
+
+cites: [LNK-F-0287](findings.md#lnk-f-0287)
+
+cites: [LNK-D-0272](decisions.md#lnk-d-0272)
+
+cites: [LNK-D-0273](decisions.md#lnk-d-0273)
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+cites: [LNK-F-0274](findings.md#lnk-f-0274)
+
+cites: [LNK-D-0274](decisions.md#lnk-d-0274)
+
+cites: [LNK-M-0088](#lnk-m-0088)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-M-0078](#lnk-m-0078)
+
+- **The runtime is wazero, and the binary stays pure Go.** The build is
+  `CGO_ENABLED=0` — `Dockerfile:86`, and the Makefile's `dist` cross-compile
+  loop, cited by target because the line number moved twice in one day (D218) —
+  and stays so; wazero is the
+  one production WASM runtime with no cgo, which is why it is named at planning
+  rather than left to the build. It joins `go.mod`'s 14 direct dependencies and
+  Plan.md's Stack table in this milestone's diff.
+- **An add-on is a `.wasm` file plus a manifest**, loaded from an
+  operator-owned directory named by a new `LINKCTRL_ADDONS_DIR` config field
+  (the `caarlos0/env` pattern in `internal/config/config.go`; documented in
+  `docs/configuration.md` and `.env.example`). Unset means no host: no runtime
+  constructed, no goroutine, no route, no table and no metric series — each
+  absence asserted by test, which is the falsifiable form of "zero added
+  cost". *(Amended 2026-08-30 at LNK-M-0094 — a fact. Four of the five
+  still assert as written and their tests are green. The fifth, **no table**, was
+  narrowed deliberately by LNK-M-0085 and LNK-M-0089 into a bound: an instance with no add-ons
+  carries two of this product's own empty tables, `addon_identity_links` and
+  `addon_settings`, and the test became
+  `TestNoMigrationCreatesAnAddOnsOwnTables` — no migration creates an *add-on's*
+  tables. The narrowing was written down at the time, in
+  `internal/addon/absence_test.go` and in D342, but not into
+  this file, which is the gap this parenthesis closes.)*
+- **The manifest names identity and intent**: add-on name, version, ABI version
+  (consumed in LNK-M-0080, parsed now), declared permissions (enforced from LNK-M-0081;
+  parsed and stored now), failure class (`required` or `degrade`), the sha256
+  of the `.wasm` it accompanies, and **declared settings** — name, type (one
+  of text, secret, select-with-options, toggle), default — parsed and stored
+  now, rendered and saved by LNK-M-0089's manager (owner-added scope,
+  2026-08-18, recorded in
+  phase-4-candidates.md).
+- **Load-time verification refuses a module whose hash does not match its
+  manifest**, asserted by a test that corrupts one byte. This is the load-time
+  half of the owner's *both* answer on build verification; the provenance half
+  is the add-on repo's release process and is LNK-M-0092's to prove.
+- **The failure class is enforced at boot**: a `required` add-on that fails to
+  load stops the instance with the reason; a `degrade` add-on logs, increments
+  a metric, and the instance serves without it. Both asserted by test.
+  *(Narrowed 2026-08-22 by LNK-M-0085, and recorded here rather than left for
+  a reader to find in another milestone's file: an add-on declaring
+  `session.mint` is `required` whatever its manifest says, so the `degrade` limb
+  above does not reach one — and an operator's
+  `LINKCTRL_ADDON_<NAME>_FAILURE_CLASS` is read before the manifest for **every**
+  add-on, which narrows "the add-on decides" generally. The decision is not new:
+  LNK-M-0085's own definition of done carried the owner's answer that anything on the
+  authentication path defaults to required, and it was reviewed at planning. What
+  was missing is this note. See decisions.md, D315.)*
+- **Per-module observability exists from birth**: a
+  `linkctrl_addon_loads_total{addon,outcome}` counter and a per-add-on info
+  gauge in `internal/observability` (own registry, `metrics.go`), on the
+  metrics listener only.
+- **The single-instance gate grows the add-on case**
+  (phase-4-candidates.md's owed work #5): a new
+  `step` in `scripts/single-instance-check.sh` loads a test module and proves
+  the app serves with it, so *one container is a tested configuration* stays
+  true of the shipped shape.
+- **Test modules are built in-repo** with the standard toolchain
+  (`GOOS=wasip1 GOARCH=wasm`), no TinyGo and no checked-in binaries; the build
+  step lives in the Makefile beside the other generated artifacts.
+- **F286 — the manifest reads as what the host acts on.** *(Added 2026-08-20 by
+  the reopening, D269, on F286. D271.)* The
+  bullet above says the manifest *names* identity and intent, and it did not:
+  `encoding/json` keeps the **last** occurrence of a repeated key and binds a
+  struct tag case-insensitively when no exact match exists, so
+  `{"permissions": ["session.mint"], "permissions": []}` loaded with no grants,
+  the same pair reversed loaded with all of them, and `"SCHEMA_VERSION": 7`
+  beside `"schema_version": 1` walked past the equality check the schema field
+  exists for. Every field spelled in capitals was accepted. That is not a
+  parsing nicety: **nothing hashes `addon.json`** — the `sha256` field covers
+  the module and each `migrations` entry covers its own `.sql` — so the file is
+  the trust root, and a publisher could write one whose readable text said one
+  thing to a reviewer and another to the host. Done is: a key is spelled exactly
+  as `docs/configuration.md` documents it and appears once, refused at **every
+  level of the document** rather than only the top — a `migrations` entry
+  carrying `file` twice would otherwise name one `.sql` to a reader and hash
+  another. The key set is read from the struct tags, so a field added later is
+  covered without anybody remembering. Asserted by the finding's own battery,
+  and by sabotage: with the check bypassed, nine cases parse.
+- **F287 — a load that will not finish is a failure like any other.** *(Added
+  2026-08-20 by the reopening, D269, on
+  F287. D272.)* The failure-class bullet above
+  says a `degrade` add-on that fails to load *logs, increments a metric, and the
+  instance serves without it*, and that was true of every way a load could fail
+  except the one where it does not fail at all: package initialization runs
+  during instantiation, so a module that loops there returns nothing, and the
+  context `Open` was handed came from `signal.NotifyContext(context.Background(),
+  …)` with no deadline on it. `Open` did not return within 20 s, the listener
+  never opened, and there was no log line, no metric and no error naming the
+  add-on. Done is: the add-on's own execution is bounded, the class it declared
+  decides what happens when the budget runs out, and a ninth outcome
+  `load_timeout` distinguishes *never returned* from *trapped*. **Per add-on, not
+  for the load as a whole** — a shared budget, once spent, is spent for every
+  add-on behind the slow one, which turns a `degrade` module's hang into a
+  `required` module's refusal to boot, and that is this bullet's own claim
+  re-broken from the other side. **30 s**, which is the number this milestone's
+  own measurement test has called the boundary since it shipped; the test now
+  reads the constant, so the budget and the ceiling cannot drift. Measured
+  against it 2026-08-20, **at the two compilation workers this host now sets**:
+  one 1.87 MB fixture compiles in 211 ms and instantiates in 1.6 ms. The 380 ms
+  this bullet first carried was the same fixture at one worker — the
+  configuration the tree stopped running in the same attempt that measured it.
+- **F287 — the budget bounds the add-on's code, and deliberately not the load.**
+  *(Added 2026-08-20 by the reopening, D269. D273.)* What a bound *bounds* is the
+  argument, and the first answer to it was wrong in a way that falsified a shipped
+  milestone: a deadline laid over the whole of `loadOne` also caps the migration
+  step, and LNK-M-0082 gives an add-on's migrations `lock.WithLockTimeout(5,
+  60)` — five minutes — because *a replica arriving mid-migration should wait
+  rather than fail into a crash loop*. Thirty seconds over the whole load makes
+  that wait unreachable, so the second replica fails as `load_timeout` and a
+  `required` add-on then stops the instance: the crash loop LNK-M-0082 chose five minutes
+  to prevent, produced by the fix for F287. A first `CREATE INDEX` on a real table
+  at upgrade meets the same bound with nothing wrong anywhere. Done is: the budget
+  is given to each of the **two steps that run the add-on's own code** —
+  `CompileModule`, and `InstantiateModule`, which is where package initialization
+  and therefore F287's hang lives — and to nothing else, so LNK-M-0082's five minutes
+  stays reachable and the hang stays caught. Two consequences are stated rather
+  than left to be found. An add-on's *migrations* are code it supplied too and
+  nothing here bounds one statement in one of them; that bound is Postgres's, on
+  the migration connection, and is F274. And the
+  worst case per add-on is two budgets rather than one, which in practice is one:
+  compiling is a finite pass over a file of finite size, while instantiation runs
+  a loop the add-on wrote.
+- **F287 — the cost of the bound is named where an operator reads.** *(Added
+  2026-08-20 by the reopening, D269. D273.)* Per add-on is the right choice and it
+  has a price: N add-ons that hang cost N budgets before the listener opens, and
+  three of them exceed the 80 s `docker-compose.yml`'s healthcheck allows, so
+  `docker compose up --wait` reports a failed bring-up
+  (deployment.md) for an instance that comes up behind it.
+  Done is that `docs/operations.md` says so under `load_timeout`, with the
+  remedy, rather than the arithmetic living in a code comment. Its metric row
+  says what the budget covers and what it does not, and the missing-tables case
+  still reports `storage_failed` — which it would not have, because the first fix
+  overwrote whatever outcome the expiring step had produced.
+- **F287 — the fix is shown to catch a hang, not merely to exist.** *(Added
+  2026-08-20 by the reopening, D269.)* A test that has never hung has not been
+  shown to catch a hang, so the fixture is a module that genuinely spins in
+  `init()` and the sabotage is the tree as shipped: with the deadline removed the
+  test does not fail, it **hangs**, and `go test -timeout 25s` is what ends it.
+  The per-add-on claim is sabotaged separately — one shared budget makes a
+  `required` add-on behind the spinner fail with `load_timeout`, which is the
+  argument above made falsifiable. And the hazard the deadline introduces is
+  asserted rather than reasoned about: `WithCloseOnContextDone` means a per-step
+  context that outlived its step would close a healthy module when its budget
+  expired, so a loaded add-on is called into after the budget has passed.
+- **F287 — the compile half of the budget is enforced by something.** *(Added
+  2026-08-20 by the reopening, D269. D274.)* The bullet above gives the budget to
+  each of `CompileModule` and `InstantiateModule`, and for two attempts only one of
+  the two had it. `runGuest` wrapped the compile in a context carrying the
+  deadline; wazero does not stop for one. Its wazevo engine checks cancellation on
+  the **multi-worker** compilation path only — the worker loop opens with
+  `ctx.Err()` and the caller reports `context.Cause` — while the single-worker
+  branch walks the code section with no check anywhere in it, and single-worker is
+  the branch every compile took, because `experimental.GetCompilationWorkers`
+  returns `max(workers, 1)` and nothing set the key. So a compile past the budget
+  returned **no error**, expiry is read only when a step errors, and the
+  `load_timeout` limb for compiling was unreachable: the load succeeded late while
+  four documents called it bounded. Done is: `compileWorkers` is set on the context
+  the compile runs under; the test asserts the **step** rather than the outcome,
+  because an unbounded compile still ends in `load_timeout` one step later, having
+  spent a whole compile getting there; and what is bounded is claimed at the
+  granularity it holds at — between functions of the code section, so one
+  pathologically slow function still overshoots. Measured 2026-08-20 on the 1.87 MB
+  fixture: handed a context already done, compiling returns success after 377 ms at
+  the default and `context deadline exceeded` after 23 ms at two workers, and a
+  budget expiring mid-compile is honoured within a millisecond of it. Sabotage is
+  the setting removed, at which point the whole load **succeeds** — each step's
+  budget is its own, so instantiation's clock starts fresh.
+- **A manifest is at most 64 KiB, which is a refusal no bullet asked for.**
+  *(Added 2026-08-20 by the reopening, D269, on the orchestrator's scope call at
+  the second attempt.)* F286's fix holds `addon.json` in memory to walk it twice —
+  once decoded into the record, once as a token stream — so the read is bounded
+  rather than streamed, and a bound a publisher meets as a boot failure is
+  publisher-visible whether or not anybody planned it. It stays, because it is a
+  consequence of the required work rather than a second feature, and it is declared
+  here rather than left to be found: `maxManifestBytes` is its own constant and not
+  the ABI's `maxStringIn`, which is the same number for an unrelated contract and
+  would otherwise have made one change move both. Asserted by
+  `TestAManifestLargerThanTheBoundIsRefused` and documented in
+  `docs/configuration.md`'s manifest section beside the other refusals. The largest
+  thing this schema can honestly describe — a `migrations` list of a few hundred
+  entries — is under 40 KiB.
+- **Deliberately not done:** any host function beyond the minimum an
+  instantiation needs (LNK-M-0080); permission enforcement (LNK-M-0081); runtime
+  install/remove and any UI (LNK-M-0088, LNK-M-0089) — in this milestone the directory is read at
+  boot and that is the whole lifecycle; any redirect-path execution (LNK-M-0086).
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0078 *(ordering preference — the CI gate should exist |
+| Discharges | opens Plan.md's *Add-on support* scope row — the row that read |
+| Status | done |
+| Plan.md order | 2 |
+| Plan.md depends on | LNK-M-0078 *(ordering)* |
+| Plan.md discharges | Opens the *Add-on support* scope row · owed-work #5 (single-instance gate case) |
+| LinkCtrl | M60 |
+
+---
+
+## LNK-M-0080
+
+**The ABI: what an add-on may import, written down and versioned**
+
+milestone · 2026-08-18
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-D-0233](decisions.md#lnk-d-0233)
+
+cites: [LNK-D-0228](decisions.md#lnk-d-0228)
+
+cites: [LNK-M-0092](#lnk-m-0092)
+
+- **A host-function set exists, enumerated in one place**, covering what the
+  later milestones will expose through it: logging, config reads (scoped to the
+  add-on's own keys **and its manifest-declared settings** — LNK-M-0079 declares
+  them, LNK-M-0089 edits them, this function is how the module reads the values),
+  storage access (scoped by LNK-M-0082's schema boundary), HTTP route handling (LNK-M-0083),
+  the session hook (LNK-M-0085), and redirect observation (LNK-M-0086).
+  Functions whose backing milestone has not landed are **declared and refused
+  at runtime** with a distinguishable error, so the contract is complete on
+  paper before it is complete in behaviour — and the refusal is asserted by
+  test, not assumed.
+- **The ABI carries a version, and the promise is SemVer with deprecation
+  windows** (owner-set, against the path-versioning recommendation — recorded
+  in phase-4-candidates.md).
+  The manifest's ABI version (parsed since LNK-M-0079) is checked at load: an add-on
+  built against a newer **generation** is refused, an older one within the
+  window loads. *(Amended 2026-08-18 on a fact, D233: the bullet read "a newer
+  major … an older minor within the window", which names the wrong axis while
+  the ABI is `0.x`. SemVer puts a break in the minor until 1.0, so the
+  manifest's single integer is the generation — D228 — and the minor is what
+  carries it today.)*
+- **The deprecation policy is a written document**, `docs/addon-abi.md` or
+  beside it, stating: what counts as breaking, the minimum deprecation window,
+  and how a deprecation is announced. SemVer without it is a version number and
+  a hope — the owed work named at planning, discharged here, not at the close.
+- **The SDK is generated from the host's definition** — one authoring point,
+  `make generate` alongside sqlc and openapi — into a Go package an add-on
+  imports and `GOOS=wasip1` compiles against. The in-repo test modules (LNK-M-0079)
+  are rebuilt on top of it, which is the first proof the SDK compiles a
+  working consumer.
+- **The SDK is consumable from outside this repository**, proven mechanically
+  and in-repo: the generated package lives at an importable path with no
+  dependency on LinkCtrl internals, asserted by a test that builds a consumer
+  against only the SDK package. That property — not anything this loop can
+  land in another repository — is what lets `DevOfPie/LinkCtrl-OIDC` compile
+  against it from its first commit; the add-on repo actually doing so is
+  LNK-M-0092's evidence, cited there because this tree cannot mark it
+  done.
+- **The privacy stance crosses the boundary as an ABI property, not an audit
+  of add-on code**: **no host function hands an add-on a raw client address in
+  any form, in any record field or parameter**, and what the redirect event
+  (LNK-M-0086) and every other **click-derived** record carry is at most what
+  `click_events` may carry, prefix-derived and country-level — both asserted by
+  tests over the ABI surface, so an add-on cannot store what it is never
+  handed. *(Amended 2026-08-18 on a fact, D233: the bullet applied the
+  `click_events` bound to "every other import", which no route-handling ABI can
+  satisfy — a request record must carry a method and a path, and neither is a
+  `click_events` column. The address bound is the one that reaches every field;
+  the column bound is the one that reaches click-derived records.)* The fifth inherited-rule collision, recorded in
+  phase-4-candidates.md.
+- **Deliberately not done:** the behaviour behind most imports — LNK-M-0082 storage,
+  LNK-M-0083 routes, LNK-M-0085 sessions, LNK-M-0086 redirect hooks each land their own limb and
+  cite this file. Also not done: any promise of ABI stability beyond 0.x — 1.0
+  *means* the contract is stable, and that gate is the close's to state, not
+  this milestone's to claim early.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0079. |
+| Discharges | two of the phase's owed-work items |
+| Status | done |
+| Plan.md order | 3 |
+| Plan.md depends on | LNK-M-0079 |
+| Plan.md discharges | Owed-work #2 (deprecation policy) · the host-function question |
+| LinkCtrl | M61 |
+
+---
+
+## LNK-M-0081
+
+**Declared permissions: an add-on gets what it named and nothing else**
+
+milestone · 2026-08-19
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-D-0258](decisions.md#lnk-d-0258)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-D-0292](decisions.md#lnk-d-0292)
+
+cites: [LNK-D-0304](decisions.md#lnk-d-0304)
+
+cites: [LNK-D-0240](decisions.md#lnk-d-0240)
+
+cites: [LNK-D-0285](decisions.md#lnk-d-0285)
+
+cites: [LNK-F-0310](findings.md#lnk-f-0310)
+
+cites: [LNK-F-0285](findings.md#lnk-f-0285)
+
+cites: [LNK-D-0283](decisions.md#lnk-d-0283)
+
+cites: [LNK-D-0270](decisions.md#lnk-d-0270)
+
+cites: [LNK-D-0242](decisions.md#lnk-d-0242)
+
+cites: [LNK-D-0284](decisions.md#lnk-d-0284)
+
+cites: [LNK-D-0244](decisions.md#lnk-d-0244)
+
+cites: [LNK-D-0286](decisions.md#lnk-d-0286)
+
+cites: [LNK-F-0311](findings.md#lnk-f-0311)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+- **The permission vocabulary is enumerated and closed**: storage (its own
+  schema, LNK-M-0082), routes (a path prefix, LNK-M-0083), config keys, the session *read*
+  (LNK-M-0083, added as `session.context` by D258 after this bullet was written), the
+  session hook (LNK-M-0085), redirect-observe and redirect-inline (LNK-M-0086, two distinct
+  grants — a module cannot acquire the second by accident, owner requirement #1
+  on the redirect answer). **Seven**, and the count is `abi.Permissions` rather
+  than this list. Adding a vocabulary entry is a code change with a test
+  asserting the set, the same discipline `?src=` uses for its closed
+  vocabulary.
+- **Enforcement sits in the host layer, not in the add-on's honesty**: every
+  **gated** host function (LNK-M-0080) checks the calling module's grants before
+  acting, and an undeclared call fails with a distinguishable error, counted per
+  module in a `linkctrl_addon_refusals_total{addon,permission}` metric. Asserted
+  by a test module that requests what it did not declare. **Four functions are
+  ungated and it is a decision rather than a gap** — `abi_version` reports a
+  compile-time constant; `log` is the capability the host grants on purpose,
+  because stdout and stderr are discarded and it is the only way a module can
+  say anything at all; and `random_bytes` and `time_now` are entropy and a clock,
+  which are not capabilities to withhold — a module denied them does not get a
+  safer host, it gets one whose guests are handed a constant instead (D292). *(Amended 2026-08-21: it read **two**, which was true from
+  LNK-M-0081 until LNK-M-0085. D292 added `random_bytes` and `time_now` as ungated, on the
+  reasoning that entropy and a clock are not a capability to withhold — a module
+  that cannot generate a nonce is not an authentication add-on, and the fake
+  sources it had instead were worse than either. The mechanism did what the
+  bullet promises: the test went red and was changed deliberately. What was
+  missing is this note, because a guarantee discharged by editing its own guard
+  and saying nothing is indistinguishable from one nobody noticed. See
+  decisions.md, D304.)* Which four, and the argument, are named by a test that
+  fails when the set changes. *(Amended 2026-08-19, owner-approved, D240: the
+  bullet read "every host function", and its own enumerated vocabulary has no
+  token for either function.)*
+- **What an add-on writes to the log is sanitized at the boundary**
+  (owner-set 2026-08-19 while approving the ungated set, which was a pair when
+  D240 was taken and is four since D292). An ungated
+  `log` is reachable by every module, including one that declared nothing, so
+  the host neutralizes the message **before it reaches the logger** rather than
+  trusting what a module hands over: no forged log record, and no member of
+  Unicode's `Default_Ignorable_Code_Point` in front of a reader. Asserted by test,
+  since the whole point is that the module is not trusted to do it.
+  *(Amended 2026-08-21, owner-decided, D285: the bullet read "nothing an add-on
+  could use to smuggle a secret past a reader's eye", and the tree has never
+  delivered it — four workers were defeated trying, because *invisible* is not a
+  property Unicode publishes and no denylist over it can be completed. The claim
+  is now the property the boundary enforces, and the residue is stated and
+  tracked as F310.)*
+- **F285 — the boundary asks Unicode's real property, and every variation selector
+  is deleted.** *(Added 2026-08-20 by the reopening on
+  F285; the remedy is the owner's, D283, which
+  replaced D270's.)* The bullet above promised, before its amendment, *nothing an
+  add-on could use to smuggle a secret past a reader's eye*, and 260 code points
+  walked through it.
+  `escapedRune` asked `unicode.Other_Default_Ignorable_Code_Point`, which is
+  Unicode's **residue** property rather than the derived one:
+  `Default_Ignorable_Code_Point` is `Other_DI ∪ Cf ∪ Variation_Selector` less
+  `White_Space`, `FFF9..FFFB`, `13430..13440` and the prepended concatenation marks,
+  and the missing `Variation_Selector` term is the whole defect — every variation
+  selector is category `Mn`, so `unicode.IsGraphic` says yes and the default-deny
+  fallback could not reach one. A module declaring **no permission at all** put
+  `SECRET=hunter2` into an operator's log behind a line reading *everything is
+  fine*, under both handlers, with two independent schemes. **The same failure shape
+  as the enumeration D242 replaced, one abstraction level up**: a property whose
+  name begins with `Other_` is incomplete by construction.
+
+  Done is two things. The property is **computed** from the tables Go ships, all
+  **seven** of the derivation's terms — 4174 members, 267 of them graphic, against the
+  residue's 3776 and 7, and 4174 is what Unicode 15.0's own file totals for the
+  property. Every one of those numbers is pinned by test as an **equality**: the first
+  fix for this bullet wrote six terms, claimed 4190, and put that number inside a
+  floor, where a wrong constant is indistinguishable from a Unicode revision (D284).
+  And every variation selector is **deleted from the message** rather than escaped,
+  unconditionally, with **no base set and no exemption** (D283). `❤️` becomes `❤`,
+  still a heart; `😀` is untouched, U+1F600 having emoji presentation by default;
+  and the nibble scheme, the byte-per-selector scheme, the Mongolian selectors and
+  the ideographic ones all leave nothing behind.
+
+  **The absence of a base set is the correction, and it took two rejected
+  attempts.** The first keyed an exemption on category `So`, and 6304 of the 6634
+  symbols carry no registered emoji variation sequence, so `migrating: [████░░░░]
+  everything is fine` drawn from `U+2588` and `U+2591` went through byte-identical
+  at log₂3 bits per symbol. The second keyed it on Unicode's own registered
+  sequences, read from the UCD's `emoji-variation-sequences.txt`, and a reviewer
+  defeated that too by building the channel out of registered bases whose selector a
+  renderer ignores. Whether a selector is visible depends on the font in front of the
+  reader, and no Unicode property names that set. Neither attempt shipped; both are
+  on the parked branch `wip/m62-sanitizer`. What made stripping available where it
+  had looked unavailable is that **the threat is legibility, not confidentiality** —
+  `log` is ungated, so an add-on may write a secret in plain text whenever it likes
+  and nothing here stops it, and what this boundary owes a reader is only that what
+  they see is what is there. Removing the covert bit therefore does not require
+  making logs ugly.
+
+  **Stripping is lossy where escaping was not, and what rested on injectivity was
+  checked rather than assumed.** Two messages differing only in their selectors now
+  produce one line, which the escaping form (D244) did not permit. Nothing rested on
+  it: the record boundary rests on `\n` and `\r` being escaped; attribution rests on
+  the `addon` and `source` **attributes** the host sets, not on message text; and the
+  truncation mark rests on every module backslash being doubled, which a deletion
+  cannot undo. The general argument is that this boundary is the escaping form
+  composed after a deletion, so its image is a **subset** of the escaping form's — a
+  module can reach strictly fewer distinct log lines than before, and anything it
+  could not forge under an injective map it still cannot.
+  `TestStrippingIsLossyAndForgesNothing` is that argument as assertions.
+
+  Asserted five ways, because a sanitizer test that has never let a payload through
+  has not been shown to catch one: the category walk decides every code point and
+  counts the 260 selectors as a class of their own; a walk over the whole range
+  asserts that no default-ignorable character reaches a line and counts 4174/267
+  against 3776/7, all as equalities; the three reproduction schemes and the
+  block-element bar are driven as messages; the bar has a test of its own asserting
+  the payload is unrecoverable and the visible text survives; and the fixture that
+  declares nothing carries all three schemes and the heart end to end.
+
+  **Two absolute claims were corrected here rather than restated.**
+  `docs/SECURITY.md` and `CHANGELOG.md` shipped *cannot arrange bytes in an
+  operator's log to be overlooked*, and the rejected second attempt replaced that
+  with *cannot put invisible bytes in an operator's log*, which never shipped and is
+  worse. Both are false — 17 `Zs` survive as themselves and `U+00A0` is pixel-identical to a
+  space, 13 `Cf` survive by the allowlist the same cell names by hand, and `U+00C5`
+  and `U+212B` render identically — and no escaping rule that keeps text can support
+  an absolute claim. What is claimed now is about **default-ignorable** characters,
+  and a test walks the whole range asserting it.
+- **D285 — the claim is narrowed to what is enforced, the residue is stated, and
+  the property that bounds it is asserted.** *(Added 2026-08-21 by the owner's
+  answer at LNK-M-0081's fourth stop; the amendment above is the same decision's.)*
+  Four attempts and four reviewers established that *invisible* is not a Unicode
+  property: `Other_DI` is the residue of one, `Default_Ignorable_Code_Point` is
+  not *renders as nothing*, and the survivors that carry bits are combining marks
+  the UCD annotates as "shape shown is arbitrary and is not visibly rendered" —
+  `U+2D7F`, `U+17D2`, `U+10A3F`, `U+1107F`, `U+11A47`, `U+11A99`, `U+11F42` and
+  `U+16FE4`. They are **not** added to a list; that is the hand-written
+  enumeration D242 replaced, and the owner declined it. Done is four things.
+
+  **The claim says the set the boundary enforces**, not the set a reader would
+  like: the 268 is *the graphic code points this host treats as invisible* rather
+  than *the graphic code points that render as nothing*, in `abi/functions.go`
+  and its two generated SDK copies, `docs/addon-abi.md`, `docs/SECURITY.md`,
+  `CHANGELOG.md` and `Plan.md`. **Its test no longer derives its expectation from
+  the thing under test** — the previous form counted what the boundary
+  neutralized and asserted 268 against that count, so a graphic code point the
+  boundary let through was invisible to the test by construction, which is D284's
+  own rule broken in form. The expectation is now Unicode's, and the boundary's
+  behaviour is asserted equal to it for every code point in both directions.
+
+  **The residue is stated wherever the claim is**, and it is
+  F310 so that it is tracked rather than only
+  described. `TestTheResidualClassIsWhatTheDocumentsConcede` pins the eight — each
+  is `Mn`, graphic, outside the property, and reaches a line unchanged — so a
+  toolchain that moves one into the property fails rather than leaving the
+  documents conceding more than they need to.
+
+  **What bounds the residue is a property the tree now asserts**: an add-on may
+  *post* to the log and may not *read* it, so a value accidentally logged cannot
+  be retrieved by the module that wants it. `log` declares no out-parameter, no
+  ABI function hands log content back, a guest gets no preopened file and its
+  output streams are discarded, and its storage is a schema the log does not live
+  in. `TestAnAddonPostsToTheLogAndCannotReadItBack` posts a secret through `log`
+  and then drives **every** function in `abi.Functions`, sweeping each declared
+  out-buffer and the whole of the guest's memory for it.
+
+  **And the sanitizer is applied where the claim was made — to the module, not to
+  one function.** `Manifest.validate` embeds every value it refuses with `%q`,
+  which escapes on `unicode.IsPrint` and so leaves every `Mn` and every `Lo`
+  alone: `U+3164`, `U+FE0F`, `U+E0100` and `U+2D7F` all measured through it
+  unchanged, and `migrationFileRe` admits every code point but a newline. Every
+  `LoadError`'s `Err` is neutralized where it is built and its `Addon` where it
+  becomes a sentence, and a refused response, a failed statement and a trapped
+  handler are neutralized at the attribute. **Once each**, because the escaping
+  doubles a backslash.
+
+  *(Corrected before landing, by D286's bullet below: this paragraph said the text
+  reached an operator **twice** and enumerated the sites. Both were wrong — the
+  migration filename reaches an operator a third time on `store.MigrateAddon`'s
+  success path, and a per-request instantiation failure a fourth. The enumeration
+  is gone rather than extended; the neutralization is the logger's now.)*
+
+  Two stated numbers gain what D284 requires: **6634** is the size of category
+  `So` and is now pinned as an equality, and **6304** is marked **attributed
+  rather than pinned** — it cannot be computed from the tables Go ships, having
+  been measured against the UCD's `emoji-variation-sequences.txt` on the parked
+  branch. The toolchain guard names `abi/functions.go` and the `make abi-sdk`
+  target that carries it into the two SDK files and the published table, which it
+  had omitted although each of them prints 268. And a sentence LNK-M-0080 published in
+  `docs/addon-abi.md` — that a flag sequence survives, being made of ordinary
+  graphic code points — is corrected: a **subdivision** flag is tag characters
+  from `U+E0020`–`U+E007F`, which are `Cf`, so `🏴󠁧󠁢󠁳󠁣󠁴󠁿` arrives as the black flag
+  and six escapes. National flags and skin-tone modifiers do survive, and all
+  three are pinned.
+- **D286 — the boundary is a handler, so there is no list of log sites to get
+  wrong.** *(Added 2026-08-21 by the reopening on the fifth attempt's five
+  findings.)* Two rounds fixed the sites they could find and enumerated them; both
+  enumerations were wrong. The second missed `store.MigrateAddon`'s
+  `slog.String("name", r.Source.Path)` — the line that fires when a migration
+  **applies**, the path that runs when nothing is wrong, carrying a filename
+  `migrationFileRe` admits every code point but a newline into, from a package that
+  cannot import the neutralizer because `internal/addon` imports `internal/store`.
+  And it missed the per-request instantiation failure, where the trap twelve lines
+  below was neutralized and this was not: the per-request `hostState` is registered
+  **before** `InstantiateModule` and carries the request, so a guest can read that it
+  is answering one and trap only there — loading clean and failing per visit — and
+  wazero's text is built from the module's own name section.
+
+  Done is five things.
+
+  **The property is structural.** `Open` wraps the logger it is given in a
+  `slog.Handler` that neutralizes the message and every attribute — string, error,
+  `Stringer`, string slice, group, `With` attribute, group name, resolved
+  `LogValuer` — and every logger the subsystem uses derives from that one, including
+  the one `openStorage` hands to `internal/store`. A call added later in a file
+  nobody has thought of is neutralized without its author knowing the boundary
+  exists. `Route` gets the mirror: one neutralizing exit rather than a `neutralize`
+  at each return, with `Unwrap` preserved so `errors.Is` decides what it decided.
+  Asserted by `TestEveryLoggerThisSubsystemHandsOutNeutralizes`, which also refuses
+  any file in this package that calls `slog.New(` — **one construction spelling,
+  not every way to come by an unwrapped logger**: `slog.Default()`, `slog.With`
+  and `observability.LoggerFrom` each yield one without matching, and the scan
+  covers `internal/addon` only, so a second caller of `internal/store`'s exported
+  logger-taking functions is outside it. The property holds today because
+  `internal/addon` is their only production caller. Widening both is
+  F311; claiming only what the test enforces is
+  the same rule this milestone just applied to the boundary itself. Also asserted
+  by `TestEveryErrorOutOfRouteIsNeutralizedAtTheExit`. The real
+  `store.MigrateAddon` line is driven against a real database in
+  `TestAMigrationFilenameReachesAnOperatorNeutralized`.
+
+  **Escaping happens once, kept by a marker rather than by discipline.** Every site
+  logs the raw value; the two types whose text is already neutralized because they
+  are also printed outside a log — `moduleErr` and `LoadError` — implement a marker
+  and are only folded and bounded. Forgetting the marker escapes twice: a line that
+  reads worse, never one carrying what it should not.
+
+  **The escaping and the log line's bound are two concerns and were one function.**
+  `neutralize` was `sanitizeLogMessage` renamed, so the 4 KiB cap reached the fatal
+  message a `required` add-on produces — and `Manifest.Validate` aggregates with
+  `errors.Join` precisely so a first-time publisher sees every problem at once. Past
+  4 KiB the list was cut with nothing to say so, and the join's newlines were escaped
+  like a module's own, so it arrived run-on. `escapeModuleText` takes the bound as a
+  parameter; `moduleErr.Error()` descends into a join and neutralizes each branch,
+  telling a join from `fmt.Errorf`'s two-`%w` form by shape rather than by type. The
+  same error is still one bounded record in a log.
+  `TestAnOperatorsManifestErrorListIsNeitherCutNorRunOn` asserts both destinations.
+
+  **The read end's behaviour limb drives functions with their dependencies met and
+  counts writes.** It built its state as `newHostState(Manifest{Name: "reader"},
+  Grants{}, nil, nil, …)`, so of five live out-parameters exactly one was ever
+  written and the guard asked whether one had been *declared*. The state now carries
+  a declared setting, a request and a session; inputs are keyed by the ABI's own
+  parameter names; the count is over buffers whose filler changed; the expectation is
+  derived from `abi.Functions` less the functions behind the storage permission, and
+  those two are asserted to answer `StatusInternal` so the reason they wrote nothing
+  is named.
+
+  **And the two facts that were true by omission are asserted from inside a guest.**
+  *No preopened file* and *stdout and stderr are discarded* rested on wazero's
+  `NewModuleConfig()` defaults. The `undeclared` fixture now lists `/`, opens a host
+  file and opens its own manifest, and panics on any that succeeds — which fails
+  instantiation — and writes a marker to each stream that
+  `TestAGuestGetsNoFilesAndItsOutputStreamsGoNowhere` requires to reach neither the
+  log nor this process's own two, which are swapped for pipes across the load.
+- **Grants are visible**: what each installed add-on declared is readable —
+  surfaced to operators properly in LNK-M-0089's manager; here, at minimum, logged at
+  load and exposed on the info gauge LNK-M-0079 created.
+- **The analogy to `NonDelegableScopes` is examined and the answer recorded**
+  (`internal/auth/apikey.go`, `NonDelegableScopes` — the shape the planning
+  conversation pointed at). Whether add-on permissions reuse that mechanism or
+  parallel it is this milestone's design call; the decision and its why go to
+  decisions.md either way. What is fixed now: like a role permission, a grant
+  is *held*, never inferred; unlike one, it is granted by the operator's act of
+  installing, not by a role row.
+- **The redirect-inline grant exists and is refused for every module** — the
+  class is defined here so LNK-M-0086 can enforce behaviour against an
+  already-enforced permission, but nothing may hold it until LNK-M-0086 lands. The
+  refusal is the test.
+- **Deliberately not done:** row-level or column-level storage permissions —
+  the storage grant is the add-on's own schema, whole (LNK-M-0082's boundary), and
+  anything finer is a different feature with its own argument. Also not done:
+  any UI for grants (LNK-M-0089), and any event-subscription vocabulary beyond what
+  LNK-M-0083–LNK-M-0086 concretely deliver — a declared-but-undeliverable event is a lie in
+  a manifest.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0080. |
+| Discharges | the owner's answer *declared permissions, enforced* |
+| Status | done |
+| Plan.md order | 4 |
+| Plan.md depends on | LNK-M-0080 |
+| Plan.md discharges | The enforcement answer · the permission-expression question |
+| LinkCtrl | M62 |
+
+---
+
+## LNK-M-0082
+
+**An add-on's tables: a schema of its own, migrated by the host**
+
+milestone · 2026-08-20
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-F-0258](findings.md#lnk-f-0258)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-D-0255](decisions.md#lnk-d-0255)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-F-0288](findings.md#lnk-f-0288)
+
+cites: [LNK-D-0269](decisions.md#lnk-d-0269)
+
+cites: [LNK-D-0279](decisions.md#lnk-d-0279)
+
+cites: [LNK-D-0253](decisions.md#lnk-d-0253)
+
+cites: [LNK-D-0282](decisions.md#lnk-d-0282)
+
+cites: [LNK-D-0281](decisions.md#lnk-d-0281)
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+- **Each add-on's DDL runs inside `addon_<name>`, and only there.** The host
+  runs an add-on's migrations at load, after its own
+  (`internal/store/migrate.go`, `Migrate` — same in-process, before-listener
+  discipline, same goose session-lock serialization across replicas). The
+  add-on's migration source arrives with the module; the host applies it with
+  the search path pinned to the add-on's schema and refuses DDL that names any
+  other schema, asserted by a test module that tries.
+- **The storage host functions (LNK-M-0080's declared limb) become real**: queries an
+  add-on runs through the ABI execute with a role/search-path confined to its
+  schema. Reaching `public` — the product's own tables, all of them — is refused at
+  the same boundary, asserted by test. (No count is claimed here: Plan.md's
+  data-model count is stale at planning time and is
+  F258's subject, so this file names the
+  schema rather than a number.) An add-on that needs product data gets it
+  through host functions that expose it deliberately (LNK-M-0085/LNK-M-0086 expose what
+  their hooks need), never through SQL against product tables.
+- **The additive-ness answer, recorded in decisions.md**: within one ABI minor
+  version, an add-on's *host-visible* contract is additive; inside its own
+  schema it may do what it likes to its own data, because the only reader it
+  has is one it gave itself — the inherited rule protects readers, and the
+  schema boundary is what makes *no reader the add-on did not create* true
+  rather than hoped. **Amended by D255**, which measured that the absolute this
+  bullet first stated is false: the *host* offers no vocabulary for sharing, and
+  that is what the deliberately-not-done bullet below asks for, but the add-on
+  owns its schema and one `GRANT … TO PUBLIC` hands its own data to any other
+  role. The argument therefore rests on the grant being the add-on author's own
+  act rather than on the reader being impossible, and the host's part is that it
+  notices: the load post-condition reports any grantee but the add-on's own role
+  and refuses the add-on until an operator revokes.
+- **Versioned like the host's own**: an add-on's migration state lives in a
+  goose table inside its schema, so upgrade and re-load are idempotent,
+  asserted by loading the same module twice.
+- **An orphan is detectable**: removing a module's file and rebooting leaves
+  its schema; the host can enumerate `addon_*` schemas with no matching loaded
+  module. That enumeration is a host capability with a test now, and LNK-M-0089's
+  *orphaned data named explicitly* page row is its consumer. Nothing is
+  deleted here — purge is an operator's explicit act, LNK-M-0089's flow.
+- **F288 — the reset is driven by the catalogue, because any database can be
+  named.** *(Added 2026-08-20 by the reopening, D269. D279.)* The load's
+  `ALTER ROLE … RESET ALL` clears one scope — `pg_roles.rolconfig`, which is
+  `pg_db_role_setting` filtered to `setdatabase = 0` — and D253's heading, this
+  file's confinement claim and a code comment reading *everything the role has
+  been told about itself, cleared* were all written as though it cleared every
+  scope. `ALTER ROLE CURRENT_USER IN DATABASE <db> SET work_mem = '4GB'` writes
+  the other one, and it survived every load of this milestone's life.
+  **The obvious repair is the wrong one and this bullet is where that is
+  argued.** A second reset scoped to `current_database()` closes the shape the
+  finding was first filed as and nothing more: `IN DATABASE` takes a *name*, not
+  a connection, and the confined role's write is accepted for a database with
+  `CONNECT` revoked from `PUBLIC` and for `template0`, whose `datallowconn` is
+  false — both measured. A repair that names a database is therefore evaded by
+  naming a different one, and Postgres offers no `IN ALL DATABASES` to name
+  instead. So done is that the databases are **read from the catalogue**:
+  `pg_db_role_setting` is shared across the cluster, one connection sees every
+  row wherever it was written, and the reset is accepted for a database the
+  application itself cannot connect to — so enumerate, reset each, then reset the
+  cluster-wide row, then pin. There is no name left to evade with, and the
+  privilege is still the `CREATEROLE` D253 measured rather than superuser.
+- **F288 — the test reads the catalogue the setting lives in, and the load has a
+  post-condition for it.** *(Added 2026-08-20 by the reopening, D269. D279.)*
+  The shipped test set the plain variant and asked `pg_roles`, so it was blind to
+  the `IN DATABASE` row by construction rather than by omission — it passed on
+  every run for the whole life of the defect, and a repair verified the same way
+  would have passed over the fix exactly as it passed over the defect. Done is
+  that the test sets all three scopes, including one in a database the add-on
+  does not run in, and reads `pg_db_role_setting`; and that
+  `AddonConfinementViolations` gains the branch that catches a repair which
+  stopped working, since a setting is not an object and the four catalogue
+  branches that shipped cannot see one however carefully they enumerate. It
+  permits exactly the row the load itself writes — the search-path pin — and
+  reports every other, in every database. The cost is the one D255 accepted for
+  grants: an add-on that parks a setting between the load's reset and the check
+  refuses itself, and a `required` one stops the instance. That is the same
+  trade, and the remedy is one statement.
+- **F288 — an add-on that parks a setting earns a failed load, and nothing sweeps.**
+  *(Added 2026-08-20 by the reopening, D269. D279. Amended 2026-08-21 by D282,
+  which reverses D281.)* Every repair above is per-add-on and runs at that add-on's
+  load, and **no code path in this product drops an add-on role** — the only
+  `DROP ROLE` is the purge an operator types out of
+  operations.md, which they may never type at all. So a
+  module deleted from the directory leaves a role nothing will ever call
+  `EnsureAddonSchema` for again, and a `work_mem` it parked before it went is
+  repaired by no load that will ever run.
+  **Done is detect and refuse, not sweep.** The confinement post-condition's
+  `pg_db_role_setting` branch — the bullet above — reads that catalogue and refuses
+  an add-on whose role carries any row but the search-path pin, in any database. So
+  parking a setting buys its author nothing either way — a load resets every scope
+  before it checks, so a setting parked from a query is **cleared** and one parked
+  inside the add-on's own migrations is **refused** — and no proof
+  of role ownership is needed anywhere, which is what makes this the shape that
+  holds: **a name beginning `addon_` is not a proof of ownership, and neither is the
+  `pg_auth_members` row that looked like one.** On PostgreSQL 17.10 a
+  `NOSUPERUSER CREATEROLE` role — the privilege
+  deployment.md asks for — is recorded as a member with
+  `admin_option` by a bare `CREATE ROLE addon_x NOLOGIN` with no `GRANT` typed, so
+  a sweep resting on that fact would take the settings off a role an operator made
+  by hand.
+  **The residue is stated rather than absorbed.** An uninstalled add-on's parked
+  settings stay forever on a role this product never drops. What bounds them is
+  measured, not assumed: `SET ROLE` and `SET SESSION AUTHORIZATION` both leave
+  `work_mem` at its default, and only an actual **login** reads the parked value
+  back — and nothing logs in as that role once the add-on is gone. Re-installing
+  the add-on clears every scope at its next load, before its pool opens a
+  connection. An operator who wants it gone sooner types
+  `ALTER ROLE addon_<name> IN DATABASE <database> RESET ALL` once per scope, and
+  without the `IN DATABASE` clause for the cluster-wide row;
+  operations.md carries the query that lists the scopes, and
+  deployment.md states the residue where an operator meets
+  it before installing anything.
+- **Deliberately not done:** cross-add-on data access (no vocabulary for it,
+  deliberately — two add-ons that want to share data are one add-on, or a
+  future decision); backup/restore tooling beyond what `pg_dump` of a schema
+  already is, stated in docs; any quota on schema size — growth is visible the
+  way audit growth is, by metric, `linkctrl_addon_schema_bytes{addon}`.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0081. |
+| Discharges | the owner's answer *a Postgres schema per add-on, host-run |
+| Status | done |
+| Plan.md order | 5 |
+| Plan.md depends on | LNK-M-0081 |
+| Plan.md discharges | The schema-per-add-on answer · the DDL-additiveness collision |
+| LinkCtrl | M63 |
+
+---
+
+## LNK-M-0083
+
+**An add-on reaches the page: routes, templates, config**
+
+milestone · 2026-08-30
+
+cites: [LNK-M-0020](#lnk-m-0020)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0094](#lnk-m-0094)
+
+cites: [LNK-D-0304](decisions.md#lnk-d-0304)
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-M-0092](#lnk-m-0092)
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+- **A declared route prefix mounts**: an add-on holding the routes grant gets
+  `/addons/<name>/…` on the **app tree only** (`registerAppRoutes`,
+  `internal/httpx/router.go` — the `appMux`), never on the link tree. The
+  redirect tree's tripwire tests
+  (`test/integration/redirect_test.go`, `tripwireAuthenticator`) pass
+  unmodified; a test asserts an add-on route registered on the link host 404s.
+- **The CSP does not move** — the inherited rule argued in writing, as
+  phase-4-candidates.md
+  requires: `internal/httpx/middleware.go`'s `csp` constant is byte-identical
+  before and after, asserted by test. An add-on renders through host-side
+  templating — it returns content the host wraps in the layout
+  (`internal/ui/templates/layout.html`), or serves declared static assets from
+  its module through the host's handler; it cannot inject script tags, inline
+  handlers, or external references, and a test module that tries renders
+  inert text.
+- **Both themes hold**: add-on pages inherit the LNK-M-0020 theme tokens through
+  the host layout, and the theme test's discipline
+  (`internal/ui/theme_test.go`) covers whatever host-side CSS this milestone
+  adds. **The scan cannot see add-on assets** — it walks the embedded
+  templates, and a module's assets are not in the embed — so this milestone
+  either extends the same discipline to served add-on CSS as a host-side
+  check, or ships add-on CSS unscanned and says so in this file and in the
+  manager's surface. Which, is this milestone's design work; pretending the
+  existing scan reaches it is not an option, and this sentence exists so that
+  gap is a decision rather than a discovery.
+- **Config reaches an add-on the way it reaches the product**: keys under
+  `LINKCTRL_ADDON_<NAME>_…` are read through the same env mechanism
+  (`internal/config`), handed to the module at load, readable through the
+  LNK-M-0080 config host function, and bounded by the config-keys grant. Secrets get
+  the `Secret` treatment — an add-on's client secret must not print, same as
+  the host's own. Manifest-declared settings (LNK-M-0079) arrive through the same
+  host function; *editing* them is LNK-M-0089's page, never the
+  environment and not this milestone.
+- **Session context, not session power**: an add-on route handler can ask the
+  host *who is signed in* (identity, workspace) when its grant includes it; it
+  cannot read the cookie, mint, or destroy sessions — that boundary is LNK-M-0085's
+  subject and stays closed here, asserted by the ABI having no such function
+  yet (LNK-M-0080's declared-but-refused list). *(Amended 2026-08-30 at
+  LNK-M-0094 — a fact, not the assertion. The bullet is still true of what
+  LNK-M-0083 delivered, and its own "here"/"yet" said so: at LNK-M-0083's terminal commit
+  `c0d0025` the ABI carried `session_mint` with no `Live` field. LNK-M-0085 set it
+  `Live: true`, so a reader following the cross-reference today finds a
+  declared-but-refused list holding only `template_render`. The amendment rather
+  than a reopening follows D304, which ruled the same way on
+  LNK-M-0081; LNK-M-0085 wrote the matching parenthesis into m60.md and not into this file.)*
+- **Deliberately not done:** add-on entries in the nav
+  (`internal/ui/templates/partials/nav.html`) — LNK-M-0089 decides how installed
+  add-ons are presented, and until then an add-on's pages are reachable by URL
+  and from the manager (LNK-M-0089); WebSocket/SSE anything; and add-on routes on the API
+  tree under `/api/v1` — every UI feature has API support is a *product* rule,
+  and whether it binds third-party surfaces is a question LNK-M-0092 will force with
+  a real case rather than this milestone deciding in the abstract.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0081 *(hard — routes are a declared permission)*; |
+| Discharges | the routes, templates and config limbs of the reach answer |
+| Status | done |
+| Plan.md order | 6 |
+| Plan.md depends on | LNK-M-0081 · LNK-M-0082 *(ordering)* |
+| Plan.md discharges | Reach: routes, templates, config |
+| LinkCtrl | M64 |
+
+---
+
+## LNK-M-0084
+
+**Mid-phase adversarial review**
+
+milestone · 2026-08-11
+
+cites: [LNK-M-0036](#lnk-m-0036)
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-M-0054](#lnk-m-0054)
+
+cites: [LNK-M-0078](#lnk-m-0078)
+
+- The review runs to LNK-M-0036's specification, as every `X.9` since
+  has. An independent actor — a different model from the workers', per
+  planning.md §7's
+  independence standard applied as this project applies it to code reviews —
+  reads the tree, not the milestone files' claims, and asks at least:
+  - whether a claim any **shipped** milestone makes is now false (the
+    reviewer's standing question);
+  - whether the LNK-M-0082 schema boundary survives hostile SQL the suite did not
+    think of;
+  - whether LNK-M-0083's host-wrapped rendering survives hostile output the suite
+    did not think of;
+  - whether the ABI as built (LNK-M-0080's enumerated set) matches the ABI as
+    documented, function by function, including the declared-but-refused list;
+  - whether the manifest/SDK contract as consumed by `LinkCtrl-OIDC` matches
+    what this repository publishes — read at whatever commit that repository
+    holds at review time, and if it holds none to check, the review records
+    *not yet checkable* rather than a pass. The cross-repo seam has a reviewer
+    for the first time here.
+- **A browser check** — the obligation LNK-M-0054 put on every `X.9`
+  review, owner-set 2026-08-11: the dashboard surfaces this range added (LNK-M-0083's
+  add-on pages, driven through a test module) are walked in the real browser
+  harness, against a freshly rebuilt image — `make verify-ui` passes against
+  stale code otherwise. A review that did not answer it is not finished.
+- Findings are triaged per workflow.md: in-spec
+  fixed, out-of-spec to
+  deferred-findings.md for owner review.
+- The review's range claim is written into this file when it runs: which
+  milestones and which commit it covered.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0078–LNK-M-0083, and any insertion numbered below |
+| Discharges | the first of the phase's two budgeted reviews. |
+| Status | done |
+| Plan.md order | 7 |
+| Plan.md depends on | LNK-M-0078–LNK-M-0083 |
+| Plan.md discharges | — |
+| LinkCtrl | M64.9 |
+
+---
+
+## LNK-M-0085
+
+**The authentication hook: a session minted on an add-on's word**
+
+milestone · 2026-08-21
+
+cites: [LNK-D-0300](decisions.md#lnk-d-0300)
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-D-0038](decisions.md#lnk-d-0038)
+
+cites: [LNK-M-0068](#lnk-m-0068)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+- **The host mints; the add-on asserts.** `mintSession`
+  (`internal/auth/service.go`, the function whose doc comment says it has two
+  callers and nothing else calls `CreateSession`) gains its third caller — a
+  host-side function that accepts an add-on's authentication assertion and
+  runs the host's own rules: the account must exist and be active, lockout
+  state applies, and the audit writer records the session's provenance
+  (audit action `session.minted_by_addon`, carrying the add-on in a `minted_by`
+  metadata key). *(Spelling amended 2026-08-21 at step 3.4: the bullet wrote
+  `session.minted_by = addon:<name>`, and there is no `sessions.minted_by`
+  column and no `session.minted_by` key. A fact with no referent, corrected
+  rather than prompted; see decisions.md, D300.)* The add-on never sees a token, a
+  cookie, or the session row; asserted by the ABI's surface — no function
+  returns them.
+- **The grant is its own vocabulary entry** (LNK-M-0081), held by nothing by default,
+  and an add-on holding it is `required`-class unless the operator explicitly
+  overrides — the owner's load-failure answer: anything on the authentication
+  path defaults to required. A `degrade` auth add-on is a deliberate operator
+  choice with a documented consequence (external sign-in disappears; local
+  sign-in continues).
+- **Account linking is explicit, never guessed.** An assertion carries an
+  external subject identifier; the mapping from external subject to LinkCtrl
+  account is a host-owned table written only through a deliberate linking flow
+  (signed-in user connects a provider), and an assertion for an unlinked
+  subject mints nothing. Matching by email string alone is refused by design —
+  the classic account-takeover shape, named here so its absence is a decision
+  rather than an accident.
+- **What this deliberately does not decide: provisioning.** Whether an unknown
+  external subject may become a *new* account (and under which signup mode,
+  `LINKCTRL_SIGNUP_MODE` being the operator's, D38) is a policy question with
+  its own tenancy consequences — Phase 2's signup section is the precedent.
+  This milestone ships linking-only; provisioning is a candidate for the phase
+  that wants it, recorded in phase-4-candidates.md.
+- **MFA composes; it is not bypassed.** An account with TOTP enrolled (LNK-M-0068)
+  still meets its second factor after an add-on assertion, unless the operator
+  configures the provider as satisfying it — the default is the safe reading,
+  asserted by test.
+- **Sabotage-verified end to end** with a test module asserting a fake
+  identity: wrong subject, unlinked subject, locked account, and an add-on that
+  does not hold `session.mint` — each refused at the host boundary, each a test
+  that has been made to fail. *(Amended 2026-08-21 at step 3.4: the bullet said
+  "disabled add-on", and this product has no mechanism that disables one, so the
+  phrase named nothing the tree could satisfy. Withholding the grant is the
+  refusal the suite drives and is what the bullet can mean; see D300.)*
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0080, LNK-M-0081; LNK-M-0083 *(hard — an OIDC |
+| Discharges | the hook-on-session-mint limb of the reach answer — the last |
+| Status | done |
+| Plan.md order | 8 |
+| Plan.md depends on | LNK-M-0080 · LNK-M-0081 · LNK-M-0083 |
+| Plan.md discharges | Reach: the session hook, last limb of *everything OIDC needs* |
+| LinkCtrl | M65 |
+
+---
+
+## LNK-M-0086
+
+**Add-ons on the redirect path: two classes, a deadline, and a promise rescoped**
+
+milestone · 2026-08-23
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-D-0104](decisions.md#lnk-d-0104)
+
+cites: [LNK-M-0095](#lnk-m-0095)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+- **Two classes, enforced as the two grants LNK-M-0081 defined.** *redirect-observe*
+  runs async, off the request path, fed a completed redirect's event after the
+  response — it can delay nothing, asserted by test. *redirect-inline* runs on
+  the path, inside `RedirectHandler.ServeHTTP`'s flow
+  (`internal/httpx/redirect.go`) at a single named extension point — after the
+  destination is decided, with the power the point grants it (at minimum:
+  observe the decision, veto to the gate-refusal path; whether it may rewrite
+  the destination is decided in this milestone's design and recorded, with
+  the tier system's constraints — an add-on must not be a fourth way around
+  the destination validator).
+- **The redirect tree stays the redirect tree.** No session lookup, CSRF or
+  template rendering arrives with the extension point; the tripwire tests
+  pass unmodified. An inline module's host functions are the redirect-safe
+  subset only — no storage I/O on the hot path; asserted by the ABI refusing
+  the storage functions to an inline invocation.
+- **The deadline is runtime-enforced and its value is measured into, not
+  assumed.** wazero's per-invocation interruption bounds an inline module;
+  an overrun kills the invocation, the redirect completes without it, and
+  `linkctrl_addon_redirect_kills_total{addon}` counts it. The value ships as
+  `LINKCTRL_ADDON_INLINE_DEADLINE` with a default chosen from this
+  milestone's own measurements (the upcoming-decisions entry this plan files
+  is answered here, from data) — the planning-time expectation is
+  single-digit milliseconds against the 20ms budget, and the number is
+  worthless until measured.
+- **Per-module attribution is first-class** (owner requirement #2, stated
+  verbatim in the candidates file): `linkctrl_addon_redirect_duration_seconds
+  {addon,class}` histograms, separate from
+  `linkctrl_redirect_duration_seconds`, so core p99 and each add-on's p99 are
+  different curves an operator can read apart. LNK-M-0089 renders them; this
+  milestone records them.
+- **The k6 measurement re-runs on the built image** (the inherited rule —
+  this milestone touches the redirect path): once with no add-on, proving
+  core is unmoved; once with a deliberately slow inline test module, proving
+  the deadline holds, the kill counter moves, and core availability survives.
+  Both runs land in docs/slo.md.
+- **The published promise is rescoped to core, in the same diff — in the
+  files a mid-phase commit may touch** (owed #1): docs/slo.md's
+  headline claim and `docs/SECURITY.md` state the measurement as *core, with
+  no inline add-on on the path*, and state that an inline add-on's latency is
+  its own. A published claim about to stop being unconditionally true is
+  edited before the capability ships, not after. **`README.md`'s figure
+  (`README.md:43`) is deliberately not in this diff**: D104 keeps README
+  describing the *released* product, which has no add-ons until the tag —
+  `CHANGELOG.md`'s `[Unreleased]` carries the rescoping until
+  LNK-M-0095's documentation pass moves it into README, and that split is
+  stated here so the close does not rediscover it.
+- **LNK-M-0081's refusal test is amended here, by counter-edit and on the record**:
+  LNK-M-0081 shipped a test asserting the redirect-inline grant is refused for every
+  module; this milestone is the one that makes that assertion false, so the
+  test is deliberately amended — refusal becomes grant-respecting enforcement
+  — with the amendment named in this file's diff rather than silently
+  rewritten. That is the tripwire-amendment discipline applied to the phase's
+  own scaffolding.
+- **Deliberately not done:** any add-on holding redirect-inline by default —
+  the grant remains operator-installed and explicit; per-add-on deadline
+  overrides (one instance-wide knob until a real case argues); and the
+  observe-class event vocabulary beyond the redirect event itself.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0081 *(hard — both classes exist there as grants |
+| Discharges | the redirect-path answer and its three requirements |
+| Status | done |
+| Plan.md order | 9 |
+| Plan.md depends on | LNK-M-0079 · LNK-M-0081 |
+| Plan.md discharges | The redirect answer and its three requirements · owed-work #1 (core-only SLO claim) · the deadline question |
+| LinkCtrl | M66 |
+
+---
+
+## LNK-M-0087
+
+**Instances are reused, so a visitor stops paying for a cold start**
+
+milestone · 2026-08-23
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-M-0094](#lnk-m-0094)
+
+cites: [LNK-D-0324](decisions.md#lnk-d-0324)
+
+cites: [LNK-F-0324](findings.md#lnk-f-0324)
+
+cites: [LNK-D-0104](decisions.md#lnk-d-0104)
+
+cites: [LNK-F-0326](findings.md#lnk-f-0326)
+
+cites: [LNK-D-0325](decisions.md#lnk-d-0325)
+
+cites: [LNK-D-0328](decisions.md#lnk-d-0328)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-D-0319](decisions.md#lnk-d-0319)
+
+- **The measurement this milestone exists to move is stated first, and is the
+  gate.** A well-behaved inline add-on — the `redirect` fixture holding
+  `redirect.inline`, parsing the decision and allowing it — measured on
+  2026-08-23 at 2,000 rps for two minutes: generator p99 **44.89ms** against a
+  20ms target, median 9.18ms; **11.05ms** per invocation from the add-on's own
+  histogram and **18.6ms** mean for a request that actually invoked — the
+  whole-population mean of 11.46ms is lower only because **38.6%** of 240,002
+  redirects skipped the add-on entirely for want of a slot; 208 guest-deadline
+  kills on a module that does nothing. The same run on this milestone's build is what says
+  whether it worked, and it lands in docs/slo.md beside the two
+  LNK-M-0086 already put there. **The bar is the inherited one: generator p99 under
+  20ms for a well-behaved inline add-on**, owner-set 2026-08-23 over a
+  fraction-of-baseline target and over a bar with an escape clause. It is the
+  same figure every other redirect-path milestone re-verifies against and the
+  figure this product publishes, and it is stated here rather than left as
+  *moved the number*, which 44.89ms → 42ms would satisfy.
+- **An instance is reused, and what that means when a module is stateful is
+  decided and enforced.** A wasm instance carries the guest's memory, so reuse
+  hands the next redirect whatever the last one left. Either the guest's state
+  is reset between uses or the pool is per-something that makes sharing safe,
+  and whichever it is, **a test drives two redirects through one pooled instance
+  and asserts the second cannot observe the first**. This is the milestone's
+  central design question and its most likely source of a security defect; it is
+  named here rather than discovered in review. *(Amended 2026-08-30 at
+  LNK-M-0094 — this one **was** discovered in review, and the bullet as
+  shipped asserts more than the tree delivers. Neither limb holds in full: the
+  reset covers the guest's linear memory only, and the pool is keyed
+  `(add-on, class)`, which shares across every visitor and every workspace. A
+  module keeping state in a mutable WebAssembly global or a funcref table carries
+  it from one invocation to the next — measured by driving hand-assembled modules
+  through `Host.Inline`. The cited test passes because the Go fixture it drives
+  stores in a package-level variable, which is linear memory: exactly the risk
+  this bullet's last sentence names. No add-on built with this product's SDK can
+  reach it; a module installed from a URL is arbitrary bytes. Filed rather than
+  fixed here, because every remedy is a design choice — see the finding.)*
+- **The runtime kills the module, not the call, and the pool knows it.** A
+  deadline interrupt closes the instance — m66.md's third risk, now
+  load-bearing — so a killed instance is evicted rather than returned, and a
+  module that overruns repeatedly cannot poison the pool with dead entries.
+  Asserted by a test that kills an invocation and then drives a successful one
+  through the same pool.
+- **A thrashing module degrades and does not cascade.** An add-on whose
+  invocations are killed at a sustained rate turns the pool into
+  re-instantiation, which is LNK-M-0086's behaviour and is the floor rather than a new
+  failure. The claim is that it is *no worse* than LNK-M-0086: core's histogram stays
+  where D324 put it, the redirect still completes, and the kill counter still
+  names the add-on. Measured in the hostile-module k6 run, which re-runs here.
+- **The pool's size and lifetime are configuration, and their defaults are
+  measured into.** Named variables with the `LINKCTRL_ADDON_` prefix, documented
+  in docs/configuration.md with the measurement beside
+  each default. **The sixteen-slot concurrency budget is a different thing and
+  is not silently merged into this one** — `maxConcurrentRoutes` already bounds
+  three things and is named for one (F324); a
+  pool that quietly becomes the fourth makes that row worse.
+- **Idle cost is bounded and stated, in every document tied to the old shape.**
+  A pool holds guest memory that LNK-M-0086 freed after every invocation — 3.4 MB per
+  instance for the `redirect` fixture, from its boot log — so the phrase the
+  ceiling is stated with, ***in flight***, stops being true: holding at rest
+  becomes nonzero. That phrase is **machine-tied across nine documents** by
+  `documentedNumberSites` and `TestTheGuestMemoryCeilingIsTheOneDocumented`
+  (`internal/addon/http_test.go`), which fails on a reworded sentence, so this is
+  a test that goes red rather than a sweep somebody has to remember: SECURITY.md,
+  deployment.md, configuration.md, operations.md, CHANGELOG.md, Plan.md,
+  addon-abi.md, `sdk/doc.go` and slo.md. **`CHANGELOG.md` is the sharp one** — it
+  is released history, so what may be edited there is `[Unreleased]` and the rest
+  is a D104-shaped question this milestone answers rather than discovers. The
+  code comment stating the invariant this milestone removes is
+  `internal/addon/http.go:65`, *"what the 2 ms buys is that guest memory does not
+  cross requests"*; it is not documentation and it is the sentence the isolation
+  bullet above has to make true again by another means.
+- **The observe class gets the same treatment or an argued exemption.** It pays
+  the same startup on the same slots — the reopening found F326 in both call
+  sites — so a pool that serves only the inline class is a choice to be stated,
+  not an omission.
+- **Both k6 runs re-run on the built image** (the inherited rule; this milestone
+  changes the redirect path's cost), plus the well-behaved run above, which
+  becomes a third column rather than a note. All three land in
+  docs/slo.md.
+- **Deliberately not done:** raising the sixteen-slot budget, which is the
+  answer this milestone exists to avoid — more slots multiply the memory rather
+  than remove the work; per-add-on pool sizing, one instance-wide knob until a
+  real case argues; and any change to either bound LNK-M-0086 shipped, which D325 and
+  D328 settled and this does not reargue.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0086 *(hard — the two classes, the two bounds and the |
+| Discharges | owner-added scope, 2026-08-23, on the measurement in |
+| Status | done |
+| Plan.md order | 10 |
+| Plan.md depends on | LNK-M-0086 · LNK-M-0079 *(ordering)* |
+| Plan.md discharges | Owner-added scope 2026-08-23 — reverses D319, which declined pooling before an add-on had been measured under load |
+| LinkCtrl | M66.5 |
+
+---
+
+## LNK-M-0088
+
+**Runtime lifecycle: an add-on arrives and leaves without a reboot**
+
+milestone · 2026-08-18
+
+cites: [LNK-D-0098](decisions.md#lnk-d-0098)
+
+cites: [LNK-D-0018](decisions.md#lnk-d-0018)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-M-0091](#lnk-m-0091)
+
+cites: [LNK-M-0090](#lnk-m-0090)
+
+cites: [LNK-M-0087](#lnk-m-0087)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-M-0016](#lnk-m-0016)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+- **The permission exists before the surface**: `addons.manage`, an
+  instance-principal scope in the D98 pattern — enumerated, **seeded by an
+  insert-and-grant migration** (the 00800 pattern; `03400_instance_principal.sql`
+  is the instance-scope precedent), and non-delegable to API keys. The
+  milestone records its D18 limb per the inherited rule; the working argument
+  is the second limb — a key that can add executable capability has widened
+  its own reach past any scope it was issued with.
+- **Install is an upload, never a fetch**: a `.wasm` + manifest pair arrives
+  in the request body, runs LNK-M-0079's checksum verification and manifest parsing
+  before anything activates, and **nothing is fetched from a URL**.
+  *(**Superseded 2026-08-25 as to the reason, not the behaviour.** This bullet
+  went on to say a fetch *"would be the SSRF-shaped convenience this product
+  refuses everywhere else, and its absence is deliberate"* — presented as a
+  stance when **no decision backed it**: `decisions.md` has no entry and
+  phase-4-candidates.md, which records the owner's
+  planning answers, never mentions upload, fetch or URL. The owner's actual
+  intention was local and direct-URL installs with a module store on top of
+  them, stated 2026-08-25. What LNK-M-0088 built is correct and unchanged; what was
+  wrong is the sentence claiming somebody chose it.
+  LNK-M-0091 adds the URL route on
+  LNK-M-0090's fetch, and this milestone's upload path stays exactly as
+  it is. See decisions.md.)*
+  *(**Landed 2026-08-27.** LNK-M-0091 shipped, so the second half of
+  this bullet — *nothing is fetched from a URL* — is now false of the product
+  and true of this milestone's own path, which is unchanged. An install may
+  name a bundle URL and the `sha256` it must hash to; the address policy
+  LNK-M-0090 built is what answers the argument this bullet used to make, and the
+  operator's digest is what makes the trust bounded. This milestone's tests,
+  its refusals and the directory it writes are untouched, and a test installs
+  the same module both ways and compares the two directories byte for byte.)*
+  The operator's boot-directory route from LNK-M-0079 keeps working unchanged.
+- **Activation is atomic with the stored state**: the file set and the
+  manifest record move together, so a crash mid-install leaves either the old
+  world or the new one, never a half — asserted by a test that kills the
+  sequence between steps.
+- **Removal unloads without a reboot**, and the unload semantics are this
+  milestone's design work stated in its diff: in-flight invocations complete
+  or are interrupted (chosen and recorded), held instances are released, and
+  the leak risk is bounded by test — repeated install/remove cycles hold
+  resident memory flat within a stated tolerance.
+- **Removal drains the add-on's pool** (LNK-M-0087's seam, written into
+  this file when that milestone was added on 2026-08-23 so it is owned rather
+  than discovered). LNK-M-0087 keeps instances rather than destroying them, so
+  unloading has something to release that LNK-M-0086 did not have: pooled instances
+  for the removed add-on are drained before the module is closed, and a test
+  drives install → pool warm → remove and asserts nothing of that add-on
+  survives. If LNK-M-0087's design turns out to make this free, say so here rather
+  than dropping the bullet.
+- **A removed `required` add-on cannot brick the boot it was required for**:
+  removal updates the stored state atomically with the file set, so the next
+  boot does not stop for a module the operator deliberately removed. Tested.
+- **Every lifecycle act is audited**: `addon.installed`, `addon.removed`,
+  each naming the module, version and checksum, through the LNK-M-0016 writer.
+- **The API is the mechanism** (inherited rule): install and remove land in
+  `api/openapi.yaml` under `addons.manage`, replayed by the contract test —
+  LNK-M-0089's page calls what this milestone ships, and has no private
+  side door.
+- **The single-instance gate re-runs against a lifecycle sequence**: LNK-M-0079's
+  add-on case grows install-then-remove-then-serve, so *one container is a
+  tested configuration* covers the moving version of the claim, not only the
+  boot-time one.
+- **Deliberately not done:** any page (LNK-M-0089); purge of an add-on's schema —
+  removal leaves the orphan LNK-M-0082 makes enumerable, and offering the purge
+  choice is the surface's job at the point of decision; upgrade-in-place
+  (remove-then-install is the path this phase ships, and a one-step upgrade
+  with migration implications is its own future argument).
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0079 *(the loader and verification it drives)*, |
+| Discharges | the install/remove halves of the owner's Add-on manager answer |
+| Status | done |
+| Plan.md order | 11 |
+| Plan.md depends on | LNK-M-0079 · LNK-M-0081 · LNK-M-0082 · LNK-M-0087 |
+| Plan.md discharges | The install/remove halves of the manager answer · split from the surface at the plan's review |
+| LinkCtrl | M67 |
+
+---
+
+## LNK-M-0089
+
+**The Add-on manager**
+
+milestone · 2026-08-18
+
+cites: [LNK-D-0177](decisions.md#lnk-d-0177)
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-M-0088](#lnk-m-0088)
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-M-0093](#lnk-m-0093)
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-D-0401](decisions.md#lnk-d-0401)
+
+- **The page follows the chosen and confirmed wireframes** — owner-chosen
+  2026-08-18 from drawn options (the D177 route), amended twice in the same
+  review and recorded with the frames in
+  phase-4-candidates.md:
+  **Option A's flat table as the list page, Option C's detail pages behind
+  each row**; rendered in the existing idiom (`internal/ui`, theme tokens,
+  both themes).
+- **It lists every installed add-on** with name, version, declaration class
+  (none / redirect-observe / redirect-inline), failure class (required /
+  degrade), and its declared permissions (LNK-M-0081's visibility promise, kept
+  here).
+- **Per-module performance against the redirect path is on the page** — the
+  owner's stated reason the manager exists: each module's own latency and its
+  deadline-kill count, read from LNK-M-0086's per-module series and rendered as
+  values on the page itself — per-module p99 and kill counts, not a link to
+  `/metrics` — which is the checkable form of "attribution without
+  Prometheus". Modules holding no redirect grant show no redirect figures
+  rather than zeros.
+- **Install and remove are driven from the page through LNK-M-0088's API** — same
+  scope (`addons.manage`), no private side door, upload-only. **Removal is
+  select-mode** (owner-amended 2026-08-18): Remove sits in-line with Install;
+  pressing it turns each row's trailing chevron cell into a checkbox — same
+  column template in both states, so the table does not shift, asserted by
+  the browser harness — multiple rows select, and the same button, now
+  *Remove selected (n)*, opens **one confirmation for one or many**: a
+  purge-data choice per selected module (its LNK-M-0082 schema), default off, and a
+  required-class module's consequence stated in the dialog. Declining a purge
+  leaves an orphan the page then names.
+- **The detail page renders and saves the add-on's declared settings**
+  (owner-added scope, 2026-08-18 — the amendment named in
+  phase-4-candidates.md):
+  settings declared in the manifest (LNK-M-0079) with a type each — text, secret,
+  select, toggle — rendered as the matching input, saved behind
+  `addons.manage`, audit-logged, values stored host-side in a table this
+  milestone shapes (never the add-on's own schema, never the environment),
+  and readable by the module through LNK-M-0080's ABI. Secrets get the `Secret`
+  treatment and are never echoed back into the form.
+  *(**Amended 2026-08-29 under LNK-M-0093, a fact.** What LNK-M-0089 built is
+  described correctly above and is unchanged. The exclusion below read "only
+  manifest-**declared** settings are editable here" and now reads "only
+  **declared** settings", because since LNK-M-0093 this page also renders one setting
+  the **host** declares on an add-on's behalf — the operator's consent to that
+  add-on's sign-in link, which a manifest is refused if it tries to declare.
+  What that sentence was drawn to exclude is unchanged and still holds: the env
+  keys LNK-M-0083 reads stay the operator's, and nothing on this page edits them. See
+  decisions.md, D401.)*
+- **Orphaned data is listed explicitly**: every `addon_*` schema with no
+  matching installed module appears with its size and origin, each offering
+  its own purge — with confirmation, audit-logged (`addon.data_purged`). A
+  schema left behind is a row on this page, never merely a fact in the
+  database. Purge — the schema drop itself — is this milestone's one
+  mechanism, because the offer and the act belong at the same point of
+  decision.
+- **Every UI feature has API support** (inherited): listing and purge land in
+  `api/openapi.yaml` beside LNK-M-0088's install/remove, replayed by the contract
+  test, under the same scope.
+- **The demo shows it** (inherited, `demoCoverage()`): the demo instance
+  seeds a small first-party observe-class sample module so the manager page,
+  its class badges and its performance figures render over real rows, and a
+  `demoFeature` row asserts it.
+- **Deliberately not done:** add-on marketplace/discovery anything; editing
+  the operator's *environment* config from the page — the env keys LNK-M-0083 reads
+  stay the operator's, and only **declared** settings are editable
+  here (the exclusion narrowed by the owner on 2026-08-18; it read "config
+  stays the operator's env" whole until then); nav integration beyond the
+  manager's own entry — how add-on pages themselves surface in the nav is
+  decided by this design and recorded either way.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0082 *(orphan enumeration)*, LNK-M-0086 *(the |
+| Discharges | the visible half of the owner's *the Add-on manager is a real |
+| Status | done |
+| Plan.md order | 12 |
+| Plan.md depends on | LNK-M-0082 · LNK-M-0086 · LNK-M-0088 · LNK-M-0083 *(ordering)* |
+| Plan.md discharges | The manager answer's visible half: listing, per-module performance, orphaned data, the purge choice |
+| LinkCtrl | M68 |
+
+---
+
+## LNK-M-0090
+
+**An add-on reaches outward, and only where the operator pointed it**
+
+milestone · 2026-08-25
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-D-0378](decisions.md#lnk-d-0378)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-M-0087](#lnk-m-0087)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-M-0030](#lnk-m-0030)
+
+cites: [LNK-M-0091](#lnk-m-0091)
+
+cites: [LNK-F-0334](findings.md#lnk-f-0334)
+
+cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-M-0092](#lnk-m-0092)
+
+- **The manifest declares a need, never a destination.** A new permission —
+  `network.fetch` unless the build finds a better name — is what an add-on
+  asks for, and it carries no hosts, no patterns and no URLs. An add-on's
+  author cannot widen its own reach, and the only thing an operator reads at
+  install is *this add-on talks to something*. Asserted by a test over the
+  manifest schema: a manifest naming a host anywhere is refused, so the
+  capability cannot grow a second, quieter allowlist later.
+- **The operator names the origins, in settings.** An origin the host will
+  dial comes from a declared setting the operator fills in — LNK-M-0089's page, LNK-M-0083's
+  types — and from nowhere else. **Absent configuration the function refuses
+  every call**, so an unconfigured add-on that talks outward is inert rather
+  than trusting a default. The failure is a status the guest branches on and an
+  operator-visible record naming the setting, not a trap.
+  *(**Amended 2026-08-26.** This read "a **log line** naming the setting". The
+  line exists and names the setting, and D378 moved it to `Debug` — so at the
+  default `LOG_LEVEL` an operator does not see it. That was decided rather than
+  drifted into: a guest can drive this refusal at CPU speed without touching the
+  network, and Warn on a guest-drivable refusal lets a module decide how much an
+  instance logs. What carries the fact instead is
+  `linkctrl_addon_fetch_total{addon,outcome="unconfigured"}` and the manager
+  page's per-outcome sentence, which is a better channel than a log line and is
+  what `docs/configuration.md` and `docs/SECURITY.md` already promise. The
+  requirement — the operator can find out which setting is unset — is unchanged;
+  only the medium is. See decisions.md.)*
+- **What "same origin" admits is decided here and written down.** A discovery
+  document names further endpoints, and the whole point of discovery is that
+  the operator does not transcribe them — so the host follows what a configured
+  origin returns **only on that same origin** (scheme, host and port all equal),
+  and refuses a discovery document that points elsewhere. That refusal is a
+  test, because a hostile or compromised IdP redirecting the token exchange to
+  a third party is exactly the attack this bound exists to stop.
+- **The hard bounds, each asserted rather than described.** After DNS
+  resolution and before connecting: loopback, link-local, unique-local, and
+  every RFC 1918 and RFC 4193 range refused, on **every** address the name
+  resolves to and again on any address a redirect leads to — the rebinding
+  case, so the check is at dial time and not at parse time. No redirect is
+  followed across origins. A response size cap and a request timeout, both
+  configurable with measured defaults. The refusals are a closed vocabulary the
+  guest can branch on, and each one is a counter label.
+- **Which invocations may fetch at all is decided here, and the redirect path
+  is refused unless a measurement says otherwise.** A fetch happens inside a
+  guest call and spends that call's budget. For a **route** handler the bound is
+  the application tree's own request deadline, `HTTP_REQUEST_TIMEOUT`, which is a
+  context deadline every request already carries — so this milestone's first job
+  is to say what bounds a fetching route handler and to build whatever that
+  answer needs.
+  *(**Amended 2026-08-26, a fact.** This read "For a **route** handler there is
+  no deadline to spend", citing `m64.md`'s memory bounds and its `<250ms`
+  dashboard target. The tree contradicts it: `internal/httpx/router.go` wraps the
+  whole application tree in `RequestTimeout(cfg.HTTP.RequestTimeout)` and
+  `internal/httpx/addons.go` hands `r.Context()` to `Host.Route`, so a route
+  handler has been bounded all along — `internal/addon/http.go`'s own comment
+  said so before this milestone touched it. Found by LNK-M-0090's first reviewer,
+  which measured a spinning fixture returning in 300.7ms under a 300ms parent.
+  The requirement is unchanged and is what the build answered; only the premise
+  was wrong. See decisions.md.)* For a **redirect-class** invocation the budget is LNK-M-0086's
+  inline deadline, a number in single-digit milliseconds against a network round
+  trip in tens, so **the default answer is that egress is refused on the redirect
+  path**, and reversing it needs a measurement in this milestone rather than an
+  argument. Whichever way it lands, the outcome is one sentence in
+  `docs/addon-abi.md` and a test that a refused path refuses.
+- **The redirect SLO is re-verified if and only if the redirect path ends up in
+  scope** (the inherited rule): if a redirect-class invocation may fetch, the
+  `docs/slo.md` k6 measurement re-runs on the built image in LNK-M-0087's
+  three-column shape and the well-behaved column stays under the 20ms bar LNK-M-0087
+  was held to. If egress is refused there — the default above — the milestone
+  says so in `docs/slo.md`'s LNK-M-0089 section instead, because *this cannot touch the
+  redirect path* is a claim a reader should be able to find rather than infer.
+  Either way the rule is discharged in writing.
+- **Attribution is per add-on**: `linkctrl_addon_fetch_duration_seconds{addon}`
+  and `linkctrl_addon_fetch_total{addon,outcome}` with the refusal vocabulary as
+  `outcome`, so an operator can see an add-on talking outward, how often, how
+  slowly, and what was refused. LNK-M-0089's manager renders them beside the redirect
+  figures; this milestone records them.
+- **The ABI addition is classified under LNK-M-0080's own policy**, which
+  LNK-M-0089 already had to repair once: a new function is additive, the
+  version moves, the generation does not, and the SDK, the generated table and
+  `docs/addon-abi.md` regenerate from the list rather than being written twice.
+  **The counts move with it**, and they are enumerated because this phase has
+  had four enumerations go stale: `Plan.md`'s limitation row says *sixteen
+  functions … fifteen are live* and becomes seventeen and sixteen; the
+  permission vocabulary goes from eight tokens to nine wherever it is stated.
+  `TestEveryDocumentedNumberIsTied` and the audit-count anchors are the pattern
+  to follow — a number stated in prose is tied to the constant or it drifts.
+- **`docs/SECURITY.md` gains the paragraph before the capability ships**, and
+  the mechanism is the docs gate rather than anybody's diligence — a shipped
+  claim this milestone falsifies is a failing gate, and the sweep that ties
+  numbers across documents is what catches the count. It says what an add-on
+  holding this permission can do, what the operator is trusting when they name
+  an origin, and the sentence that matters most —
+  **this is the first door in this product through which a server-side request
+  reaches an address somebody else chose**, which is what the destination
+  validator has refused since LNK-M-0030 and what
+  LNK-M-0091 will reuse. The relationship to that validator is stated:
+  they are different doors with different rules, and why.
+- **The demo does not get it** (the inherited demo rule, claimed rather than
+  skipped): the demo's sample module is an observe-class page-counter with
+  nothing to fetch, and pointing it at an origin would mean running a second
+  service beside the demo for it to talk to. What an operator can *see* — the
+  permission on the manager page, and the settings that name an origin —
+  arrives with LNK-M-0091 if it seeds anything at all. Stated here so
+  the exemption is on the record rather than discovered by `demoCoverage()`
+  passing because nobody added a row.
+- **Deliberately not done:** any host allowlist in the manifest, which is the
+  shape the owner's constraint rules out; egress on the redirect path for the
+  observe class, which has no caller to spend a deadline against and would
+  need its own bound; arbitrary methods and bodies beyond what an OIDC exchange
+  and a discovery fetch need — `GET` and form-encoded `POST` are the milestone's
+  scope and anything wider is argued when something needs it; and connection
+  pooling or keep-alive across invocations, which would outlive the instance
+  the pool hands back.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0080 *(the ABI this adds a function to, and the |
+| Discharges | F334 — an add-on cannot make an |
+| Status | done |
+| Plan.md order | 13 |
+| Plan.md depends on | LNK-M-0080 · LNK-M-0081 · LNK-M-0083 · LNK-M-0089 *(ordering)* |
+| Plan.md discharges | F334 — the gap LNK-M-0092's validation found; owner-answered scope 2026-08-25 |
+| LinkCtrl | M68.5 |
+
+---
+
+## LNK-M-0091
+
+**A module arrives from a URL, because that was always the intention**
+
+milestone · 2026-08-25
+
+cites: [LNK-M-0088](#lnk-m-0088)
+
+cites: [LNK-M-0090](#lnk-m-0090)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+- **A URL install fetches, verifies, and then does what LNK-M-0088 already does.**
+  The bytes arrive over LNK-M-0090's fetch rather than in a request body; from the
+  digest check onward the path is LNK-M-0088's — same manifest parse, same checksum
+  comparison against the manifest, same staging directory, same single
+  `rename(2)`, same audit record. Asserted by a test that installs the same
+  module both ways and compares the resulting directory byte for byte.
+- **The operator supplies the URL, and it is checked the way an origin is.**
+  Every bound LNK-M-0090 asserts applies here unchanged — resolution-time refusal of
+  loopback, link-local, unique-local and private ranges on every resolved
+  address, no cross-origin redirect following, a size cap sized for a `.wasm`
+  rather than for a JSON document. **What is not inherited is the origin
+  allowlist**: an install is an operator typing a URL at the moment of the act,
+  not an add-on reaching out on its own, so the thing authorizing it is
+  `addons.manage` and the typing. That difference is this milestone's central
+  argument and it is stated in `docs/SECURITY.md`, not only here.
+- **The digest is supplied by the operator, not by the URL.** A checksum
+  fetched from the same place as the module proves nothing. The install form
+  and the API take the expected `sha256` alongside the URL, the fetch is
+  refused if it does not match, and **a manifest fetched from the URL cannot
+  be the sole source of its own module's digest** — asserted by a test that
+  serves a manifest whose `sha256` matches a module the operator did not
+  expect. This is the milestone's security claim and the reason a URL install
+  is not simply a convenience wrapper.
+- **It is one more way in, never a replacement.** Upload keeps working
+  unchanged, the boot-directory route LNK-M-0079 built keeps working unchanged, and
+  the three are the same add-on to everything downstream. `m67.md`'s bullet is
+  amended in place with a dated pointer here rather than being quietly
+  rewritten.
+- **The page offers it** — LNK-M-0089's install control gains the URL shape beside the
+  file shape, under the same `addons.manage`, with the digest field beside the
+  URL field so the pair cannot be separated by a reader in a hurry. Refusals
+  word themselves: a fetch that was refused says which bound bit, not *the
+  upload was refused*.
+- **The API carries it** (inherited): the install operation grows the URL form
+  in `api/openapi.yaml`, replayed by the contract test, with the mutually
+  exclusive shapes expressed in the schema rather than in prose.
+- **`docs/SECURITY.md` states the trust honestly.** An operator installing from
+  a URL trusts the URL's host to serve the bytes the digest names, and the
+  digest is what makes that a bounded trust rather than an unbounded one.
+  Written before the capability ships, and held by the docs gate rather than by
+  diligence: this milestone changes what an operator observes, so a claim in
+  that file it falsifies is a failing gate.
+- **The demo shows it** (inherited, `demoCoverage()`): this is the first add-on
+  capability with a *control* an evaluator can find, so the manager's install
+  affordance showing both shapes is what the demo gains, and a `demoFeature`
+  row asserts the **absence of a fetch** while `internal/ui`'s template test
+  asserts the control renders.
+  *(**Amended 2026-08-27, a fact.** This read that a `demoFeature` row asserts
+  the control renders *"the way LNK-M-0089's does"*. It cannot: a `demoFeature` is a
+  SQL count, so it can assert that no `addon.installed`/`addon.removed` action
+  exists — which is the *no demo install reaches the network* half — and nothing
+  about markup. The control's rendering is asserted at
+  `internal/ui/addons_test.go`. Both halves of the bullet's requirement are met;
+  the mechanism named for one of them was wrong. See decisions.md.)* **What the demo does not do is fetch** —
+  no demo install reaches the network, because the demo has nothing to fetch
+  from and a seeder that dialled out would be a scheduled job nobody asked for.
+  The row asserts the control renders, not that a fetch happened, and says so.
+- **Deliberately not done:** the module store itself, which is what the owner
+  said this is the foundation for and which is a phase's worth of work on its
+  own — a catalogue, publisher identity, and an update path all need answers
+  this milestone does not owe; signature verification beyond the digest, which
+  is the store's problem rather than this one's; and fetching a *manifest*
+  independently of its module, which would make the pair separable and is the
+  thing the digest bullet exists to prevent.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0088 *(the install path this widens, and its |
+| Discharges | owner-added scope, 2026-08-25, correcting a constraint no |
+| Status | done |
+| Plan.md order | 14 |
+| Plan.md depends on | LNK-M-0088 · LNK-M-0090 · LNK-M-0089 *(ordering)* |
+| Plan.md discharges | Owner-added scope 2026-08-25 — corrects LNK-M-0088's *never a fetch*, which no decision backed |
+| LinkCtrl | M68.6 |
+
+---
+
+## LNK-M-0092
+
+**The OIDC add-on: the foundation's acceptance test**
+
+milestone · 2026-08-18
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0095](#lnk-m-0095)
+
+cites: [LNK-M-0094](#lnk-m-0094)
+
+cites: [LNK-M-0079](#lnk-m-0079)
+
+cites: [LNK-F-0348](findings.md#lnk-f-0348)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-F-0346](findings.md#lnk-f-0346)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-M-0082](#lnk-m-0082)
+
+cites: [LNK-M-0090](#lnk-m-0090)
+
+- **A stock instance signs a user in through OIDC** with the released add-on
+  installed: discovery, authorization-code flow with PKCE against a real IdP
+  implementation in CI (a containerized IdP, e.g. dex or Keycloak, in the
+  integration compose — not a mock of the protocol), callback on the add-on's
+  LNK-M-0083 route, assertion through LNK-M-0085, session minted by the host, provenance in
+  the audit trail. Asserted by an integration test in **this** repository,
+  because the claim is about the host.
+- **Linking is exercised both ways**: a signed-in user connects the provider;
+  an unlinked external subject is refused sign-in. The LNK-M-0085 boundary holds
+  under a real protocol, not only under test modules.
+- **The add-on consumes only the published SDK** at an **immutable, publicly
+  resolvable version** — verified by its go.mod naming the module at one, with
+  no replace directive and no fork. The cross-repo contract
+  phase-4-candidates.md calls the point of the exercise.
+  *(**Amended 2026-08-25, owner-answered.** This read "at a tagged release", which
+  is unsatisfiable as ordered: `sdk/` does not exist at `v0.3.0` — it arrived at
+  `0f87297`, inside this phase — and the next tag is 0.4.0, which
+  LNK-M-0095 cuts after this milestone and after LNK-M-0094. A Go
+  pseudo-version is immutable, publicly resolvable and needs neither a replace
+  nor a fork, so it satisfies what the bullet is for; what it does not satisfy
+  is the word *tagged*, and the cost of that — for one phase the worked example
+  shows an author something nobody would tell them to type — is paid at LNK-M-0095,
+  which bumps the add-on to `v0.4.0` as part of the close. See decisions.md.)*
+- **Its release is verifiable end to end**: checksummed artifact, published
+  provenance (the owner's *both* answer — this is the provenance half LNK-M-0079
+  deferred), and the checksum the manifest carries is what LNK-M-0079's loader
+  verifies on install.
+- **The fixture reproduces that release on any machine, not only on the one that
+  wrote the pin.** The rebuild `scripts/oidc-fixture.sh` performs is what earns
+  the right to install the published artifact, so a rebuild whose digest depends
+  on the Go patch release a machine happens to have proves something about the
+  machine and nothing about the release. The toolchain is pinned to what cut the
+  release, and the acceptance test therefore runs in CI as well as here.
+  *(**Added 2026-08-28, on the owner's answer, under this milestone's own
+  number.** LNK-M-0092 landed at `d421339` and CI's *Integration tests* job then failed
+  at the fixture step on that commit and on `086d325` before it: the runner's Go
+  1.26.7 built `f917a810…` against the published `695385a1…`, so no OIDC test had
+  ever executed in CI. That is
+  F348. The owner reopened LNK-M-0092 rather than
+  deferring it, because this milestone's first bullet claims an integration test
+  asserts the sign-in and the test could not run. See decisions.md.)*
+- **What the build discovered feeds back**: ABI gaps found while building the
+  add-on land as normal findings — in-spec fixes in the milestone that owns
+  the seam, or deferred rows. An ABI change it forces before 1.0 is a **patch**
+  bump under LNK-M-0080's policy, exercised for real — the deprecation policy's
+  first live case, if one arises.
+  *(**Amended 2026-08-27, a fact.** This read **minor**. Under that policy the
+  minor **is** the generation, which is the breaking class; an additive change
+  moves the patch while the major is zero. F346's fix moved `abi.Version` from
+  0.1.4 to 0.1.5, which is the policy working as written rather than an
+  exception to it, and the case did arise. See decisions.md.)*
+- **The demo does not get OIDC**, deliberately: the demo instance has no IdP
+  and a sign-in flow against a throwaway IdP demonstrates nothing a visitor
+  can use. The manager page's demo coverage (LNK-M-0089's sample module) is where
+  add-ons are visible in the demo; recorded here so the inherited demo rule's
+  exception is stated rather than discovered.
+- **`LinkCtrl-OIDC` carries an MIT `LICENSE` before this milestone is done**
+  — owed-work #4, the owner's one-file act in the other repository, named
+  here because it is an acceptance-test precondition: an unlicensed add-on
+  repo means nobody may use the worked example this milestone exists to
+  produce. This tree's part is only to check it and refuse to close while it
+  is absent.
+- **Docs say what shipped**: `docs/configuration.md` and `docs/SECURITY.md`
+  cover running with the OIDC add-on — required-class default (LNK-M-0085), what the
+  operator trusts (the IdP, the add-on's release checksum), what happens when
+  the IdP is down (local sign-in unaffected).
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0080, LNK-M-0082, LNK-M-0083, LNK-M-0085, |
+| Discharges | the OIDC limb of Plan.md's *MFA, OAuth, OIDC, SSO, SCIM* row — |
+| Status | done |
+| Plan.md order | 15 |
+| Plan.md depends on | LNK-M-0080 · LNK-M-0082 · LNK-M-0083 · LNK-M-0085 · **LNK-M-0090** · LNK-M-0089 *(ordering)* |
+| Plan.md discharges | The OIDC limb of *MFA, OAuth, OIDC, SSO, SCIM* · the acceptance test · owed-work #4 (the add-on repo's LICENSE, checked as a precondition) |
+| LinkCtrl | M69 |
+
+---
+
+## LNK-M-0093
+
+**Somebody can start the sign-in an add-on made possible**
+
+milestone · 2026-08-27
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-D-0364](decisions.md#lnk-d-0364)
+
+cites: [LNK-F-0286](findings.md#lnk-f-0286)
+
+cites: [LNK-M-0094](#lnk-m-0094)
+
+cites: [LNK-M-0090](#lnk-m-0090)
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-D-0232](decisions.md#lnk-d-0232)
+
+cites: [LNK-D-0234](decisions.md#lnk-d-0234)
+
+cites: [LNK-D-0402](decisions.md#lnk-d-0402)
+
+cites: [LNK-F-0349](findings.md#lnk-f-0349)
+
+cites: [LNK-M-0089](#lnk-m-0089)
+
+cites: [LNK-M-0088](#lnk-m-0088)
+
+cites: [LNK-M-0091](#lnk-m-0091)
+
+cites: [LNK-M-0095](#lnk-m-0095)
+
+cites: [LNK-F-0345](findings.md#lnk-f-0345)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0092](#lnk-m-0092)
+
+- **The sign-in page offers what an installed add-on declared, and nothing an
+  add-on invented.** A module holding `session.mint` declares **two** fields in
+  its manifest — a **label** and a **relative path** — and the host renders the
+  label as a link on `internal/ui/templates/pages/login.html`. **The target is
+  the host's to compose**: it joins the add-on's own LNK-M-0083 route prefix to the
+  declared path and **asserts the result is still under that prefix**, so `..`,
+  an absolute URL, a scheme and a leading `/` are each refused by test. The
+  manifest names a place inside the one the host already gave it and cannot name
+  a destination — D364's rule, applied to a second surface. Owner-answered
+  2026-08-27 over a label alone, which would have made the prefix root a
+  reserved meaning the ABI never gave it.
+- **The manifest format's three obligations are met, because a new key is what
+  this milestone adds.** `docs/configuration.md`'s manifest field table gains
+  both fields — `parseManifest` has refused any key not spelled exactly as that
+  file documents it since F286, so an undocumented field is precisely what that
+  rule exists to catch. *(Amended 2026-08-30 at LNK-M-0094 — a fact. The
+  refusal is real but is not driven by that document: `jsonFields` derives the
+  key set from the struct's own JSON tags, and the test compares tags to
+  `NumField`, so nothing fails when the documentation omits a field. It had
+  omitted one — LNK-M-0090's `origin` — which is how the gap was found and is now
+  fixed in `docs/configuration.md`. This milestone's own fields were documented,
+  so nothing here rested on the mistaken half.)* **`schema_version` stays `1`**, owner-answered on
+  the precedent LNK-M-0080's cookie-namespace entry records: no LinkCtrl release has
+  published the manifest format, 0.4.0 being untagged, so the condition that
+  precedent states holds as written. D232's
+  narrower argument — that the format should not grow a field per milestone
+  across a boundary another repository compiles against — is **named rather
+  than dismissed**: that boundary now has a consumer, `LinkCtrl-OIDC`, and the
+  answer treats *published* as the word D234 actually used. Say so in the
+  decision rather than letting the precedent be assumed.
+- **The label is hostile input and is treated as such.** It renders through
+  `html/template` like every other add-on string, it is length-bounded, and the
+  bound is a constant with a test rather than a number in a template. A label
+  that is empty, or that is not there, means **no link** — an add-on cannot force
+  itself onto the sign-in page by omission.
+- **Nothing appears on a stock instance.** No add-ons directory, or no installed
+  module holding `session.mint`, and `login.html` is byte-identical to what it
+  renders today, **save the built stylesheet's cache-busting fingerprint** — that
+  token hashes `app.css`, which is gitignored and built by `make css`, so it is a
+  property of a build rather than of this template, and it is normalized out of
+  the comparison and counted (D402, F349).
+  Asserted by a template test, because this is the one page every visitor with an
+  account meets and the cost of getting it wrong is the whole product's front
+  door; the exception is one token wide, and the test is driven from the other
+  side — an add-on link leaking onto a stock page still fails it.
+- **The operator decides whether it appears at all.** Declaring the label is the
+  add-on asking; a setting under `addons.manage` is the operator agreeing, and it
+  is **off until they do**. **Which mechanism carries that setting decides
+  whether the inherited *every UI feature has API support* rule binds**: if it is
+  an add-on-declared setting riding LNK-M-0083's types and LNK-M-0089's page, the rule is
+  already discharged by LNK-M-0089 and this milestone says so; if it is a new host
+  operation, it lands in `api/openapi.yaml` under `addons.manage` and is replayed
+  by the contract test, the way LNK-M-0088, LNK-M-0089 and LNK-M-0091 each did. Decide which and
+  write it down — the rule is not optional and neither is saying which limb
+  applies.
+  The operator's consent follows D364's shape — the manifest
+  declares a need and the operator decides — and for the same reason: an add-on's
+  author must not be able to change what a visitor sees by shipping a new
+  version.
+- **More than one is ordered, and the order is not the add-on's.** Two modules
+  holding `session.mint` produce two links; the order is stable and comes from
+  something the host controls (installation order or name), never from a manifest
+  field, because *which sign-in method is listed first* is worth gaming.
+- **The local sign-in form does not move.** Password sign-in stays where it is
+  and keeps working; the add-on's links are additive, and a test asserts the
+  form's fields and their order are unchanged. An instance whose add-on is
+  broken must still let its operator in.
+- **The demo shows it** (inherited): the demo's sample module does not hold
+  `session.mint`, so this milestone either seeds a module that does — with the
+  flow going nowhere in particular — or states the exemption and says what an
+  evaluator sees instead. Decide and write it down rather than leaving
+  `demoCoverage()` to pass because nobody added a row.
+- **The OIDC add-on gains the two fields and its README stops telling an
+  operator to paste a URL** — the manifest change is the observable end of this
+  milestone and the README is its documentation; without the first, no link
+  renders and nothing here is provable against the add-on the phase was built
+  toward. That file is in another repository
+  and this tree cannot commit it, so this bullet is done when the change is
+  *stated here* for whoever lands it — the same shape as
+  LNK-M-0095's obligation to bump that repository's `go.mod`.
+- **Deliberately not done:** an add-on contributing anything else to any other
+  page, which is a general extension mechanism and is not what F345 asks for;
+  an icon, logo or any styling the add-on controls, because the sign-in page's
+  appearance is not an add-on's to decide and a label is the smallest thing that
+  works; and replacing or reordering the local form.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0085 *(the grant that makes an add-on an authenticator)*, |
+| Discharges | F345 — an add-on that can mint a |
+| Status | done |
+| Plan.md order | 16 |
+| Plan.md depends on | LNK-M-0083 *(ordering)* · LNK-M-0085 *(ordering)* · LNK-M-0089 *(ordering)* · LNK-M-0092 |
+| Plan.md discharges | F345 — the last inch the acceptance test found; owner-answered scope 2026-08-27 |
+| LinkCtrl | M69.5 |
+
+---
+
+## LNK-M-0094
+
+**Pre-release adversarial review**
+
+milestone · 2026-08-30
+
+cites: [LNK-M-0036](#lnk-m-0036)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-M-0078](#lnk-m-0078)
+
+cites: [LNK-F-0255](findings.md#lnk-f-0255)
+
+cites: [LNK-M-0054](#lnk-m-0054)
+
+cites: [LNK-M-0083](#lnk-m-0083)
+
+cites: [LNK-M-0092](#lnk-m-0092)
+
+cites: [LNK-M-0084](#lnk-m-0084)
+
+- The review runs to LNK-M-0036's specification, as every `X.9` since
+  has. An independent actor — different model, fresh context, given the tree
+  and the standards — covers everything numerically below this file and asks
+  at least:
+  - the standing question: does any diff of this phase make a **shipped**
+    milestone's claim false;
+  - the LNK-M-0085 boundary, attacked as an account-takeover surface: assertion
+    forgery, linking confusion, MFA bypass, lockout bypass;
+  - the LNK-M-0086 deadline under adversarial modules: never-returning, allocating,
+    re-entrant, clock-abusing — availability stays the host's promise;
+  - the rescoped published claims (slo.md, README, SECURITY.md) against what
+    an instance with add-ons actually measures;
+  - the cross-repo release chain: SDK version, add-on checksum, provenance —
+    the supply-chain read the phase's spine deserves;
+  - CI is green, asked mechanically — LNK-M-0078's gate, exercised as a gate, the
+    check F255 existed to create.
+- **A browser check** — LNK-M-0054's obligation on every `X.9` review:
+  the phase's UI (the Add-on manager above all, and LNK-M-0083's add-on pages) is
+  walked in the real browser harness against a freshly rebuilt image — this
+  is the last gate before a release carrying dashboard surfaces nobody has
+  driven. A review that did not answer it is not finished.
+- Findings triaged per workflow.md; the review's
+  range and commit are written into this file when it runs.
+- An insertion after this review runs is numbered below it and reopens it —
+  the reservation planning.md states, restated here because this phase's
+  predecessor reopened its pre-release review once and the rule was what kept
+  the range true.
+
+| Field | Value |
+| --- | --- |
+| Depends on | LNK-M-0078–LNK-M-0092, LNK-M-0084, and any |
+| Discharges | the second budgeted review. Nothing is numbered above this |
+| Status | done |
+| Plan.md order | 17 |
+| Plan.md depends on | everything below it |
+| Plan.md discharges | — |
+| LinkCtrl | M69.9 |
+
+---
+
+## LNK-M-0095
+
+**Deferred findings, documentation pass, 0.4.0**
+
+milestone · 2026-08-25
+
+cites: [LNK-M-0080](#lnk-m-0080)
+
+cites: [LNK-D-0104](decisions.md#lnk-d-0104)
+
+cites: [LNK-M-0086](#lnk-m-0086)
+
+cites: [LNK-D-0313](decisions.md#lnk-d-0313)
+
+cites: [LNK-M-0085](#lnk-m-0085)
+
+cites: [LNK-D-0311](decisions.md#lnk-d-0311)
+
+cites: [LNK-F-0253](findings.md#lnk-f-0253)
+
+cites: [LNK-M-0078](#lnk-m-0078)
+
+cites: [LNK-F-0254](findings.md#lnk-f-0254)
+
+cites: [LNK-M-0092](#lnk-m-0092)
+
+- **Owner-approved deferred findings** collected into the close are worked;
+  everything else stays a row with its state honest.
+- **The documentation pass runs the full workflow.md table** — every doc file,
+  not the ones this phase touched. Phase-specific attention:
+  - **docs/releasing.md's pre-1.0 sentence is
+    rewritten** (`docs/releasing.md:14-16` today): 1.0 now means the add-on
+    contract is stable, not that identity is built in — the owner's answer,
+    taken knowing somebody tracking 1.0 for SSO sees it arrive as a module.
+    The rewrite states the new gate and what it obliges (LNK-M-0080's SemVer +
+    deprecation policy becoming a kept promise).
+  - `README.md` gains add-ons at the release, per D104 — written against what
+    the tag ships, drawn from `CHANGELOG.md`'s `[Unreleased]` — **including
+    the rescoped redirect figure**, the README limb LNK-M-0086 deliberately
+    left here: from the tag on, `README.md:43`'s claim reads *core, with no
+    inline add-on on the path*.
+  - **`README.md`'s audit-action count is folded, and that is an obligation
+    rather than a reminder** (D313). README's *Thirty-nine actions are
+    recorded* was untied from `audit.AllActions` in LNK-M-0085 so that a
+    mid-phase action could not force a mid-phase README edit, and the trade
+    only works if the fold happens here. Recount `audit.AllActions`, edit the
+    sentence, and move the spelling in `internal/audit/actions_test.go`'s
+    `frozenUntilTheTag` with it — the entry goes red on the edit, which is
+    what makes this obligation self-announcing rather than something the
+    person cutting the tag has to remember. **The number is not the whole of
+    it**: the same sentence claims the count *"cannot drift without a failing
+    build"*, and between LNK-M-0085 and this fold that clause is false — the tie is
+    exactly what was removed, and the count drifted on a green build. Restore
+    the clause's truth along with the number, or reword it to say what holds
+    the count after the fold. It is done when the number, the spelling and the
+    mechanism clause all agree and `make check` is green. The alternative the owner declined — tying it back
+    to the vocabulary — becomes cheap once D311's shared count mechanism
+    exists, and a later phase may prefer it.
+  - The doc-cost number is regenerated **and judged**, per the standing rule.
+- **The status table moves**: Phase 4's rows leave
+  README.md for `phase-4.md`, the way Phase 3's left for
+  phase-3.md, and Plan.md's build status gains the release line.
+- **The release itself**: `make release-check` (with F253's fix, whichever
+  shape LNK-M-0078 landed, actually exercised at a tag for the first time),
+  `[Unreleased]` folded under F254's now-written rule, tag `v0.4.0`,
+  `make demo-update` from the tagged commit.
+- **`LinkCtrl-OIDC`'s go.mod is bumped to `v0.4.0`, and that is an obligation
+  this milestone owes another repository** (owner-answered 2026-08-25, the
+  amendment in m69.md). LNK-M-0092 builds the add-on against a Go
+  **pseudo-version** of this module, because `sdk/` has never been tagged and
+  the tag this milestone cuts is the first one that carries it. Immutable and
+  publicly resolvable is what the exercise actually needs; *tagged* is what the
+  worked example needs, and it only becomes available here. Done when that
+  repository's go.mod names `github.com/DevOfPie/LinkCtrl v0.4.0`, its CI is
+  green on the bump, and its changelog says the SDK moved from a pseudo-version
+  to a release. **This tree cannot commit that**, so the close carries it as a
+  step somebody performs rather than as a gate anything here enforces — written
+  down because a cross-repository obligation with no home is the one that is
+  discovered by a reader of the published example.
+- **The CI gate is consulted on the record** — the release PR carries the
+  LNK-M-0078 gate's green answer, which is the first release this project cuts with
+  a mechanism, rather than a person, asking whether the build passed.
+
+| Field | Value |
+| --- | --- |
+| Depends on | everything; last by construction. |
+| Discharges | the phase close, and owed-work #3 |
+| Status | done |
+| Plan.md order | 18 |
+| Plan.md depends on | all |
+| Plan.md discharges | Phase close · owed-work #3 (the 1.0 sentence) |
+| LinkCtrl | M70 |
 
 ---
 

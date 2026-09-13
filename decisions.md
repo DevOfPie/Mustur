@@ -3822,3 +3822,17 @@ MUS-Q-0116 asked whether criterion 9 is reworded or recorded as failed, since a 
 | Field | Value |
 | --- | --- |
 | Where | Plan.md, success criteria, 9 |
+
+### MUS-D-0172
+
+**W48 is approved as restated, and made under LinkCtrl's own workflow loop**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0117
+
+milestone: MUS-M-0009
+
+project: MUS-P-0004
+
+MUS-Q-0117 asked whether the owner approves W48, LinkCtrl's change that moves its records to Mustur, now that the import has its verdict (MUS-D-0164). The owner approved it as restated: the records leave, every LinkCtrl rule that filed into decisions.md, deferred-findings.md, phase-details or upcoming-decisions.md files into Mustur instead, every link from a staying file into a leaving one is rewritten, test/docs/decisions_index_test.go goes, and check-links.sh and doc-cost.sh stop naming the leaving paths. The change is made by LinkCtrl's own workflow loop in a Mustur-started LinkCtrl session, on a task branch, as a pull request the owner merges. LinkCtrl's records were imported into the live store immediately before it. The approval's decision entry for LinkCtrl is written under LNK rather than in decisions.md, because decisions.md is the file leaving.
