@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 129 | [questions.md](questions.md) |
-| decision | 178 | [decisions.md](decisions.md) |
-| finding | 161 | [findings.md](findings.md) |
+| question | 132 | [questions.md](questions.md) |
+| decision | 179 | [decisions.md](decisions.md) |
+| finding | 162 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 25 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -212,6 +212,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0111](questions.md#mus-q-0111) | question | Plan.md still promises LinkCtrl a committed .mcp.json. Reword the row, or strike it? |
 | [MUS-Q-0112](questions.md#mus-q-0112) | question | LinkCtrl's decision log is 505 dated entries with decision numbers inside them, not 444 decisions. What is one imported decision? |
 | [MUS-Q-0113](questions.md#mus-q-0113) | question | 24 of LinkCtrl's milestones are fractional, like M24.5 and M57.9, and a serial is four whole digits. How are they numbered? |
+| [MUS-Q-0114](questions.md#mus-q-0114) | question | 18 milestone numbers are cited in LinkCtrl and defined nowhere, so renumbering cannot start at the beginning. Stub them, or leave those 40 references as written? |
+| [MUS-Q-0115](questions.md#mus-q-0115) | question | Milestone 7's done-when is still 'its own verdict'. What must be true for LinkCtrl's move to be accepted? |
+| [MUS-Q-0116](questions.md#mus-q-0116) | question | Success criterion 9 says no other project's file changed before its onboarding started. LinkCtrl's own session changed two on 09-09. Reword it, or record it as failed? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -379,6 +382,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0165](decisions.md#mus-d-0165) | decision | An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json |
 | [MUS-D-0166](decisions.md#mus-d-0166) | decision | Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it |
 | [MUS-D-0167](decisions.md#mus-d-0167) | decision | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number |
+| [MUS-D-0168](decisions.md#mus-d-0168) | decision | Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -526,6 +530,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0145](findings.md#mus-f-0145) | finding | A session restarted under the same name kept tmux's 80x24, so it had no scrollback |
 | [MUS-F-0146](findings.md#mus-f-0146) | finding | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records |
 | [MUS-F-0147](findings.md#mus-f-0147) | finding | I can't click or ctrl+click on links in the session |
+| [MUS-F-0148](findings.md#mus-f-0148) | finding | Push up replacing the visual plan mcp |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

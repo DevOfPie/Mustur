@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-129 record(s), by identifier.
+132 record(s), by identifier.
 
 ---
 
@@ -3149,3 +3149,76 @@ phase-details holds 74 milestone files: M21 to M70 plus 24 fractional ones, wher
 | Answer | Renumber them from the beginning to fit them in the new format in their existing order. Make sure any references to them will be updated to properly point to the correct new number. Note the old number in a field in-case something was missed |
 | Answered | 2026-09-13 07:15 |
 | Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0114
+
+**18 milestone numbers are cited in LinkCtrl and defined nowhere, so renumbering cannot start at the beginning. Stub them, or leave those 40 references as written?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0167](decisions.md#mus-d-0167)
+
+Found by the done-when review of MUS-M-0009. LinkCtrl's tree has a source for M18 to M20 (phase-1.md) and the 74 files, and nothing for M0.5, M4, M7, M8, M9, M11 to M17, the withdrawn M24.6, M30.5, M32.6, M44.5, M58.5 or M58.9, which are cited 40 times, e.g. decisions.md:2675 'M0.5 set the precedent'. Your MUS-Q-0113 answer asked that every reference point at its new number. M1, M2, M3, M5, M6 and M10 are neither defined nor cited.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | The live import: the answer shifts every milestone's new serial |
+| Needed to proceed | yes |
+| Option | Stub the cited ones :: Recommended: each of the 18 gets a milestone record in its place in the order, saying it is cited and never defined, and every reference then points at a record :: Meets your answer as given: numbering starts at M0.5, every one of the 40 references resolves, and the stub says honestly that LinkCtrl holds nothing more. Costs 18 records with no content beyond where they are cited, and every milestone after M0.5 moves up by the stubs before it. |
+| Option | Leave them as written :: numbering starts at M18; the 40 references keep their old text :: No record without content. The 40 references stay readable as LinkCtrl's own numbers and a reader can search the old-number field, but they point at nothing, which is the gap your answer asked to close. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:29 |
+
+---
+
+## MUS-Q-0115
+
+**Milestone 7's done-when is still 'its own verdict'. What must be true for LinkCtrl's move to be accepted?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+Found by the done-when review. Plan.md milestone 7 reads 'Its own verdict, not assumed here', so a review can only check the plan in MUS-W-0024, which is the builder's account. Writing the clause is scope, which is yours.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | The verdict on MUS-M-0009; the reviewers had no clause to check the tree against |
+| Needed to proceed | yes |
+| Option | The whole move :: Recommended: every LinkCtrl record Mustur has a kind for is in the store and reconciled per source to LinkCtrl's tree; the files holding them are gone from LinkCtrl with every link rewritten and its gates green; a LinkCtrl session reaches mustur_route with a token :: Matches MUS-Q-0092 and MUS-Q-0093's goal: acceptance means the records moved, not that an importer exists. Holds the milestone open until LinkCtrl's side, which waits on the import verdict (MUS-D-0164), is done too. |
+| Option | Mustur's side only :: the import is in the live store, reconciled per source, the export passes make check, and nothing in LinkCtrl has changed :: Can be accepted now-ish, and gives MUS-D-0164 a verdict to wait on. LinkCtrl's side then needs a milestone or work unit of its own, and 'moved in' is true of Mustur while LinkCtrl still holds every file. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:29 |
+
+---
+
+## MUS-Q-0116
+
+**Success criterion 9 says no other project's file changed before its onboarding started. LinkCtrl's own session changed two on 09-09. Reword it, or record it as failed?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+Found by the shipped-claims review. MUS-M-0009 started 2026-09-13; LinkCtrl's tree has mustur-transition.md added and workflow-changes.md modified on 2026-09-09, uncommitted, by a LinkCtrl session preparing the survey that Plan.md assigns to 'that repository's agents'. Nothing from Mustur touched it.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Nothing in the import; whether Plan.md's criterion 9 stays a true claim |
+| Option | Reword it :: Recommended: no file in another project is modified by Mustur, or by a session working on Mustur, before its onboarding starts; a project's own agents preparing their side in their own tree is not that :: Keeps what the criterion protects, a router that edits repositories before it is trusted, and makes it true of what happened, which is the preparation Plan.md itself assigned to LinkCtrl's agents. |
+| Option | Record it as failed for LinkCtrl :: the criterion stands as written and a finding says it was not met :: The literal reading. It records a failure for work the plan asked for, and every future onboarding that prepares its own side fails it the same way. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:30 |

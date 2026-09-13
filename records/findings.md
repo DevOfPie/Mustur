@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-161 record(s), by identifier.
+162 record(s), by identifier.
 
 ## The queue
 
@@ -171,6 +171,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0145](#mus-f-0145) | A session restarted under the same name kept tmux's 80x24, so it had no scrollback | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. | fixed |
 | [MUS-F-0146](#mus-f-0146) | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation | raised as MUS-Q-0112 and MUS-Q-0113 |
 | [MUS-F-0147](#mus-f-0147) | I can't click or ctrl+click on links in the session |  | unreviewed |
+| [MUS-F-0148](#mus-f-0148) | Push up replacing the visual plan mcp |  | unreviewed |
 
 ---
 
@@ -4047,6 +4048,26 @@ finding · 2026-09-13
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
 I can't click or ctrl+click on links in the session
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0148
+
+**Push up replacing the visual plan mcp**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Push up replacing the visual plan mcp. Te plan proposed in `https://plan.agent-native.com/plans/plan-523b4a30c7d3409b` looks like it would cause significant changes to the existing UI which I assume is due to limitations in the MCP. Our replacement should allow much better and freer wireframes as the current implentation leaves a lot up to chance. The only good things the current one has going is the ability to give feedback anywhere on the design. Wireframes should be quick and efficient to generate, but not sacrifice the feeling of the UI being planned. Any questions on a plan should be linked to a decision and appear in both as well as showing they have been answered on both.
 
 | Field | Value |
 | --- | --- |

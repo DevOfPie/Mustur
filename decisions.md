@@ -3743,3 +3743,31 @@ MUS-Q-0113 asked how 24 fractional milestones such as M24.5 fit a four-digit who
 | --- | --- |
 | Applies to | LinkCtrl's milestones and their work units, and every M reference in imported bodies and fields |
 | Amends | MUS-D-0163, for milestones |
+
+### MUS-D-0168
+
+**Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured**
+
+decision · 2026-09-13
+
+corrects: MUS-D-0163
+
+corrects: MUS-D-0164
+
+amends: MUS-D-0023
+
+milestone: MUS-M-0009
+
+finding: MUS-F-0146
+
+The three reviewers of MUS-M-0009 found two decisions stating what the build then contradicted, and neither was corrected in a later entry.
+
+MUS-D-0163 said the store gains a write that takes an explicit serial. It needed none: Store.Append already wrote an explicit identifier and refused a taken one, which a test now holds. What the store did gain, after the review, is AppendAll, one transaction for a batch, so a failed import leaves nothing behind. MUS-D-0163's numbering holds for findings and D numbers. Milestones are renumbered by MUS-D-0167, and the log's dated entries take serials from 445 by MUS-D-0166; both depart from it as those decisions say.
+
+MUS-D-0164 said per-source counts are reconciled to 947. That was the survey's sum of 444 D numbers, 381 finding rows, 74 milestone files, 1 ADR and 47 workflow-change rows, and it is not a count of records. Reconciled per source against LinkCtrl 230771a: findings 381 rows become 381 findings; the 444 D numbers are 441 issued, since D276 and D277 were reserved and D290 never issued, and they become 441 decisions beside the 505 dated entries, 946 in all; the 74 milestone files become 74 work units and, with M18 to M20 from phase-1.md, 77 milestones; the ADR becomes 1 investigation; the 47 workflow-change rows stay in LinkCtrl because Mustur has no kind for them (MUS-Q-0093); upcoming-decisions.md, listed as leaving but outside the 947, gives 2 questions; Plan.md's 18 ordering rows become fields on the milestones they name, their place in the table kept. That is 1,481 records, and the verdict MUS-D-0164 waits on is this reconciliation holding, not the 947. The milestone count moves if the open question on milestone numbers cited and never defined is answered with stubs.
+
+One consequence stated rather than left in a code comment: the import copies bodies whole, which MUS-D-0023's summary-and-link shape does not. It has to, because the files leave LinkCtrl (MUS-Q-0090, MUS-Q-0092); a link back would point at nothing.
+
+| Field | Value |
+| --- | --- |
+| Corrects | MUS-D-0163's store clause and MUS-D-0164's reconciliation target |

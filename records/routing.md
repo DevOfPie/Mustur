@@ -54,7 +54,7 @@ repository · 2026-09-13
 
 milestone: [MUS-M-0009](milestones.md#mus-m-0009)
 
-LinkCtrl's checkout, registered to start MUS-M-0009: it brings 947 existing records, so its onboarding is a milestone with its own verdict (MUS-D-0162). Registration routes it; nothing of LinkCtrl's has moved yet, and no file in its tree has been edited from Mustur.
+LinkCtrl's checkout, registered to start MUS-M-0009: it brings a corpus of existing records, 1,481 once imported as MUS-D-0168 reconciles them, so its onboarding is a milestone with its own verdict (MUS-D-0162). Registration routes it; nothing of LinkCtrl's has moved yet, and no file in its tree has been edited from Mustur.
 
 | Field | Value |
 | --- | --- |
@@ -140,11 +140,11 @@ project · 2026-09-13
 
 milestone: [MUS-M-0009](milestones.md#mus-m-0009)
 
-The second project with a corpus of its own: 444 decisions, 381 findings, 74 milestone files and their plan rows, counted at LinkCtrl 230771a on 2026-09-09. Records file under LNK. Moving in is MUS-M-0009, on the boundary MUS-Q-0090 to MUS-Q-0093 settled: no StrucGu adoption in LinkCtrl, everything imports, and a part leaves LinkCtrl if and only if Mustur has a kind that holds it.
+The second project with a corpus of its own, measured at LinkCtrl 230771a and reconciled in MUS-D-0168: 381 findings, 946 decisions (505 dated log entries and 441 issued D numbers), 77 milestones with 74 work units, 2 questions and 1 investigation. Records file under LNK. Moving in is MUS-M-0009, on the boundary MUS-Q-0090 to MUS-Q-0093 settled: no StrucGu adoption in LinkCtrl, everything imports, and a part leaves LinkCtrl if and only if Mustur has a kind that holds it.
 
 | Field | Value |
 | --- | --- |
 | Prefix | LNK |
-| Aliases | linkctrl, link ctrl |
 | Repositories | MUS-R-0003 |
 | Machines | MUS-H-0001 |
+| Intake | off until the import lands: a jot filed under LNK first would take a number LinkCtrl's own records need, and the import would then refuse the store |
