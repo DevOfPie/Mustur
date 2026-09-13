@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-160 record(s), by identifier.
+161 record(s), by identifier.
 
 ## The queue
 
@@ -170,6 +170,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  |  |
 | [MUS-F-0145](#mus-f-0145) | A session restarted under the same name kept tmux's 80x24, so it had no scrollback | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. | fixed |
 | [MUS-F-0146](#mus-f-0146) | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation | raised as MUS-Q-0112 and MUS-Q-0113 |
+| [MUS-F-0147](#mus-f-0147) | I can't click or ctrl+click on links in the session |  | unreviewed |
 
 ---
 
@@ -4034,3 +4035,23 @@ Findings (381), questions (2 real entries, not a queue) and the one ADR count as
 | --- | --- |
 | Evidence | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation |
 | Status | raised as MUS-Q-0112 and MUS-Q-0113 |
+
+---
+
+## MUS-F-0147
+
+**I can't click or ctrl+click on links in the session**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+I can't click or ctrl+click on links in the session
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |

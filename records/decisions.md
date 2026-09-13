@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-176 record(s), by identifier.
+178 record(s), by identifier.
 
 ## Index
 
@@ -188,6 +188,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0163](#mus-d-0163) | LinkCtrl's records keep the numbers they were written with, under the LNK prefix | 2026-09-13 |
 | [MUS-D-0164](#mus-d-0164) | Nothing leaves LinkCtrl until the import has a verdict | 2026-09-13 |
 | [MUS-D-0165](#mus-d-0165) | An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json | 2026-09-13 |
+| [MUS-D-0166](#mus-d-0166) | Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it | 2026-09-13 |
+| [MUS-D-0167](#mus-d-0167) | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number | 2026-09-13 |
 
 ---
 
@@ -3385,3 +3387,45 @@ MUS-Q-0111 asked whether Plan.md's injection-kit scope row is reworded or struck
 | --- | --- |
 | Applies to | every project onboarded, LinkCtrl first |
 | Where | Plan.md, Scope table, injection-kit row |
+
+---
+
+## MUS-D-0166
+
+**Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0112](questions.md#mus-q-0112)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+finding: [MUS-F-0146](findings.md#mus-f-0146)
+
+MUS-Q-0112 asked what one imported decision is, since LinkCtrl's decisions.md holds 505 dated entries with D numbers defined inside them rather than 444 separable decisions. The owner chose both, each whole. Every dated entry becomes a decision numbered past 444 in the order the file gives them, holding the entry entire. Every D number LinkCtrl defined becomes a decision at its own serial under MUS-D-0163, holding its definition and citing the entry it came from; a D number defined only as a phase-table row holds that row. A wrong extract boundary costs a paragraph of the extract, never history, because the entry is the lossless copy. Reserved and never-issued numbers (D276, D277, D290) stay gaps. One consequence stated rather than discovered: the entries take serials 445 to 949, so a decision filed under LNK after the import continues past 949, not at 445.
+
+| Field | Value |
+| --- | --- |
+| Applies to | LinkCtrl's decisions.md and the decision tables in phase-2.md and phase-3.md |
+| Costs | about 950 decision records, with each defining passage held twice |
+
+---
+
+## MUS-D-0167
+
+**LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0113](questions.md#mus-q-0113)
+
+amends: [MUS-D-0163](#mus-d-0163)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+MUS-Q-0113 asked how 24 fractional milestones such as M24.5 fit a four-digit whole serial. The owner chose none of the three options: renumber every milestone from the beginning, in the order LinkCtrl gives them, so the fractions take whole serials in sequence; rewrite every reference to a milestone in what is imported so it points at the new number; and keep the old number in a field on each record, in case a reference is missed. Work units take the same serial as their milestone. This departs from MUS-D-0163 for milestones only: decisions and findings keep their numbers, milestones do not, and the old-number field is what connects a milestone to prose outside the import.
+
+| Field | Value |
+| --- | --- |
+| Applies to | LinkCtrl's milestones and their work units, and every M reference in imported bodies and fields |
+| Amends | MUS-D-0163, for milestones |

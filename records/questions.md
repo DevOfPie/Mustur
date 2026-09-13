@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-126 record(s), by identifier.
+129 record(s), by identifier.
 
 ---
 
@@ -358,6 +358,76 @@ ci.yml runs on every pull_request push: fmt, trailers, clippy (Linux with the fr
 | Answered | 2026-09-13 06:35 |
 | Note | Include windows tests for releases since that is where it'll actually be run for the most part |
 | Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0014
+
+**Desktop UI: where does the Groups screen live?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d3409b (frame: Groups route). Answer here or in the plan's form; either is written down.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Phase 3 desktop slice, step 2 (the Groups route) |
+| Option | Its own route under Hoard Saves :: Recommended: a sidebar entry beside Library and Dashboard, as drawn :: One more nav item; groups are a first-class thing you visit, with members, invites and the shared worlds' lease state on one page. |
+| Option | A card on the Account page :: no new nav entry; the self-hosted branch of Account gains a Groups card :: Less discoverable, and Account is already a long page of cards. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+
+---
+
+## HRD-Q-0015
+
+**Desktop UI: how does the claim prompt appear when the game starts?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+d: [HRD-D-0002](decisions.md#hrd-d-0002)
+
+Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d3409b (frame: Claim prompt on launch). The engine already asks once per session and auto-hosts after 60 s when one free world exists; this is only how the question is shown.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Phase 3 desktop slice, step 5 (the claim modal) |
+| Option | A modal over the app :: Recommended: dismissible, one row per world with Host / View, Not playing in the footer with the 60 s countdown, as drawn :: The game is in front anyway; the app shows the question when you look. Host is disabled where another member holds the lease. |
+| Option | A bell notification with buttons :: non-blocking and it persists :: A three-way answer per world does not fit a notification row, and the countdown would be text only. |
+| Option | A floating card bottom-right :: like the storage-full banner, stacked with the activity feed :: Visible without a modal, but the same fit problem as the bell once there are several worlds. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+
+---
+
+## HRD-Q-0016
+
+**Desktop UI: where does sharing a world start?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d3409b (frames: Library and Share dialog). The dialog itself is the same either way: pick a group, pick a world for games with a template, see what travels.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Phase 3 desktop slice, step 3 (the share dialog) |
+| Option | Library row icon :: Recommended: first icon in the tracked row's action row, as drawn :: Library is where a save's identity is managed today (rename, untrack, history). |
+| Option | Dashboard card overflow menu :: beside Rename, Pause, History :: Closer to play, but that card is about version state, not membership. |
+| Option | Both :: one dialog, two entry points :: Costs one more menu item and a second place to keep in step. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
 
 ---
 
@@ -3036,7 +3106,7 @@ Counted at LinkCtrl 230771a on 2026-09-13. decisions.md holds 505 dated entries.
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | The decisions half of the LinkCtrl importer; findings, the ADR and the questions are being built meanwhile |
 | Needed to proceed | yes |
 | Option | Both, each whole :: Recommended: each dated entry becomes a decision numbered past 444, whole; each D number becomes a decision at its own serial holding its definition and citing its entry :: Nothing is lost and nothing has to be split correctly to survive: the entry is the lossless copy, and a D number's record is an extract that points at it, so a wrong boundary in an extract costs a paragraph, not history. D14 still resolves by rule under MUS-D-0163. Costs about 950 decision records instead of 444, and every defined sentence exists twice; the file they came from is frozen, so the two cannot drift. |
@@ -3046,6 +3116,9 @@ Counted at LinkCtrl 230771a on 2026-09-13. decisions.md holds 505 dated entries.
 | Session | mustur/LinkCtrl_Target |
 | Session project | LinkCtrl_Target |
 | Surfaced | 2026-09-13 07:07 |
+| Answer | Both, each whole |
+| Answered | 2026-09-13 07:12 |
+| Delivered | typed into mustur/LinkCtrl_Target |
 
 ---
 
@@ -3063,7 +3136,7 @@ phase-details holds 74 milestone files: M21 to M70 plus 24 fractional ones, wher
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Milestones and work units in the LinkCtrl importer |
 | Needed to proceed | yes |
 | Option | Tenths :: Recommended: the serial is the milestone number times ten, so M24.5 is serial 245 and M59 is serial 590 :: One rule covers all 94 milestones and every citation, and ordering by serial is LinkCtrl's own order, fractions included. Costs a rule a reader has to know, since M59 does not read as serial 590, and the same rule has to be applied to work units. |
@@ -3073,3 +3146,6 @@ phase-details holds 74 milestone files: M21 to M70 plus 24 fractional ones, wher
 | Session | mustur/LinkCtrl_Target |
 | Session project | LinkCtrl_Target |
 | Surfaced | 2026-09-13 07:08 |
+| Answer | Renumber them from the beginning to fit them in the new format in their existing order. Make sure any references to them will be updated to properly point to the correct new number. Note the old number in a field in-case something was missed |
+| Answered | 2026-09-13 07:15 |
+| Delivered | typed into mustur/LinkCtrl_Target |

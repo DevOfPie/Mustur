@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 126 | [questions.md](questions.md) |
-| decision | 176 | [decisions.md](decisions.md) |
-| finding | 160 | [findings.md](findings.md) |
+| question | 129 | [questions.md](questions.md) |
+| decision | 178 | [decisions.md](decisions.md) |
+| finding | 161 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 25 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -34,6 +34,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0011](questions.md#hrd-q-0011) | question | Where is the fork's release signing key generated, and who holds the secret half? |
 | [HRD-Q-0012](questions.md#hrd-q-0012) | question | May I prune the 43 GB Docker build cache on whippy-vm? It is LinkCtrl's, and the disk has hit 100% twice today |
 | [HRD-Q-0013](questions.md#hrd-q-0013) | question | How much of upstream's CI should run on a fork pull request push? |
+| [HRD-Q-0014](questions.md#hrd-q-0014) | question | Desktop UI: where does the Groups screen live? |
+| [HRD-Q-0015](questions.md#hrd-q-0015) | question | Desktop UI: how does the claim prompt appear when the game starts? |
+| [HRD-Q-0016](questions.md#hrd-q-0016) | question | Desktop UI: where does sharing a world start? |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -374,6 +377,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0163](decisions.md#mus-d-0163) | decision | LinkCtrl's records keep the numbers they were written with, under the LNK prefix |
 | [MUS-D-0164](decisions.md#mus-d-0164) | decision | Nothing leaves LinkCtrl until the import has a verdict |
 | [MUS-D-0165](decisions.md#mus-d-0165) | decision | An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json |
+| [MUS-D-0166](decisions.md#mus-d-0166) | decision | Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it |
+| [MUS-D-0167](decisions.md#mus-d-0167) | decision | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -520,6 +525,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0144](findings.md#mus-f-0144) | finding | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |
 | [MUS-F-0145](findings.md#mus-f-0145) | finding | A session restarted under the same name kept tmux's 80x24, so it had no scrollback |
 | [MUS-F-0146](findings.md#mus-f-0146) | finding | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records |
+| [MUS-F-0147](findings.md#mus-f-0147) | finding | I can't click or ctrl+click on links in the session |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
