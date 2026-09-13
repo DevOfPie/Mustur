@@ -3627,3 +3627,24 @@ None of that would have been safe before MUS-F-0135 was fixed at the source: whi
 | Field | Value |
 | --- | --- |
 | Status | built; internal/session/screen.go Supervise, and the picker and the sweep both read it |
+
+### MUS-D-0162
+
+**A new project with no records moves in as an ordinary project, not as a milestone**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0108
+
+project: MUS-P-0003
+
+repository: MUS-R-0002
+
+the milestone it leaves alone: MUS-M-0009
+
+MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has been a milestone with its own verdict. The owner answered that LinkCtrl is not a good reference, because it replaces an older pattern built through use before StrucGu and Mustur, and that adding a new project should not be a milestone's worth of work. So Hoard moved in on 2026-09-13 as MUS-P-0003 with repository MUS-R-0002, and no milestone was opened. The rule the milestone gate was written for still stands where it applies: a project arriving with an existing corpus to map, as LinkCtrl does, is still MUS-M-0009's to prove. What this changes is the reading that every repository, however new, is a milestone before its first routing row. Nothing of Mustur's is committed to the hoard fork: its mandate lives in a CLAUDE.md upstream's .gitignore already covers.
+
+| Field | Value |
+| --- | --- |
+| Applies to | a new project that brings no existing records |
+| Unchanged | MUS-M-0009 is still LinkCtrl's transition |

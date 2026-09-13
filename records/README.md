@@ -9,17 +9,19 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 106 | [questions.md](questions.md) |
-| decision | 161 | [decisions.md](decisions.md) |
-| finding | 143 | [findings.md](findings.md) |
-| repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 23 | [work-units/index.md](work-units/index.md) |
-| investigation | 3 | [investigations/index.md](investigations/index.md) |
+| question | 108 | [questions.md](questions.md) |
+| decision | 162 | [decisions.md](decisions.md) |
+| finding | 145 | [findings.md](findings.md) |
+| repository, machine, project | 6 | [routing.md](routing.md) |
+| work-unit | 24 | [work-units/index.md](work-units/index.md) |
+| investigation | 4 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
 
 | Identifier | Kind | Title |
 | --- | --- | --- |
+| [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001) | work-unit | Group save sharing in the DevOfPie fork |
+| [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
 | [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
@@ -166,6 +168,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0104](questions.md#mus-q-0104) | question | What counts as idle enough to restart a session under you, and what is never restarted? |
 | [MUS-Q-0105](questions.md#mus-q-0105) | question | Re-asking what the picker should say, with your premise correction folded in and a fourth option |
 | [MUS-Q-0106](questions.md#mus-q-0106) | question | The seven rebased branches need landing without rewriting anything you would mind rewriting |
+| [MUS-Q-0107](questions.md#mus-q-0107) | question | How should the Hoard group-sharing work enter Mustur, given onboarding a repository is its own milestone? |
+| [MUS-Q-0108](questions.md#mus-q-0108) | question | Re-asking how Hoard enters Mustur, with your question answered and a fourth option |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -327,6 +331,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0159](decisions.md#mus-d-0159) | decision | Mustur restarts a session to take a CLI update, which is the first thing it does on its own |
 | [MUS-D-0160](decisions.md#mus-d-0160) | decision | A jot takes six pictures, and six is the owner's number rather than the agent's |
 | [MUS-D-0161](decisions.md#mus-d-0161) | decision | The hub polls every owned session, and the reader stops being a thing a viewer starts |
+| [MUS-D-0162](decisions.md#mus-d-0162) | decision | A new project with no records moves in as an ordinary project, not as a milestone |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -465,10 +470,14 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0136](findings.md#mus-f-0136) | finding | A bare form rule written for the composer draws a line across three forms that never asked for one |
 | [MUS-F-0137](findings.md#mus-f-0137) | finding | A question answered with a question is recorded as answered, and leaves the queue settled |
 | [MUS-F-0138](findings.md#mus-f-0138) | finding | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft |
+| [MUS-F-0139](findings.md#mus-f-0139) | finding | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository |
+| [MUS-F-0140](findings.md#mus-f-0140) | finding | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
+| [MUS-R-0002](routing.md#mus-r-0002) | repository | DevOfPie/hoard |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |
 | [MUS-P-0002](routing.md#mus-p-0002) | project | Idea inbox |
+| [MUS-P-0003](routing.md#mus-p-0003) | project | Hoard |

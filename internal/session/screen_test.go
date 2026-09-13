@@ -253,3 +253,50 @@ func TestAStillScreenProducesNoNewFrame(t *testing.T) {
 		t.Error("a still screen reset the dwell")
 	}
 }
+
+// A dwell is never longer than the poller has been running.
+//
+// changedAt is seeded from tmux's session_activity so that the first frame does
+// not claim a long-silent session just moved. But session_activity is not when
+// the session last did anything (MUS-F-0051), and MUS-D-0159's sweep kills a
+// session on the strength of this number. Measured before the cap existed:
+// mustur/Research's session_activity was three days stale, so the first sweep
+// after a deploy would have restarted it inside a minute.
+func TestTheDwellIsNeverLongerThanThePollerHasBeenWatching(t *testing.T) {
+	h := &Hub{}
+	now := time.Date(2026, 9, 13, 12, 0, 0, 0, time.UTC)
+	h.panes = map[string]*pane{"zz": {
+		project: "zz",
+		// tmux says the screen last moved three days ago...
+		changedAt: now.Add(-72 * time.Hour),
+		// ...but this poller started two minutes ago.
+		adoptedAt: now.Add(-2 * time.Minute),
+	}}
+
+	quiet, known := h.Quiet("zz", now)
+	if !known {
+		t.Fatal("the dwell is not known at all")
+	}
+	if quiet != 2*time.Minute {
+		t.Errorf("dwell is %s, want 2m: a seed from tmux must only ever shorten it", quiet)
+	}
+	if quiet >= Quiet {
+		t.Error("a freshly adopted session would be restarted on a stale tmux timestamp")
+	}
+}
+
+// Once the poller has been running longer than the screen has been still, the
+// screen is what counts again.
+func TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough(t *testing.T) {
+	h := &Hub{}
+	now := time.Date(2026, 9, 13, 12, 0, 0, 0, time.UTC)
+	h.panes = map[string]*pane{"zz": {
+		project:   "zz",
+		changedAt: now.Add(-40 * time.Minute),
+		adoptedAt: now.Add(-3 * time.Hour),
+	}}
+	quiet, known := h.Quiet("zz", now)
+	if !known || quiet != 40*time.Minute {
+		t.Errorf("dwell is %s (known %v), want 40m", quiet, known)
+	}
+}

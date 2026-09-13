@@ -124,6 +124,9 @@ type pane struct {
 	// the body with the CLI's furniture stripped off, so a turning spinner does
 	// not reset it (MUS-F-0135).
 	changedAt time.Time
+	// adoptedAt is when this poller started. The dwell is never reported as
+	// longer than this, because before it nothing here was looking.
+	adoptedAt time.Time
 	ended     bool
 	subs      map[chan Frame]struct{}
 	refs      int
@@ -179,6 +182,7 @@ func (h *Hub) ensureLocked(ctx context.Context, project string) *pane {
 	// Since MUS-Q-0105 the hub adopts every owned session, so for most panes
 	// this seed is used once at startup and the poller maintains it after.
 	p.changedAt = h.lastActive(ctx, project)
+	p.adoptedAt = time.Now()
 	h.panes[project] = p
 	h.start(p)
 	return p
@@ -375,7 +379,25 @@ func (h *Hub) Quiet(project string, now time.Time) (time.Duration, bool) {
 	if p.changedAt.IsZero() {
 		return 0, false
 	}
-	return now.Sub(p.changedAt), true
+	quiet := now.Sub(p.changedAt)
+	// Never longer than this poller has been running.
+	//
+	// changedAt is seeded from tmux's session_activity when a pane is adopted,
+	// because the first frame must not claim a session silent since Sunday had
+	// just this moment moved. But session_activity is not when the session last
+	// did anything (MUS-F-0051), and MUS-D-0159's sweep kills a session on the
+	// strength of this number -- so the seed must only ever shorten it.
+	//
+	// Measured on this machine before it was capped: mustur/Research's
+	// session_activity was three days stale, so the first sweep after a deploy
+	// would have restarted it inside a minute on a timestamp this repository
+	// has already recorded as unreliable. What the cap costs is that nothing is
+	// auto-updated for the first half hour after Mustur restarts, which is the
+	// honest answer -- for that half hour nobody here was watching.
+	if watched := now.Sub(p.adoptedAt); !p.adoptedAt.IsZero() && watched < quiet {
+		quiet = watched
+	}
+	return quiet, true
 }
 
 // Furniture is what the CLI's own status line last said, for a caller that

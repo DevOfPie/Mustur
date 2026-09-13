@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-143 record(s), by identifier.
+145 record(s), by identifier.
 
 ## The queue
 
@@ -153,6 +153,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
 | [MUS-F-0137](#mus-f-0137) | A question answered with a question is recorded as answered, and leaves the queue settled | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
 | [MUS-F-0138](#mus-f-0138) | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. | fixed before the sweep ran anywhere |
+| [MUS-F-0139](#mus-f-0139) | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body | open |
+| [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
 
 ---
 
@@ -3673,4 +3675,49 @@ The owner also pointed out that the guard was never protecting what it claimed. 
 | --- | --- |
 | Where | internal/session/chrome.go, internal/session/sweep.go |
 | Evidence | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. |
+| Status | fixed before the sweep ran anywhere |
+
+---
+
+## MUS-F-0139
+
+**Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository**
+
+finding · 2026-09-13
+
+decision: [MUS-D-0162](decisions.md#mus-d-0162)
+
+the record: [MUS-R-0001](routing.md#mus-r-0001)
+
+The decision letting Hoard move in without a milestone left the prose that says otherwise in place. Plan.md's not-doing table (line 113) and scope table (line 90), workflow.md's gate (line 30, 'before touching a file outside this repository: DON'T'), and CLAUDE.md's standing rules (line 199) all state onboarding as a milestone with its own verdict, with no exception for a project that brings no records. MUS-R-0001's body still says it is the only repository in this registry, which stopped being true when MUS-R-0002 was filed. None was edited from the hoard session, because the Mustur checkout is on another session's branch.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body |
+| Status | open |
+
+---
+
+## MUS-F-0140
+
+**A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute**
+
+finding · 2026-09-13
+
+the sweep that reads it: [MUS-D-0159](decisions.md#mus-d-0159)
+
+the timestamp that is not what it looks like: [MUS-F-0051](#mus-f-0051)
+
+the seed it must not remove: [MUS-F-0042](#mus-f-0042)
+
+A pane's changedAt is seeded from tmux's session_activity when the poller adopts it, so the first frame does not claim a session silent since Sunday had just this moment moved. MUS-D-0159's sweep then reads that number and kills a session when it passes thirty minutes.
+
+MUS-F-0051 already established that session_activity is not when the session last did anything. Read on this machine before deploying: mustur/Research's session_activity was three days stale, and Research is idle with an update notice showing -- so the first sweep after the deploy would have restarted it inside a minute, on a timestamp this repository had already written down as unreliable. The outcome would have looked right, which is the worst version of it.
+
+Capped rather than the seed removed: without a seed the counter says a long-silent session just moved, which is MUS-F-0042 again. The dwell is now the smaller of how long the screen has been still and how long this poller has been running, so a seed can only ever shorten it. The cost is that nothing is auto-updated for the first half hour after Mustur restarts, which is the honest answer -- for that half hour nobody here was watching.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/screen.go, Hub.Quiet |
+| Evidence | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. |
 | Status | fixed before the sweep ran anywhere |

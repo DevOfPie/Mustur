@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-106 record(s), by identifier.
+108 record(s), by identifier.
 
 ---
 
@@ -2519,3 +2519,64 @@ Correcting the premise first, because it changes the choice: nothing was ever go
 | Answer | Force-push the seven intake/* branches, with --force-with-lease |
 | Answered | 2026-09-12 01:53 |
 | Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0107
+
+**How should the Hoard group-sharing work enter Mustur, given onboarding a repository is its own milestone?**
+
+question · 2026-09-13
+
+m: [MUS-M-0009](milestones.md#mus-m-0009)
+
+q: [MUS-Q-0091](#mus-q-0091)
+
+Pie asked to add the DevOfPie/hoard fork (co-op group save sharing with a per-world lease lock, built on rleeon/hoard) to Mustur. workflow.md's gate says a repository outside Mustur is not touched before onboarding, which is MUS-M-0009 with its own verdict, and LinkCtrl's transition (MUS-Q-0090, MUS-Q-0091) is already preparing to be that second project. No file in the hoard fork is touched by any option; its local excludes keep session files out of commits.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Recording the DevOfPie/hoard fork and its group save-sharing work in Mustur |
+| Needed to proceed | yes |
+| Option | Jot to the idea inbox :: Recommended — one IDW finding describing the work, no routing row, nothing onboarded :: The intake path exists for exactly this and costs nothing against the contract. The record is findable by identifier and can be rerouted into a Hoard project later with mustur reroute, which keeps its identifier. The cost: the idea inbox is not a project, so milestones, decisions and questions about Hoard have nowhere of their own to live until onboarding. |
+| Option | A Hoard project, no repository row :: a project record with its own prefix that Hoard's records file under, repository row left for onboarding :: Mirrors how the idea inbox is a routing target inside Mustur (MUS-D-0038): records get a Hoard prefix from the start, so nothing is re-minted later. It stops short of the repository row the gate forbids, but it is still a destination claim about a project nothing here has verified, and it lands before LinkCtrl, which MUS-M-0009 expected to arrive first. |
+| Option | Onboard Hoard now :: start MUS-M-0009 with Hoard as the second project, repository row and all :: The complete answer: routing, the mandated tool call reachable from the hoard checkout, and records that belong to it. It is a milestone with reviewers and its own verdict, it displaces LinkCtrl's transition as the proof MUS-M-0009 was chosen to test, and onboarding would place Mustur's files in a tree whose upstream bans them, so every such file stays local-only. |
+| Asked by | whippy |
+| Session | claude-code bg job 63a59fd8 (hoard research) |
+| Answer | Why is adding projects a milestone of its own? |
+| Answered | 2026-09-13 03:51 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-13 03:52 |
+
+---
+
+## MUS-Q-0108
+
+**Re-asking how Hoard enters Mustur, with your question answered and a fourth option**
+
+question · 2026-09-13
+
+supersedes: [MUS-Q-0107](#mus-q-0107)
+
+f: [MUS-F-0137](findings.md#mus-f-0137)
+
+m: [MUS-M-0009](milestones.md#mus-m-0009)
+
+Your question first. Onboarding is a milestone because of your own instruction, recorded in Plan.md's not-doing table: a half-built router that has already edited eight repositories is worse than no router. Plan.md success criterion 9 holds it: no other project's files are modified before its onboarding milestone is deliberately started. The work it names is real for LinkCtrl: 947 existing records to map and import (MUS-Q-0091), the mandate placed in that repository, and an audit over its declared files, all read by reviewers. MUS-M-0009 was also chosen so the first project onboarded proves the record-shape transition. Hoard is the case the rule was not sized for: it has no records to map, so the expensive half of onboarding is empty, and its upstream bans agent files, so the mandate could only live in local excludes. That is the fourth option.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Recording the DevOfPie/hoard fork and its group save-sharing work in Mustur; MUS-Q-0107 was closed by a reply that asked rather than chose (MUS-F-0137) |
+| Needed to proceed | yes |
+| Option | Jot to the idea inbox :: one IDW finding describing the work, no routing row, nothing onboarded :: The intake path exists for this and costs nothing against the contract. Reroutable into a Hoard project later with mustur reroute, keeping its identifier. Hoard's own decisions and questions have nowhere of their own until onboarding. |
+| Option | A Hoard project, no repository row :: a project record with its own prefix, repository row left for onboarding :: Mirrors the idea inbox as a routing target (MUS-D-0038), so nothing is re-minted later. It is still a destination claim about a project nothing here has verified, and it lands before LinkCtrl. |
+| Option | Onboard Hoard as MUS-M-0009 :: the full milestone, repository row and all, displacing LinkCtrl as the second project :: The complete answer, with reviewers and its own verdict. It spends MUS-M-0009's proof of the record-shape transition on a project with no records to transition. |
+| Option | A light onboarding of its own :: Recommended — a new milestone for Hoard alone: project and repository rows, mandate kept in local excludes, no records to map; MUS-M-0009 stays LinkCtrl's :: Satisfies criterion 9 as written, since the onboarding is deliberately started, and costs little because Hoard brings no corpus. It still needs its own done-when and reviewers, and it amends the plan by adding a milestone the plan did not have. |
+| Asked by | whippy |
+| Session | claude-code bg job 63a59fd8 (hoard research) |
+| Answer | LinkCtrl is not a good reference here because we are replacing an older pattern that was built through use before StrucGu and Musutr. Hoard onboarding shouldn't be a milstone worth of work since we are adding a new project |
+| Answered | 2026-09-13 03:58 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-13 03:58 |
