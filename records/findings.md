@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-152 record(s), by identifier.
+157 record(s), by identifier.
 
 ## The queue
 
@@ -14,6 +14,9 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [HRD-F-0002](#hrd-f-0002) | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |  | claim to verify; owner has the game, this VM does not |
 | [HRD-F-0003](#hrd-f-0003) | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |  |  |
 | [HRD-F-0004](#hrd-f-0004) | Upstream moved 244 commits in 30 days, so the fork's changes must be additive |  |  |
+| [HRD-F-0005](#hrd-f-0005) | The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message |  | defect noted, not fixed; upstream-relevant |
+| [HRD-F-0006](#hrd-f-0006) | The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning |  |  |
+| [HRD-F-0007](#hrd-f-0007) | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -162,6 +165,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
 | [MUS-F-0142](#mus-f-0142) | One project's unsurfaced question fails every other project's commit gate | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. | fixed for the gate; the export still carries every project's records |
 | [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… |  | unreviewed |
+| [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  |  |
+| [MUS-F-0145](#mus-f-0145) | A session restarted under the same name kept tmux's 80x24, so it had no scrollback | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. | fixed |
 
 ---
 
@@ -226,6 +231,58 @@ git log --since=30.days upstream/main counts 244 commits to 2026-09-12. A branch
 | Field | Value |
 | --- | --- |
 | Consequence | additive modules, single-site hooks, weekly rebase |
+
+---
+
+## HRD-F-0005
+
+**The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message**
+
+finding · 2026-09-13
+
+q: [HRD-Q-0009](questions.md#hrd-q-0009)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Cloudflare answers http://hoard.killerofpie.com with a 301 to https. The app's Test connection is an unauthenticated GET /v1/health, which reqwest follows across the redirect, so it reports the server reached. Sign-in calls /v1/auth/whoami with a bearer token; reqwest drops the Authorization header when a redirect changes the origin, and the server answers 401 without a database lookup, so nothing shows in its log and the app shows the 401 as the key being refused. Pie hit exactly this on 2026-09-13 and it cost a token-format investigation. normalizeUrl in ServerSetup.svelte already picks https for a public hostname; the trap is a typed http:// prefix, which it keeps verbatim (ServerSetup.svelte:36). Fix candidates for the fork, later: have the health check report the final URL after redirects and reflect it into the field, or warn when a typed http address answered through an https redirect.
+
+| Field | Value |
+| --- | --- |
+| Status | defect noted, not fixed; upstream-relevant |
+
+---
+
+## HRD-F-0006
+
+**The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Reported by Pie on 2026-09-13 while testing the demo (upstream 1.1.6 desktop against the fork's server): after starting the game scan, the feedback bar appears finished but the scan does not complete; after changing pages and coming back it completed fairly quickly, but with significant time after the bar had filled. Upstream desktop behaviour, not the fork's server. Untriaged: the scan's progress source versus its completion signal (hoard-desktop commands/library.rs run_scan and the Library/Dashboard stores).
+
+| Field | Value |
+| --- | --- |
+| Reported by | Pie |
+| Scope | upstream desktop; not group sharing |
+
+---
+
+## HRD-F-0007
+
+**The dashboard game icons' dodge animation moves their corner buttons away from the pointer**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Reported by Pie on 2026-09-13 while testing the demo: the dodging effect on the game icons of the dashboard page moves the corner buttons away as the pointer approaches them, so pressing them is a chase. Upstream desktop behaviour (Dashboard.svelte), not the fork's server. A hit target should not move under an approaching pointer; either the dodge excludes the button's approach zone or the buttons sit outside the animated element.
+
+| Field | Value |
+| --- | --- |
+| Reported by | Pie |
+| Scope | upstream desktop; not group sharing |
 
 ---
 
@@ -3871,3 +3928,48 @@ After I close a session the create a session screen shows up instead of the top 
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0144
+
+**A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+q: [HRD-Q-0008](questions.md#hrd-q-0008)
+
+Raised by Pie on 2026-09-13: plans provided as files on the agent's system are inconvenient to access, and Mustur needs a way of providing them. The case: the Hoard group-sharing plan lives at .local/group-sharing/plan.md in ~/repos/DevOfPie/hoard on whippy-vm, an ignored path because upstream bans agent files in commits. HRD-W-0001 carries only the path, HRD-Q-0008 asks Pie to read the plan before phase 1 starts, and the only way to read it is a shell on the VM. Mustur's records hold a title, a body and fields; nothing holds a document the size of a plan, and no surface renders one. What is wanted: a way for a session to hand Mustur a plan, and for the owner to read it where the decisions are.
+
+| Field | Value |
+| --- | --- |
+| Raised by | Pie, in the Hoard_Work session |
+| Consequence | until this exists, a plan is a file Pie must open on the VM |
+
+---
+
+## MUS-F-0145
+
+**A session restarted under the same name kept tmux's 80x24, so it had no scrollback**
+
+finding · 2026-09-13
+
+why height is the only scrollback: [MUS-F-0052](#mus-f-0052)
+
+the change that caused it: [MUS-D-0161](decisions.md#mus-d-0161)
+
+a path that restarts under the same name: [MUS-D-0159](decisions.md#mus-d-0159)
+
+The owner could not scroll back in mustur/Intake. Read on the machine: Intake, started at 05:24, was 80x24 with window-size latest and no history; Hoard_Work, started before the deploy, was 100x300 with window-size manual. An agent CLI runs on the alternate screen, where tmux keeps no scrollback, so a tall pane is the only transcript there is (MUS-F-0052), and Intake did not have one.
+
+Fit set the size, and it ran once per poller. That was once per session while pollers came and went with viewers. MUS-D-0161 pinned a poller to every owned session, so a session killed and started again under the same name inside one poll is never seen to end: the old poller carries on reading the new pane and nothing fits its window. The restore button does that, and so does MUS-D-0159's update sweep, so every update the sweep took would have come back with no scrollback. This was caused by the change that pinned the pollers.
+
+Fixed at Start, which now sizes the window itself after the session settles, so a session Mustur starts is tall from birth whichever path started it. The live Intake pane was resized by hand to the same geometry; what scrolled off it while it was 80x24 is not recoverable.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go, Adapter.Start |
+| Evidence | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. |
+| Status | fixed |

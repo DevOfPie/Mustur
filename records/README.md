@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 116 | [questions.md](questions.md) |
-| decision | 168 | [decisions.md](decisions.md) |
-| finding | 152 | [findings.md](findings.md) |
+| question | 119 | [questions.md](questions.md) |
+| decision | 170 | [decisions.md](decisions.md) |
+| finding | 157 | [findings.md](findings.md) |
 | repository, machine, project | 6 | [routing.md](routing.md) |
 | work-unit | 24 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -29,16 +29,24 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0006](questions.md#hrd-q-0006) | question | When is the design offered to upstream: before code, after phase 1 works, or not at all? |
 | [HRD-Q-0007](questions.md#hrd-q-0007) | question | Re-asking how a shared save names one world's files, with your question answered |
 | [HRD-Q-0008](questions.md#hrd-q-0008) | question | Does phase 1, the server half, start in this session or after you read the plan? |
+| [HRD-Q-0009](questions.md#hrd-q-0009) | question | Which address did you give the desktop app, and what exactly does it say when it refuses the key? |
+| [HRD-Q-0010](questions.md#hrd-q-0010) | question | How do you and your testers get fork builds of the desktop client, and how do those clients update? |
+| [HRD-Q-0011](questions.md#hrd-q-0011) | question | Where is the fork's release signing key generated, and who holds the secret half? |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
 | [HRD-D-0004](decisions.md#hrd-d-0004) | decision | Only the self-hosted stack is built, shaped so the cloud stack could follow |
 | [HRD-D-0005](decisions.md#hrd-d-0005) | decision | The fork is the product; nothing is offered upstream on a schedule |
 | [HRD-D-0006](decisions.md#hrd-d-0006) | decision | A shared save names its files with a per-save include filter, set from a per-game template |
+| [HRD-D-0007](decisions.md#hrd-d-0007) | decision | The plan is approved and phase 1 starts |
+| [HRD-D-0008](decisions.md#hrd-d-0008) | decision | The fork publishes its own signed desktop releases and its clients update from them |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
 | [HRD-F-0004](findings.md#hrd-f-0004) | finding | Upstream moved 244 commits in 30 days, so the fork's changes must be additive |
+| [HRD-F-0005](findings.md#hrd-f-0005) | finding | The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message |
+| [HRD-F-0006](findings.md#hrd-f-0006) | finding | The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning |
+| [HRD-F-0007](findings.md#hrd-f-0007) | finding | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
@@ -493,6 +501,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0141](findings.md#mus-f-0141) | finding | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered |
 | [MUS-F-0142](findings.md#mus-f-0142) | finding | One project's unsurfaced question fails every other project's commit gate |
 | [MUS-F-0143](findings.md#mus-f-0143) | finding | After I close a session the create a session screen shows up instead of the top session and I… |
+| [MUS-F-0144](findings.md#mus-f-0144) | finding | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |
+| [MUS-F-0145](findings.md#mus-f-0145) | finding | A session restarted under the same name kept tmux's 80x24, so it had no scrollback |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

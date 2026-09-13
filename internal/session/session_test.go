@@ -447,3 +447,26 @@ func TestAScopeThatCannotBeMadeStillStartsTheSession(t *testing.T) {
 		t.Error("it gave up instead of falling back to the plain spawn")
 	}
 }
+
+// A session is tall from the moment Start returns, not from the moment a poller
+// first reads it.
+//
+// Fit used to run only when a poller was created. Since the hub pins a poller
+// to every owned session, a session killed and started again under the same
+// name inside one poll kept the old poller, so nothing fitted the new window:
+// it kept tmux's 80x24 and, an agent pane having no scrollback but its height,
+// had none (MUS-F-0145). The restore button and the update sweep both do that.
+func TestStartSizesTheWindowItself(t *testing.T) {
+	f := &fake{started: owned("mustur/Mustur", 1, false)}
+	a := &Adapter{Run: f, Stat: func(string) error { return nil }}
+
+	if _, err := a.Start(context.Background(), "Mustur", "/some/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if !f.ran("set-option -t mustur/Mustur window-size manual") {
+		t.Errorf("the window was left to follow tmux's default size: %v", f.calls)
+	}
+	if !f.ran(fmt.Sprintf("resize-window -t mustur/Mustur -x %d -y %d", PaneWidth, PaneHeight)) {
+		t.Errorf("the window was not given its height: %v", f.calls)
+	}
+}

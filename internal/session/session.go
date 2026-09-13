@@ -354,6 +354,18 @@ func (a *Adapter) Start(ctx context.Context, project, dir, cmd string) (Session,
 		return Session{}, err
 	}
 
+	// Sized here, at birth, and not only when a poller first reads the pane.
+	// Fit used to run once per poller, which was once per session while
+	// pollers came and went with viewers. Since the hub keeps a poller pinned to
+	// every owned session (MUS-D-0161), a session killed and started again under
+	// the same name inside one poll -- the restore button, the update sweep --
+	// keeps the old poller, so nothing fitted the new window and it kept tmux's
+	// 80x24. An agent pane has no scrollback but its height, so that session had
+	// none (MUS-F-0145). Not fatal: a short pane is still a readable one.
+	if err := a.Fit(ctx, project); err != nil {
+		fmt.Fprintf(os.Stderr, "mustur: %s started but was not sized: %v\n", name, err)
+	}
+
 	// Written down after the session is believed in, so a command that died on
 	// startup is not offered back as something to restore. The command recorded
 	// is the one that was given, without the hook this function appended: the

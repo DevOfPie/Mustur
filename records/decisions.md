@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-168 record(s), by identifier.
+170 record(s), by identifier.
 
 ## Index
 
@@ -18,6 +18,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [HRD-D-0004](#hrd-d-0004) | Only the self-hosted stack is built, shaped so the cloud stack could follow | 2026-09-13 |
 | [HRD-D-0005](#hrd-d-0005) | The fork is the product; nothing is offered upstream on a schedule | 2026-09-13 |
 | [HRD-D-0006](#hrd-d-0006) | A shared save names its files with a per-save include filter, set from a per-game template | 2026-09-13 |
+| [HRD-D-0007](#hrd-d-0007) | The plan is approved and phase 1 starts | 2026-09-13 |
+| [HRD-D-0008](#hrd-d-0008) | The fork publishes its own signed desktop releases and its clients update from them | 2026-09-13 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -264,6 +266,34 @@ q: [HRD-Q-0007](questions.md#hrd-q-0007)
 w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 Answered by Pie on HRD-Q-0007 after HRD-Q-0002 came back as a question. A save carries a glob list honoured by backup (walk_source) and restore (the merge). Sharing a world sets it from a per-game template; Valheim's names worlds_local/<W>.db, .fwl, .db.old, .fwl.old and <W>_backup_* and nothing under characters_local. Player data is excluded unless the game stores it inside the world, in which case the template says so (Minecraft's world folder whole). A second game is a template, not code.
+
+---
+
+## HRD-D-0007
+
+**The plan is approved and phase 1 starts**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0008](questions.md#hrd-q-0008)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Pie read .local/group-sharing/plan.md and approved it on 2026-09-13 in the Hoard_Work session, closing HRD-Q-0008's condition. Phase 1, the self-hosted server half, begins on branch group-sharing/server from main at 43474d5.
+
+---
+
+## HRD-D-0008
+
+**The fork publishes its own signed desktop releases and its clients update from them**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0010](questions.md#hrd-q-0010)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0010. The fork's clients point REPO at DevOfPie/hoard (hoard-agent/src/update.rs:16, install/fetch.rs:23), carry a fork minisign public key in place of upstream's (install/fetch.rs:33), and release-desktop.yml builds and signs installers on a tag. Pie owes: Actions enabled on the fork and the two secrets MINISIGN_SECRET_KEY and MINISIGN_KEY_PASSWORD. The updater change is a fork-only commit on main, outside the group-sharing PRs, so it can ship first and carry them. A fork client sees no upstream release until the constants are switched back.
 
 ---
 

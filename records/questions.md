@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-116 record(s), by identifier.
+119 record(s), by identifier.
 
 ---
 
@@ -224,6 +224,84 @@ The plan at .local/group-sharing/plan.md is revised for HRD-D-0001 to 0005. Phas
 | Answer | After you read the plan |
 | Answered | 2026-09-13 04:46 |
 | Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0009
+
+**Which address did you give the desktop app, and what exactly does it say when it refuses the key?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The key never reached the server: its last-used stamp is empty, no unknown-token lookup appears in the debug log, and no 401 was logged. A key I minted answered whoami with 200 through hoard.killerofpie.com, so the tunnel, the auth path and the key format all work. The tunnel log shows the app has reached the server on other paths. The one failure that leaves no server trace is a plain http address: Cloudflare redirects it to https and the client drops the Authorization header on the redirect, so the server answers 401 without looking anything up. Pick the address you entered, and add the app's exact error text as a note.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Diagnosing why the demo rejects your KoPie-Streamer key; nothing in the server work |
+| Option | https://hoard.killerofpie.com :: Recommended: https, host only, nothing after it :: If this is what you entered, the redirect theory is out and I need the app's exact wording to go further. |
+| Option | http://hoard.killerofpie.com :: plain http :: Cloudflare answers with a redirect to https, and the client does not carry the key across it. Re-enter the address with https. |
+| Option | Something else :: a path, a port, or the LAN address; put it in the note :: The panel path or a trailing slash would change what the client calls. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | http://hoard.killerofpie.com |
+| Answered | 2026-09-13 05:27 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0010
+
+**How do you and your testers get fork builds of the desktop client, and how do those clients update?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+f: [HRD-F-0003](findings.md#hrd-f-0003)
+
+Today the client checks api.github.com/repos/rleeon/hoard/releases/latest (hoard-agent/src/update.rs:16, install/fetch.rs:23) and hoardd applies the release after checking its minisign signature against a public key compiled into the binary. The fork's clients would keep pointing at upstream and would never see a fork build. Upstream's release-desktop.yml builds Windows, macOS and Linux installers on GitHub-hosted runners from a tag and needs two secrets, MINISIGN_SECRET_KEY and MINISIGN_KEY_PASSWORD. DevOfPie/hoard is public, so runner minutes are free, but Actions on the fork is still unconfirmed (HRD-F-0003).
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 delivery to testers; nothing in phase 1 |
+| Option | Fork releases with the fork's own updater :: Recommended: point REPO at DevOfPie/hoard, compile in a fork minisign public key, tag prereleases like v1.1.6-share.1, let release-desktop.yml build them; every tester installs once and updates from inside the app :: Costs you: enable Actions, generate a minisign keypair, add the two secrets. Costs me: two constants and the key, kept as a fork-only commit. A fork client never sees upstream releases again until it is switched back. |
+| Option | Manual installers from Actions :: run release-desktop.yml by hand, share the installer link, testers reinstall each time :: No code change and no key of ours, but every update is a message to every tester and an unsigned reinstall by hand; the in-app updater keeps offering upstream's releases. |
+| Option | Testers build from source :: each machine clones the fork and builds :: Zero infrastructure and out of reach for anyone without a Rust and Node toolchain, so in practice only you. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Fork releases with the fork's own updater |
+| Answered | 2026-09-13 05:41 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0011
+
+**Where is the fork's release signing key generated, and who holds the secret half?**
+
+question · 2026-09-13
+
+d: [HRD-D-0008](decisions.md#hrd-d-0008)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+HRD-D-0008 needs a minisign keypair: the public half goes into the client and server binaries, the secret half and its password into the fork's Actions secrets MINISIGN_SECRET_KEY and MINISIGN_KEY_PASSWORD. minisign is not installed on this VM and my token cannot write repository secrets (403), so adding the secrets is yours either way. Two more facts for the release recipe: GitHub's releases/latest ignores prereleases, and the client compares only major.minor.patch (update.rs:30-46), so every fork release is an ordinary release with the patch bumped: v1.1.7, v1.1.8 and so on. release-desktop.yml must stay enabled alongside ci.yml.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | The fork-only updater commit needs the public key; nothing else waits on it |
+| Option | You generate it on your machine :: Recommended: minisign -G -p hoard-fork.pub -s hoard-fork.key, add the two secrets in the fork's settings, paste the public key to me :: The secret never touches this VM or a chat transcript. Costs you a minisign install and five minutes. |
+| Option | I generate it here :: I install a minisign implementation, write the keypair to a 600 file under ~/hoard-demo, you copy the secret into the fork's settings :: Faster for you, but the secret half lives on this VM and passes through a file you read over the session. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
 
 ---
 
