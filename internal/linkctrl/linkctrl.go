@@ -117,7 +117,7 @@ func titleOf(s string) string {
 	} else if i := strings.Index(s, ". "); i > 0 {
 		s = s[:i]
 	}
-	s = strings.TrimSpace(strings.TrimRight(strings.TrimSpace(s), ".:"))
+	s = strings.TrimSpace(strings.TrimRight(strings.TrimSpace(s), ".:,;"))
 	if r := []rune(s); len(r) > 200 {
 		s = string(r[:199]) + "…"
 	}

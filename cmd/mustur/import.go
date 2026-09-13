@@ -45,6 +45,24 @@ func cmdImport(args []string) error {
 	}
 	sources = append(sources, linkctrl.Source{Path: "docs/build-notes/deferred-findings.md", Records: findings})
 
+	log, err := os.ReadFile(filepath.Join(notes, "decisions.md"))
+	if err != nil {
+		return err
+	}
+	tables := map[string]string{}
+	for _, name := range []string{"phase-2.md", "phase-3.md"} {
+		b, err := os.ReadFile(filepath.Join(notes, "phase-details", name))
+		if err != nil {
+			return err
+		}
+		tables["phase-details/"+name] = string(b)
+	}
+	decisions, err := linkctrl.Decisions(string(log), tables, today)
+	if err != nil {
+		return err
+	}
+	sources = append(sources, linkctrl.Source{Path: "docs/build-notes/decisions.md", Records: decisions})
+
 	b, err := os.ReadFile(filepath.Join(notes, "upcoming-decisions.md"))
 	if err != nil {
 		return err
@@ -73,6 +91,48 @@ func cmdImport(args []string) error {
 		inv.Records = append(inv.Records, rec)
 	}
 	sources = append(sources, inv)
+
+	ms := linkctrl.MilestoneSources{Files: map[string]string{}, Phases: map[string]string{}}
+	files, err := filepath.Glob(filepath.Join(notes, "phase-details", "*.md"))
+	if err != nil {
+		return err
+	}
+	for _, p := range files {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		switch base := filepath.Base(p); {
+		case base == "phase-1.md":
+			ms.Phase1 = string(b)
+			ms.Phases[base] = string(b)
+		case strings.HasPrefix(base, "phase-"):
+			ms.Phases[base] = string(b)
+		default:
+			ms.Files[base] = string(b)
+		}
+	}
+	plan, err := os.ReadFile(filepath.Join(*from, "Plan.md"))
+	if err != nil {
+		return err
+	}
+	ms.Plan = string(plan)
+	milestones, renumber, err := linkctrl.Milestones(ms, today)
+	if err != nil {
+		return err
+	}
+	sources = append(sources, linkctrl.Source{Path: "docs/build-notes/phase-details/", Records: milestones})
+
+	rewritten, unresolved := linkctrl.Rewrite(sources, renumber)
+	var left []string
+	leftTotal := 0
+	for tok, n := range unresolved {
+		left = append(left, fmt.Sprintf("%s×%d", tok, n))
+		leftTotal += n
+	}
+	sort.Strings(left)
+	fmt.Printf("renumbered %d milestones; rewrote %d references; left %d as written: %s\n",
+		len(renumber), rewritten, leftTotal, strings.Join(left, " "))
 
 	total := 0
 	for _, src := range sources {
