@@ -164,6 +164,12 @@ type sessionRow struct {
 	Project string
 	Here    bool
 	State   string
+	// Where is the tree it is running in, named for the picker (MUS-F-0108).
+	Where string
+	// Doing is working or waiting, read from the hub's own poller rather than
+	// captured here (MUS-Q-0105). Empty when nothing has polled it yet, which
+	// is not the same as idle and is drawn as nothing rather than as a guess.
+	Doing string
 }
 
 type sessionPage struct {
@@ -217,6 +223,28 @@ type subagentRow struct {
 	Started int64  `json:"started"`
 	Ended   int64  `json:"ended,omitempty"`
 	Said    string `json:"said,omitempty"`
+}
+
+// held is the call this session is holding in front of the owner, if any.
+//
+// Unlike subagents below it, this does reach the socket: it goes with the hello
+// frame and on every tick of it. That is worth saying because this function was
+// inserted directly under subagents' own doc comment, which says the opposite,
+// and for one commit that comment read as this function's.
+//
+// At most one: the gate declines a sub-agent's own tool calls, and the main
+// conversation runs its tools one at a time. If that ever stops being true the
+// oldest is the one shown, because it is the one whose timeout runs out first.
+func (s *Sessions) held(project string) *askRow {
+	if s.HookDir == "" || project == "" {
+		return nil
+	}
+	waiting, err := session.Asks(s.HookDir, project, s.now())
+	if err != nil || len(waiting) == 0 {
+		return nil
+	}
+	a := waiting[0]
+	return &askRow{ID: a.ID, Tool: a.Tool, Summary: a.Summary, Input: a.Input, At: a.At.Unix()}
 }
 
 // subagents reads what the hook recorded for this session.
@@ -299,6 +327,7 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 	rows := make([]sessionRow, 0, len(live))
 	running := make(map[string]bool, len(live))
 	found := false
+	place := s.places(ctx)
 	for _, sn := range live {
 		if sn.Project == here {
 			found = true
@@ -308,7 +337,19 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 		if sn.Attached {
 			state = "running · attached"
 		}
-		rows = append(rows, sessionRow{Project: sn.Project, Here: sn.Project == here, State: state})
+		row := sessionRow{Project: sn.Project, Here: sn.Project == here, State: state, Where: place[sn.Project]}
+		// The other half of MUS-F-0108, and it costs nothing now: the hub polls
+		// every owned session, so this is a map lookup rather than the
+		// capture-pane per session per render that MUS-Q-0102 was about.
+		if s.Hub != nil {
+			switch s.Hub.Doing(sn.Project) {
+			case session.AgentWorking, session.AgentStarting:
+				row.Doing = "working"
+			case session.AgentWaiting:
+				row.Doing = "waiting"
+			}
+		}
+		rows = append(rows, row)
 	}
 	return rows, s.lost(ctx, running, here), found
 }
@@ -451,6 +492,31 @@ type frame struct {
 	// Activity is what the CLI says it is doing, sent with every screen so its
 	// absence on one means nothing is running (MUS-F-0098).
 	Activity *session.Activity `json:"activity,omitempty"`
+	// Ask is a tool call the CLI is holding while the owner decides, which is
+	// the whole of milestone 8. Unlike Prompt it was not read off the screen:
+	// the hook was told the tool and its input and told Mustur, so this row is
+	// what the CLI said rather than what a parser made of what it drew.
+	Ask *askRow `json:"ask,omitempty"`
+	// NoAsk clears one. A held call that was answered, or that timed out into
+	// the CLI's own dialog, has to be able to say so — and a nil Ask with
+	// omitempty is indistinguishable from a frame about something else.
+	NoAsk bool `json:"noask,omitempty"`
+	// ID and Decision go up: which held call, and what was pressed.
+	ID       string `json:"id,omitempty"`
+	Decision string `json:"decision,omitempty"`
+}
+
+// An askRow is a held tool call, ready to render.
+//
+// The input is carried whole as well as summarised, because the owner is being
+// asked to allow something and a truncated command is a different question from
+// the one the agent asked.
+type askRow struct {
+	ID      string `json:"id"`
+	Tool    string `json:"tool"`
+	Summary string `json:"summary"`
+	Input   string `json:"input,omitempty"`
+	At      int64  `json:"at"`
 }
 
 // A statusRow is the CLI's status line, ready to render.
@@ -541,12 +607,22 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	if s.Store != nil {
 		waitingNow = OpenCount(conn, s.Store)
 	}
+	// What the hello says about a held call is also where the ticker starts
+	// comparing from. Without that the tick's idea of "last sent" was empty
+	// while the tab had a call on screen, so a call that cleared before the
+	// first tick changed nothing the tick could see and the pop-up kept
+	// offering it — a test written for the timeout case found this one.
+	helloAsk := s.held(project)
 	if err := send(frame{
 		T: "hello", Alive: true, Quiet: quiet,
 		Screen: now.HTML, Agent: string(now.Agent), Status: statusChips(now.Status),
 		Prompt:   now.Prompt,
 		Activity: now.Activity,
 		Waiting:  waitingIf(s.Store != nil, &waitingNow),
+		// A held call goes with the hello, so a tab that opens or reconnects
+		// while one is waiting sees it rather than waiting for the next tick to
+		// change something.
+		Ask: helloAsk,
 	}); err != nil {
 		return
 	}
@@ -558,6 +634,10 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	agents := time.NewTicker(AgentsEvery)
 	defer agents.Stop()
 	var lastAgents, lastStamp string
+	lastAsk := ""
+	if helloAsk != nil {
+		lastAsk = helloAsk.ID
+	}
 
 	// Reset on activity. The timer used to be created once and never touched,
 	// which made it a cap on the connection's age rather than on its idleness:
@@ -599,6 +679,34 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		case <-agents.C:
+			// The gate, first and outside the short-circuit below. A held call
+			// raises no sub-agent event, so a tick that returned early on that
+			// stamp would never notice one — which is how the badge came to be
+			// live on one surface out of three (MUS-F-0086).
+			// Every tick, not only when the directory changes. A hook the CLI
+			// killed leaves its file behind and changes nothing, so a stamp
+			// that only counts filenames would leave the pop-up saying
+			// "waiting on you" for a process that is gone — and hide the
+			// dialog the CLI drew in its place, which is the fallback the
+			// whole design rests on. The read is one small directory; the
+			// comparison below is what keeps the socket quiet.
+			held := s.held(project)
+			stamp := ""
+			if held != nil {
+				stamp = held.ID
+			}
+			if stamp != lastAsk {
+				lastAsk = stamp
+				f := frame{T: "ask"}
+				if held != nil {
+					f.Ask = held
+				} else {
+					f.NoAsk = true
+				}
+				if err := send(f); err != nil {
+					return
+				}
+			}
 			// The agent's state used to be captured here, on its own timer.
 			// The poller already has the pane in hand and reads it out of the
 			// same text, so this tick is back to being only about sub-agents.
@@ -686,6 +794,35 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 		}
 		var f frame
 		if err := json.Unmarshal(data, &f); err != nil {
+			continue
+		}
+		if f.T == "answer" {
+			// The gate's own frame: which held call, and what was pressed. It
+			// is not a keypress and not text — nothing is sent to the pane at
+			// all. The hook is holding the tool call and reads the answer from
+			// the file this writes (MUS-D-0153).
+			if now := s.now(); now.Sub(lastKey) < KeysEvery {
+				_ = say(frame{T: "error", Error: "sent too quickly; that one was not delivered"})
+				continue
+			} else {
+				lastKey = now
+			}
+			id, decision := strings.TrimSpace(f.ID), strings.TrimSpace(f.Decision)
+			err := session.AnswerAsk(s.HookDir, project, id, session.Answer{
+				Decision: decision,
+				Reason:   answerReason(decision, actor),
+				At:       s.now(),
+			})
+			if err != nil {
+				// The common case is a call that timed out while the owner was
+				// deciding: the hook is gone, the CLI has drawn its own dialog,
+				// and the terminal underneath is where the answer goes now.
+				_ = say(frame{T: "error", Error: "that call is no longer waiting: " + err.Error()})
+				_ = say(frame{T: "ask", NoAsk: true})
+				continue
+			}
+			_ = say(frame{T: "ask", NoAsk: true})
+			resetIdle(idle, IdleTimeout)
 			continue
 		}
 		if f.T != "input" && f.T != "key" {
@@ -839,9 +976,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      the only one spelling itself out. Square, so the glyph sits in the middle
      of it rather than on the left of a word-shaped box. */
   /* Ending one. Beside the control that starts one, because that is where a
-     reader looks for what can be done to a session, and behind the same tick
-     the decision queue puts in front of Withdraw (MUS-D-0147). */
-  .endform { display: inline-flex; flex: 0 0 auto; }
+     reader looks for what can be done to a session, and behind the confirmation
+     that names it (MUS-D-0147, as MUS-F-0103 amended it -- the tick is gone).
+
+     border-top undoes the bare form rule below, which was written for the
+     composer and lands on every form on the page. It is what drew a line across
+     the rail above Stop, where the tick used to sit, and went on drawing it
+     after the tick was removed (MUS-F-0107). The same rule also reaches .pick
+     and .new form, which is a leak rather than an intent, but neither is what
+     the owner reported and both would change a layout nobody has looked at. */
+  .endform { display: inline-flex; flex: 0 0 auto; border-top: 0; }
   .endform button { font: inherit; font-size: .82em; padding: .2rem .55rem;
                     border: 1px solid var(--edge); border-radius: .45rem;
                     background: transparent; color: inherit; cursor: pointer; }
@@ -976,6 +1120,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
                     background: transparent; color: inherit; cursor: pointer; }
   .dlgbody { margin: .4rem 0 .7rem; opacity: .75; font-size: .88em; }
   .dlgbody:empty { display: none; }
+  /* The whole call, behind a disclosure. Shut, because the summary is the
+     question most of the time and a wall of JSON over the terminal is not; open,
+     because allowing a command you have seen the first 400 characters of is a
+     different decision from the one the agent asked for. */
+  .askmore { margin-top: .4rem; }
+  .askmore summary { cursor: pointer; opacity: .8; }
+  .askraw { margin: .4rem 0 0; max-height: 9rem; overflow: auto;
+            white-space: pre-wrap; word-break: break-word;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: .82em; opacity: .9; }
   .dlgopts { display: flex; flex-direction: column; gap: .35rem; }
   .dlgopts button { font: inherit; text-align: left; padding: .5rem .6rem;
                     border: 1px solid var(--edge); border-radius: .5rem;
@@ -1252,10 +1406,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <form class="pick" method="get" action="/sessions">
     <select name="p" id="pick" aria-label="Session">
       {{if .Lost}}{{if .Rows}}<optgroup label="Running">
-        {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
+        {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}{{if .Doing}} &middot; {{.Doing}}{{end}}</option>{{end}}
       </optgroup>{{end}}<optgroup label="Not running">
-        {{range .Lost}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}
-      </optgroup>{{else}}{{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}</option>{{end}}{{end}}
+        {{range .Lost}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}</option>{{end}}
+      </optgroup>{{else}}{{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}{{if .Doing}} &middot; {{.Doing}}{{end}}</option>{{end}}{{end}}
     </select><noscript><button type="submit" class="go">Go</button></noscript>
   </form>
   <a class="newlink" href="/sessions?new=1" title="Start a session" aria-label="Start a session">+</a>
@@ -1289,7 +1443,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
        ran and which conversation it was having. -->
   <div class="lost">
     <h2>Not running</h2>
-    <p class="none"><small>Mustur started these and they are gone. A reboot ends every session; nothing here restarts one on its own.</small></p>
+    <p class="none"><small>Mustur started these and they are gone. A reboot ends every session; nothing here brings one back on its own.</small></p>
     <ul>
       {{range .Lost}}<li>
         <form method="post" action="/sessions/{{.Project}}/restore">
@@ -1298,7 +1452,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
             <small>{{.Dir}}{{if .When}} &middot; started {{.When}}{{end}}</small>
             <small>{{if .Resumes}}Comes back with the conversation it was having.{{else}}Starts again here, empty: there is no conversation on disk to bring back.{{end}}</small>
           </div>
-          <button type="submit">Start it again</button>
+          <button type="submit">{{if .Resumes}}Resume it{{else}}Start it again{{end}}</button>
         </form>
       </li>{{end}}
     </ul>
@@ -1337,10 +1491,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
         <small>{{.Recover.Dir}}{{if .Recover.When}} &middot; started {{.Recover.When}}{{end}}</small>
         <small>{{if .Recover.Resumes}}Comes back with the conversation it was having.{{else}}Starts again here, empty: there is no conversation on disk to bring back.{{end}}</small>
       </div>
-      <button type="submit">Start it again</button>
+      <button type="submit">{{if .Recover.Resumes}}Resume it{{else}}Start it again{{end}}</button>
     </form>
   </li></ul>
-  <p class="none"><small>Nothing here restarts on its own. <a href="/sessions?new=1">Start something else</a>.</small></p>
+  <p class="none"><small>Nothing here comes back on its own. <a href="/sessions?new=1">Start something else</a>.</small></p>
 </div>
 {{else if .Missing}}
 <p class="none">{{if .Project}}Mustur did not start a session for {{.Project}}, so there is nothing to show.{{else}}No sessions.{{end}}<br>
@@ -1441,3 +1595,18 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 </body>
 </html>
 `))
+
+// answerReason is what the agent is told when a call is refused.
+//
+// A denial reaches the agent verbatim — investigation 0003 watched the words
+// come back inside the tool result — so it says who refused it and where. An
+// allowed call is told nothing, because there is nothing to explain.
+func answerReason(decision, actor string) string {
+	if decision != "deny" {
+		return ""
+	}
+	if actor == "" {
+		return "Refused from Mustur's session view"
+	}
+	return "Refused by " + actor + " from Mustur's session view"
+}

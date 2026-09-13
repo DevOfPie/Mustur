@@ -12,9 +12,10 @@ repo-local file that mandates the call.
 and awaiting acceptance; 5 is built, reviewed twice and rebuilt after the first
 review, and everything through it is merged. 5b, accounts, was raised on
 2026-08-24 and inserted before 6; 5c, the credential an agent can hold, came out
-of 5b's own review. Both are built, neither is merged, and both are **deployed
-and enforced** on the owner's machine since 2026-08-26. Nothing below 5c is
-built.** What exists is one binary
+of 5b's own review. Both are built and merged — pull requests 30 and 31, on
+2026-08-28 — and both are **deployed and enforced** on the owner's machine since
+2026-08-26. **Milestone 8, a tool call answered without the screen, is built and
+not merged**; nothing below it is built.** What exists is one binary
 that can hold this project's records and routing, serve them to a session
 through a single mandated tool call, audit its own records against the
 conventions this repository declares, take a jot into its own findings queue
@@ -29,8 +30,10 @@ built, refuses correctly, and is switched off until somebody holds a passkey. An
 agent, which has no browser and so no passkey, carries a token instead: one
 path, one project, revoked the moment you say so.
 
-Six surfaces carry a client layer: the session view, the composer, and the four
-authentication surfaces. Only two of them stop working without it — the session
+Every surface that draws the tab bar carries `bar.js`, which is what keeps the
+decision badge live rather than fixed at whatever it said when the page was
+rendered. Six carry a client layer of their own: the session view, the composer,
+and the four authentication surfaces. Only two of those stop working without it — the session
 view, because a live terminal cannot be server-rendered, and the passkey
 ceremony, because `navigator.credentials` is a browser API. Everywhere else the
 form posts and the script adds a convenience. What the rule should count is open

@@ -275,6 +275,28 @@ at 21.2s, 21.4s and 21.3s.
 [captured/hold-2.1.267.txt](0003-harness/captured/hold-2.1.267.txt). Unchanged,
 and now measured on the version this repository would build against.
 
+### And what the two events cannot do together
+
+If the two hooks ran at the same time, the route would be better than either
+event alone: hold the answer channel open in `PreToolUse` and let
+`PermissionRequest` say what the dialog is about, then answer it structurally.
+They do not. With a `PreToolUse` hook that never returns and a
+`PermissionRequest` hook that returns at once, `PermissionRequest` fires
+**20.022s, 20.024s and 20.014s** after `PreToolUse`, against a `PreToolUse`
+timeout of 20s: the CLI runs the permission flow only once the first hook has
+been waited out. [captured/order-2.1.267.txt](0003-harness/captured/order-2.1.267.txt),
+run by [order.sh](0003-harness/order.sh).
+
+Two of the five sessions in that file are not in the numbers: on trials 51 and 53
+the prompt was typed into the CLI's box and never submitted, so no tool was called
+and no hook fired. A race between `send-keys` and the CLI becoming ready, not a
+result — named here because a reader counting sessions in the captured file will
+find five.
+
+So while Mustur holds the only channel that can answer, nothing tells it whether
+anybody would ever have been asked. That is [MUS-F-0122](../../records/findings.md#mus-f-0122),
+and what milestone 8 does about it is [MUS-D-0153](../../records/decisions.md#mus-d-0153).
+
 ### What the harness will and will not reproduce
 
 `trial.sh` changed shape between the first trials and the last: one hardcoded

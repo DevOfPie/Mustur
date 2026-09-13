@@ -395,6 +395,26 @@ func kindNames() []string {
 // defaultActor names who wrote a record. The log distinguishes what the
 // bootstrap imported from what has been written since, so an unattributed
 // record would erase the one thing that distinction is for.
+// remembered adapts the store to what the update sweep reads back.
+//
+// The command it hands over is the resume command, not the recorded one, by the
+// same rule the restore button follows and through the same function.
+type remembered struct{ store *store.Store }
+
+func (r remembered) Remembered(ctx context.Context, project string) (string, string, bool) {
+	rows, err := r.store.RememberedSessions(ctx)
+	if err != nil {
+		return "", "", false
+	}
+	for _, row := range rows {
+		if row.Project != project {
+			continue
+		}
+		return row.Dir, session.ResumeIfWritten(row.Cmd, row.CLI, row.Transcript), true
+	}
+	return "", "", false
+}
+
 func defaultActor() string {
 	if who := os.Getenv("MUSTUR_ACTOR"); who != "" {
 		return who
@@ -600,6 +620,11 @@ func cmdServe(args []string) error {
 	// page is not a shell behind Access (MUS-D-0146).
 	sessionCmds := &values{}
 	fs.Var(sessionCmds, "session-cmd", "a command the session surface may start, repeatable")
+	// Which tool calls a session started from here holds in front of the owner
+	// rather than letting the CLI draw its own dialog for (MUS-D-0153). The
+	// empty string is a session that gates nothing, which is the opt-out the
+	// decision promises; unset is the default set.
+	gate := fs.String("gate", "", "tools a started session holds in front of the owner; empty for the default set, \"none\" for no gate")
 	// The site as a browser sees it. A passkey is bound to it, which is what
 	// makes one unphishable — and what makes a wrong value fail silently, by
 	// making every registered passkey unusable rather than by erroring.
@@ -667,7 +692,7 @@ func cmdServe(args []string) error {
 	// told which store to report the CLI's conversation identifier to. The path
 	// is passed rather than defaulted, because a server told to use another
 	// store would otherwise have its hooks write to the machine's usual one.
-	adapter := &session.Adapter{HookDir: hookDir, DB: *db, Remember: s}
+	adapter := &session.Adapter{HookDir: hookDir, DB: *db, Remember: s, Gate: gateFlag(*gate)}
 	hub := &session.Hub{Adapter: adapter}
 	// Readers hold a fifo and a tmux pipe-pane each; without this a server that
 	// goes down leaves both behind, with tmux still writing into a pipe nobody
@@ -681,6 +706,22 @@ func cmdServe(args []string) error {
 			Commands:    *sessionCmds,
 		}
 		sessions.Routes(mux)
+
+		// The update sweep, which is the only thing here that acts on a running
+		// agent without a person pressing anything (MUS-D-0159). It rides on
+		// --sessions rather than a flag of its own: it restarts sessions, and
+		// the flag that decides whether this server touches sessions at all is
+		// the one already being read. Dropping --sessions removes the surface
+		// and the sweep together, which is the knob to reach for.
+		sweep := &session.Sweeper{Adapter: adapter, Recall: remembered{s}, Watch: hub}
+		sweepCtx, stopSweep := context.WithCancel(context.Background())
+		defer stopSweep()
+		// One poller per owned session, watched or not (MUS-Q-0105). It is what
+		// lets the picker say which session is working without a tmux capture
+		// per session per page render, and what gives the sweep above a dwell
+		// measured continuously rather than seeded whenever a tab opens.
+		go hub.Supervise(sweepCtx)
+		go sweep.Run(sweepCtx)
 	}
 	// The composer is served whatever the flag says, and offers sessions only
 	// when they are being served.

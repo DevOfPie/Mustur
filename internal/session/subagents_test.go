@@ -230,7 +230,7 @@ func TestTheHookIsOnlyAddedToACommandItRecognises(t *testing.T) {
 		{"my-agent --claude", false},
 		{"", false},
 	} {
-		got := withHook(tc.cmd, "/usr/bin/mustur", "/state", "P", "") != tc.cmd
+		got := withHook(tc.cmd, "/usr/bin/mustur", "/state", "P", "", nil) != tc.cmd
 		if got != tc.want {
 			t.Errorf("withHook(%q) changed=%v, want %v", tc.cmd, got, tc.want)
 		}
@@ -242,7 +242,7 @@ func TestTheHookIsOnlyAddedToACommandItRecognises(t *testing.T) {
 // session does not start — but it is a bug a fake runner would never show, so
 // the round trip runs through a real shell.
 func TestTheHookSurvivesTheShell(t *testing.T) {
-	cmd := withHook("claude", "/usr/bin/mustur", "/state dir", "P", "")
+	cmd := withHook("claude", "/usr/bin/mustur", "/state dir", "P", "", nil)
 	if cmd == "claude" {
 		t.Fatal("no hook was added")
 	}

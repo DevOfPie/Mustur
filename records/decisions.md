@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-153 record(s), by identifier.
+170 record(s), by identifier.
 
 ## Index
 
@@ -12,6 +12,14 @@ Navigation only. Rows are appended when entries are, and never removed.
 
 | Entry | Covers | Date |
 | --- | --- | --- |
+| [HRD-D-0001](#hrd-d-0001) | Shared saves store their blobs in a group namespace, and the group's owner pays for them | 2026-09-13 |
+| [HRD-D-0002](#hrd-d-0002) | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free | 2026-09-13 |
+| [HRD-D-0003](#hrd-d-0003) | A lease renews every 30 seconds and expires after five minutes | 2026-09-13 |
+| [HRD-D-0004](#hrd-d-0004) | Only the self-hosted stack is built, shaped so the cloud stack could follow | 2026-09-13 |
+| [HRD-D-0005](#hrd-d-0005) | The fork is the product; nothing is offered upstream on a schedule | 2026-09-13 |
+| [HRD-D-0006](#hrd-d-0006) | A shared save names its files with a per-save include filter, set from a per-game template | 2026-09-13 |
+| [HRD-D-0007](#hrd-d-0007) | The plan is approved and phase 1 starts | 2026-09-13 |
+| [HRD-D-0008](#hrd-d-0008) | The fork publishes its own signed desktop releases and its clients update from them | 2026-09-13 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -165,6 +173,127 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0151](#mus-d-0151) | The tmux server is spawned in a scope of its own, so a deploy stops ending every session | 2026-09-08 |
 | [MUS-D-0152](#mus-d-0152) | The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary | 2026-09-10 |
 | [MUS-D-0153](#mus-d-0153) | Mustur gates the tools it names, and never allows what the CLI would have asked about | 2026-09-10 |
+| [MUS-D-0154](#mus-d-0154) | The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer | 2026-09-10 |
+| [MUS-D-0155](#mus-d-0155) | A held call waits five minutes, and when it stops being held the question is still Mustur's to answer | 2026-09-10 |
+| [MUS-D-0156](#mus-d-0156) | In a session Mustur started, Mustur is the prompt | 2026-09-10 |
+| [MUS-D-0157](#mus-d-0157) | Milestone 6 is not met: the person exists and the reading has not happened | 2026-09-10 |
+| [MUS-D-0158](#mus-d-0158) | The gate respects the permission mode, and is therefore inert in ordinary use here | 2026-09-11 |
+| [MUS-D-0159](#mus-d-0159) | Mustur restarts a session to take a CLI update, which is the first thing it does on its own | 2026-09-11 |
+| [MUS-D-0160](#mus-d-0160) | A jot takes six pictures, and six is the owner's number rather than the agent's | 2026-09-11 |
+| [MUS-D-0161](#mus-d-0161) | The hub polls every owned session, and the reader stops being a thing a viewer starts | 2026-09-12 |
+| [MUS-D-0162](#mus-d-0162) | A new project with no records moves in as an ordinary project, not as a milestone | 2026-09-13 |
+
+---
+
+## HRD-D-0001
+
+**Shared saves store their blobs in a group namespace, and the group's owner pays for them**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0001](questions.md#hrd-q-0001)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0001: group namespace, with the note that an owner creates a group because that fits Hoard Cloud's pay model. So a group is created by one user, who owns it; a shared save's blobs live under the group, not under any member; and the group's storage counts against its owner's quota, since groups have no quota of their own in v1. The per-account rule of 0013_blobs.sql stands: content existence leaks only within the group, whose members can read the save anyway. Cost accepted: a group_blobs table and a Namespace enum threaded through cas.rs, blobs.rs and store.rs, and a blob copy into the group namespace when a save with history is shared.
+
+---
+
+## HRD-D-0002
+
+**An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0003](questions.md#hrd-q-0003)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0003. After 60 s without an answer, if the launched game has one shared world and nobody holds its lease, the agent takes the lease and says so. Another member may take the lease over while its holder has pushed nothing since acquiring, so a wrong auto-claim costs nothing. With several shared worlds, or a held lease, nothing is claimed and file evidence decides, as the design says.
+
+---
+
+## HRD-D-0003
+
+**A lease renews every 30 seconds and expires after five minutes**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0004](questions.md#hrd-q-0004)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0004. The renew rides the presence beat (presence.rs, 30 s); the server treats a lease as live while renewed_at is within 300 s and released_at is null, computed on read with no stored flag, as devices.rs does for online. A network stumble mid-session never hands the world away; a crash costs the group five minutes, and the force route covers less patience than that.
+
+---
+
+## HRD-D-0004
+
+**Only the self-hosted stack is built, shaped so the cloud stack could follow**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0005](questions.md#hrd-q-0005)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0005: self-hosted only, built with the intention of cloud support; Pie will use it self-hosted unless upstream accepts it, in which case the maintainer makes or requests the cloud changes. So: no Postgres migrations, RLS or cloud route twins in the fork. The shapes that cloud would reuse are kept stack-neutral: wire types in hoard-core, the save_access helper and Namespace enum as plain functions over a pool, route paths that the cloud router could mount, and no self-hosted-only assumption in the agent's group and lease clients beyond the capability probe.
+
+---
+
+## HRD-D-0005
+
+**The fork is the product; nothing is offered upstream on a schedule**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0006](questions.md#hrd-q-0006)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0006: fork only, for their own use for now, possibly offered later at no set time. The plan drops the upstream-offer phase. Code stays upstreamable in style because it costs nothing: English prose, no trailers, additive modules, changelog entries under Unreleased. Every upstream release is a rebase the fork carries.
+
+---
+
+## HRD-D-0006
+
+**A shared save names its files with a per-save include filter, set from a per-game template**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0007](questions.md#hrd-q-0007)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0007 after HRD-Q-0002 came back as a question. A save carries a glob list honoured by backup (walk_source) and restore (the merge). Sharing a world sets it from a per-game template; Valheim's names worlds_local/<W>.db, .fwl, .db.old, .fwl.old and <W>_backup_* and nothing under characters_local. Player data is excluded unless the game stores it inside the world, in which case the template says so (Minecraft's world folder whole). A second game is a template, not code.
+
+---
+
+## HRD-D-0007
+
+**The plan is approved and phase 1 starts**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0008](questions.md#hrd-q-0008)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Pie read .local/group-sharing/plan.md and approved it on 2026-09-13 in the Hoard_Work session, closing HRD-Q-0008's condition. Phase 1, the self-hosted server half, begins on branch group-sharing/server from main at 43474d5.
+
+---
+
+## HRD-D-0008
+
+**The fork publishes its own signed desktop releases and its clients update from them**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0010](questions.md#hrd-q-0010)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0010. The fork's clients point REPO at DevOfPie/hoard (hoard-agent/src/update.rs:16, install/fetch.rs:23), carry a fork minisign public key in place of upstream's (install/fetch.rs:33), and release-desktop.yml builds and signs installers on a tag. Pie owes: Actions enabled on the fork and the two secrets MINISIGN_SECRET_KEY and MINISIGN_KEY_PASSWORD. The updater change is a fork-only commit on main, outside the group-sharing PRs, so it can ship first and carry them. A fork client sees no upstream release until the constants are switched back.
 
 ---
 
@@ -2889,3 +3018,263 @@ What is not built, and is a real refinement rather than an oversight: Mustur cou
 | Default set | Bash, Edit, Write, NotebookEdit |
 | Never | allow or deny without a press; a widened gate; a session in a mode the CLI does not prompt in |
 | Falls back to | the hook's own timeout, and the CLI drawing the dialog it would have drawn |
+
+---
+
+## MUS-D-0154
+
+**The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer**
+
+decision · 2026-09-10
+
+the rule it extends: [MUS-D-0153](#mus-d-0153)
+
+the milestone: [MUS-D-0152](#mus-d-0152)
+
+MUS-D-0153 states the rule as two clauses -- a named tool, and a permission mode where the CLI prompts. The build has four, and a reviewer reading the decision against the code is what turned the other two up. decisions.md is append-only, so this says what shipped rather than editing what was written.
+
+**A call with no tool_use_id is declined.** The identifier is what a file is named after and what a button answers; inventing one would make two calls share a button, and the CLI has supplied one on every payload measured.
+
+**A sub-agent's own tool calls are declined.** The owner is answering for the session, and a sub-agent is a call inside one whose shape the surface does not show. Holding those would put a button in front of work that has no row on the screen yet. This was a scope decision living in a Go comment until now, which is what the reviewer objected to rather than the choice itself.
+
+Two defects the same review found are fixed rather than recorded as their own findings, because neither shipped past this branch. A held call whose hook the CLI killed was never cleared from an open tab -- the tick only looked when the directory changed, and the expiry lived behind that look -- so the pop-up offered a call nobody was holding and covered the dialog the CLI had drawn in its place, which is the fallback the whole design rests on. And pressing on one reported success: the check was that a file existed, and the file was still there. AnswerAsk now refuses a call that waited out its timeout, and the tick reads the directory every time rather than only when a filename changes.
+
+Writing the test for that found a third: the hello frame carried a held call and left the ticker's idea of what it had last sent empty, so a call that cleared before the first tick changed nothing the tick could see.
+
+| Field | Value |
+| --- | --- |
+| Declined as well as MUS-D-0153's two clauses | a call with no tool_use_id; a tool call inside a sub-agent |
+| Fixed in the same branch | a stale held call is cleared within a tick; a press after the timeout is refused and says why; the hello frame seeds what the ticker compares against |
+| Found by | the done-when and shipped-claims reviewers, and by a test written for the first of them |
+
+---
+
+## MUS-D-0155
+
+**A held call waits five minutes, and when it stops being held the question is still Mustur's to answer**
+
+decision · 2026-09-10
+
+answers: [MUS-Q-0096](questions.md#mus-q-0096)
+
+the rule it belongs to: [MUS-D-0153](#mus-d-0153)
+
+the pop-up it hands over to: [MUS-D-0144](#mus-d-0144)
+
+MUS-Q-0096 asked how long a held tool call waits before the session takes it back. The owner chose five minutes, which is what shipped -- but it shipped as a number nobody had chosen, in a code comment calling it a number the owner feels, and a reviewer was right that this made it theirs rather than mine. It is now a number with a record.
+
+The answer carried a note that says more than the number does: **the question should always be answered through Mustur for Mustur's own sessions**, and when the timer expires the session can try other work or idle until it is answered there.
+
+That is already what happens, and it is worth writing down because it is not obvious from either half on its own. When the hook times out the CLI draws the dialog it would have drawn, and that dialog is on the pane -- which the surface already reads and offers as the same pop-up, answered by a keypress (MUS-D-0142, MUS-D-0144). So the question does not leave Mustur when the gate lets go of it; it changes channel, from a decision the CLI honours to a key sent to the terminal. The pop-up hands over rather than disappearing, and the client draws the pane's prompt the moment the held call clears.
+
+What Mustur does not do, and the note does not ask for, is make the session do something else in the meantime. What an agent does while it waits on its own dialog is the CLI's business.
+
+The number is a constant rather than a flag, deliberately: --gate already says which calls are held, and a second knob for how long each one waits is a setting nobody has asked for twice.
+
+| Field | Value |
+| --- | --- |
+| Answer | five minutes, chosen on MUS-Q-0096 after shipping unchosen |
+| After it expires | the CLI draws its own dialog, the pane parser reads it, and the same pop-up offers it as a keypress |
+| Not built | anything that makes the session do other work while it waits; that is the CLI's |
+
+---
+
+## MUS-D-0156
+
+**In a session Mustur started, Mustur is the prompt**
+
+decision · 2026-09-10
+
+answers: [MUS-Q-0098](questions.md#mus-q-0098)
+
+what a delivery into a dialog does: [MUS-F-0125](findings.md#mus-f-0125)
+
+the channel it retires here: [MUS-F-0074](findings.md#mus-f-0074)
+
+MUS-Q-0098 asked which of two channels gives way, after four answers in one day were recorded as delivered into this session and none arrived. The owner chose the first option: in a session Mustur started, Mustur is the prompt.
+
+The reason is mechanical rather than aesthetic. An answer reaches the raising session by being typed into its pane. A pane showing a dialog reads the paste as input to the dialog and the Enter behind it as a press (MUS-F-0125). An AskUserQuestion prompt is a dialog. So a prompt raised to point the owner at the queue is exactly the thing that stops the queue's answer landing -- and the two failures are silent in opposite directions, because the prompt returns its first option whether or not anybody touched it (MUS-F-0074) and delivery reported success whether or not anybody saw it.
+
+**So raising the question is showing it.** mustur ask --in <a live Mustur session> now records the question as surfaced by the raising, and says so instead of telling the caller to go and put it in a prompt. The queue holds it, the badge that counts it is live on every surface (MUS-D-0145), and the pane stays clear for the answer.
+
+**Outside a session Mustur started, nothing changes.** There is no pane to deliver into and no session watching the badge, so a prompt is still owed and mustur surfaced still records that it happened. That is most questions raised from a terminal somebody is sitting at.
+
+What this costs, stated because the option said it and the owner took it anyway: a prompt is what makes a question findable on whatever device the owner is holding, and a badge on a page they are not looking at is not the same thing. The bet is that a question that arrives late is better than an answer that never arrives at all.
+
+What it retires, quietly and worth naming: the channel that has twice returned an option nobody chose. In a Mustur session there is no longer a prompt to return anything, so MUS-F-0074's failure has nowhere left to happen.
+
+The gate is unchanged in what it enforces. --needed still blocks on being answered rather than on being asked, and a question raised outside a Mustur session and never prompted still fails make check.
+
+| Field | Value |
+| --- | --- |
+| Changed | mustur ask --in a live Mustur session marks the question surfaced by the raising; CLAUDE.md's mandate and workflow.md's trigger say so |
+| Unchanged | a question raised outside such a session still owes an AskUserQuestion prompt and mustur surfaced; --needed still blocks on the answer |
+| Why | a prompt is a dialog, and an answer delivered into a pane showing one is eaten by it |
+
+---
+
+## MUS-D-0157
+
+**Milestone 6 is not met: the person exists and the reading has not happened**
+
+decision · 2026-09-10
+
+answers: [MUS-Q-0099](questions.md#mus-q-0099)
+
+the milestone: [MUS-M-0008](milestones.md#mus-m-0008)
+
+what was fixed while waiting: [MUS-F-0126](findings.md#mus-f-0126)
+
+MUS-Q-0099 asked whether milestone 6 is met, given that a second account exists on this deployment with a reader role and a passkey. The owner answered in their own words rather than from the three options: the account was created and signup finished, and they have not looked through Mustur yet as far as the owner knows.
+
+So the milestone is not met, and what is missing is exactly what Plan.md has said since it was written: the person. Everything else is there -- the invitation, the ceremony, the role, the reading surfaces, and now a tab bar that does not offer them the one page that refuses them.
+
+**What was done in the meantime, and why it was worth doing before the answer arrived.** A reader was being shown a Sessions tab that answers 403 (MUS-F-0126). That is a queue line from 2026-08-25 which had been deferred, and it was the first thing a second person would have hit -- the milestone's whole subject is somebody who is not the owner finding the thing usable. It is fixed and deployed, so their first look is of a surface that tells them the truth.
+
+**What is deliberately not done.** Nobody was asked to go and look. An invitation was already accepted; chasing the reading is the owner's to do or not, and a milestone that turns on somebody else's ten minutes is not one an agent can close by trying harder.
+
+The remaining evidence is unusual for this repository and worth naming: nothing in the store can prove a person read a page, because the server keeps no request log. So the verdict, when it comes, is the owner's word or that person's, in the way 2c's last clause was proven by the owner filing a jot from their own phone.
+
+| Field | Value |
+| --- | --- |
+| What is in place | an invitation accepted, a passkey registered, a reader role on MUS, the reading surfaces, and a tab bar that no longer offers what a reader cannot open |
+| What is missing | somebody who is not the owner reading a project's routing and records from their own device |
+| How it will be proven | the owner's word or that person's; the server keeps no request log and the store cannot show a page being read |
+
+---
+
+## MUS-D-0158
+
+**The gate respects the permission mode, and is therefore inert in ordinary use here**
+
+decision · 2026-09-11
+
+answers: [MUS-Q-0100](questions.md#mus-q-0100)
+
+the finding: [MUS-F-0129](findings.md#mus-f-0129)
+
+the rule it leaves alone: [MUS-D-0153](#mus-d-0153)
+
+MUS-Q-0100 asked whether the gate should hold calls in auto mode, given that the owner's settings make auto the mode every session started from the surface runs in, and that the gate therefore never fires there. The owner chose to leave it: auto means do not ask me, and the gate respects that.
+
+So MUS-D-0153's two clauses stand unchanged, and the consequence is written down here rather than left to be rediscovered: **milestone 8 does nothing in the ordinary use of this deployment.** A session started from mustur.devofpie.com inherits permissions.defaultMode = auto, the CLI asks nobody anything, and Mustur holds nothing. The pop-up appears only in a session someone deliberately started in a prompting mode.
+
+That is not the milestone failing. It is the milestone declining to override a setting the owner made on purpose, which is the sentence MUS-D-0153 was written around -- Mustur never adds a gate it cannot justify, and a mode that says do not ask is the clearest possible instruction not to.
+
+**What it costs, said plainly because it is the whole of what was bought.** The capability is built, measured, reviewed and deployed, and on the machine it runs on it will sit unused until the owner starts a session in a prompting mode. Whether that ever happens is theirs. An agent should not read this decision as an invitation to widen the gate later on its own judgement; widening it is MUS-Q-0100 being answered differently, which is the owner's to do.
+
+**How to see it work**, for anyone judging the milestone or reproducing it: start a session whose command sets a prompting mode -- mustur session start X --dir DIR --cmd "claude --permission-mode default" -- and ask it to run a shell command. That is how the end-to-end evidence in MUS-W-0023 was taken, and it is now also the only way to watch it happen here.
+
+| Field | Value |
+| --- | --- |
+| Unchanged | MUS-D-0153's two clauses |
+| Consequence | no session started from the surface will raise the pop-up while the owner's default mode is auto |
+| How to exercise it | start a session with --permission-mode default, as MUS-W-0023's evidence did |
+| Not an invitation | widening the gate later is MUS-Q-0100 answered differently, which is the owner's |
+
+---
+
+## MUS-D-0159
+
+**Mustur restarts a session to take a CLI update, which is the first thing it does on its own**
+
+decision · 2026-09-11
+
+the question it answers: [MUS-Q-0101](questions.md#mus-q-0101)
+
+the clause it supersedes: [MUS-D-0149](#mus-d-0149)
+
+the jot that raised it: [MUS-F-0134](findings.md#mus-f-0134)
+
+what idle is read from: [MUS-D-0130](#mus-d-0130)
+
+the threshold: [MUS-Q-0104](questions.md#mus-q-0104)
+
+The owner's answer to MUS-Q-0101, with a note: wait until sessions have been idle for some time, to avoid interrupting work. The option they chose is the one the question argued against, and the note is why it is answerable at all -- the objection was that a restart ends a turn in flight, and a session that is idle has no turn in flight.
+
+This supersedes the clause in MUS-D-0149 that says a person presses it and never a timer, for this one case and no other. MUS-D-0149 stands for a session lost with the machine: a CLI that crashed still wants a person, because nothing here knows why it died. A CLI that has told the screen it installed an update and is sitting at its prompt is a different thing entirely -- it has said what it wants and it is not doing anything. CLAUDE.md's 'It does not restart anything' is corrected rather than quietly left.
+
+What idle has to mean is the whole of the risk, and MUS-Q-0104 settled it: at the prompt, nothing typed, nobody present, and thirty minutes of an unchanged screen. Two of those clauses were got wrong first time and both were corrected by the owner rather than by a test. The typed guard read the CLI's own dim suggestion as somebody's draft, which would have stopped the sweep ever firing (MUS-F-0138). And it was justified as protecting a draft it never protected: what the owner types goes into Mustur's composer, which is held in the browser until Send, so a restart cannot destroy it. The box catches a line typed by somebody attached in a terminal, and an attached terminal now declines the restart on its own -- the owner's presence clause was about presence, not about which client it was reached from.
+
+| Field | Value |
+| --- | --- |
+| Supersedes | the never-a-timer clause of MUS-D-0149, for this case only |
+| Status | built; internal/session/sweep.go, riding on --sessions |
+| Threshold | MUS-Q-0104: at its prompt with nothing typed, nobody present -- no browser tab and no attached terminal -- and the screen unchanged for thirty minutes |
+
+---
+
+## MUS-D-0160
+
+**A jot takes six pictures, and six is the owner's number rather than the agent's**
+
+decision · 2026-09-11
+
+the question it answers: [MUS-Q-0103](questions.md#mus-q-0103)
+
+the ceiling it sits beside: [MUS-D-0119](#mus-d-0119)
+
+the fix it sizes: [MUS-F-0130](findings.md#mus-f-0130)
+
+the report that needed three: [MUS-F-0131](findings.md#mus-f-0131)
+
+MUS-Q-0103 answered: six, as built. The ceiling stands where MUS-F-0130's fix put it, and the point of asking was never that six was likely wrong -- it was that the request body cap is computed from it, so the number decides what one POST can push through the ingress, and MUS-D-0119 had already had the owner choose once in that class. A contract reviewer found it taken in a code comment, which is where it should not have been settled.
+
+Three was the only measured number in it: MUS-F-0131 arrived as three records because the box took one picture each. Six is double that, and it is now double that on the owner's word.
+
+| Field | Value |
+| --- | --- |
+| Status | decided; nothing changes in the code and the comment stops saying the question is open |
+
+---
+
+## MUS-D-0161
+
+**The hub polls every owned session, and the reader stops being a thing a viewer starts**
+
+decision · 2026-09-12
+
+the question it answers: [MUS-Q-0105](questions.md#mus-q-0105)
+
+the question it closed badly: [MUS-Q-0102](questions.md#mus-q-0102)
+
+the sweep that shares it: [MUS-D-0159](#mus-d-0159)
+
+the half of the finding it completes: [MUS-F-0108](findings.md#mus-f-0108)
+
+what had to be fixed first: [MUS-F-0135](findings.md#mus-f-0135)
+
+The owner's answer to MUS-Q-0105, which was their own suggestion re-raised after MUS-Q-0102 was closed by a question rather than a choice (MUS-F-0137). A session runs in tmux from Start until something stops it; what was gated on a viewer was the reader. Hub.Watch counted viewers and the poller stopped two minutes after the last one left, so nothing knew what an unwatched session was doing -- and the picker had to choose between saying nothing and paying a tmux capture per session on every page render.
+
+Now one poller per owned session, adopted on a five-second tick and kept while the session runs. The cost moves from per page load to per running session, which is the right way round: there are three sessions here and there can be a hundred page loads. What it gives up is LingerAfter's whole point, which was not polling a session nobody is reading, and the owner took that knowingly.
+
+Three things fall out of it. The picker says working or waiting, which is the half of MUS-F-0108 that was not free and now is. MUS-D-0159's sweep stops capturing panes of its own and reads what the poller already holds. And the dwell that sweep turns on is maintained continuously per session rather than seeded from tmux's session_activity whenever a tab happens to open, which MUS-F-0051 established is not when the session last did anything.
+
+None of that would have been safe before MUS-F-0135 was fixed at the source: while the poller hashed the capture rather than what it renders, changedAt was reset by every turn of a spinner, so a dwell read off it would have been a dwell that never elapsed.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/session/screen.go Supervise, and the picker and the sweep both read it |
+
+---
+
+## MUS-D-0162
+
+**A new project with no records moves in as an ordinary project, not as a milestone**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0108](questions.md#mus-q-0108)
+
+project: [MUS-P-0003](routing.md#mus-p-0003)
+
+repository: [MUS-R-0002](routing.md#mus-r-0002)
+
+the milestone it leaves alone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has been a milestone with its own verdict. The owner answered that LinkCtrl is not a good reference, because it replaces an older pattern built through use before StrucGu and Mustur, and that adding a new project should not be a milestone's worth of work. So Hoard moved in on 2026-09-13 as MUS-P-0003 with repository MUS-R-0002, and no milestone was opened. The rule the milestone gate was written for still stands where it applies: a project arriving with an existing corpus to map, as LinkCtrl does, is still MUS-M-0009's to prove. What this changes is the reading that every repository, however new, is a milestone before its first routing row. Nothing of Mustur's is committed to the hoard fork: its mandate lives in a CLAUDE.md upstream's .gitignore already covers.
+
+| Field | Value |
+| --- | --- |
+| Applies to | a new project that brings no existing records |
+| Unchanged | MUS-M-0009 is still LinkCtrl's transition |
