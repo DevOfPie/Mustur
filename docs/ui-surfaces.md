@@ -243,8 +243,11 @@ holds up a milestone from one that holds up a sentence.
 
 **Built at milestone 2c, without a visual plan**, and published at
 `mustur.devofpie.com` behind Cloudflare Access at 2c's end. What exists is one
-textarea, one button and a list of what was filed in the last hour. It is the
-baseline a plan should argue with rather than a design anyone chose.
+textarea, a file field taking up to six pictures, a destination select, one
+button, and a list of what was filed in the last hour. The first three words of
+that sentence used to be the whole of it; the picture field arrived on
+MUS-D-0119 and the select on MUS-D-0121, and the description had not caught up.
+It is the baseline a plan should argue with rather than a design anyone chose.
 
 One box. Append a line and leave. Under fifteen seconds, and it must never
 require a decision to file — naming a thing requires understanding it, and at
@@ -277,15 +280,20 @@ A running session's output, streamed to a browser tab. **Not the session list:**
 that says which sessions exist, this is what one of them is saying.
 
 Must answer, from a phone, off the home network: is this session running, and
-what has it just said? A dropped connection must reconnect and replay what was
-missed without the owner wondering whether walking into a lift killed the work.
+what has it just said? A dropped connection must reconnect and show what is
+there now, without the owner wondering whether walking into a lift killed the
+work. This asked for a *replay* until 2026-09-10, which is how it was built and
+is not how it works: the stream carries whole screens rather than bytes, so there
+is no gap to replay ([MUS-D-0132](../records/decisions.md#mus-d-0132)).
 A session that has **ended** must not look like one that is merely quiet — that
 confusion is most of what this surface exists to prevent.
 
 **A session Mustur started and is no longer running has this page too**, and it
 is not a terminal: where it ran, when it started, whether the conversation comes
-back, and one button that starts it again
-([MUS-D-0150](../records/decisions.md#mus-d-0150)). No Stop and no sub-agent
+back, and one button that says which of those two it is doing — **Resume it**
+where there is a conversation on disk, **Start it again** where there is not
+([MUS-D-0150](../records/decisions.md#mus-d-0150),
+[MUS-F-0116](../records/findings.md#mus-f-0116)). No Stop and no sub-agent
 drawer, because there is nothing behind it. A project Mustur never started is
 still nothing to show.
 
@@ -293,6 +301,21 @@ still nothing to show.
 with no alternative. A live terminal cannot be server-rendered. The stack table names this as the exception and keeps the rule
 for everything else; a second surface wanting script is a new decision, not a
 precedent.
+
+**A held tool call arrives at milestone 8**, and it is not a new surface. It is
+drawn in the pop-up the pane's own prompts already use
+([MUS-D-0144](../records/decisions.md#mus-d-0144)), because a session has one
+place where it asks the owner for something and that place can already be
+minimised out of the way of the terminal. What differs is where the words came
+from and what the buttons do: the CLI's own hook was told the tool and its
+input, so nothing was read off a screen, and the two buttons return a decision
+the CLI honours rather than a keypress aimed at the pane.
+
+It must say what happens if nobody presses, because that is the case it will
+mostly be in: the hook times out and the CLI draws the dialog it would have
+drawn ([MUS-D-0153](../records/decisions.md#mus-d-0153)). A held call the owner
+answers too late must say so rather than appear to have worked — the terminal
+underneath is where the answer goes by then.
 
 **Sub-agents arrived at milestone 4c**, and not by the route this file expected.
 They moved out of 4b on MUS-Q-0017 because showing them requires Mustur to know

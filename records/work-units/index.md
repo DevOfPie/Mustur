@@ -23,6 +23,7 @@ is a copy that will drift.
 
 | Unit | Title | Date |
 | --- | --- | --- |
+| [HRD-W-0001](HRD-W-0001.md) | Group save sharing in the DevOfPie fork | 2026-09-13 |
 | [MUS-W-0001](MUS-W-0001.md) | An identifier scheme records can be addressed by | 2026-08-19 |
 | [MUS-W-0002](MUS-W-0002.md) | An insert-only store with a materialized latest | 2026-08-19 |
 | [MUS-W-0003](MUS-W-0003.md) | A seed that puts what already exists into the store | 2026-08-19 |
@@ -45,3 +46,4 @@ is a copy that will drift.
 | [MUS-W-0020](MUS-W-0020.md) | Accounts of Mustur's own | 2026-08-25 |
 | [MUS-W-0021](MUS-W-0021.md) | An agent carries a token | 2026-08-25 |
 | [MUS-W-0022](MUS-W-0022.md) | A CLI's prompt, read off the pane and offered as controls | 2026-09-04 |
+| [MUS-W-0023](MUS-W-0023.md) | The gate, and what it was measured against | 2026-09-10 |

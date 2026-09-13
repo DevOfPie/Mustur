@@ -259,6 +259,25 @@ func AskedBy(r record.Record) string {
 	return strings.TrimSpace(v)
 }
 
+// OfProject keeps the records whose identifier carries a prefix.
+//
+// An empty prefix keeps everything, which is the answer for a caller that wants
+// to see the whole store rather than gate one commit on part of it.
+func OfProject(records []record.Record, prefix string) []record.Record {
+	prefix = strings.TrimSpace(prefix)
+	if prefix == "" {
+		return records
+	}
+	want := prefix + "-"
+	var out []record.Record
+	for _, r := range records {
+		if strings.HasPrefix(r.ID, want) {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
 // Buried returns the open questions that block reporting work complete.
 //
 // Two ways to qualify. One was never surfaced as a prompt, so nobody was asked.

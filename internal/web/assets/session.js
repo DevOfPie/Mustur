@@ -171,11 +171,49 @@
   //
   // The HTML is the server's — every character of the pane was escaped there,
   // and the only markup in it is the spans it wrote for colour.
+  //
+  // Replacing it destroys whatever the browser had a selection anchored in, so
+  // a drag across the pane was re-anchored to the top of it on the next frame
+  // and the selection ran from there to the pointer (MUS-F-0128). Two guards,
+  // and they do different work. The first is free: a frame whose HTML is what
+  // is already on screen is not written at all, which covers the frames the
+  // server sends because the spinner turned. The second holds a changed frame
+  // back while the selection is inside #out, and paints it when the selection
+  // goes away.
+  var painted = null;
+  var pending = null;
+
+  function selecting() {
+    var sel = window.getSelection && window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return false;
+    return out.contains(sel.anchorNode) || out.contains(sel.focusNode);
+  }
+
+  // Answers whether the frame carried a change, which is a different question
+  // from whether it was drawn. A frame held back for a selection did carry one.
   function paint(html) {
+    if (html === painted || html === pending) return false;
+    // The screen is stale for as long as the selection is held, deliberately:
+    // a terminal that repaints under the thumb cannot be copied from, and the
+    // pill and the chips go on saying what the session is doing meanwhile.
+    if (selecting()) {
+      pending = html;
+      return true;
+    }
+    pending = null;
+    painted = html;
     var stick = atBottom();
     out.innerHTML = html;
     if (stick) out.scrollTop = out.scrollHeight;
+    return true;
   }
+
+  // Nothing else clears a selection, so this is where the held frame lands.
+  // selectionchange fires on collapse and on a click anywhere in the document,
+  // which is every way a selection ends.
+  document.addEventListener("selectionchange", function () {
+    if (pending !== null && !selecting()) paint(pending);
+  });
 
   // Something Mustur has to say about the session, as opposed to something the
   // session said. Appended under the screen rather than into it, because the
@@ -557,13 +595,19 @@
       // Sent with every hello and every screen, so its absence on one of those
       // means there is no prompt rather than that nothing was said.
       if (f.t === "hello" || f.t === "screen") {
-        drawPrompt(f.prompt || null);
+        panePrompt = f.prompt || null;
+        refreshDialog();
         // Sent with the same frames as the prompt, so its absence on one of
         // them means the turn ended rather than that nothing was said.
         doingNow = f.activity || null;
         showFoot();
       }
       if (f.t === "hello") {
+        // A call the CLI is holding goes with the hello, so a tab that opens
+        // or reconnects while one is waiting is shown it rather than waiting
+        // for the next tick to change something.
+        held = f.ask || null;
+        refreshDialog();
         // The first frame carries the screen as it stands, so a reconnect
         // paints immediately rather than waiting for the session to move.
         if (typeof f.screen === "string") paint(f.screen);
@@ -575,13 +619,17 @@
         // Now that the real silence is known, the pill can be honest about it.
         refreshState();
       } else if (f.t === "screen") {
-        paint(f.screen || "");
+        var moved = paint(f.screen || "");
         if (typeof f.agent === "string") doing = f.agent;
         drawChips(f.status);
-        // A frame only arrives when the screen actually changed, so its arrival
-        // is the activity. There is no replay to tell apart any more: the
-        // server has no backlog to send.
-        lastOutput = Date.now();
+        // The arrival of a frame is not the activity, which is what this used
+        // to say. The server hashes the pane before it strips the CLI's own
+        // status line, so a turning spinner is broadcast as a frame whose
+        // screen is identical to the last one (MUS-F-0135) -- and the silence
+        // counter, which is the fallback when the pane cannot be read at all,
+        // was counting those. What paint answers is whether the screen moved.
+        // There is still no replay to tell apart: the server has no backlog.
+        if (moved) lastOutput = Date.now();
         refreshState();
       } else if (f.t === "error") {
         // The server discarded a message and said so. The draft is put back,
@@ -594,6 +642,12 @@
           grow();
           showKept();
         }
+      } else if (f.t === "ask") {
+        // A tool call the CLI is holding while the owner decides. Unlike the
+        // prompt beside it, this was not read off the screen: the hook was told
+        // the tool and its input, and told the server.
+        held = f.ask || null;
+        refreshDialog();
       } else if (f.t === "agents") {
         agents = f.agents || [];
         drawAgents();
@@ -791,6 +845,11 @@
   var dlgK = document.getElementById("dlgk");
   var dlgMin = document.getElementById("dlgmin");
   var lastPrompt = null;
+  // The two things that can be in the pop-up, kept apart. A held tool call is
+  // the owner's to answer and wins; the pane's own prompt is what is drawn when
+  // there is no call waiting, and it is still there when the call clears.
+  var panePrompt = null;
+  var held = null;
   // The prompt as last drawn, so a click knows where the cursor is without
   // keeping a second copy of it.
   var lastDrawn = null;
@@ -919,6 +978,78 @@
     else showPrompt();
   }
 
+  // A tool call the CLI is holding, drawn in the same pop-up the pane's own
+  // prompts use.
+  //
+  // The same box on purpose: there is one place a session asks the owner for
+  // something, and it is already the one that can be minimised out of the way
+  // of the terminal (MUS-D-0144). What is different is where the words came
+  // from -- the hook was told the tool and its input by the CLI, so nothing
+  // here was read off a screen -- and what the buttons do. They send a decision
+  // the CLI reads back, not a keypress aimed at the pane.
+  function drawHeld(a) {
+    if (!dlg) {
+      if (!toldStale) {
+        toldStale = true;
+        note("this tab is older than the server: reload it to see held calls");
+      }
+      return;
+    }
+    var sig = "ask:" + a.id;
+    if (sig === lastPrompt) return;
+    var wasMinimised = minimised && lastPrompt !== "";
+    lastPrompt = sig;
+    // Not a pane prompt, so nothing in the click path should walk a cursor
+    // through it.
+    lastDrawn = null;
+
+    dlgT.textContent = a.tool ? a.tool + " is waiting on you" : "A tool call is waiting on you";
+    dlgB.textContent = a.summary || "";
+    // The whole call, where the summary is not the whole call. A command past
+    // the summary's length is shown clipped, and allowing a command you have
+    // only seen the first part of is a different decision from the one the
+    // agent asked for -- so the rest is here, closed, rather than nowhere.
+    if (a.input && a.input !== a.summary) {
+      var more = el("details", "askmore");
+      var sum = el("summary", "", "the whole call");
+      more.appendChild(sum);
+      more.appendChild(el("pre", "askraw", a.input));
+      dlgB.appendChild(more);
+    }
+    dlgO.textContent = "";
+    dlgO.appendChild(answerButton("allow", "Allow"));
+    dlgO.appendChild(answerButton("deny", "Deny"));
+    dlgK.textContent = "";
+    // What happens if nobody presses, said rather than left to be discovered.
+    dlgK.appendChild(el("span", "hintkey", "no answer \u00b7 the session draws its own dialog"));
+
+    if (wasMinimised) hidePrompt(dlgT.textContent);
+    else showPrompt();
+  }
+
+  function answerButton(decision, label) {
+    var b = el("button", decision === "allow" ? "on" : "", label);
+    b.type = "button";
+    b.setAttribute("data-answer", decision);
+    return b;
+  }
+
+  // What the pop-up should be showing. A held call wins: the pane's prompt can
+  // wait, and a tool call cannot -- it has a timeout running.
+  function refreshDialog() {
+    if (held) drawHeld(held);
+    else drawPrompt(panePrompt);
+  }
+
+  function sendAnswer(id, decision) {
+    if (!ws || ws.readyState !== 1) {
+      note("not sent: still reconnecting.");
+      return;
+    }
+    if (closed) return;
+    ws.send(JSON.stringify({ t: "answer", id: id, decision: decision }));
+  }
+
   if (dlgMin) {
     dlgMin.addEventListener("click", function () {
       hidePrompt(dlgT ? dlgT.textContent : "");
@@ -927,11 +1058,12 @@
 
   // Ending the session.
   //
-  // The owner asked for a confirmation prompt as well as the tick (MUS-Q-0080's
-  // note), so there are two things in front of it that fail differently: the
-  // tick is the server's and is refused without, and this is the browser's and
-  // names the session before anything is submitted. With script blocked the
-  // tick is the whole guard, which is the standing Withdraw already has.
+  // The owner asked for a confirmation prompt rather than the tick that first
+  // shipped here (MUS-Q-0080's note, and MUS-F-0103 for why the tick was wrong
+  // on this surface). So this is the only thing in front of Stop that a person
+  // sees, and it names the session before anything is submitted. The guards
+  // that do not depend on script are the origin check on the POST and the
+  // owner-only rule on any write -- neither of which the tick ever was.
   var endForm = document.getElementById("endform");
   if (endForm) {
     endForm.addEventListener("submit", function (e) {
@@ -994,6 +1126,14 @@
     if (!box) return;
     box.addEventListener("click", function (e) {
       if (!e.target.closest) return;
+      // The held call's two buttons. Checked first because they are not keys
+      // and must never fall through to a path that presses one.
+      var ans = e.target.closest("button[data-answer]");
+      if (ans) {
+        e.stopPropagation();
+        if (held) sendAnswer(held.id, ans.getAttribute("data-answer"));
+        return;
+      }
       // A key on the row — the cycler's arrows — is that key and not a move.
       var k = e.target.closest("button[data-key]");
       if (k) {

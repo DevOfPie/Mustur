@@ -9,17 +9,45 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 89 | [questions.md](questions.md) |
-| decision | 151 | [decisions.md](decisions.md) |
-| finding | 122 | [findings.md](findings.md) |
-| repository, machine, project | 4 | [routing.md](routing.md) |
-| work-unit | 22 | [work-units/index.md](work-units/index.md) |
-| investigation | 2 | [investigations/index.md](investigations/index.md) |
+| question | 119 | [questions.md](questions.md) |
+| decision | 170 | [decisions.md](decisions.md) |
+| finding | 157 | [findings.md](findings.md) |
+| repository, machine, project | 6 | [routing.md](routing.md) |
+| work-unit | 24 | [work-units/index.md](work-units/index.md) |
+| investigation | 4 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
 
 | Identifier | Kind | Title |
 | --- | --- | --- |
+| [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001) | work-unit | Group save sharing in the DevOfPie fork |
+| [HRD-Q-0001](questions.md#hrd-q-0001) | question | Which blob namespace do shared saves use, and how far may content existence leak? |
+| [HRD-Q-0002](questions.md#hrd-q-0002) | question | How does a shared save name one world's files, given a save is a whole folder today? |
+| [HRD-Q-0003](questions.md#hrd-q-0003) | question | What happens when the Host / View / Not playing prompt goes unanswered? |
+| [HRD-Q-0004](questions.md#hrd-q-0004) | question | What lease TTL and heartbeat does a hosted world use? |
+| [HRD-Q-0005](questions.md#hrd-q-0005) | question | Is the cloud stack in scope for group sharing at all? |
+| [HRD-Q-0006](questions.md#hrd-q-0006) | question | When is the design offered to upstream: before code, after phase 1 works, or not at all? |
+| [HRD-Q-0007](questions.md#hrd-q-0007) | question | Re-asking how a shared save names one world's files, with your question answered |
+| [HRD-Q-0008](questions.md#hrd-q-0008) | question | Does phase 1, the server half, start in this session or after you read the plan? |
+| [HRD-Q-0009](questions.md#hrd-q-0009) | question | Which address did you give the desktop app, and what exactly does it say when it refuses the key? |
+| [HRD-Q-0010](questions.md#hrd-q-0010) | question | How do you and your testers get fork builds of the desktop client, and how do those clients update? |
+| [HRD-Q-0011](questions.md#hrd-q-0011) | question | Where is the fork's release signing key generated, and who holds the secret half? |
+| [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
+| [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
+| [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
+| [HRD-D-0004](decisions.md#hrd-d-0004) | decision | Only the self-hosted stack is built, shaped so the cloud stack could follow |
+| [HRD-D-0005](decisions.md#hrd-d-0005) | decision | The fork is the product; nothing is offered upstream on a schedule |
+| [HRD-D-0006](decisions.md#hrd-d-0006) | decision | A shared save names its files with a per-save include filter, set from a per-game template |
+| [HRD-D-0007](decisions.md#hrd-d-0007) | decision | The plan is approved and phase 1 starts |
+| [HRD-D-0008](decisions.md#hrd-d-0008) | decision | The fork publishes its own signed desktop releases and its clients update from them |
+| [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
+| [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
+| [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
+| [HRD-F-0004](findings.md#hrd-f-0004) | finding | Upstream moved 244 commits in 30 days, so the fork's changes must be additive |
+| [HRD-F-0005](findings.md#hrd-f-0005) | finding | The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message |
+| [HRD-F-0006](findings.md#hrd-f-0006) | finding | The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning |
+| [HRD-F-0007](findings.md#hrd-f-0007) | finding | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |
+| [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
 | [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
@@ -59,6 +87,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0020](work-units/MUS-W-0020.md#mus-w-0020) | work-unit | Accounts of Mustur's own |
 | [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
 | [MUS-W-0022](work-units/MUS-W-0022.md#mus-w-0022) | work-unit | A CLI's prompt, read off the pane and offered as controls |
+| [MUS-W-0023](work-units/MUS-W-0023.md#mus-w-0023) | work-unit | The gate, and what it was measured against |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -148,6 +177,25 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0087](questions.md#mus-q-0087) | question | Does a green change deploy itself, or does every deploy wait for you? |
 | [MUS-Q-0088](questions.md#mus-q-0088) | question | One session's deploy kills every other session's turn, and deploying no longer asks |
 | [MUS-Q-0089](questions.md#mus-q-0089) | question | Forty-seven commits sit on this machine and nothing since pull request 34 has been pushed |
+| [MUS-Q-0090](questions.md#mus-q-0090) | question | Does LinkCtrl declare StrucGu adoption now, or does milestone 7 derive the mapping when it starts? |
+| [MUS-Q-0091](questions.md#mus-q-0091) | question | What moves into Mustur: LinkCtrl's 947 existing records, or only what is written after the transition? |
+| [MUS-Q-0092](questions.md#mus-q-0092) | question | Where is the boundary of 'all agent documentation' in LinkCtrl: the records, the rules too, or the scope contract as well? |
+| [MUS-Q-0093](questions.md#mus-q-0093) | question | Records only does not align with the note, in two places: Plan.md carries milestone rows Mustur handles, and three trackers have no kind at all |
+| [MUS-Q-0094](questions.md#mus-q-0094) | question | Investigation 0003 came back a pass. Does the session channel become milestone 8, and in which shape? |
+| [MUS-Q-0095](questions.md#mus-q-0095) | question | A stacked branch needs its remote rewritten every time its base gains a fix. Is a force push mine to make? |
+| [MUS-Q-0096](questions.md#mus-q-0096) | question | How long does a held tool call wait for you before the session takes it back? |
+| [MUS-Q-0097](questions.md#mus-q-0097) | question | The gate is built and green. Does it go live on your own sessions, and on by default? |
+| [MUS-Q-0098](questions.md#mus-q-0098) | question | The prompt and the answer cannot both use the pane. Which one gives way? |
+| [MUS-Q-0099](questions.md#mus-q-0099) | question | There is a second person with a passkey. Is milestone 6 met, and what is left before it can be? |
+| [MUS-Q-0100](questions.md#mus-q-0100) | question | Your sessions run in auto mode, where the gate stands down. Should it hold calls there anyway? |
+| [MUS-Q-0101](questions.md#mus-q-0101) | question | Claude updates itself under a running session. Does taking the update get a control, or stay two presses? |
+| [MUS-Q-0102](questions.md#mus-q-0102) | question | Should the session picker say which sessions are working and which are waiting? |
+| [MUS-Q-0103](questions.md#mus-q-0103) | question | A jot takes six pictures, which multiplies what one request can carry by six. Is six yours? |
+| [MUS-Q-0104](questions.md#mus-q-0104) | question | What counts as idle enough to restart a session under you, and what is never restarted? |
+| [MUS-Q-0105](questions.md#mus-q-0105) | question | Re-asking what the picker should say, with your premise correction folded in and a fourth option |
+| [MUS-Q-0106](questions.md#mus-q-0106) | question | The seven rebased branches need landing without rewriting anything you would mind rewriting |
+| [MUS-Q-0107](questions.md#mus-q-0107) | question | How should the Hoard group-sharing work enter Mustur, given onboarding a repository is its own milestone? |
+| [MUS-Q-0108](questions.md#mus-q-0108) | question | Re-asking how Hoard enters Mustur, with your question answered and a fourth option |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -299,6 +347,17 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0149](decisions.md#mus-d-0149) | decision | A session lost with the machine is written down and offered back, and nothing starts on its own |
 | [MUS-D-0150](decisions.md#mus-d-0150) | decision | The picker carries what is not running, and the button is on the page it lands on |
 | [MUS-D-0151](decisions.md#mus-d-0151) | decision | The tmux server is spawned in a scope of its own, so a deploy stops ending every session |
+| [MUS-D-0152](decisions.md#mus-d-0152) | decision | The session channel is milestone 8, and it is this vendor's hooks rather than a module boundary |
+| [MUS-D-0153](decisions.md#mus-d-0153) | decision | Mustur gates the tools it names, and never allows what the CLI would have asked about |
+| [MUS-D-0154](decisions.md#mus-d-0154) | decision | The gate declines two more kinds of call than MUS-D-0153 said, and the surface clears one it cannot answer |
+| [MUS-D-0155](decisions.md#mus-d-0155) | decision | A held call waits five minutes, and when it stops being held the question is still Mustur's to answer |
+| [MUS-D-0156](decisions.md#mus-d-0156) | decision | In a session Mustur started, Mustur is the prompt |
+| [MUS-D-0157](decisions.md#mus-d-0157) | decision | Milestone 6 is not met: the person exists and the reading has not happened |
+| [MUS-D-0158](decisions.md#mus-d-0158) | decision | The gate respects the permission mode, and is therefore inert in ordinary use here |
+| [MUS-D-0159](decisions.md#mus-d-0159) | decision | Mustur restarts a session to take a CLI update, which is the first thing it does on its own |
+| [MUS-D-0160](decisions.md#mus-d-0160) | decision | A jot takes six pictures, and six is the owner's number rather than the agent's |
+| [MUS-D-0161](decisions.md#mus-d-0161) | decision | The hub polls every owned session, and the reader stops being a thing a viewer starts |
+| [MUS-D-0162](decisions.md#mus-d-0162) | decision | A new project with no records moves in as an ordinary project, not as a milestone |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -416,9 +475,40 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0115](findings.md#mus-f-0115) | finding | A restored session shows a blank terminal with no sign that it is still loading |
 | [MUS-F-0116](findings.md#mus-f-0116) | finding | The session is restored not started over, the button text and descriptions are all wrong |
 | [MUS-F-0117](findings.md#mus-f-0117) | finding | Two sessions started from the surface share one working tree, and nothing says so |
+| [MUS-F-0118](findings.md#mus-f-0118) | finding | Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven |
+| [MUS-F-0119](findings.md#mus-f-0119) | finding | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses |
+| [MUS-F-0120](findings.md#mus-f-0120) | finding | PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog |
+| [MUS-F-0121](findings.md#mus-f-0121) | finding | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog |
+| [MUS-F-0122](findings.md#mus-f-0122) | finding | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had |
+| [MUS-F-0123](findings.md#mus-f-0123) | finding | The captured panes are all one version, and two of them are trials the write-up never names |
+| [MUS-F-0124](findings.md#mus-f-0124) | finding | An agent read a prompt's return value as permission to rewrite a published branch |
+| [MUS-F-0125](findings.md#mus-f-0125) | finding | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog |
+| [MUS-F-0126](findings.md#mus-f-0126) | finding | A reader was offered the one tab that refuses them, because no surface knew who was reading it |
+| [MUS-F-0127](findings.md#mus-f-0127) | finding | Acceptance gates four rules, and nothing defines the act, records it, or tells the two states apart |
+| [MUS-F-0128](findings.md#mus-f-0128) | finding | If i try to select text in the sessions the selection jumps to include the start of the tmux… |
+| [MUS-F-0129](findings.md#mus-f-0129) | finding | The gate cannot fire on the deployment it runs on, because the owner's default mode is one the CLI never prompts in |
+| [MUS-F-0130](findings.md#mus-f-0130) | finding | I cannot submit multiple pictures in one intake jot |
+| [MUS-F-0131](findings.md#mus-f-0131) | finding | The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the… |
+| [MUS-F-0132](findings.md#mus-f-0132) | finding | The second picture of MUS-F-0131, filed as its own record because a jot took one |
+| [MUS-F-0133](findings.md#mus-f-0133) | finding | The third picture of MUS-F-0131, filed as its own record because a jot took one |
+| [MUS-F-0134](findings.md#mus-f-0134) | finding | How do we handle stopping and restarting sessions around claude updates? |
+| [MUS-F-0135](findings.md#mus-f-0135) | finding | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame |
+| [MUS-F-0136](findings.md#mus-f-0136) | finding | A bare form rule written for the composer draws a line across three forms that never asked for one |
+| [MUS-F-0137](findings.md#mus-f-0137) | finding | A question answered with a question is recorded as answered, and leaves the queue settled |
+| [MUS-F-0138](findings.md#mus-f-0138) | finding | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft |
+| [MUS-F-0139](findings.md#mus-f-0139) | finding | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository |
+| [MUS-F-0140](findings.md#mus-f-0140) | finding | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute |
+| [MUS-F-0141](findings.md#mus-f-0141) | finding | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered |
+| [MUS-F-0142](findings.md#mus-f-0142) | finding | One project's unsurfaced question fails every other project's commit gate |
+| [MUS-F-0143](findings.md#mus-f-0143) | finding | After I close a session the create a session screen shows up instead of the top session and I… |
+| [MUS-F-0144](findings.md#mus-f-0144) | finding | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |
+| [MUS-F-0145](findings.md#mus-f-0145) | finding | A session restarted under the same name kept tmux's 80x24, so it had no scrollback |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
+| [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
+| [MUS-R-0002](routing.md#mus-r-0002) | repository | DevOfPie/hoard |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |
 | [MUS-P-0002](routing.md#mus-p-0002) | project | Idea inbox |
+| [MUS-P-0003](routing.md#mus-p-0003) | project | Hoard |

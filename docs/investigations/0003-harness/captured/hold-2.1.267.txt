@@ -1,0 +1,3 @@
+trial 40  timeout=20s  the CLI drew its own dialog    after 21.2s
+trial 41  timeout=20s  the CLI drew its own dialog    after 21.4s
+trial 42  timeout=20s  the CLI drew its own dialog    after 21.3s

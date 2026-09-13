@@ -178,7 +178,7 @@ func (in *Intake) now() time.Time {
 
 func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	p := page{
-		ShowSessions: in.ShowSessions,
+		ShowSessions: in.ShowSessions && CanWrite(r),
 		ShowAccount:  in.ShowAccount,
 		Filed:        r.URL.Query().Get("filed"),
 		Routed:       r.URL.Query().Get("routed"),
@@ -215,10 +215,13 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// the whole requirement.
 	//
 	// An image raises the ceiling but does not remove it: MaxJot for the words,
-	// plus room for one picture and the multipart framing around it.
-	r.Body = http.MaxBytesReader(w, r.Body, MaxJot+store.MaxAttachment+(1<<16))
+	// plus room for the pictures a jot may carry and the multipart framing
+	// around them. Sized from MaxImages, so the cap and the count cannot drift
+	// apart -- a second picture used to bounce off this reader as a form-parse
+	// failure rather than as anything a person could act on.
+	r.Body = http.MaxBytesReader(w, r.Body, MaxJot+MaxImages*store.MaxAttachment+(1<<16))
 	if err := r.ParseMultipartForm(1 << 20); err != nil && !errors.Is(err, http.ErrNotMultipart) {
-		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
 	text := r.PostFormValue("jot")
@@ -228,16 +231,16 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	if len(text) > MaxJot {
 		render(w, page{
 			Error:   "that is longer than this box takes; it is for a line, not a document",
-			Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+			Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
 		})
 		return
 	}
 
-	// Read the image before the record is written, so a picture this refuses
+	// Read the images before the record is written, so a picture this refuses
 	// does not leave a jot behind claiming to have one.
-	image, imageErr := readImage(r)
+	images, imageErr := readImages(r)
 	if imageErr != nil {
-		render(w, page{Error: imageErr.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		render(w, page{Error: imageErr.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
 	// Scratch: filed beside the records rather than among them. It takes no
@@ -247,15 +250,15 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		sc, err := in.Store.Scratched(r.Context(), text, in.actor(r))
 		if err != nil {
 			render(w, page{Error: err.Error(), Project: in.Project, Jot: text,
-				ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+				ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 			return
 		}
-		if len(image) > 0 {
+		if len(images) > 0 {
 			// Attached to the scratch row's own id, so the sweep takes the
-			// picture with the note rather than leaving it unreachable.
-			if _, err := in.Store.Attach(r.Context(), sc.ID, image, in.actor(r)); err != nil {
-				render(w, page{Error: "kept the note, but not the image: " + err.Error(),
-					Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+			// pictures with the note rather than leaving them unreachable.
+			if n, err := attachAll(r.Context(), in.Store, sc.ID, images, in.actor(r)); err != nil {
+				render(w, page{Error: fmt.Sprintf("kept the note, and %d of %d images: %s", n, len(images), err),
+					Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 				return
 			}
 		}
@@ -277,16 +280,18 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		// failure this surface cannot have, above code that dropped it: the
 		// page had no field for it and the textarea came back empty. On a
 		// phone that is a thumb-typed paragraph gone.
-		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount})
+		render(w, page{Error: err.Error(), Project: in.Project, Jot: text, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
-	if len(image) > 0 {
-		if _, err := in.Store.Attach(r.Context(), rec.ID, image, in.actor(r)); err != nil {
-			// The jot is already filed and is worth more than the picture. Say
-			// what happened rather than losing the words to a failed image.
+	if len(images) > 0 {
+		if n, err := attachAll(r.Context(), in.Store, rec.ID, images, in.actor(r)); err != nil {
+			// The jot is already filed and is worth more than the pictures. Say
+			// what happened, and how many landed, rather than losing the words
+			// to a failed image.
 			render(w, page{
-				Error:   "filed " + rec.ID + ", but the image was not stored: " + err.Error(),
-				Project: in.Project, ShowSessions: in.ShowSessions, ShowAccount: in.ShowAccount,
+				Error: fmt.Sprintf("filed %s with %d of %d images; the rest were not stored: %s",
+					rec.ID, n, len(images), err),
+				Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
 			})
 			return
 		}
@@ -304,40 +309,79 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, q, http.StatusSeeOther)
 }
 
-// readImage takes the one picture a jot may carry.
+// MaxImages is how many pictures one jot may carry.
 //
-// Nothing about the upload is trusted: not its name, which is never stored, not
+// The report that asked for more than one needed three (MUS-F-0131, filed as
+// three records because the box took one each). Six is double that, and it is
+// the owner's number: MUS-D-0119 set the per-picture ceiling deliberately at ten
+// megabytes and this multiplies what one POST can carry by six, so it was theirs
+// to set rather than a comment's. They set it on MUS-Q-0103, and MUS-D-0160
+// records why it was asked at all. MaxBytesReader in file() above is computed
+// from this constant rather than written beside it, so the two cannot drift --
+// which also means raising it raises what a request can push through the
+// ingress, and raising it is theirs too.
+const MaxImages = 6
+
+// readImages takes the pictures a jot may carry.
+//
+// Nothing about an upload is trusted: not its name, which is never stored, not
 // its Content-Type, which the sender also chose, and not its length, which is
 // bounded by the reader rather than believed from a header. What comes back is
 // bytes, and store.Attach decides whether they are an image.
-func readImage(r *http.Request) ([]byte, error) {
+//
+// All of them are read and checked before any of them is stored, for the same
+// reason one was: a picture this refuses must not leave a jot behind claiming
+// to have it. With several, that also means a bad third picture refuses the
+// whole submission rather than filing a jot with two.
+func readImages(r *http.Request) ([][]byte, error) {
 	if r.MultipartForm == nil {
 		return nil, nil
 	}
-	f, _, err := r.FormFile("image")
-	if errors.Is(err, http.ErrMissingFile) {
+	parts := r.MultipartForm.File["image"]
+	if len(parts) == 0 {
 		return nil, nil
 	}
-	if err != nil {
-		return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+	if len(parts) > MaxImages {
+		return nil, fmt.Errorf("that is %d pictures; a jot takes %d", len(parts), MaxImages)
 	}
-	defer f.Close()
+	images := make([][]byte, 0, len(parts))
+	for _, part := range parts {
+		f, err := part.Open()
+		if err != nil {
+			return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+		}
+		// One byte past the limit is enough to know it is too big, and stops a
+		// large upload being read into memory in full only to be refused.
+		data, err := io.ReadAll(io.LimitReader(f, store.MaxAttachment+1))
+		f.Close()
+		if err != nil {
+			return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+		}
+		if len(data) > store.MaxAttachment {
+			return nil, store.ErrTooLarge
+		}
+		// An empty part is a file field the browser submitted with nothing in
+		// it, which is what a phone does when the picker is opened and
+		// cancelled. Not an error, and not a picture either.
+		if len(data) == 0 {
+			continue
+		}
+		if _, err := store.ImageType(data); err != nil {
+			return nil, err
+		}
+		images = append(images, data)
+	}
+	return images, nil
+}
 
-	// One byte past the limit is enough to know it is too big, and stops a
-	// large upload being read into memory in full only to be refused.
-	data, err := io.ReadAll(io.LimitReader(f, store.MaxAttachment+1))
-	if err != nil {
-		return nil, fmt.Errorf("that image did not arrive intact: %w", err)
+// attachAll stores the pictures against a record, and says how many landed.
+func attachAll(ctx context.Context, st *store.Store, recordID string, images [][]byte, actor string) (int, error) {
+	for i, img := range images {
+		if _, err := st.Attach(ctx, recordID, img, actor); err != nil {
+			return i, err
+		}
 	}
-	if len(data) > store.MaxAttachment {
-		return nil, store.ErrTooLarge
-	}
-	// Decided here, before the record is written. Leaving it to Attach meant a
-	// refused picture had already left a jot behind claiming to have one.
-	if _, err := store.ImageType(data); err != nil {
-		return nil, err
-	}
-	return data, nil
+	return len(images), nil
 }
 
 // actor is who filed a jot. Cloudflare Access puts the authenticated identity
@@ -510,9 +554,9 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <form method="post" action="/intake" enctype="multipart/form-data">
   <textarea name="jot" autofocus spellcheck="true" autocapitalize="sentences" autocorrect="on"
             placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
-  <label class="pic">A picture, if a picture says it faster
-    <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
-    <small>Held privately. The record carries what an agent reads in it, never the picture.</small>
+  <label class="pic">Pictures, if a picture says it faster
+    <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp" multiple>
+    <small>Held privately. The record carries what an agent reads in them, never the pictures.</small>
   </label>
   <label class="to"><span>Where</span>
     <select name="to">

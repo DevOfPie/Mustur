@@ -4,7 +4,7 @@
 
 Where work goes and which machine holds it.
 
-4 record(s), by identifier.
+6 record(s), by identifier.
 
 ---
 
@@ -26,6 +26,24 @@ Mustur's own checkout. The only repository in this registry: a routing row for a
 
 ---
 
+## MUS-R-0002
+
+**DevOfPie/hoard**
+
+repository · 2026-09-13
+
+The fork of rleeon/hoard where co-op group save sharing is built: shared worlds any member can host, with a per-world lease lock. Upstream bans agent files in commits, so everything Mustur places in this checkout sits in paths upstream's .gitignore or the checkout's .git/info/exclude already cover, and nothing of Mustur's is ever committed here.
+
+| Field | Value |
+| --- | --- |
+| Remote | https://github.com/DevOfPie/hoard |
+| Upstream | https://github.com/rleeon/hoard |
+| Checkout on MUS-H-0001 | ~/repos/DevOfPie/hoard |
+| Machine | MUS-H-0001 |
+| Contract | AGENTS.md and CONTRIBUTING.md, upstream's |
+
+---
+
 ## MUS-H-0001
 
 **whippy-vm**
@@ -37,7 +55,7 @@ The machine holding the checkout and, later, the adapter that supervises session
 | Field | Value |
 | --- | --- |
 | Role | checkout host |
-| Repositories | MUS-R-0001 |
+| Repositories | MUS-R-0001, MUS-R-0002 |
 
 ---
 
@@ -72,3 +90,20 @@ Where a jot goes when no destination is obvious. A routing target inside Mustur,
 | Intake | default |
 | Prefix | IDW |
 | Aliases | inbox, ideas |
+
+---
+
+## MUS-P-0003
+
+**Hoard**
+
+project · 2026-09-13
+
+Co-op group save sharing built into Hoard: any member of a group can host a shared world, with a lease lock taken only on the world being played. Records for this project file under HRD. It moved in as an ordinary project rather than as a milestone, because it brings no existing records to map.
+
+| Field | Value |
+| --- | --- |
+| Prefix | HRD |
+| Aliases | hoard, save sharing |
+| Repositories | MUS-R-0002 |
+| Machines | MUS-H-0001 |

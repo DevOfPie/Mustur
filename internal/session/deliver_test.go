@@ -13,7 +13,14 @@ type sender struct {
 	sendErr error
 	sent    string
 	project string
+	// dialog is what the pane is showing. Empty is the ordinary case; a
+	// non-empty one is the case MUS-F-0125 measured, where a paste and its
+	// Enter operate the dialog instead of reaching the agent.
+	dialog    string
+	dialogErr error
 }
+
+func (s *sender) Dialog(context.Context, string) (string, error) { return s.dialog, s.dialogErr }
 
 func (s *sender) Alive(context.Context, string) (bool, error) { return s.live, s.liveErr }
 
@@ -99,5 +106,74 @@ func TestARelayedAnswerDoesNotArriveWearingTheOwnersName(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("relayed text is missing %q: %q", want, got)
 		}
+	}
+}
+
+// A dialog on the screen eats the paste and is pressed by the Enter behind it,
+// so nothing is sent at all. Measured against the real CLI on 2026-09-10: the
+// answer was nowhere on the pane afterwards and the model picker had been
+// pressed.
+func TestNothingIsDeliveredIntoADialog(t *testing.T) {
+	s := &sender{live: true, dialog: "Select model"}
+	got := Deliver(context.Background(), s, "Mustur", "MUS-Q-0001", "Split it.")
+
+	if s.sent != "" {
+		t.Fatalf("typed %q into a pane showing a dialog", s.sent)
+	}
+	for _, want := range []string{"not delivered", "Select model", "in the queue"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("record says %q, want it to mention %q", got, want)
+		}
+	}
+}
+
+// A screen that cannot be read is not a dialog. Refusing on a failed read would
+// make an unreadable pane and a dialog the same thing, and the common case is
+// that there is no dialog at all.
+func TestAnUnreadablePaneIsDeliveredInto(t *testing.T) {
+	s := &sender{live: true, dialogErr: fmt.Errorf("no server running")}
+	got := Deliver(context.Background(), s, "Mustur", "MUS-Q-0001", "Split it.")
+
+	if s.sent == "" {
+		t.Fatalf("nothing was delivered because the pane could not be read: %q", got)
+	}
+}
+
+// The session name tmux gives you is a name delivery accepts.
+//
+// A session raising a question knows itself as "mustur/Hoard_Work", because
+// that is what tmux reports. Passing it to --in produced a question whose
+// answer could never arrive: delivery prepends the prefix again and a project
+// name may not contain a slash. The owner met it as "not delivered" on an
+// answer they had already given (MUS-F-0141).
+func TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject(t *testing.T) {
+	for _, name := range []string{"Hoard_Work", "mustur/Hoard_Work", "  mustur/Hoard_Work  "} {
+		if got := ProjectFrom(name); got != "Hoard_Work" {
+			t.Errorf("ProjectFrom(%q) = %q, want Hoard_Work", name, got)
+		}
+	}
+
+	for _, name := range []string{"Hoard_Work", "mustur/Hoard_Work"} {
+		s := &sender{live: true}
+		said := Deliver(context.Background(), s, name, "HRD-Q-0006", "Fork only")
+		if strings.Contains(said, "not delivered") {
+			t.Errorf("%q: %s", name, said)
+		}
+		// And it reaches the project, not the session name with the prefix on.
+		if s.project != "Hoard_Work" {
+			t.Errorf("%q was delivered to %q", name, s.project)
+		}
+	}
+}
+
+// A name that is wrong for some other reason still says so.
+func TestANameThatIsActuallyWrongIsStillRefused(t *testing.T) {
+	s := &sender{live: true}
+	said := Deliver(context.Background(), s, "two words", "MUS-Q-0001", "yes")
+	if !strings.Contains(said, "not delivered") {
+		t.Errorf("a name with a space was delivered to: %s", said)
+	}
+	if s.sent != "" {
+		t.Error("something was typed into a session that cannot be named")
 	}
 }

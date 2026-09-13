@@ -186,7 +186,7 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	page := queuePage{
-		ShowSessions: q.ShowSessions,
+		ShowSessions: q.ShowSessions && CanWrite(r),
 		ShowAccount:  q.ShowAccount,
 		Project:      q.Project,
 		Open:         openQs,

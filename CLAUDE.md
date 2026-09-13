@@ -34,7 +34,10 @@ question named one with `--in`, which is the only way delivery has a target.
 It shows a running session's screen in a browser tab and notices when one ends
 — the screen tmux has already assembled, polled and re-rendered when it
 changes, rather than the pane's raw byte protocol appended to a log
-([MUS-D-0132](records/decisions.md#mus-d-0132)). There is no pipe, no byte
+([MUS-D-0132](records/decisions.md#mus-d-0132)). The one time it is not
+re-rendered is while you have a selection held inside it, which is what makes
+the terminal something text can be copied out of
+([MUS-F-0128](records/findings.md#mus-f-0128)). There is no pipe, no byte
 offset and no replay: a tab that reconnects is handed the screen as it stands.
 Sessions Mustur starts are **100x300**, because an agent CLI runs on the
 alternate screen and tmux keeps no scrollback for one — a tall pane is the only
@@ -74,17 +77,41 @@ the command line Mustur builds. The session picker is a dropdown for the same
 reason the intake destinations are
 ([MUS-D-0121](records/decisions.md#mus-d-0121)): a row that scrolls sideways
 hides its last choice behind a swipe.
-**It does not restart anything** — an agent CLI that crashed wants a person, not
-a loop. A reboot ends every session and no process survives one, so what Mustur
-does instead is remember: since 2026-09-07 `Start` writes down which project,
-where and what it ran, and the CLI's own `SessionStart` hook adds the identifier
-of the conversation it is having, which is the only place that identifier is
-published ([MUS-D-0149](records/decisions.md#mus-d-0149), on the owner's answer
+**It restarts exactly one thing, and a crash is not it.** An agent CLI that died
+wants a person, not a loop: nothing here knows why it died, so nothing here can
+know that starting it again is right. A reboot ends every session and no process
+survives one, so what Mustur does instead is remember: since 2026-09-07 `Start`
+writes down which project, where and what it ran, and the CLI's own
+`SessionStart` hook adds the identifier of the conversation it is having, which
+is the only place that identifier is published
+([MUS-D-0149](records/decisions.md#mus-d-0149), on the owner's answer
 to [MUS-Q-0083](records/questions.md#mus-q-0083)). The page that starts
 a session then lists what is written down and no longer running, with a button
 that starts each one again on its own transcript — a person pressing it, never a
 timer. Stopping a session deletes its row, so what is offered back is only what
-went without being told to. tmux is still the only answer to what is *running*
+went without being told to.
+
+The exception the owner granted is a **CLI update**
+([MUS-D-0159](records/decisions.md#mus-d-0159), on
+[MUS-Q-0101](records/questions.md#mus-q-0101)). A CLI that has printed `Update
+installed · Restart to update` has said what it wants, and Mustur already reads
+that line off the pane. So a sweep takes it — but only for a session that is at
+its prompt with **nothing typed into the box**, with **no browser tab open on
+it**, and whose screen has **not changed for thirty minutes**, every clause of
+which is the owner's on [MUS-Q-0104](records/questions.md#mus-q-0104). Whether a
+turn is in flight is read off the pane rather than timed, so the dwell is not
+guarding against that; it is the gap between a turn ending and whoever asked for
+it reading the answer. A terminal attached to the session counts the same as a
+tab, because it is the same presence by another route. Whether anything is typed
+into the *pane's* box is read as a yes or no and never as text — and that is a
+narrower guard than it first looks: a draft written in Mustur's composer lives
+in the browser until Send, so a restart cannot destroy it and never could. What
+the box catches is a line typed by somebody attached in a terminal. The box is
+also not empty when it looks empty, because the CLI draws a dim suggestion into
+it, and reading that as somebody's draft would have stopped the sweep ever
+firing ([MUS-F-0138](records/findings.md#mus-f-0138)). The sweep rides on `--sessions`: dropping the flag removes it along with
+the surface. It is the only code here that acts on a running agent with nobody
+pressing anything. tmux is still the only answer to what is *running*
 ([MUS-D-0062](records/decisions.md#mus-d-0062)): with tmux unreachable nothing
 is offered rather than everything.
 
@@ -106,10 +133,21 @@ the mandate could not both be on — measured, not reasoned.
 `mustur account tokens` says which exist; a session refused with 403 on `/mcp`
 is missing one rather than looking at a stopped server.
 
-Nothing below 5c is built; do not describe any of it in the present tense.
+**Milestone 8 is built and not merged**: a tool call in a named set reaches the
+session view because the CLI's own hook told Mustur about it, and the owner's
+press returns a decision the CLI honours rather than a keypress aimed at the
+pane. Nothing is allowed without a press, and an unanswered call times out into
+the dialog the CLI would have drawn, so the pane parser is the fallback rather
+than retired ([MUS-D-0152](records/decisions.md#mus-d-0152),
+[MUS-D-0153](records/decisions.md#mus-d-0153),
+[MUS-D-0154](records/decisions.md#mus-d-0154)). Nothing below milestone 8 is
+built; do not describe any of it in the present tense.
 
-**Every page carries a script now, and two kinds carry a second.** The badge in
-the tab bar is live on every surface since
+**Every page that draws the tab bar carries a script now, and two kinds carry a
+second.** Sign-in and accepting an invitation draw no bar and carry only the
+ceremony script; the page shown when an invitation has already been used carries
+nothing at all. The badge in the tab bar is live on every surface that has one,
+since
 [MUS-Q-0078](records/questions.md#mus-q-0078): a page left open used to show the
 count it was rendered with, and the owner missed a question being raised because
 of it. `bar.js` polls `/questions/count` and writes the badge, and it is the only
@@ -128,9 +166,9 @@ took, never a precedent set by building it: the composer on
 
 **What the rule counts is still open** on
 [MUS-Q-0053](records/questions.md#mus-q-0053), and MUS-Q-0078 moved the numbers
-rather than settling it: the count of pages shipping a `<script>` tag is now all
-of them, and the count that matters — pages that stop working without one — is
-unchanged at two.
+rather than settling it: the count of pages shipping a `<script>` tag is now
+every page that draws the bar, and the count that matters — pages that stop
+working without one — is unchanged at two.
 
 They are not the same kind of exception. The session view cannot be
 server-rendered at all: it is a live terminal, and neither can the passkey
@@ -160,9 +198,24 @@ Three rules bind every session in this repository:
 - **No file in any other project is touched.** Not read for restructuring, not
   edited, not migrated. Onboarding another project is a milestone with its own
   verdict.
-- **Every decision or question for the owner goes in a prompt**, never in prose,
-  a report or a pull request body. A pull request out of draft says work needs
+- **Every decision or question for the owner goes in Mustur**, never in prose, a
+  report or a pull request body. A pull request out of draft says work needs
   review; it never asks a decision.
+
+  **In a session Mustur started, Mustur is the prompt.** Raising the question is
+  showing it: it is on the queue, the badge that counts it is live on every
+  surface, and — this is the point — the pane stays clear for the answer to land
+  in. A prompt on the screen is a dialog, and an answer delivered into a session
+  showing one goes into the dialog rather than to the agent, and the Enter behind
+  it presses whatever the dialog had selected
+  ([MUS-F-0125](records/findings.md#mus-f-0125),
+  [MUS-D-0156](records/decisions.md#mus-d-0156)). So `mustur ask --in <this
+  session>` records the question as surfaced by the raising, and raising a
+  second prompt for it is how the answer gets lost.
+
+  Outside a session Mustur started there is nothing to deliver into and no badge
+  the owner is watching, so a prompt is still owed and `mustur surfaced <ID>`
+  still says it happened.
 
   This one is enforced rather than trusted. Raise it with
 
@@ -177,7 +230,8 @@ Three rules bind every session in this repository:
   outcome for a question raised outside a session Mustur started — and the
   common one, since most are.
 
-  then put it in a prompt and `mustur surfaced <ID>`. **Give it options.** You
+  then, if the session is not one Mustur started, put it in a prompt and
+  `mustur surfaced <ID>`. **Give it options.** You
   have just finished weighing the alternatives — that is why you are blocked —
   and a bare question makes the owner reconstruct them. Prefix one option's line
   with `Recommended` if you have a view. Omit them only when the question

@@ -4,12 +4,19 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-122 record(s), by identifier.
+157 record(s), by identifier.
 
 ## The queue
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
+| [HRD-F-0001](#hrd-f-0001) | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |  |  |
+| [HRD-F-0002](#hrd-f-0002) | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |  | claim to verify; owner has the game, this VM does not |
+| [HRD-F-0003](#hrd-f-0003) | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |  |  |
+| [HRD-F-0004](#hrd-f-0004) | Upstream moved 244 commits in 30 days, so the fork's changes must be additive |  |  |
+| [HRD-F-0005](#hrd-f-0005) | The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message |  | defect noted, not fixed; upstream-relevant |
+| [HRD-F-0006](#hrd-f-0006) | The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning |  |  |
+| [HRD-F-0007](#hrd-f-0007) | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -121,8 +128,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0104](#mus-f-0104) | A dialog of toggles could be read and not used | TestClickingARowWalksTheCursorToIt holds that rows are clickable, that the walk reads the cursor from the frame it was drawn from, that it goes both ways, that a cycler row offers its own two keys, and that pressing one of those does not also walk the cursor. | fixed |
 | [MUS-F-0105](#mus-f-0105) | An answer was delivered into a session that never saw it, and the record says it was typed in |  |  |
 | [MUS-F-0106](#mus-f-0106) | Every redeploy kills every session, because the tmux server lives in the service's cgroup |  |  |
-| [MUS-F-0107](#mus-f-0107) | There is still a divider line above the stop button where the checkbox was on top of |  | unreviewed |
-| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… |  | unreviewed |
+| [MUS-F-0107](#mus-f-0107) | There is still a divider line above the stop button where the checkbox was on top of | A bare form rule sets border-top and padding for the composer, which declares neither of its own. .endform declared display and flex and nothing else, so the border applied to it -- which is also why the removed tick sat on top of the button rather than beside it, the column direction coming from the same rule. TestNothingDrawsALineAboveStop asserts .endform undoes it. | fixed |
+| [MUS-F-0108](#mus-f-0108) | The selector drop-down on the session tab should show the name of each session and the project… | Every option was the session's name and nothing else, on all three of the template's option sites. The name is free text typed on the start form; nothing else was on the option to tell two apart. Where a session runs was already in the store -- Start writes the project, the directory and the command down and the row survives until the session is deliberately stopped -- and the page was already reading those rows to work out which sessions are lost, and throwing the directory away. | fixed, both halves: the tree each session runs in, and the working or waiting state once MUS-D-0161 made it free |
 | [MUS-F-0109](#mus-f-0109) | The offer to restore a lost session was on the one page a running session redirects past |  |  |
 | [MUS-F-0110](#mus-f-0110) | The session picker did nothing on a page with no terminal, and had no submit button either |  |  |
 | [MUS-F-0111](#mus-f-0111) | The transcript carries the conversation and none of the CLI's screen, so reading it retires no parser | Twenty-five transcripts under ~/.claude/projects, 52,160 lines, on CLI 2.1.263. Twenty-three entry types appear and none is a dialog: assistant, user, attachment, queue-operation, last-prompt, ai-title, atis-latch, mode, permission-mode, agent-name, pr-link, agent-setting, relocated, worktree-state, bridge-session, file-history-delta, system, file-history-snapshot, frame-link, artifact-autoreact-ledger, cost-state, artifact-comment-monitor, continued-in. system carries only turn_duration, compact_boundary, away_summary and informational. Zero lines carry isSidechain:true across all twenty-five, so a sub-agent's own turns are not in its parent's file; what is there is the Agent tool_use with description, subagent_type, model and the whole prompt, and its result when it lands. Assistant content blocks are thinking, text, tool_use and usage. |  |
@@ -130,8 +137,152 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0113](#mus-f-0113) | The CLI has structured hooks for the dialogs Mustur reads off the screen, and they run in a terminal | code.claude.com/docs/en/hooks lists PermissionRequest, PermissionDenied, Notification, MessageDisplay, Elicitation, ElicitationResult, TaskCreated and TaskCompleted among thirty-two events; all eight appear as exact strings in the shipped 2.1.263 binary. PreToolUse and PermissionRequest work in non---print sessions and decide permission through a decision object of allow, deny or ask. Command hooks default to a 600s timeout, are configurable per hook with timeout, and enforce none at all with async true. MessageDisplay fires while assistant text is displayed, has no matcher and a 10s default. |  |
 | [MUS-F-0114](#mus-f-0114) | Every vendor's best channel is a different channel, which is the argument for a module rather than a protocol | Claude Code 2.1.263: tmux pane for the terminal, thirty-two lifecycle hooks in an interactive session, a live transcript JSONL, and --print stream-json only if the terminal is given up. Codex: codex app-server, a long-lived bidirectional JSON-RPC 2.0 process per workspace over stdio or websocket, stateful, plus codex exec --json and rollout JSONL under ~/.codex/sessions/YYYY/MM/DD/. Gemini CLI: ACP natively and documented at docs/cli/acp-mode.md, JSON-RPC 2.0 over stdio, no documented transcript. ACP adapters exist for all three but are the first-class interface for only one. |  |
 | [MUS-F-0115](#mus-f-0115) | A restored session shows a blank terminal with no sign that it is still loading |  |  |
-| [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong |  | unreviewed |
+| [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong | The POST path calls Adapter.Start with resumes(row), which strips any --resume already on the command and appends the conversation identifier when the transcript is on disk; restore_test asserts the argv both ways. The button read Start it again in both cases, on both templates, directly above a line saying the conversation comes back. Plan.md's agent-transport row and docs/ui-surfaces.md's brief for the surface both used the same words for the same button. | fixed; the behaviour was always the restore and only the word was wrong |
 | [MUS-F-0117](#mus-f-0117) | Two sessions started from the surface share one working tree, and nothing says so |  |  |
+| [MUS-F-0118](#mus-f-0118) | Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. | not yet reviewed |
+| [MUS-F-0119](#mus-f-0119) | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. | not yet reviewed |
+| [MUS-F-0120](#mus-f-0120) | PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog | Investigation 0003, trials 0 and 1 on Claude Code 2.1.263. A PermissionRequest hook received a full payload and returned the documented object -- hookSpecificOutput with hookEventName PermissionRequest and decision allow -- and the pane drew 'Do you want to proceed?' anyway and was still drawing it minutes later. Retried with the exact key names the documentation quotes, including permissionDecisionReason on the deny path. Same result. PreToolUse with permissionDecision allow suppressed the dialog on the first attempt and on all seven firings after: trials 2, 11 through 15 on 2.1.263 and trial 26 on 2.1.266. Payloads and panes in docs/investigations/0003-harness/captured/. |  |
+| [MUS-F-0121](#mus-f-0121) | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
+| [MUS-F-0122](#mus-f-0122) | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |  |
+| [MUS-F-0123](#mus-f-0123) | The captured panes are all one version, and two of them are trials the write-up never names | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
+| [MUS-F-0124](#mus-f-0124) | An agent read a prompt's return value as permission to rewrite a published branch | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
+| [MUS-F-0125](#mus-f-0125) | Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog | MUS-Q-0094 through MUS-Q-0097 all recorded as typed into mustur/Milestone_Work; that session's transcript at ~/.claude/projects/.../de5be2c5-....jsonl contains no delivered answer. Probe on 2026-09-10: an answer delivered into a pane showing the model picker was absent from the screen afterwards and the picker had been pressed |  |
+| [MUS-F-0126](#mus-f-0126) | A reader was offered the one tab that refuses them, because no surface knew who was reading it | a reader's records page carries no /sessions link and keeps the other three; an owner's carries it; a server with no guard carries it. Mutation-checked |  |
+| [MUS-F-0127](#mus-f-0127) | Acceptance gates four rules, and nothing defines the act, records it, or tells the two states apart | eight rows in Plan.md read 'awaiting acceptance'; no mustur verb accepts anything; no milestone record carries an acceptance field; milestone 2's passed row and 2b's awaiting row describe the same evidence | open, and not fixed by an agent choosing a procedure for it |
+| [MUS-F-0128](#mus-f-0128) | If i try to select text in the sessions the selection jumps to include the start of the tmux… | paint writes out.innerHTML on every frame, which destroys the node a selection is anchored in; the browser re-anchors the range to the container at offset 0 while the focus follows the pointer, which is the reported symptom exactly. Nothing in any of the five asset files called getSelection on the terminal. Verified after the fix against the shipped file, not a copy: a session started under the built binary running a loop printing a line every 300ms, driven in chrome-headless-shell over the DevTools protocol with a real mouse press-move-release inside the pane. With a selection held, zero childList mutations on the terminal across four seconds of output and the selected string byte-identical before and after; on a click outside, one frame 150ms later carrying thirteen lines of held output. Sixty-six mutations outside the terminal in the same four seconds -- the pill, the chips and the accent ring -- so the rest of the surface kept moving. No console errors. | fixed, with a consequence: the screen is stale for as long as a selection is held in it |
+| [MUS-F-0129](#mus-f-0129) | The gate cannot fire on the deployment it runs on, because the owner's default mode is one the CLI never prompts in | a session started from the surface on 2026-09-11 ran echo mustur-gate-test with no pop-up; its pane reads auto mode on; the settings file sets defaultMode auto | open on MUS-Q-0100 |
+| [MUS-F-0130](#mus-f-0130) | I cannot submit multiple pictures in one intake jot | MUS-F-0131 is the report that needed it: three screenshots of one defect arrived as three records, two of which say nothing but Pic 2 and Pic 3. The store was never the limit -- attachment is keyed by record_id and indexed on it, and Attachments already returns a slice. The form input had no multiple attribute and r.FormFile reads the first part and no other. | fixed |
+| [MUS-F-0131](#mus-f-0131) | The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the… | Three screenshots of /records in Chrome on the owner's phone, 1080px wide. The first is the page as it loads, fitted to the window: the content column fills the left 55% of the screen and the rest is empty background. The third, at 100%, shows the same page with no tab bar on the screen at all. The second is a full-page scrolling capture in which the content fills the width and the bar's icons sit at the very foot. Measured against a throwaway store in chrome-headless-shell 1237, driven over the DevTools protocol with mobile emulation: at a 390x844 viewport documentElement.scrollWidth was 625 where clientWidth is 390, and the fixed bar's bounding rect bottom was 1353. After the fix, 390 and 844 -- the bar on the screen's bottom edge -- and no visible element exceeding the viewport. The same before and after at 360px, 625 to 360. /sessions, /intake and /questions measure 390 at 390px, so nothing moved to a surface nobody had looked at. | fixed |
+| [MUS-F-0132](#mus-f-0132) | The second picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
+| [MUS-F-0133](#mus-f-0133) | The third picture of MUS-F-0131, filed as its own record because a jot took one |  | not a finding of its own; the picture is described in MUS-F-0131 |
+| [MUS-F-0134](#mus-f-0134) | How do we handle stopping and restarting sessions around claude updates? |  | answered on MUS-Q-0101 and built on MUS-D-0159; the threshold is MUS-Q-0104's |
+| [MUS-F-0135](#mus-f-0135) | The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame | The sum was taken over the capture, which carries the CLI's status line; PollEvery is 400ms, so a turning spinner produced a frame up to two and a half times a second on a screen that had said nothing. changedAt was reset by every one of them. TestATurningSpinnerIsSentAndDoesNotCountAsTheScreenChanging holds both halves of the fix. | fixed at the source; two sums, one over the body and one over everything rendered |
+| [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
+| [MUS-F-0137](#mus-f-0137) | A question answered with a question is recorded as answered, and leaves the queue settled | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
+| [MUS-F-0138](#mus-f-0138) | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. | fixed before the sweep ran anywhere |
+| [MUS-F-0139](#mus-f-0139) | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body | open |
+| [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
+| [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
+| [MUS-F-0142](#mus-f-0142) | One project's unsurfaced question fails every other project's commit gate | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. | fixed for the gate; the export still carries every project's records |
+| [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… |  | unreviewed |
+| [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  |  |
+| [MUS-F-0145](#mus-f-0145) | A session restarted under the same name kept tmux's 80x24, so it had no scrollback | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. | fixed |
+
+---
+
+## HRD-F-0001
+
+**Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The Ludusavi catalog roots Valheim at <xdgConfig>/unity3d/IronGate/Valheim on Linux and <home>/AppData/LocalLow/IronGate/Valheim on Windows, with cloud_steam true (hoard-manifest/data/ludusavi-catalog.json.zst, slug valheim). Worlds sit under worlds_local and characters under characters_local, so a Hoard save of that root ships characters with the world. With Steam Cloud enabled Valheim keeps worlds in worlds rather than worlds_local and Steam syncs them, so a shared world needs Steam Cloud off for Valheim on every member's machine, or Hoard tracking worlds_local only. Documentation for members, and a check the client could make.
+
+| Field | Value |
+| --- | --- |
+| Consequence | world scope needs a file subset; members disable Steam Cloud for Valheim |
+
+---
+
+## HRD-F-0002
+
+**Valheim most likely does not hold the world file open, which makes file evidence a late backstop**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Unverified on a real install; from what I know of the game: the world is read at load and written by autosave (default every 30 minutes, -saveinterval) and on exit as <name>.db.new renamed over <name>.db, with the previous copy kept as .db.old. If so, /proc/<pid>/fd (agent.rs:4837) and the Windows sharing-violation probe (locks.rs) see the file only for the moment of load, which a 2 s poll catches by luck, and the first write can be 30 minutes in. The claim prompt becomes the primary signal and the design's item 3 the backstop. To verify before phase 2: inotifywait on worlds_local during a session on Linux, Process Monitor on Windows, noting open, write and rename events and whether .fwl is rewritten at load.
+
+| Field | Value |
+| --- | --- |
+| Status | claim to verify; owner has the game, this VM does not |
+
+---
+
+## HRD-F-0003
+
+**The fork's Actions state cannot be read with the current PAT, and no workflow is listed**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+gh api repos/DevOfPie/hoard/actions/workflows returns an empty list and actions/permissions returns 403 Resource not accessible by personal access token (2026-09-13). Either Actions is disabled on the fork or the token lacks the actions scope; the two are indistinguishable from here. The ruleset on main enforces deletion and non_fast_forward only, no required checks, so a PR merges without CI either way. Owed by the owner per HRD-W-0001: enable Actions, disable the five non-CI workflows, and a PAT that can read them.
+
+| Field | Value |
+| --- | --- |
+| Consequence | until confirmed, every PR is gated by the local recipe in the checkout CLAUDE.md, not by CI |
+
+---
+
+## HRD-F-0004
+
+**Upstream moved 244 commits in 30 days, so the fork's changes must be additive**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+git log --since=30.days upstream/main counts 244 commits to 2026-09-12. A branch that edits inside agent.rs's poll loop or reconcile.rs's decision order will conflict on every rebase. The plan therefore puts new logic in new modules (a lease client, a group client, a world-file filter), touches existing hot paths at single call sites, adds tables rather than altering them, and stacks small PRs rebased weekly. windows-sys 0.59 is already a dependency of hoard-agent, so the Restart Manager probe needs a feature flag, not a crate.
+
+| Field | Value |
+| --- | --- |
+| Consequence | additive modules, single-site hooks, weekly rebase |
+
+---
+
+## HRD-F-0005
+
+**The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message**
+
+finding · 2026-09-13
+
+q: [HRD-Q-0009](questions.md#hrd-q-0009)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Cloudflare answers http://hoard.killerofpie.com with a 301 to https. The app's Test connection is an unauthenticated GET /v1/health, which reqwest follows across the redirect, so it reports the server reached. Sign-in calls /v1/auth/whoami with a bearer token; reqwest drops the Authorization header when a redirect changes the origin, and the server answers 401 without a database lookup, so nothing shows in its log and the app shows the 401 as the key being refused. Pie hit exactly this on 2026-09-13 and it cost a token-format investigation. normalizeUrl in ServerSetup.svelte already picks https for a public hostname; the trap is a typed http:// prefix, which it keeps verbatim (ServerSetup.svelte:36). Fix candidates for the fork, later: have the health check report the final URL after redirects and reflect it into the field, or warn when a typed http address answered through an https redirect.
+
+| Field | Value |
+| --- | --- |
+| Status | defect noted, not fixed; upstream-relevant |
+
+---
+
+## HRD-F-0006
+
+**The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Reported by Pie on 2026-09-13 while testing the demo (upstream 1.1.6 desktop against the fork's server): after starting the game scan, the feedback bar appears finished but the scan does not complete; after changing pages and coming back it completed fairly quickly, but with significant time after the bar had filled. Upstream desktop behaviour, not the fork's server. Untriaged: the scan's progress source versus its completion signal (hoard-desktop commands/library.rs run_scan and the Library/Dashboard stores).
+
+| Field | Value |
+| --- | --- |
+| Reported by | Pie |
+| Scope | upstream desktop; not group sharing |
+
+---
+
+## HRD-F-0007
+
+**The dashboard game icons' dodge animation moves their corner buttons away from the pointer**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Reported by Pie on 2026-09-13 while testing the demo: the dodging effect on the game icons of the dashboard page moves the corner buttons away as the pointer approaches them, so pressing them is a chase. Upstream desktop behaviour (Dashboard.svelte), not the fork's server. A hit target should not move under an approaching pointer; either the dodge excludes the button's approach zone or the buttons sit outside the animated element.
+
+| Field | Value |
+| --- | --- |
+| Reported by | Pie |
+| Scope | upstream desktop; not group sharing |
 
 ---
 
@@ -2880,15 +3031,20 @@ finding · 2026-09-08
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+the rule that leaked, and the two forms still carrying it: [MUS-F-0136](#mus-f-0136)
+
+the tick that used to sit on the line: [MUS-F-0103](#mus-f-0103)
+
 There is still a divider line above the stop button where the checkbox was on top of. This should be removed
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | A bare form rule sets border-top and padding for the composer, which declares neither of its own. .endform declared display and flex and nothing else, so the border applied to it -- which is also why the removed tick sat on top of the button rather than beside it, the column direction coming from the same rule. TestNothingDrawsALineAboveStop asserts .endform undoes it. |
+| Status | fixed |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go |
 
 ---
 
@@ -2900,17 +3056,26 @@ finding · 2026-09-08
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+the half that is not free: [MUS-Q-0102](questions.md#mus-q-0102)
+
+two sessions can share one tree: [MUS-F-0117](#mus-f-0117)
+
+the poller that made the second half free: [MUS-D-0161](decisions.md#mus-d-0161)
+
+the half that was not free: [MUS-Q-0105](questions.md#mus-q-0105)
+
 The selector drop-down on the session tab should show the name of each session and the project it is for. Once another project is added it will be impossible to tell projects apart unless they are all named perfectly.
 
 It would also be nice to know which sessions are actively working, and which are awaiting input from the drop-down
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | Every option was the session's name and nothing else, on all three of the template's option sites. The name is free text typed on the start form; nothing else was on the option to tell two apart. Where a session runs was already in the store -- Start writes the project, the directory and the command down and the row survives until the session is deliberately stopped -- and the page was already reading those rows to work out which sessions are lost, and throwing the directory away. |
+| Status | fixed, both halves: the tree each session runs in, and the working or waiting state once MUS-D-0161 made it free |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, internal/web/start.go, internal/session/screen.go |
 
 ---
 
@@ -2996,6 +3161,8 @@ The asymmetry worth naming: ACP costs the terminal on Claude, because claude-age
 
 finding · 2026-09-08
 
+corrected by: [MUS-F-0120](#mus-f-0120)
+
 MUS-F-0084 looked at the extension and found the structured channel behind --print. It is not the only one. The CLI publishes a second structured channel that works in an ordinary interactive terminal, and Mustur is already using a corner of it: MUS-D-0087 installs SubagentStart and SubagentStop through --settings on the command line Start builds.
 
 The corner is small and the channel is not. A PermissionRequest hook fires exactly when the CLI is about to draw a permission dialog, receives the tool and its input as JSON, and returns allow, deny or ask. With a timeout measured in minutes -- 600 seconds by default and unbounded with async -- that hook can hand the request to Mustur's surface, wait for the owner, and answer. The dialog is never read off a screen because it is never drawn. If nobody answers in time the CLI draws it as it does today, which makes the fallback the thing already built rather than a failure.
@@ -3064,11 +3231,12 @@ The session is restored not started over, the button text and descriptions are a
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | The POST path calls Adapter.Start with resumes(row), which strips any --resume already on the command and appends the conversation identifier when the transcript is on disk; restore_test asserts the argv both ways. The button read Start it again in both cases, on both templates, directly above a line saying the conversation comes back. Plan.md's agent-transport row and docs/ui-surfaces.md's brief for the surface both used the same words for the same button. |
+| Status | fixed; the behaviour was always the restore and only the word was wrong |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/sessions.go, Plan.md, docs/ui-surfaces.md |
 
 ---
 
@@ -3091,3 +3259,717 @@ The surface cannot do anything else. MUS-D-0146 has the start form choose where 
 Nothing about it is visible. The picker shows two names, the session pages show two panes, and neither says the two are editing the same files. A git checkout in one moves the tree under the other, an uncommitted edit in one is in the other's diff, and make export from both conflicts in records/ — which is MUS-F-0066, filed for two branches and not for two sessions.
 
 The CLI can already avoid it: mustur session start takes --dir and will start a session anywhere, including a worktree. The surface offers no such choice, and the records that describe agents working in their own worktrees (MUS-F-0065) describe a thing the surface cannot ask for.
+
+---
+
+## MUS-F-0118
+
+**Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven**
+
+finding · 2026-09-09
+
+The row reads 'LinkCtrl carries 1,476 headings and only 10 of its 247 decision identifiers appear in one'. Both figures have moved and the ratio has moved further: 10 of 247 is 4%, and the measurement today is 271 of 444, which is 61%.
+
+The non-goal itself is not obviously wrong — records Mustur owns are addressable when written, and that stands. What is wrong is the evidence under it. The argument as written is that LinkCtrl is prose with no addresses in it; the tree says LinkCtrl adopted a per-decision heading convention at D16 and has held it for 428 decisions since. A milestone 7 that plans an import from this row will plan for a retrofit that is already three-fifths done.
+
+Where the row is still right, and by a wider margin than it claims, is findings: all 381 rows in deferred-findings.md are table rows and not one is addressable by a heading. The row does not mention findings at all.
+
+Filed from a LinkCtrl session preparing that repository's side of the transition. Nothing in Mustur was edited.
+
+| Field | Value |
+| --- | --- |
+| Where | Plan.md, Non-goals table, 'ID expansion as a rendering trick over someone else's prose' |
+| Evidence | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. |
+| Status | not yet reviewed |
+
+---
+
+## MUS-F-0119
+
+**Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses**
+
+finding · 2026-09-09
+
+same defect as: [MUS-F-0063](#mus-f-0063)
+
+answered by: [MUS-Q-0065](questions.md#mus-q-0065)
+
+Scope.md's own header says 'Authoritative. Where this table and prose elsewhere disagree, this table wins.' So the falsified row does not merely sit there being wrong — it outranks the CLAUDE.md paragraph that corrects it.
+
+This matters to milestone 7 rather than only to tidiness. The injection kit is what a second project receives, and a reader of the scope table will build LinkCtrl's as a committed .mcp.json — the exact file MUS-F-0063 found could only ever refuse, and on a repository that is also public. What LinkCtrl can actually receive is the mandate clause and nothing else, with the credential per-machine at user scope and surviving no clone.
+
+The fix is a row, not a rewrite: either the promise becomes 'a mandate clause, and a per-machine credential' or the row is struck and the capability restated. Which of those is a decision, so it is a finding and not an edit.
+
+Filed from a LinkCtrl session preparing that repository's side of the transition. Nothing in Mustur was edited.
+
+| Field | Value |
+| --- | --- |
+| Where | Plan.md, Scope table, row 'Repo-local injection kit — committed .mcp.json plus a mandate clause' |
+| Evidence | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. |
+| Status | not yet reviewed |
+
+---
+
+## MUS-F-0120
+
+**PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog**
+
+finding · 2026-09-09
+
+corrects: [MUS-F-0113](#mus-f-0113)
+
+MUS-F-0113 named the wrong event. It said PermissionRequest fires when a dialog is about to be drawn and takes back allow, deny or ask, and cited the documentation and eight event names in the binary. The events exist and the channel is real; the deciding event is PreToolUse.
+
+The distinction is not cosmetic. A module built on PermissionRequest would have fired correctly, logged correctly, answered correctly, and left the dialog on the screen -- which is the failure shape this repository keeps shipping and then finding, and the reason investigation 0003 had a rule before it had evidence.
+
+Whether PermissionRequest's decision object works where a permission host exists, which is --print and the SDK, was not established and is not needed. The route that works is the one that keeps the terminal.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Investigation 0003, trials 0 and 1 on Claude Code 2.1.263. A PermissionRequest hook received a full payload and returned the documented object -- hookSpecificOutput with hookEventName PermissionRequest and decision allow -- and the pane drew 'Do you want to proceed?' anyway and was still drawing it minutes later. Retried with the exact key names the documentation quotes, including permissionDecisionReason on the deny path. Same result. PreToolUse with permissionDecision allow suppressed the dialog on the first attempt and on all seven firings after: trials 2, 11 through 15 on 2.1.263 and trial 26 on 2.1.266. Payloads and panes in docs/investigations/0003-harness/captured/. |
+
+---
+
+## MUS-F-0121
+
+**permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog**
+
+finding · 2026-09-10
+
+the event that does not work: [MUS-F-0120](#mus-f-0120)
+
+the investigation it corrects: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+the milestone it re-prices: [MUS-Q-0094](questions.md#mus-q-0094)
+
+Investigation 0003's verdict credits PreToolUse with carrying `permission_suggestions` that are "literally options 2 and 3 of the dialog the CLI would have drawn", and cites captured/payload-pretooluse.json for it. That file does not contain the field. captured/payload-permissionrequest.json does, and it is the only payload in the harness that ever did — so the sentence attributes one event's evidence to another, in the row that establishes the property the whole route turns on.
+
+Measured again on 2026-09-10 at Claude Code 2.1.267, both hooks installed in one session and the hook returning nothing so the CLI's own permission flow decided: six trials, three on a tool call the CLI prompts on (Bash) and three on one it does not (Read of a file in the working directory). PreToolUse fired on all six. PermissionRequest fired on the three that prompt and on none of the three that do not, carrying permission_suggestions each time.
+
+So the two events say different things. **PermissionRequest is the event that means a dialog is pending** -- and its decision is the one the CLI ignores (MUS-F-0120). **PreToolUse is the event that can answer** -- and it fires on every tool call, so a firing carries no information about whether a person would ever have been asked.
+
+This does not falsify the verdict's three properties. Every trial that established them used a tool call that does prompt, so interceptable, answerable and terminal-preserving all hold as measured. What it falsifies is the sentence describing what the payload carries, and with it the assumption a milestone could have been built on: that a surface fed by PreToolUse alone knows which calls the owner would have been asked about. It does not. It would either ask about every tool call, or hold a permission policy of its own, or pair the two events.
+
+| Field | Value |
+| --- | --- |
+| Where | docs/investigations/0003-dialog-without-the-screen.md, the Interceptable row of the verdict, and MUS-I-0003's Result |
+| Evidence | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh |
+| Also true before this run | internal/session/testdata/hook-payloads.jsonl holds five real PreToolUse captures in permission_mode auto, none carrying permission_suggestions and none drawing a dialog |
+| Status | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
+
+---
+
+## MUS-F-0122
+
+**The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had**
+
+finding · 2026-09-10
+
+the events it builds on: [MUS-F-0121](#mus-f-0121)
+
+the investigation: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+the milestone it shapes: [MUS-D-0152](decisions.md#mus-d-0152)
+
+MUS-F-0121 established that PreToolUse fires on every tool call and PermissionRequest only when a dialog is pending, and that only PreToolUse's decision is honoured. That left one thing that decides the shape of the milestone: if the two hooks ran concurrently, Mustur could hold the answer channel open in PreToolUse and learn from PermissionRequest what the dialog is about, and answer it structurally.
+
+They do not run concurrently. Measured at 2.1.267 with a PreToolUse hook that never returns and a PermissionRequest hook that returns immediately: PermissionRequest fires 20.022s, 20.024s and 20.014s after PreToolUse, against a PreToolUse hook timeout of 20s. The CLI runs the permission flow only once the PreToolUse hook has been waited out.
+
+So while Mustur holds the one channel that can answer, it cannot be told whether anybody would ever have been asked. The three shapes MUS-Q-0094's option named are now two: ask about every tool call, or hold a policy of Mustur's own that decides which to ask about. Pairing the two events on the same call is not available.
+
+Two of the five trials are not in the numbers: on trials 51 and 53 the prompt was typed into the CLI's box and never submitted, so no tool was ever called and no hook fired. That is a harness race between send-keys and the CLI becoming ready, not a result, and it is recorded rather than dropped because a reader counting sessions in the captured file will find five.
+
+| Field | Value |
+| --- | --- |
+| Evidence | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |
+| What it rules out | holding PreToolUse open while PermissionRequest describes the dialog. The description arrives only after the answer channel has closed |
+| What it leaves | MUS-D-0153: Mustur gates a named set of tools and never widens what the CLI would have allowed |
+
+---
+
+## MUS-F-0123
+
+**The captured panes are all one version, and two of them are trials the write-up never names**
+
+finding · 2026-09-10
+
+the same failure, louder: [MUS-F-0121](#mus-f-0121)
+
+the investigation: [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003)
+
+Investigation 0003 says it was verified against Claude Code 2.1.263 for the five consecutive trials and 2.1.266 for the confirmation, which is more careful than most claims in this repository and is still not what the artefacts show. All three panes committed with it print 2.1.266, and one of them -- captured/pane-allow.txt -- has trial 11's working directory, which is one of the five.
+
+Either the panes were captured again after the CLI updated itself, or the attribution is wrong. Nothing in the harness can say which, and the session that ran it is gone. What can be said is that the result did not depend on it: trial 26 repeated the five-trial shape at 2.1.266 and passed, and on 2026-09-10 the timeout fallback was re-measured at 2.1.267 three times.
+
+Two citations name trials nothing else does. captured/pane-timeout-fallback.txt is trial 24, and the hold trials the write-up describes are 21 through 23. captured/pane-deny.txt is trial 3, which appears in no sentence of the document and in no list in MUS-F-0120. Neither is evidence of anything wrong having been measured; both are evidence that the write-up and the evidence directory were kept by hand and drifted, which is the same failure as MUS-F-0121 in a quieter form.
+
+No committed artefact carries the 21.3s, 24s and 20s the write-up reports for the hold trials. The only captured table of timeout numbers is the re-run, 40 through 42.
+
+| Field | Value |
+| --- | --- |
+| Where | docs/investigations/0003-dialog-without-the-screen.md, the Verified against header and the two capture citations |
+| Evidence | grep 'Claude Code v' over captured/pane-allow.txt, pane-deny.txt and pane-timeout-fallback.txt returns 2.1.266 for all three; their working directories are work-11, work-3 and work-24 |
+| Status | the document is corrected to say what the artefacts support; the attribution itself cannot be recovered |
+| Not evidence of | a wrong result. The rule was met at whichever version, and the fallback reproduces at 2.1.267 |
+
+---
+
+## MUS-F-0124
+
+**An agent read a prompt's return value as permission to rewrite a published branch**
+
+finding · 2026-09-10
+
+the same channel, on records: [MUS-F-0074](#mus-f-0074)
+
+what the owner did about those: [MUS-D-0139](decisions.md#mus-d-0139)
+
+the question raised properly: [MUS-Q-0095](questions.md#mus-q-0095)
+
+MUS-F-0074 recorded a prompt returning the first, recommended option five times in one session while the owner answered none of them, and MUS-D-0139 reopened nine questions closed that way. Today the same channel was read the same way, for something that is not a record: a force push.
+
+The question -- how stacked branches should be pushed after a rebase -- was put in an AskUserQuestion prompt and nowhere else. No Mustur question was raised, so nothing appeared in the decision queue and the owner had nothing to interact with. The prompt returned 'Force-push stacked branches', which was its first option and the one labelled Recommended, and the branch was force-pushed on that.
+
+The owner said plainly afterwards that they had not answered it.
+
+Nothing was lost: the rewritten tip contained everything the old one did plus the review fixes, --force-with-lease was used, and GitHub keeps the replaced commit reachable. What happened is not damage, it is an act taken without authority, and the distinction matters because the next one may not be so cheap.
+
+Two things made it possible and only one is about carelessness. The prompt is a channel that answers itself, which no rule in this repository can change. The other is that the question was never raised in Mustur -- had it been, it would have sat open in the queue, the gate would have counted it, and the absence of an answer would have been visible rather than silently filled.
+
+| Field | Value |
+| --- | --- |
+| Where | the working practice, not the code |
+| Evidence | plan/what-is-actually-built rewritten from d6f8aa5 to de55d77 at 2026-09-10; no MUS-Q record existed for the decision until MUS-Q-0095 was raised afterwards |
+| Status | answered on MUS-Q-0095: force pushes on my own stacked branches, with --force-with-lease. The question was raised, surfaced and answered in Mustur within four minutes of the finding being written, and this field said open for as long as it took to commit. |
+| What it is not | a records defect. MUS-Q-0094 was answered through Mustur by the owner's own account at 16:56:19Z and is unaffected |
+
+---
+
+## MUS-F-0125
+
+**Delivery into a session showing a dialog is swallowed by it, and the Enter behind it presses the dialog**
+
+finding · 2026-09-10
+
+the same thing, seen once: [MUS-F-0105](#mus-f-0105)
+
+the other silent channel: [MUS-F-0074](#mus-f-0074)
+
+what to do about the collision: [MUS-Q-0098](questions.md#mus-q-0098)
+
+The owner answered four questions in Mustur's queue on 2026-09-10 -- MUS-Q-0094, 0095, 0096 and 0097. Each named this session with --in. Each was recorded "Delivered: typed into mustur/Milestone_Work". None of them arrived: the session's own transcript contains no delivered answer at all, and the owner eventually said so in the terminal, which is the only reason it was found.
+
+MUS-F-0105 saw this once on 2026-09-08 and named the first place to look: a modal on the screen. That was right, and it is worse than it guessed.
+
+**Measured, against the real CLI.** A probe session was put in front of the model picker and an answer delivered into it. Afterwards the answer text was nowhere on the screen -- and the picker had been pressed: "Set model to Opus 5 and saved as your default for new sessions". Send is a paste followed by Enter. A pane showing a dialog reads both: the text goes into the dialog, where nothing will ever read it, and the Enter presses whatever the dialog had selected.
+
+So delivery into a dialog does not merely fail. It operates the dialog. The one on the screen may be a permission prompt, and the Enter behind a lost answer would be answering it -- which is the exact harm milestone 8 exists to prevent, arriving through Mustur's own delivery path.
+
+**Why all four, and not one.** Every one was answered within seconds of this session putting up an AskUserQuestion prompt -- which is a modal in the CLI's own UI. The prompt exists to point the owner at the Mustur question; while it is up, the answer to that question cannot arrive. The two channels the contract requires collide, and the collision is silent in both directions: the prompt returns its first option whether or not anybody touched it (MUS-F-0074), and the delivery reports success whether or not anybody sees it.
+
+The delivery half is fixed here: Deliver reads the pane first and refuses while a dialog is up, recording what the dialog is and that the answer is in the queue. A pane that cannot be read is treated as clear, because refusing on a failed read would make an unreadable screen and a dialog the same thing.
+
+The other half is not a code question and is MUS-Q-0098.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/deliver.go, and every question answered while the raising session had a prompt on screen |
+| Evidence | MUS-Q-0094 through MUS-Q-0097 all recorded as typed into mustur/Milestone_Work; that session's transcript at ~/.claude/projects/.../de5be2c5-....jsonl contains no delivered answer. Probe on 2026-09-10: an answer delivered into a pane showing the model picker was absent from the screen afterwards and the picker had been pressed |
+| Fixed | delivery refuses while a dialog is up and says which; two tests, including that an unreadable pane is still delivered into |
+| Not fixed | the collision between the prompt rule and the delivery path, which is MUS-Q-0098 |
+| No harm on the probe | the picker's selected row was the default already, so the press re-set the same model |
+
+---
+
+## MUS-F-0126
+
+**A reader was offered the one tab that refuses them, because no surface knew who was reading it**
+
+finding · 2026-09-10
+
+the refusal that stands: [MUS-Q-0048](questions.md#mus-q-0048)
+
+the tab bar it waited on: [MUS-D-0131](decisions.md#mus-d-0131)
+
+the milestone it is in the way of: [MUS-M-0008](milestones.md#mus-m-0008)
+
+The guard has refused a reader correctly since milestone 5b: /sessions and /compose answer 403 to an account that can read but not write. What no surface knew was who was reading it, so the tab bar above every page offered the Sessions tab to everybody. A reader pressed it and got a plain-text refusal.
+
+This was a queue line on 2026-08-25, deferred with a reason that has since expired -- the tab bar's final shape was open then and MUS-D-0131 settled it. It is filed now rather than left as a line because there is a second person on this deployment with a reader role and a passkey, so it is a defect somebody can actually hit.
+
+The refusals are untouched. MUS-Q-0048 settled that a control refuses and explains itself at the moment it is pressed rather than warning first, and that stands: what changed is navigation, not a control. A link into a page this account cannot open is not a control refusing, it is a broken route wearing a tab.
+
+The role now travels on the request, put there by the guard that already computes it, and every page that renders the bar asks whether the viewer can write before offering the tab. **A request carrying no role can write**, which is the server running without --accounts -- there is nobody to be a reader there and every surface is the owner's. Defaulting the other way would have hidden the session tab from everybody who has not turned accounts on, including a fresh clone.
+
+Left alone deliberately: the intake box still takes a reader's jot and refuses the POST. Making that refusal a rendered page rather than plain text is a change to the guard's behaviour on every write path -- including a socket, which has no page to render -- and it is its own piece of work rather than this one.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/guard.go and every page that renders the tab bar |
+| Fixed | the guard puts the viewer's role on the request; the bar offers Sessions only to an account that can write, and to everybody when accounts are off |
+| Evidence | a reader's records page carries no /sessions link and keeps the other three; an owner's carries it; a server with no guard carries it. Mutation-checked |
+| Not fixed | the intake box still takes a reader's jot and refuses the POST in plain text |
+
+---
+
+## MUS-F-0127
+
+**Acceptance gates four rules, and nothing defines the act, records it, or tells the two states apart**
+
+finding · 2026-09-11
+
+workflow.md uses "accepted" as a gate in four places: it is what the reviewers are a precondition for, it is what the repeat-or-stop table turns on twice, and Plan.md says plainly that "passed is a verdict acceptance makes". Nothing anywhere says what the act is.
+
+There is no verb for it. mustur has seed, export, verify, serve, list, get, rebuild, add, amend, reroute, ask, surfaced, answer, questions, session, account and audit, and nothing that accepts anything. No milestone record carries an acceptance field. No record kind marks one.
+
+So the state is a sentence in a table, written by whoever last edited Plan.md. Eight rows say "awaiting acceptance", the oldest since 2026-08-20.
+
+**And the two states are not distinguishable by their evidence.** Milestone 2's row says "passed 2026-08-20, reviewed by three agents that did not build it and every finding dispositioned". Milestone 2b's says "built and reviewed 2026-08-20; awaiting acceptance". Those describe the same thing. What made one passed and the other awaiting is not in the tree; it is presumably that the owner said so about one of them, somewhere that was not written down -- which is the thing this repository records everything else to avoid.
+
+The cost is not bookkeeping. The stop table tells an agent to start the next milestone when one is accepted, and to stop when the dispatch named a milestone and that milestone is accepted. Both rows read a state that no command sets and no record holds, so in practice an agent decides for itself what the owner has accepted, or ignores the rows.
+
+Found because the owner asked what accepting milestone 8 would mean, which is the right question and had no answer in the tree.
+
+| Field | Value |
+| --- | --- |
+| Where | workflow.md's gates and repeat-or-stop table; Plan.md's build-status column |
+| Evidence | eight rows in Plan.md read 'awaiting acceptance'; no mustur verb accepts anything; no milestone record carries an acceptance field; milestone 2's passed row and 2b's awaiting row describe the same evidence |
+| Status | open, and not fixed by an agent choosing a procedure for it |
+
+---
+
+## MUS-F-0128
+
+**If i try to select text in the sessions the selection jumps to include the start of the tmux…**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the frames it also stops repainting: [MUS-F-0135](#mus-f-0135)
+
+If i try to select text in the sessions the selection jumps to include the start of the tmux window to my current selected position
+
+| Field | Value |
+| --- | --- |
+| Evidence | paint writes out.innerHTML on every frame, which destroys the node a selection is anchored in; the browser re-anchors the range to the container at offset 0 while the focus follows the pointer, which is the reported symptom exactly. Nothing in any of the five asset files called getSelection on the terminal. Verified after the fix against the shipped file, not a copy: a session started under the built binary running a loop printing a line every 300ms, driven in chrome-headless-shell over the DevTools protocol with a real mouse press-move-release inside the pane. With a selection held, zero childList mutations on the terminal across four seconds of output and the selected string byte-identical before and after; on a click outside, one frame 150ms later carrying thirteen lines of held output. Sixty-six mutations outside the terminal in the same four seconds -- the pill, the chips and the accent ring -- so the rest of the surface kept moving. No console errors. |
+| Status | fixed, with a consequence: the screen is stale for as long as a selection is held in it |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/assets/session.js |
+
+---
+
+## MUS-F-0129
+
+**The gate cannot fire on the deployment it runs on, because the owner's default mode is one the CLI never prompts in**
+
+finding · 2026-09-11
+
+the rule it obeys: [MUS-D-0153](decisions.md#mus-d-0153)
+
+the milestone: [MUS-D-0152](decisions.md#mus-d-0152)
+
+Milestone 8 holds a tool call only when the session is in a permission mode where the CLI would have prompted -- default, plan or manual (MUS-D-0153). The owner's settings carry permissions.defaultMode = "auto", and the surface starts plain claude, which reads those settings. So every session started from mustur.devofpie.com runs in auto mode, where the CLI never asks anyone anything, and the gate stands down exactly as specified.
+
+The capability is live, correct, and cannot fire on the only deployment it runs on. The owner found it in the first five minutes of trying it: they started a session, sent the command the gate was supposed to hold, and it ran.
+
+**Why no test caught it.** Every one of them set a prompting mode explicitly. The investigation harness passes --permission-mode manual, the two end-to-end runs pass it, and the unit tests hand Gated the mode as an argument. Not one exercised the mode a session started from the surface actually gets, which is the only mode that matters on this machine. A test that chooses its own input agrees with the code by construction; the fixture that would have caught this is the settings file, and nothing reads it.
+
+**The done-when reviewer was closer than it was credited for.** It said the gate's predicate is "neither necessary nor sufficient for a dialog" and named both directions. That was read as a wording problem in Plan.md's row and answered with better wording. One of the two directions was this, and it was not a wording problem.
+
+What to do is MUS-Q-0100 and is not an agent's to choose: gating a mode the owner set to auto means Mustur asking about calls the owner has said they do not want to be asked about, which is the one thing MUS-D-0153 exists to refuse.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/gate.go promptingModes, against ~/.claude/settings.json permissions.defaultMode |
+| Evidence | a session started from the surface on 2026-09-11 ran echo mustur-gate-test with no pop-up; its pane reads auto mode on; the settings file sets defaultMode auto |
+| Why the tests passed | all of them set a prompting mode explicitly, so none used the mode a surface-started session actually gets |
+| Status | open on MUS-Q-0100 |
+
+---
+
+## MUS-F-0130
+
+**I cannot submit multiple pictures in one intake jot**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the report that needed it: [MUS-F-0131](#mus-f-0131)
+
+I cannot submit multiple pictures in one intake jot. Multiple pictures help to provide linked actions and confirm testing paths and need to be available
+
+| Field | Value |
+| --- | --- |
+| Evidence | MUS-F-0131 is the report that needed it: three screenshots of one defect arrived as three records, two of which say nothing but Pic 2 and Pic 3. The store was never the limit -- attachment is keyed by record_id and indexed on it, and Attachments already returns a slice. The form input had no multiple attribute and r.FormFile reads the first part and no other. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/intake.go |
+
+---
+
+## MUS-F-0131
+
+**The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the…**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+second picture: [MUS-F-0132](#mus-f-0132)
+
+third picture: [MUS-F-0133](#mus-f-0133)
+
+the same failure on a different element: [MUS-F-0033](#mus-f-0033)
+
+The records tab on module doesn't have a bottom nav bar until you scroll down a bit, and the whole page loads bigger than the screen size.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Three screenshots of /records in Chrome on the owner's phone, 1080px wide. The first is the page as it loads, fitted to the window: the content column fills the left 55% of the screen and the rest is empty background. The third, at 100%, shows the same page with no tab bar on the screen at all. The second is a full-page scrolling capture in which the content fills the width and the bar's icons sit at the very foot. Measured against a throwaway store in chrome-headless-shell 1237, driven over the DevTools protocol with mobile emulation: at a 390x844 viewport documentElement.scrollWidth was 625 where clientWidth is 390, and the fixed bar's bounding rect bottom was 1353. After the fix, 390 and 844 -- the bar on the screen's bottom edge -- and no visible element exceeding the viewport. The same before and after at 360px, 625 to 360. /sessions, /intake and /questions measure 390 at 390px, so nothing moved to a surface nobody had looked at. |
+| Status | fixed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/records.go |
+
+---
+
+## MUS-F-0132
+
+**The second picture of MUS-F-0131, filed as its own record because a jot took one**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+report: [MUS-F-0131](#mus-f-0131)
+
+why there are three: [MUS-F-0130](#mus-f-0130)
+
+Not a finding of its own. The owner had three screenshots of the same defect and the intake box took one picture per jot, so the report arrived as three records. What this one showed is written into MUS-F-0131 with the other two.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | not a finding of its own; the picture is described in MUS-F-0131 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0133
+
+**The third picture of MUS-F-0131, filed as its own record because a jot took one**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+report: [MUS-F-0131](#mus-f-0131)
+
+why there are three: [MUS-F-0130](#mus-f-0130)
+
+Not a finding of its own. The owner had three screenshots of the same defect and the intake box took one picture per jot, so the report arrived as three records. What this one showed is written into MUS-F-0131 with the other two.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | not a finding of its own; the picture is described in MUS-F-0131 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0134
+
+**How do we handle stopping and restarting sessions around claude updates?**
+
+finding · 2026-09-11
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+raised as: [MUS-Q-0101](questions.md#mus-q-0101)
+
+the decision: [MUS-D-0159](decisions.md#mus-d-0159)
+
+what idle means: [MUS-Q-0104](questions.md#mus-q-0104)
+
+Asked by the owner through the intake box. What is true today: the CLI installs an update and goes on running the version it started on, says so on its own status line, and Mustur reads that line off the pane and shows it as a chip (internal/session/chrome.go, the Update branch of SplitChrome). Taking the update is ending the session and bringing it back, which the restore path does. Whether that gets a control of its own is MUS-Q-0101.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | answered on MUS-Q-0101 and built on MUS-D-0159; the threshold is MUS-Q-0104's |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0135
+
+**The frame hash is taken over the capture the furniture is still in, so a turning spinner is a new frame**
+
+finding · 2026-09-11
+
+found while fixing: [MUS-F-0128](#mus-f-0128)
+
+the state the timer stands in for: [MUS-D-0130](decisions.md#mus-d-0130)
+
+the clause it measures false: [MUS-D-0132](decisions.md#mus-d-0132)
+
+A frame is suppressed when the SHA-256 of the capture matches the last one (the sum in internal/session/screen.go's read path). The sum is taken over raw, before SplitChrome and SplitActivity take the CLI's own input box, dividers and status line off the screen. Those lines move on their own: a spinner turns, a token count ticks. So the server broadcasts a frame whose rendered HTML is byte-identical to the one before it, as often as the poll runs -- PollEvery is 400ms in screen.go, so up to two and a half times a second while an agent is working. MUS-D-0132 says the screen is re-rendered 'only when the screen has actually changed', and that clause is what this measures false; the decision stands uncorrected and this record is the correction's evidence. The client's screen branch also treats every arrival as activity, which is what the fallback silence counter counts.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/screen.go, the pane read path |
+| Status | fixed at the source; two sums, one over the body and one over everything rendered |
+| Evidence | The sum was taken over the capture, which carries the CLI's status line; PollEvery is 400ms, so a turning spinner produced a frame up to two and a half times a second on a screen that had said nothing. changedAt was reset by every one of them. TestATurningSpinnerIsSentAndDoesNotCountAsTheScreenChanging holds both halves of the fix. |
+
+---
+
+## MUS-F-0136
+
+**A bare form rule written for the composer draws a line across three forms that never asked for one**
+
+finding · 2026-09-11
+
+what was reported: [MUS-F-0107](#mus-f-0107)
+
+internal/web/sessions.go declares a bare form rule for the composer, which has no rule of its own: display flex, direction column, gap, padding .7rem 1rem and border-top 1.4px solid var(--edge). A bare element selector reaches every form on the page. .endform wears the line above Stop, which is what the owner reported as MUS-F-0107. .pick undoes the rule's direction and padding and not its border; .new form undoes none of it. The fix for the class is to move the border and the padding onto the composer, which is the only form that wants them. Line numbers move, so the rule is named rather than numbered: it is the one bare form selector in the stylesheet.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/sessions.go, the bare form selector in the session stylesheet |
+| Status | open for .pick and .new form; fixed for .endform, which is the one that was reported |
+
+---
+
+## MUS-F-0137
+
+**A question answered with a question is recorded as answered, and leaves the queue settled**
+
+finding · 2026-09-11
+
+the question it closed: [MUS-Q-0102](questions.md#mus-q-0102)
+
+re-raised as: [MUS-Q-0105](questions.md#mus-q-0105)
+
+an answer is a choice: [MUS-D-0055](decisions.md#mus-d-0055)
+
+an answer keeps its choice and gains a note: [MUS-D-0137](decisions.md#mus-d-0137)
+
+the button that dims until one is chosen: [MUS-Q-0071](questions.md#mus-q-0071)
+
+MUS-Q-0102 offered three options. The owner replied 'Are the Tmux sessions only running when a session is being viewed? Would it not be better to always have the Tmux live on the machine and only transit the selected session?' -- which chooses none of them and asks something back. It was recorded as the answer, the question's status went to answered, the badge stopped counting it and mustur questions reports no open questions. Nothing is wrong with the owner's reply; what is wrong is that the path cannot tell a choice from a question and treats free text as a settlement.
+
+MUS-D-0055 says an answer is a choice between options rather than a text box, and MUS-D-0137 says an answer keeps its choice and gains a note. Between them there is no shape for 'I am not answering this yet, here is what I want to know first' -- so the text lands in the answer field, which is the one field that closes the record. MUS-Q-0071 disabled the Answer button until an option is chosen, which covers the queue's own form; this arrived through the session view's box, where the text is the whole of the message.
+
+The cost is precisely that the gate stops working. make check fails while an open question has never been surfaced, and a question closed by a question is not open, so the one thing that stops work being reported around an unanswered decision cannot see it.
+
+| Field | Value |
+| --- | --- |
+| Where | the answer path; observed on MUS-Q-0102 |
+| Evidence | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. |
+| Status | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
+
+---
+
+## MUS-F-0138
+
+**The guard against restarting over somebody's draft read the CLI's own suggestion as a draft**
+
+finding · 2026-09-11
+
+the sweep it guards: [MUS-D-0159](decisions.md#mus-d-0159)
+
+the threshold it implements: [MUS-Q-0104](questions.md#mus-q-0104)
+
+MUS-D-0159's sweep refuses to restart a session with a line typed into the pane's input box. The first version read the box by stripping the escapes and asking whether anything was left, which is true of the dim suggestion the CLI draws into an empty box. Every session showing one would have been refused forever, so the feature would have done nothing on the only machine it runs on.
+
+The owner found it by saying they had typed nothing into a session this called typed. Measured afterwards: the CLI renders its suggestion with SGR 2 and a person's text with no SGR at all after the caret -- not colour 231, which is what the transcript above the box uses. Both cases are now fixtures taken from the real CLI, the second by starting a throwaway session and typing into it without pressing Enter, because nothing in the tree had a capture of a box with something in it.
+
+The test is written as 'not dim' rather than 'is the input colour', and the direction is the point: if the CLI restyles its suggestion a suggestion reads as typed and an update goes untaken, and if it restyles its input the other test would read a draft as an empty box and the restart would destroy it. One costs a version, the other costs what somebody wrote.
+
+The owner also pointed out that the guard was never protecting what it claimed. A draft written in Mustur's composer is held in the browser under mustur.draft and only reaches the pane when Send is pressed, so a restart cannot destroy it. What the box catches is a line typed by somebody attached to the session in a terminal -- and tmux already reports an attached client, so the sweep now declines on that too, which is the owner's 'no browser tab open on it' clause reached by the other route.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/chrome.go, internal/session/sweep.go |
+| Evidence | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. |
+| Status | fixed before the sweep ran anywhere |
+
+---
+
+## MUS-F-0139
+
+**Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository**
+
+finding · 2026-09-13
+
+decision: [MUS-D-0162](decisions.md#mus-d-0162)
+
+the record: [MUS-R-0001](routing.md#mus-r-0001)
+
+The decision letting Hoard move in without a milestone left the prose that says otherwise in place. Plan.md's not-doing table (line 113) and scope table (line 90), workflow.md's gate (line 30, 'before touching a file outside this repository: DON'T'), and CLAUDE.md's standing rules (line 199) all state onboarding as a milestone with its own verdict, with no exception for a project that brings no records. MUS-R-0001's body still says it is the only repository in this registry, which stopped being true when MUS-R-0002 was filed. None was edited from the hoard session, because the Mustur checkout is on another session's branch.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body |
+| Status | open |
+
+---
+
+## MUS-F-0140
+
+**A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute**
+
+finding · 2026-09-13
+
+the sweep that reads it: [MUS-D-0159](decisions.md#mus-d-0159)
+
+the timestamp that is not what it looks like: [MUS-F-0051](#mus-f-0051)
+
+the seed it must not remove: [MUS-F-0042](#mus-f-0042)
+
+A pane's changedAt is seeded from tmux's session_activity when the poller adopts it, so the first frame does not claim a session silent since Sunday had just this moment moved. MUS-D-0159's sweep then reads that number and kills a session when it passes thirty minutes.
+
+MUS-F-0051 already established that session_activity is not when the session last did anything. Read on this machine before deploying: mustur/Research's session_activity was three days stale, and Research is idle with an update notice showing -- so the first sweep after the deploy would have restarted it inside a minute, on a timestamp this repository had already written down as unreliable. The outcome would have looked right, which is the worst version of it.
+
+Capped rather than the seed removed: without a seed the counter says a long-silent session just moved, which is MUS-F-0042 again. The dwell is now the smaller of how long the screen has been still and how long this poller has been running, so a seed can only ever shorten it. The cost is that nothing is auto-updated for the first half hour after Mustur restarts, which is the honest answer -- for that half hour nobody here was watching.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/screen.go, Hub.Quiet |
+| Evidence | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. |
+| Status | fixed before the sweep ran anywhere |
+
+---
+
+## MUS-F-0141
+
+**A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the rule the name broke: [MUS-D-0064](decisions.md#mus-d-0064)
+
+why an answer must not be retyped by an agent: [MUS-F-0085](#mus-f-0085)
+
+HRD-Q-0006 was raised with --in mustur/Hoard_Work. A session knows itself by what tmux reports, and tmux reports the session name, prefix and all. Delivery prepends the prefix again and a project name may not contain a slash (MUS-D-0064), so the target could never resolve.
+
+Nothing said so until the owner pressed Answer. The check lived in Deliver, which runs after the answer is recorded and the question closed, so the failure landed on the owner as 'not delivered' against an answer they had already given -- and the session that asked never heard it. The raiser, who could have fixed it by typing the command again, was told nothing.
+
+Fixed on both sides. ProjectFrom strips the prefix, because a project name cannot contain a slash and a string with one in it can only be the session name -- so nothing is guessed. And ask now refuses a target NameFor will not accept, so a question that cannot be answered usefully is never filed at all.
+
+Deliver normalises too rather than only ask, so a record written before this is still deliverable. What there is no verb for is delivering an answer that has already been recorded: HRD-Q-0006 is closed, its answer is in the store, and the Hoard session still has not been told. That gap is the queue line.
+
+| Field | Value |
+| --- | --- |
+| Evidence | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. |
+| Status | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/session/session.go, internal/session/deliver.go, cmd/mustur/questions.go |
+
+---
+
+## MUS-F-0142
+
+**One project's unsurfaced question fails every other project's commit gate**
+
+finding · 2026-09-13
+
+the decision that let a second project in: [MUS-D-0162](decisions.md#mus-d-0162)
+
+the collision it shares: [MUS-F-0066](#mus-f-0066)
+
+The questions gate reads the exported tree and fails while any open question has never been surfaced. That was exactly right while the store held one project. A second moved in on MUS-D-0162, and within minutes a Mustur commit was blocked by HRD-Q-0007 and HRD-Q-0008 -- raised by the session onboarding Hoard, surfaceable only by that session, and answerable only by the owner.
+
+The gate exists so a session cannot report its own work complete around its own unanswered question. Another project's question is not that. Left alone it would block every Mustur commit until an unrelated session got round to its prompts, and the obvious way out -- surfacing somebody else's question to unblock yourself -- is the gate being walked around rather than kept.
+
+So the gate takes a prefix and the Makefile names this project's. Run by hand with no prefix it still shows the whole store, which is what a person wants to see. The prefix is matched with its dash, so MU does not match MUS.
+
+What this does not solve is the same collision everywhere else: one store and a whole-tree export means every branch commits every project's records, which is MUS-F-0066 and is now worse rather than different.
+
+| Field | Value |
+| --- | --- |
+| Where | cmd/mustur/questions.go, internal/question/question.go, Makefile |
+| Evidence | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. |
+| Status | fixed for the gate; the export still carries every project's records |
+
+---
+
+## MUS-F-0143
+
+**After I close a session the create a session screen shows up instead of the top session and I…**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+After I close a session the create a session screen shows up instead of the top session and I need to switch the session and go back before it loads.
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0144
+
+**A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+q: [HRD-Q-0008](questions.md#hrd-q-0008)
+
+Raised by Pie on 2026-09-13: plans provided as files on the agent's system are inconvenient to access, and Mustur needs a way of providing them. The case: the Hoard group-sharing plan lives at .local/group-sharing/plan.md in ~/repos/DevOfPie/hoard on whippy-vm, an ignored path because upstream bans agent files in commits. HRD-W-0001 carries only the path, HRD-Q-0008 asks Pie to read the plan before phase 1 starts, and the only way to read it is a shell on the VM. Mustur's records hold a title, a body and fields; nothing holds a document the size of a plan, and no surface renders one. What is wanted: a way for a session to hand Mustur a plan, and for the owner to read it where the decisions are.
+
+| Field | Value |
+| --- | --- |
+| Raised by | Pie, in the Hoard_Work session |
+| Consequence | until this exists, a plan is a file Pie must open on the VM |
+
+---
+
+## MUS-F-0145
+
+**A session restarted under the same name kept tmux's 80x24, so it had no scrollback**
+
+finding · 2026-09-13
+
+why height is the only scrollback: [MUS-F-0052](#mus-f-0052)
+
+the change that caused it: [MUS-D-0161](decisions.md#mus-d-0161)
+
+a path that restarts under the same name: [MUS-D-0159](decisions.md#mus-d-0159)
+
+The owner could not scroll back in mustur/Intake. Read on the machine: Intake, started at 05:24, was 80x24 with window-size latest and no history; Hoard_Work, started before the deploy, was 100x300 with window-size manual. An agent CLI runs on the alternate screen, where tmux keeps no scrollback, so a tall pane is the only transcript there is (MUS-F-0052), and Intake did not have one.
+
+Fit set the size, and it ran once per poller. That was once per session while pollers came and went with viewers. MUS-D-0161 pinned a poller to every owned session, so a session killed and started again under the same name inside one poll is never seen to end: the old poller carries on reading the new pane and nothing fits its window. The restore button does that, and so does MUS-D-0159's update sweep, so every update the sweep took would have come back with no scrollback. This was caused by the change that pinned the pollers.
+
+Fixed at Start, which now sizes the window itself after the session settles, so a session Mustur starts is tall from birth whichever path started it. The live Intake pane was resized by hand to the same geometry; what scrolled off it while it was 80x24 is not recoverable.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/session/session.go, Adapter.Start |
+| Evidence | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. |
+| Status | fixed |

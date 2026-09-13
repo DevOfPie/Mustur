@@ -241,3 +241,30 @@ func TestARefFieldMayNameSeveralRecords(t *testing.T) {
 		t.Error("a ref naming a file was dropped")
 	}
 }
+
+// Every piece of record text a long token can appear in has somewhere to break.
+//
+// MUS-F-0033 gave field values that and left titles, bodies and summaries
+// alone. It held until a record body carried a pasted terminal box — an
+// unbroken run of box-drawing characters — which set the width of the document
+// and took the fixed tab bar off the bottom of the screen with it. Measured in
+// a headless browser at 390px: 625px of document before, 390 after, and the bar
+// back on the first screen (MUS-F-0131).
+func TestRecordTextCanBreakWhereverItHasTo(t *testing.T) {
+	srv := serveRecords(t, "", decision("MUS-D-0001", "A decision", "Decided."))
+	css, code := fetch(t, srv, "/records")
+	if code != http.StatusOK {
+		t.Fatalf("records returned %d", code)
+	}
+	for _, rule := range []string{"article h3", "article p", "summary"} {
+		i := strings.Index(css, rule+" {")
+		if i < 0 {
+			t.Errorf("no %s rule on the records page", rule)
+			continue
+		}
+		block := css[i : i+strings.Index(css[i:], "}")]
+		if !strings.Contains(block, "overflow-wrap") {
+			t.Errorf("%s has no break opportunity: %s", rule, block)
+		}
+	}
+}

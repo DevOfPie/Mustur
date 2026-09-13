@@ -19,5 +19,7 @@ Stated here and nowhere else.
 
 | Investigation | Title | Date |
 | --- | --- | --- |
+| [HRD-I-0001](HRD-I-0001.md) | Group save sharing is worth building, and worth building inside Hoard rather than alone | 2026-09-13 |
 | [MUS-I-0001](MUS-I-0001.md) | A mandated tool call is honoured | 2026-08-19 |
 | [MUS-I-0002](MUS-I-0002.md) | Sub-agents can be seen, and the pane survives | 2026-08-22 |
+| [MUS-I-0003](MUS-I-0003.md) | A dialog can be answered without the screen, and the terminal survives it | 2026-09-09 |

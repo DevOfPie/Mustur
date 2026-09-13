@@ -157,13 +157,25 @@ failure to stack.
 ### A decision needs the owner
 
 ```
-always  → a prompt (AskUserQuestion)
-never   → prose, a report, a PR body, a heading called "open questions"
+always            → mustur ask, with options
+in a Mustur
+  session         → that is the prompt. Raising it shows it; a second prompt on
+                    the pane is what stops the answer arriving
+anywhere else     → a prompt (AskUserQuestion), then mustur surfaced <ID>
+never             → prose, a report, a PR body, a heading called "open questions"
 ```
 
 A well-formed decision written out in prose, with options and costs and a
 recommendation, is still the failure. Completeness is not what makes a request
-findable; arriving on the prompt surface is.
+findable; arriving where the owner answers is.
+
+The split is not a preference. An answer is delivered into the raising session by
+being typed into its pane, and a pane showing a dialog reads the paste as input
+to the dialog and the Enter as a press
+([MUS-F-0125](records/findings.md#mus-f-0125)). A prompt is a dialog. So in a
+session Mustur started, raising a prompt is how the answer to it gets lost —
+which happened four times in one day before it was measured
+([MUS-D-0156](records/decisions.md#mus-d-0156)).
 
 ### A PR needs the owner's eyes
 

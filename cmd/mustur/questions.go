@@ -104,8 +104,17 @@ func cmdAsk(args []string) error {
 	if strings.TrimSpace(*sessionID) != "" {
 		r.Data = append(r.Data, record.Field{Key: question.FieldSession, Value: *sessionID})
 	}
-	if strings.TrimSpace(*inProject) != "" {
-		r.Data = append(r.Data, record.Field{Key: question.FieldProject, Value: *inProject})
+	if in := session.ProjectFrom(*inProject); in != "" {
+		// Checked here rather than at delivery, which is where it used to be
+		// checked and is far too late: a question raised with a target nothing
+		// can reach looks fine until the owner presses Answer, and then the
+		// answer is recorded, the question closes, and the session that asked
+		// never hears it (MUS-F-0141). The raiser finds out now, when the fix
+		// is to type the command again.
+		if _, err := session.NameFor(in); err != nil {
+			return fmt.Errorf("--in %q cannot be delivered to: %w", *inProject, err)
+		}
+		r.Data = append(r.Data, record.Field{Key: question.FieldProject, Value: in})
 	}
 
 	role, ok := ident.RoleFor(question.Kind)
@@ -117,6 +126,37 @@ func cmdAsk(args []string) error {
 		return err
 	}
 	fmt.Println(written.ID)
+
+	// **In a session Mustur started, Mustur is the prompt.**
+	//
+	// The owner took that on MUS-Q-0098 after four answers in one day were
+	// recorded as delivered and never arrived: each was answered while the
+	// raising session had a prompt on its screen, and a paste into a dialog
+	// goes into the dialog (MUS-F-0125). The prompt existed to point at the
+	// queue, and while it was up the queue could not answer.
+	//
+	// So raising it here is showing it: it is on the queue, the badge that
+	// counts it is live on every surface (MUS-D-0145), and the pane stays clear
+	// for the answer to land in. A question with no --in, or one naming a
+	// session Mustur did not start, still owes a prompt and says so.
+	if p := strings.TrimSpace(*inProject); p != "" {
+		live, err := (&session.Adapter{}).Alive(ctx, p)
+		if err == nil && live {
+			when, err := stamped("", time.Now())
+			if err == nil {
+				err = setField(*db, written.ID, *actor, func(r *record.Record) error {
+					question.MarkSurfaced(r, when)
+					return nil
+				})
+			}
+			if err == nil {
+				fmt.Fprintln(os.Stderr, "raised, and on the queue "+p+" is watching. Mustur is the prompt in its own sessions (MUS-D-0156); do not raise a second one.")
+				return nil
+			}
+			fmt.Fprintln(os.Stderr, "raised, but not marked surfaced: "+err.Error())
+			return nil
+		}
+	}
 	fmt.Fprintln(os.Stderr, "raised, and not yet surfaced. Put it in a prompt, then: mustur surfaced "+written.ID)
 	return nil
 }
@@ -273,6 +313,19 @@ func cmdQuestions(args []string) error {
 	// is machine-local: reading it meant the check could only skip on a clone and
 	// in CI, while CLAUDE.md told every session the gate was binding.
 	records := fs.String("records", "", "read questions from this exported tree instead of the store")
+	// Which project's work is being gated.
+	//
+	// The gate exists so a session cannot report *its* work complete around
+	// *its* own unanswered question. That was the whole of it while the store
+	// held one project. Since a second moved in, one project's unsurfaced
+	// question fails every other project's commit gate -- a Mustur commit was
+	// blocked by two questions raised minutes earlier by the session onboarding
+	// Hoard, which no Mustur session can surface or answer (MUS-F-0142).
+	//
+	// Empty means every question, which is what a person running this by hand
+	// wants to see. The Makefile names a prefix, because a commit gate is about
+	// the work being committed.
+	only := fs.String("project", "", "gate only on this identifier prefix, for a store holding more than one project")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -283,7 +336,7 @@ func cmdQuestions(args []string) error {
 			return err
 		}
 		if *gate {
-			return question.Gate(qs)
+			return question.Gate(question.OfProject(qs, *only))
 		}
 		return listQuestions(qs, *all)
 	}
@@ -300,7 +353,7 @@ func cmdQuestions(args []string) error {
 	}
 
 	if *gate {
-		return question.Gate(stored)
+		return question.Gate(question.OfProject(stored, *only))
 	}
 	return listQuestions(stored, *all)
 }
