@@ -87,7 +87,7 @@ Authoritative. Where this table and prose elsewhere disagree, this table wins.
 | Long-lived sessions owned by Mustur, via a per-machine adapter | yes | | |
 | Read access for a second person, by Access policy | yes | | |
 | A second agent CLI fitted to the adapter | | yes | |
-| Onboarding a second project, and taking over its records | | yes, with its own verdict | |
+| Onboarding a second project, and taking over its records | | yes, with its own verdict; a new project with no records moves in as an ordinary project ([MUS-D-0162](records/decisions.md#mus-d-0162)) | |
 | Repository and commit activity | | yes | |
 | Reaching served demos behind the same door | | yes | |
 | Usage pacing aggregated across machines | | pending triage of its jot | |
@@ -110,7 +110,7 @@ the same expansion in three months.
 | Not doing | Because |
 | --- | --- |
 | Attaching to a session already running in a terminal | No documented interface exposes another process's session, so it would mean depending on a private one. Mustur converses only with sessions it started, and a session left in tmux is not visible in Mustur and will not become visible. |
-| Touching another project's files before it is onboarded | The owner's instruction, and a sound one: a half-built router that has already edited eight repositories is worse than no router. Onboarding is a milestone with its own verdict. |
+| Touching another project's files before it is onboarded | The owner's instruction, and a sound one: a half-built router that has already edited eight repositories is worse than no router. Onboarding a project that brings existing records is a milestone with its own verdict; one that brings none moves in as an ordinary project ([MUS-D-0162](records/decisions.md#mus-d-0162)). |
 | ID expansion as a rendering trick over someone else's prose | It was retrofitting addresses onto text that has none. The numbers this row used to give — 10 of 247 decision identifiers under a heading — were stale by a factor of twenty-seven on the count and fifteen on the proportion: 271 of LinkCtrl's 444 identifiers are addressable today, against the 10 of 247 this row claimed, because it adopted a per-decision heading at D16 ([MUS-F-0118](records/findings.md#mus-f-0118)). Where the row is right, and by more than it claimed, is findings: all 381 rows in that repository's deferred-findings file are table rows and none is addressable at all. Records Mustur owns are addressable when written. |
 | Embedding backends behind one origin | Documented to break back and forward, deep links and iOS scrolling at specification level; the identity provider refuses framing outright. |
 | A second git repository for documentation | Already run as `TradeShop-Support` and found unsatisfying: per-session rediscovery, cross-repo authentication, and a 13,595-byte file that exists only to explain the split. |
