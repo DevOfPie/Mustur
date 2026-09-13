@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 133 | [questions.md](questions.md) |
-| decision | 182 | [decisions.md](decisions.md) |
-| finding | 162 | [findings.md](findings.md) |
+| question | 134 | [questions.md](questions.md) |
+| decision | 185 | [decisions.md](decisions.md) |
+| finding | 163 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 25 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -38,6 +38,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0015](questions.md#hrd-q-0015) | question | Desktop UI: how does the claim prompt appear when the game starts? |
 | [HRD-Q-0016](questions.md#hrd-q-0016) | question | Desktop UI: where does sharing a world start? |
 | [HRD-Q-0017](questions.md#hrd-q-0017) | question | Re-asking how the claim prompt appears, with what the overlay can and cannot do |
+| [HRD-Q-0018](questions.md#hrd-q-0018) | question | Re-asking how the claim prompt appears, now on the Alt+H HUD that exists |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -51,6 +52,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-D-0011](decisions.md#hrd-d-0011) | decision | Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope |
 | [HRD-D-0012](decisions.md#hrd-d-0012) | decision | Groups is its own route under Hoard Saves |
 | [HRD-D-0013](decisions.md#hrd-d-0013) | decision | Sharing starts from both the Library row and the Dashboard card menu |
+| [HRD-D-0014](decisions.md#hrd-d-0014) | decision | The claim prompt lives in the Alt+H HUD, which the app raises when the game asks |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
@@ -60,6 +62,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-F-0007](findings.md#hrd-f-0007) | finding | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |
 | [HRD-F-0008](findings.md#hrd-f-0008) | finding | The self-hosted event stream is read by the desktop, not the engine, so lease frames need an engine-side listener |
 | [HRD-F-0009](findings.md#hrd-f-0009) | finding | Review of PR 1 found ten confirmed defects in the server half, three of them data loss |
+| [HRD-F-0010](findings.md#hrd-f-0010) | finding | The desktop has an interactive in-game HUD on Alt+H that the UI survey missed, and HRD-Q-0017 was raised on the wrong overlay |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
@@ -387,6 +390,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0167](decisions.md#mus-d-0167) | decision | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number |
 | [MUS-D-0168](decisions.md#mus-d-0168) | decision | Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured |
 | [MUS-D-0169](decisions.md#mus-d-0169) | decision | A milestone LinkCtrl cites and never defines becomes a stub in its place in the order |
+| [MUS-D-0170](decisions.md#mus-d-0170) | decision | LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur |
+| [MUS-D-0171](decisions.md#mus-d-0171) | decision | Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

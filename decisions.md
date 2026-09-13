@@ -3790,3 +3790,35 @@ MUS-Q-0114 asked what happens to milestone numbers cited in LinkCtrl and defined
 | --- | --- |
 | Applies to | milestone numbers cited in imported LinkCtrl records with no file, phase-1 row or heading |
 | Costs | 18 milestone records with no content beyond their citations |
+
+### MUS-D-0170
+
+**LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0115
+
+milestone: MUS-M-0009
+
+MUS-Q-0115 asked what milestone 7 must show for LinkCtrl, since its done-when was only 'its own verdict'. The owner chose the whole move. MUS-M-0009 is done when: every LinkCtrl record Mustur has a kind for is in the store and reconciled per source to LinkCtrl's tree (MUS-D-0168, MUS-D-0169); the files holding them are gone from LinkCtrl, with every link into them rewritten and LinkCtrl's own gates green; and a LinkCtrl session reaches mustur_route with a token. An importer existing, or records sitting in the store while LinkCtrl still holds its files, is not the milestone. MUS-D-0164 still orders the two halves: the import has its verdict before anything leaves LinkCtrl.
+
+| Field | Value |
+| --- | --- |
+| Done when | LinkCtrl's records are in the store and reconciled per source; the files holding them are gone from LinkCtrl with every link rewritten and its gates green; a LinkCtrl session reaches mustur_route with a token |
+
+### MUS-D-0171
+
+**Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0116
+
+milestone: MUS-M-0009
+
+MUS-Q-0116 asked whether criterion 9 is reworded or recorded as failed, since a LinkCtrl session modified two files in LinkCtrl's own tree on 2026-09-09, preparing the survey Plan.md assigned to that repository's agents, before MUS-M-0009 started on 2026-09-13. The owner chose to reword it. Criterion 9 now says no file in another project is modified by Mustur, or by a session working on Mustur, before that project's onboarding starts; a project's own agents preparing their side in their own tree is not that. What it protects is unchanged: a router that edits repositories before it is trusted.
+
+| Field | Value |
+| --- | --- |
+| Where | Plan.md, success criteria, 9 |

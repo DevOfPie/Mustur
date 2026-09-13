@@ -136,7 +136,9 @@ Done when: Someone who is not the owner signs in through Access and reads a proj
 
 milestone · 2026-08-19
 
-Done when: Its own verdict, not assumed here. The first project onboarded proves the transition the record shape was chosen to test.
+decision: [MUS-D-0170](decisions.md#mus-d-0170)
+
+Done when: for LinkCtrl, the first project onboarded with records of its own, every record Mustur has a kind for is in the store and reconciled per source to LinkCtrl's tree; the files holding them are gone from LinkCtrl, with every link into them rewritten and its gates green; and a LinkCtrl session reaches mustur_route with a token (MUS-D-0170). It proves the transition the record shape was chosen to test.
 
 | Field | Value |
 | --- | --- |

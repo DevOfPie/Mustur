@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-182 record(s), by identifier.
+185 record(s), by identifier.
 
 ## Index
 
@@ -25,6 +25,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [HRD-D-0011](#hrd-d-0011) | Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope | 2026-09-13 |
 | [HRD-D-0012](#hrd-d-0012) | Groups is its own route under Hoard Saves | 2026-09-13 |
 | [HRD-D-0013](#hrd-d-0013) | Sharing starts from both the Library row and the Dashboard card menu | 2026-09-13 |
+| [HRD-D-0014](#hrd-d-0014) | The claim prompt lives in the Alt+H HUD, which the app raises when the game asks | 2026-09-13 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -194,6 +195,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0167](#mus-d-0167) | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number | 2026-09-13 |
 | [MUS-D-0168](#mus-d-0168) | Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured | 2026-09-13 |
 | [MUS-D-0169](#mus-d-0169) | A milestone LinkCtrl cites and never defines becomes a stub in its place in the order | 2026-09-13 |
+| [MUS-D-0170](#mus-d-0170) | LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur | 2026-09-13 |
+| [MUS-D-0171](#mus-d-0171) | Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side | 2026-09-13 |
 
 ---
 
@@ -372,6 +375,22 @@ q: [HRD-Q-0016](questions.md#hrd-q-0016)
 w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 Answered by Pie on HRD-Q-0016: both. One ShareWorldModal, two entry points: the first icon in the Library tracked row's action row (Unshare when already shared) and a Share item in the SaveGameCard overflow menu beside Rename, Pause and History. Drawn in plan-523b4a30c7d3409b.
+
+---
+
+## HRD-D-0014
+
+**The claim prompt lives in the Alt+H HUD, which the app raises when the game asks**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0018](questions.md#hrd-q-0018)
+
+f: [HRD-F-0010](findings.md#hrd-f-0010)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0018. On WorldClaimWanted the desktop raises the HUD (overlay_set_visible(true), commands/overlay.rs:58-69) with a prompt panel across its top: one row per shared world of the started game with Host, View and the holder's lease state, Not playing for the whole set, and the engine's 60 s clock as a countdown. Escape hides the HUD and the clock keeps running; the engine auto-hosts after 60 s regardless (HRD-D-0002). Tauri events do not reach the HUD window, so the panel reads a pending-prompt field added to the agent snapshot the HUD already polls (Overlay.svelte:26-35); the buttons send ClaimWorld, DismissWorld like any other command. The same panel shows as a modal in the main window when that is focused. The HUD's saves column gains the lease pill. Drawn in plan-523b4a30c7d3409b.
 
 ---
 
@@ -3512,3 +3531,39 @@ MUS-Q-0114 asked what happens to milestone numbers cited in LinkCtrl and defined
 | --- | --- |
 | Applies to | milestone numbers cited in imported LinkCtrl records with no file, phase-1 row or heading |
 | Costs | 18 milestone records with no content beyond their citations |
+
+---
+
+## MUS-D-0170
+
+**LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0115](questions.md#mus-q-0115)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+MUS-Q-0115 asked what milestone 7 must show for LinkCtrl, since its done-when was only 'its own verdict'. The owner chose the whole move. MUS-M-0009 is done when: every LinkCtrl record Mustur has a kind for is in the store and reconciled per source to LinkCtrl's tree (MUS-D-0168, MUS-D-0169); the files holding them are gone from LinkCtrl, with every link into them rewritten and LinkCtrl's own gates green; and a LinkCtrl session reaches mustur_route with a token. An importer existing, or records sitting in the store while LinkCtrl still holds its files, is not the milestone. MUS-D-0164 still orders the two halves: the import has its verdict before anything leaves LinkCtrl.
+
+| Field | Value |
+| --- | --- |
+| Done when | LinkCtrl's records are in the store and reconciled per source; the files holding them are gone from LinkCtrl with every link rewritten and its gates green; a LinkCtrl session reaches mustur_route with a token |
+
+---
+
+## MUS-D-0171
+
+**Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0116](questions.md#mus-q-0116)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+MUS-Q-0116 asked whether criterion 9 is reworded or recorded as failed, since a LinkCtrl session modified two files in LinkCtrl's own tree on 2026-09-09, preparing the survey Plan.md assigned to that repository's agents, before MUS-M-0009 started on 2026-09-13. The owner chose to reword it. Criterion 9 now says no file in another project is modified by Mustur, or by a session working on Mustur, before that project's onboarding starts; a project's own agents preparing their side in their own tree is not that. What it protects is unchanged: a router that edits repositories before it is trusted.
+
+| Field | Value |
+| --- | --- |
+| Where | Plan.md, success criteria, 9 |

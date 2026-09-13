@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-133 record(s), by identifier.
+134 record(s), by identifier.
 
 ---
 
@@ -466,6 +466,36 @@ The overlay exists and is not a dialog. hoard-screen is a window-capture composi
 | Session project | Hoard_Work |
 | Answer | This seems false, with Alt+H there is an overlay that I can interact with that shows the log and my saves |
 | Answered | 2026-09-13 07:41 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0018
+
+**Re-asking how the claim prompt appears, now on the Alt+H HUD that exists**
+
+question · 2026-09-13
+
+supersedes: [HRD-Q-0017](#hrd-q-0017)
+
+f: [HRD-F-0010](findings.md#hrd-f-0010)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The HUD is lib/overlay/Overlay.svelte: a second transparent, always-on-top, maximised webview (commands/overlay.rs:34-53) with three columns, status, the session log and the saves, opened by the shortcut you set (Alt+H by default) and closed by Escape. The app can raise it itself: overlay_set_visible(true) shows it and takes focus (:58-69). One constraint shapes the prompt: Tauri events do not reach that window, so it reads an agent snapshot on a timer (Overlay.svelte:26-35); a prompt shown there is read the same way, from a new pending-prompt field on the snapshot, and its buttons send the world verbs like any other command. The engine auto-hosts after 60 s regardless.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 desktop slice, step 5; HRD-Q-0017 rested on a false premise you corrected |
+| Option | The HUD, raised when the game asks :: Recommended: a prompt panel across the top of the HUD with Host, View, Not playing per world and the countdown; the app raises the HUD on WorldClaimWanted, Escape hides it and the clock keeps running; the same panel shows in the main window when that is focused :: The answer arrives in-game, like Steam's overlay taking focus for a moment. Costs the snapshot field, a small polling change, and the panel in two windows. |
+| Option | The HUD, only when you open it :: no auto-raise; the OS nudge hoardd already sends says press Alt+H; the panel sits at the top of the HUD until answered :: Nothing steals focus from the game; a player who misses the nudge is hosted after 60 s anyway. |
+| Option | Main window modal only :: as first drawn, nothing in the HUD :: Simplest, and the answer needs alt-tab. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | The HUD, raised when the game asks |
+| Answered | 2026-09-13 07:44 |
 | Delivered | typed into mustur/Hoard_Work |
 
 ---
@@ -3232,7 +3262,7 @@ Found by the done-when review. Plan.md milestone 7 reads 'Its own verdict, not a
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | The verdict on MUS-M-0009; the reviewers had no clause to check the tree against |
 | Needed to proceed | yes |
 | Option | The whole move :: Recommended: every LinkCtrl record Mustur has a kind for is in the store and reconciled per source to LinkCtrl's tree; the files holding them are gone from LinkCtrl with every link rewritten and its gates green; a LinkCtrl session reaches mustur_route with a token :: Matches MUS-Q-0092 and MUS-Q-0093's goal: acceptance means the records moved, not that an importer exists. Holds the milestone open until LinkCtrl's side, which waits on the import verdict (MUS-D-0164), is done too. |
@@ -3241,6 +3271,9 @@ Found by the done-when review. Plan.md milestone 7 reads 'Its own verdict, not a
 | Session | mustur/LinkCtrl_Target |
 | Session project | LinkCtrl_Target |
 | Surfaced | 2026-09-13 07:29 |
+| Answer | The whole move |
+| Answered | 2026-09-13 07:41 |
+| Delivered | typed into mustur/LinkCtrl_Target |
 
 ---
 
@@ -3256,7 +3289,7 @@ Found by the shipped-claims review. MUS-M-0009 started 2026-09-13; LinkCtrl's tr
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Nothing in the import; whether Plan.md's criterion 9 stays a true claim |
 | Option | Reword it :: Recommended: no file in another project is modified by Mustur, or by a session working on Mustur, before its onboarding starts; a project's own agents preparing their side in their own tree is not that :: Keeps what the criterion protects, a router that edits repositories before it is trusted, and makes it true of what happened, which is the preparation Plan.md itself assigned to LinkCtrl's agents. |
 | Option | Record it as failed for LinkCtrl :: the criterion stands as written and a finding says it was not met :: The literal reading. It records a failure for work the plan asked for, and every future onboarding that prepares its own side fails it the same way. |
@@ -3264,3 +3297,6 @@ Found by the shipped-claims review. MUS-M-0009 started 2026-09-13; LinkCtrl's tr
 | Session | mustur/LinkCtrl_Target |
 | Session project | LinkCtrl_Target |
 | Surfaced | 2026-09-13 07:30 |
+| Answer | Reword it |
+| Answered | 2026-09-13 07:42 |
+| Delivered | typed into mustur/LinkCtrl_Target |

@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-162 record(s), by identifier.
+163 record(s), by identifier.
 
 ## The queue
 
@@ -19,6 +19,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [HRD-F-0007](#hrd-f-0007) | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |  |  |
 | [HRD-F-0008](#hrd-f-0008) | The self-hosted event stream is read by the desktop, not the engine, so lease frames need an engine-side listener |  |  |
 | [HRD-F-0009](#hrd-f-0009) | Review of PR 1 found ten confirmed defects in the server half, three of them data loss |  |  |
+| [HRD-F-0010](#hrd-f-0010) | The desktop has an interactive in-game HUD on Alt+H that the UI survey missed, and HRD-Q-0017 was raised on the wrong overlay |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -321,6 +322,24 @@ Posted as inline comments on https://github.com/DevOfPie/hoard/pull/1 at 278d887
 | Field | Value |
 | --- | --- |
 | Severity | three data-loss (1, 3, 4), two lockouts (6, 7), two races (9, 10) |
+
+---
+
+## HRD-F-0010
+
+**The desktop has an interactive in-game HUD on Alt+H that the UI survey missed, and HRD-Q-0017 was raised on the wrong overlay**
+
+finding · 2026-09-13
+
+q: [HRD-Q-0017](questions.md#hrd-q-0017)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Pie on 2026-09-13: with Alt+H there is an overlay I can interact with that shows the log and my saves. Verified: hoard-desktop/src/commands/overlay.rs creates a second Tauri webview window labelled overlay, transparent, always on top, out of the taskbar (:34-53), shown and hidden by overlay_set_visible/overlay_toggle (:58-76), toggled by a global shortcut the user sets in Settings (default Alt+H, App.svelte:524, Settings.svelte:64-67), Escape closes it (overlay.rs:63). It renders the same frontend bundle, told apart by its window label, with Hoard's live log (settings.overlay_desc). It is not Pro-gated; the Pro-only hoard-screen compositor is a different thing. HRD-Q-0017's premise, that no interactive overlay exists on self-hosted, was false, and Pie corrected it. Re-raised with the HUD as the surface.
+
+| Field | Value |
+| --- | --- |
+| Cause | the survey grepped for overlay only around hoard-screen and the crate docs; commands/overlay.rs was not read |
 
 ---
 
