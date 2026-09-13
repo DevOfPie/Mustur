@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-124 record(s), by identifier.
+126 record(s), by identifier.
 
 ---
 
@@ -3017,3 +3017,59 @@ The scope table is authoritative over prose and still promises a committed .mcp.
 | Answer | Reword it |
 | Answered | 2026-09-13 07:03 |
 | Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0112
+
+**LinkCtrl's decision log is 505 dated entries with decision numbers inside them, not 444 decisions. What is one imported decision?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0163](decisions.md#mus-d-0163)
+
+follows: [MUS-Q-0091](#mus-q-0091)
+
+Counted at LinkCtrl 230771a on 2026-09-13. decisions.md holds 505 dated entries. A D number is defined inside one in six forms: its own ### heading (266), a heading ending (D18) (10), a bold lead-in paragraph, a range lead-in covering four at once, and D1 to D193 again as rows in phase-2 and phase-3 tables (177 rows). 283 of the 505 entries define no D number at all, so splitting by number leaves more than half the log's prose with no record to live in once the file leaves. D276 and D277 are reserved and D290 was never issued.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | The decisions half of the LinkCtrl importer; findings, the ADR and the questions are being built meanwhile |
+| Needed to proceed | yes |
+| Option | Both, each whole :: Recommended: each dated entry becomes a decision numbered past 444, whole; each D number becomes a decision at its own serial holding its definition and citing its entry :: Nothing is lost and nothing has to be split correctly to survive: the entry is the lossless copy, and a D number's record is an extract that points at it, so a wrong boundary in an extract costs a paragraph, not history. D14 still resolves by rule under MUS-D-0163. Costs about 950 decision records instead of 444, and every defined sentence exists twice; the file they came from is frozen, so the two cannot drift. |
+| Option | Split by number :: each D number is one decision holding its section up to the next definition; entries defining none are filed past 444 :: About 727 records and no duplication. The body of every numbered decision depends on the parser drawing the boundary where the author meant it, across six definition forms, ranges, and headings that mention a number without defining it; a mistake is a paragraph moved into the wrong record permanently, with the source deleted. |
+| Option | Entries only :: 505 decisions numbered past 444, each whole, with the D numbers they define as a field :: The simplest parse and fully lossless. It reverses MUS-D-0163 for decisions in practice: D14 in any prose no longer names a record by rule, and finding it means searching a field. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:07 |
+
+---
+
+## MUS-Q-0113
+
+**24 of LinkCtrl's milestones are fractional, like M24.5 and M57.9, and a serial is four whole digits. How are they numbered?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0163](decisions.md#mus-d-0163)
+
+phase-details holds 74 milestone files: M21 to M70 plus 24 fractional ones, where .9 is a review and .1 to .8 added scope. M1 to M20 have no file, only phase-1's summary. An identifier's serial is exactly four digits and ident.Parse refuses anything else; its own comment says widening the field would resort every identifier already written. MUS-D-0163 wants a citation to resolve by rule.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Milestones and work units in the LinkCtrl importer |
+| Needed to proceed | yes |
+| Option | Tenths :: Recommended: the serial is the milestone number times ten, so M24.5 is serial 245 and M59 is serial 590 :: One rule covers all 94 milestones and every citation, and ordering by serial is LinkCtrl's own order, fractions included. Costs a rule a reader has to know, since M59 does not read as serial 590, and the same rule has to be applied to work units. |
+| Option | Whole ones keep theirs, fractions go past 70 :: M59 is serial 59; the 24 fractional ones take 71 onward with their LinkCtrl number as a field :: Whole milestones read naturally. The 24 fractional ones stop resolving by rule, and they include the reviews, which are the ones most cited from findings. |
+| Option | Widen the identifier :: allow a one-digit decimal suffix in the serial :: Every number kept exactly. Changes the identifier grammar for every project, the anchor rule, and the sort order ident.go warns about, which is a Mustur milestone of its own before LinkCtrl can move. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:08 |

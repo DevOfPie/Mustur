@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 124 | [questions.md](questions.md) |
+| question | 126 | [questions.md](questions.md) |
 | decision | 176 | [decisions.md](decisions.md) |
-| finding | 159 | [findings.md](findings.md) |
+| finding | 160 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 25 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -207,6 +207,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0109](questions.md#mus-q-0109) | question | LinkCtrl's 947 records import under which identifiers: its own numbers, or fresh serials? |
 | [MUS-Q-0110](questions.md#mus-q-0110) | question | LinkCtrl's own side of the move is W48, still unapproved. Approve it now, or after the import has a verdict? |
 | [MUS-Q-0111](questions.md#mus-q-0111) | question | Plan.md still promises LinkCtrl a committed .mcp.json. Reword the row, or strike it? |
+| [MUS-Q-0112](questions.md#mus-q-0112) | question | LinkCtrl's decision log is 505 dated entries with decision numbers inside them, not 444 decisions. What is one imported decision? |
+| [MUS-Q-0113](questions.md#mus-q-0113) | question | 24 of LinkCtrl's milestones are fractional, like M24.5 and M57.9, and a serial is four whole digits. How are they numbered? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -517,6 +519,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0143](findings.md#mus-f-0143) | finding | After I close a session the create a session screen shows up instead of the top session and I… |
 | [MUS-F-0144](findings.md#mus-f-0144) | finding | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |
 | [MUS-F-0145](findings.md#mus-f-0145) | finding | A session restarted under the same name kept tmux's 80x24, so it had no scrollback |
+| [MUS-F-0146](findings.md#mus-f-0146) | finding | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

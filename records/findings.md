@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-159 record(s), by identifier.
+160 record(s), by identifier.
 
 ## The queue
 
@@ -169,6 +169,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… |  | unreviewed |
 | [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  |  |
 | [MUS-F-0145](#mus-f-0145) | A session restarted under the same name kept tmux's 80x24, so it had no scrollback | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. | fixed |
+| [MUS-F-0146](#mus-f-0146) | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation | raised as MUS-Q-0112 and MUS-Q-0113 |
 
 ---
 
@@ -4008,3 +4009,28 @@ Fixed at Start, which now sizes the window itself after the session settles, so 
 | Where | internal/session/session.go, Adapter.Start |
 | Evidence | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. |
 | Status | fixed |
+
+---
+
+## MUS-F-0146
+
+**LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records**
+
+finding · 2026-09-13
+
+work-unit: [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+The survey in LinkCtrl's docs/build-notes/mustur-transition.md totals 947 records, and MUS-Q-0091's answer was taken against that total. Measured for the importer on 2026-09-13 at 230771a, two of its rows are not record counts.
+
+Decisions: decisions.md is 505 dated entries. D numbers are defined inside them in six forms, D1 to D193 again as phase-table rows, and 283 of the entries define no D number at all. The survey also said D1 to D15 have no heading, which is true, and missed that they are phase-2 table rows; a sub-survey reported D106 and D107 as defined nowhere, and both have headings at decisions.md:18335 and :18364.
+
+Milestones: 74 files, of which 24 are fractional (M24.5, M57.9), which a four-digit serial cannot hold; M1 to M20 have no file.
+
+Findings (381), questions (2 real entries, not a queue) and the one ADR count as the survey said. Nothing in LinkCtrl was edited; the survey is not Mustur's to correct.
+
+| Field | Value |
+| --- | --- |
+| Evidence | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation |
+| Status | raised as MUS-Q-0112 and MUS-Q-0113 |
