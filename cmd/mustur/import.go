@@ -133,6 +133,7 @@ func cmdImport(args []string) error {
 	sort.Strings(left)
 	fmt.Printf("renumbered %d milestones; rewrote %d references; left %d as written: %s\n",
 		len(renumber), rewritten, leftTotal, strings.Join(left, " "))
+	fmt.Printf("%d citation(s) became refs\n", linkctrl.Cite(sources))
 
 	total := 0
 	for _, src := range sources {

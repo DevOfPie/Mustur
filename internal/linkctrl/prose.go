@@ -71,6 +71,14 @@ func Questions(text, today string) ([]record.Record, error) {
 		status := "open"
 		if a := answered.FindStringSubmatch(b); a != nil {
 			status, rec.At = "answered", a[1]
+			for _, l := range strings.Split(b, "\n") {
+				if strings.Contains(l, a[0]) {
+					rec.Data = append(rec.Data, record.Field{Key: "Answer", Value: delink(strings.TrimSpace(l))})
+					break
+				}
+			}
+			// MUS-D-0126: an answer not given here says where it was given.
+			rec.Data = append(rec.Data, record.Field{Key: "Relayed", Value: "imported from LinkCtrl's upcoming-decisions.md, where the answer is recorded; not answered in Mustur"})
 		}
 		if rec.At == "" {
 			rec.At = today

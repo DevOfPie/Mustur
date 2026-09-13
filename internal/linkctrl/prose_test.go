@@ -40,6 +40,12 @@ func TestQuestionsSkipTheTemplateAndReadAnswered(t *testing.T) {
 	if s, _ := got[0].Get("Status"); s != "answered" || got[0].At != "2026-08-08" {
 		t.Fatalf("first: %s at %s", s, got[0].At)
 	}
+	if a, _ := got[0].Get("Answer"); !strings.Contains(a, "Answered 2026-08-08") {
+		t.Fatalf("answer %q", a)
+	}
+	if r, _ := got[0].Get("Relayed"); r == "" {
+		t.Fatal("an answer given in LinkCtrl does not say so")
+	}
 	if s, _ := got[1].Get("Status"); s != "open" || got[1].ID != "LNK-Q-0002" {
 		t.Fatalf("second: %s %s", got[1].ID, s)
 	}

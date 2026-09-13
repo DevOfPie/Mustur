@@ -2,9 +2,11 @@
 //
 // Unlike the seed, this copies bodies rather than linking to them: the files
 // leave LinkCtrl once the import has its verdict (MUS-D-0164), so a link back
-// would point at nothing. Every record keeps the number LinkCtrl gave it
-// (MUS-D-0163). A link whose target is a file in LinkCtrl's tree keeps its text
-// and loses its target, because the target is one of the files that leave.
+// would point at nothing. Findings and D numbers keep the number LinkCtrl gave
+// them (MUS-D-0163); the log's entries follow them from 445 (MUS-D-0166) and
+// milestones are renumbered (MUS-D-0167). A link whose target is a file in
+// LinkCtrl's tree keeps its text and loses its target, because the target is
+// one of the files that leave.
 package linkctrl
 
 import (
@@ -30,8 +32,8 @@ type Source struct {
 	Records []record.Record
 }
 
-// Apply writes records into a store that holds nothing under LNK yet. An
-// import that runs twice has stopped being an import.
+// Apply writes records into a store that holds nothing under LNK yet, all or
+// nothing. An import that runs twice has stopped being an import.
 func Apply(ctx context.Context, s *store.Store, sources []Source) (int, error) {
 	existing, err := s.List(ctx, "")
 	if err != nil {
@@ -42,16 +44,14 @@ func Apply(ctx context.Context, s *store.Store, sources []Source) (int, error) {
 			return 0, fmt.Errorf("store already holds %s: the import runs once", r.ID)
 		}
 	}
-	n := 0
+	var all []record.Record
 	for _, src := range sources {
-		for _, r := range src.Records {
-			if err := s.Append(ctx, r, "create", Actor); err != nil {
-				return n, fmt.Errorf("%s: %w", src.Path, err)
-			}
-			n++
-		}
+		all = append(all, src.Records...)
 	}
-	return n, nil
+	if err := s.AppendAll(ctx, all, Actor); err != nil {
+		return 0, err
+	}
+	return len(all), nil
 }
 
 var (
@@ -122,4 +122,29 @@ func titleOf(s string) string {
 		s = string(r[:199]) + "…"
 	}
 	return s
+}
+
+// outsideCode applies fn to the parts of s that are prose: not inside a fenced
+// block, not the fence lines themselves, and not inside a code span. A number
+// in a shell line or an identifier is not a citation.
+func outsideCode(s string, fn func(string) string) string {
+	var out []string
+	fence := false
+	for _, line := range strings.Split(s, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "```") {
+			fence = !fence
+			out = append(out, line)
+			continue
+		}
+		if fence {
+			out = append(out, line)
+			continue
+		}
+		parts := strings.Split(line, "`")
+		for i := 0; i < len(parts); i += 2 { // odd parts are inside a code span
+			parts[i] = fn(parts[i])
+		}
+		out = append(out, strings.Join(parts, "`"))
+	}
+	return strings.Join(out, "\n")
 }

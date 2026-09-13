@@ -92,7 +92,7 @@ func Milestones(src MilestoneSources, today string) ([]record.Record, map[string
 	if err != nil {
 		return nil, nil, err
 	}
-	plan, err := columnByMilestone(map[string]string{"Plan.md": src.Plan}, "Discharges")
+	plan, err := planRows(src.Plan)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -136,9 +136,7 @@ func Milestones(src MilestoneSources, today string) ([]record.Record, map[string
 		if s, ok := status[n]; ok {
 			ms.Data = append(ms.Data, record.Field{Key: "Status", Value: s})
 		}
-		if p, ok := plan[n]; ok {
-			ms.Data = append(ms.Data, record.Field{Key: "Plan.md row", Value: p})
-		}
+		ms.Data = append(ms.Data, plan[n]...)
 		if ms.At == "" {
 			ms.At = today
 			ms.Data = append(ms.Data, record.Field{Key: "Dated", Value: "on import: nothing dates it"})
@@ -168,6 +166,39 @@ func Milestones(src MilestoneSources, today string) ([]record.Record, map[string
 		out = append(out, wu)
 	}
 	return out, renumber, nil
+}
+
+// planRows reads Plan.md's milestone ordering table whole. The rows leave
+// LinkCtrl (MUS-Q-0093), so each keeps its place in the table, which is an
+// order LinkCtrl chose and need not be numeric, and its own cells.
+func planRows(plan string) (map[string][]record.Field, error) {
+	out := map[string][]record.Field{}
+	var header []string
+	order := 0
+	for i, l := range strings.Split(plan, "\n") {
+		switch {
+		case strings.HasPrefix(l, "| # |"):
+			header, order = cells(l), 0
+		case header != nil && milestoneRow.MatchString(l):
+			c := cells(l)
+			if len(c) != len(header) {
+				return nil, fmt.Errorf("Plan.md:%d: %d cells under a %d-column header", i+1, len(c), len(header))
+			}
+			order++
+			n := milestoneRow.FindStringSubmatch(l)[1]
+			fields := []record.Field{{Key: "Plan.md order", Value: strconv.Itoa(order)}}
+			for j, h := range header {
+				if h == "#" || h == "Milestone" || c[j] == "" {
+					continue
+				}
+				fields = append(fields, record.Field{Key: "Plan.md " + strings.ToLower(h), Value: delink(c[j])})
+			}
+			out[n] = fields
+		case !strings.HasPrefix(l, "|"):
+			header = nil
+		}
+	}
+	return out, nil
 }
 
 func has(r record.Record, key string) bool {
@@ -238,32 +269,17 @@ func columnByMilestone(files map[string]string, column string) (map[string]strin
 func Rewrite(sources []Source, renumber map[string]int) (int, map[string]int) {
 	rewritten, unresolved := 0, map[string]int{}
 	swap := func(s string) string {
-		var out []string
-		fence := false
-		for _, line := range strings.Split(s, "\n") {
-			if strings.HasPrefix(strings.TrimSpace(line), "```") {
-				fence = !fence
-			}
-			if fence || strings.HasPrefix(strings.TrimSpace(line), "```") {
-				out = append(out, line)
-				continue
-			}
-			parts := strings.Split(line, "`")
-			for i := 0; i < len(parts); i += 2 { // odd parts are inside a code span
-				parts[i] = milestoneRef.ReplaceAllStringFunc(parts[i], func(tok string) string {
-					n := tok[1:]
-					serial, ok := renumber[n]
-					if !ok {
-						unresolved[tok]++
-						return tok
-					}
-					rewritten++
-					return ident.ID{Project: Prefix, Role: ident.Milestone, Serial: serial}.String()
-				})
-			}
-			out = append(out, strings.Join(parts, "`"))
-		}
-		return strings.Join(out, "\n")
+		return outsideCode(s, func(prose string) string {
+			return milestoneRef.ReplaceAllStringFunc(prose, func(tok string) string {
+				serial, ok := renumber[tok[1:]]
+				if !ok {
+					unresolved[tok]++
+					return tok
+				}
+				rewritten++
+				return ident.ID{Project: Prefix, Role: ident.Milestone, Serial: serial}.String()
+			})
+		})
 	}
 	for si := range sources {
 		for ri := range sources[si].Records {

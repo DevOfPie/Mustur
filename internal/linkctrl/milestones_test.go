@@ -65,8 +65,11 @@ func TestMilestonesRenumberInLinkCtrlOrder(t *testing.T) {
 	if b := m["LNK-M-0002"].Body; b != "The redirect." {
 		t.Fatalf("M20's detail section: %q", b)
 	}
-	if v, _ := m["LNK-M-0006"].Get("Plan.md row"); v != "F12" {
-		t.Fatalf("plan row %q", v)
+	m25 := m["LNK-M-0006"]
+	for key, want := range map[string]string{"Plan.md order": "1", "Plan.md depends on": "M24.5", "Plan.md discharges": "F12"} {
+		if v, _ := m25.Get(key); v != want {
+			t.Fatalf("%s %q, want %q", key, v, want)
+		}
 	}
 }
 
