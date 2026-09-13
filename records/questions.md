@@ -4,7 +4,220 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-108 record(s), by identifier.
+116 record(s), by identifier.
+
+---
+
+## HRD-Q-0001
+
+**Which blob namespace do shared saves use, and how far may content existence leak?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Blobs are keyed (user_id, sha256) and 0013_blobs.sql:4 says dedup is per user so content existence never leaks across accounts. A member pushing into a shared save must land bytes somewhere, and the CAS init dedup reply tells the uploader which hashes already exist in that namespace.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 1 migrations for shared saves; the groups, members and lease tables can proceed without it |
+| Option | Owner namespace, dedup scoped to the save :: Recommended: no blob schema change; the server resolves a member's upload and download to the save owner's namespace, and a non-owner's dedup lookup only consults hashes already in that save's own snapshots :: Storage counts against the owner as it does today. The leak is confined to content the member can already download from that save's history, which is no leak. Cost is one namespace resolution in cas.rs plus a filtered have-check for non-owners. |
+| Option | Group namespace :: a new blob owner kind so a group holds its own blobs, with its own quota :: Principled and keeps the per-account rule intact, but blobs.user_id is an FK to users, so it means a parallel table or a rebuilt PK, a group quota with its own accounting, and a second store path. Roughly doubles phase 1's server work. |
+| Option | Owner namespace, owner-wide dedup :: cheapest: members dedup against everything the owner has :: A member learns whether the owner holds any given file anywhere in their account. Exactly the leak upstream wrote the rule against, so it would not go upstream. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Group namespace |
+| Answered | 2026-09-13 04:25 |
+| Note | An Owner creates a group, as I believe this will work best with Hoard clouds pay model. |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0002
+
+**How does a shared save name one world's files, given a save is a whole folder today?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The Ludusavi catalog roots Valheim at the parent folder (Linux <xdgConfig>/unity3d/IronGate/Valheim, Windows LocalLow/IronGate/Valheim), so worlds_local and characters_local travel together. walk_source (backup.rs:630-720) has no include filter. Only the chosen world is locked means the save must be one world.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 2 backup and restore scope; the lease itself does not depend on it |
+| Option | Per-save include filter :: Recommended: a glob list on the save, set from a Valheim template when the world is shared, honoured by backup and restore :: Generic, so a second game is data not code, and upstreamable on its own. Costs a filter in walk_source and the restore merge, a state field, a wire field with a golden fixture, and the template. |
+| Option | Subfolder save :: track worlds_local as its own save with its own label, no new mechanism :: Zero new code, but every world in the folder shares one lease, so a member playing a solo world locks the co-op one. Acceptable only as an interim. |
+| Option | Per-game rule in hoard-manifest :: a Valheim-only file rule beside the catalog :: Smaller than the filter but a special case in the manifest crate, and a second game means another rule in code. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Which option is the least disruptive to the project while only sharing the appropriate files for the game(player data does not and should not be synced unless it is required by the game (when player data is part of the worlds save, like Minecraft where the local user stores nothing) |
+| Answered | 2026-09-13 04:29 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0003
+
+**What happens when the Host / View / Not playing prompt goes unanswered?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The design leaves an unanswered prompt to file evidence. From what I know of Valheim, unverified on a real install, it reads the world at load and writes <name>.db.new then renames on save, autosaving every 30 minutes by default, so it does not hold the file open. The first evidence a poll can see may be 30 minutes into two members hosting the same world.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 2 claim flow; nothing before it |
+| Option | Auto-Host when unambiguous :: Recommended: after 60 s unanswered, if the game has exactly one shared world and its lease is free, take it and say so; another member may take it over while the holder has written nothing :: Closes the 30-minute window at the cost of sometimes locking a world the player is not in. The takeover rule keeps that cheap: a lease with no writes behind it is safe to move. |
+| Option | Wait for evidence :: the design as written: no default, the lease is claimed by the first open or write :: Nothing is locked wrongly, and for Valheim the warning arrives at the first autosave, after which one session's work is already a side copy. |
+| Option | Auto-View :: pull the latest copy and push nothing until the player answers :: Nobody forks the save, but a host who ignores the prompt plays a session that is discarded, which the design already calls the worst outcome of View. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Auto-Host when unambiguous |
+| Answered | 2026-09-13 04:32 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0004
+
+**What lease TTL and heartbeat does a hosted world use?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Presence beats every 30 s and the server treats 90 s as offline (devices.rs:59, presence.rs:33). A lease that expires while its holder is mid-session lets a second host in, which forks the world; one that lingers after a crash makes friends wait.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 1 lease routes take the numbers as constants; the choice can change later without a migration |
+| Option | 30 s beat, 5 minute expiry :: Recommended: the lease renews on the presence beat, expires after ten missed :: A network stumble during play never hands the world away. A crash costs the group five minutes, and a force-release route covers the impatient case. |
+| Option | Presence cadence, 30 s beat, 90 s expiry :: one cadence and one mental model, shared code path :: Three missed beats mid-session is a real risk on home wifi, and losing the lease while hosting is the one failure the lease exists to prevent. |
+| Option | Renew on the poll tick :: 2 s renew, 30 s expiry, near-instant crash recovery :: Chatty against a self-hosted server and brittle on any hiccup; the same fork risk as the short expiry, worse. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | 30 s beat, 5 minute expiry |
+| Answered | 2026-09-13 04:33 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0005
+
+**Is the cloud stack in scope for group sharing at all?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Self-hosted SQLite and cloud Postgres are separate stacks with separate migrations and handlers (cloud/mod.rs, cloud/run.rs:182-365). Cloud also brings plan limits, bandwidth windows and billing (plans.rs, quota.rs), so a shared save raises who pays. HRD-W-0001 says self-hosted first and leaves whether cloud is attempted open.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Whether phase 1 carries Postgres migrations, RLS policies and cloud route twins |
+| Option | Self-hosted only :: Recommended: the fork ships self-hosted; cloud is left to the upstream maintainer with the design offered :: Halves every server phase and avoids deciding quota ownership for a service we do not run. A cloud member of the group cannot join, which for a friends' server is no loss. |
+| Option | Both stacks, cloud second :: self-hosted first, then a cloud phase in the fork :: Complete, but the cloud phase cannot be tested end to end without Hoard's Supabase and R2, and its quota decisions are the maintainer's to make. |
+| Option | Cloud first :: build against the stack most users are on :: We cannot run it, so nothing could be verified here. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Self-hosted only |
+| Answered | 2026-09-13 04:35 |
+| Note | Build with the intention of cloud support, but I will only be using this self hosted unless it is accepted by the project at which point they can make the final changes themselves or request them. |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0006
+
+**When is the design offered to upstream: before code, after phase 1 works, or not at all?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+i: [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001)
+
+Upstream's AGENTS.md asks before writing code and the maintainer answers issues within two days (HRD-I-0001). Upstream moved 244 commits in the last 30 days, so a long-lived fork branch will be rebased often whatever we choose. Opening an issue is your outward-facing action, not mine.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing in the fork; it decides whether the schema can still change on the maintainer's word |
+| Option | Issue now, before phase 1 :: Recommended: a design issue on rleeon/hoard with the lease model and the schema, then build :: Feedback lands before any migration is committed, which is the cheapest moment to be told no. Costs a few days' wait, which phase 0 verification fills. |
+| Option | After phase 1 works :: build the server half in the fork, then open an issue with a working branch :: A working demo argues better than a design, but a schema the maintainer dislikes is then already built. |
+| Option | Fork only :: never offer it; the fork is the product :: No waiting and no compromise, and every upstream release is a rebase we carry alone. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Fork only |
+| Answered | 2026-09-13 04:37 |
+| Note | My only concern is using it myself for now. We may offer it later but not at a scheduled time. |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0007
+
+**Re-asking how a shared save names one world's files, with your question answered**
+
+question · 2026-09-13
+
+supersedes: [HRD-Q-0002](#hrd-q-0002)
+
+f: [MUS-F-0137](findings.md#mus-f-0137)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Your question: which option is least disruptive while sharing only the files the game needs, and never player data unless the game keeps it inside the world (Minecraft). Answer: the per-save include filter. The subfolder save cannot separate one world from another or exclude anything inside the folder, so it fails the constraint outright. The per-game rule shares only the right files but is a special case in the manifest crate and a code change per game. The filter is one mechanism, honoured by backup and restore, and each game is a template: Valheim names the world's .db, .fwl, .old and _backup_ files and nothing under characters_local; a Minecraft template names the world folder whole, playerdata included, because the game keeps it there. Disruption is one filter call in walk_source and the restore merge, a state field, a wire field with a golden fixture.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Phase 2 backup and restore scope; HRD-Q-0002 was closed by a reply that asked rather than chose |
+| Option | Per-save include filter :: Recommended: a glob list on the save, set from a per-game template when the world is shared; player data excluded unless the template says the game stores it in the world :: Meets the constraint for both cases you named with one mechanism. Costs a filter in walk_source and the restore merge, a state field, a wire field with a golden fixture, and the Valheim template. |
+| Option | Subfolder save :: track worlds_local as its own save, no new mechanism :: Zero new code, but every world in the folder shares one lease and nothing inside can be excluded, so it cannot meet the constraint. |
+| Option | Per-game rule in hoard-manifest :: a Valheim-only file rule beside the catalog :: Shares only the right files, but each new game is a code change in the manifest crate rather than data. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0008
+
+**Does phase 1, the server half, start in this session or after you read the plan?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+d: [HRD-D-0001](decisions.md#hrd-d-0001)
+
+The plan at .local/group-sharing/plan.md is revised for HRD-D-0001 to 0005. Phase 1 is the server: four migrations, a Namespace enum through the CAS path, groups and lease routes, wire types, tests. It is the biggest PR and the one a schema objection would most want to reach before it is built. AGENTS.md's ask-before-code is satisfied by this session per the checkout rules, so this is your review gate, not upstream's.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Writing code; the plan is complete apart from HRD-Q-0007, which only touches phase 2 |
+| Option | Start now :: Recommended: phase 1 begins in this session on a branch from main, PR opened as draft when green :: Fastest; the plan is on disk to read alongside the diff, and a draft PR is where a schema objection is cheapest to act on. |
+| Option | After you read the plan :: this session stops; phase 1 starts when you say so :: Costs a round trip and buys a read of the plan before any migration exists. |
+| Option | Phase 0 first :: hold code until the Valheim file behaviour is verified :: Phase 0 only changes phase 2's evidence design, so it buys nothing for the server half. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
 
 ---
 

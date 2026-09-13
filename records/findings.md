@@ -4,12 +4,16 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-145 record(s), by identifier.
+150 record(s), by identifier.
 
 ## The queue
 
 | # | Finding | Evidence | Reviewed |
 | --- | --- | --- | --- |
+| [HRD-F-0001](#hrd-f-0001) | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |  |  |
+| [HRD-F-0002](#hrd-f-0002) | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |  | claim to verify; owner has the game, this VM does not |
+| [HRD-F-0003](#hrd-f-0003) | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |  |  |
+| [HRD-F-0004](#hrd-f-0004) | Upstream moved 244 commits in 30 days, so the fork's changes must be additive |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -155,6 +159,71 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0138](#mus-f-0138) | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. | fixed before the sweep ran anywhere |
 | [MUS-F-0139](#mus-f-0139) | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body | open |
 | [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
+| [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
+
+---
+
+## HRD-F-0001
+
+**Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The Ludusavi catalog roots Valheim at <xdgConfig>/unity3d/IronGate/Valheim on Linux and <home>/AppData/LocalLow/IronGate/Valheim on Windows, with cloud_steam true (hoard-manifest/data/ludusavi-catalog.json.zst, slug valheim). Worlds sit under worlds_local and characters under characters_local, so a Hoard save of that root ships characters with the world. With Steam Cloud enabled Valheim keeps worlds in worlds rather than worlds_local and Steam syncs them, so a shared world needs Steam Cloud off for Valheim on every member's machine, or Hoard tracking worlds_local only. Documentation for members, and a check the client could make.
+
+| Field | Value |
+| --- | --- |
+| Consequence | world scope needs a file subset; members disable Steam Cloud for Valheim |
+
+---
+
+## HRD-F-0002
+
+**Valheim most likely does not hold the world file open, which makes file evidence a late backstop**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Unverified on a real install; from what I know of the game: the world is read at load and written by autosave (default every 30 minutes, -saveinterval) and on exit as <name>.db.new renamed over <name>.db, with the previous copy kept as .db.old. If so, /proc/<pid>/fd (agent.rs:4837) and the Windows sharing-violation probe (locks.rs) see the file only for the moment of load, which a 2 s poll catches by luck, and the first write can be 30 minutes in. The claim prompt becomes the primary signal and the design's item 3 the backstop. To verify before phase 2: inotifywait on worlds_local during a session on Linux, Process Monitor on Windows, noting open, write and rename events and whether .fwl is rewritten at load.
+
+| Field | Value |
+| --- | --- |
+| Status | claim to verify; owner has the game, this VM does not |
+
+---
+
+## HRD-F-0003
+
+**The fork's Actions state cannot be read with the current PAT, and no workflow is listed**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+gh api repos/DevOfPie/hoard/actions/workflows returns an empty list and actions/permissions returns 403 Resource not accessible by personal access token (2026-09-13). Either Actions is disabled on the fork or the token lacks the actions scope; the two are indistinguishable from here. The ruleset on main enforces deletion and non_fast_forward only, no required checks, so a PR merges without CI either way. Owed by the owner per HRD-W-0001: enable Actions, disable the five non-CI workflows, and a PAT that can read them.
+
+| Field | Value |
+| --- | --- |
+| Consequence | until confirmed, every PR is gated by the local recipe in the checkout CLAUDE.md, not by CI |
+
+---
+
+## HRD-F-0004
+
+**Upstream moved 244 commits in 30 days, so the fork's changes must be additive**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+git log --since=30.days upstream/main counts 244 commits to 2026-09-12. A branch that edits inside agent.rs's poll loop or reconcile.rs's decision order will conflict on every rebase. The plan therefore puts new logic in new modules (a lease client, a group client, a world-file filter), touches existing hot paths at single call sites, adds tables rather than altering them, and stacks small PRs rebased weekly. windows-sys 0.59 is already a dependency of hoard-agent, so the Restart Manager probe needs a feature flag, not a crate.
+
+| Field | Value |
+| --- | --- |
+| Consequence | additive modules, single-site hooks, weekly rebase |
 
 ---
 
@@ -3723,3 +3792,34 @@ Capped rather than the seed removed: without a seed the counter says a long-sile
 | Where | internal/session/screen.go, Hub.Quiet |
 | Evidence | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. |
 | Status | fixed before the sweep ran anywhere |
+
+---
+
+## MUS-F-0141
+
+**A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+the rule the name broke: [MUS-D-0064](decisions.md#mus-d-0064)
+
+why an answer must not be retyped by an agent: [MUS-F-0085](#mus-f-0085)
+
+HRD-Q-0006 was raised with --in mustur/Hoard_Work. A session knows itself by what tmux reports, and tmux reports the session name, prefix and all. Delivery prepends the prefix again and a project name may not contain a slash (MUS-D-0064), so the target could never resolve.
+
+Nothing said so until the owner pressed Answer. The check lived in Deliver, which runs after the answer is recorded and the question closed, so the failure landed on the owner as 'not delivered' against an answer they had already given -- and the session that asked never heard it. The raiser, who could have fixed it by typing the command again, was told nothing.
+
+Fixed on both sides. ProjectFrom strips the prefix, because a project name cannot contain a slash and a string with one in it can only be the session name -- so nothing is guessed. And ask now refuses a target NameFor will not accept, so a question that cannot be answered usefully is never filed at all.
+
+Deliver normalises too rather than only ask, so a record written before this is still deliverable. What there is no verb for is delivering an answer that has already been recorded: HRD-Q-0006 is closed, its answer is in the store, and the Hoard session still has not been told. That gap is the queue line.
+
+| Field | Value |
+| --- | --- |
+| Evidence | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. |
+| Status | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/session/session.go, internal/session/deliver.go, cmd/mustur/questions.go |

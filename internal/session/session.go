@@ -215,6 +215,21 @@ var safeProject = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 // with a sentence about colons and full stops, which is true of the rule and
 // irrelevant to what was typed. The reason the rule exists is above; a person
 // who has just been refused wants the fact, not the derivation.
+// ProjectFrom takes whatever somebody has to hand and returns the project name.
+//
+// A session raising a question knows its own name from tmux, and what tmux
+// gives it is the *session* name -- "mustur/Hoard_Work", prefix and all. Passing
+// that to --in produced a question whose answer could never be delivered,
+// because delivery prepends the prefix again and a project name may not contain
+// a slash (MUS-D-0064). The owner met that as "not delivered" on an answer they
+// had already given, which is the worst place to meet it (MUS-F-0141).
+//
+// Stripping is unambiguous: a project name cannot contain a slash, so a string
+// with one in it can only be the session name. Nothing is guessed.
+func ProjectFrom(name string) string {
+	return strings.TrimPrefix(strings.TrimSpace(name), Prefix)
+}
+
 func NameFor(project string) (string, error) {
 	if project == "" {
 		return "", fmt.Errorf("a name is needed: letters, digits, dash or underscore")

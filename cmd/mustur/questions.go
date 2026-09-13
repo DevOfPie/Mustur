@@ -104,8 +104,17 @@ func cmdAsk(args []string) error {
 	if strings.TrimSpace(*sessionID) != "" {
 		r.Data = append(r.Data, record.Field{Key: question.FieldSession, Value: *sessionID})
 	}
-	if strings.TrimSpace(*inProject) != "" {
-		r.Data = append(r.Data, record.Field{Key: question.FieldProject, Value: *inProject})
+	if in := session.ProjectFrom(*inProject); in != "" {
+		// Checked here rather than at delivery, which is where it used to be
+		// checked and is far too late: a question raised with a target nothing
+		// can reach looks fine until the owner presses Answer, and then the
+		// answer is recorded, the question closes, and the session that asked
+		// never hears it (MUS-F-0141). The raiser finds out now, when the fix
+		// is to type the command again.
+		if _, err := session.NameFor(in); err != nil {
+			return fmt.Errorf("--in %q cannot be delivered to: %w", *inProject, err)
+		}
+		r.Data = append(r.Data, record.Field{Key: question.FieldProject, Value: in})
 	}
 
 	role, ok := ident.RoleFor(question.Kind)

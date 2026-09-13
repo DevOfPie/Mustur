@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 108 | [questions.md](questions.md) |
-| decision | 162 | [decisions.md](decisions.md) |
-| finding | 145 | [findings.md](findings.md) |
+| question | 116 | [questions.md](questions.md) |
+| decision | 167 | [decisions.md](decisions.md) |
+| finding | 150 | [findings.md](findings.md) |
 | repository, machine, project | 6 | [routing.md](routing.md) |
 | work-unit | 24 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
@@ -21,6 +21,23 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Identifier | Kind | Title |
 | --- | --- | --- |
 | [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001) | work-unit | Group save sharing in the DevOfPie fork |
+| [HRD-Q-0001](questions.md#hrd-q-0001) | question | Which blob namespace do shared saves use, and how far may content existence leak? |
+| [HRD-Q-0002](questions.md#hrd-q-0002) | question | How does a shared save name one world's files, given a save is a whole folder today? |
+| [HRD-Q-0003](questions.md#hrd-q-0003) | question | What happens when the Host / View / Not playing prompt goes unanswered? |
+| [HRD-Q-0004](questions.md#hrd-q-0004) | question | What lease TTL and heartbeat does a hosted world use? |
+| [HRD-Q-0005](questions.md#hrd-q-0005) | question | Is the cloud stack in scope for group sharing at all? |
+| [HRD-Q-0006](questions.md#hrd-q-0006) | question | When is the design offered to upstream: before code, after phase 1 works, or not at all? |
+| [HRD-Q-0007](questions.md#hrd-q-0007) | question | Re-asking how a shared save names one world's files, with your question answered |
+| [HRD-Q-0008](questions.md#hrd-q-0008) | question | Does phase 1, the server half, start in this session or after you read the plan? |
+| [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
+| [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
+| [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
+| [HRD-D-0004](decisions.md#hrd-d-0004) | decision | Only the self-hosted stack is built, shaped so the cloud stack could follow |
+| [HRD-D-0005](decisions.md#hrd-d-0005) | decision | The fork is the product; nothing is offered upstream on a schedule |
+| [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
+| [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
+| [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
+| [HRD-F-0004](findings.md#hrd-f-0004) | finding | Upstream moved 244 commits in 30 days, so the fork's changes must be additive |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
@@ -472,6 +489,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0138](findings.md#mus-f-0138) | finding | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft |
 | [MUS-F-0139](findings.md#mus-f-0139) | finding | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository |
 | [MUS-F-0140](findings.md#mus-f-0140) | finding | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute |
+| [MUS-F-0141](findings.md#mus-f-0141) | finding | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
