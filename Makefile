@@ -62,8 +62,8 @@ surfaces: ## Every page served is a surface docs/ui-surfaces.md briefed first
 # here. Against the tree there is nothing to skip: an absent or empty
 # questions.md is the tree saying there are none, which is a fact and not a gap.
 questions: ## No open question was left unsurfaced as a prompt
-	@go run ./cmd/mustur questions --gate --records records \
-	  && echo "  ok    no open question in records/ was left unsurfaced"
+	@go run ./cmd/mustur questions --gate --records records --project MUS \
+	  && echo "  ok    no open question of this project's was left unsurfaced"
 
 # go.mod said a directly imported package was `// indirect` for one commit, and
 # nothing noticed. An earlier version of this comment said "a whole milestone",

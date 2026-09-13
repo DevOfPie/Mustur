@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-162 record(s), by identifier.
+168 record(s), by identifier.
 
 ## Index
 
@@ -12,6 +12,12 @@ Navigation only. Rows are appended when entries are, and never removed.
 
 | Entry | Covers | Date |
 | --- | --- | --- |
+| [HRD-D-0001](#hrd-d-0001) | Shared saves store their blobs in a group namespace, and the group's owner pays for them | 2026-09-13 |
+| [HRD-D-0002](#hrd-d-0002) | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free | 2026-09-13 |
+| [HRD-D-0003](#hrd-d-0003) | A lease renews every 30 seconds and expires after five minutes | 2026-09-13 |
+| [HRD-D-0004](#hrd-d-0004) | Only the self-hosted stack is built, shaped so the cloud stack could follow | 2026-09-13 |
+| [HRD-D-0005](#hrd-d-0005) | The fork is the product; nothing is offered upstream on a schedule | 2026-09-13 |
+| [HRD-D-0006](#hrd-d-0006) | A shared save names its files with a per-save include filter, set from a per-game template | 2026-09-13 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -174,6 +180,90 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0160](#mus-d-0160) | A jot takes six pictures, and six is the owner's number rather than the agent's | 2026-09-11 |
 | [MUS-D-0161](#mus-d-0161) | The hub polls every owned session, and the reader stops being a thing a viewer starts | 2026-09-12 |
 | [MUS-D-0162](#mus-d-0162) | A new project with no records moves in as an ordinary project, not as a milestone | 2026-09-13 |
+
+---
+
+## HRD-D-0001
+
+**Shared saves store their blobs in a group namespace, and the group's owner pays for them**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0001](questions.md#hrd-q-0001)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0001: group namespace, with the note that an owner creates a group because that fits Hoard Cloud's pay model. So a group is created by one user, who owns it; a shared save's blobs live under the group, not under any member; and the group's storage counts against its owner's quota, since groups have no quota of their own in v1. The per-account rule of 0013_blobs.sql stands: content existence leaks only within the group, whose members can read the save anyway. Cost accepted: a group_blobs table and a Namespace enum threaded through cas.rs, blobs.rs and store.rs, and a blob copy into the group namespace when a save with history is shared.
+
+---
+
+## HRD-D-0002
+
+**An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0003](questions.md#hrd-q-0003)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0003. After 60 s without an answer, if the launched game has one shared world and nobody holds its lease, the agent takes the lease and says so. Another member may take the lease over while its holder has pushed nothing since acquiring, so a wrong auto-claim costs nothing. With several shared worlds, or a held lease, nothing is claimed and file evidence decides, as the design says.
+
+---
+
+## HRD-D-0003
+
+**A lease renews every 30 seconds and expires after five minutes**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0004](questions.md#hrd-q-0004)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0004. The renew rides the presence beat (presence.rs, 30 s); the server treats a lease as live while renewed_at is within 300 s and released_at is null, computed on read with no stored flag, as devices.rs does for online. A network stumble mid-session never hands the world away; a crash costs the group five minutes, and the force route covers less patience than that.
+
+---
+
+## HRD-D-0004
+
+**Only the self-hosted stack is built, shaped so the cloud stack could follow**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0005](questions.md#hrd-q-0005)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0005: self-hosted only, built with the intention of cloud support; Pie will use it self-hosted unless upstream accepts it, in which case the maintainer makes or requests the cloud changes. So: no Postgres migrations, RLS or cloud route twins in the fork. The shapes that cloud would reuse are kept stack-neutral: wire types in hoard-core, the save_access helper and Namespace enum as plain functions over a pool, route paths that the cloud router could mount, and no self-hosted-only assumption in the agent's group and lease clients beyond the capability probe.
+
+---
+
+## HRD-D-0005
+
+**The fork is the product; nothing is offered upstream on a schedule**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0006](questions.md#hrd-q-0006)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0006: fork only, for their own use for now, possibly offered later at no set time. The plan drops the upstream-offer phase. Code stays upstreamable in style because it costs nothing: English prose, no trailers, additive modules, changelog entries under Unreleased. Every upstream release is a rebase the fork carries.
+
+---
+
+## HRD-D-0006
+
+**A shared save names its files with a per-save include filter, set from a per-game template**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0007](questions.md#hrd-q-0007)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0007 after HRD-Q-0002 came back as a question. A save carries a glob list honoured by backup (walk_source) and restore (the merge). Sharing a world sets it from a per-game template; Valheim's names worlds_local/<W>.db, .fwl, .db.old, .fwl.old and <W>_backup_* and nothing under characters_local. Player data is excluded unless the game stores it inside the world, in which case the template says so (Minecraft's world folder whole). A second game is a template, not code.
 
 ---
 
