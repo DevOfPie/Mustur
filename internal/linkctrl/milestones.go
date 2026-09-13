@@ -55,7 +55,10 @@ func order(nums []string) {
 // LinkCtrl's order, and returns the renumbering so every reference can follow
 // it (MUS-D-0167). Each keeps its old number in its LinkCtrl field; each file
 // becomes a work unit at its milestone's serial.
-func Milestones(src MilestoneSources, today string) ([]record.Record, map[string]int, error) {
+//
+// A number in cited that nothing defines becomes a stub in its place in the
+// order (MUS-D-0169). Unplaced finds them, from a first pass with cited nil.
+func Milestones(src MilestoneSources, cited map[string]Citation, today string) ([]record.Record, map[string]int, error) {
 	type phase1 struct{ title, state string }
 	fromPhase1 := map[string]phase1{}
 	for _, l := range strings.Split(src.Phase1, "\n") {
@@ -82,6 +85,14 @@ func Milestones(src MilestoneSources, today string) ([]record.Record, map[string
 	for n := range fileOf {
 		nums = append(nums, n)
 	}
+	stub := map[string]Citation{}
+	for n, c := range cited {
+		_, inPhase1 := fromPhase1[n]
+		if _, hasFile := fileOf[n]; !hasFile && !inPhase1 {
+			stub[n] = c
+			nums = append(nums, n)
+		}
+	}
 	order(nums)
 	renumber := map[string]int{}
 	for i, n := range nums {
@@ -103,6 +114,22 @@ func Milestones(src MilestoneSources, today string) ([]record.Record, map[string
 		ms := record.Record{
 			ID:   ident.ID{Project: Prefix, Role: ident.Milestone, Serial: serial}.String(),
 			Kind: "milestone",
+		}
+		if c, ok := stub[n]; ok {
+			// The old number sits in code spans: Rewrite and Cite skip code, so
+			// the stub does not rename or cite itself.
+			ms.Title = "`M" + n + "`, cited in LinkCtrl and defined nowhere"
+			ms.Body = fmt.Sprintf("LinkCtrl cites `M%s` %d time(s) and its tree holds no file, table row or heading for it. This record exists so those references point somewhere (MUS-D-0169); the records citing it say what LinkCtrl meant by it.", n, c.Count)
+			ms.At = c.At
+			if ms.At == "" {
+				ms.At = today
+			}
+			ms.Data = append(ms.Data, record.Field{Key: "Status", Value: "cited, never defined"}, record.Field{Key: "LinkCtrl", Value: "M" + n})
+			if err := ms.Validate(); err != nil {
+				return nil, nil, fmt.Errorf("stub M%s: %w", n, err)
+			}
+			out = append(out, ms)
+			continue
 		}
 		name, hasFile := fileOf[n]
 		if hasFile {
@@ -199,6 +226,46 @@ func planRows(plan string) (map[string][]record.Field, error) {
 		}
 	}
 	return out, nil
+}
+
+// Citation is how often a milestone number is cited, and the earliest date of
+// a record citing it.
+type Citation struct {
+	Count int
+	At    string
+}
+
+// Unplaced finds the milestone numbers imported records cite outside code that
+// renumber has no place for. It changes nothing.
+func Unplaced(sources []Source, renumber map[string]int) map[string]Citation {
+	out := map[string]Citation{}
+	for _, src := range sources {
+		for _, r := range src.Records {
+			scan := func(s string) string {
+				for _, tok := range milestoneRef.FindAllString(s, -1) {
+					n := tok[1:]
+					if _, ok := renumber[n]; ok {
+						continue
+					}
+					c := out[n]
+					c.Count++
+					if c.At == "" || r.At < c.At {
+						c.At = r.At
+					}
+					out[n] = c
+				}
+				return s
+			}
+			outsideCode(r.Title, scan)
+			outsideCode(r.Body, scan)
+			for _, f := range r.Data {
+				if f.Key != "LinkCtrl" {
+					outsideCode(f.Value, scan)
+				}
+			}
+		}
+	}
+	return out
 }
 
 func has(r record.Record, key string) bool {

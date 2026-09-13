@@ -26,7 +26,7 @@ func milestoneFixture() MilestoneSources {
 }
 
 func TestMilestonesRenumberInLinkCtrlOrder(t *testing.T) {
-	got, renumber, err := Milestones(milestoneFixture(), "2026-09-13")
+	got, renumber, err := Milestones(milestoneFixture(), nil, "2026-09-13")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func TestMilestonesRenumberInLinkCtrlOrder(t *testing.T) {
 }
 
 func TestRewritePointsReferencesAtTheNewNumber(t *testing.T) {
-	ms, renumber, err := Milestones(milestoneFixture(), "2026-09-13")
+	ms, renumber, err := Milestones(milestoneFixture(), nil, "2026-09-13")
 	if err != nil {
 		t.Fatal(err)
 	}

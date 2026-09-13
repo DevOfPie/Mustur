@@ -117,10 +117,18 @@ func cmdImport(args []string) error {
 		return err
 	}
 	ms.Plan = string(plan)
-	milestones, renumber, err := linkctrl.Milestones(ms, today)
+	// Two passes: the first finds what is cited and defined nowhere, the second
+	// stubs it in its place (MUS-D-0169).
+	milestones, renumber, err := linkctrl.Milestones(ms, nil, today)
 	if err != nil {
 		return err
 	}
+	cited := linkctrl.Unplaced(append(sources[:len(sources):len(sources)], linkctrl.Source{Records: milestones}), renumber)
+	milestones, renumber, err = linkctrl.Milestones(ms, cited, today)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("stubbed %d milestone(s) cited and defined nowhere\n", len(cited))
 	sources = append(sources, linkctrl.Source{Path: "docs/build-notes/phase-details/", Records: milestones})
 
 	rewritten, unresolved := linkctrl.Rewrite(sources, renumber)
