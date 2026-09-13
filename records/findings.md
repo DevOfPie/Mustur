@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-157 record(s), by identifier.
+159 record(s), by identifier.
 
 ## The queue
 
@@ -12,11 +12,13 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | --- | --- | --- | --- |
 | [HRD-F-0001](#hrd-f-0001) | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |  |  |
 | [HRD-F-0002](#hrd-f-0002) | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |  | claim to verify; owner has the game, this VM does not |
-| [HRD-F-0003](#hrd-f-0003) | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |  |  |
+| [HRD-F-0003](#hrd-f-0003) | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |  | resolved 2026-09-13: Actions enabled by Pie, CI and Release (desktop) active, the other four disabled; CI runs on both PRs. The PAT still cannot read actions/permissions or secrets, but run and workflow listing work, which is what watching CI needs |
 | [HRD-F-0004](#hrd-f-0004) | Upstream moved 244 commits in 30 days, so the fork's changes must be additive |  |  |
 | [HRD-F-0005](#hrd-f-0005) | The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message |  | defect noted, not fixed; upstream-relevant |
 | [HRD-F-0006](#hrd-f-0006) | The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning |  |  |
 | [HRD-F-0007](#hrd-f-0007) | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |  |  |
+| [HRD-F-0008](#hrd-f-0008) | The self-hosted event stream is read by the desktop, not the engine, so lease frames need an engine-side listener |  |  |
+| [HRD-F-0009](#hrd-f-0009) | Review of PR 1 found ten confirmed defects in the server half, three of them data loss |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -139,8 +141,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0115](#mus-f-0115) | A restored session shows a blank terminal with no sign that it is still loading |  |  |
 | [MUS-F-0116](#mus-f-0116) | The session is restored not started over, the button text and descriptions are all wrong | The POST path calls Adapter.Start with resumes(row), which strips any --resume already on the command and appends the conversation identifier when the transcript is on disk; restore_test asserts the argv both ways. The button read Start it again in both cases, on both templates, directly above a line saying the conversation comes back. Plan.md's agent-transport row and docs/ui-surfaces.md's brief for the surface both used the same words for the same button. | fixed; the behaviour was always the restore and only the word was wrong |
 | [MUS-F-0117](#mus-f-0117) | Two sessions started from the surface share one working tree, and nothing says so |  |  |
-| [MUS-F-0118](#mus-f-0118) | Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. | not yet reviewed |
-| [MUS-F-0119](#mus-f-0119) | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. | not yet reviewed |
+| [MUS-F-0118](#mus-f-0118) | Plan.md's ID-expansion non-goal cites LinkCtrl numbers that are stale by a factor of twenty-seven | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. | fixed in 4d28e74: Plan.md's non-goal row carries the measured 271 of 444 and names findings |
+| [MUS-F-0119](#mus-f-0119) | Plan.md's scope table still promises a committed .mcp.json, which MUS-F-0063 removed and CLAUDE.md refuses | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. | fixed on stack/m9-1-onboarding-reads-true: the scope row names the mandate clause and the per-machine token (MUS-D-0165) |
 | [MUS-F-0120](#mus-f-0120) | PermissionRequest fires and its decision is ignored; PreToolUse is the one that answers a dialog | Investigation 0003, trials 0 and 1 on Claude Code 2.1.263. A PermissionRequest hook received a full payload and returned the documented object -- hookSpecificOutput with hookEventName PermissionRequest and decision allow -- and the pane drew 'Do you want to proceed?' anyway and was still drawing it minutes later. Retried with the exact key names the documentation quotes, including permissionDecisionReason on the deny path. Same result. PreToolUse with permissionDecision allow suppressed the dialog on the first attempt and on all seven firings after: trials 2, 11 through 15 on 2.1.263 and trial 26 on 2.1.266. Payloads and panes in docs/investigations/0003-harness/captured/. |  |
 | [MUS-F-0121](#mus-f-0121) | permission_suggestions belongs to PermissionRequest, and a PreToolUse firing does not mean a dialog | captured/payload-pretooluse.json has no permission_suggestions key; captured/payload-permissionrequest.json has it. Trials 30-35, 2026-09-10, Claude Code 2.1.267: PreToolUse 6 of 6, PermissionRequest 3 of 3 on the prompting case and 0 of 3 on the quiet one. Run by docs/investigations/0003-harness/signal.sh | open: the investigation is corrected in the same commit, and what it means for the milestone is MUS-Q-0094's to answer |
 | [MUS-F-0122](#mus-f-0122) | The CLI waits for the PreToolUse hook before running the permission flow, so the signal and the answer cannot both be had | docs/investigations/0003-harness/order.sh, trials 50-54 at Claude Code 2.1.267, captured in captured/order-2.1.267.txt. Three clean trials, all at the hook's own timeout: +20.022s, +20.024s, +20.014s |  |
@@ -160,7 +162,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0136](#mus-f-0136) | A bare form rule written for the composer draws a line across three forms that never asked for one |  | open for .pick and .new form; fixed for .endform, which is the one that was reported |
 | [MUS-F-0137](#mus-f-0137) | A question answered with a question is recorded as answered, and leaves the queue settled | MUS-Q-0102 shows Status answered, Answered 2026-09-11 07:29, and an Answer field whose text is two questions and no option. mustur questions reported 'no open questions' immediately afterwards, with the picker's design undecided. | open; MUS-Q-0105 re-raises the question it closed, and the path itself is unfixed |
 | [MUS-F-0138](#mus-f-0138) | The guard against restarting over somebody's draft read the CLI's own suggestion as a draft | mustur/Milestone_Work rendered ESC[2m before 'milestone 8 is accepted' with nothing typed into it; a throwaway session typed into without Enter rendered the text with no SGR after the caret. Both captures are in internal/session/testdata as prompt-ghost-suggestion.txt and prompt-typed-draft.txt. | fixed before the sweep ran anywhere |
-| [MUS-F-0139](#mus-f-0139) | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body | open |
+| [MUS-F-0139](#mus-f-0139) | Four places still say every onboarding is a milestone, and one record says Mustur's is the only repository | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body | fixed on stack/m9-1-onboarding-reads-true: Plan.md scope and non-goal rows, workflow.md's gate and CLAUDE.md now name MUS-D-0162's exception; MUS-R-0001's body corrected in the store |
 | [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
 | [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
 | [MUS-F-0142](#mus-f-0142) | One project's unsurfaced question fails every other project's commit gate | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. | fixed for the gate; the export still carries every project's records |
@@ -215,6 +217,7 @@ gh api repos/DevOfPie/hoard/actions/workflows returns an empty list and actions/
 | Field | Value |
 | --- | --- |
 | Consequence | until confirmed, every PR is gated by the local recipe in the checkout CLAUDE.md, not by CI |
+| Status | resolved 2026-09-13: Actions enabled by Pie, CI and Release (desktop) active, the other four disabled; CI runs on both PRs. The PAT still cannot read actions/permissions or secrets, but run and workflow listing work, which is what watching CI needs |
 
 ---
 
@@ -283,6 +286,38 @@ Reported by Pie on 2026-09-13 while testing the demo: the dodging effect on the 
 | --- | --- |
 | Reported by | Pie |
 | Scope | upstream desktop; not group sharing |
+
+---
+
+## HRD-F-0008
+
+**The self-hosted event stream is read by the desktop, not the engine, so lease frames need an engine-side listener**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The only consumer of GET /v1/events is hoard-desktop/src/commands/selfhosted_events.rs (connect_once :157, handle_event :220), which turns a save frame into an IPC ForceRestore. hoard-agent has no SSE client; its cloud counterpart is cloud_live.rs (WebSocket). A lease frame that only the desktop sees never reaches the engine that must hold the lease, and a CLI-only machine sees none. Phase 2 therefore adds an SSE loop in hoard-agent beside cloud_live.rs that handles lease frames and, for now, ignores save frames, leaving the desktop loop as it is; folding the save frame into the engine loop and retiring the desktop one is a later cleanup. Also noted from the map: AgentEvent has no serde(other) catch-all (ipc/events.rs:45), so a client older than its daemon fails to read new event kinds; the fork ships all three binaries together, so this only matters for mixed installs.
+
+| Field | Value |
+| --- | --- |
+| Consequence | phase 2 gains hoard-agent/src/selfhosted_live.rs; plan.md updated when phase 2 is briefed |
+
+---
+
+## HRD-F-0009
+
+**Review of PR 1 found ten confirmed defects in the server half, three of them data loss**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Posted as inline comments on https://github.com/DevOfPie/hoard/pull/1 at 278d887 on 2026-09-13. (1) store.rs:511 purge_owned_groups on owner deletion deletes every object in the group, including saves other members shared in, which then point at keys that no longer exist. (2) cas.rs:660, snapshots create, share.rs:214: the namespace is resolved before the transaction, so a share racing a push lands a version in the wrong namespace; unshare then 500s forever. (3) cleanup.rs:307 purge_trash resolves the namespace outside its transaction and skips a None decref, so a racing share skews refcounts either way, up to deleting a blob another save still uses. (4) saves.rs:360 deleting a shared save cascades without touching group refcounts or the owner's charge; groups.rs:241 group delete never purges objects. (5) admin.rs:626 deleting a member who shared into someone else's group leaves the group's refcounts and charge behind. (6) 0022_groups.sql:34,37 group_invites.created_by and used_by reference users with no ON DELETE, so deleting a user who redeemed an invite fails on the foreign key after the object purge already ran. (7) groups.rs:405 removing a member leaves their shared_saves row: the group owner keeps paying, cannot unshare, cannot delete the group, and the removed member can still push. (8) same site: the departing member's live lease is not ended. (9) groups.rs:358 invite redemption checks used_at outside the transaction and the UPDATE has no used_at IS NULL guard, so two concurrent redeemers both join. (10) leases.rs:258 acquire uses a deferred transaction, so two concurrent acquires give one a 500 instead of 409 held; BEGIN IMMEDIATE fixes it and require_host at cas.rs:905 has the same race. Fixes follow on the same branch, then a second PR comment.
+
+| Field | Value |
+| --- | --- |
+| Severity | three data-loss (1, 3, 4), two lockouts (6, 7), two races (9, 10) |
 
 ---
 
@@ -3280,7 +3315,7 @@ Filed from a LinkCtrl session preparing that repository's side of the transition
 | --- | --- |
 | Where | Plan.md, Non-goals table, 'ID expansion as a rendering trick over someone else's prose' |
 | Evidence | Counted in LinkCtrl at 230771a on 2026-09-09. Decision identifiers: 444 (grep -oE '\\bD[0-9]+\\b' docs/build-notes/decisions.md \| sort -u), of which 271 carry their own '### D<n>' heading (grep -oE '^#{2,4} D[0-9]+' \| sort -u), lowest D16. Headings: 1,777 in decisions.md alone, 2,962 across all tracked markdown. |
-| Status | not yet reviewed |
+| Status | fixed in 4d28e74: Plan.md's non-goal row carries the measured 271 of 444 and names findings |
 
 ---
 
@@ -3306,7 +3341,7 @@ Filed from a LinkCtrl session preparing that repository's side of the transition
 | --- | --- |
 | Where | Plan.md, Scope table, row 'Repo-local injection kit — committed .mcp.json plus a mandate clause' |
 | Evidence | The row is in the v1 column. CLAUDE.md says the opposite in prose: 'There is no .mcp.json here, deliberately: a checked-in one can carry no credential, and it would be preferred over the configuration that has one'. MUS-F-0063 measured that precedence and its status is fixed. |
-| Status | not yet reviewed |
+| Status | fixed on stack/m9-1-onboarding-reads-true: the scope row names the mandate clause and the per-machine token (MUS-D-0165) |
 
 ---
 
@@ -3824,7 +3859,7 @@ The decision letting Hoard move in without a milestone left the prose that says 
 | Field | Value |
 | --- | --- |
 | Evidence | Plan.md:90, Plan.md:113, workflow.md:30, CLAUDE.md:199, MUS-R-0001's body |
-| Status | open |
+| Status | fixed on stack/m9-1-onboarding-reads-true: Plan.md scope and non-goal rows, workflow.md's gate and CLAUDE.md now name MUS-D-0162's exception; MUS-R-0001's body corrected in the store |
 
 ---
 

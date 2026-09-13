@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-119 record(s), by identifier.
+124 record(s), by identifier.
 
 ---
 
@@ -295,13 +295,69 @@ HRD-D-0008 needs a minisign keypair: the public half goes into the client and se
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | The fork-only updater commit needs the public key; nothing else waits on it |
 | Option | You generate it on your machine :: Recommended: minisign -G -p hoard-fork.pub -s hoard-fork.key, add the two secrets in the fork's settings, paste the public key to me :: The secret never touches this VM or a chat transcript. Costs you a minisign install and five minutes. |
 | Option | I generate it here :: I install a minisign implementation, write the keypair to a 600 file under ~/hoard-demo, you copy the secret into the fork's settings :: Faster for you, but the secret half lives on this VM and passes through a file you read over the session. |
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | mustur/Hoard_Work |
+| Answer | You generate it on your machine |
+| Answered | 2026-09-13 06:01 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0012
+
+**May I prune the 43 GB Docker build cache on whippy-vm? It is LinkCtrl's, and the disk has hit 100% twice today**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The root filesystem is 124 GB. Hoard's debug target alone is about 30 GB with the desktop crate and every test binary, and the demo's release target is 1.2 GB. docker system df reports 43 GB of build cache, 42.8 GB reclaimable, from the linkctrl images; the running linkctrl containers and their volumes are not touched by a build-cache prune, only their next image build is slower. It is another project's cache, so I have not touched it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing yet; the next full workspace build fills the disk again (12 GB free after clearing incremental caches) |
+| Option | Prune the build cache :: Recommended: docker builder prune -af, once, now :: Frees about 43 GB; LinkCtrl's next image build runs cold. Containers, images in use and volumes stay. |
+| Option | Leave it; I keep Hoard's target small :: I clear target/debug before every full build and accept 10 to 15 minutes of cold build each time :: No effect on LinkCtrl. Every gate run costs a quarter hour more and the disk stays near full. |
+| Option | Something else :: a bigger disk, or a policy of yours; put it in the note :: |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Prune the build cache |
+| Answered | 2026-09-13 06:01 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0013
+
+**How much of upstream's CI should run on a fork pull request push?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+ci.yml runs on every pull_request push: fmt, trailers, clippy (Linux with the frontend build), build and test on ubuntu, ubuntu-arm, windows and macos, a second full workspace build for the sqlx cache check, cargo-deny and cargo-machete. Upstream sized it as the release gate and runs it only on tags and PRs, which for upstream means rarely. The fork pushes to PRs many times a day. Every option below keeps the full matrix on tags and on manual dispatch, so a release is still gated as upstream intended, and adds a concurrency group so a newer push cancels the older run of the same PR.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing; every PR push currently costs about 15 minutes of runner time |
+| Option | Cheap on drafts, Linux on ready PRs :: Recommended: draft PRs run fmt, trailers, clippy and deny only; a PR out of draft adds Linux build and test and the sqlx check; the four-OS matrix runs on tags and dispatch :: A push to a draft costs about 4 minutes, a ready PR about 8, a tag the full 15. Windows and macOS breakage surfaces at release or when dispatched by hand before merging something platform-sensitive. |
+| Option | Linux only on every PR :: PRs run everything once on ubuntu; the matrix runs on tags and dispatch :: About 8 minutes per push regardless of draft state. Simpler rule, no draft distinction. |
+| Option | Keep the full matrix, add cancel-in-progress only :: no job is cut; a newer push cancels the older run :: Still 15 minutes per push, but rapid pushes stop stacking runs. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Cheap on drafts, Linux on ready PRs |
+| Answered | 2026-09-13 06:35 |
+| Note | Include windows tests for releases since that is where it'll actually be run for the most part |
+| Delivered | typed into mustur/Hoard_Work |
 
 ---
 
@@ -2877,3 +2933,87 @@ Your question first. Onboarding is a milestone because of your own instruction, 
 | Answered | 2026-09-13 03:58 |
 | Delivered | not delivered: the question names no session |
 | Surfaced | 2026-09-13 03:58 |
+
+---
+
+## MUS-Q-0109
+
+**LinkCtrl's 947 records import under which identifiers: its own numbers, or fresh serials?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-Q-0091](#mus-q-0091)
+
+MUS-Q-0091 settled that everything imports. LinkCtrl's prose cites D14, F382, M70 thousands of times, and those citations stay in the records that move. mustur add allocates the next serial and cannot be told one, so keeping LinkCtrl's numbers is a store change, not just a parser. Numbering gaps exist (F1 to F382 holds 381 rows).
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The importer for MUS-M-0009; nothing can be imported until this is settled |
+| Needed to proceed | yes |
+| Option | Keep LinkCtrl's numbers :: Recommended: D444 keeps serial 444 under the LNK prefix, F382 serial 382, M70 serial 70 as both milestone and work unit :: Every citation already in the prose resolves by rule, with no lookup table, and the rendering can link a bare D14 to the LNK decision with serial 14 mechanically. Costs a store path that writes an explicit serial, refused if it is taken, and gaps stay visible as gaps. Later records continue from the highest serial, which the store already does. |
+| Option | Fresh serials, old number as a field :: LNK serials from 1 onward in import order, with a 'LinkCtrl id' field on each :: No store change. Every existing D14 in 947 records then needs a lookup to find its record forever, and an identifier that differs from the one in the text beside it is exactly the confusion identifiers exist to remove. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 06:59 |
+| Answer | Keep LinkCtrl's numbers |
+| Answered | 2026-09-13 07:02 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+| Note | Option text restated 2026-09-13 after the answer, without spelled-out LNK identifiers: the record check reads them as citations to records not yet imported. Labels and meaning unchanged. |
+
+---
+
+## MUS-Q-0110
+
+**LinkCtrl's own side of the move is W48, still unapproved. Approve it now, or after the import has a verdict?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+LinkCtrl's transition survey names W48 as the change that moves its records out, and it is unapproved in LinkCtrl's workflow-changes.md. The survey and that W48 line are uncommitted on LinkCtrl's task/correct-the-release-date branch, which is about something else. Criterion 9 means no LinkCtrl file changes until onboarding deliberately touches it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Deleting the records from LinkCtrl and rewriting its links; not the Mustur-side importer |
+| Option | After the import verdict :: Recommended: build and review the importer against a scratch store first, then approve W48 :: Nothing leaves LinkCtrl until 947 records are shown to be in Mustur and counted. Costs a second round with you before the move. |
+| Option | Approve W48 now :: the LinkCtrl-side move is built alongside the importer, in a stack :: Faster to done, and the link rewrites get reviewed with the import. A defect in the importer is then found with the source files already queued for deletion. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 06:59 |
+| Answer | After the import verdict |
+| Answered | 2026-09-13 07:02 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0111
+
+**Plan.md still promises LinkCtrl a committed .mcp.json. Reword the row, or strike it?**
+
+question · 2026-09-13
+
+answers: [MUS-F-0119](findings.md#mus-f-0119)
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+The scope table is authoritative over prose and still promises a committed .mcp.json, which MUS-F-0063 found can only refuse and CLAUDE.md now forbids. LinkCtrl is public, so it can only ever get a mandate clause plus a token set up per machine.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The injection kit LinkCtrl receives in MUS-M-0009; fixing MUS-F-0119 |
+| Option | Reword it :: Recommended: 'a mandate clause in the project's CLAUDE.md, and a per-machine token at user scope' :: Keeps the capability in the scope table, where a second project's onboarding reads it, and makes it true. One row. |
+| Option | Strike it :: remove the row and let CLAUDE.md's setup paragraph carry it :: Less to keep true, but the authoritative table then says nothing about what an onboarded project receives. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 06:59 |
+| Answer | Reword it |
+| Answered | 2026-09-13 07:03 |
+| Delivered | typed into mustur/LinkCtrl_Target |

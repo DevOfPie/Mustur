@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-170 record(s), by identifier.
+176 record(s), by identifier.
 
 ## Index
 
@@ -20,6 +20,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [HRD-D-0006](#hrd-d-0006) | A shared save names its files with a per-save include filter, set from a per-game template | 2026-09-13 |
 | [HRD-D-0007](#hrd-d-0007) | The plan is approved and phase 1 starts | 2026-09-13 |
 | [HRD-D-0008](#hrd-d-0008) | The fork publishes its own signed desktop releases and its clients update from them | 2026-09-13 |
+| [HRD-D-0009](#hrd-d-0009) | The Docker build cache on whippy-vm is pruned when Hoard's builds need the room | 2026-09-13 |
+| [HRD-D-0010](#hrd-d-0010) | Draft PRs run the cheap CI, ready PRs build and test on ubuntu, tags run every platform | 2026-09-13 |
+| [HRD-D-0011](#hrd-d-0011) | Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope | 2026-09-13 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -182,6 +185,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0160](#mus-d-0160) | A jot takes six pictures, and six is the owner's number rather than the agent's | 2026-09-11 |
 | [MUS-D-0161](#mus-d-0161) | The hub polls every owned session, and the reader stops being a thing a viewer starts | 2026-09-12 |
 | [MUS-D-0162](#mus-d-0162) | A new project with no records moves in as an ordinary project, not as a milestone | 2026-09-13 |
+| [MUS-D-0163](#mus-d-0163) | LinkCtrl's records keep the numbers they were written with, under the LNK prefix | 2026-09-13 |
+| [MUS-D-0164](#mus-d-0164) | Nothing leaves LinkCtrl until the import has a verdict | 2026-09-13 |
+| [MUS-D-0165](#mus-d-0165) | An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json | 2026-09-13 |
 
 ---
 
@@ -294,6 +300,44 @@ q: [HRD-Q-0010](questions.md#hrd-q-0010)
 w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 Answered by Pie on HRD-Q-0010. The fork's clients point REPO at DevOfPie/hoard (hoard-agent/src/update.rs:16, install/fetch.rs:23), carry a fork minisign public key in place of upstream's (install/fetch.rs:33), and release-desktop.yml builds and signs installers on a tag. Pie owes: Actions enabled on the fork and the two secrets MINISIGN_SECRET_KEY and MINISIGN_KEY_PASSWORD. The updater change is a fork-only commit on main, outside the group-sharing PRs, so it can ship first and carry them. A fork client sees no upstream release until the constants are switched back.
+
+---
+
+## HRD-D-0009
+
+**The Docker build cache on whippy-vm is pruned when Hoard's builds need the room**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0012](questions.md#hrd-q-0012)
+
+Answered by Pie on HRD-Q-0012: prune the build cache. docker builder prune -af run 2026-09-13; LinkCtrl's running containers, images in use and volumes untouched, only its next image build runs cold. Hoard's full debug target is about 30 GB on a 124 GB disk, so the cache is the reclaimable slack; incremental caches under target/debug are cleared as a first resort.
+
+---
+
+## HRD-D-0010
+
+**Draft PRs run the cheap CI, ready PRs build and test on ubuntu, tags run every platform**
+
+decision · 2026-09-13
+
+q: [HRD-Q-0013](questions.md#hrd-q-0013)
+
+Answered by Pie on HRD-Q-0013: cheap on drafts, Linux on ready PRs, with the note that Windows tests must run for releases because that is where the fork's builds are mostly played. So ci.yml in the fork: drafts run fmt, trailers, clippy, cargo-deny and cargo-machete; a PR out of draft (ready_for_review triggers it) adds ubuntu build and test and the sqlx cache check; a tag or a manual dispatch runs the full matrix, ubuntu, ubuntu-arm, windows and macos. A newer push cancels the older run of the same PR. Fork-only change on main.
+
+---
+
+## HRD-D-0011
+
+**Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope**
+
+decision · 2026-09-13
+
+d: [HRD-D-0010](#hrd-d-0010)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Pie on 2026-09-13: follow the same CI change path as the other DevOfPie projects. That path is LinkCtrl's, adopted by TradeShop (ci/README.md) and Mustur (ci/proposed/README.md): a change to .github/workflows is committed as ci/proposed/<name>.yml with a README, the owner applies it with git mv, and the PAT deliberately lacks the Workflows permission because a workflow's own permissions block overrides the repository default. The earlier request for that scope on HRD-W-0001 is withdrawn.
 
 ---
 
@@ -3278,3 +3322,66 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | --- | --- |
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
+
+---
+
+## MUS-D-0163
+
+**LinkCtrl's records keep the numbers they were written with, under the LNK prefix**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0109](questions.md#mus-q-0109)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+project: [MUS-P-0004](routing.md#mus-p-0004)
+
+MUS-Q-0109 asked whether LinkCtrl's 947 imported records take their own numbers or fresh serials. The owner chose their own numbers. A LinkCtrl decision numbered D14 becomes serial 14 of kind D under LNK, a finding F382 serial 382 of kind F, and a milestone file M70 serial 70 as both a milestone and its work unit, so every citation already in LinkCtrl's prose resolves by rule without a lookup table. Gaps in LinkCtrl's numbering stay gaps. The store gains a write that takes an explicit serial and refuses one already taken; a record filed after the import continues from the highest serial, which the store already does.
+
+| Field | Value |
+| --- | --- |
+| Applies to | records imported from LinkCtrl under MUS-M-0009 |
+| Costs | an explicit-serial write path in the store |
+
+---
+
+## MUS-D-0164
+
+**Nothing leaves LinkCtrl until the import has a verdict**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0110](questions.md#mus-q-0110)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+project: [MUS-P-0004](routing.md#mus-p-0004)
+
+MUS-Q-0110 asked whether W48, LinkCtrl's own change that moves its records out, is approved now or after the import is reviewed. The owner chose after the verdict. The importer is built and run against a scratch store, its per-source counts are reconciled to 947, and three reviewers read it; only then is W48 approved in LinkCtrl and are the moved files deleted, in the commit that rewrites every link into them. Until then no file in LinkCtrl's tree is edited from this milestone.
+
+| Field | Value |
+| --- | --- |
+| Applies to | LinkCtrl's side of MUS-M-0009 |
+| Unchanged | MUS-Q-0090 to MUS-Q-0093's boundary |
+
+---
+
+## MUS-D-0165
+
+**An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json**
+
+decision · 2026-09-13
+
+answers: [MUS-Q-0111](questions.md#mus-q-0111)
+
+finding: [MUS-F-0119](findings.md#mus-f-0119)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+MUS-Q-0111 asked whether Plan.md's injection-kit scope row is reworded or struck, since MUS-F-0063 found a committed .mcp.json can carry no credential and is preferred over the user-scope configuration that has one. The owner chose to reword it. The row keeps the capability in the authoritative scope table, where an onboarding reads it, and now says what a project actually receives: a mandate clause in its own CLAUDE.md, and a token issued per machine with the server registered at user scope. LinkCtrl, which is public, receives exactly that in MUS-M-0009.
+
+| Field | Value |
+| --- | --- |
+| Applies to | every project onboarded, LinkCtrl first |
+| Where | Plan.md, Scope table, injection-kit row |

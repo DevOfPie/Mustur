@@ -9,11 +9,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 12 | [milestones.md](milestones.md) |
-| question | 119 | [questions.md](questions.md) |
-| decision | 170 | [decisions.md](decisions.md) |
-| finding | 157 | [findings.md](findings.md) |
-| repository, machine, project | 6 | [routing.md](routing.md) |
-| work-unit | 24 | [work-units/index.md](work-units/index.md) |
+| question | 124 | [questions.md](questions.md) |
+| decision | 176 | [decisions.md](decisions.md) |
+| finding | 159 | [findings.md](findings.md) |
+| repository, machine, project | 8 | [routing.md](routing.md) |
+| work-unit | 25 | [work-units/index.md](work-units/index.md) |
 | investigation | 4 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -32,6 +32,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0009](questions.md#hrd-q-0009) | question | Which address did you give the desktop app, and what exactly does it say when it refuses the key? |
 | [HRD-Q-0010](questions.md#hrd-q-0010) | question | How do you and your testers get fork builds of the desktop client, and how do those clients update? |
 | [HRD-Q-0011](questions.md#hrd-q-0011) | question | Where is the fork's release signing key generated, and who holds the secret half? |
+| [HRD-Q-0012](questions.md#hrd-q-0012) | question | May I prune the 43 GB Docker build cache on whippy-vm? It is LinkCtrl's, and the disk has hit 100% twice today |
+| [HRD-Q-0013](questions.md#hrd-q-0013) | question | How much of upstream's CI should run on a fork pull request push? |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -40,6 +42,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-D-0006](decisions.md#hrd-d-0006) | decision | A shared save names its files with a per-save include filter, set from a per-game template |
 | [HRD-D-0007](decisions.md#hrd-d-0007) | decision | The plan is approved and phase 1 starts |
 | [HRD-D-0008](decisions.md#hrd-d-0008) | decision | The fork publishes its own signed desktop releases and its clients update from them |
+| [HRD-D-0009](decisions.md#hrd-d-0009) | decision | The Docker build cache on whippy-vm is pruned when Hoard's builds need the room |
+| [HRD-D-0010](decisions.md#hrd-d-0010) | decision | Draft PRs run the cheap CI, ready PRs build and test on ubuntu, tags run every platform |
+| [HRD-D-0011](decisions.md#hrd-d-0011) | decision | Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
@@ -47,6 +52,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-F-0005](findings.md#hrd-f-0005) | finding | The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message |
 | [HRD-F-0006](findings.md#hrd-f-0006) | finding | The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning |
 | [HRD-F-0007](findings.md#hrd-f-0007) | finding | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |
+| [HRD-F-0008](findings.md#hrd-f-0008) | finding | The self-hosted event stream is read by the desktop, not the engine, so lease frames need an engine-side listener |
+| [HRD-F-0009](findings.md#hrd-f-0009) | finding | Review of PR 1 found ten confirmed defects in the server half, three of them data loss |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
@@ -88,6 +95,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
 | [MUS-W-0022](work-units/MUS-W-0022.md#mus-w-0022) | work-unit | A CLI's prompt, read off the pane and offered as controls |
 | [MUS-W-0023](work-units/MUS-W-0023.md#mus-w-0023) | work-unit | The gate, and what it was measured against |
+| [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024) | work-unit | LinkCtrl moves in |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -196,6 +204,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0106](questions.md#mus-q-0106) | question | The seven rebased branches need landing without rewriting anything you would mind rewriting |
 | [MUS-Q-0107](questions.md#mus-q-0107) | question | How should the Hoard group-sharing work enter Mustur, given onboarding a repository is its own milestone? |
 | [MUS-Q-0108](questions.md#mus-q-0108) | question | Re-asking how Hoard enters Mustur, with your question answered and a fourth option |
+| [MUS-Q-0109](questions.md#mus-q-0109) | question | LinkCtrl's 947 records import under which identifiers: its own numbers, or fresh serials? |
+| [MUS-Q-0110](questions.md#mus-q-0110) | question | LinkCtrl's own side of the move is W48, still unapproved. Approve it now, or after the import has a verdict? |
+| [MUS-Q-0111](questions.md#mus-q-0111) | question | Plan.md still promises LinkCtrl a committed .mcp.json. Reword the row, or strike it? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -358,6 +369,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0160](decisions.md#mus-d-0160) | decision | A jot takes six pictures, and six is the owner's number rather than the agent's |
 | [MUS-D-0161](decisions.md#mus-d-0161) | decision | The hub polls every owned session, and the reader stops being a thing a viewer starts |
 | [MUS-D-0162](decisions.md#mus-d-0162) | decision | A new project with no records moves in as an ordinary project, not as a milestone |
+| [MUS-D-0163](decisions.md#mus-d-0163) | decision | LinkCtrl's records keep the numbers they were written with, under the LNK prefix |
+| [MUS-D-0164](decisions.md#mus-d-0164) | decision | Nothing leaves LinkCtrl until the import has a verdict |
+| [MUS-D-0165](decisions.md#mus-d-0165) | decision | An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -508,7 +522,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-R-0002](routing.md#mus-r-0002) | repository | DevOfPie/hoard |
+| [MUS-R-0003](routing.md#mus-r-0003) | repository | DevOfPie/LinkCtrl |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |
 | [MUS-P-0002](routing.md#mus-p-0002) | project | Idea inbox |
 | [MUS-P-0003](routing.md#mus-p-0003) | project | Hoard |
+| [MUS-P-0004](routing.md#mus-p-0004) | project | LinkCtrl |

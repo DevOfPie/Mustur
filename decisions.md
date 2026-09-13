@@ -3648,3 +3648,60 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | --- | --- |
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
+
+### MUS-D-0163
+
+**LinkCtrl's records keep the numbers they were written with, under the LNK prefix**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0109
+
+milestone: MUS-M-0009
+
+project: MUS-P-0004
+
+MUS-Q-0109 asked whether LinkCtrl's 947 imported records take their own numbers or fresh serials. The owner chose their own numbers. A LinkCtrl decision numbered D14 becomes serial 14 of kind D under LNK, a finding F382 serial 382 of kind F, and a milestone file M70 serial 70 as both a milestone and its work unit, so every citation already in LinkCtrl's prose resolves by rule without a lookup table. Gaps in LinkCtrl's numbering stay gaps. The store gains a write that takes an explicit serial and refuses one already taken; a record filed after the import continues from the highest serial, which the store already does.
+
+| Field | Value |
+| --- | --- |
+| Applies to | records imported from LinkCtrl under MUS-M-0009 |
+| Costs | an explicit-serial write path in the store |
+
+### MUS-D-0164
+
+**Nothing leaves LinkCtrl until the import has a verdict**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0110
+
+milestone: MUS-M-0009
+
+project: MUS-P-0004
+
+MUS-Q-0110 asked whether W48, LinkCtrl's own change that moves its records out, is approved now or after the import is reviewed. The owner chose after the verdict. The importer is built and run against a scratch store, its per-source counts are reconciled to 947, and three reviewers read it; only then is W48 approved in LinkCtrl and are the moved files deleted, in the commit that rewrites every link into them. Until then no file in LinkCtrl's tree is edited from this milestone.
+
+| Field | Value |
+| --- | --- |
+| Applies to | LinkCtrl's side of MUS-M-0009 |
+| Unchanged | MUS-Q-0090 to MUS-Q-0093's boundary |
+
+### MUS-D-0165
+
+**An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0111
+
+finding: MUS-F-0119
+
+milestone: MUS-M-0009
+
+MUS-Q-0111 asked whether Plan.md's injection-kit scope row is reworded or struck, since MUS-F-0063 found a committed .mcp.json can carry no credential and is preferred over the user-scope configuration that has one. The owner chose to reword it. The row keeps the capability in the authoritative scope table, where an onboarding reads it, and now says what a project actually receives: a mandate clause in its own CLAUDE.md, and a token issued per machine with the server registered at user scope. LinkCtrl, which is public, receives exactly that in MUS-M-0009.
+
+| Field | Value |
+| --- | --- |
+| Applies to | every project onboarded, LinkCtrl first |
+| Where | Plan.md, Scope table, injection-kit row |
