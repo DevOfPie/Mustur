@@ -249,3 +249,33 @@ func TestCheckOptionRefusesAMisplacedRecommendation(t *testing.T) {
 		}
 	}
 }
+
+// A commit gate is about the work being committed.
+//
+// While the store held one project this was the whole store and the question
+// never arose. Since a second moved in, one project's unsurfaced question fails
+// every other project's gate: a Mustur commit was blocked by two questions
+// raised minutes earlier by the session onboarding Hoard, which no Mustur
+// session can surface and none may answer (MUS-F-0142).
+func TestTheGateCanBeNarrowedToOneProject(t *testing.T) {
+	mine := record.Record{ID: "MUS-Q-0001", Kind: Kind, Title: "mine, and surfaced",
+		Data: []record.Field{{Key: FieldStatus, Value: StatusOpen}, {Key: FieldSurfaced, Value: "2026-09-13 04:00"}}}
+	theirs := record.Record{ID: "HRD-Q-0007", Kind: Kind, Title: "theirs, and never surfaced",
+		Data: []record.Field{{Key: FieldStatus, Value: StatusOpen}}}
+
+	if err := Gate(OfProject([]record.Record{mine, theirs}, "MUS")); err != nil {
+		t.Errorf("another project's buried question blocked this one's gate: %v", err)
+	}
+	if err := Gate(OfProject([]record.Record{mine, theirs}, "HRD")); err == nil {
+		t.Error("a project's own buried question did not block its gate")
+	}
+	// No prefix is the whole store, which is what a person running it by hand
+	// wants to see.
+	if err := Gate(OfProject([]record.Record{mine, theirs}, "")); err == nil {
+		t.Error("an empty prefix dropped questions instead of keeping them all")
+	}
+	// A prefix must not match by accident.
+	if got := OfProject([]record.Record{mine, theirs}, "MU"); len(got) != 0 {
+		t.Errorf("prefix MU matched %d record(s); it is a project prefix, not a substring", len(got))
+	}
+}

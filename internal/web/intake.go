@@ -312,13 +312,14 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 // MaxImages is how many pictures one jot may carry.
 //
 // The report that asked for more than one needed three (MUS-F-0131, filed as
-// three records because the box took one each). Six is double that and it is the
-// agent's number, not the owner's: MUS-D-0119 set the per-picture ceiling
-// deliberately at ten megabytes, and this multiplies what one POST can carry by
-// six. MaxBytesReader in file() above is computed from this constant rather than
-// written beside it, so the two cannot drift -- which also means raising it
-// raises what a request can push through the ingress. MUS-Q-0103 is the owner's
-// to answer; this is what it ships as until they do.
+// three records because the box took one each). Six is double that, and it is
+// the owner's number: MUS-D-0119 set the per-picture ceiling deliberately at ten
+// megabytes and this multiplies what one POST can carry by six, so it was theirs
+// to set rather than a comment's. They set it on MUS-Q-0103, and MUS-D-0160
+// records why it was asked at all. MaxBytesReader in file() above is computed
+// from this constant rather than written beside it, so the two cannot drift --
+// which also means raising it raises what a request can push through the
+// ingress, and raising it is theirs too.
 const MaxImages = 6
 
 // readImages takes the pictures a jot may carry.

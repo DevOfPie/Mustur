@@ -384,3 +384,51 @@ func TestTheRestoreButtonSaysResumeWhenTheConversationComesBack(t *testing.T) {
 		t.Errorf("the page the picker lands on still offers a fresh start: %s", one)
 	}
 }
+
+// Where a session runs, in the picker.
+//
+// With one project every name is unambiguous and with two nothing but a
+// perfectly chosen name tells them apart (MUS-F-0108). The directory is already
+// in the store — Start writes it down — so this costs no extra call to tmux.
+func TestThePickerNamesTheTreeEachSessionRunsIn(t *testing.T) {
+	srv, st, ctx := restoreServer(t, fakeRunner{listing: owned("mustur/alive")})
+	if err := st.RememberSession(ctx, "alive", "/checkout/Mustur", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.RememberSession(ctx, "gone", "/checkout/TradeShop", "claude"); err != nil {
+		t.Fatal(err)
+	}
+
+	body := getFrom(t, srv, "/sessions/alive")
+	// The option's own text, not the page's: "Mustur" is on this page half a
+	// dozen ways and none of them is the picker.
+	if !strings.Contains(body, "alive &middot; Mustur<") {
+		t.Errorf("the running session's option does not say where it runs: %s", body)
+	}
+	if !strings.Contains(body, "gone &middot; TradeShop<") {
+		t.Errorf("the lost session's option does not say where it ran: %s", body)
+	}
+}
+
+// Which sessions are working and which are waiting, in the picker.
+//
+// The half of MUS-F-0108 that MUS-Q-0102 said cost a tmux capture per session
+// per page render. It costs nothing now: the hub polls every owned session
+// whether or not anybody is watching (MUS-Q-0105), so this is a map lookup.
+// A session nothing has polled yet says nothing, which is not the same as idle.
+func TestThePickerSaysWhichSessionsAreWorking(t *testing.T) {
+	srv, st, ctx := restoreServer(t, fakeRunner{listing: owned("mustur/alive")})
+	if err := st.RememberSession(ctx, "alive", "/checkout/Mustur", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	body := getFrom(t, srv, "/sessions/alive")
+	// Nothing has polled it, so the option names the tree and says no more.
+	if !strings.Contains(body, "alive &middot; Mustur<") {
+		t.Errorf("the option does not name the tree: %s", body)
+	}
+	for _, guess := range []string{"working", "waiting"} {
+		if strings.Contains(body, "alive &middot; Mustur &middot; "+guess) {
+			t.Errorf("a session nothing has polled was called %q", guess)
+		}
+	}
+}

@@ -4,7 +4,304 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-103 record(s), by identifier.
+119 record(s), by identifier.
+
+---
+
+## HRD-Q-0001
+
+**Which blob namespace do shared saves use, and how far may content existence leak?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Blobs are keyed (user_id, sha256) and 0013_blobs.sql:4 says dedup is per user so content existence never leaks across accounts. A member pushing into a shared save must land bytes somewhere, and the CAS init dedup reply tells the uploader which hashes already exist in that namespace.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 1 migrations for shared saves; the groups, members and lease tables can proceed without it |
+| Option | Owner namespace, dedup scoped to the save :: Recommended: no blob schema change; the server resolves a member's upload and download to the save owner's namespace, and a non-owner's dedup lookup only consults hashes already in that save's own snapshots :: Storage counts against the owner as it does today. The leak is confined to content the member can already download from that save's history, which is no leak. Cost is one namespace resolution in cas.rs plus a filtered have-check for non-owners. |
+| Option | Group namespace :: a new blob owner kind so a group holds its own blobs, with its own quota :: Principled and keeps the per-account rule intact, but blobs.user_id is an FK to users, so it means a parallel table or a rebuilt PK, a group quota with its own accounting, and a second store path. Roughly doubles phase 1's server work. |
+| Option | Owner namespace, owner-wide dedup :: cheapest: members dedup against everything the owner has :: A member learns whether the owner holds any given file anywhere in their account. Exactly the leak upstream wrote the rule against, so it would not go upstream. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Group namespace |
+| Answered | 2026-09-13 04:25 |
+| Note | An Owner creates a group, as I believe this will work best with Hoard clouds pay model. |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0002
+
+**How does a shared save name one world's files, given a save is a whole folder today?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The Ludusavi catalog roots Valheim at the parent folder (Linux <xdgConfig>/unity3d/IronGate/Valheim, Windows LocalLow/IronGate/Valheim), so worlds_local and characters_local travel together. walk_source (backup.rs:630-720) has no include filter. Only the chosen world is locked means the save must be one world.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 2 backup and restore scope; the lease itself does not depend on it |
+| Option | Per-save include filter :: Recommended: a glob list on the save, set from a Valheim template when the world is shared, honoured by backup and restore :: Generic, so a second game is data not code, and upstreamable on its own. Costs a filter in walk_source and the restore merge, a state field, a wire field with a golden fixture, and the template. |
+| Option | Subfolder save :: track worlds_local as its own save with its own label, no new mechanism :: Zero new code, but every world in the folder shares one lease, so a member playing a solo world locks the co-op one. Acceptable only as an interim. |
+| Option | Per-game rule in hoard-manifest :: a Valheim-only file rule beside the catalog :: Smaller than the filter but a special case in the manifest crate, and a second game means another rule in code. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Which option is the least disruptive to the project while only sharing the appropriate files for the game(player data does not and should not be synced unless it is required by the game (when player data is part of the worlds save, like Minecraft where the local user stores nothing) |
+| Answered | 2026-09-13 04:29 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0003
+
+**What happens when the Host / View / Not playing prompt goes unanswered?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The design leaves an unanswered prompt to file evidence. From what I know of Valheim, unverified on a real install, it reads the world at load and writes <name>.db.new then renames on save, autosaving every 30 minutes by default, so it does not hold the file open. The first evidence a poll can see may be 30 minutes into two members hosting the same world.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 2 claim flow; nothing before it |
+| Option | Auto-Host when unambiguous :: Recommended: after 60 s unanswered, if the game has exactly one shared world and its lease is free, take it and say so; another member may take it over while the holder has written nothing :: Closes the 30-minute window at the cost of sometimes locking a world the player is not in. The takeover rule keeps that cheap: a lease with no writes behind it is safe to move. |
+| Option | Wait for evidence :: the design as written: no default, the lease is claimed by the first open or write :: Nothing is locked wrongly, and for Valheim the warning arrives at the first autosave, after which one session's work is already a side copy. |
+| Option | Auto-View :: pull the latest copy and push nothing until the player answers :: Nobody forks the save, but a host who ignores the prompt plays a session that is discarded, which the design already calls the worst outcome of View. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Auto-Host when unambiguous |
+| Answered | 2026-09-13 04:32 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0004
+
+**What lease TTL and heartbeat does a hosted world use?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Presence beats every 30 s and the server treats 90 s as offline (devices.rs:59, presence.rs:33). A lease that expires while its holder is mid-session lets a second host in, which forks the world; one that lingers after a crash makes friends wait.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 1 lease routes take the numbers as constants; the choice can change later without a migration |
+| Option | 30 s beat, 5 minute expiry :: Recommended: the lease renews on the presence beat, expires after ten missed :: A network stumble during play never hands the world away. A crash costs the group five minutes, and a force-release route covers the impatient case. |
+| Option | Presence cadence, 30 s beat, 90 s expiry :: one cadence and one mental model, shared code path :: Three missed beats mid-session is a real risk on home wifi, and losing the lease while hosting is the one failure the lease exists to prevent. |
+| Option | Renew on the poll tick :: 2 s renew, 30 s expiry, near-instant crash recovery :: Chatty against a self-hosted server and brittle on any hiccup; the same fork risk as the short expiry, worse. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | 30 s beat, 5 minute expiry |
+| Answered | 2026-09-13 04:33 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0005
+
+**Is the cloud stack in scope for group sharing at all?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Self-hosted SQLite and cloud Postgres are separate stacks with separate migrations and handlers (cloud/mod.rs, cloud/run.rs:182-365). Cloud also brings plan limits, bandwidth windows and billing (plans.rs, quota.rs), so a shared save raises who pays. HRD-W-0001 says self-hosted first and leaves whether cloud is attempted open.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Whether phase 1 carries Postgres migrations, RLS policies and cloud route twins |
+| Option | Self-hosted only :: Recommended: the fork ships self-hosted; cloud is left to the upstream maintainer with the design offered :: Halves every server phase and avoids deciding quota ownership for a service we do not run. A cloud member of the group cannot join, which for a friends' server is no loss. |
+| Option | Both stacks, cloud second :: self-hosted first, then a cloud phase in the fork :: Complete, but the cloud phase cannot be tested end to end without Hoard's Supabase and R2, and its quota decisions are the maintainer's to make. |
+| Option | Cloud first :: build against the stack most users are on :: We cannot run it, so nothing could be verified here. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Self-hosted only |
+| Answered | 2026-09-13 04:35 |
+| Note | Build with the intention of cloud support, but I will only be using this self hosted unless it is accepted by the project at which point they can make the final changes themselves or request them. |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0006
+
+**When is the design offered to upstream: before code, after phase 1 works, or not at all?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+i: [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001)
+
+Upstream's AGENTS.md asks before writing code and the maintainer answers issues within two days (HRD-I-0001). Upstream moved 244 commits in the last 30 days, so a long-lived fork branch will be rebased often whatever we choose. Opening an issue is your outward-facing action, not mine.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing in the fork; it decides whether the schema can still change on the maintainer's word |
+| Option | Issue now, before phase 1 :: Recommended: a design issue on rleeon/hoard with the lease model and the schema, then build :: Feedback lands before any migration is committed, which is the cheapest moment to be told no. Costs a few days' wait, which phase 0 verification fills. |
+| Option | After phase 1 works :: build the server half in the fork, then open an issue with a working branch :: A working demo argues better than a design, but a schema the maintainer dislikes is then already built. |
+| Option | Fork only :: never offer it; the fork is the product :: No waiting and no compromise, and every upstream release is a rebase we carry alone. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Fork only |
+| Answered | 2026-09-13 04:37 |
+| Note | My only concern is using it myself for now. We may offer it later but not at a scheduled time. |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0007
+
+**Re-asking how a shared save names one world's files, with your question answered**
+
+question · 2026-09-13
+
+supersedes: [HRD-Q-0002](#hrd-q-0002)
+
+f: [MUS-F-0137](findings.md#mus-f-0137)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Your question: which option is least disruptive while sharing only the files the game needs, and never player data unless the game keeps it inside the world (Minecraft). Answer: the per-save include filter. The subfolder save cannot separate one world from another or exclude anything inside the folder, so it fails the constraint outright. The per-game rule shares only the right files but is a special case in the manifest crate and a code change per game. The filter is one mechanism, honoured by backup and restore, and each game is a template: Valheim names the world's .db, .fwl, .old and _backup_ files and nothing under characters_local; a Minecraft template names the world folder whole, playerdata included, because the game keeps it there. Disruption is one filter call in walk_source and the restore merge, a state field, a wire field with a golden fixture.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 2 backup and restore scope; HRD-Q-0002 was closed by a reply that asked rather than chose |
+| Option | Per-save include filter :: Recommended: a glob list on the save, set from a per-game template when the world is shared; player data excluded unless the template says the game stores it in the world :: Meets the constraint for both cases you named with one mechanism. Costs a filter in walk_source and the restore merge, a state field, a wire field with a golden fixture, and the Valheim template. |
+| Option | Subfolder save :: track worlds_local as its own save, no new mechanism :: Zero new code, but every world in the folder shares one lease and nothing inside can be excluded, so it cannot meet the constraint. |
+| Option | Per-game rule in hoard-manifest :: a Valheim-only file rule beside the catalog :: Shares only the right files, but each new game is a code change in the manifest crate rather than data. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Per-save include filter |
+| Answered | 2026-09-13 04:45 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0008
+
+**Does phase 1, the server half, start in this session or after you read the plan?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+d: [HRD-D-0001](decisions.md#hrd-d-0001)
+
+The plan at .local/group-sharing/plan.md is revised for HRD-D-0001 to 0005. Phase 1 is the server: four migrations, a Namespace enum through the CAS path, groups and lease routes, wire types, tests. It is the biggest PR and the one a schema objection would most want to reach before it is built. AGENTS.md's ask-before-code is satisfied by this session per the checkout rules, so this is your review gate, not upstream's.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Writing code; the plan is complete apart from HRD-Q-0007, which only touches phase 2 |
+| Option | Start now :: Recommended: phase 1 begins in this session on a branch from main, PR opened as draft when green :: Fastest; the plan is on disk to read alongside the diff, and a draft PR is where a schema objection is cheapest to act on. |
+| Option | After you read the plan :: this session stops; phase 1 starts when you say so :: Costs a round trip and buys a read of the plan before any migration exists. |
+| Option | Phase 0 first :: hold code until the Valheim file behaviour is verified :: Phase 0 only changes phase 2's evidence design, so it buys nothing for the server half. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | After you read the plan |
+| Answered | 2026-09-13 04:46 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0009
+
+**Which address did you give the desktop app, and what exactly does it say when it refuses the key?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The key never reached the server: its last-used stamp is empty, no unknown-token lookup appears in the debug log, and no 401 was logged. A key I minted answered whoami with 200 through hoard.killerofpie.com, so the tunnel, the auth path and the key format all work. The tunnel log shows the app has reached the server on other paths. The one failure that leaves no server trace is a plain http address: Cloudflare redirects it to https and the client drops the Authorization header on the redirect, so the server answers 401 without looking anything up. Pick the address you entered, and add the app's exact error text as a note.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Diagnosing why the demo rejects your KoPie-Streamer key; nothing in the server work |
+| Option | https://hoard.killerofpie.com :: Recommended: https, host only, nothing after it :: If this is what you entered, the redirect theory is out and I need the app's exact wording to go further. |
+| Option | http://hoard.killerofpie.com :: plain http :: Cloudflare answers with a redirect to https, and the client does not carry the key across it. Re-enter the address with https. |
+| Option | Something else :: a path, a port, or the LAN address; put it in the note :: The panel path or a trailing slash would change what the client calls. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | http://hoard.killerofpie.com |
+| Answered | 2026-09-13 05:27 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0010
+
+**How do you and your testers get fork builds of the desktop client, and how do those clients update?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+f: [HRD-F-0003](findings.md#hrd-f-0003)
+
+Today the client checks api.github.com/repos/rleeon/hoard/releases/latest (hoard-agent/src/update.rs:16, install/fetch.rs:23) and hoardd applies the release after checking its minisign signature against a public key compiled into the binary. The fork's clients would keep pointing at upstream and would never see a fork build. Upstream's release-desktop.yml builds Windows, macOS and Linux installers on GitHub-hosted runners from a tag and needs two secrets, MINISIGN_SECRET_KEY and MINISIGN_KEY_PASSWORD. DevOfPie/hoard is public, so runner minutes are free, but Actions on the fork is still unconfirmed (HRD-F-0003).
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 delivery to testers; nothing in phase 1 |
+| Option | Fork releases with the fork's own updater :: Recommended: point REPO at DevOfPie/hoard, compile in a fork minisign public key, tag prereleases like v1.1.6-share.1, let release-desktop.yml build them; every tester installs once and updates from inside the app :: Costs you: enable Actions, generate a minisign keypair, add the two secrets. Costs me: two constants and the key, kept as a fork-only commit. A fork client never sees upstream releases again until it is switched back. |
+| Option | Manual installers from Actions :: run release-desktop.yml by hand, share the installer link, testers reinstall each time :: No code change and no key of ours, but every update is a message to every tester and an unsigned reinstall by hand; the in-app updater keeps offering upstream's releases. |
+| Option | Testers build from source :: each machine clones the fork and builds :: Zero infrastructure and out of reach for anyone without a Rust and Node toolchain, so in practice only you. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
+| Answer | Fork releases with the fork's own updater |
+| Answered | 2026-09-13 05:41 |
+| Delivered | not delivered: a name cannot contain "/": use letters, digits, dash or underscore |
+
+---
+
+## HRD-Q-0011
+
+**Where is the fork's release signing key generated, and who holds the secret half?**
+
+question · 2026-09-13
+
+d: [HRD-D-0008](decisions.md#hrd-d-0008)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+HRD-D-0008 needs a minisign keypair: the public half goes into the client and server binaries, the secret half and its password into the fork's Actions secrets MINISIGN_SECRET_KEY and MINISIGN_KEY_PASSWORD. minisign is not installed on this VM and my token cannot write repository secrets (403), so adding the secrets is yours either way. Two more facts for the release recipe: GitHub's releases/latest ignores prereleases, and the client compares only major.minor.patch (update.rs:30-46), so every fork release is an ordinary release with the patch bumped: v1.1.7, v1.1.8 and so on. release-desktop.yml must stay enabled alongside ci.yml.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | The fork-only updater commit needs the public key; nothing else waits on it |
+| Option | You generate it on your machine :: Recommended: minisign -G -p hoard-fork.pub -s hoard-fork.key, add the two secrets in the fork's settings, paste the public key to me :: The secret never touches this VM or a chat transcript. Costs you a minisign install and five minutes. |
+| Option | I generate it here :: I install a minisign implementation, write the keypair to a 600 file under ~/hoard-demo, you copy the secret into the fork's settings :: Faster for you, but the secret half lives on this VM and passes through a file you read over the session. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | mustur/Hoard_Work |
 
 ---
 
@@ -2377,7 +2674,7 @@ The CLI installs an update and keeps running the version it started on. It says 
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0134. Nothing is built either way; the answer decides whether anything is |
 | Option | Leave it at Stop then Resume :: Recommended. Nothing new is built, the chip already says an update is waiting, and two presses already do it. :: The pieces exist and compose. What the owner loses is that the two presses are on different screens -- Stop is on the session, the Resume button is on the page you land on afterwards -- so it is two presses and a navigation rather than two presses. |
 | Option | A restart control on the session's own page :: One press instead of two and a navigation, and one more destructive button on the surface. :: Stop, remember, restore, without leaving the session view. It is the existing stop path and the existing restore path behind one button, so it is small. It is also a second button that kills a running agent, next to the first one, and MUS-D-0147 put a confirmation in front of that for a reason. |
@@ -2385,6 +2682,10 @@ The CLI installs an update and keeps running the version it started on. It says 
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 05:01 |
+| Answer | Mustur restarts the session when it sees the notice |
+| Answered | 2026-09-11 07:25 |
+| Note | Wait until sessions have been idle for some time to avoid interrupting work |
+| Delivered | typed into mustur/Intake |
 
 ---
 
@@ -2394,18 +2695,30 @@ The CLI installs an update and keeps running the version it started on. It says 
 
 question · 2026-09-11
 
+what idle is read from: [MUS-D-0130](decisions.md#mus-d-0130)
+
+the sweep that would share it: [MUS-D-0159](decisions.md#mus-d-0159)
+
 Naming the tree each session runs in is the half of MUS-F-0108 that costs nothing, because Start already writes down where each session runs and the page that lists them was reading that row and discarding the directory. The other half was 'nice to know', and it is not free. Whether a session is working or waiting is read out of the CLI's own pane (MUS-D-0130), and the picker is rendered on the server with nothing captured -- so every session in the list means one more tmux capture-pane, on every page load of every session.
+
+The owner asked whether the tmux sessions only run while a session is being viewed. They do not: a session runs in tmux from the moment Start creates it until something stops it, and since MUS-D-0151 the tmux server sits in a systemd scope of its own so even a redeploy of Mustur does not end one. What is gated on a viewer is the *reader*, not the session -- Hub.Watch counts viewers and the poller stops two minutes after the last one leaves (LingerAfter in internal/session/screen.go). So the screen is polled only while somebody is looking at it, and the session runs regardless.
+
+That distinction is what the fourth option below is: their suggestion, which none of the first three offered. Keep a poller on every owned session all the time, rather than starting one per viewer, and the picker reads state that is already in memory. It changes what this costs from a tmux call per session per page render into a fixed background cost per running session -- and it is the same machinery MUS-D-0159 needs to notice an update notice on a session nobody is looking at.
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | the second half of MUS-F-0108. The first half -- the tree each session runs in -- is built and needs no answer |
-| Option | Leave the picker naming only where each session runs :: Recommended. Nothing further is built or spent; the state stays on the session's own page, where the pill already says it. :: The pill is live and correct for the session being looked at. What the picker cannot then tell you is which of the others is waiting for you, which is the thing that was asked for -- so this is declining the nice-to-know rather than satisfying it cheaply. |
-| Option | Read every session's pane on every render :: One tmux capture-pane per running session, per page load, run one after another. :: With three sessions that is three subprocesses before the page draws, and it grows with the list. The reading itself is code that exists (session.Doing). It is the honest version: the picker says what is true at the moment it is drawn. |
-| Option | Read them, but no more often than every few seconds :: Same reading, shared between page loads, at the cost of a picker that can be a few seconds behind. :: One capture per session per interval rather than per render, held in memory. A session that finished two seconds ago still reads as working. That is the same trade the pill does not have to make, and it is the only version whose cost does not grow with how often the page is loaded. |
+| Option | Leave the picker naming only where each session runs :: Recommended when this was asked, and superseded by the fourth if that is taken. :: The pill is live and correct for the session being looked at. What the picker cannot then tell you is which of the others is waiting for you, which is the thing that was asked for. |
+| Option | Read every session's pane on every render :: One tmux capture-pane per running session, per page load, run one after another. :: With three sessions that is three subprocesses before the page draws, and it grows with the list. It is the honest version: the picker says what is true at the moment it is drawn. |
+| Option | Read them, but no more often than every few seconds :: Same reading, shared between page loads, at the cost of a picker that can be a few seconds behind. :: One capture per session per interval rather than per render, held in memory. A session that finished two seconds ago still reads as working. |
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 05:01 |
+| Answer | Are the Tmux sessions only running when a session is being viewed? Would it not be better to always have the Tmux live on the machine and only transit the selected session? |
+| Answered | 2026-09-11 07:29 |
+| Delivered | typed into mustur/Intake |
+| Option | Poll every owned session always, not only the watched one :: The owner's own suggestion. A fixed background cost per running session, and the picker's state becomes free. :: Today a poller is started by a viewer and stops two minutes after the last one leaves, so nothing knows what an unwatched session is doing. Polling all of them makes the picker's state something already in memory rather than something fetched, removes the per-render cost entirely, and is the same sweep MUS-D-0159 needs to see an update notice on a session nobody has open. The cost is one capture-pane per running session every 400ms forever, whether or not anyone is looking -- which is the thing LingerAfter exists to avoid, made permanent. |
 
 ---
 
@@ -2419,7 +2732,7 @@ MUS-D-0119 set the picture ceilings on purpose -- ten megabytes, four raster for
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | nothing; it ships at six and MUS-F-0130 is fixed either way. What the answer changes is the ceiling and how it is expressed |
 | Option | Six, as built :: Recommended. Double what the report that asked for it needed, and nothing further to do. :: MUS-F-0131 arrived as three records. Six leaves room without being a number chosen to sound generous. The cost is the ceiling: a request can carry sixty megabytes of pictures, where before it could carry ten. |
 | Option | Three :: The measured number, and the body cap stays at thirty megabytes. :: Three is what the report that prompted this actually needed, which is the only measurement there is. It is tighter on the ingress and it will be the wrong number the first time somebody has four screenshots of one defect. |
@@ -2427,3 +2740,140 @@ MUS-D-0119 set the picture ceilings on purpose -- ten megabytes, four raster for
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-11 05:22 |
+| Answer | Six, as built |
+| Answered | 2026-09-11 07:27 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0104
+
+**What counts as idle enough to restart a session under you, and what is never restarted?**
+
+question · 2026-09-11
+
+Your note on MUS-Q-0101 was to wait until sessions have been idle for some time. Some time is the whole of the risk and I will not pick it. What is already exact: the CLI prints 'esc to interrupt' while a turn is in flight and sits at a bare prompt otherwise, and Mustur reads that off the pane rather than timing silence (MUS-D-0130), so 'no turn in flight' needs no timer at all. What a timer is for is the person -- the gap between finishing a turn and typing the next thing. Read while writing this: Research is at its prompt with the update notice showing, which is the case this exists for, and Milestone_Work is also at its prompt with 'milestone 8 is accepted' typed into its input box and not sent. A restart destroys that line, and no silence timer can see it -- but the CLI publishes the input box and Mustur already strips it off the screen, so it can be read. Every option below therefore refuses to restart a session with anything typed in its box; they differ in how long and in what else counts as you being present.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-D-0159. The mechanism is built and does nothing without a threshold; a number chosen here would be an agent picking when to kill your agents |
+| Needed to proceed | yes |
+| Option | Prompt empty, quiet thirty minutes, and no browser tab open on it :: Recommended. The slowest to take an update and the only one that cannot interrupt you. :: Three conditions, all of them things Mustur can already see: no turn in flight, nothing typed, no viewer holding a socket on that session, and half an hour since the screen last changed. A session you walked away from yesterday is taken on the next sweep; one you are reading is never taken while you are reading it. The cost is that an update can sit for a day on a session you keep glancing at, which is the cost of the version of this that cannot surprise you. |
+| Option | Prompt empty and quiet five minutes :: Takes the update promptly; can restart a session you are looking at but not typing in. :: Two conditions. Five minutes is long enough that a session mid-task is safe -- a turn in flight is excluded by the pane, not the clock -- and short enough that the update is taken the same working session. What it does not know is whether you are watching: a tab open on the screen counts for nothing, so a session you are reading can restart under you between one glance and the next. |
+| Option | Prompt empty, and that is all :: Takes the update the moment the turn ends. No dwell at all. :: This is your answer read literally, with only the typed-text guard on it. The moment a turn finishes and the box is empty, the session goes and comes back on its conversation. Fastest, and the one where finishing a turn and reaching for the keyboard is a race -- the pane says idle the instant the reply lands, and you have not read it yet. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 07:28 |
+| Answer | Prompt empty, quiet thirty minutes, and no browser tab open on it |
+| Answered | 2026-09-11 07:30 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0105
+
+**Re-asking what the picker should say, with your premise correction folded in and a fourth option**
+
+question · 2026-09-11
+
+Your question first, because it has an answer. tmux sessions do not only run while a session is being viewed -- a session runs from Start until something stops it, and since MUS-D-0151 the tmux server sits in a systemd scope of its own so even a redeploy of Mustur leaves them running. What is gated on a viewer is the reader: Hub.Watch counts viewers and the poller stops two minutes after the last one leaves. So the screen is polled only while somebody is looking, and the session runs regardless. Your suggestion is therefore about the poller, not the sessions, and it is the fourth option -- which none of the first three offered, and which is now the one I would take.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | the second half of MUS-F-0108, which is undecided: MUS-Q-0102 was closed by a reply that asked rather than chose (MUS-F-0137) |
+| Option | Poll every owned session always, not only the watched one :: Recommended, and it is your suggestion. One capture per running session on a fixed interval, and the picker's state becomes free. :: The cost stops scaling with page loads and starts scaling with sessions, which is the right way round -- there are three sessions and there could be a hundred page loads. It also makes the picker's state something already in memory rather than something fetched, and it is close to what the update sweep built on MUS-D-0159 already does on its own slower timer. The two could share one loop. What it gives up is LingerAfter's whole point, which was not polling a session nobody is reading. |
+| Option | Leave the picker naming only where each session runs :: Nothing further is built or spent. The state stays on the session's own page. :: The pill is live and correct for whichever session is open. What the picker cannot tell you is which of the others is waiting for you, which is what you asked for. |
+| Option | Read every session's pane on each page render :: One tmux capture-pane per running session, per page load, run one after another. :: Honest -- the picker says what is true at the moment it is drawn -- and the only option whose cost grows with how often you open a page rather than with how many sessions exist. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 07:38 |
+| Answer | Poll every owned session always, not only the watched one |
+| Answered | 2026-09-11 16:49 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0106
+
+**The seven rebased branches need landing without rewriting anything you would mind rewriting**
+
+question · 2026-09-11
+
+Correcting the premise first, because it changes the choice: nothing was ever going to be force-pushed to main. Main is protected, this token has no bypass, and a727af5 records that. The push targets seven intake/* feature branches that exist only to carry pull requests 46 to 52, and every one of them goes through a PR to its neighbour. What makes a rewrite necessary at all is that two reviewers found gate failures after those branches were pushed, and the fixes belong inside the commits that caused them rather than in a commit that apologises for them. If you would rather nothing published is rewritten at all, the third option does that and costs seven pull request numbers. One thing worth knowing about the middle option: in a stack, adding a correction commit to a lower branch means every branch above it has to take that commit too, and workflow.md forbids merging back down -- so it ends in either a rewrite anyway or a tangle of merge commits.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | ten branches of fixes, none of which can be reviewed until their PRs show the corrected commits |
+| Option | Force-push the seven intake/* branches, with --force-with-lease :: Recommended. PRs 46 to 52 keep their numbers and re-diff; main is untouched and would refuse anyway. :: This is what MUS-Q-0095 already answered -- force pushes on my own stacked branches, with lease -- and it is the ordinary way a stacked pull request takes review feedback. --force-with-lease refuses if anything landed on the branch that I have not seen. Nothing outside those seven refs moves, and none of them is main or has ever been merged. |
+| Option | Close 46 to 52 and open seven fresh branches with the corrected commits :: Nothing published is rewritten. Costs seven new PR numbers and leaves seven abandoned branches on the remote. :: The only option where no existing ref changes at all. The review comments already posted on 52 stay on a closed pull request, so the record of what two reviewers found and what was done about it is one link removed from the work. Everything else is identical. |
+| Option | Leave 46 to 52 as they are and put every correction in one more PR on top :: No rewrite and no new branches, but the commits stay wrong on the record. :: Commit 38639da keeps five present-tense claims about code that lands four commits later, which is a gate in workflow.md's own before-committing table, and each commit stops being self-consistent. It is the repository's correct-it-forward idiom applied to something that idiom was not written for -- it is for records, where nothing is deleted, not for a commit that can simply be correct. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-11 17:17 |
+| Answer | Force-push the seven intake/* branches, with --force-with-lease |
+| Answered | 2026-09-12 01:53 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0107
+
+**How should the Hoard group-sharing work enter Mustur, given onboarding a repository is its own milestone?**
+
+question · 2026-09-13
+
+m: [MUS-M-0009](milestones.md#mus-m-0009)
+
+q: [MUS-Q-0091](#mus-q-0091)
+
+Pie asked to add the DevOfPie/hoard fork (co-op group save sharing with a per-world lease lock, built on rleeon/hoard) to Mustur. workflow.md's gate says a repository outside Mustur is not touched before onboarding, which is MUS-M-0009 with its own verdict, and LinkCtrl's transition (MUS-Q-0090, MUS-Q-0091) is already preparing to be that second project. No file in the hoard fork is touched by any option; its local excludes keep session files out of commits.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Recording the DevOfPie/hoard fork and its group save-sharing work in Mustur |
+| Needed to proceed | yes |
+| Option | Jot to the idea inbox :: Recommended — one IDW finding describing the work, no routing row, nothing onboarded :: The intake path exists for exactly this and costs nothing against the contract. The record is findable by identifier and can be rerouted into a Hoard project later with mustur reroute, which keeps its identifier. The cost: the idea inbox is not a project, so milestones, decisions and questions about Hoard have nowhere of their own to live until onboarding. |
+| Option | A Hoard project, no repository row :: a project record with its own prefix that Hoard's records file under, repository row left for onboarding :: Mirrors how the idea inbox is a routing target inside Mustur (MUS-D-0038): records get a Hoard prefix from the start, so nothing is re-minted later. It stops short of the repository row the gate forbids, but it is still a destination claim about a project nothing here has verified, and it lands before LinkCtrl, which MUS-M-0009 expected to arrive first. |
+| Option | Onboard Hoard now :: start MUS-M-0009 with Hoard as the second project, repository row and all :: The complete answer: routing, the mandated tool call reachable from the hoard checkout, and records that belong to it. It is a milestone with reviewers and its own verdict, it displaces LinkCtrl's transition as the proof MUS-M-0009 was chosen to test, and onboarding would place Mustur's files in a tree whose upstream bans them, so every such file stays local-only. |
+| Asked by | whippy |
+| Session | claude-code bg job 63a59fd8 (hoard research) |
+| Answer | Why is adding projects a milestone of its own? |
+| Answered | 2026-09-13 03:51 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-13 03:52 |
+
+---
+
+## MUS-Q-0108
+
+**Re-asking how Hoard enters Mustur, with your question answered and a fourth option**
+
+question · 2026-09-13
+
+supersedes: [MUS-Q-0107](#mus-q-0107)
+
+f: [MUS-F-0137](findings.md#mus-f-0137)
+
+m: [MUS-M-0009](milestones.md#mus-m-0009)
+
+Your question first. Onboarding is a milestone because of your own instruction, recorded in Plan.md's not-doing table: a half-built router that has already edited eight repositories is worse than no router. Plan.md success criterion 9 holds it: no other project's files are modified before its onboarding milestone is deliberately started. The work it names is real for LinkCtrl: 947 existing records to map and import (MUS-Q-0091), the mandate placed in that repository, and an audit over its declared files, all read by reviewers. MUS-M-0009 was also chosen so the first project onboarded proves the record-shape transition. Hoard is the case the rule was not sized for: it has no records to map, so the expensive half of onboarding is empty, and its upstream bans agent files, so the mandate could only live in local excludes. That is the fourth option.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Recording the DevOfPie/hoard fork and its group save-sharing work in Mustur; MUS-Q-0107 was closed by a reply that asked rather than chose (MUS-F-0137) |
+| Needed to proceed | yes |
+| Option | Jot to the idea inbox :: one IDW finding describing the work, no routing row, nothing onboarded :: The intake path exists for this and costs nothing against the contract. Reroutable into a Hoard project later with mustur reroute, keeping its identifier. Hoard's own decisions and questions have nowhere of their own until onboarding. |
+| Option | A Hoard project, no repository row :: a project record with its own prefix, repository row left for onboarding :: Mirrors the idea inbox as a routing target (MUS-D-0038), so nothing is re-minted later. It is still a destination claim about a project nothing here has verified, and it lands before LinkCtrl. |
+| Option | Onboard Hoard as MUS-M-0009 :: the full milestone, repository row and all, displacing LinkCtrl as the second project :: The complete answer, with reviewers and its own verdict. It spends MUS-M-0009's proof of the record-shape transition on a project with no records to transition. |
+| Option | A light onboarding of its own :: Recommended — a new milestone for Hoard alone: project and repository rows, mandate kept in local excludes, no records to map; MUS-M-0009 stays LinkCtrl's :: Satisfies criterion 9 as written, since the onboarding is deliberately started, and costs little because Hoard brings no corpus. It still needs its own done-when and reviewers, and it amends the plan by adding a milestone the plan did not have. |
+| Asked by | whippy |
+| Session | claude-code bg job 63a59fd8 (hoard research) |
+| Answer | LinkCtrl is not a good reference here because we are replacing an older pattern that was built through use before StrucGu and Musutr. Hoard onboarding shouldn't be a milstone worth of work since we are adding a new project |
+| Answered | 2026-09-13 03:58 |
+| Delivered | not delivered: the question names no session |
+| Surfaced | 2026-09-13 03:58 |

@@ -104,8 +104,17 @@ func cmdAsk(args []string) error {
 	if strings.TrimSpace(*sessionID) != "" {
 		r.Data = append(r.Data, record.Field{Key: question.FieldSession, Value: *sessionID})
 	}
-	if strings.TrimSpace(*inProject) != "" {
-		r.Data = append(r.Data, record.Field{Key: question.FieldProject, Value: *inProject})
+	if in := session.ProjectFrom(*inProject); in != "" {
+		// Checked here rather than at delivery, which is where it used to be
+		// checked and is far too late: a question raised with a target nothing
+		// can reach looks fine until the owner presses Answer, and then the
+		// answer is recorded, the question closes, and the session that asked
+		// never hears it (MUS-F-0141). The raiser finds out now, when the fix
+		// is to type the command again.
+		if _, err := session.NameFor(in); err != nil {
+			return fmt.Errorf("--in %q cannot be delivered to: %w", *inProject, err)
+		}
+		r.Data = append(r.Data, record.Field{Key: question.FieldProject, Value: in})
 	}
 
 	role, ok := ident.RoleFor(question.Kind)
@@ -304,6 +313,19 @@ func cmdQuestions(args []string) error {
 	// is machine-local: reading it meant the check could only skip on a clone and
 	// in CI, while CLAUDE.md told every session the gate was binding.
 	records := fs.String("records", "", "read questions from this exported tree instead of the store")
+	// Which project's work is being gated.
+	//
+	// The gate exists so a session cannot report *its* work complete around
+	// *its* own unanswered question. That was the whole of it while the store
+	// held one project. Since a second moved in, one project's unsurfaced
+	// question fails every other project's commit gate -- a Mustur commit was
+	// blocked by two questions raised minutes earlier by the session onboarding
+	// Hoard, which no Mustur session can surface or answer (MUS-F-0142).
+	//
+	// Empty means every question, which is what a person running this by hand
+	// wants to see. The Makefile names a prefix, because a commit gate is about
+	// the work being committed.
+	only := fs.String("project", "", "gate only on this identifier prefix, for a store holding more than one project")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -314,7 +336,7 @@ func cmdQuestions(args []string) error {
 			return err
 		}
 		if *gate {
-			return question.Gate(qs)
+			return question.Gate(question.OfProject(qs, *only))
 		}
 		return listQuestions(qs, *all)
 	}
@@ -331,7 +353,7 @@ func cmdQuestions(args []string) error {
 	}
 
 	if *gate {
-		return question.Gate(stored)
+		return question.Gate(question.OfProject(stored, *only))
 	}
 	return listQuestions(stored, *all)
 }

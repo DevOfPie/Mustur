@@ -23,6 +23,7 @@ is a copy that will drift.
 
 | Unit | Title | Date |
 | --- | --- | --- |
+| [HRD-W-0001](HRD-W-0001.md) | Group save sharing in the DevOfPie fork | 2026-09-13 |
 | [MUS-W-0001](MUS-W-0001.md) | An identifier scheme records can be addressed by | 2026-08-19 |
 | [MUS-W-0002](MUS-W-0002.md) | An insert-only store with a materialized latest | 2026-08-19 |
 | [MUS-W-0003](MUS-W-0003.md) | A seed that puts what already exists into the store | 2026-08-19 |

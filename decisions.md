@@ -3549,3 +3549,102 @@ That is not the milestone failing. It is the milestone declining to override a s
 | Consequence | no session started from the surface will raise the pop-up while the owner's default mode is auto |
 | How to exercise it | start a session with --permission-mode default, as MUS-W-0023's evidence did |
 | Not an invitation | widening the gate later is MUS-Q-0100 answered differently, which is the owner's |
+
+### MUS-D-0159
+
+**Mustur restarts a session to take a CLI update, which is the first thing it does on its own**
+
+decision · 2026-09-11
+
+the question it answers: MUS-Q-0101
+
+the clause it supersedes: MUS-D-0149
+
+the jot that raised it: MUS-F-0134
+
+what idle is read from: MUS-D-0130
+
+the threshold: MUS-Q-0104
+
+The owner's answer to MUS-Q-0101, with a note: wait until sessions have been idle for some time, to avoid interrupting work. The option they chose is the one the question argued against, and the note is why it is answerable at all -- the objection was that a restart ends a turn in flight, and a session that is idle has no turn in flight.
+
+This supersedes the clause in MUS-D-0149 that says a person presses it and never a timer, for this one case and no other. MUS-D-0149 stands for a session lost with the machine: a CLI that crashed still wants a person, because nothing here knows why it died. A CLI that has told the screen it installed an update and is sitting at its prompt is a different thing entirely -- it has said what it wants and it is not doing anything. CLAUDE.md's 'It does not restart anything' is corrected rather than quietly left.
+
+What idle has to mean is the whole of the risk, and MUS-Q-0104 settled it: at the prompt, nothing typed, nobody present, and thirty minutes of an unchanged screen. Two of those clauses were got wrong first time and both were corrected by the owner rather than by a test. The typed guard read the CLI's own dim suggestion as somebody's draft, which would have stopped the sweep ever firing (MUS-F-0138). And it was justified as protecting a draft it never protected: what the owner types goes into Mustur's composer, which is held in the browser until Send, so a restart cannot destroy it. The box catches a line typed by somebody attached in a terminal, and an attached terminal now declines the restart on its own -- the owner's presence clause was about presence, not about which client it was reached from.
+
+| Field | Value |
+| --- | --- |
+| Supersedes | the never-a-timer clause of MUS-D-0149, for this case only |
+| Status | built; internal/session/sweep.go, riding on --sessions |
+| Threshold | MUS-Q-0104: at its prompt with nothing typed, nobody present -- no browser tab and no attached terminal -- and the screen unchanged for thirty minutes |
+
+### MUS-D-0160
+
+**A jot takes six pictures, and six is the owner's number rather than the agent's**
+
+decision · 2026-09-11
+
+the question it answers: MUS-Q-0103
+
+the ceiling it sits beside: MUS-D-0119
+
+the fix it sizes: MUS-F-0130
+
+the report that needed three: MUS-F-0131
+
+MUS-Q-0103 answered: six, as built. The ceiling stands where MUS-F-0130's fix put it, and the point of asking was never that six was likely wrong -- it was that the request body cap is computed from it, so the number decides what one POST can push through the ingress, and MUS-D-0119 had already had the owner choose once in that class. A contract reviewer found it taken in a code comment, which is where it should not have been settled.
+
+Three was the only measured number in it: MUS-F-0131 arrived as three records because the box took one picture each. Six is double that, and it is now double that on the owner's word.
+
+| Field | Value |
+| --- | --- |
+| Status | decided; nothing changes in the code and the comment stops saying the question is open |
+
+### MUS-D-0161
+
+**The hub polls every owned session, and the reader stops being a thing a viewer starts**
+
+decision · 2026-09-12
+
+the question it answers: MUS-Q-0105
+
+the question it closed badly: MUS-Q-0102
+
+the sweep that shares it: MUS-D-0159
+
+the half of the finding it completes: MUS-F-0108
+
+what had to be fixed first: MUS-F-0135
+
+The owner's answer to MUS-Q-0105, which was their own suggestion re-raised after MUS-Q-0102 was closed by a question rather than a choice (MUS-F-0137). A session runs in tmux from Start until something stops it; what was gated on a viewer was the reader. Hub.Watch counted viewers and the poller stopped two minutes after the last one left, so nothing knew what an unwatched session was doing -- and the picker had to choose between saying nothing and paying a tmux capture per session on every page render.
+
+Now one poller per owned session, adopted on a five-second tick and kept while the session runs. The cost moves from per page load to per running session, which is the right way round: there are three sessions here and there can be a hundred page loads. What it gives up is LingerAfter's whole point, which was not polling a session nobody is reading, and the owner took that knowingly.
+
+Three things fall out of it. The picker says working or waiting, which is the half of MUS-F-0108 that was not free and now is. MUS-D-0159's sweep stops capturing panes of its own and reads what the poller already holds. And the dwell that sweep turns on is maintained continuously per session rather than seeded from tmux's session_activity whenever a tab happens to open, which MUS-F-0051 established is not when the session last did anything.
+
+None of that would have been safe before MUS-F-0135 was fixed at the source: while the poller hashed the capture rather than what it renders, changedAt was reset by every turn of a spinner, so a dwell read off it would have been a dwell that never elapsed.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/session/screen.go Supervise, and the picker and the sweep both read it |
+
+### MUS-D-0162
+
+**A new project with no records moves in as an ordinary project, not as a milestone**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0108
+
+project: MUS-P-0003
+
+repository: MUS-R-0002
+
+the milestone it leaves alone: MUS-M-0009
+
+MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has been a milestone with its own verdict. The owner answered that LinkCtrl is not a good reference, because it replaces an older pattern built through use before StrucGu and Mustur, and that adding a new project should not be a milestone's worth of work. So Hoard moved in on 2026-09-13 as MUS-P-0003 with repository MUS-R-0002, and no milestone was opened. The rule the milestone gate was written for still stands where it applies: a project arriving with an existing corpus to map, as LinkCtrl does, is still MUS-M-0009's to prove. What this changes is the reading that every repository, however new, is a milestone before its first routing row. Nothing of Mustur's is committed to the hoard fork: its mandate lives in a CLAUDE.md upstream's .gitignore already covers.
+
+| Field | Value |
+| --- | --- |
+| Applies to | a new project that brings no existing records |
+| Unchanged | MUS-M-0009 is still LinkCtrl's transition |

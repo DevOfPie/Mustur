@@ -1,0 +1,24 @@
+
+[38;5;174m ▐[48;5;16m▛███▛█[39m[49m   [1mClaude Code[0m [38;5;246mv2.1.268
+[38;5;174m▝▜[48;5;16m█████[49m█▀[39m  [38;5;246mOpus 5 with high effort · Claude Max
+[38;5;174m  ▝▝ ▝▝  [39m  [38;5;246m/tmp/tmp.2mwoOPyXV8 · [38;5;114m]8;id=11hkpbt;https://claude.ai/code/session_01TvxvhRsPcJp1KTmKRFVDTi?from=cli\/rc[39m]8;;\            
+
+[2m▎[0m [38;5;246mUsing Opus 5 (from managed settings) · /model
+
+
+
+
+
+
+
+
+
+
+
+
+
+[39m                                                                              
+[38;5;244m────────────────────────────────────────────────────────────────────────────────
+[39m❯ this is a real draft nobody sent
+[38;5;244m────────────────────────────────────────────────────────────────────────────────
+[39m  [38;5;220m⏵⏵ auto mode on[38;5;246m (shift+tab to cycle)[39m               

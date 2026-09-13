@@ -138,3 +138,42 @@ func TestAnUnreadablePaneIsDeliveredInto(t *testing.T) {
 		t.Fatalf("nothing was delivered because the pane could not be read: %q", got)
 	}
 }
+
+// The session name tmux gives you is a name delivery accepts.
+//
+// A session raising a question knows itself as "mustur/Hoard_Work", because
+// that is what tmux reports. Passing it to --in produced a question whose
+// answer could never arrive: delivery prepends the prefix again and a project
+// name may not contain a slash. The owner met it as "not delivered" on an
+// answer they had already given (MUS-F-0141).
+func TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject(t *testing.T) {
+	for _, name := range []string{"Hoard_Work", "mustur/Hoard_Work", "  mustur/Hoard_Work  "} {
+		if got := ProjectFrom(name); got != "Hoard_Work" {
+			t.Errorf("ProjectFrom(%q) = %q, want Hoard_Work", name, got)
+		}
+	}
+
+	for _, name := range []string{"Hoard_Work", "mustur/Hoard_Work"} {
+		s := &sender{live: true}
+		said := Deliver(context.Background(), s, name, "HRD-Q-0006", "Fork only")
+		if strings.Contains(said, "not delivered") {
+			t.Errorf("%q: %s", name, said)
+		}
+		// And it reaches the project, not the session name with the prefix on.
+		if s.project != "Hoard_Work" {
+			t.Errorf("%q was delivered to %q", name, s.project)
+		}
+	}
+}
+
+// A name that is wrong for some other reason still says so.
+func TestANameThatIsActuallyWrongIsStillRefused(t *testing.T) {
+	s := &sender{live: true}
+	said := Deliver(context.Background(), s, "two words", "MUS-Q-0001", "yes")
+	if !strings.Contains(said, "not delivered") {
+		t.Errorf("a name with a space was delivered to: %s", said)
+	}
+	if s.sent != "" {
+		t.Error("something was typed into a session that cannot be named")
+	}
+}
