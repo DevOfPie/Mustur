@@ -3648,3 +3648,23 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | --- | --- |
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
+
+### MUS-D-0176
+
+**Plans move into Mustur as milestone 9, a plan held beside its decisions, and 9b, a plan drawn there**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0121
+
+the first half: MUS-F-0144
+
+the second half: MUS-F-0148
+
+the tool limit it replaces: MUS-F-0048
+
+The owner answered MUS-Q-0121 with a milestone, plans first. Nothing in Plan.md covered plans or wireframes, so this adds a scope row and two milestone rows rather than building under an existing one. 9 is the document: a session hands Mustur a plan the size of the Hoard group-sharing plan, it becomes a record addressable by identifier and rendered where the owner answers decisions, and a question raised against a plan cites it and shows its answered state on both, which today nothing can do because refs point one way and no surface shows a cited question's state. 9b is the drawing: wireframes generated quickly and drawn freely enough that a surface planned in them looks like the surface built, with feedback left anywhere on the design, which the owner named as the one thing the external tool does well. The split is the owner's order, not an estimate: 9 gives a plan's questions somewhere to link before 9b exists, and 9 is independently useful because MUS-F-0144 is a plan a person cannot currently read without a shell. Constraints carried into both rows: never embed a backend in a frame, and a plan living in another project's checkout stays that project's file until the session hands it over. Rendering a plan's markdown waits on MUS-Q-0119's dependency check.
+
+| Field | Value |
+| --- | --- |
+| Status | scheduled; Plan.md milestone rows 9 and 9b, not started |
