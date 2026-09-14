@@ -57,19 +57,24 @@ func Apply(ctx context.Context, s *store.Store, sources []Source) (int, error) {
 // RepairActor marks an amendment the import made to its own records.
 const RepairActor = "import-linkctrl-repair"
 
-// Repair re-states imported records the importer now reads differently. A
-// record anybody else has written since the import is left alone and named:
-// replacing it would erase what they wrote. Record by record, and safe to run
-// again, since a record already matching is not touched.
-func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, skipped, missing []string, err error) {
+// Repair re-states imported records the importer now reads differently, and
+// creates the ones it now reads that the store has never held, which is how a
+// kind added after the import arrives (MUS-D-0173). A record anybody else has
+// written since the import is left alone and named: replacing it would erase
+// what they wrote. Record by record, and safe to run again, since a record
+// already matching is not touched.
+func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, skipped, created []string, err error) {
 	for _, src := range sources {
 		for _, r := range src.Records {
 			events, err := s.History(ctx, r.ID)
 			if err != nil {
-				return amended, skipped, missing, err
+				return amended, skipped, created, err
 			}
 			if len(events) == 0 {
-				missing = append(missing, r.ID)
+				if err := s.Append(ctx, r, "create", RepairActor); err != nil {
+					return amended, skipped, created, err
+				}
+				created = append(created, r.ID)
 				continue
 			}
 			last := events[len(events)-1]
@@ -86,22 +91,22 @@ func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, ski
 			}
 			was, err := last.Record.MarshalPayload()
 			if err != nil {
-				return amended, skipped, missing, err
+				return amended, skipped, created, err
 			}
 			now, err := r.MarshalPayload()
 			if err != nil {
-				return amended, skipped, missing, err
+				return amended, skipped, created, err
 			}
 			if string(was) == string(now) {
 				continue
 			}
 			if err := s.Append(ctx, r, "amend", RepairActor); err != nil {
-				return amended, skipped, missing, err
+				return amended, skipped, created, err
 			}
 			amended = append(amended, r.ID)
 		}
 	}
-	return amended, skipped, missing, nil
+	return amended, skipped, created, nil
 }
 
 var (

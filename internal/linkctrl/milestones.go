@@ -169,6 +169,9 @@ func Milestones(src MilestoneSources, cited map[string]Citation, today string) (
 		}
 		if p, ok := phases[n]; ok {
 			ms.Data = append(ms.Data, record.Field{Key: "Phase", Value: p[0]}, record.Field{Key: "Phase order", Value: p[1]})
+			if serial, err := strconv.Atoi(p[0]); err == nil {
+				ms.Refs = append(ms.Refs, record.Field{Key: "phase", Value: ident.ID{Project: Prefix, Role: ident.Phase, Serial: serial}.String()})
+			}
 		}
 		ms.Data = append(ms.Data, plan[n]...)
 		if ms.At == "" {

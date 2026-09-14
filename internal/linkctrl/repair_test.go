@@ -33,7 +33,7 @@ func TestRepairAmendsOnlyWhatTheImportStillOwns(t *testing.T) {
 	absent.ID = "LNK-F-0999"
 	src := []Source{{Records: append(reread, absent)}}
 
-	amended, skipped, missing, err := Repair(ctx, s, src)
+	amended, skipped, created, err := Repair(ctx, s, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,8 +43,11 @@ func TestRepairAmendsOnlyWhatTheImportStillOwns(t *testing.T) {
 	if len(skipped) != 1 || skipped[0] != "LNK-F-0001" {
 		t.Fatalf("skipped %v, want the record a person wrote since", skipped)
 	}
-	if len(missing) != 1 || missing[0] != "LNK-F-0999" {
-		t.Fatalf("missing %v", missing)
+	if len(created) != 1 || created[0] != "LNK-F-0999" {
+		t.Fatalf("created %v, want the record the store had never held", created)
+	}
+	if got, err := s.Get(ctx, "LNK-F-0999"); err != nil || got.Title != "read better" {
+		t.Fatalf("the created record: %+v, %v", got, err)
 	}
 	if got, _ := s.Get(ctx, "LNK-F-0001"); got.Title != "corrected by a person" {
 		t.Fatalf("the person's correction was replaced: %q", got.Title)

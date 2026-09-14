@@ -131,6 +131,14 @@ func cmdImport(args []string) error {
 	}
 	fmt.Printf("stubbed %d milestone(s) cited and defined nowhere\n", len(cited))
 	sources = append(sources, linkctrl.Source{Path: "docs/build-notes/phase-details/", Records: milestones})
+	// Phases come after the stubs are placed, deliberately: a milestone number
+	// cited only in phase prose must not add a stub, because a stub shifts every
+	// serial after it, and those serials are live and cited (MUS-D-0173).
+	phaseRecords, err := linkctrl.Phases(ms, renumber, today)
+	if err != nil {
+		return err
+	}
+	sources = append(sources, linkctrl.Source{Path: "docs/build-notes/phase-details/phase-N.md", Records: phaseRecords})
 
 	rewritten, unresolved := linkctrl.Rewrite(sources, renumber)
 	var left []string
@@ -172,7 +180,7 @@ func cmdImport(args []string) error {
 	}
 	defer s.Close()
 	if *repair {
-		amended, skipped, missing, err := linkctrl.Repair(ctx, s, sources)
+		amended, skipped, created, err := linkctrl.Repair(ctx, s, sources)
 		fmt.Printf("amended %d record(s)\n", len(amended))
 		if len(amended) > 0 {
 			fmt.Printf("  %s\n", strings.Join(amended, " "))
@@ -180,8 +188,8 @@ func cmdImport(args []string) error {
 		if len(skipped) > 0 {
 			fmt.Printf("left %d written since the import: %s\n", len(skipped), strings.Join(skipped, " "))
 		}
-		if len(missing) > 0 {
-			fmt.Printf("%d not in the store: %s\n", len(missing), strings.Join(missing, " "))
+		if len(created) > 0 {
+			fmt.Printf("created %d the store had never held: %s\n", len(created), strings.Join(created, " "))
 		}
 		return err
 	}
