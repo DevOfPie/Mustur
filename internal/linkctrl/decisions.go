@@ -39,6 +39,7 @@ const (
 type definition struct {
 	number, form, line int
 	title, body        string
+	afterBold          bool   // the title is prose after a bold holding only the number
 	entry              string // the entry record it came from
 	at                 string
 }
@@ -131,7 +132,7 @@ func Decisions(log string, tables map[string]string, today string) ([]record.Rec
 					rec.Refs = append(rec.Refs, record.Field{Key: "entry", Value: other.entry})
 				}
 			}
-			if rec.Title == "" && hasRow {
+			if hasRow && (rec.Title == "" || d.afterBold) {
 				rec.Title = row.title
 			}
 			if rec.Title == "" {
@@ -199,12 +200,26 @@ func definitions(body []string, firstLine int) []definition {
 				form = formRange
 			}
 			rest := m[3]
+			afterBold := false
 			if end := strings.Index(rest, "**"); end >= 0 {
+				after := rest[end+2:]
 				rest = rest[:end]
+				// "**D211.** The owner's answers…": the bold holds only the
+				// number, so the claim is what follows it — unless a phase
+				// table names the decision, which Decisions prefers.
+				if strings.TrimSpace(rest) == "" {
+					// The claim runs on past the line: "**D241.** [D240](…)" then
+					// "settled that…" below. Read the paragraph, not the line.
+					para := []string{after}
+					for j := i + 1; j < len(body) && strings.TrimSpace(body[j]) != ""; j++ {
+						para = append(para, body[j])
+					}
+					rest, afterBold = strings.Join(strings.Fields(strings.Join(para, " ")), " "), true
+				}
 			}
 			var ds []definition
 			for n := lo; n <= hi; n++ {
-				ds = append(ds, definition{number: n, form: form, line: line, title: titleOf(rest)})
+				ds = append(ds, definition{number: n, form: form, line: line, title: titleOf(rest), afterBold: afterBold})
 			}
 			starts = append(starts, start{i, ds, false})
 		case defTrail.MatchString(l):

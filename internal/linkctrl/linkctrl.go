@@ -54,6 +54,56 @@ func Apply(ctx context.Context, s *store.Store, sources []Source) (int, error) {
 	return len(all), nil
 }
 
+// RepairActor marks an amendment the import made to its own records.
+const RepairActor = "import-linkctrl-repair"
+
+// Repair re-states imported records the importer now reads differently. A
+// record anybody else has written since the import is left alone and named:
+// replacing it would erase what they wrote. Record by record, and safe to run
+// again, since a record already matching is not touched.
+func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, skipped, missing []string, err error) {
+	for _, src := range sources {
+		for _, r := range src.Records {
+			events, err := s.History(ctx, r.ID)
+			if err != nil {
+				return amended, skipped, missing, err
+			}
+			if len(events) == 0 {
+				missing = append(missing, r.ID)
+				continue
+			}
+			last := events[len(events)-1]
+			if last.Actor != Actor && last.Actor != RepairActor {
+				skipped = append(skipped, r.ID)
+				continue
+			}
+			// A row dated nowhere is stamped with the day it is read; a repair
+			// run another day keeps the stamp the import gave it.
+			// The stored copy need not carry the mark: work units only gained it
+			// after the import stamped them.
+			if _, onImport := r.Get("Dated"); onImport {
+				r.At = last.Record.At
+			}
+			was, err := last.Record.MarshalPayload()
+			if err != nil {
+				return amended, skipped, missing, err
+			}
+			now, err := r.MarshalPayload()
+			if err != nil {
+				return amended, skipped, missing, err
+			}
+			if string(was) == string(now) {
+				continue
+			}
+			if err := s.Append(ctx, r, "amend", RepairActor); err != nil {
+				return amended, skipped, missing, err
+			}
+			amended = append(amended, r.ID)
+		}
+	}
+	return amended, skipped, missing, nil
+}
+
 var (
 	link = regexp.MustCompile(`\[([^\]]+)\]\(([^)\s]+)\)`)
 	date = regexp.MustCompile(`\b(20[0-9]{2}-[0-9]{2}-[0-9]{2})\b`)

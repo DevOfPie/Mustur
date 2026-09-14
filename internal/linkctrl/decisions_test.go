@@ -50,6 +50,13 @@ Keys are matched exactly. **D271.**
 
 **D283, owner-answered, superseding D270.** The base set goes.
 
+**D211.** The owner's answers of 2026-08-18 — two of them.
+
+**D1.** Prose after the number, which the table's title outranks.
+
+**D241.** [D240](#2026-08-19--m62-two-functions)
+settled that the log is neutralized. It left three things open.
+
 ## D123 — a panel is a route first
 
 An undated section inside this entry.
@@ -146,6 +153,12 @@ func TestDecisionsImportEntriesWholeAndNumbersAsExtracts(t *testing.T) {
 	if r := m["LNK-D-0271"]; r.Title != "The repair D269 scheduled for F286" || !strings.Contains(r.Body, "matched exactly") {
 		t.Fatalf("a paragraph closing with its own number: %q, %q", r.Title, r.Body)
 	}
+	if r := m["LNK-D-0241"]; r.Title != "D240 settled that the log is neutralized" {
+		t.Fatalf("a lead-in whose claim wraps past its line took %q", r.Title)
+	}
+	if r := m["LNK-D-0211"]; r.Title != "The owner's answers of 2026-08-18 — two of them" {
+		t.Fatalf("a bold lead-in holding only its number took %q as its title", r.Title)
+	}
 	if r := m["LNK-D-0283"]; r.Title != "owner-answered, superseding D270" {
 		t.Fatalf("a lead-in followed by a comma: %q", r.Title)
 	}
@@ -155,8 +168,11 @@ func TestDecisionsImportEntriesWholeAndNumbersAsExtracts(t *testing.T) {
 	if v, _ := m["LNK-D-0018"].Get("Outcome"); v != "A rule." {
 		t.Fatalf("D18's table row was not kept beside its definition: %q", v)
 	}
-	if d1 := m["LNK-D-0001"]; d1.At != "2026-07-31" || d1.Body != "Ships." {
-		t.Fatalf("a table-only decision: at %s body %q", d1.At, d1.Body)
+	if d1 := m["LNK-D-0001"]; d1.At != "2026-07-31" {
+		t.Fatalf("D1 at %s", d1.At)
+	}
+	if v, _ := m["LNK-D-0001"].Get("Outcome"); v != "Ships." {
+		t.Fatalf("D1's table outcome %q", v)
 	}
 	if m["LNK-D-0024"].At != "2026-08-02" {
 		t.Fatal("a dated row did not keep its own date")

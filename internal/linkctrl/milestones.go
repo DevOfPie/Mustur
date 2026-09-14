@@ -103,6 +103,7 @@ func Milestones(src MilestoneSources, cited map[string]Citation, today string) (
 	if err != nil {
 		return nil, nil, err
 	}
+	phases := phaseRows(src)
 	plan, err := planRows(src.Plan)
 	if err != nil {
 		return nil, nil, err
@@ -140,9 +141,12 @@ func Milestones(src MilestoneSources, cited map[string]Citation, today string) (
 				return nil, nil, fmt.Errorf("%s: first line is not '# M<N> — <title>'", name)
 			}
 			ms.Title = delink(strings.TrimSpace(m[1]))
+			ms.Refs = append(ms.Refs, record.Field{Key: "work-unit", Value: ident.ID{Project: Prefix, Role: ident.WorkUnit, Serial: serial}.String()})
 			ms.Body = section(lines, "## Done means")
 			ms.At = firstDate(text)
-			for _, l := range lines {
+			// By paragraph: M45's and M59's headers wrap over several lines, and
+			// read line by line they were cut at the first break.
+			for _, l := range paragraphs(text) {
 				if d := dependsOn.FindStringSubmatch(l); d != nil && !has(ms, "Depends on") {
 					ms.Data = append(ms.Data, record.Field{Key: "Depends on", Value: delink(strings.TrimSpace(d[1]))})
 				}
@@ -162,6 +166,9 @@ func Milestones(src MilestoneSources, cited map[string]Citation, today string) (
 		}
 		if s, ok := status[n]; ok {
 			ms.Data = append(ms.Data, record.Field{Key: "Status", Value: s})
+		}
+		if p, ok := phases[n]; ok {
+			ms.Data = append(ms.Data, record.Field{Key: "Phase", Value: p[0]}, record.Field{Key: "Phase order", Value: p[1]})
 		}
 		ms.Data = append(ms.Data, plan[n]...)
 		if ms.At == "" {
@@ -186,6 +193,11 @@ func Milestones(src MilestoneSources, cited map[string]Citation, today string) (
 			Body:  prose(lines[1:]),
 			Refs:  []record.Field{{Key: "milestone", Value: ms.ID}},
 			Data:  []record.Field{{Key: "LinkCtrl", Value: "phase-details/" + name}},
+		}
+		// Dated by its milestone, so it carries the same mark: a repair keeps an
+		// import-day date only on a record that says it has one.
+		if v, ok := ms.Get("Dated"); ok {
+			wu.Data = append(wu.Data, record.Field{Key: "Dated", Value: v})
 		}
 		if err := wu.Validate(); err != nil {
 			return nil, nil, fmt.Errorf("%s: %w", name, err)
@@ -226,6 +238,58 @@ func planRows(plan string) (map[string][]record.Field, error) {
 		}
 	}
 	return out, nil
+}
+
+// paragraphs is text split at blank lines, each paragraph on one line.
+func paragraphs(text string) []string {
+	var out []string
+	for _, p := range strings.Split(text, "\n\n") {
+		if p = strings.Join(strings.Fields(p), " "); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+var phaseFile = regexp.MustCompile(`^phase-([0-9]+)\.md$`)
+
+// phaseRows says which phase each milestone belongs to and its place in that
+// phase's status table, which is the order LinkCtrl's phase loop builds in.
+// Phase 1's table is its three bold rows; the others are the tables headed
+// with a Status column. Plan.md's ordering rows cover only Phase 4.
+func phaseRows(src MilestoneSources) map[string][2]string {
+	out := map[string][2]string{}
+	order := 0
+	for _, l := range strings.Split(src.Phase1, "\n") {
+		if m := phase1Row.FindStringSubmatch(l); m != nil {
+			order++
+			out[m[1]] = [2]string{"1", strconv.Itoa(order)}
+		}
+	}
+	for name, text := range src.Phases {
+		pm := phaseFile.FindStringSubmatch(name)
+		if pm == nil || pm[1] == "1" {
+			continue
+		}
+		inStatus := false
+		order := 0
+		for _, l := range strings.Split(text, "\n") {
+			switch {
+			case strings.HasPrefix(l, "| # |"):
+				h := cells(l)
+				inStatus = len(h) > 0 && h[len(h)-1] == "Status"
+			case inStatus && milestoneRow.MatchString(l):
+				n := milestoneRow.FindStringSubmatch(l)[1]
+				if _, seen := out[n]; !seen {
+					order++
+					out[n] = [2]string{pm[1], strconv.Itoa(order)}
+				}
+			case !strings.HasPrefix(l, "|"):
+				inStatus = false
+			}
+		}
+	}
+	return out
 }
 
 // Citation is how often a milestone number is cited, and the earliest date of

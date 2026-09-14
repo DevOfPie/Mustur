@@ -60,7 +60,7 @@ const usage = `mustur — records and routing for one project
   mustur image    list | read ID [--out F]   a jot's picture, held privately and never exported
                   forget ID                 drop the picture, keep what was written about it
   mustur audit    [--root DIR] [--catalog DIR] check this tree against the modules it adopts
-  mustur import   linkctrl --from DIR [--apply]  read LinkCtrl's records; counts unless told to write
+  mustur import   linkctrl --from DIR [--apply|--repair]  read LinkCtrl's records; counts unless told to write or correct
   mustur version
 
 The store defaults to $MUSTUR_DB, then to $XDG_DATA_HOME/mustur/mustur.db,

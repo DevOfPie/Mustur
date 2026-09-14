@@ -24,6 +24,7 @@ func cmdImport(args []string) error {
 	db := dbFlag(fs)
 	from := fs.String("from", "", "the LinkCtrl checkout to read")
 	apply := fs.Bool("apply", false, "write the records; without it, only count them")
+	repair := fs.Bool("repair", false, "re-state imported records read differently now; never one written since the import")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
 	}
@@ -158,8 +159,11 @@ func cmdImport(args []string) error {
 		total += len(src.Records)
 	}
 	fmt.Printf("%-42s %d\n", "total", total)
-	if !*apply {
-		fmt.Println("counted, nothing written: pass --apply to write")
+	if *apply && *repair {
+		return fmt.Errorf("--apply and --repair are two different runs: the first writes an empty import, the second corrects one")
+	}
+	if !*apply && !*repair {
+		fmt.Println("counted, nothing written: pass --apply to write, or --repair to correct an import")
 		return nil
 	}
 	s, ctx, err := openStore(*db)
@@ -167,6 +171,20 @@ func cmdImport(args []string) error {
 		return err
 	}
 	defer s.Close()
+	if *repair {
+		amended, skipped, missing, err := linkctrl.Repair(ctx, s, sources)
+		fmt.Printf("amended %d record(s)\n", len(amended))
+		if len(amended) > 0 {
+			fmt.Printf("  %s\n", strings.Join(amended, " "))
+		}
+		if len(skipped) > 0 {
+			fmt.Printf("left %d written since the import: %s\n", len(skipped), strings.Join(skipped, " "))
+		}
+		if len(missing) > 0 {
+			fmt.Printf("%d not in the store: %s\n", len(missing), strings.Join(missing, " "))
+		}
+		return err
+	}
 	n, err := linkctrl.Apply(ctx, s, sources)
 	if err != nil {
 		return err
