@@ -202,7 +202,12 @@ type sessionPage struct {
 	// running session when there is one, so starting another needs a way to
 	// reach the page that is not "have none".
 	Start bool
-	Error string
+	// Unchosen is a page no option in the picker is: the start form, or a
+	// name nothing is running or remembered under. It opens the picker on a
+	// placeholder, because with nothing selected the browser shows the first
+	// session as chosen and choosing it again fires no change (MUS-F-0143).
+	Unchosen bool
+	Error    string
 }
 
 // A subagentRow is one sub-agent as the page says it, with every value already
@@ -324,6 +329,11 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 	if err != nil {
 		return nil, nil, false
 	}
+	// Most recently active first, which is the owner's answer to MUS-Q-0123:
+	// list redirects into rows[0], so this order is which session /sessions
+	// lands on, and the picker lists in the same order so the top of it is
+	// where that landing went. tmux's own order is nothing the code defines.
+	live = session.ByActivity(live)
 	rows := make([]sessionRow, 0, len(live))
 	running := make(map[string]bool, len(live))
 	found := false
@@ -421,6 +431,19 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 	// Set here rather than at the call sites: a page built without it renders
 	// a header missing its only route to the account surface.
 	p.ShowAccount = s.ShowAccount
+	// Set here from the rows rather than from Project, because a page with a
+	// project can still be one the picker has no option for.
+	p.Unchosen = true
+	for _, row := range p.Rows {
+		if row.Here {
+			p.Unchosen = false
+		}
+	}
+	for _, row := range p.Lost {
+		if row.Here {
+			p.Unchosen = false
+		}
+	}
 	// Never cached, which every other surface here already says of itself and
 	// this one did not.
 	//
@@ -1405,10 +1428,15 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      before it is chosen. Choosing either one only navigates — the button that
      restarts a session is on the page it lands on, because a select fires
      change on every option a keyboard arrows past, and an agent CLI restarted
-     by an arrow key is not a control anybody asked for. -->
+     by an arrow key is not a control anybody asked for.
+
+     A page that is none of them opens on a placeholder that cannot be chosen
+     back, so every real session is a change and the script navigates to it
+     (MUS-F-0143). -->
 {{if or .Rows .Lost}}<div class="rail" id="rail">
   <form class="pick" method="get" action="/sessions">
     <select name="p" id="pick" aria-label="Session">
+      {{if .Unchosen}}<option value="" selected disabled>Choose a session</option>{{end}}
       {{if .Lost}}{{if .Rows}}<optgroup label="Running">
         {{range .Rows}}<option value="{{.Project}}"{{if .Here}} selected{{end}}>{{.Project}}{{if .Where}} &middot; {{.Where}}{{end}}{{if .Doing}} &middot; {{.Doing}}{{end}}</option>{{end}}
       </optgroup>{{end}}<optgroup label="Not running">
