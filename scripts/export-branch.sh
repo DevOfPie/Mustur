@@ -13,21 +13,35 @@
 # three of them cannot disagree about which branch they are on.
 #
 # CI checks a pull request out as a detached merge commit, where git has no
-# branch to report, so the name GitHub gives comes first: the pull request's
-# head, then the ref a push was made to, then git's own answer.
+# branch to report, so the names GitHub gives come first. A pull request is
+# recognised by GITHUB_BASE_REF (or GITHUB_HEAD_REF), which GitHub sets on
+# pull_request runs only; its branch is GITHUB_HEAD_REF, and it is never main,
+# whatever that head is called — a fork's pull request from its own `main` is a
+# branch of somebody else's, not this repository's main. Otherwise the ref a push
+# was made to (GITHUB_REF_NAME), then git's own answer.
+#
+# The name alone is not trusted for records/refresh-*: check-export-scope.sh
+# holds such a branch to carrying nothing but the export.
 #
 # Usage: scripts/export-branch.sh
 # Prints the branch (empty on a detached HEAD with nothing to name it). Exits 0
 # when that branch commits the export, 1 when it does not.
 set -uo pipefail
 
-branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}
-if [ -z "$branch" ]; then
-  branch=$(git branch --show-current 2>/dev/null || true)
+pull_request=0
+if [ -n "${GITHUB_BASE_REF:-}" ] || [ -n "${GITHUB_HEAD_REF:-}" ]; then
+  pull_request=1
+  branch=${GITHUB_HEAD_REF:-}
+else
+  branch=${GITHUB_REF_NAME:-}
+  if [ -z "$branch" ]; then
+    branch=$(git branch --show-current 2>/dev/null || true)
+  fi
 fi
 printf '%s\n' "$branch"
 
 case "$branch" in
-  main|records/refresh-*) exit 0 ;;
+  records/refresh-*) exit 0 ;;
+  main) [ "$pull_request" -eq 0 ] && exit 0 ;;
 esac
 exit 1
