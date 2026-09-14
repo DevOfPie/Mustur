@@ -3789,3 +3789,4 @@ question · 2026-09-14
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-14 01:38 |
+| Correction | Since this was raised: the integration build it describes passed every Go test and still drew nothing in the session view. A browser run found PR 73's paint check named held(), which the pop-up's var held replaced, so every frame threw. Fixed in 060ca8f with a test that catches the clash. The same browser run repeated against the unpatched fix came back clean on 2026-09-14: no page errors, 10 of 10 clicks and 5 of 5 ctrl+clicks opened the link. The integration build carries the fix and passes its tests. |

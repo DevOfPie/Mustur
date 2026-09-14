@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-1147 record(s), by identifier.
+1148 record(s), by identifier.
 
 ## Index
 
@@ -980,6 +980,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [LNK-D-0951](#lnk-d-0951) | An All Workspaces view is a candidate for the next phase, beside moving links between workspaces | 2026-09-13 |
 | [LNK-D-0952](#lnk-d-0952) | W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md | 2026-09-13 |
 | [LNK-D-0953](#lnk-d-0953) | PR 14's three subject-less review-fix commits stay as pushed; no history rewrite | 2026-09-14 |
+| [LNK-D-0954](#lnk-d-0954) | W48's three review-fix commits keep the subjects they were pushed with | 2026-09-14 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -80164,6 +80165,24 @@ Owner-answered 2026-09-14 on LNK-Q-0006, used the same day. Commits 0b9b14c, 10e
 | Field | Value |
 | --- | --- |
 | Status | taken |
+
+---
+
+## LNK-D-0954
+
+**W48's three review-fix commits keep the subjects they were pushed with**
+
+decision · 2026-09-14
+
+answers: [LNK-Q-0006](questions.md#lnk-q-0006)
+
+work-unit: [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097)
+
+Owner-answered on 2026-09-14 on LNK-Q-0006. Commits 0b9b14c, 10e750e and 7f17800 on task/records-move-to-mustur went up with their subject lines lost to a shell heredoc, so each commit's subject is its body's first paragraph. They are not rewritten: no force push to the public pull request branch. PR 14's what-changed comment names each commit's findings, and later commits on the branch were checked in git log --oneline before they were pushed.
+
+| Field | Value |
+| --- | --- |
+| Status | decided |
 
 ---
 

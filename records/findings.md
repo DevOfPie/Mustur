@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-555 record(s), by identifier.
+556 record(s), by identifier.
 
 ## The queue
 
@@ -561,10 +561,11 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0148](#mus-f-0148) | Push up replacing the visual plan mcp | No scope row or milestone covers plans or wireframes (Plan.md scope table and milestone table). The plan named is plan-523b4a30c7d3409b, Hoard's phase 3 desktop UI (HRD-W-0001), whose questions are HRD-Q-0014 to 0016. Its drawn claim modal was not what the app had: HRD-Q-0015 was asked against it and superseded twice, ending on HRD-D-0014 in the HUD. Questions and decisions cite each other one way only (internal/record/record.go:35), nothing shows answered state on the citing record (internal/web/records.go:97-105), and an answer given in a plan reaches the store only by relay (internal/question/question.go:377). | scheduled as milestones 9 and 9b on MUS-D-0176, plans first |
 | [MUS-F-0149](#mus-f-0149) | The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives | mustur_route repository=DevOfPie/LinkCtrl returned 50.5 KB (Claude Code persisted it as a file); mustur list counts the live store and the rehearsal store | open |
 | [MUS-F-0150](#mus-f-0150) | Decisions should show near the top what project they are for. | A question's project is its identifier prefix, shown only as the faded identifier at the foot of the card (internal/web/questions.go:501, :456). The page is handed its project and never draws it (:136, :469). The queue sorts by identifier string, so projects bunch by prefix with no heading (internal/question/question.go:218-228). The artboard had a project pill, and docs/ui-surfaces.md:224 dropped it because 'One project exists', which stopped being true when the store took IDW, HRD and LNK. A prefix-to-name lookup already exists (internal/web/accountpage.go:56-81). | fixed: each card's first pill names its project from the project records, falling back to the prefix; docs/ui-surfaces.md no longer records the pill as a departure |
-| [MUS-F-0151](#mus-f-0151) | Allow decisions to have their questions written in markdown to make them more readable | Body and option detail are printed as escaped plain text in one paragraph (internal/web/questions.go:485, :493), so newlines collapse and asterisks and table pipes show as typed; the records page does the same (internal/web/records.go:509). No markdown renderer is in the module (go.mod). Option text cannot carry markdown at all, because the export flattens every field into a table cell (internal/export/export.go:265-268). HTML pages carry no CSP, so escaping is the only barrier against a body imported from another project's files. | raised as MUS-Q-0119 |
+| [MUS-F-0151](#mus-f-0151) | Allow decisions to have their questions written in markdown to make them more readable | Body and option detail are printed as escaped plain text in one paragraph (internal/web/questions.go:485, :493), so newlines collapse and asterisks and table pipes show as typed; the records page does the same (internal/web/records.go:509). No markdown renderer is in the module (go.mod). Option text cannot carry markdown at all, because the export flattens every field into a table cell (internal/export/export.go:265-268). HTML pages carry no CSP, so escaping is the only barrier against a body imported from another project's files. | fixed on MUS-D-0177: question bodies, option details and record bodies render as markdown through goldmark v1.8.6 with its safe defaults; tables scroll in their own box |
 | [MUS-F-0152](#mus-f-0152) | The intake text box should keep what is typed and uploaded as a draft unless it is cleared or… | Intake is served with Cache-Control no-store (internal/web/intake.go:447), so going back is a fresh GET and the box renders empty. The page loads bar.js and nothing else (:585), and a test holds it to exactly one script (internal/web/sessions_test.go:271-279). Two error paths also drop the text: an upload over the cap (:224) and words over MaxJot (:232). A picked picture cannot be kept by any server path, since nothing can refill a file input. | fixed: the box keeps typed text as its own draft until filed or cleared; pictures are not kept, on MUS-Q-0120 |
 | [MUS-F-0153](#mus-f-0153) | CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25 | records/questions.md MUS-Q-0053: Status answered, 2026-08-25; CLAUDE.md line 166-168 calls it open | fixed: CLAUDE.md, Plan.md, README.md and docs/ui-surfaces.md now say MUS-Q-0053 was answered on 2026-08-25, alongside the seventh script it made a decision |
 | [MUS-F-0154](#mus-f-0154) | intake.go's comments say the page carries no script and no stylesheet, and it carries both | intake.go loads /assets/bar.js at :585 and carries a style block at :466-545; sessions_test.go:277 requires one script on /intake | fixed: intake.go's package and template comments now say what the page carries |
+| [MUS-F-0155](#mus-f-0155) | A paint helper shared its name with the pop-up's state and blanked the session view, and no test runs session.js | headless Chromium at 52975ce: pageerror TypeError: held is not a function at paint (session.js:207) from ws.onmessage, #out length 0 after 4s; recorded on PR 73 before the fix | fixed in 060ca8f for this name; the class, script defects no gate executes, is open |
 
 ---
 
@@ -16053,12 +16054,14 @@ raised as: [MUS-Q-0119](questions.md#mus-q-0119)
 
 the question that prompted it: [LNK-Q-0002](questions.md#lnk-q-0002)
 
+the decision: [MUS-D-0177](decisions.md#mus-d-0177)
+
 Allow decisions to have their questions written in markdown to make them more readable. LNK-Q-0002 is what lead to me thinking of this.
 
 | Field | Value |
 | --- | --- |
 | Evidence | Body and option detail are printed as escaped plain text in one paragraph (internal/web/questions.go:485, :493), so newlines collapse and asterisks and table pipes show as typed; the records page does the same (internal/web/records.go:509). No markdown renderer is in the module (go.mod). Option text cannot carry markdown at all, because the export flattens every field into a table cell (internal/export/export.go:265-268). HTML pages carry no CSP, so escaping is the only barrier against a body imported from another project's files. |
-| Status | raised as MUS-Q-0119 |
+| Status | fixed on MUS-D-0177: question bodies, option details and record bodies render as markdown through goldmark v1.8.6 with its safe defaults; tables scroll in their own box |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -16117,3 +16120,24 @@ The package comment at internal/web/intake.go:1-4 says 'no per-project client st
 | Where | internal/web/intake.go:1-4, :453-457 |
 | Evidence | intake.go loads /assets/bar.js at :585 and carries a style block at :466-545; sessions_test.go:277 requires one script on /intake |
 | Status | fixed: intake.go's package and template comments now say what the page carries |
+
+---
+
+## MUS-F-0155
+
+**A paint helper shared its name with the pop-up's state and blanked the session view, and no test runs session.js**
+
+finding · 2026-09-14
+
+the change that caused it: [MUS-D-0174](decisions.md#mus-d-0174)
+
+the question it was deploying under: [MUS-Q-0125](questions.md#mus-q-0125)
+
+PR 73's commit 52975ce named paint's hold check held(). session.js is one scope and already declares var held = null for the tool call the pop-up holds; a var's assignment replaces a function of the same name, so the first frame set held() to null and every paint threw 'held is not a function'. The terminal stayed empty with frames arriving. go vet, go test ./... and make check all passed on it, and so did an integration build of five branches that was one approval from being deployed to mustur.devofpie.com: the only test of session.js reads it as strings. It was found by driving the page in headless Chromium against a throwaway server and an isolated tmux socket, run to measure the link click rather than to look for this. Fixed in 060ca8f by renaming the helper, with TestTheSessionScriptDeclaresNoNameTwice failing on any top-level name declared as both a function and a variable; it reports held on 52975ce and passes on the fix. What it does not fix is the class: every other defect a browser would see and a string match would not is still invisible to the gates, and the session view is the surface most of this repository's client code lives in.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/assets/session.js, paint; internal/web/sessions_test.go |
+| Evidence | headless Chromium at 52975ce: pageerror TypeError: held is not a function at paint (session.js:207) from ws.onmessage, #out length 0 after 4s; recorded on PR 73 before the fix |
+| Status | fixed in 060ca8f for this name; the class, script defects no gate executes, is open |
+| Verified | headless Chromium against unpatched 060ca8f: no pageerror or console error, one anchor rendered, 10 of 10 clicks and 5 of 5 ctrl+clicks opened the link, terminal never replaced during a press; with the pointer hold disabled 9 of 10, the lost click being the only press a frame landed in |

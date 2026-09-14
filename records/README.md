@@ -11,8 +11,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | phase | 4 | [phases.md](phases.md) |
 | milestone | 107 | [milestones.md](milestones.md) |
 | question | 151 | [questions.md](questions.md) |
-| decision | 1147 | [decisions.md](decisions.md) |
-| finding | 555 | [findings.md](findings.md) |
+| decision | 1148 | [decisions.md](decisions.md) |
+| finding | 556 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 102 | [work-units/index.md](work-units/index.md) |
 | investigation | 5 | [investigations/index.md](investigations/index.md) |
@@ -1212,6 +1212,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-D-0951](decisions.md#lnk-d-0951) | decision | An All Workspaces view is a candidate for the next phase, beside moving links between workspaces |
 | [LNK-D-0952](decisions.md#lnk-d-0952) | decision | W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md |
 | [LNK-D-0953](decisions.md#lnk-d-0953) | decision | PR 14's three subject-less review-fix commits stay as pushed; no history rewrite |
+| [LNK-D-0954](decisions.md#lnk-d-0954) | decision | W48's three review-fix commits keep the subjects they were pushed with |
 | [LNK-F-0001](findings.md#lnk-f-0001) | finding | Release-notes extraction sweeps up the changelog's link-reference block |
 | [LNK-F-0002](findings.md#lnk-f-0002) | finding | A stalled Redis stretches a link edit to about nine seconds |
 | [LNK-F-0003](findings.md#lnk-f-0003) | finding | Dark mode has no effect on the UI: the light tokens are unlayered and beat every dark rule |
@@ -2089,6 +2090,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0152](findings.md#mus-f-0152) | finding | The intake text box should keep what is typed and uploaded as a draft unless it is cleared or… |
 | [MUS-F-0153](findings.md#mus-f-0153) | finding | CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25 |
 | [MUS-F-0154](findings.md#mus-f-0154) | finding | intake.go's comments say the page carries no script and no stylesheet, and it carries both |
+| [MUS-F-0155](findings.md#mus-f-0155) | finding | A paint helper shared its name with the pop-up's state and blanked the session view, and no test runs session.js |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
