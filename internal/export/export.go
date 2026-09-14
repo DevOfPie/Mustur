@@ -28,6 +28,7 @@ import (
 // fileFor names the export file each record kind lands in, relative to the
 // export root. Kinds in dirFor are one file per record and are absent here.
 var fileFor = map[string]string{
+	"phase":      "phases.md",
 	"milestone":  "milestones.md",
 	"question":   "questions.md",
 	"decision":   "decisions.md",
