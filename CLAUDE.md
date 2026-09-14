@@ -184,10 +184,17 @@ and a save-on-change.
 **A session left running in a terminal is invisible to Mustur and will not
 become visible.** Mustur starts sessions and never attaches to one it did not.
 
-**A change reaches `mustur.devofpie.com` with `make deploy`** — build, install,
-restart, and a line saying the service came back. Run it from the session that
-made the change; it needs nobody's hands but yours
-([MUS-F-0092](records/findings.md#mus-f-0092)).
+**A change reaches `mustur.devofpie.com` with `make deploy`, and only once it
+is on `main`** — build, install, restart, and a line saying the service came
+back. Run it from a checkout of `origin/main` after the owner has merged; it
+refuses anything else, and leaves `records/` out of that check because the
+service writes there. It needs nobody's hands but yours
+([MUS-F-0092](records/findings.md#mus-f-0092)). Deploying from the branch that
+made a change is what this used to say, and the owner ended it on MUS-Q-0125
+(MUS-D-0180): a build that passed every gate would have shipped a blank session
+view (MUS-F-0155). To see a change running before it merges, use a test
+instance — its own binary, store, port and tmux socket, never the live service
+or its sessions.
 
 Three rules bind every session in this repository:
 
