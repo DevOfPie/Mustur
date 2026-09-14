@@ -35,14 +35,9 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-# cmd/mustur's defaultDB: $MUSTUR_DB, then $XDG_DATA_HOME/mustur/mustur.db,
-# then ~/.local/share/mustur/mustur.db.
+# cmd/mustur's defaultDB, resolved by the script the question gate shares.
 if [ -z "$store" ]; then
-  if [ -n "${MUSTUR_DB:-}" ]; then
-    store=$MUSTUR_DB
-  else
-    store="${XDG_DATA_HOME:-$HOME/.local/share}/mustur/mustur.db"
-  fi
+  store=$(scripts/store-path.sh)
 fi
 store=$(realpath -m "$store")
 

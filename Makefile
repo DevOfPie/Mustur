@@ -68,14 +68,22 @@ surfaces: ## Every page served is a surface docs/ui-surfaces.md briefed first
 	  fi; \
 	  exit $$status
 
-# Reads records/, not the store. The store is machine-local, so a store-backed
-# gate could only skip on a clone and in CI — and it could not tell "no store"
-# from "no buried question", which is the substitution DL-03 already made once
-# here. Against the tree there is nothing to skip: an absent or empty
-# questions.md is the tree saying there are none, which is a fact and not a gap.
-questions: ## No open question was left unsurfaced as a prompt
-	@go run ./cmd/mustur questions --gate --records records --project MUS \
-	  && echo "  ok    no open question of this project's was left unsurfaced"
+# Reads the store, never records/. Mustur acts only on its own store; the export
+# is a backup and a conformance surface, and on a feature branch it is main's,
+# not this branch's, so a question raised here is not in it (MUS-D-0183, which
+# supersedes MUS-D-0050). The store is machine-local, so on a clone and in CI
+# there is none, and the gate says out loud that it did not run rather than
+# reading the export in its place. It never runs the binary against a missing
+# store: openStore creates an empty one, and an empty store passes silently,
+# which would be "no store" reported as "no buried question".
+questions: ## No open question in the store was left unsurfaced as a prompt
+	@store=$$(scripts/store-path.sh); \
+	  if [ ! -s "$$store" ]; then \
+	    echo "  skip  question gate did not run: no store at $$store, and it reads only the store (MUS-D-0183)"; \
+	    exit 0; \
+	  fi; \
+	  go run ./cmd/mustur questions --gate --db "$$store" --project MUS \
+	    && echo "  ok    no open question of this project's in $$store was left unsurfaced"
 
 # go.mod said a directly imported package was `// indirect` for one commit, and
 # nothing noticed. An earlier version of this comment said "a whole milestone",
