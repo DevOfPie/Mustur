@@ -94,6 +94,9 @@ exclude:
   # gated all the same: `make questions` reads this file, which is why the check
   # is in the Makefile and not in the audit.
   - records/questions.md
+  # No StrucGu module describes a phase either (MUS-D-0173): phases.md holds a
+  # project's own account of its stages and fills no role.
+  - records/phases.md
 
 # Not adopted, and why:
 #

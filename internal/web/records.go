@@ -80,6 +80,7 @@ var kinds = []struct {
 	One  string
 	Many string
 }{
+	{"phase", "phase", "phases"},
 	{"milestone", "milestone", "milestones"},
 	{"work-unit", "work unit", "work units"},
 	{"question", "question", "questions"},

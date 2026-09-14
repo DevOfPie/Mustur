@@ -51,6 +51,28 @@ func TestCreateTwiceIsRefused(t *testing.T) {
 	}
 }
 
+// An import keeps the numbers its records were written with (MUS-D-0163): it
+// writes them out of order and with gaps, and what is filed after it continues
+// past the highest rather than filling one.
+func TestAnImportedSerialIsKeptAndNotReused(t *testing.T) {
+	s, ctx, _ := open(t)
+	for _, id := range []string{"LNK-D-0444", "LNK-D-0014"} {
+		if err := s.Append(ctx, decision(id, "imported"), "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.Append(ctx, decision("LNK-D-0014", "again"), "create", "test"); err == nil {
+		t.Fatal("a second import of LNK-D-0014 was accepted")
+	}
+	next, err := s.NextID(ctx, "LNK", "D")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if next != "LNK-D-0445" {
+		t.Fatalf("next after an import ending at 0444 is %s", next)
+	}
+}
+
 func TestAmendUnknownIsRefused(t *testing.T) {
 	s, ctx, _ := open(t)
 	err := s.Append(ctx, decision("MUS-D-0001", "first"), "amend", "test")

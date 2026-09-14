@@ -196,8 +196,9 @@ Three rules bind every session in this repository:
   named in
   [decisions.md](decisions.md#what-the-mandate-keeps-from-the-fixture-and-what-it-does-not).
 - **No file in any other project is touched.** Not read for restructuring, not
-  edited, not migrated. Onboarding another project is a milestone with its own
-  verdict.
+  edited, not migrated. Onboarding another project that brings records is a
+  milestone with its own verdict; one that brings none moves in as an ordinary
+  project ([MUS-D-0162](records/decisions.md#mus-d-0162)).
 - **Every decision or question for the owner goes in Mustur**, never in prose, a
   report or a pull request body. A pull request out of draft says work needs
   review; it never asks a decision.
