@@ -12,6 +12,7 @@ import (
 
 	"net/http/httptest"
 
+	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/question"
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/store"
@@ -822,5 +823,98 @@ func TestTheRecommendationIsAMarkNotAWordInTheDescription(t *testing.T) {
 	}
 	if strings.Contains(body, "Recommended. It is the only place") {
 		t.Error("the marker is still text in the description, which is what MUS-F-0072 reported")
+	}
+}
+
+// projectsOf is a store's worth of routing: one project that names its prefix
+// in a field, and one known only by the prefix of its own identifier. Those are
+// the two ways projectName resolves a tag, and the queue has to reach both.
+func projectsOf() []record.Record {
+	return []record.Record{
+		{ID: "MUS-P-0001", Kind: "project", Title: "Mustur", At: "2026-08-20"},
+		{ID: "MUS-P-0003", Kind: "project", Title: "Idea warehouse", At: "2026-08-20",
+			Data: []record.Field{{Key: intake.PrefixField, Value: "IDW"}}},
+	}
+}
+
+// firstPill is the text of the first pill on the card carrying id.
+func firstPill(t *testing.T, body, id string) string {
+	t.Helper()
+	at := strings.Index(body, `value="`+id+`"`)
+	if at < 0 {
+		t.Fatalf("no card for %s", id)
+	}
+	card := body[at:]
+	if end := strings.Index(card, "</form>"); end >= 0 {
+		card = card[:end]
+	}
+	start := strings.Index(card, `<span class="pill`)
+	if start < 0 {
+		t.Fatalf("%s has no pill at all", id)
+	}
+	pill := card[start:]
+	pill = pill[strings.Index(pill, ">")+1:]
+	return pill[:strings.Index(pill, "</span>")]
+}
+
+// MUS-F-0150: "Decisions should show near the top what project they are for."
+// The store holds more than one project's questions, and a card said which only
+// in the faded identifier at its foot.
+func TestEachCardSaysWhichProjectItIsFor(t *testing.T) {
+	recs := append(projectsOf(),
+		openQuestion("MUS-Q-0001", "Where does the audit run?"),
+		openQuestion("IDW-Q-0001", "Which inbox takes a voice note?"))
+	srv, _ := serveQuestions(t, recs...)
+	body := getFrom(t, srv, "/questions")
+
+	for id, want := range map[string]string{
+		"MUS-Q-0001": "Mustur (MUS)",
+		"IDW-Q-0001": "Idea warehouse (IDW)",
+	} {
+		if got := firstPill(t, body, id); got != want {
+			t.Errorf("%s: first pill reads %q, want %q", id, got, want)
+		}
+	}
+}
+
+// A prefix no project record claims is shown as itself rather than guessed at,
+// which is projectName's rule everywhere else.
+func TestAnUnknownProjectIsShownByItsPrefix(t *testing.T) {
+	recs := append(projectsOf(), openQuestion("ZZZ-Q-0001", "Whose is this?"))
+	srv, _ := serveQuestions(t, recs...)
+	body := getFrom(t, srv, "/questions")
+
+	if got := firstPill(t, body, "ZZZ-Q-0001"); got != "ZZZ" {
+		t.Errorf("first pill reads %q, want the bare prefix", got)
+	}
+}
+
+// The queue names projects from the listing it already made; the account page
+// and the invitation still name one prefix at a time. This pins what they said
+// before that lookup was shared, so sharing it cannot change it.
+func TestTheAccountPagesNameProjectsAsBefore(t *testing.T) {
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	for _, r := range projectsOf() {
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for prefix, want := range map[string]string{
+		"MUS": "Mustur (MUS)",
+		"IDW": "Idea warehouse (IDW)",
+		"ZZZ": "ZZZ",
+		"":    "",
+	} {
+		if got := projectName(ctx, s, prefix); got != want {
+			t.Errorf("projectName(%q) = %q, want %q", prefix, got, want)
+		}
+	}
+	if got := projectName(ctx, nil, "MUS"); got != "MUS" {
+		t.Errorf("with no store, projectName = %q, want the bare prefix", got)
 	}
 }

@@ -1780,6 +1780,96 @@ func TestEndingASessionAsksFirstAndCarriesNoTick(t *testing.T) {
 	}
 }
 
+// Stop lands on /sessions, not on the start form (MUS-F-0143).
+//
+// It used to send ?new=1, which skips the jump into a running session, so the
+// owner ended one session and was shown the form for starting another, with
+// the picker's first choice unable to take them anywhere.
+func TestStoppingASessionLandsOnTheSessionsList(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur")+"\n"+owned("mustur/Other"))
+	req, err := http.NewRequest(http.MethodPost, srv.URL+"/sessions/Mustur/stop", strings.NewReader(""))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Origin", srv.URL)
+	res, err := srv.Client().Transport.RoundTrip(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("stop got %d, want 303", res.StatusCode)
+	}
+	if loc := res.Header.Get("Location"); loc != "/sessions" {
+		t.Errorf("stop sent the owner to %q, want /sessions", loc)
+	}
+}
+
+// /sessions lands on the most recently active running session, and the picker
+// lists in that order (MUS-Q-0123).
+//
+// The listing is in neither activity nor name order, so a test passing here is
+// not tmux's order or the alphabet happening to agree with the answer.
+func TestTheSessionsListLandsOnTheMostRecentlyActive(t *testing.T) {
+	srv := serveSessions(t, strings.Join([]string{
+		owned("mustur/alpha") + "\t100",
+		owned("mustur/bravo") + "\t300",
+		owned("mustur/charlie") + "\t200",
+	}, "\n"))
+	res, err := srv.Client().Transport.RoundTrip(mustGet(t, srv.URL+"/sessions"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if loc := res.Header.Get("Location"); loc != "/sessions/bravo" {
+		t.Errorf("/sessions went to %q, want the most recently active, /sessions/bravo", loc)
+	}
+
+	body := getFrom(t, srv, "/sessions/bravo")
+	b, c, a := strings.Index(body, `<option value="bravo"`), strings.Index(body, `<option value="charlie"`), strings.Index(body, `<option value="alpha"`)
+	if b < 0 || c < 0 || a < 0 || !(b < c && c < a) {
+		t.Errorf("the picker is not in activity order: bravo %d, charlie %d, alpha %d", b, c, a)
+	}
+}
+
+func mustGet(t *testing.T, u string) *http.Request {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return req
+}
+
+// A page with no current session opens the picker on a placeholder.
+//
+// With no option selected the browser shows the first session as chosen, and
+// choosing what is already chosen fires no change event — so the one session
+// the owner most likely wanted was the one the dropdown could not reach
+// (MUS-F-0143). The placeholder cannot be chosen back, and choosing anything
+// else is a change.
+func TestAPageWithNoCurrentSessionOpensThePickerOnAPlaceholder(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	placeholder := `<option value="" selected disabled>`
+
+	for _, path := range []string{"/sessions?new=1", "/sessions/whatever"} {
+		body := getFrom(t, srv, path)
+		pick := between(body, `<select name="p" id="pick"`, `</select>`)
+		if !strings.Contains(pick, placeholder) {
+			t.Errorf("%s: the picker has no selected, disabled placeholder: %s", path, pick)
+		}
+		if strings.Index(pick, placeholder) > strings.Index(pick, `<option value="Mustur"`) {
+			t.Errorf("%s: the placeholder is not the first option: %s", path, pick)
+		}
+	}
+	// A page that is a session already has its option selected, and a
+	// placeholder there would be a second selection.
+	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, placeholder) {
+		t.Error("a session's own page carries the placeholder")
+	}
+}
+
 // The dock says what the session is doing, and turns a ring while it does.
 func TestTheDockShowsTheActivityRatherThanTheQuietCounter(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))

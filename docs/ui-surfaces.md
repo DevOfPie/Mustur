@@ -210,7 +210,8 @@ expands in place, one line up front and the paragraph behind it only when asked;
 and answering is one tap above the bar. The expansion is a `<details>` element,
 so none of it costs script.
 
-**Six things differ from the drawing.** An earlier version of this paragraph
+**Six things differed from the drawing, and five still do** — the project pill
+has been rendered since MUS-F-0150. An earlier version of this paragraph
 said two, and a review counted the rest — so they are listed rather than
 summarised.
 
@@ -221,7 +222,7 @@ summarised.
 | Every open question is on one page, not one per screen | The queue is short by construction. The drawing is a single-question screen and this is a list with a rule between entries; the earlier claim to be "one question per screen" was simply false of the code beneath it |
 | Options carry a radio | The drawing makes the card itself the selection. A radio is what a form can express without script, and the whole row is the control |
 | There is a free-text box under the options | The drawing has none. The owner wanting to say something the list does not contain is the case a list of options is worst at, and it must not be the case the surface refuses |
-| The project pill is not rendered | One project exists. A pill that always reads the same is chrome |
+| The project pill is first on the card, and rendered only since MUS-F-0150 | It was left out while one project existed, because a pill that always reads the same is chrome. The store now holds questions under more than one prefix, and the owner reported not being able to tell whose a decision was; the pill names the project from its record and falls back to the bare prefix. It stopped being a departure when it was rendered, and the row stays so the omission is still on the page |
 
 The Answer button is also in flow rather than in a bordered footer, so it
 scrolls with the question rather than staying pinned. That is a difference the
