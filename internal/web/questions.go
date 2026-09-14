@@ -43,6 +43,7 @@ import (
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/export"
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/question"
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
@@ -125,7 +126,14 @@ type queuedOption struct {
 }
 
 type queued struct {
-	ID       string
+	ID string
+	// Project is whose question this is, named the way the account page names
+	// one: "Mustur (MUS)", or the bare prefix when no project record claims it.
+	// The artboard drew it as a pill and the first build dropped it while one
+	// project existed; the store now holds several, and the owner could not
+	// tell whose a decision was without reading the faded identifier at the
+	// foot of the card (MUS-F-0150).
+	Project  string
 	Title    string
 	Body     template.HTML
 	Blocks   string
@@ -158,6 +166,9 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 	if err != nil {
 		return nil, err
 	}
+	// The project records are already in this listing, so naming every card's
+	// project costs no query beyond the one above, rather than one per question.
+	names := projectNamesIn(records)
 	var out []queued
 	for _, r := range question.Open(records) {
 		item := queued{
@@ -167,6 +178,12 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 			Asked:    r.At,
 			Needed:   question.Needed(r),
 			Surfaced: question.Surfaced(r),
+		}
+		// The prefix is the routing (MUS-D-0125), so the identifier is the
+		// authority on whose question it is. One that does not parse gets no
+		// pill rather than a guess.
+		if id, err := ident.Parse(r.ID); err == nil {
+			item.Project = names.name(id.Project)
 		}
 		if b, ok := r.Get(question.FieldBlocks); ok {
 			item.Blocks = strings.TrimSpace(b)
@@ -481,6 +498,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <form method="post" action="/questions">
   <input type="hidden" name="id" value="{{$q.ID}}">
   <div class="pills">
+    {{if $q.Project}}<span class="pill">{{$q.Project}}</span>{{end}}
     {{if $q.Blocks}}<span class="pill accent">blocks {{$q.Blocks}}</span>{{end}}
     {{if $q.Needed}}<span class="pill">answer needed to proceed</span>{{end}}
     {{if not $q.Surfaced}}<span class="pill">never surfaced</span>{{end}}
