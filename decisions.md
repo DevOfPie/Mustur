@@ -3649,25 +3649,234 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
 
-### MUS-D-0178
+### MUS-D-0163
 
-**The intake box keeps what is typed as a draft of its own, cleared by filing or by Clear, and pictures are not kept**
+**LinkCtrl's records keep the numbers they were written with, under the LNK prefix**
 
-decision · 2026-09-14
+decision · 2026-09-13
 
-answers: MUS-Q-0120
+answers: MUS-Q-0109
 
-fixes: MUS-F-0152
+milestone: MUS-M-0009
 
-the count it is the seventh of: MUS-Q-0053
+project: MUS-P-0004
 
-the draft it is modelled on: MUS-Q-0034
-
-The owner answered MUS-Q-0120 with a text draft of intake's own. Intake is served no-store, so going to another tab and back was a fresh page with an empty box. Intake now carries a second script, the seventh page to by MUS-Q-0053's count, which that answer makes a new decision rather than a precedent, and this is that decision. The draft lives in the browser under its own key, never the composer's, so filing a jot cannot clear a message being drafted for a session or the reverse; it is restored only into an empty box, so text the server handed back after an error wins; and it is cleared when a filing succeeds, marked by the redirect rather than inferred, or by a Clear button the script reveals. The page still files with the script blocked, and what stops is only the draft. Pictures are not kept, because nothing can refill a file input and holding up to six pictures in the browser was the option not taken. Separately, a jot over the word limit now comes back in the box rather than being lost; one that fails to parse cannot, because the form never reaches the handler. Measured in a headless browser at 390x844 against a throwaway store: typed text survived a link away and back and the Back button, Clear emptied box and draft, both filing paths cleared it, the composer's draft was untouched, and with script blocked the draft row never appeared.
+MUS-Q-0109 asked whether LinkCtrl's 947 imported records take their own numbers or fresh serials. The owner chose their own numbers. A LinkCtrl decision numbered D14 becomes serial 14 of kind D under LNK, a finding F382 serial 382 of kind F, and a milestone file M70 serial 70 as both a milestone and its work unit, so every citation already in LinkCtrl's prose resolves by rule without a lookup table. Gaps in LinkCtrl's numbering stay gaps. The store gains a write that takes an explicit serial and refuses one already taken; a record filed after the import continues from the highest serial, which the store already does.
 
 | Field | Value |
 | --- | --- |
-| Status | built; internal/web/assets/intake.js, internal/web/intake.go |
+| Applies to | records imported from LinkCtrl under MUS-M-0009 |
+| Costs | an explicit-serial write path in the store |
+
+### MUS-D-0164
+
+**Nothing leaves LinkCtrl until the import has a verdict**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0110
+
+milestone: MUS-M-0009
+
+project: MUS-P-0004
+
+MUS-Q-0110 asked whether W48, LinkCtrl's own change that moves its records out, is approved now or after the import is reviewed. The owner chose after the verdict. The importer is built and run against a scratch store, its per-source counts are reconciled to 947, and three reviewers read it; only then is W48 approved in LinkCtrl and are the moved files deleted, in the commit that rewrites every link into them. Until then no file in LinkCtrl's tree is edited from this milestone.
+
+| Field | Value |
+| --- | --- |
+| Applies to | LinkCtrl's side of MUS-M-0009 |
+| Unchanged | MUS-Q-0090 to MUS-Q-0093's boundary |
+
+### MUS-D-0165
+
+**An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0111
+
+finding: MUS-F-0119
+
+milestone: MUS-M-0009
+
+MUS-Q-0111 asked whether Plan.md's injection-kit scope row is reworded or struck, since MUS-F-0063 found a committed .mcp.json can carry no credential and is preferred over the user-scope configuration that has one. The owner chose to reword it. The row keeps the capability in the authoritative scope table, where an onboarding reads it, and now says what a project actually receives: a mandate clause in its own CLAUDE.md, and a token issued per machine with the server registered at user scope. LinkCtrl, which is public, receives exactly that in MUS-M-0009.
+
+| Field | Value |
+| --- | --- |
+| Applies to | every project onboarded, LinkCtrl first |
+| Where | Plan.md, Scope table, injection-kit row |
+
+### MUS-D-0166
+
+**Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0112
+
+milestone: MUS-M-0009
+
+finding: MUS-F-0146
+
+MUS-Q-0112 asked what one imported decision is, since LinkCtrl's decisions.md holds 505 dated entries with D numbers defined inside them rather than 444 separable decisions. The owner chose both, each whole. Every dated entry becomes a decision numbered past 444 in the order the file gives them, holding the entry entire. Every D number LinkCtrl defined becomes a decision at its own serial under MUS-D-0163, holding its definition and citing the entry it came from; a D number defined only as a phase-table row holds that row. A wrong extract boundary costs a paragraph of the extract, never history, because the entry is the lossless copy. Reserved and never-issued numbers (D276, D277, D290) stay gaps. One consequence stated rather than discovered: the entries take serials 445 to 949, so a decision filed under LNK after the import continues past 949, not at 445.
+
+| Field | Value |
+| --- | --- |
+| Applies to | LinkCtrl's decisions.md and the decision tables in phase-2.md and phase-3.md |
+| Costs | about 950 decision records, with each defining passage held twice |
+
+### MUS-D-0167
+
+**LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0113
+
+amends: MUS-D-0163
+
+milestone: MUS-M-0009
+
+MUS-Q-0113 asked how 24 fractional milestones such as M24.5 fit a four-digit whole serial. The owner chose none of the three options: renumber every milestone from the beginning, in the order LinkCtrl gives them, so the fractions take whole serials in sequence; rewrite every reference to a milestone in what is imported so it points at the new number; and keep the old number in a field on each record, in case a reference is missed. Work units take the same serial as their milestone. This departs from MUS-D-0163 for milestones only: decisions and findings keep their numbers, milestones do not, and the old-number field is what connects a milestone to prose outside the import.
+
+| Field | Value |
+| --- | --- |
+| Applies to | LinkCtrl's milestones and their work units, and every M reference in imported bodies and fields |
+| Amends | MUS-D-0163, for milestones |
+
+### MUS-D-0168
+
+**Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured**
+
+decision · 2026-09-13
+
+corrects: MUS-D-0163
+
+corrects: MUS-D-0164
+
+amends: MUS-D-0023
+
+milestone: MUS-M-0009
+
+finding: MUS-F-0146
+
+The three reviewers of MUS-M-0009 found two decisions stating what the build then contradicted, and neither was corrected in a later entry.
+
+MUS-D-0163 said the store gains a write that takes an explicit serial. It needed none: Store.Append already wrote an explicit identifier and refused a taken one, which a test now holds. What the store did gain, after the review, is AppendAll, one transaction for a batch, so a failed import leaves nothing behind. MUS-D-0163's numbering holds for findings and D numbers. Milestones are renumbered by MUS-D-0167, and the log's dated entries take serials from 445 by MUS-D-0166; both depart from it as those decisions say.
+
+MUS-D-0164 said per-source counts are reconciled to 947. That was the survey's sum of 444 D numbers, 381 finding rows, 74 milestone files, 1 ADR and 47 workflow-change rows, and it is not a count of records. Reconciled per source against LinkCtrl 230771a: findings 381 rows become 381 findings; the 444 D numbers are 441 issued, since D276 and D277 were reserved and D290 never issued, and they become 441 decisions beside the 505 dated entries, 946 in all; the 74 milestone files become 74 work units and, with M18 to M20 from phase-1.md, 77 milestones; the ADR becomes 1 investigation; the 47 workflow-change rows stay in LinkCtrl because Mustur has no kind for them (MUS-Q-0093); upcoming-decisions.md, listed as leaving but outside the 947, gives 2 questions; Plan.md's 18 ordering rows become fields on the milestones they name, their place in the table kept. That is 1,481 records, and the verdict MUS-D-0164 waits on is this reconciliation holding, not the 947. The milestone count moves if the open question on milestone numbers cited and never defined is answered with stubs.
+
+One consequence stated rather than left in a code comment: the import copies bodies whole, which MUS-D-0023's summary-and-link shape does not. It has to, because the files leave LinkCtrl (MUS-Q-0090, MUS-Q-0092); a link back would point at nothing.
+
+| Field | Value |
+| --- | --- |
+| Corrects | MUS-D-0163's store clause and MUS-D-0164's reconciliation target |
+
+### MUS-D-0169
+
+**A milestone LinkCtrl cites and never defines becomes a stub in its place in the order**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0114
+
+amends: MUS-D-0167
+
+milestone: MUS-M-0009
+
+MUS-Q-0114 asked what happens to milestone numbers cited in LinkCtrl and defined nowhere, 18 of them cited 40 times, since MUS-D-0167 asked that every reference point at its new number and renumbering could not start at the beginning without them. The owner chose to stub the cited ones. Each gets a milestone record in its place in LinkCtrl's order, holding only that LinkCtrl cites it and defines it nowhere, dated by the earliest record citing it, with its old number in the LinkCtrl field. Every reference then points at a record, and the records citing it say what LinkCtrl meant. Numbers neither defined nor cited (M1, M2, M3, M5, M6 and M10) get nothing. Stubs have no work unit, and every milestone after the first stub moves up by the stubs before it.
+
+| Field | Value |
+| --- | --- |
+| Applies to | milestone numbers cited in imported LinkCtrl records with no file, phase-1 row or heading |
+| Costs | 18 milestone records with no content beyond their citations |
+
+### MUS-D-0170
+
+**LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0115
+
+milestone: MUS-M-0009
+
+MUS-Q-0115 asked what milestone 7 must show for LinkCtrl, since its done-when was only 'its own verdict'. The owner chose the whole move. MUS-M-0009 is done when: every LinkCtrl record Mustur has a kind for is in the store and reconciled per source to LinkCtrl's tree (MUS-D-0168, MUS-D-0169); the files holding them are gone from LinkCtrl, with every link into them rewritten and LinkCtrl's own gates green; and a LinkCtrl session reaches mustur_route with a token. An importer existing, or records sitting in the store while LinkCtrl still holds its files, is not the milestone. MUS-D-0164 still orders the two halves: the import has its verdict before anything leaves LinkCtrl.
+
+| Field | Value |
+| --- | --- |
+| Done when | LinkCtrl's records are in the store and reconciled per source; the files holding them are gone from LinkCtrl with every link rewritten and its gates green; a LinkCtrl session reaches mustur_route with a token |
+
+### MUS-D-0171
+
+**Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0116
+
+milestone: MUS-M-0009
+
+MUS-Q-0116 asked whether criterion 9 is reworded or recorded as failed, since a LinkCtrl session modified two files in LinkCtrl's own tree on 2026-09-09, preparing the survey Plan.md assigned to that repository's agents, before MUS-M-0009 started on 2026-09-13. The owner chose to reword it. Criterion 9 now says no file in another project is modified by Mustur, or by a session working on Mustur, before that project's onboarding starts; a project's own agents preparing their side in their own tree is not that. What it protects is unchanged: a router that edits repositories before it is trusted.
+
+| Field | Value |
+| --- | --- |
+| Where | Plan.md, success criteria, 9 |
+
+### MUS-D-0172
+
+**W48 is approved as restated, and made under LinkCtrl's own workflow loop**
+
+decision · 2026-09-13
+
+answers: MUS-Q-0117
+
+milestone: MUS-M-0009
+
+project: MUS-P-0004
+
+MUS-Q-0117 asked whether the owner approves W48, LinkCtrl's change that moves its records to Mustur, now that the import has its verdict (MUS-D-0164). The owner approved it as restated: the records leave, every LinkCtrl rule that filed into decisions.md, deferred-findings.md, phase-details or upcoming-decisions.md files into Mustur instead, every link from a staying file into a leaving one is rewritten, test/docs/decisions_index_test.go goes, and check-links.sh and doc-cost.sh stop naming the leaving paths. The change is made by LinkCtrl's own workflow loop in a Mustur-started LinkCtrl session, on a task branch, as a pull request the owner merges. LinkCtrl's records were imported into the live store immediately before it. The approval's decision entry for LinkCtrl is written under LNK rather than in decisions.md, because decisions.md is the file leaving.
+
+### MUS-D-0173
+
+**Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases**
+
+decision · 2026-09-14
+
+answers: LNK-Q-0005
+
+milestone: MUS-M-0009
+
+finding: MUS-F-0013
+
+LNK-Q-0005 asked where LinkCtrl's phase summaries live, since W48 deleted the prose of phase-details/phase-1.md to phase-4.md and the import read only their tables. The owner chose to import them, and asked that Mustur add a record kind for phases, holding a phase's details and linking to the milestones it encompasses. So phase becomes a kind, with the role letter S: P already means project, and S stands for stage, the way H stands for host because M was taken. A phase record holds its phase's prose and every table Mustur does not already hold elsewhere; the milestone status tables and the D1 to D193 decision tables stay on the milestone and decision records they were imported into. It cites each milestone it encompasses, and each milestone cites its phase. This is the first kind added for another project's shape rather than Mustur's own, and it answers MUS-F-0013's observation that nobody had asked for a fifth role: the owner has.
+
+| Field | Value |
+| --- | --- |
+| Role letter | S |
+| Applies to | LinkCtrl's phase-details/phase-1.md to phase-4.md; any project with phases |
+
+### MUS-D-0174
+
+**The CLI's own hyperlinks open in the session view, and nothing else from the pane becomes a link**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0118
+
+fixes: MUS-F-0147
+
+the rule it makes one exception to: MUS-D-0132
+
+why the readers keep stripping links: MUS-F-0054
+
+The owner answered MUS-Q-0118 with the CLI's own links, and said bare addresses may follow if a need for them turns up. MUS-D-0132's rule that the pane's contents never become markup gains one exception: an OSC 8 hyperlink whose address is http or https with a host renders as a link that opens a new tab, its address escaped as an attribute the way the text around it is. Any other scheme, a hyperlink the capture never terminated, and an address printed as plain text all stay text. Measured on tmux 3.6 on 2026-09-14: capture-pane -p -e -J keeps the OSC 8 sequence whole, parameters and ST terminator included, so the CLI's links reach the renderer rather than being lost before it. A link on the page was not enough on its own. A frame landing between press and release replaced the link under the pointer, so the session view now holds a changed frame while a pointer is down in the terminal and paints it after the click has been dispatched; that also stops the press which collapses a selection from painting the frame MUS-F-0128 held, which used to lose the first click after one. Plain, which the chrome, activity and prompt readers use, still strips a link to its text, because MUS-F-0054 is what reading the URL there broke.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/ansi/ansi.go HTML, internal/web/assets/session.js paint |
+| Left open | bare addresses, if the owner finds a need for them |
+
 ### MUS-D-0175
 
 **After Stop the Sessions page lands on the most recently active running session, and the picker lists in that order**
@@ -3687,3 +3896,117 @@ The owner answered MUS-Q-0123 with the most recently active session. Stop used t
 | Field | Value |
 | --- | --- |
 | Status | built; internal/web/start.go stop, internal/web/sessions.go rows and render |
+
+### MUS-D-0176
+
+**Plans move into Mustur as milestone 9, a plan held beside its decisions, and 9b, a plan drawn there**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0121
+
+the first half: MUS-F-0144
+
+the second half: MUS-F-0148
+
+the tool limit it replaces: MUS-F-0048
+
+The owner answered MUS-Q-0121 with a milestone, plans first. Nothing in Plan.md covered plans or wireframes, so this adds a scope row and two milestone rows rather than building under an existing one. 9 is the document: a session hands Mustur a plan the size of the Hoard group-sharing plan, it becomes a record addressable by identifier and rendered where the owner answers decisions, and a question raised against a plan cites it and shows its answered state on both, which today nothing can do because refs point one way and no surface shows a cited question's state. 9b is the drawing: wireframes generated quickly and drawn freely enough that a surface planned in them looks like the surface built, with feedback left anywhere on the design, which the owner named as the one thing the external tool does well. The split is the owner's order, not an estimate: 9 gives a plan's questions somewhere to link before 9b exists, and 9 is independently useful because MUS-F-0144 is a plan a person cannot currently read without a shell. Constraints carried into both rows: never embed a backend in a frame, and a plan living in another project's checkout stays that project's file until the session hands it over. Rendering a plan's markdown waits on MUS-Q-0119's dependency check.
+
+| Field | Value |
+| --- | --- |
+| Status | scheduled; Plan.md milestone rows 9 and 9b, not started |
+
+### MUS-D-0177
+
+**Question text renders as markdown through goldmark v1, with raw HTML and dangerous URLs refused by its defaults**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0119
+
+for: MUS-F-0151
+
+the question that prompted it: LNK-Q-0002
+
+The owner answered MUS-Q-0119 with goldmark, and asked that it be verified as the best dependency with no comparable alternative. Verified on 2026-09-14 by building each candidate in a scratch module and running one hostile input through it, CGO disabled: bold, italic, code, a pipe table, a script block, an inline img with onerror, and javascript:, data:text/html and vbscript: URLs in plain, mixed-case and entity-encoded forms. github.com/yuin/goldmark v1.8.6 lists no packages outside its own, which is the bar decisions.md holds a dependency to (pure Go, no transitive dependencies); drops raw HTML and blanks every dangerous link and image URL with its defaults, including the entity-encoded bypass fixed in 1.7.17 (GHSA-c97m-vxhj-p7j6); implements CommonMark 0.31.2 with tables as a bundled extension; and is what Hugo pins. The v2 module has the same properties and no importers yet, and v1 keeps security fixes, so v1 is the one taken. gomarkdown and blackfriday pass raw HTML and image javascript: URLs even with their safe flags; golang-commonmark pulls in golang.org/x/text and four modules and has had no commit since 2021; go-commonmark panics on a table followed by a paragraph; malcolmston/markdown has no tables and no URL filter; lute brings chroma and x/text and still emits data: and vbscript: links with sanitizing on. So goldmark v1, with WithUnsafe never set: HTML pages carry no CSP and bodies arrive from other projects' files, so its defaults are the barrier.
+
+| Field | Value |
+| --- | --- |
+| Status | taken; building on MUS-F-0151 |
+| Pinned | github.com/yuin/goldmark v1.8.6 |
+
+### MUS-D-0178
+
+**The intake box keeps what is typed as a draft of its own, cleared by filing or by Clear, and pictures are not kept**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0120
+
+fixes: MUS-F-0152
+
+the count it is the seventh of: MUS-Q-0053
+
+the draft it is modelled on: MUS-Q-0034
+
+The owner answered MUS-Q-0120 with a text draft of intake's own. Intake is served no-store, so going to another tab and back was a fresh page with an empty box. Intake now carries a second script, the seventh page to by MUS-Q-0053's count, which that answer makes a new decision rather than a precedent, and this is that decision. The draft lives in the browser under its own key, never the composer's, so filing a jot cannot clear a message being drafted for a session or the reverse; it is restored only into an empty box, so text the server handed back after an error wins; and it is cleared when a filing succeeds, marked by the redirect rather than inferred, or by a Clear button the script reveals. The page still files with the script blocked, and what stops is only the draft. Pictures are not kept, because nothing can refill a file input and holding up to six pictures in the browser was the option not taken. Separately, a jot over the word limit now comes back in the box rather than being lost; one that fails to parse cannot, because the form never reaches the handler. Measured in a headless browser at 390x844 against a throwaway store: typed text survived a link away and back and the Back button, Clear emptied box and draft, both filing paths cleared it, the composer's draft was untouched, and with script blocked the draft row never appeared.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/web/assets/intake.js, internal/web/intake.go |
+
+### MUS-D-0179
+
+**A phase keeps its file whole, tables included, and is dated by its milestones**
+
+decision · 2026-09-14
+
+corrects: MUS-D-0173
+
+milestone: MUS-M-0009
+
+Correcting MUS-D-0173, which said a phase holds its prose and every table Mustur does not already hold elsewhere. The independent review of Mustur PR 70 found that the premise was false. LinkCtrl's build-plan tables carry notes in their cells (M57.9's reopened range, M50.8's four reopenings) that no milestone or work unit holds, because a milestone's Depends on and Discharges come from its own file. The status tables carry notes too. The phase-2 decision table's Taken dates reach a D-number record only when the log never defined the number. Dropping those tables as held elsewhere lost history. So a phase keeps its file whole. That duplicates two detail tables phase 1 shares with its milestones and every row the D-number decisions carry, and the duplication cannot drift, because the source file is frozen and leaving LinkCtrl. The same review found a phase dated by the earliest date written in its file, which for phase 2 was 2018, inside a dependency's history. A phase is now dated by the earliest dated milestone it holds. Phase 1's closed status is read from its own State column rather than assumed.
+
+| Field | Value |
+| --- | --- |
+| Corrects | MUS-D-0173's rule for tables, and how a phase is dated |
+
+### MUS-D-0180
+
+**Nothing is deployed to mustur.devofpie.com before it is on main; a test instance carries a change between pull requests**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0125
+
+the deploy it ends: MUS-F-0092
+
+the build that nearly shipped broken: MUS-F-0155
+
+The owner answered MUS-Q-0125: after merge, and no pre-main deploys from now on, because the last one caused issues; a change may go to a test instance between pull requests. Until now make deploy ran from the session that made a change, on whatever branch it was on, and PR 64's fix went live before it merged. The integration build raised under MUS-Q-0125 would have shipped a blank session view had it been deployed, because every Go gate passed it (MUS-F-0155). So the live site follows main: a change reaches it only after the owner merges it, deployed from main. Seeing a change running before merge means a test instance, which never shares the live service, its store, its port or its tmux sessions.
+
+| Field | Value |
+| --- | --- |
+| Status | built; CLAUDE.md's deploy paragraph, and make deploy refuses unless HEAD is origin/main and nothing outside records/ is changed (Makefile deploy-from-main) |
+| Applies to | make deploy and anything else that replaces the running mustur.service |
+
+### MUS-D-0181
+
+**Finished sub-agents fold under one 'N finished' line beneath the running ones, each still readable**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0126
+
+for: MUS-F-0156
+
+the reason it keeps them: MUS-D-0123
+
+the order it builds on: MUS-F-0156
+
+The owner answered MUS-Q-0126 with collapse under a count. A session that runs many sub-agents filled the drawer with finished rows, 47 in Hoard_Work with 14 running. Running rows stay listed first; every finished row folds under a single line saying how many finished, which opens to list them, and a folded row still opens its report in the drawer. MUS-D-0123 kept finished rows because their reports are worth reading once they end, and folding keeps that one tap away rather than removing it; the badge on the drawer button keeps counting what is running and falling back to the total, unchanged. The fold is a disclosure the page renders, so it works with script blocked, and a redraw from the socket keeps it open or shut as the owner left it.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/web/sessions.go drawer template, internal/web/assets/session.js drawAgents, on branch intake/finished-sub-agents-fold-under-a-count stacked on PR 78 |
