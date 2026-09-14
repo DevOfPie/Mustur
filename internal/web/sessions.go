@@ -1043,6 +1043,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
          font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
          word-break: break-word; font-size: .82em; line-height: 1.35;
          overscroll-behavior: contain; }
+  /* A link the CLI printed as a hyperlink (MUS-Q-0118). Its colour stays the
+     terminal's, so the underline is what says it is one. */
+  #out a { color: inherit; text-decoration: underline;
+           text-underline-offset: .15em; }
   /* Something Mustur says about the session, as opposed to something the
      session said. Under the screen, because the screen is replaced whole and
      anything written into it would go with the next frame. */

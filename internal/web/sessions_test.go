@@ -2273,8 +2273,22 @@ func TestTheTerminalIsNotRepaintedUnderASelection(t *testing.T) {
 	}
 	// The held frame has to be painted by something, or the screen never comes
 	// back after a selection is let go.
-	if !strings.Contains(src, "if (pending !== null && !selecting()) paint(pending);") {
+	if !strings.Contains(src, "if (pending !== null && !held()) paint(pending);") {
 		t.Error("nothing paints the frame held back while a selection was up")
+	}
+	// A pointer down in the terminal holds the frame too, and lets it go after
+	// the click rather than on release: a frame landing between press and
+	// release replaces the link under the pointer (MUS-Q-0118).
+	for _, want := range []string{
+		`out.addEventListener("pointerdown"`,
+		"return pressed || selecting();",
+		`document.addEventListener("pointerup", release);`,
+		`document.addEventListener("pointercancel", release);`,
+		"setTimeout(",
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("the paint path has no %q; a frame can still land under a click", want)
+		}
 	}
 }
 

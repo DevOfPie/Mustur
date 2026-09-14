@@ -170,7 +170,8 @@
   // accumulates, so nothing needs trimming either.
   //
   // The HTML is the server's — every character of the pane was escaped there,
-  // and the only markup in it is the spans it wrote for colour.
+  // and the only markup in it is the spans it wrote for colour and the links
+  // the CLI printed as hyperlinks (MUS-Q-0118).
   //
   // Replacing it destroys whatever the browser had a selection anchored in, so
   // a drag across the pane was re-anchored to the top of it on the next frame
@@ -178,15 +179,22 @@
   // and they do different work. The first is free: a frame whose HTML is what
   // is already on screen is not written at all, which covers the frames the
   // server sends because the spinner turned. The second holds a changed frame
-  // back while the selection is inside #out, and paints it when the selection
-  // goes away.
+  // back while the selection is inside #out, or a pointer is down in it, and
+  // paints it when both have gone. The pointer is the link's half: a frame
+  // landing between press and release replaces the link under it, and the
+  // click lands on #out instead.
   var painted = null;
   var pending = null;
+  var pressed = false;
 
   function selecting() {
     var sel = window.getSelection && window.getSelection();
     if (!sel || sel.isCollapsed || sel.rangeCount === 0) return false;
     return out.contains(sel.anchorNode) || out.contains(sel.focusNode);
+  }
+
+  function held() {
+    return pressed || selecting();
   }
 
   // Answers whether the frame carried a change, which is a different question
@@ -196,7 +204,7 @@
     // The screen is stale for as long as the selection is held, deliberately:
     // a terminal that repaints under the thumb cannot be copied from, and the
     // pill and the chips go on saying what the session is doing meanwhile.
-    if (selecting()) {
+    if (held()) {
       pending = html;
       return true;
     }
@@ -210,10 +218,25 @@
 
   // Nothing else clears a selection, so this is where the held frame lands.
   // selectionchange fires on collapse and on a click anywhere in the document,
-  // which is every way a selection ends.
+  // which is every way a selection ends. It also fires on the press that
+  // collapses one, which is why the pointer holds the frame too: painting there
+  // lost the first click after a selection.
   document.addEventListener("selectionchange", function () {
-    if (pending !== null && !selecting()) paint(pending);
+    if (pending !== null && !held()) paint(pending);
   });
+
+  out.addEventListener("pointerdown", function () { pressed = true; });
+  // After the click rather than on release: a frame painted on pointerup
+  // replaces the link before the click that follows it is dispatched.
+  function release() {
+    if (!pressed) return;
+    pressed = false;
+    setTimeout(function () {
+      if (pending !== null && !held()) paint(pending);
+    }, 0);
+  }
+  document.addEventListener("pointerup", release);
+  document.addEventListener("pointercancel", release);
 
   // Something Mustur has to say about the session, as opposed to something the
   // session said. Appended under the screen rather than into it, because the

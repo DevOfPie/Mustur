@@ -57,9 +57,57 @@ func TestHTMLRendersWhatItUnderstands(t *testing.T) {
 			"beforeafterend",
 		},
 		{
-			"a hyperlink's payload does not reach the page",
+			// MUS-Q-0118: the CLI's own links open.
+			"a hyperlink becomes a link",
 			"see \x1b]8;id=abc;https://example.com/x\x1b\\here\x1b]8;;\x1b\\",
-			"see here",
+			`see <a href="https://example.com/x" target="_blank" rel="noopener noreferrer">here</a>`,
+		},
+		{
+			"a bell-terminated hyperlink becomes a link too",
+			"\x1b]8;;http://example.com\x07PR\x1b]8;;\x07",
+			`<a href="http://example.com" target="_blank" rel="noopener noreferrer">PR</a>`,
+		},
+		{
+			// Only http and https. Anything else is the text without the link.
+			"a hyperlink to a script is text",
+			"\x1b]8;;javascript:alert(1)\x1b\\click\x1b]8;;\x1b\\",
+			"click",
+		},
+		{
+			"a hyperlink with no host is text",
+			"\x1b]8;;https:///x\x1b\\click\x1b]8;;\x1b\\",
+			"click",
+		},
+		{
+			// The address is somebody else's output as much as the text is.
+			"a hyperlink's address is escaped",
+			"\x1b]8;;https://example.com/a?b=\"x\"&c=<y>\x1b\\q\x1b]8;;\x1b\\",
+			`<a href="https://example.com/a?b=&#34;x&#34;&amp;c=&lt;y&gt;" target="_blank" rel="noopener noreferrer">q</a>`,
+		},
+		{
+			"a colour inside a link nests inside it",
+			"\x1b]8;;https://e.com\x1b\\a\x1b[31mb\x1b[39mc\x1b]8;;\x1b\\",
+			`<a href="https://e.com" target="_blank" rel="noopener noreferrer">a<span style="color:#c0392b;">b</span>c</a>`,
+		},
+		{
+			"a link opened inside a colour still wraps the span",
+			"\x1b[31mx\x1b]8;;https://e.com\x1b\\y\x1b]8;;\x1b\\z",
+			`<span style="color:#c0392b;">x</span><a href="https://e.com" target="_blank" rel="noopener noreferrer"><span style="color:#c0392b;">y</span></a><span style="color:#c0392b;">z</span>`,
+		},
+		{
+			"a link closes at a newline and reopens after it",
+			"\x1b]8;;https://e.com\x1b\\ab\ncd\x1b]8;;\x1b\\",
+			"<a href=\"https://e.com\" target=\"_blank\" rel=\"noopener noreferrer\">ab</a>\n<a href=\"https://e.com\" target=\"_blank\" rel=\"noopener noreferrer\">cd</a>",
+		},
+		{
+			"a link the capture never closed is closed at the end",
+			"\x1b]8;;https://e.com\x1b\\ab",
+			`<a href="https://e.com" target="_blank" rel="noopener noreferrer">ab</a>`,
+		},
+		{
+			"an unterminated hyperlink is dropped with its payload",
+			"a\x1b]8;;https://e.com",
+			"a",
 		},
 		{
 			"a bell-terminated OSC is skipped too",
@@ -96,16 +144,19 @@ func TestHTMLNeverEmitsUnescapedInput(t *testing.T) {
 		"\x1b[38;5;",         // a truncated extended colour
 		"<img src=x onerror=alert(1)>",
 		"\x1b[31m<b>",
+		"\x1b]8;;javascript:alert(1)\x1b\\x", // a link to a script
+		"\x1b]8;;https://e.com/\"><script>alert(1)\x1b\\x", // an address that closes its attribute
 	} {
 		got := HTML(in)
 		// Every < in the output must be one this package wrote, which is only
-		// ever <span or </span.
+		// ever a span or a link.
 		for i := 0; i < len(got); i++ {
 			if got[i] != '<' {
 				continue
 			}
 			rest := got[i:]
-			if !strings.HasPrefix(rest, "<span style=\"") && !strings.HasPrefix(rest, "</span>") {
+			if !strings.HasPrefix(rest, "<span style=\"") && !strings.HasPrefix(rest, "</span>") &&
+				!strings.HasPrefix(rest, "<a href=\"") && !strings.HasPrefix(rest, "</a>") {
 				t.Errorf("input %q produced markup this package did not write: %q", in, got)
 				break
 			}

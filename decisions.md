@@ -3648,3 +3648,24 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | --- | --- |
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
+
+### MUS-D-0174
+
+**The CLI's own hyperlinks open in the session view, and nothing else from the pane becomes a link**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0118
+
+fixes: MUS-F-0147
+
+the rule it makes one exception to: MUS-D-0132
+
+why the readers keep stripping links: MUS-F-0054
+
+The owner answered MUS-Q-0118 with the CLI's own links, and said bare addresses may follow if a need for them turns up. MUS-D-0132's rule that the pane's contents never become markup gains one exception: an OSC 8 hyperlink whose address is http or https with a host renders as a link that opens a new tab, its address escaped as an attribute the way the text around it is. Any other scheme, a hyperlink the capture never terminated, and an address printed as plain text all stay text. Measured on tmux 3.6 on 2026-09-14: capture-pane -p -e -J keeps the OSC 8 sequence whole, parameters and ST terminator included, so the CLI's links reach the renderer rather than being lost before it. A link on the page was not enough on its own. A frame landing between press and release replaced the link under the pointer, so the session view now holds a changed frame while a pointer is down in the terminal and paints it after the click has been dispatched; that also stops the press which collapses a selection from painting the frame MUS-F-0128 held, which used to lose the first click after one. Plain, which the chrome, activity and prompt readers use, still strips a link to its text, because MUS-F-0054 is what reading the URL there broke.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/ansi/ansi.go HTML, internal/web/assets/session.js paint |
+| Left open | bare addresses, if the owner finds a need for them |
