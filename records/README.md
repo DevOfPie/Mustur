@@ -10,9 +10,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | phase | 4 | [phases.md](phases.md) |
 | milestone | 107 | [milestones.md](milestones.md) |
-| question | 154 | [questions.md](questions.md) |
-| decision | 1150 | [decisions.md](decisions.md) |
-| finding | 566 | [findings.md](findings.md) |
+| question | 157 | [questions.md](questions.md) |
+| decision | 1152 | [decisions.md](decisions.md) |
+| finding | 568 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 102 | [work-units/index.md](work-units/index.md) |
 | investigation | 5 | [investigations/index.md](investigations/index.md) |
@@ -74,6 +74,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-F-0012](findings.md#hrd-f-0012) | finding | The desktop's delete-group text promises what the server refuses |
 | [HRD-F-0013](findings.md#hrd-f-0013) | finding | Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group |
 | [HRD-F-0014](findings.md#hrd-f-0014) | finding | Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night |
+| [HRD-F-0015](findings.md#hrd-f-0015) | finding | Second-round reviews of PRs 8, 9 and 10 found and fixed engine, CLI and UI defects; the stack verifies at 1,236 tests |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
@@ -1760,6 +1761,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0126](questions.md#mus-q-0126) | question | Finished sub-agents fill the drawer. Collapse them, keep them all listed, or let them go? |
 | [MUS-Q-0127](questions.md#mus-q-0127) | question | Adding the times-in-Pacific trait puts Whippy's core at ~823 tokens, over its 800 budget. Raise the budget, or retire a trait? |
 | [MUS-Q-0128](questions.md#mus-q-0128) | question | LinkCtrl's /work registry row in ~/.claude/commands/work.md: retire it now that W48 merged, or keep it? |
+| [MUS-Q-0129](questions.md#mus-q-0129) | question | Every branch commits a whole-store export, so two branches that add records conflict in the generated files. How do we stop it? |
+| [MUS-Q-0130](questions.md#mus-q-0130) | question | With the export on main only, the question gate goes blind to questions raised on a branch. Read the store as well, or keep reading only the tree? |
+| [MUS-Q-0131](questions.md#mus-q-0131) | question | Milestone 7, LinkCtrl moving in, has landed on both mains. Do you accept it? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -1941,6 +1945,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0179](decisions.md#mus-d-0179) | decision | A phase keeps its file whole, tables included, and is dated by its milestones |
 | [MUS-D-0180](decisions.md#mus-d-0180) | decision | Nothing is deployed to mustur.devofpie.com before it is on main; a test instance carries a change between pull requests |
 | [MUS-D-0181](decisions.md#mus-d-0181) | decision | Finished sub-agents fold under one 'N finished' line beneath the running ones, each still readable |
+| [MUS-D-0182](decisions.md#mus-d-0182) | decision | The records export is committed on main only, and branches carry none |
+| [MUS-D-0183](decisions.md#mus-d-0183) | decision | Mustur acts only on its own store; the committed records export is a backup and a conformance surface |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -2106,6 +2112,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0163](findings.md#mus-f-0163) | finding | Records needs proper rending too, looking at the Phase records for LinkCtrl is un readable |
 | [MUS-F-0164](findings.md#mus-f-0164) | finding | Opening the Records tab is slow because it seems to be loading in everything at once |
 | [MUS-F-0165](findings.md#mus-f-0165) | finding | LinkCtrl still dispatches through a global file, so success criterion 1 is not yet true for it |
+| [MUS-F-0166](findings.md#mus-f-0166) | finding | I can only invite people to the Mustur project and it doesn't seem that I can add existing… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

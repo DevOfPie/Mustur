@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-566 record(s), by identifier.
+568 record(s), by identifier.
 
 ## The queue
 
@@ -24,6 +24,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [HRD-F-0012](#hrd-f-0012) | The desktop's delete-group text promises what the server refuses |  |  |
 | [HRD-F-0013](#hrd-f-0013) | Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group |  |  |
 | [HRD-F-0014](#hrd-f-0014) | Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night |  |  |
+| [HRD-F-0015](#hrd-f-0015) | Second-round reviews of PRs 8, 9 and 10 found and fixed engine, CLI and UI defects; the stack verifies at 1,236 tests |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -576,6 +577,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0163](#mus-f-0163) | Records needs proper rending too, looking at the Phase records for LinkCtrl is un readable |  | unreviewed |
 | [MUS-F-0164](#mus-f-0164) | Opening the Records tab is slow because it seems to be loading in everything at once |  | unreviewed |
 | [MUS-F-0165](#mus-f-0165) | LinkCtrl still dispatches through a global file, so success criterion 1 is not yet true for it | ~/.claude/commands/work.md:23 routes linkctrl to /home/whippy/repos/DevOfPie/LinkCtrl and docs/build-notes/work-loop.md; MUS-R-0003 carries Dispatch kinds phase, workflow, which no code path reads for dispatch | open |
+| [MUS-F-0166](#mus-f-0166) | I can only invite people to the Mustur project and it doesn't seem that I can add existing… |  | unreviewed |
 
 ---
 
@@ -802,6 +804,18 @@ finding · 2026-09-13
 w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 Reviewed by hand on 2026-09-14 while agent reviews were blocked by the API limit; posted on the PRs, fixed with tests, merged up the stack. PR 8, claim.rs: a View choice stuck to the slot for good because nothing reset the role at session end; a relaunch during a side copy replaced the stopped session so the copy's landing cleared the live game's pending writes; a write under an unknown lease was forgotten. PR 4, lease.rs: a stale acquire looped every two seconds for the whole session (the engine cleared its request on every verdict and re-asked with the same head); a transport error on the first acquire silenced the request for the session; a refresh called any live lease mine while the task held one, naming the server's holder. Commits f9af555, b72194c, dc677ca.
+
+---
+
+## HRD-F-0015
+
+**Second-round reviews of PRs 8, 9 and 10 found and fixed engine, CLI and UI defects; the stack verifies at 1,236 tests**
+
+finding · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Run on 2026-09-14 after the API limit reset. PR 8 (ten findings, a845914): side-copy renames re-armed pending changes and left the folder empty; a failed copy let a viewer's writes push; View on a still-held lease released nothing; a refresh cleared a pending acquire and never renewed a lease it read as ours; sibling sessions never closed; a role chosen before launch was dropped. PR 9 (all ten items, a7b1154, f7a2c7d, 1987d19, 9239fae): hoard saves and hoard status asked the server once per shared save, serially, up to a minute offline, now one local status call; the host column could claim nobody hosts when the answer was unknown; here was decided by device instead of account; refusal codes were lost over the socket; the world rule for template games lived only in the CLI; world verbs on an unwatched save reported success. PR 10 (da66a04, 71e209f): a request loop in the share dialog with no groups, the claim question open in both windows, success toasts before the server's verdict, and a replay gate I had added on a wrong premise (removed). Build lesson recorded outside the repo: parallel worktrees on one cargo target clobber each other. Tip 9239fae: 1,236 passed, 0 failed, 4 ignored; baseline 1,081.
 
 ---
 
@@ -16356,3 +16370,23 @@ Plan.md's success criterion 1 is that a project becomes routable by editing one 
 | --- | --- |
 | Evidence | ~/.claude/commands/work.md:23 routes linkctrl to /home/whippy/repos/DevOfPie/LinkCtrl and docs/build-notes/work-loop.md; MUS-R-0003 carries Dispatch kinds phase, workflow, which no code path reads for dispatch |
 | Status | open |
+
+---
+
+## MUS-F-0166
+
+**I can only invite people to the Mustur project and it doesn't seem that I can add existing…**
+
+finding · 2026-09-14
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+I can only invite people to the Mustur project and it doesn't seem that I can add existing people to additional projects
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
