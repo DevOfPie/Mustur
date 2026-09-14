@@ -24,20 +24,36 @@ fails=0
 checked=0
 deferred=0
 
-# Anchors into records/ wait for main on a feature branch (MUS-D-0182).
+# Links into records/ wait for a refresh branch, everywhere else (MUS-D-0182).
 #
-# The export is committed on main only, so a branch carries main's records/ and
-# not its own. A document on that branch linking to a record it has just filed
-# points at a file that exists and a heading that will not, until a
-# records/refresh-* pull request lands it. The file is still checked; the
-# anchor is counted, said out loud, and checked in full on main and on the
-# refresh branch, which is where the export it names is committed. Links from
-# inside records/ are generated alongside their targets and stay checked.
-defer_records_anchors=0
-if ! branch=$(scripts/export-branch.sh); then
-  defer_records_anchors=1
-fi
-records_dir=$(realpath records 2>/dev/null || true)
+# The export is committed only by a records/refresh-* pull request, so records/
+# on every other branch, main included, is main's last export and lags the
+# store. A document linking to a record filed since then points at a heading,
+# or a whole file, that is not there yet: on the branch that filed it, and on
+# main after that branch merges, until a refresh lands. Failing on either would
+# turn main red after an ordinary merge. So off a refresh branch, a link from
+# outside records/ into records/ that does not resolve is named and counted as
+# deferred, not failed. A refresh branch renders main's documents together with
+# a fresh export, so it checks them in full, and a link that is really broken
+# fails there, before the refresh merges. Links from inside records/ are
+# generated alongside their targets and are checked everywhere.
+full_records=0
+branch=$(scripts/export-branch.sh) || true
+case "$branch" in
+  records/refresh-*) full_records=1 ;;
+esac
+records_dir=$(realpath -m records)
+
+# into_records TARGET — succeeds when a broken link from $file to TARGET waits
+# for a refresh branch rather than failing here.
+into_records() {
+  [ "$full_records" -eq 0 ] || return 1
+  case "$file" in records/*) return 1 ;; esac
+  case "$(realpath -m "$1")" in
+    "$records_dir"|"$records_dir"/*) return 0 ;;
+  esac
+  return 1
+}
 
 # Tracked *and* newly added, which `git ls-files` alone is not.
 #
@@ -111,8 +127,13 @@ while IFS= read -r file; do
     if [ -n "$path" ]; then
       target="$dir/$path"
       if [ ! -e "$target" ]; then
-        printf '  FAIL  %s -> %s (no such file)\n' "$file" "$link"
-        fails=$((fails + 1))
+        if into_records "$target"; then
+          printf '  defer %s -> %s (no such file yet)\n' "$file" "$link"
+          deferred=$((deferred + 1))
+        else
+          printf '  FAIL  %s -> %s (no such file)\n' "$file" "$link"
+          fails=$((fails + 1))
+        fi
         continue
       fi
     fi
@@ -122,37 +143,31 @@ while IFS= read -r file; do
     [ -d "$target" ] && continue
     [ -n "$anchor" ] || continue
 
-    if [ "$defer_records_anchors" -eq 1 ] && [ -n "$path" ] && [ -n "$records_dir" ]; then
-      case "$file" in
-        records/*) ;;
-        *)
-          case "$(realpath "$target")" in
-            "$records_dir"/*.md) deferred=$((deferred + 1)); continue ;;
-          esac
-          ;;
-      esac
-    fi
-
     # Not `slugs "$target" | grep -qxF`: `grep -q` exits at the first match, the
     # writers upstream of it take SIGPIPE, and `pipefail` then reports 141 for a
     # pipeline that succeeded. That failed roughly one anchor in five, a
     # different one each run.
     if ! grep -qxF "$anchor" <<<"$(anchors_for "$target")"; then
-      printf '  FAIL  %s -> %s (no such heading)\n' "$file" "$link"
-      fails=$((fails + 1))
+      if into_records "$target"; then
+        printf '  defer %s -> %s (no such heading yet)\n' "$file" "$link"
+        deferred=$((deferred + 1))
+      else
+        printf '  FAIL  %s -> %s (no such heading)\n' "$file" "$link"
+        fails=$((fails + 1))
+      fi
     fi
   done < <(grep -oE '\]\([^)]*\)' "$file" | sed -E 's/^\]\(//; s/\)$//')
 done < <(tracked_markdown)
 
 if [ "$fails" -eq 0 ]; then
-  printf '  ok    %d links resolve\n' "$checked"
+  printf '  ok    %d links resolve\n' "$((checked - deferred))"
 else
   printf '  %d broken link(s) of %d\n' "$fails" "$checked"
 fi
 if [ "$deferred" -gt 0 ]; then
-  printf '  defer %d anchor(s) into records/ checked for the file only: %s carries main'\''s export,\n' \
+  printf '  defer %d link(s) into records/ do not resolve on %s, whose records/ is main'\''s last export;\n' \
     "$deferred" "${branch:-this detached HEAD}"
-  printf '        so their headings are checked on main and records/refresh-* (MUS-D-0182)\n'
+  printf '        they are checked in full on records/refresh-*, where a fresh export meets these documents (MUS-D-0182)\n'
 fi
 
 # Table rows against their own header.

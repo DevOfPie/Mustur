@@ -205,8 +205,9 @@ belongs in it.
 ```
 on a feature branch → commit no export; make export refuses, make check fails
 after merges        → make records-refresh: branch from main, export, PR, never merge
-anchors into
-  records/          → checked for the file only off main; in full on main and refresh
+links into
+  records/          → unresolved ones deferred and counted everywhere, main included;
+                      checked in full only on records/refresh-*
 ```
 
 The export is committed on main only
@@ -243,7 +244,7 @@ never be the reason scope is cut.
 | Links | Every relative link and anchor in tracked `.md` resolves |
 | Scope | One topic per commit |
 | Other repositories | Untouched |
-| Export | Nothing under `records/`, nothing at or below `decisions.md`'s generated marker — unless the branch is `main` or `records/refresh-*` ([MUS-D-0182](records/decisions.md#mus-d-0182)) |
+| Export | Nothing under `records/`, nothing at or below `decisions.md`'s generated marker — unless the branch is `main`; a `records/refresh-*` branch changes those and nothing else ([MUS-D-0182](records/decisions.md#mus-d-0182)) |
 
 Commit messages are long prose explaining *why*. The diff shows what.
 

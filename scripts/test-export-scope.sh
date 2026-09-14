@@ -26,7 +26,22 @@ commit() { git -c user.name=t -c user.email=t@e.invalid commit -q "$@"; }
 git init -q --bare "$tmp/origin.git"
 git init -q -b main "$tmp/work"
 mkdir -p "$tmp/work/scripts" "$tmp/work/records"
-cp "$here/check-export-scope.sh" "$here/export-branch.sh" "$tmp/work/scripts/"
+cp "$here/check-export-scope.sh" "$here/export-branch.sh" "$here/check-links.sh" "$tmp/work/scripts/"
+
+# check-links.sh reads anchors from `go run ./cmd/mustur anchors`, which this
+# throwaway tree cannot build. A stand-in on PATH answers for it: records/README.md
+# has one heading, `known`, and nothing else has any. What is under test is which
+# broken links fail and which wait, not how headings become anchors.
+mkdir -p "$tmp/bin"
+cat >"$tmp/bin/go" <<'STUB'
+#!/usr/bin/env bash
+for f in "$@"; do
+  case "$f" in
+    *records/README.md) printf '%s\tknown\n' "$(realpath "$f")" ;;
+  esac
+done
+STUB
+chmod +x "$tmp/bin/go"
 printf '# Records\n' >"$tmp/work/records/README.md"
 printf '# Old\n' >"$tmp/work/records/old.md"
 printf '%s\n' '# Decisions' 'prose above' '<!-- mustur:generated from=MUS-D-0121 -->' 'generated one' 'generated two' \
@@ -113,5 +128,28 @@ scope 0 "skips out loud when origin/main cannot be fetched" feature/nofetch \
   "export scope NOT checked on feature/nofetch: origin/main is absent and fetching it failed"
 g remote set-url origin "$tmp/origin.git"
 g fetch -q origin
+
+# check-links: a link from outside records/ into it that does not resolve waits
+# for a refresh branch everywhere else, main included, because records/ there
+# is main's last export (MUS-D-0182). On a refresh branch it fails.
+links() { expect check-links.sh "$@" "PATH=$tmp/bin:$PATH"; }
+doc="mkdir -p docs && printf '%s\n' '[known](../records/README.md#known)' \
+  '[new heading](../records/README.md#mus-x-0001)' '[new file](../records/work-units/NEW.md#mus-w-0001)' >docs/links.md"
+
+links 0 "defers a heading and a file into records/ on a feature branch" feature/links "$doc" \
+  "defer 2 link(s) into records/ do not resolve on feature/links"
+links 0 "defers them on main"                   main            "$doc" "defer 2 link(s) into records/ do not resolve on main"
+links 0 "defers them on a pull request whose head is main" feature/pr "$doc" "do not resolve on main" \
+  GITHUB_BASE_REF=main GITHUB_HEAD_REF=main
+links 1 "fails them on a refresh branch"        records/refresh-20260914T000003Z "$doc" \
+  "FAIL  docs/links.md -> ../records/work-units/NEW.md#mus-w-0001 (no such file)"
+links 1 "fails a broken heading on a refresh branch" records/refresh-20260914T000004Z "$doc" \
+  "FAIL  docs/links.md -> ../records/README.md#mus-x-0001 (no such heading)"
+links 1 "never defers a link from inside records/" feature/inside "printf '[x](missing.md)\n' >records/links.md" \
+  "FAIL  records/links.md -> missing.md (no such file)"
+links 1 "never defers a link that is not into records/" feature/outside "printf '[x](nowhere.md#a)\n' >elsewhere.md" \
+  "FAIL  elsewhere.md -> nowhere.md#a (no such file)"
+links 0 "passes a resolving link into records/ without deferring it" records/refresh-20260914T000005Z \
+  "printf '[known](records/README.md#known)\n' >ok.md" "ok    1 links resolve"
 
 [ "$fails" -eq 0 ]
