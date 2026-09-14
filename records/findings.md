@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-554 record(s), by identifier.
+555 record(s), by identifier.
 
 ## The queue
 
@@ -410,6 +410,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [LNK-F-0380](#lnk-f-0380) | A 3.6 MB compiled binary was committed | **Found by the code review of PR #11** (review 5131991986), which read the production diff in seven passes and verified every finding against the source, wazero v1.12.0 and goose v3.27.3 | closed |
 | [LNK-F-0381](#lnk-f-0381) | `TestInvalidationReachesAnotherReplica` fails again, from a different cause than F11's | **Found by a full `make test-integration` run on 2026-09-08**, on the phase-4 review fixes. The assertion was *the second replica did not cache the alias in process*, and the log around it carries `cache invalidation subscriber lost its connection … error=EOF`, a reconnect, then `cannot reach redis … error=EOF` and a `context deadline exceeded` on the invalidation itself. **Not the change under test**: nothing in that run touched the cache, the resolver, Redis or the subscriber. Re-run alone with `-count=3` immediately afterwards: green three times | open |
 | [LNK-F-0382](#lnk-f-0382) | Tests asserting a timing bound fail under load, and nothing in the suite protects them from it | **Two observations on 2026-09-08, on the phase-4 review fixes.** (a) CI run 34179045616 failed `TestGatesAreCorrectWithoutRedis` with `consume click budget: timeout: context deadline exceeded`; **run 34179043291 on the same commit passed the same job**, which is the whole argument — same tree, both outcomes. (b) `TestDummyVerifyCostsTheSameAsARealOne` failed locally at `109.958426ms vs 27.082488ms (ratio 4.06)` while a second gate was running on the same machine, and passed `-count=3` immediately afterwards on a quiet one. Neither run touched the code under test | open |
+| [LNK-F-0383](#lnk-f-0383) | Code comments still name the milestone and record files W48 deleted |  | open, unapproved |
 | [MUS-F-0001](#mus-f-0001) | queue.md's own shape will fail the findings-queue checks it declares |  | overtaken |
 | [MUS-F-0002](#mus-f-0002) | Pull request #1 promises three open design questions and the file marks two |  | overtaken 2026-08-24 |
 | [MUS-F-0003](#mus-f-0003) | A paused metering change would decide the adapter's exposure |  | open |
@@ -12317,6 +12318,24 @@ cites: [LNK-F-0381](#lnk-f-0381)
 | Reviewed | **Not yet reviewed.** Distinct from F381, which is a connection lost outright rather than a bound missed, and distinct from F11, whose fix is a barrier rather than a bound. The question this row is really asking is whether a timing assertion belongs in a gate at all, or whether these two want a `testing.Short` skip, a wider bound, or a bound measured rather than written down |
 | Status | open |
 | LinkCtrl | F382 |
+
+---
+
+## LNK-F-0383
+
+**Code comments still name the milestone and record files W48 deleted**
+
+finding · 2026-09-14
+
+work-unit: [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097)
+
+W48 (PR 14) deleted docs/build-notes/phase-details/ and decisions.md, deferred-findings.md, upcoming-decisions.md. Non-markdown files still cite them by filename — m62.md's sanitization bullet, m60.md refuses a checked-in binary, m69.md's second risk. Evidence: `git grep -n -E 'm[0-9]+(\.[0-9]+)?\.md|phase-details/|upcoming-decisions\.md|decisions\.md|deferred-findings\.md' -- ':!*.md'` on f9514fe returns 373 lines, most in internal/auth/mfa.go (14), test/integration/mfa_test.go (11), internal/addon (host.go 8). W48's row claims links, not comments, so no shipped claim is false; a reader following one reaches a file that is gone. Only hostabi_test.go:821's failure message was in LNK-W-0097's list and was fixed there. Fix shape: each mN.md becomes its LNK milestone's work unit, each record file its LNK kind; a sweep of its own.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/addon/host.go:700,1130; internal/addon/lifecycle.go:357; internal/auth/mfa.go; test/integration/mfa_test.go; and others |
+| Severity | low — comments only; no behaviour |
+| Status | open, unapproved |
 
 ---
 

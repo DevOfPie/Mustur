@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-1138 record(s), by identifier.
+1141 record(s), by identifier.
 
 ## Index
 
@@ -29,6 +29,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [HRD-D-0015](#hrd-d-0015) | The demo server runs the fork's releases and follows them on its own | 2026-09-13 |
 | [HRD-D-0016](#hrd-d-0016) | The demo deploys releases only; branch builds go to a separate test instance | 2026-09-13 |
 | [HRD-D-0017](#hrd-d-0017) | The demo came back on v1.1.7 by rolling its database back in place | 2026-09-13 |
+| [HRD-D-0018](#hrd-d-0018) | The VM's disk grows to 256 GB | 2026-09-14 |
 | [LNK-D-0001](#lnk-d-0001) | Mailer | 2026-07-31 |
 | [LNK-D-0002](#lnk-d-0002) | Cookie / returning-visitor conditions | 2026-07-31 |
 | [LNK-D-0003](#lnk-d-0003) | Custom-domain TLS | 2026-07-31 |
@@ -978,6 +979,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [LNK-D-0950](#lnk-d-0950) | W48 approved: this repository's records move to Mustur, and the rules that filed into them file into Mustur | 2026-09-13 |
 | [LNK-D-0951](#lnk-d-0951) | An All Workspaces view is a candidate for the next phase, beside moving links between workspaces | 2026-09-13 |
 | [LNK-D-0952](#lnk-d-0952) | W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md | 2026-09-13 |
+| [LNK-D-0953](#lnk-d-0953) | PR 14's three subject-less review-fix commits stay as pushed; no history rewrite | 2026-09-14 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -1150,6 +1152,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0170](#mus-d-0170) | LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur | 2026-09-13 |
 | [MUS-D-0171](#mus-d-0171) | Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side | 2026-09-13 |
 | [MUS-D-0172](#mus-d-0172) | W48 is approved as restated, and made under LinkCtrl's own workflow loop | 2026-09-13 |
+| [MUS-D-0173](#mus-d-0173) | Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases | 2026-09-14 |
 
 ---
 
@@ -1388,6 +1391,18 @@ q: [HRD-Q-0019](questions.md#hrd-q-0019)
 f: [HRD-F-0011](findings.md#hrd-f-0011)
 
 Answered by Pie on HRD-Q-0019: allow the in-place rollback. Done 2026-09-13: hoard-demo stopped, hoard.db backed up beside itself as hoard.db.bak-branch-<stamp>, the seven sharing tables dropped and migration rows 22 to 27 deleted, VACUUM, service started. Result: 21 migrations, the one user and both active tokens intact, health 200 locally and through the tunnel on version 1.1.7. The sharing data those tables held lives on in the test instance's copy.
+
+---
+
+## HRD-D-0018
+
+**The VM's disk grows to 256 GB**
+
+decision · 2026-09-14
+
+q: [HRD-Q-0020](questions.md#hrd-q-0020)
+
+Answered by Pie on HRD-Q-0020: grow the disk; done on the host on 2026-09-14, no restart needed for the size to show. The partition sda3, the physical volume, the logical volume ubuntu-vg/ubuntu-lv and the root filesystem still had to be grown from inside, which needs root; this session's shell runs with no-new-privileges so Pie runs the four commands from their own terminal.
 
 ---
 
@@ -80124,6 +80139,24 @@ LNK-W-0096 said phase-details/ leaves whole. Measured against the export, the mi
 
 ---
 
+## LNK-D-0953
+
+**PR 14's three subject-less review-fix commits stay as pushed; no history rewrite**
+
+decision · 2026-09-14
+
+answers: [LNK-Q-0006](questions.md#lnk-q-0006)
+
+work-unit: [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097)
+
+Owner-answered 2026-09-14 on LNK-Q-0006, used the same day. Commits 0b9b14c, 10e750e and 7f17800 on task/records-move-to-mustur lost their subject lines to a shell heredoc chain that ran each subject as a command; bodies and trailers are intact. They are not rebuilt or force-pushed, so nothing pushed is rewritten and the hashes in PR 14's what-changed comment stay true. The accepted cost: in git log --oneline each commit's subject is its body's first paragraph, permanently if PR 14 merges with a merge commit rather than a squash. The locally rebuilt copies were never referenced and are dropped.
+
+| Field | Value |
+| --- | --- |
+| Status | taken |
+
+---
+
 ## MUS-D-0001
 
 **Why this is not a local file**
@@ -83313,3 +83346,24 @@ milestone: [MUS-M-0009](milestones.md#mus-m-0009)
 project: [MUS-P-0004](routing.md#mus-p-0004)
 
 MUS-Q-0117 asked whether the owner approves W48, LinkCtrl's change that moves its records to Mustur, now that the import has its verdict (MUS-D-0164). The owner approved it as restated: the records leave, every LinkCtrl rule that filed into decisions.md, deferred-findings.md, phase-details or upcoming-decisions.md files into Mustur instead, every link from a staying file into a leaving one is rewritten, test/docs/decisions_index_test.go goes, and check-links.sh and doc-cost.sh stop naming the leaving paths. The change is made by LinkCtrl's own workflow loop in a Mustur-started LinkCtrl session, on a task branch, as a pull request the owner merges. LinkCtrl's records were imported into the live store immediately before it. The approval's decision entry for LinkCtrl is written under LNK rather than in decisions.md, because decisions.md is the file leaving.
+
+---
+
+## MUS-D-0173
+
+**Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases**
+
+decision · 2026-09-14
+
+answers: [LNK-Q-0005](questions.md#lnk-q-0005)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+finding: [MUS-F-0013](findings.md#mus-f-0013)
+
+LNK-Q-0005 asked where LinkCtrl's phase summaries live, since W48 deleted the prose of phase-details/phase-1.md to phase-4.md and the import read only their tables. The owner chose to import them, and asked that Mustur add a record kind for phases, holding a phase's details and linking to the milestones it encompasses. So phase becomes a kind, with the role letter S: P already means project, and S stands for stage, the way H stands for host because M was taken. A phase record holds its phase's prose and every table Mustur does not already hold elsewhere; the milestone status tables and the D1 to D193 decision tables stay on the milestone and decision records they were imported into. It cites each milestone it encompasses, and each milestone cites its phase. This is the first kind added for another project's shape rather than Mustur's own, and it answers MUS-F-0013's observation that nobody had asked for a fifth role: the owner has.
+
+| Field | Value |
+| --- | --- |
+| Role letter | S |
+| Applies to | LinkCtrl's phase-details/phase-1.md to phase-4.md; any project with phases |

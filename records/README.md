@@ -8,12 +8,13 @@ Mustur's own records, exported from its store. The store is the record; this tre
 
 | Kind | Records | Where |
 | --- | --- | --- |
+| phase | 4 | [phases.md](phases.md) |
 | milestone | 107 | [milestones.md](milestones.md) |
-| question | 148 | [questions.md](questions.md) |
-| decision | 1138 | [decisions.md](decisions.md) |
-| finding | 554 | [findings.md](findings.md) |
+| question | 149 | [questions.md](questions.md) |
+| decision | 1141 | [decisions.md](decisions.md) |
+| finding | 555 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
-| work-unit | 100 | [work-units/index.md](work-units/index.md) |
+| work-unit | 101 | [work-units/index.md](work-units/index.md) |
 | investigation | 5 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -58,6 +59,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-D-0015](decisions.md#hrd-d-0015) | decision | The demo server runs the fork's releases and follows them on its own |
 | [HRD-D-0016](decisions.md#hrd-d-0016) | decision | The demo deploys releases only; branch builds go to a separate test instance |
 | [HRD-D-0017](decisions.md#hrd-d-0017) | decision | The demo came back on v1.1.7 by rolling its database back in place |
+| [HRD-D-0018](decisions.md#hrd-d-0018) | decision | The VM's disk grows to 256 GB |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
@@ -78,6 +80,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
 | [IDW-F-0004](findings.md#idw-f-0004) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
 | [IDW-F-0005](findings.md#idw-f-0005) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
+| [LNK-S-0001](phases.md#lnk-s-0001) | phase | Phase 1 — the milestones added after the review |
+| [LNK-S-0002](phases.md#lnk-s-0002) | phase | Phase 2 — the milestones |
+| [LNK-S-0003](phases.md#lnk-s-0003) | phase | Phase 3 — the milestones |
+| [LNK-S-0004](phases.md#lnk-s-0004) | phase | Phase 4 — the milestones |
 | [LNK-M-0001](milestones.md#lnk-m-0001) | milestone | `M0.5`, cited in LinkCtrl and defined nowhere |
 | [LNK-M-0002](milestones.md#lnk-m-0002) | milestone | `M4`, cited in LinkCtrl and defined nowhere |
 | [LNK-M-0003](milestones.md#lnk-m-0003) | milestone | `M7`, cited in LinkCtrl and defined nowhere |
@@ -248,11 +254,13 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-W-0094](work-units/LNK-W-0094.md#lnk-w-0094) | work-unit | Pre-release adversarial review |
 | [LNK-W-0095](work-units/LNK-W-0095.md#lnk-w-0095) | work-unit | Deferred findings, documentation pass, 0.4.0 |
 | [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096) | work-unit | W48: this repository's records move to Mustur |
+| [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097) | work-unit | W48's review fixes on LinkCtrl PR 14 |
 | [LNK-Q-0001](questions.md#lnk-q-0001) | question | LNK-M-0070 — Does the update checker default on or off? |
 | [LNK-Q-0002](questions.md#lnk-q-0002) | question | An 'All Workspaces' dashboard scope — which phase, and whose milestone? |
 | [LNK-Q-0003](questions.md#lnk-q-0003) | question | W48: phase-details/README.md's fourteen inherited rules and _template.md are in no Mustur record — where do they go? |
 | [LNK-Q-0004](questions.md#lnk-q-0004) | question | Should LinkCtrl get an 'All Workspaces' view on the dashboard and links pages, and if so, when? |
 | [LNK-Q-0005](questions.md#lnk-q-0005) | question | LinkCtrl's phase summaries were deleted by W48 and never imported. Where do they live? |
+| [LNK-Q-0006](questions.md#lnk-q-0006) | question | PR 14's three review-fix commits were pushed without subject lines — rewrite them with a force push, or leave them? |
 | [LNK-D-0001](decisions.md#lnk-d-0001) | decision | Mailer |
 | [LNK-D-0002](decisions.md#lnk-d-0002) | decision | Cookie / returning-visitor conditions |
 | [LNK-D-0003](decisions.md#lnk-d-0003) | decision | Custom-domain TLS |
@@ -1202,6 +1210,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-D-0950](decisions.md#lnk-d-0950) | decision | W48 approved: this repository's records move to Mustur, and the rules that filed into them file into Mustur |
 | [LNK-D-0951](decisions.md#lnk-d-0951) | decision | An All Workspaces view is a candidate for the next phase, beside moving links between workspaces |
 | [LNK-D-0952](decisions.md#lnk-d-0952) | decision | W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md |
+| [LNK-D-0953](decisions.md#lnk-d-0953) | decision | PR 14's three subject-less review-fix commits stay as pushed; no history rewrite |
 | [LNK-F-0001](findings.md#lnk-f-0001) | finding | Release-notes extraction sweeps up the changelog's link-reference block |
 | [LNK-F-0002](findings.md#lnk-f-0002) | finding | A stalled Redis stretches a link edit to about nine seconds |
 | [LNK-F-0003](findings.md#lnk-f-0003) | finding | Dark mode has no effect on the UI: the light tokens are unlayered and beat every dark rule |
@@ -1583,6 +1592,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-F-0380](findings.md#lnk-f-0380) | finding | A 3.6 MB compiled binary was committed |
 | [LNK-F-0381](findings.md#lnk-f-0381) | finding | `TestInvalidationReachesAnotherReplica` fails again, from a different cause than F11's |
 | [LNK-F-0382](findings.md#lnk-f-0382) | finding | Tests asserting a timing bound fail under load, and nothing in the suite protects them from it |
+| [LNK-F-0383](findings.md#lnk-f-0383) | finding | Code comments still name the milestone and record files W48 deleted |
 | [LNK-I-0001](investigations/LNK-I-0001.md#lnk-i-0001) | investigation | Analytics partitioning and how sqlc sees it |
 | [MUS-M-0001](milestones.md#mus-m-0001) | milestone | The delivery bet is tested |
 | [MUS-M-0002](milestones.md#mus-m-0002) | milestone | Records and routing, behind one call |
@@ -1915,6 +1925,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0170](decisions.md#mus-d-0170) | decision | LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur |
 | [MUS-D-0171](decisions.md#mus-d-0171) | decision | Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side |
 | [MUS-D-0172](decisions.md#mus-d-0172) | decision | W48 is approved as restated, and made under LinkCtrl's own workflow loop |
+| [MUS-D-0173](decisions.md#mus-d-0173) | decision | Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

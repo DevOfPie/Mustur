@@ -3836,3 +3836,22 @@ milestone: MUS-M-0009
 project: MUS-P-0004
 
 MUS-Q-0117 asked whether the owner approves W48, LinkCtrl's change that moves its records to Mustur, now that the import has its verdict (MUS-D-0164). The owner approved it as restated: the records leave, every LinkCtrl rule that filed into decisions.md, deferred-findings.md, phase-details or upcoming-decisions.md files into Mustur instead, every link from a staying file into a leaving one is rewritten, test/docs/decisions_index_test.go goes, and check-links.sh and doc-cost.sh stop naming the leaving paths. The change is made by LinkCtrl's own workflow loop in a Mustur-started LinkCtrl session, on a task branch, as a pull request the owner merges. LinkCtrl's records were imported into the live store immediately before it. The approval's decision entry for LinkCtrl is written under LNK rather than in decisions.md, because decisions.md is the file leaving.
+
+### MUS-D-0173
+
+**Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases**
+
+decision · 2026-09-14
+
+answers: LNK-Q-0005
+
+milestone: MUS-M-0009
+
+finding: MUS-F-0013
+
+LNK-Q-0005 asked where LinkCtrl's phase summaries live, since W48 deleted the prose of phase-details/phase-1.md to phase-4.md and the import read only their tables. The owner chose to import them, and asked that Mustur add a record kind for phases, holding a phase's details and linking to the milestones it encompasses. So phase becomes a kind, with the role letter S: P already means project, and S stands for stage, the way H stands for host because M was taken. A phase record holds its phase's prose and every table Mustur does not already hold elsewhere; the milestone status tables and the D1 to D193 decision tables stay on the milestone and decision records they were imported into. It cites each milestone it encompasses, and each milestone cites its phase. This is the first kind added for another project's shape rather than Mustur's own, and it answers MUS-F-0013's observation that nobody had asked for a fifth role: the owner has.
+
+| Field | Value |
+| --- | --- |
+| Role letter | S |
+| Applies to | LinkCtrl's phase-details/phase-1.md to phase-4.md; any project with phases |

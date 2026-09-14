@@ -194,6 +194,8 @@ LinkCtrl cites `M17` 1 time(s) and its tree holds no phase-details file and no p
 
 milestone · 2026-09-13
 
+phase: [LNK-S-0001](phases.md#lnk-s-0001)
+
 **Done.** `APP_BASE_URL` and `LINK_BASE_URL` both default to `BASE_URL`, so an existing single-host deployment is unaffected; set to different hosts, the router dispatches on `Host` and each tree answers only its own paths. A wrong-host request is `404`, never a cross-host redirect. `short_url` is built from the link origin, the CSRF trusted origin follows the dashboard host, and `/healthz` and `/readyz` answer on every hostname including ones never configured, because probes do not know the operator's names. Reserved aliases stay enforced on both hosts.
 
 | Field | Value |
@@ -211,6 +213,8 @@ milestone · 2026-09-13
 **post-release defect fixes, and a demo seeder**
 
 milestone · 2026-09-13
+
+phase: [LNK-S-0001](phases.md#lnk-s-0001)
 
 cites: [LNK-D-0010](decisions.md#lnk-d-0010)
 
@@ -243,6 +247,8 @@ The three defects, each with what "fixed" means:
 **root redirect on the link domain**
 
 milestone · 2026-09-13
+
+phase: [LNK-S-0001](phases.md#lnk-s-0001)
 
 cites: [LNK-M-0013](#lnk-m-0013)
 
@@ -288,6 +294,8 @@ row below holds:
 milestone · 2026-09-13
 
 work-unit: [LNK-W-0016](work-units/LNK-W-0016.md#lnk-w-0016)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0015](#lnk-m-0015)
 
@@ -343,6 +351,8 @@ milestone · 2026-09-13
 
 work-unit: [LNK-W-0017](work-units/LNK-W-0017.md#lnk-w-0017)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0016](#lnk-m-0016)
 
 cites: [LNK-D-0005](decisions.md#lnk-d-0005)
@@ -396,6 +406,8 @@ milestone · 2026-08-01
 
 work-unit: [LNK-W-0018](work-units/LNK-W-0018.md#lnk-w-0018)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-D-0020](decisions.md#lnk-d-0020)
 
 cites: [LNK-M-0045](#lnk-m-0045)
@@ -437,6 +449,8 @@ milestone · 2026-09-13
 
 work-unit: [LNK-W-0019](work-units/LNK-W-0019.md#lnk-w-0019)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 - Login and API limiters gain a Redis-shared backend that falls back to the
   existing per-instance buckets on any Redis error, preserving fail-open and the
   `linkctrl_rate_limit_overflow_total` counter.
@@ -468,6 +482,8 @@ work-unit: [LNK-W-0019](work-units/LNK-W-0019.md#lnk-w-0019)
 milestone · 2026-07-31
 
 work-unit: [LNK-W-0020](work-units/LNK-W-0020.md#lnk-w-0020)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0043](#lnk-m-0043)
 
@@ -555,6 +571,8 @@ milestone · 2026-07-31
 
 work-unit: [LNK-W-0022](work-units/LNK-W-0022.md#lnk-w-0022)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-D-0022](decisions.md#lnk-d-0022)
 
 cites: [LNK-M-0026](#lnk-m-0026)
@@ -594,6 +612,8 @@ cites: [LNK-M-0027](#lnk-m-0027)
 milestone · 2026-09-13
 
 work-unit: [LNK-W-0023](work-units/LNK-W-0023.md#lnk-w-0023)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-D-0023](decisions.md#lnk-d-0023)
 
@@ -636,6 +656,8 @@ cites: [LNK-D-0001](decisions.md#lnk-d-0001)
 milestone · 2026-07-31
 
 work-unit: [LNK-W-0024](work-units/LNK-W-0024.md#lnk-w-0024)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-F-0006](findings.md#lnk-f-0006)
 
@@ -732,6 +754,8 @@ milestone · 2026-07-31
 
 work-unit: [LNK-W-0025](work-units/LNK-W-0025.md#lnk-w-0025)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0034](#lnk-m-0034)
 
 cites: [LNK-M-0039](#lnk-m-0039)
@@ -789,6 +813,8 @@ cites: [LNK-F-0002](findings.md#lnk-f-0002)
 milestone · 2026-08-01
 
 work-unit: [LNK-W-0026](work-units/LNK-W-0026.md#lnk-w-0026)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0023](#lnk-m-0023)
 
@@ -857,6 +883,8 @@ cites: [LNK-M-0022](#lnk-m-0022)
 milestone · 2026-08-01
 
 work-unit: [LNK-W-0027](work-units/LNK-W-0027.md#lnk-w-0027)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-D-0030](decisions.md#lnk-d-0030)
 
@@ -957,6 +985,8 @@ cites: [LNK-M-0026](#lnk-m-0026)
 milestone · 2026-08-01
 
 work-unit: [LNK-W-0028](work-units/LNK-W-0028.md#lnk-w-0028)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0027](#lnk-m-0027)
 
@@ -1086,6 +1116,8 @@ milestone · 2026-08-01
 
 work-unit: [LNK-W-0029](work-units/LNK-W-0029.md#lnk-w-0029)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-D-0038](decisions.md#lnk-d-0038)
 
 cites: [LNK-D-0001](decisions.md#lnk-d-0001)
@@ -1147,6 +1179,8 @@ See decisions.md, D38.)*
 milestone · 2026-08-01
 
 work-unit: [LNK-W-0030](work-units/LNK-W-0030.md#lnk-w-0030)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-D-0013](decisions.md#lnk-d-0013)
 
@@ -1253,6 +1287,8 @@ milestone · 2026-08-01
 
 work-unit: [LNK-W-0032](work-units/LNK-W-0032.md#lnk-w-0032)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0017](#lnk-m-0017)
 
 cites: [LNK-M-0052](#lnk-m-0052)
@@ -1303,6 +1339,8 @@ cites: [LNK-M-0030](#lnk-m-0030)
 milestone · 2026-08-01
 
 work-unit: [LNK-W-0033](work-units/LNK-W-0033.md#lnk-w-0033)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-D-0040](decisions.md#lnk-d-0040)
 
@@ -1361,6 +1399,8 @@ cites: [LNK-M-0032](#lnk-m-0032)
 milestone · 2026-07-31
 
 work-unit: [LNK-W-0034](work-units/LNK-W-0034.md#lnk-w-0034)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0016](#lnk-m-0016)
 
@@ -1489,6 +1529,8 @@ milestone · 2026-09-13
 
 work-unit: [LNK-W-0036](work-units/LNK-W-0036.md#lnk-w-0036)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0016](#lnk-m-0016)
 
 cites: [LNK-M-0034](#lnk-m-0034)
@@ -1538,6 +1580,8 @@ milestone · 2026-09-13
 
 work-unit: [LNK-W-0037](work-units/LNK-W-0037.md#lnk-w-0037)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0039](#lnk-m-0039)
 
 - An additive `links.forward_path` column, default off, exposed in API and UI,
@@ -1575,6 +1619,8 @@ cites: [LNK-M-0039](#lnk-m-0039)
 milestone · 2026-08-01
 
 work-unit: [LNK-W-0038](work-units/LNK-W-0038.md#lnk-w-0038)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0027](#lnk-m-0027)
 
@@ -1690,6 +1736,8 @@ milestone · 2026-09-13
 
 work-unit: [LNK-W-0039](work-units/LNK-W-0039.md#lnk-w-0039)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-D-0002](decisions.md#lnk-d-0002)
 
 cites: [LNK-M-0030](#lnk-m-0030)
@@ -1760,6 +1808,8 @@ milestone · 2026-08-04
 
 work-unit: [LNK-W-0040](work-units/LNK-W-0040.md#lnk-w-0040)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0041](#lnk-m-0041)
 
 cites: [LNK-M-0039](#lnk-m-0039)
@@ -1804,6 +1854,8 @@ cites: [LNK-M-0039](#lnk-m-0039)
 milestone · 2026-09-13
 
 work-unit: [LNK-W-0041](work-units/LNK-W-0041.md#lnk-w-0041)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-D-0008](decisions.md#lnk-d-0008)
 
@@ -1854,6 +1906,8 @@ cites: [LNK-M-0039](#lnk-m-0039)
 milestone · 2026-08-10
 
 work-unit: [LNK-W-0042](work-units/LNK-W-0042.md#lnk-w-0042)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0075](#lnk-m-0075)
 
@@ -1926,6 +1980,8 @@ milestone · 2026-08-05
 
 work-unit: [LNK-W-0043](work-units/LNK-W-0043.md#lnk-w-0043)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 - Folder CRUD and a move operation exist.
 - **A folder can never become its own descendant** — cycle test. *(True of one move and false of two, until the reopening below.)*
 - Sibling-name uniqueness and a depth cap are enforced in the service, with the
@@ -1958,6 +2014,8 @@ work-unit: [LNK-W-0043](work-units/LNK-W-0043.md#lnk-w-0043)
 milestone · 2026-09-13
 
 work-unit: [LNK-W-0044](work-units/LNK-W-0044.md#lnk-w-0044)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0015](#lnk-m-0015)
 
@@ -1997,6 +2055,8 @@ cites: [LNK-M-0016](#lnk-m-0016)
 milestone · 2026-08-04
 
 work-unit: [LNK-W-0045](work-units/LNK-W-0045.md#lnk-w-0045)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-D-0003](decisions.md#lnk-d-0003)
 
@@ -2054,6 +2114,8 @@ milestone · 2026-09-13
 
 work-unit: [LNK-W-0046](work-units/LNK-W-0046.md#lnk-w-0046)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-D-0011](decisions.md#lnk-d-0011)
 
 cites: [LNK-M-0042](#lnk-m-0042)
@@ -2106,6 +2168,8 @@ milestone · 2026-08-04
 
 work-unit: [LNK-W-0047](work-units/LNK-W-0047.md#lnk-w-0047)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0030](#lnk-m-0030)
 
 - Webhook CRUD, with subscription events from a documented, deliberately small
@@ -2149,6 +2213,8 @@ cites: [LNK-M-0030](#lnk-m-0030)
 milestone · 2026-08-04
 
 work-unit: [LNK-W-0048](work-units/LNK-W-0048.md#lnk-w-0048)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-M-0040](#lnk-m-0040)
 
@@ -2198,6 +2264,8 @@ cites: [LNK-D-0010](decisions.md#lnk-d-0010)
 milestone · 2026-09-13
 
 work-unit: [LNK-W-0049](work-units/LNK-W-0049.md#lnk-w-0049)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-D-0009](decisions.md#lnk-d-0009)
 
@@ -2263,6 +2331,8 @@ milestone · 2026-09-13
 
 work-unit: [LNK-W-0051](work-units/LNK-W-0051.md#lnk-w-0051)
 
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
+
 cites: [LNK-M-0016](#lnk-m-0016)
 
 cites: [LNK-M-0049](#lnk-m-0049)
@@ -2315,6 +2385,8 @@ cites: [LNK-M-0074](#lnk-m-0074)
 milestone · 2026-07-31
 
 work-unit: [LNK-W-0052](work-units/LNK-W-0052.md#lnk-w-0052)
+
+phase: [LNK-S-0002](phases.md#lnk-s-0002)
 
 cites: [LNK-F-0001](findings.md#lnk-f-0001)
 
@@ -2438,6 +2510,8 @@ The full workflow.md pass, on every file and not only the ones this phase touche
 milestone · 2026-08-02
 
 work-unit: [LNK-W-0053](work-units/LNK-W-0053.md#lnk-w-0053)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-M-0022](#lnk-m-0022)
 
@@ -2590,6 +2664,8 @@ milestone · 2026-08-11
 
 work-unit: [LNK-W-0054](work-units/LNK-W-0054.md#lnk-w-0054)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-F-0206](findings.md#lnk-f-0206)
 
 cites: [LNK-M-0056](#lnk-m-0056)
@@ -2696,6 +2772,8 @@ recorded so the next reader does not rediscover it:
 milestone · 2026-08-11
 
 work-unit: [LNK-W-0055](work-units/LNK-W-0055.md#lnk-w-0055)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-M-0053](#lnk-m-0053)
 
@@ -2817,6 +2895,8 @@ milestone · 2026-08-06
 
 work-unit: [LNK-W-0056](work-units/LNK-W-0056.md#lnk-w-0056)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-M-0020](#lnk-m-0020)
 
 cites: [LNK-M-0058](#lnk-m-0058)
@@ -2922,6 +3002,8 @@ milestone · 2026-08-11
 
 work-unit: [LNK-W-0057](work-units/LNK-W-0057.md#lnk-w-0057)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-F-0211](findings.md#lnk-f-0211)
 
 cites: [LNK-M-0054](#lnk-m-0054)
@@ -3023,6 +3105,8 @@ the answer and the way in — you read `Routing 2` and click `Routing 2`.
 milestone · 2026-08-06
 
 work-unit: [LNK-W-0058](work-units/LNK-W-0058.md#lnk-w-0058)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-D-0103](decisions.md#lnk-d-0103)
 
@@ -3157,6 +3241,8 @@ work rather than guessed here, and the answer is written down either way.
 milestone · 2026-08-07
 
 work-unit: [LNK-W-0059](work-units/LNK-W-0059.md#lnk-w-0059)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-D-0182](decisions.md#lnk-d-0182)
 
@@ -3348,6 +3434,8 @@ milestone · 2026-08-12
 
 work-unit: [LNK-W-0060](work-units/LNK-W-0060.md#lnk-w-0060)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-D-0073](decisions.md#lnk-d-0073)
 
 cites: [LNK-M-0042](#lnk-m-0042)
@@ -3471,6 +3559,8 @@ labels and click history against both, because a feature whose whole value is
 milestone · 2026-08-06
 
 work-unit: [LNK-W-0061](work-units/LNK-W-0061.md#lnk-w-0061)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-D-0075](decisions.md#lnk-d-0075)
 
@@ -3631,6 +3721,8 @@ that the upload path ran.
 milestone · 2026-08-07
 
 work-unit: [LNK-W-0062](work-units/LNK-W-0062.md#lnk-w-0062)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-D-0141](decisions.md#lnk-d-0141)
 
@@ -3894,6 +3986,8 @@ is one thing to look at and one row pointing at it.)*
 milestone · 2026-08-12
 
 work-unit: [LNK-W-0063](work-units/LNK-W-0063.md#lnk-w-0063)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-D-0024](decisions.md#lnk-d-0024)
 
@@ -4246,6 +4340,8 @@ milestone · 2026-08-14
 
 work-unit: [LNK-W-0064](work-units/LNK-W-0064.md#lnk-w-0064)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-M-0063](#lnk-m-0063)
 
 cites: [LNK-D-0193](decisions.md#lnk-d-0193)
@@ -4547,6 +4643,8 @@ milestone · 2026-08-07
 
 work-unit: [LNK-W-0065](work-units/LNK-W-0065.md#lnk-w-0065)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-M-0060](#lnk-m-0060)
 
 cites: [LNK-M-0061](#lnk-m-0061)
@@ -4698,6 +4796,8 @@ milestone · 2026-08-07
 
 work-unit: [LNK-W-0066](work-units/LNK-W-0066.md#lnk-w-0066)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-M-0053](#lnk-m-0053)
 
 cites: [LNK-M-0065](#lnk-m-0065)
@@ -4770,6 +4870,8 @@ cites: [LNK-M-0059](#lnk-m-0059)
 milestone · 2026-08-07
 
 work-unit: [LNK-W-0067](work-units/LNK-W-0067.md#lnk-w-0067)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-D-0038](decisions.md#lnk-d-0038)
 
@@ -5010,6 +5112,8 @@ milestone · 2026-08-07
 
 work-unit: [LNK-W-0068](work-units/LNK-W-0068.md#lnk-w-0068)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-D-0072](decisions.md#lnk-d-0072)
 
 cites: [LNK-M-0070](#lnk-m-0070)
@@ -5154,6 +5258,8 @@ account page shows the enrolled state rather than an empty offer.
 milestone · 2026-08-05
 
 work-unit: [LNK-W-0069](work-units/LNK-W-0069.md#lnk-w-0069)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-F-0103](findings.md#lnk-f-0103)
 
@@ -5311,6 +5417,8 @@ milestone · 2026-08-06
 
 work-unit: [LNK-W-0070](work-units/LNK-W-0070.md#lnk-w-0070)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-M-0052](#lnk-m-0052)
 
 cites: [LNK-D-0098](decisions.md#lnk-d-0098)
@@ -5426,6 +5534,8 @@ tree facts.)*
 milestone · 2026-08-06
 
 work-unit: [LNK-W-0071](work-units/LNK-W-0071.md#lnk-w-0071)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-D-0077](decisions.md#lnk-d-0077)
 
@@ -5613,6 +5723,8 @@ milestone · 2026-08-06
 
 work-unit: [LNK-W-0072](work-units/LNK-W-0072.md#lnk-w-0072)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-M-0060](#lnk-m-0060)
 
 cites: [LNK-M-0074](#lnk-m-0074)
@@ -5738,6 +5850,8 @@ and it is 8.)*
 milestone · 2026-08-11
 
 work-unit: [LNK-W-0073](work-units/LNK-W-0073.md#lnk-w-0073)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-F-0197](findings.md#lnk-f-0197)
 
@@ -5905,6 +6019,8 @@ milestone · 2026-08-11
 
 work-unit: [LNK-W-0074](work-units/LNK-W-0074.md#lnk-w-0074)
 
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
+
 cites: [LNK-M-0053](#lnk-m-0053)
 
 cites: [LNK-M-0072](#lnk-m-0072)
@@ -5966,6 +6082,8 @@ cites: [LNK-M-0075](#lnk-m-0075)
 milestone · 2026-08-07
 
 work-unit: [LNK-W-0075](work-units/LNK-W-0075.md#lnk-w-0075)
+
+phase: [LNK-S-0003](phases.md#lnk-s-0003)
 
 cites: [LNK-F-0185](findings.md#lnk-f-0185)
 
@@ -6171,6 +6289,8 @@ milestone · 2026-08-18
 
 work-unit: [LNK-W-0078](work-units/LNK-W-0078.md#lnk-w-0078)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-F-0255](findings.md#lnk-f-0255)
 
 cites: [LNK-D-0218](decisions.md#lnk-d-0218)
@@ -6309,6 +6429,8 @@ cites: [LNK-F-0251](findings.md#lnk-f-0251)
 milestone · 2026-08-18
 
 work-unit: [LNK-W-0079](work-units/LNK-W-0079.md#lnk-w-0079)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-D-0218](decisions.md#lnk-d-0218)
 
@@ -6561,6 +6683,8 @@ milestone · 2026-08-18
 
 work-unit: [LNK-W-0080](work-units/LNK-W-0080.md#lnk-w-0080)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-M-0079](#lnk-m-0079)
 
 cites: [LNK-M-0089](#lnk-m-0089)
@@ -6655,6 +6779,8 @@ cites: [LNK-M-0092](#lnk-m-0092)
 milestone · 2026-08-19
 
 work-unit: [LNK-W-0081](work-units/LNK-W-0081.md#lnk-w-0081)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-M-0082](#lnk-m-0082)
 
@@ -6999,6 +7125,8 @@ milestone · 2026-08-20
 
 work-unit: [LNK-W-0082](work-units/LNK-W-0082.md#lnk-w-0082)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-M-0080](#lnk-m-0080)
 
 cites: [LNK-F-0258](findings.md#lnk-f-0258)
@@ -7162,6 +7290,8 @@ milestone · 2026-08-30
 
 work-unit: [LNK-W-0083](work-units/LNK-W-0083.md#lnk-w-0083)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-M-0020](#lnk-m-0020)
 
 cites: [LNK-M-0080](#lnk-m-0080)
@@ -7257,6 +7387,8 @@ milestone · 2026-08-11
 
 work-unit: [LNK-W-0084](work-units/LNK-W-0084.md#lnk-w-0084)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-M-0036](#lnk-m-0036)
 
 cites: [LNK-M-0082](#lnk-m-0082)
@@ -7319,6 +7451,8 @@ cites: [LNK-M-0078](#lnk-m-0078)
 milestone · 2026-08-21
 
 work-unit: [LNK-W-0085](work-units/LNK-W-0085.md#lnk-w-0085)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-D-0300](decisions.md#lnk-d-0300)
 
@@ -7397,6 +7531,8 @@ cites: [LNK-M-0083](#lnk-m-0083)
 milestone · 2026-08-23
 
 work-unit: [LNK-W-0086](work-units/LNK-W-0086.md#lnk-w-0086)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-M-0081](#lnk-m-0081)
 
@@ -7487,6 +7623,8 @@ cites: [LNK-M-0079](#lnk-m-0079)
 milestone · 2026-08-23
 
 work-unit: [LNK-W-0087](work-units/LNK-W-0087.md#lnk-w-0087)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-M-0086](#lnk-m-0086)
 
@@ -7614,6 +7752,8 @@ milestone · 2026-08-18
 
 work-unit: [LNK-W-0088](work-units/LNK-W-0088.md#lnk-w-0088)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-D-0098](decisions.md#lnk-d-0098)
 
 cites: [LNK-D-0018](decisions.md#lnk-d-0018)
@@ -7729,6 +7869,8 @@ milestone · 2026-08-18
 
 work-unit: [LNK-W-0089](work-units/LNK-W-0089.md#lnk-w-0089)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-D-0177](decisions.md#lnk-d-0177)
 
 cites: [LNK-M-0081](#lnk-m-0081)
@@ -7838,6 +7980,8 @@ cites: [LNK-D-0401](decisions.md#lnk-d-0401)
 milestone · 2026-08-25
 
 work-unit: [LNK-W-0090](work-units/LNK-W-0090.md#lnk-w-0090)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-M-0089](#lnk-m-0089)
 
@@ -7995,6 +8139,8 @@ milestone · 2026-08-25
 
 work-unit: [LNK-W-0091](work-units/LNK-W-0091.md#lnk-w-0091)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-M-0088](#lnk-m-0088)
 
 cites: [LNK-M-0090](#lnk-m-0090)
@@ -8089,6 +8235,8 @@ cites: [LNK-M-0089](#lnk-m-0089)
 milestone · 2026-08-18
 
 work-unit: [LNK-W-0092](work-units/LNK-W-0092.md#lnk-w-0092)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-M-0083](#lnk-m-0083)
 
@@ -8204,6 +8352,8 @@ cites: [LNK-M-0088](#lnk-m-0088)
 milestone · 2026-08-27
 
 work-unit: [LNK-W-0093](work-units/LNK-W-0093.md#lnk-w-0093)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-M-0083](#lnk-m-0083)
 
@@ -8347,6 +8497,8 @@ milestone · 2026-08-30
 
 work-unit: [LNK-W-0094](work-units/LNK-W-0094.md#lnk-w-0094)
 
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
+
 cites: [LNK-M-0036](#lnk-m-0036)
 
 cites: [LNK-M-0085](#lnk-m-0085)
@@ -8416,6 +8568,8 @@ cites: [LNK-M-0095](#lnk-m-0095)
 milestone · 2026-08-25
 
 work-unit: [LNK-W-0095](work-units/LNK-W-0095.md#lnk-w-0095)
+
+phase: [LNK-S-0004](phases.md#lnk-s-0004)
 
 cites: [LNK-M-0080](#lnk-m-0080)
 

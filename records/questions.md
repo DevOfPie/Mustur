@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-148 record(s), by identifier.
+149 record(s), by identifier.
 
 ---
 
@@ -542,7 +542,7 @@ whippy-vm has 124 GB. A full workspace debug build with every test binary is 30 
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Nothing right now; every full build risks taking the demo and test servers down with it (the test instance answered db_error at 100 percent on 2026-09-13 23:34) |
 | Option | Grow the disk :: Recommended: 250 GB or more for the root volume, which is a host-side change only you can make :: Removes the outage risk and the cold rebuilds. Everything else stays as it is. |
 | Option | Clean between runs :: I delete target/debug after every full verification and keep worktrees to one at a time :: No host change; every verification after the first in a session costs a fifteen-minute cold build, and a parallel review or agent can still push the disk over. |
@@ -550,6 +550,10 @@ whippy-vm has 124 GB. A full workspace debug build with every test binary is 30 
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | Hoard_Work |
+| Answer | Grow the disk |
+| Answered | 2026-09-14 01:16 |
+| Note | Disk has been grow to 256GB, I'm not sure if the change is immediately present for you or requires a restart |
+| Delivered | typed into mustur/Hoard_Work |
 
 ---
 
@@ -726,7 +730,7 @@ Found by the independent review of PR 14. The importer read only the tables in p
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | Merging LinkCtrl PR 14: as it stands the move loses them |
 | Needed to proceed | yes |
 | Option | Keep them in the tree :: Recommended: the prose of the four phase files moves verbatim into one staying file, docs/build-notes/phases.md, minus the tables Mustur now holds; the two conventions go into milestone-rules.md :: MUS-Q-0093's rule applied as LNK-Q-0003 applied it: no kind holds them, so they stay. Nothing is lost, every pointer has a target, and the tables are not held twice. Costs a second new file in a change meant to shrink the tree, about 20 KB. |
@@ -736,6 +740,36 @@ Found by the independent review of PR 14. The importer read only the tables in p
 | Session | mustur/LinkCtrl_Target |
 | Session project | LinkCtrl_Target |
 | Surfaced | 2026-09-14 00:14 |
+| Answer | Import them into Mustur |
+| Answered | 2026-09-14 01:18 |
+| Note | Have Muster add a new record type for phases, which hold the details and links to the Milestone units they encompass |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## LNK-Q-0006
+
+**PR 14's three review-fix commits were pushed without subject lines — rewrite them with a force push, or leave them?**
+
+question · 2026-09-14
+
+work-unit: [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097)
+
+Commits 0b9b14c, 10e750e and 7f17800 on task/records-move-to-mustur went up with their first line lost: a shell heredoc chain ran each subject line as a command, so each commit's subject is its body's first paragraph. The bodies and trailers are intact. Rebuilt commits with the same trees and the subjects restored exist locally (git commit-tree, same content byte for byte); pushing them needs a force-with-lease push to the PR branch, which the auto-mode classifier refused without the owner's word.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing in LNK-W-0097; only how the three commits read in history |
+| Option | Leave them :: Recommended: no rewrite; the what-changed comment on PR 14 names each commit's findings :: Nothing pushed is rewritten and no one's checkout is invalidated. Costs three commits whose subject is a long paragraph in git log --oneline, permanently if PR 14 merges with a merge commit rather than a squash. Default if you say you decide. |
+| Option | Rewrite and force-push :: same trees, subjects restored, git push --force-with-lease pinned to 7f17800 :: History reads correctly. Costs a force push to a public PR branch; the hashes in the PR comment go stale and are corrected in a follow-up comment. Needs your explicit go-ahead, which the classifier requires. |
+| Asked by | whippy |
+| Session | LinkCtrl_W48_fixes |
+| Session project | LinkCtrl_W48_fixes |
+| Surfaced | 2026-09-14 00:41 |
+| Answer | Leave them |
+| Answered | 2026-09-14 01:18 |
+| Delivered | typed into mustur/LinkCtrl_W48_fixes |
 
 ---
 
@@ -3582,7 +3616,7 @@ question · 2026-09-13
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0147 |
 | Option | The CLI's own links :: Recommended: turn OSC 8 hyperlinks into links that open a new tab, http and https only, address escaped :: The CLI already emits OSC 8 (MUS-F-0054) and the renderer strips it (internal/ansi/ansi.go:156, locked in by ansi_test.go:59). This is one scoped exception to MUS-D-0132. Repaints would also be held while a pointer is down, because today a frame arriving between press and release swaps the element out and the click is lost. |
 | Option | Those plus bare addresses :: also link any http or https address printed as plain text :: Covers tools that print a URL without OSC 8. It guesses at more text, and an address cut by a wrapped or truncated line links somewhere wrong. |
@@ -3590,6 +3624,10 @@ question · 2026-09-13
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-13 23:37 |
+| Answer | The CLI's own links |
+| Answered | 2026-09-14 01:19 |
+| Note | Subject to change later If i find a need for bare addresses |
+| Delivered | typed into mustur/Intake |
 
 ---
 
@@ -3601,7 +3639,7 @@ question · 2026-09-13
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0151 |
 | Option | A small renderer of our own :: Recommended: paragraphs, bold, italics, code and tables; everything escaped first, a fixed set of tags out, tables scrolling in their own box :: No new dependency. Bodies are now imported from other projects' files and HTML pages carry no CSP, so escaping is the only barrier, and a renderer passing raw HTML through would be a hole. Used on the records page too, so a body reads the same in both. Option text still cannot carry markdown: the export flattens it into a table cell (internal/export/export.go:265). |
 | Option | goldmark :: full CommonMark from a third-party library :: The first markdown dependency, measured against the bar in decisions.md for adding one (pure Go, no transitive dependencies), with raw HTML switched off. |
@@ -3609,6 +3647,10 @@ question · 2026-09-13
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-13 23:37 |
+| Answer | goldmark |
+| Answered | 2026-09-14 01:21 |
+| Note | Verify this is the best dependency to use and that no other similar ones exist |
+| Delivered | typed into mustur/Intake |
 
 ---
 
@@ -3620,7 +3662,7 @@ question · 2026-09-13
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0152 |
 | Option | Text, its own draft :: Recommended: about 30 lines copied from the composer; the draft is kept per browser under its own key and cleared on filing or by a Clear button :: The seventh page with a script by MUS-Q-0053's count, which that answer makes a new decision, and intake was declined a script once on MUS-Q-0062. Pictures are not kept. |
 | Option | Text, shared with the composer :: the same, but intake, the composer and the session box hold one draft between them :: Filing a jot would clear a message being drafted for a session, and sending that message would clear the jot. |
@@ -3629,6 +3671,9 @@ question · 2026-09-13
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-13 23:37 |
+| Answer | Text, its own draft |
+| Answered | 2026-09-14 01:21 |
+| Delivered | typed into mustur/Intake |
 
 ---
 
@@ -3640,7 +3685,7 @@ question · 2026-09-13
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0148 |
 | Option | Milestone, plans first :: Recommended: a scope row and a milestone whose first half is MUS-F-0144 (a plan handed to Mustur, read beside its questions) and second half is drawing :: Nothing in Plan.md covers plans or wireframes, so this is a scope-table change and yours. The document shape first gives plan questions something to link to, and answered state shown on both needs a two-way link that does not exist today: refs point one way and nothing writes a decision from an answer. Constraints: never embed a backend in a frame (Plan.md:98); a plan in another project's checkout is that project's file. |
 | Option | Milestone, drawing first :: build the wireframe surface, fold plan documents in after :: The part you filed as the push. The larger build, and its questions have nowhere to link until plans exist. |
@@ -3649,6 +3694,9 @@ question · 2026-09-13
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-13 23:37 |
+| Answer | Milestone, plans first |
+| Answered | 2026-09-14 01:22 |
+| Delivered | typed into mustur/Intake |
 
 ---
 
@@ -3660,13 +3708,16 @@ question · 2026-09-13
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | committing this intake triage |
 | Option | After the import stack :: Recommended: the triage lives in the store and on the served pages now; the export commit follows once stack/m9-3-the-importer merges :: records/ is rendered whole from the store (MUS-F-0066), so any export commit now carries about 100k lines the import session commits on its own branch. mustur verify passes on the tree as it stands. |
 | Option | Now :: one export commit on an intake branch carrying everything in the store :: The import stack then rebases onto records it did not write, and this pull request carries LinkCtrl's records as noise. |
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-13 23:37 |
+| Answer | After the import stack |
+| Answered | 2026-09-14 01:22 |
+| Delivered | typed into mustur/Intake |
 
 ---
 
@@ -3678,7 +3729,7 @@ question · 2026-09-13
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | MUS-F-0143 |
 | Option | Most recently active :: Recommended: sort sessions by the existing activity order, so the top is where you just were, and the picker reorders to match :: session.ByActivity (internal/session/session.go:582) is already the composer's order under MUS-D-0013. Using it in the Sessions list changes which session is first and the order of the picker MUS-D-0150 designed. The redirect and the picker's dead first choice are fixed whichever you pick. |
 | Option | Whatever tmux lists first :: keep today's order; fix only the redirect and the picker :: The order is whatever tmux list-sessions returns, which nothing in the code defines. |
@@ -3686,3 +3737,6 @@ question · 2026-09-13
 | Asked by | whippy |
 | Session project | Intake |
 | Surfaced | 2026-09-13 23:38 |
+| Answer | Most recently active |
+| Answered | 2026-09-14 01:22 |
+| Delivered | typed into mustur/Intake |
