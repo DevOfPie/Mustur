@@ -40,6 +40,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/account"
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/intake"
+	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -59,6 +60,32 @@ func projectName(ctx context.Context, s *store.Store, prefix string) string {
 	}
 	projects, err := s.List(ctx, "project")
 	if err != nil {
+		return prefix
+	}
+	return projectNames(projects).name(prefix)
+}
+
+// projectNames is one listing of project records that names as many prefixes
+// as a page needs. The decision queue names a project on every card
+// (MUS-F-0150), and projectName listing the projects once per card would turn
+// one page into a query per question.
+type projectNames []record.Record
+
+// projectNamesIn keeps the project records out of a listing of everything, for
+// a caller that has already listed the store and should not do it twice.
+func projectNamesIn(records []record.Record) projectNames {
+	var out projectNames
+	for _, r := range records {
+		if r.Kind == "project" {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// name is projectName's rule applied to a listing already in hand.
+func (projects projectNames) name(prefix string) string {
+	if prefix == "" {
 		return prefix
 	}
 	// A routing record that names its own prefix wins: that is the mapping
