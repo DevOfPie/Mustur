@@ -199,6 +199,8 @@ milestone · 2026-09-13
 | Field | Value |
 | --- | --- |
 | Status | **Done.** `APP_BASE_URL` and `LINK_BASE_URL` both default to `BASE_URL`, so an existing single-host deployment is unaffected; set to different hosts, the router dispatches on `Host` and each tree answers only its own paths. A wrong-host request is `404`, never a cross-host redirect. `short_url` is built from the link origin, the CSRF trusted origin follows the dashboard host, and `/healthz` and `/readyz` answer on every hostname including ones never configured, because probes do not know the operator's names. Reserved aliases stay enforced on both hosts. |
+| Phase | 1 |
+| Phase order | 1 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M18 |
 
@@ -229,6 +231,8 @@ The three defects, each with what "fixed" means:
 | Field | Value |
 | --- | --- |
 | Status | **Done.** Effective status is derived rather than stored, so an expired link reports as expired everywhere and `?status=expired` matches it. `visitors` and `is_first_visit` are documented as dormant instead of described as working, and stay under partition maintenance and retention so the day something writes to them the guarantees already apply. The deletion notice says what recovery is. `lctl demo` / `make demo` fills an instance with a workspace worth looking at. |
+| Phase | 1 |
+| Phase order | 2 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M19 |
 
@@ -270,6 +274,8 @@ row below holds:
 | Field | Value |
 | --- | --- |
 | Status | **Done.** Every requirement below holds, verified live and under test. |
+| Phase | 1 |
+| Phase order | 3 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M20 |
 
@@ -280,6 +286,8 @@ row below holds:
 **Audit log: behavior, retention, growth alerting**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0016](work-units/LNK-W-0016.md#lnk-w-0016)
 
 cites: [LNK-M-0015](#lnk-m-0015)
 
@@ -318,8 +326,10 @@ cites: [LNK-M-0023](#lnk-m-0023)
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | Security scope row *Audit log — behavior*; |
+| Discharges | Security scope row *Audit log — behavior*; Plan.md LNK-M-0015's promise that changing the root redirect becomes an audit event; the `partitions.go` "grows until Phase 2" note. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 1 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M21 |
 
@@ -330,6 +340,8 @@ cites: [LNK-M-0023](#lnk-m-0023)
 **Notifications: in-app behavior**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0017](work-units/LNK-W-0017.md#lnk-w-0017)
 
 cites: [LNK-M-0016](#lnk-m-0016)
 
@@ -367,8 +379,10 @@ cites: [LNK-D-0018](decisions.md#lnk-d-0018)
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | the *notification* leg of the Security |
+| Discharges | the *notification* leg of the Security blocking row (Plan.md states dispute review and outcome notices fit the dormant `notifications` table as it stands). |
 | Status | done |
+| Phase | 2 |
+| Phase order | 2 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M22 |
 
@@ -379,6 +393,8 @@ cites: [LNK-D-0018](decisions.md#lnk-d-0018)
 **Cross-replica cache invalidation (pub/sub)**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0018](work-units/LNK-W-0018.md#lnk-w-0018)
 
 cites: [LNK-D-0020](decisions.md#lnk-d-0020)
 
@@ -405,8 +421,10 @@ cites: [LNK-M-0045](#lnk-m-0045)
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | the known limitation *Cache invalidation |
+| Discharges | the known limitation *Cache invalidation is single-replica* (Plan.md). |
 | Status | done |
+| Phase | 2 |
+| Phase order | 3 |
 | LinkCtrl | M23 |
 
 ---
@@ -416,6 +434,8 @@ cites: [LNK-M-0045](#lnk-m-0045)
 **Shared rate limits (credentials and API)**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0019](work-units/LNK-W-0019.md#lnk-w-0019)
 
 - Login and API limiters gain a Redis-shared backend that falls back to the
   existing per-instance buckets on any Redis error, preserving fail-open and the
@@ -432,8 +452,10 @@ milestone · 2026-09-13
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | Security scope row *Rate limiting: shared |
+| Discharges | Security scope row *Rate limiting: shared across replicas* — **partially, by design**, see below. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 4 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M24 |
 
@@ -445,6 +467,8 @@ milestone · 2026-09-13
 
 milestone · 2026-07-31
 
+work-unit: [LNK-W-0020](work-units/LNK-W-0020.md#lnk-w-0020)
+
 cites: [LNK-M-0043](#lnk-m-0043)
 
 cites: [LNK-D-0021](decisions.md#lnk-d-0021)
@@ -454,6 +478,18 @@ cites: [LNK-M-0023](#lnk-m-0023)
 cites: [LNK-M-0046](#lnk-m-0046)
 
 cites: [LNK-M-0022](#lnk-m-0022)
+
+cites: [LNK-M-0032](#lnk-m-0032)
+
+cites: [LNK-M-0042](#lnk-m-0042)
+
+cites: [LNK-M-0048](#lnk-m-0048)
+
+cites: [LNK-M-0049](#lnk-m-0049)
+
+cites: [LNK-F-0003](findings.md#lnk-f-0003)
+
+cites: [LNK-F-0004](findings.md#lnk-f-0004)
 
 - With no stored preference, every dashboard page follows `prefers-color-scheme`.
   No account, cookie or JavaScript is involved on this path.
@@ -487,9 +523,11 @@ cites: [LNK-M-0022](#lnk-m-0022)
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. The edge to LNK-M-0022 is an *ordering preference*: |
-| Discharges | nothing on the scope tables. Owner-added scope, 2026-07-31, |
+| Depends on | nothing. The edge to LNK-M-0022 is an *ordering preference*: this milestone's template scan becomes the enforcement for every later milestone's UI, so it wants to land before the phase's UI-building run — LNK-M-0022, LNK-M-0032, LNK-M-0042, LNK-M-0043, LNK-M-0046, LNK-M-0048, LNK-M-0049 — rather than restyle all of it afterwards. |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-07-31, after the plan was finalised; the why is in decisions.md. Also deferred-findings.md F3 and F4, added on reopening. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 5 |
 | LinkCtrl | M24.5 |
 
 ---
@@ -515,9 +553,13 @@ LinkCtrl cites `M24.6` 6 time(s) and its tree holds no phase-details file and no
 
 milestone · 2026-07-31
 
+work-unit: [LNK-W-0022](work-units/LNK-W-0022.md#lnk-w-0022)
+
 cites: [LNK-D-0022](decisions.md#lnk-d-0022)
 
 cites: [LNK-M-0026](#lnk-m-0026)
+
+cites: [LNK-M-0027](#lnk-m-0027)
 
 - Identity resolves a deterministic default workspace and organization:
   **last-used** (decision D22). The switcher persists the last selection and that
@@ -537,8 +579,10 @@ cites: [LNK-M-0026](#lnk-m-0026)
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | groundwork for LNK-M-0026 and |
+| Discharges | groundwork for LNK-M-0026 and LNK-M-0027. No scope row of its own. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 6 |
 | LinkCtrl | M25 |
 
 ---
@@ -549,7 +593,11 @@ cites: [LNK-M-0026](#lnk-m-0026)
 
 milestone · 2026-09-13
 
+work-unit: [LNK-W-0023](work-units/LNK-W-0023.md#lnk-w-0023)
+
 cites: [LNK-D-0023](decisions.md#lnk-d-0023)
+
+cites: [LNK-D-0001](decisions.md#lnk-d-0001)
 
 - SMTP delivery is configurable and **off by default**. An instance with no
   mailer configured behaves exactly as it does today, tested.
@@ -572,8 +620,10 @@ cites: [LNK-D-0023](decisions.md#lnk-d-0023)
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | decisions.md's statement that "every one |
+| Discharges | decisions.md's statement that "every one of signup's supporting features — invitations, membership in someone else's workspace, a mailer — is Phase 2" (decision D1). |
 | Status | done |
+| Phase | 2 |
+| Phase order | 7 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M26 |
 
@@ -584,6 +634,8 @@ cites: [LNK-D-0023](decisions.md#lnk-d-0023)
 **Dashboard header: identity menu and notification bell**
 
 milestone · 2026-07-31
+
+work-unit: [LNK-W-0024](work-units/LNK-W-0024.md#lnk-w-0024)
 
 cites: [LNK-F-0006](findings.md#lnk-f-0006)
 
@@ -663,9 +715,11 @@ cites: [LNK-M-0026](#lnk-m-0026)
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. The edge to LNK-M-0026 is an *ordering preference*: |
-| Discharges | deferred-findings.md F6 and F7, both |
+| Depends on | nothing. The edge to LNK-M-0026 is an *ordering preference*: the milestones after this one add dashboard surfaces to a header that has no room for them, so the shape wants settling before they arrive rather than after. |
+| Discharges | deferred-findings.md F6 and F7, both owner-reported and approved 2026-07-31. Nothing on the scope tables. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 8 |
 | LinkCtrl | M26.5 |
 
 ---
@@ -676,9 +730,15 @@ cites: [LNK-M-0026](#lnk-m-0026)
 
 milestone · 2026-07-31
 
+work-unit: [LNK-W-0025](work-units/LNK-W-0025.md#lnk-w-0025)
+
 cites: [LNK-M-0034](#lnk-m-0034)
 
 cites: [LNK-M-0039](#lnk-m-0039)
+
+cites: [LNK-M-0045](#lnk-m-0045)
+
+cites: [LNK-F-0002](findings.md#lnk-f-0002)
 
 - **The mechanism is measured, not assumed.** The table above is a hypothesis
   until the milestone confirms it by attribution — which layer contributes what —
@@ -713,9 +773,11 @@ cites: [LNK-M-0039](#lnk-m-0039)
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. The edges to LNK-M-0034, LNK-M-0039 and |
-| Discharges |  |
+| Depends on | nothing. The edges to LNK-M-0034, LNK-M-0039 and LNK-M-0045 are *ordering preferences*: each either measures latency or builds more invalidation surface, and all of them are better done on top of a client whose worst case is known. |
+| Discharges | deferred-findings.md F2, owner-approved 2026-07-31. Nothing on the scope tables. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 9 |
 | LinkCtrl | M26.6 |
 
 ---
@@ -725,6 +787,8 @@ cites: [LNK-M-0039](#lnk-m-0039)
 **Organizations: invitations and joining**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0026](work-units/LNK-W-0026.md#lnk-w-0026)
 
 cites: [LNK-M-0023](#lnk-m-0023)
 
@@ -778,8 +842,10 @@ cites: [LNK-M-0022](#lnk-m-0022)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0016 LNK-M-0017 LNK-M-0022 LNK-M-0023. |
-| Discharges | Collaboration scope row *Organizations: sharing, invites, team |
+| Discharges | Collaboration scope row *Organizations: sharing, invites, team management* — invites half; LNK-M-0027 completes it. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 10 |
 | LinkCtrl | M27 |
 
 ---
@@ -789,6 +855,8 @@ cites: [LNK-M-0022](#lnk-m-0022)
 **Team management, workspaces, and org creation**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0027](work-units/LNK-W-0027.md#lnk-w-0027)
 
 cites: [LNK-D-0030](decisions.md#lnk-d-0030)
 
@@ -874,8 +942,10 @@ cites: [LNK-M-0026](#lnk-m-0026)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0026. |
-| Discharges | Collaboration scope row |
+| Discharges | Collaboration scope row *Organizations: sharing, invites, team management* (completes it), plus workspace and organization creation added by decisions D15 and D16. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 11 |
 | LinkCtrl | M28 |
 
 ---
@@ -885,6 +955,8 @@ cites: [LNK-M-0026](#lnk-m-0026)
 **Organization deletion and tenancy teardown**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0028](work-units/LNK-W-0028.md#lnk-w-0028)
 
 cites: [LNK-M-0027](#lnk-m-0027)
 
@@ -997,9 +1069,11 @@ when a member has no other organization. Consequently:
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0027. The edge is hard: deleting an organization means |
-| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-01, |
+| Depends on | LNK-M-0027. The edge is hard: deleting an organization means deleting the memberships, workspaces and invitations LNK-M-0027 is what first lets a person create. |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-01, placed when LNK-M-0027's audit bullet was found to require an operation the product does not have. It also gives `org.delete` — seeded in Phase 1's `00700_seed.sql` and granted to `owner` alone — the first operation it has ever gated. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 12 |
 | LinkCtrl | M28.5 |
 
 ---
@@ -1009,6 +1083,8 @@ when a member has no other organization. Consequently:
 **Self-serve signup, switchable at runtime**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0029](work-units/LNK-W-0029.md#lnk-w-0029)
 
 cites: [LNK-D-0038](decisions.md#lnk-d-0038)
 
@@ -1056,8 +1132,10 @@ See decisions.md, D38.)*
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0023 LNK-M-0026. |
-| Discharges | Collaboration scope |
+| Discharges | Collaboration scope row *Self-serve signup, switchable at runtime by an owner*. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 13 |
 | LinkCtrl | M29 |
 
 ---
@@ -1067,6 +1145,8 @@ See decisions.md, D38.)*
 **Destination blocking: tiers and logging**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0030](work-units/LNK-W-0030.md#lnk-w-0030)
 
 cites: [LNK-D-0013](decisions.md#lnk-d-0013)
 
@@ -1142,8 +1222,10 @@ cites: [LNK-M-0016](#lnk-m-0016)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0016. |
-| Discharges | Link-management row *Malicious |
+| Discharges | Link-management row *Malicious destination blocking, tiered by confidence*; the tiers and logging legs of the Security blocking row. Plan.md mandates these ship before disputes. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 14 |
 | LinkCtrl | M30 |
 
 ---
@@ -1168,6 +1250,8 @@ LinkCtrl cites `M30.5` 1 time(s) and its tree holds no phase-details file and no
 **Blocked-attempt disputes and owner review**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0032](work-units/LNK-W-0032.md#lnk-w-0032)
 
 cites: [LNK-M-0017](#lnk-m-0017)
 
@@ -1204,8 +1288,10 @@ cites: [LNK-M-0030](#lnk-m-0030)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0030 LNK-M-0017. |
-| Discharges | Link-management row |
+| Discharges | Link-management row *Blocked-attempt disputes, with owner review*; completes the Security blocking row. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 15 |
 | LinkCtrl | M31 |
 
 ---
@@ -1215,6 +1301,8 @@ cites: [LNK-M-0030](#lnk-m-0030)
 **Opt-in reputation and malware feeds**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0033](work-units/LNK-W-0033.md#lnk-w-0033)
 
 cites: [LNK-D-0040](decisions.md#lnk-d-0040)
 
@@ -1258,8 +1346,10 @@ cites: [LNK-M-0032](#lnk-m-0032)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0030 LNK-M-0032. |
-| Discharges | Security scope row |
+| Discharges | Security scope row *Third-party reputation and malware feeds — opt-in, off by default*. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 16 |
 | LinkCtrl | M32 |
 
 ---
@@ -1269,6 +1359,8 @@ cites: [LNK-M-0032](#lnk-m-0032)
 **Bot blocking, per domain and per link**
 
 milestone · 2026-07-31
+
+work-unit: [LNK-W-0034](work-units/LNK-W-0034.md#lnk-w-0034)
 
 cites: [LNK-M-0016](#lnk-m-0016)
 
@@ -1365,9 +1457,11 @@ The inherited redirect rules are the specification here, not background:
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. The edges to LNK-M-0037 and LNK-M-0039 are |
-| Discharges | nothing on the scope tables. Owner-added scope, 2026-07-31; the |
+| Depends on | nothing. The edges to LNK-M-0037 and LNK-M-0039 are *ordering preferences*: both build on the redirect path, and a gate deciding whether a request proceeds at all wants to exist before a transformation (LNK-M-0037) and before a rules engine (LNK-M-0039) are written around it. |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-07-31; the why is in decisions.md. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 17 |
 | LinkCtrl | M32.5 |
 
 ---
@@ -1392,6 +1486,8 @@ LinkCtrl cites `M32.6` 1 time(s) and its tree holds no phase-details file and no
 **Mid-phase adversarial review**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0036](work-units/LNK-W-0036.md#lnk-w-0036)
 
 cites: [LNK-M-0016](#lnk-m-0016)
 
@@ -1425,8 +1521,10 @@ cites: [LNK-M-0018](#lnk-m-0018)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0016–LNK-M-0034. |
-| Discharges | nothing on the |
+| Discharges | nothing on the scope tables. It exists because Phase 1's equivalent found what the milestone process did not. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 18 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M32.9 |
 
@@ -1437,6 +1535,8 @@ cites: [LNK-M-0018](#lnk-m-0018)
 **Deep-link path forwarding**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0037](work-units/LNK-W-0037.md#lnk-w-0037)
 
 cites: [LNK-M-0039](#lnk-m-0039)
 
@@ -1458,9 +1558,11 @@ cites: [LNK-M-0039](#lnk-m-0039)
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing, but **must land before LNK-M-0039** — see the |
-| Discharges | Redirect scope row *Deep-link path |
+| Depends on | nothing, but **must land before LNK-M-0039** — see the cache-key claim below. |
+| Discharges | Redirect scope row *Deep-link path forwarding*. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 19 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M33 |
 
@@ -1471,6 +1573,8 @@ cites: [LNK-M-0039](#lnk-m-0039)
 **A demo that shows the phase, not just its links**
 
 milestone · 2026-08-01
+
+work-unit: [LNK-W-0038](work-units/LNK-W-0038.md#lnk-w-0038)
 
 cites: [LNK-M-0027](#lnk-m-0027)
 
@@ -1569,9 +1673,11 @@ deliberate and is what README.md documents:
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0036. The edge is an *ordering preference* and it is |
-| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-01, |
+| Depends on | LNK-M-0036. The edge is an *ordering preference* and it is the owner's: the review comes first, and this lands after it. There is no code dependency — every feature it seeds shipped at or before LNK-M-0034. |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-01, from a `/note` observing that the demo has not grown since Phase 1 seeded it. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 20 |
 | LinkCtrl | M33.5 |
 
 ---
@@ -1581,6 +1687,8 @@ deliberate and is what README.md documents:
 **Routing rules: conditions and first-match evaluation**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0039](work-units/LNK-W-0039.md#lnk-w-0039)
 
 cites: [LNK-D-0002](decisions.md#lnk-d-0002)
 
@@ -1635,8 +1743,10 @@ cites: [LNK-M-0037](#lnk-m-0037)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0018 LNK-M-0030 LNK-M-0037. |
-| Discharges | Redirect |
+| Discharges | Redirect scope row *Rules*; Analytics row *Geographic (region/city) — resolvable, deliberately not stored*; the Accepted-unassigned region/city decision. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 21 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M34 |
 
@@ -1647,6 +1757,8 @@ cites: [LNK-M-0037](#lnk-m-0037)
 **Gated links: password, signed, one-time, max-click**
 
 milestone · 2026-08-04
+
+work-unit: [LNK-W-0040](work-units/LNK-W-0040.md#lnk-w-0040)
 
 cites: [LNK-M-0041](#lnk-m-0041)
 
@@ -1676,9 +1788,11 @@ cites: [LNK-M-0039](#lnk-m-0039)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0039 — **an ordering choice, not a hard dependency.** The |
-| Discharges | Security scope row *Password links, one-time links, max-click |
+| Depends on | LNK-M-0039 — **an ordering choice, not a hard dependency.** The snapshot already carries `HasPassword`, `MaxClicks` and `OneTime` (snapshot.go), so these need no bump of their own; riding LNK-M-0039's single v2 bump avoids a second cold cache. Stated plainly rather than dressed as a technical requirement. |
+| Discharges | Security scope row *Password links, one-time links, max-click links, signed URLs*. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 22 |
 | LinkCtrl | M35 |
 
 ---
@@ -1688,6 +1802,8 @@ cites: [LNK-M-0039](#lnk-m-0039)
 **Split testing: weighted, percentage, sequential, fallback, flags**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0041](work-units/LNK-W-0041.md#lnk-w-0041)
 
 cites: [LNK-D-0008](decisions.md#lnk-d-0008)
 
@@ -1722,8 +1838,10 @@ cites: [LNK-M-0039](#lnk-m-0039)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0039 LNK-M-0040 LNK-M-0030. |
-| Discharges | Redirect scope row |
+| Discharges | Redirect scope row *A/B testing, weighted routing, percentage splits, sequential routing, feature flags, fallback destinations*. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 23 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M36 |
 
@@ -1734,6 +1852,8 @@ cites: [LNK-M-0039](#lnk-m-0039)
 **Dimension visualizations, with the rollup cadence fixed first**
 
 milestone · 2026-08-10
+
+work-unit: [LNK-W-0042](work-units/LNK-W-0042.md#lnk-w-0042)
 
 cites: [LNK-M-0075](#lnk-m-0075)
 
@@ -1790,8 +1910,10 @@ cites: [LNK-M-0051](#lnk-m-0051)
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | Analytics scope row *Dimension |
+| Discharges | Analytics scope row *Dimension visualizations*; the Accepted-unassigned *dimension rollup cost* row; the known limitation that the rollup grows with traffic. |
 | Status | done *(reopened and closed again 2026-08-11 — F210's antimeridian bands; mapgen now splits crossing rings, and the reopening is LNK-M-0074's to review, per the note on LNK-M-0051's row)* |
+| Phase | 2 |
+| Phase order | 24 |
 | LinkCtrl | M37 |
 
 ---
@@ -1801,6 +1923,8 @@ cites: [LNK-M-0051](#lnk-m-0051)
 **Folders: API and tree UI**
 
 milestone · 2026-08-05
+
+work-unit: [LNK-W-0043](work-units/LNK-W-0043.md#lnk-w-0043)
 
 - Folder CRUD and a move operation exist.
 - **A folder can never become its own descendant** — cycle test. *(True of one move and false of two, until the reopening below.)*
@@ -1819,8 +1943,10 @@ milestone · 2026-08-05
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | Link-management scope row *Folders — API |
+| Discharges | Link-management scope row *Folders — API and tree UI*. The table has existed since Phase 1 with no queries, service, API or UI. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 25 |
 | LinkCtrl | M38 |
 
 ---
@@ -1830,6 +1956,8 @@ milestone · 2026-08-05
 **Per-domain ownership**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0044](work-units/LNK-W-0044.md#lnk-w-0044)
 
 cites: [LNK-M-0015](#lnk-m-0015)
 
@@ -1853,8 +1981,10 @@ cites: [LNK-M-0016](#lnk-m-0016)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0016. |
-| Discharges | Security scope row *Per-domain |
+| Discharges | Security scope row *Per-domain ownership, so a workspace administers its own hostname*. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 26 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M39 |
 
@@ -1865,6 +1995,8 @@ cites: [LNK-M-0016](#lnk-m-0016)
 **Custom domains: verification and serving**
 
 milestone · 2026-08-04
+
+work-unit: [LNK-W-0045](work-units/LNK-W-0045.md#lnk-w-0045)
 
 cites: [LNK-D-0003](decisions.md#lnk-d-0003)
 
@@ -1906,8 +2038,10 @@ cites: [LNK-M-0044](#lnk-m-0044)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0044 LNK-M-0018. |
-| Discharges | Other-surfaces scope |
+| Discharges | Other-surfaces scope row *Custom domains, per workspace and per link*; the domain-filter promise in `internal/store/query/links.sql`. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 27 |
 | LinkCtrl | M40 |
 
 ---
@@ -1918,9 +2052,15 @@ cites: [LNK-M-0044](#lnk-m-0044)
 
 milestone · 2026-09-13
 
+work-unit: [LNK-W-0046](work-units/LNK-W-0046.md#lnk-w-0046)
+
 cites: [LNK-D-0011](decisions.md#lnk-d-0011)
 
 cites: [LNK-M-0042](#lnk-m-0042)
+
+cites: [LNK-M-0047](#lnk-m-0047)
+
+cites: [LNK-M-0048](#lnk-m-0048)
 
 ##### QR codes
 
@@ -1949,8 +2089,10 @@ cites: [LNK-M-0042](#lnk-m-0042)
 | Field | Value |
 | --- | --- |
 | Depends on | nothing. |
-| Discharges | the QR and campaigns components of the |
+| Discharges | the QR and campaigns components of the Other-surfaces row *QR codes, campaigns, webhooks, automation*. LNK-M-0047 and LNK-M-0048 complete that row. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 28 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M41 |
 
@@ -1961,6 +2103,8 @@ cites: [LNK-M-0042](#lnk-m-0042)
 **Webhooks**
 
 milestone · 2026-08-04
+
+work-unit: [LNK-W-0047](work-units/LNK-W-0047.md#lnk-w-0047)
 
 cites: [LNK-M-0030](#lnk-m-0030)
 
@@ -1990,8 +2134,10 @@ cites: [LNK-M-0030](#lnk-m-0030)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0030. |
-| Discharges | the webhooks component of the |
+| Discharges | the webhooks component of the Other-surfaces row. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 29 |
 | LinkCtrl | M42 |
 
 ---
@@ -2001,6 +2147,8 @@ cites: [LNK-M-0030](#lnk-m-0030)
 **Automation rules**
 
 milestone · 2026-08-04
+
+work-unit: [LNK-W-0048](work-units/LNK-W-0048.md#lnk-w-0048)
 
 cites: [LNK-M-0040](#lnk-m-0040)
 
@@ -2035,8 +2183,10 @@ cites: [LNK-D-0010](decisions.md#lnk-d-0010)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0017 LNK-M-0040 LNK-M-0047. |
-| Discharges |  |
+| Discharges | completes the Other-surfaces row *QR codes, campaigns, webhooks, automation*. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 30 |
 | LinkCtrl | M43 |
 
 ---
@@ -2046,6 +2196,8 @@ cites: [LNK-D-0010](decisions.md#lnk-d-0010)
 **API keys: rotation automation and scope choice**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0049](work-units/LNK-W-0049.md#lnk-w-0049)
 
 cites: [LNK-D-0009](decisions.md#lnk-d-0009)
 
@@ -2079,8 +2231,10 @@ cites: [LNK-M-0016](#lnk-m-0016)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0016. |
-| Discharges | the known limitation *API keys |
+| Discharges | the known limitation *API keys cannot manage API keys — automating key rotation is Phase 2 work* (Plan.md); the workspace-scope-choice promise in `internal/auth/apikey.go`. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 31 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M44 |
 
@@ -2106,6 +2260,8 @@ LinkCtrl cites `M44.5` 4 time(s) and its tree holds no phase-details file and no
 **Pre-release adversarial review**
 
 milestone · 2026-09-13
+
+work-unit: [LNK-W-0051](work-units/LNK-W-0051.md#lnk-w-0051)
 
 cites: [LNK-M-0016](#lnk-m-0016)
 
@@ -2142,9 +2298,11 @@ cites: [LNK-M-0074](#lnk-m-0074)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0016–LNK-M-0049, and LNK-M-0036 having already |
-| Discharges | nothing on the scope tables; it is the gate |
+| Depends on | LNK-M-0016–LNK-M-0049, and LNK-M-0036 having already run. |
+| Discharges | nothing on the scope tables; it is the gate LNK-M-0052 closes behind. |
 | Status | done *(LNK-M-0042's 2026-08-11 reopening is inside this range and is deliberately covered by LNK-M-0074's re-run instead — reopening a released phase's review to read one diff was declined; recorded in decisions.md)* |
+| Phase | 2 |
+| Phase order | 32 |
 | Dated | on import: nothing dates it |
 | LinkCtrl | M44.9 |
 
@@ -2155,6 +2313,8 @@ cites: [LNK-M-0074](#lnk-m-0074)
 **Deferred findings, documentation pass, and the 0.2.0 release**
 
 milestone · 2026-07-31
+
+work-unit: [LNK-W-0052](work-units/LNK-W-0052.md#lnk-w-0052)
 
 cites: [LNK-F-0001](findings.md#lnk-f-0001)
 
@@ -2263,8 +2423,10 @@ The full workflow.md pass, on every file and not only the ones this phase touche
 | Field | Value |
 | --- | --- |
 | Depends on | every milestone, and LNK-M-0051 having run to completion. |
-| Discharges | the phase-end process obligations in |
+| Discharges | the phase-end process obligations in workflow.md; the dangling `docs/data-model.md` reference; the comment-truth sweep. |
 | Status | done |
+| Phase | 2 |
+| Phase order | 33 |
 | LinkCtrl | M45 |
 
 ---
@@ -2274,6 +2436,8 @@ The full workflow.md pass, on every file and not only the ones this phase touche
 **The shell, the navigation, and the links list**
 
 milestone · 2026-08-02
+
+work-unit: [LNK-W-0053](work-units/LNK-W-0053.md#lnk-w-0053)
 
 cites: [LNK-M-0022](#lnk-m-0022)
 
@@ -2409,9 +2573,11 @@ stated rather than omitted.
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. It is the phase's first milestone, and every other |
-| Discharges | the *workspace selector should always render* candidate row |
+| Depends on | nothing. It is the phase's first milestone, and every other milestone that draws a page inherits what it decides. |
+| Discharges | the *workspace selector should always render* candidate row recorded 2026-08-02, and the shell half of the redesign requested 2026-08-06. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 1 |
 | LinkCtrl | M46 |
 
 ---
@@ -2422,9 +2588,13 @@ stated rather than omitted.
 
 milestone · 2026-08-11
 
+work-unit: [LNK-W-0054](work-units/LNK-W-0054.md#lnk-w-0054)
+
 cites: [LNK-F-0206](findings.md#lnk-f-0206)
 
 cites: [LNK-M-0056](#lnk-m-0056)
+
+cites: [LNK-D-0025](decisions.md#lnk-d-0025)
 
 ##### The CLI is installed, pinned, and reachable
 
@@ -2510,9 +2680,11 @@ recorded so the next reader does not rediscover it:
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. It adds tooling and touches no product code, which is |
-| Discharges | no scope row and no known limitation. **Owner-added scope, |
+| Depends on | nothing. It adds tooling and touches no product code, which is what makes it admissible at all: **D25** — *shipped code stays stdlib-only; tooling that only verifies it may use Node, as long as Node stays out of everything except required test code.* The inherited *`ui` stays stdlib-only* rule governs what ships and is a different rule; neither is weakened here. |
+| Discharges | no scope row and no known limitation. **Owner-added scope, 2026-08-11**, from research commissioned after LNK-M-0056 reopened. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 2 |
 | LinkCtrl | M46.5 |
 
 ---
@@ -2523,6 +2695,8 @@ recorded so the next reader does not rediscover it:
 
 milestone · 2026-08-11
 
+work-unit: [LNK-W-0055](work-units/LNK-W-0055.md#lnk-w-0055)
+
 cites: [LNK-M-0053](#lnk-m-0053)
 
 cites: [LNK-M-0022](#lnk-m-0022)
@@ -2532,6 +2706,8 @@ cites: [LNK-D-0036](decisions.md#lnk-d-0036)
 cites: [LNK-M-0054](#lnk-m-0054)
 
 cites: [LNK-M-0020](#lnk-m-0020)
+
+cites: [LNK-M-0056](#lnk-m-0056)
 
 cites: [LNK-F-0204](findings.md#lnk-f-0204)
 
@@ -2624,9 +2800,11 @@ cites: [LNK-F-0204](findings.md#lnk-f-0204)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0053, which built both halves of the pair, and |
-| Discharges | F204. **Owner-added scope, |
+| Depends on | LNK-M-0053, which built both halves of the pair, and LNK-M-0054, **hard** — the chevron-only face and the 360px bound are rendered-appearance claims a template test cannot see, and LNK-M-0054 is what makes a browser assertion keepable. The work touches `partials/nav.html`'s `workspace_label` and `workspace_switch`, **their invocation site** — the two are siblings inside `layout.html`'s `<div class="ml-auto …">` (`layout.html:60-62` at `ddd5798`), so the shared container is a wrapper there or a boundary built across the two defines, and the milestone records which — and the tests that hold them. LNK-M-0056's scope is the link page; the plan expects no file overlap, and validation re-checks that rather than this line guaranteeing it. |
+| Discharges | F204. **Owner-added scope, 2026-08-11**, approved into Phase 3 on the owner's ground that this phase has carried the UI and UX changes and the fix belongs with them. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 3 |
 | LinkCtrl | M46.6 |
 
 ---
@@ -2636,6 +2814,8 @@ cites: [LNK-F-0204](findings.md#lnk-f-0204)
 **The link page, taken apart**
 
 milestone · 2026-08-06
+
+work-unit: [LNK-W-0056](work-units/LNK-W-0056.md#lnk-w-0056)
 
 cites: [LNK-M-0020](#lnk-m-0020)
 
@@ -2725,9 +2905,11 @@ the omission reads as considered.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0053. The edge is hard: this page inherits the shell, |
-| Discharges | the first of the three complaints recorded on 2026-08-06 — the |
+| Depends on | LNK-M-0053. The edge is hard: this page inherits the shell, the navigation and the section patterns LNK-M-0053 establishes, and restructuring it first would mean restructuring it twice. |
+| Discharges | the first of the three complaints recorded on 2026-08-06 — the link configuration page *"leaves a massive mess … difficult to find what you are looking for in"*. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 4 |
 | LinkCtrl | M47 |
 
 ---
@@ -2737,6 +2919,8 @@ the omission reads as considered.
 **What every tab says about itself**
 
 milestone · 2026-08-11
+
+work-unit: [LNK-W-0057](work-units/LNK-W-0057.md#lnk-w-0057)
 
 cites: [LNK-F-0211](findings.md#lnk-f-0211)
 
@@ -2823,9 +3007,11 @@ the answer and the way in — you read `Routing 2` and click `Routing 2`.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0056, hard — there is no strip to badge until it exists — |
-| Discharges | the second half of F205. LNK-M-0056 answers |
+| Depends on | LNK-M-0056, hard — there is no strip to badge until it exists — and LNK-M-0054, hard, because the glyph claims are browser claims. |
+| Discharges | the second half of F205. LNK-M-0056 answers *the page is a stack*; this answers *and now you cannot see what is configured*. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 5 |
 | LinkCtrl | M47.5 |
 
 ---
@@ -2835,6 +3021,8 @@ the answer and the way in — you read `Routing 2` and click `Routing 2`.
 **On-demand panels, and what stops being buried**
 
 milestone · 2026-08-06
+
+work-unit: [LNK-W-0058](work-units/LNK-W-0058.md#lnk-w-0058)
 
 cites: [LNK-D-0103](decisions.md#lnk-d-0103)
 
@@ -2953,9 +3141,11 @@ work rather than guessed here, and the answer is written down either way.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0056. The edge is hard: the panel pattern is applied to |
-| Discharges | the second of the three complaints recorded on 2026-08-06 — |
+| Depends on | LNK-M-0056. The edge is hard: the panel pattern is applied to the page LNK-M-0056 restructured, and defining it against the old page would mean defining it twice. |
+| Discharges | the second of the three complaints recorded on 2026-08-06 — high-traffic items like retrieving a QR code are *"buried deep in the page"* alongside configuration that *"belongs in an on-demand popup"*. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 6 |
 | LinkCtrl | M48 |
 
 ---
@@ -2965,6 +3155,8 @@ work rather than guessed here, and the answer is written down either way.
 **QR codes sized in pixels, and a PNG to download**
 
 milestone · 2026-08-07
+
+work-unit: [LNK-W-0059](work-units/LNK-W-0059.md#lnk-w-0059)
 
 cites: [LNK-D-0182](decisions.md#lnk-d-0182)
 
@@ -2987,6 +3179,12 @@ cites: [LNK-F-0223](findings.md#lnk-f-0223)
 cites: [LNK-M-0046](#lnk-m-0046)
 
 cites: [LNK-M-0058](#lnk-m-0058)
+
+cites: [LNK-M-0053](#lnk-m-0053)
+
+cites: [LNK-M-0065](#lnk-m-0065)
+
+cites: [LNK-M-0070](#lnk-m-0070)
 
 ##### The vocabulary
 
@@ -3133,9 +3331,11 @@ sitting beside it — and the milestone records which it did.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0058, and the edge is an *ordering preference* that is |
-| Discharges | Plan.md's *Not in Phase 2* row **A PNG QR code**, and the third |
+| Depends on | LNK-M-0058, and the edge is an *ordering preference* that is nearly hard. The QR panel is `internal/ui/templates/partials/link_qr.html` (171 lines) plus the panel body at `pages/link_qr.html`, which LNK-M-0053–LNK-M-0058 have now restructured; landing a settings rewrite into a page being rebuilt would have meant writing it twice. **This milestone is not a fallback destination for a stalled B**, and an earlier draft of this file said it was: W33's fallback requires *every* row in a milestone's `Depends on` column to be `done`, so a blocked LNK-M-0058 blocks LNK-M-0059 too. The phase's actual fallbacks from a stalled B are LNK-M-0065 and LNK-M-0070, whose dependency columns are empty. |
+| Discharges | Plan.md's *Not in Phase 2* row **A PNG QR code**, and the third of the three redesign complaints in phase-3-candidates.md's area B — *the QR settings expose Quiet zone and Module size where an end user wants output size in pixels*. It reverses **D11**. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 7 |
 | LinkCtrl | M49 |
 
 ---
@@ -3145,6 +3345,8 @@ sitting beside it — and the milestone records which it did.
 **More than one QR code per link, told apart in the analytics**
 
 milestone · 2026-08-12
+
+work-unit: [LNK-W-0060](work-units/LNK-W-0060.md#lnk-w-0060)
 
 cites: [LNK-D-0073](decisions.md#lnk-d-0073)
 
@@ -3159,6 +3361,8 @@ cites: [LNK-M-0058](#lnk-m-0058)
 cites: [LNK-M-0040](#lnk-m-0040)
 
 cites: [LNK-M-0059](#lnk-m-0059)
+
+cites: [LNK-D-0076](decisions.md#lnk-d-0076)
 
 ##### Several codes, each with an identity
 
@@ -3251,9 +3455,11 @@ labels and click history against both, because a feature whose whole value is
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0059, and the edge is **hard**. LNK-M-0059 rewrites what a QR |
-| Discharges | Plan.md's *Not in Phase 2* row **More than one QR code per link, |
+| Depends on | LNK-M-0059, and the edge is **hard**. LNK-M-0059 rewrites what a QR style *is* on the surface; adding a second row per link before that means migrating the same jsonb twice. |
+| Discharges | Plan.md's *Not in Phase 2* row **More than one QR code per link, and per-code scan counts**. It reopens the shape D73 and D76 closed, and it does so along the axis those decisions left open. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 8 |
 | LinkCtrl | M50 |
 
 ---
@@ -3263,6 +3469,8 @@ labels and click history against both, because a feature whose whole value is
 **The first file this product accepts**
 
 milestone · 2026-08-06
+
+work-unit: [LNK-W-0061](work-units/LNK-W-0061.md#lnk-w-0061)
 
 cites: [LNK-D-0075](decisions.md#lnk-d-0075)
 
@@ -3407,9 +3615,11 @@ that the upload path ran.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0060, and the edge is **hard**. The image this |
-| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-07, |
+| Depends on | LNK-M-0060, and the edge is **hard**. The image this milestone stores belongs to a QR code, and LNK-M-0060 is what makes a link have more than one of those — storing a per-code asset before the code has an identity means storing it twice. |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-07, split from a single logo milestone on the same day after review. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 9 |
 | LinkCtrl | M50.5 |
 
 ---
@@ -3419,6 +3629,8 @@ that the upload path ran.
 **A logo in the middle of a QR code**
 
 milestone · 2026-08-07
+
+work-unit: [LNK-W-0062](work-units/LNK-W-0062.md#lnk-w-0062)
 
 cites: [LNK-D-0141](decisions.md#lnk-d-0141)
 
@@ -3437,6 +3649,8 @@ cites: [LNK-M-0058](#lnk-m-0058)
 cites: [LNK-M-0061](#lnk-m-0061)
 
 cites: [LNK-M-0075](#lnk-m-0075)
+
+cites: [LNK-D-0134](decisions.md#lnk-d-0134)
 
 ##### The code still scans, and the claim is geometric and stated
 
@@ -3664,9 +3878,11 @@ is one thing to look at and one row pointing at it.)*
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0061, and the edge is **hard** — this milestone |
-| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-07. It |
+| Depends on | LNK-M-0061, and the edge is **hard** — this milestone composites an image the previous one accepts and stores. Transitively it needs LNK-M-0059, whose PNG renderer is what a raster logo composites into. |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-07. It gives this product a logo in a QR code for the first time — but **not** as the *logo reference* `00600_phase2_dormant.sql:59` promises, and that line is amended rather than left to read true. That comment has described the QR style blob as holding *"colours, logo reference, error-correction level, margin, shape"* since Phase 1. Under D134 the logo is a `bytea` column on `qr_codes`, so the blob still holds no logo reference and still never has. *(Amended 2026-08-07 at step 3.4. The original claim was written before the storage question was answered, and the answer is what made it false — LNK-M-0061's decision rather than this milestone's work. Of the comment's five words, **shape** remains the one nothing builds, and LNK-M-0075's sweep trues it up.)* |
 | Status | done |
+| Phase | 3 |
+| Phase order | 10 |
 | LinkCtrl | M50.6 |
 
 ---
@@ -3676,6 +3892,8 @@ is one thing to look at and one row pointing at it.)*
 **The QR tab stops costing more attention than it is worth**
 
 milestone · 2026-08-12
+
+work-unit: [LNK-W-0063](work-units/LNK-W-0063.md#lnk-w-0063)
 
 cites: [LNK-D-0024](decisions.md#lnk-d-0024)
 
@@ -4011,9 +4229,11 @@ surface is the wrong place to invent a second convention for it.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0059 *(**third** reopening, landed `fc9aeef` — the size |
-| Discharges | F224, owner-approved as work |
+| Depends on | LNK-M-0059 *(**third** reopening, landed `fc9aeef` — the size control this milestone re-lays-out is the slider that reopening's predecessor built, and the paragraph this milestone was going to delete it already deleted)*, LNK-M-0060 *(reopening, landed `2d4f424` — the codes list this milestone re-lays-out is the list that reopening makes fully removable, and it is what put a **Make default** control on every row)*, LNK-M-0062 *(**second** reopening, landed `d7107b1` — it rewrote the logo paragraph's level sentence, which is prose this milestone shrinks)*. All three edges are **hard** and all three have landed, so every citation below is against the tree at `d7107b1` rather than against a file that is about to change. |
+| Discharges | F224, owner-approved as work 2026-08-12. Owner-added scope the same day. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 11 |
 | LinkCtrl | M50.7 |
 
 ---
@@ -4023,6 +4243,8 @@ surface is the wrong place to invent a second convention for it.
 **The QR tab's third report, and the first script the dashboard depends on**
 
 milestone · 2026-08-14
+
+work-unit: [LNK-W-0064](work-units/LNK-W-0064.md#lnk-w-0064)
 
 cites: [LNK-M-0063](#lnk-m-0063)
 
@@ -4308,9 +4530,11 @@ cites: [LNK-F-0238](findings.md#lnk-f-0238)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0063 *(hard — eight of the ten limbs edit controls |
-| Discharges | F238, owner-approved as work |
+| Depends on | LNK-M-0063 *(hard — eight of the ten limbs edit controls LNK-M-0063 built, and building against the pre-LNK-M-0063 row would lay out a surface that no longer exists)*, LNK-M-0060 *(hard, for the list's sort and the last code's remove button)*, LNK-M-0062 *(hard — the logo section this milestone folds away is the one its second reopening rewrote)*. |
+| Discharges | F238, owner-approved as work 2026-08-14. Owner-added scope the same day, from the third QR-tab report. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 12 |
 | LinkCtrl | M50.8 |
 
 ---
@@ -4320,6 +4544,8 @@ cites: [LNK-F-0238](findings.md#lnk-f-0238)
 **Account recovery: a forgotten password stops being permanent**
 
 milestone · 2026-08-07
+
+work-unit: [LNK-W-0065](work-units/LNK-W-0065.md#lnk-w-0065)
 
 cites: [LNK-M-0060](#lnk-m-0060)
 
@@ -4340,6 +4566,10 @@ cites: [LNK-M-0016](#lnk-m-0016)
 cites: [LNK-D-0038](decisions.md#lnk-d-0038)
 
 cites: [LNK-M-0023](#lnk-m-0023)
+
+cites: [LNK-M-0053](#lnk-m-0053)
+
+cites: [LNK-M-0058](#lnk-m-0058)
 
 cites: [LNK-F-0141](findings.md#lnk-f-0141)
 
@@ -4451,9 +4681,11 @@ cites: [LNK-F-0141](findings.md#lnk-f-0141)
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing hard. LNK-M-0023 built the mailer this needs and it |
-| Discharges | F141, and Plan.md's *Not in Phase 2* |
+| Depends on | nothing hard. LNK-M-0023 built the mailer this needs and it shipped a phase ago; the edge to LNK-M-0053–LNK-M-0058 is an *ordering preference* only, so the two pages this adds are drawn against the redesigned shell rather than against one being replaced under them. |
+| Discharges | F141, and Plan.md's *Not in Phase 2* row **Account recovery, of any kind, for anybody**. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 13 |
 | LinkCtrl | M51 |
 
 ---
@@ -4463,6 +4695,8 @@ cites: [LNK-F-0141](findings.md#lnk-f-0141)
 **Mid-phase adversarial review**
 
 milestone · 2026-08-07
+
+work-unit: [LNK-W-0066](work-units/LNK-W-0066.md#lnk-w-0066)
 
 cites: [LNK-M-0053](#lnk-m-0053)
 
@@ -4521,8 +4755,10 @@ cites: [LNK-M-0059](#lnk-m-0059)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0053–LNK-M-0065. |
-| Discharges | nothing on the scope tables. It is the first of the phase's two |
+| Discharges | nothing on the scope tables. It is the first of the phase's two reviews, and LNK-M-0036 is the specification it runs to — method, dimensions, adversarial verification and the rule that only confirmed findings are reported. None of that is restated here. |
 | Status | done *(range re-covered by LNK-M-0074)* |
+| Phase | 3 |
+| Phase order | 14 |
 | LinkCtrl | M51.9 |
 
 ---
@@ -4532,6 +4768,8 @@ cites: [LNK-M-0059](#lnk-m-0059)
 **Account deletion and subject erasure**
 
 milestone · 2026-08-07
+
+work-unit: [LNK-W-0067](work-units/LNK-W-0067.md#lnk-w-0067)
 
 cites: [LNK-D-0038](decisions.md#lnk-d-0038)
 
@@ -4556,6 +4794,8 @@ cites: [LNK-M-0061](#lnk-m-0061)
 cites: [LNK-D-0134](decisions.md#lnk-d-0134)
 
 cites: [LNK-M-0065](#lnk-m-0065)
+
+cites: [LNK-M-0016](#lnk-m-0016)
 
 ##### The three dormant columns get an answer, and none of them stays dormant
 
@@ -4753,9 +4993,11 @@ an evaluator should see before trusting the feature.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0065, as an *ordering preference* rather than a hard |
-| Discharges | F44, and Plan.md's *Not in Phase 2* |
+| Depends on | LNK-M-0065, as an *ordering preference* rather than a hard edge — both touch `users` and its session teardown, and doing recovery first means erasure is written against a table whose password path has stopped changing. The hard edges are backwards, into LNK-M-0016 for audit and LNK-M-0028 for the teardown shape this copies. |
+| Discharges | F44, and Plan.md's *Not in Phase 2* row **Account deletion and erasure, of any kind, for anybody**. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 15 |
 | LinkCtrl | M52 |
 
 ---
@@ -4765,6 +5007,8 @@ an evaluator should see before trusting the feature.
 **A second factor: TOTP, enrolment, and recovery codes**
 
 milestone · 2026-08-07
+
+work-unit: [LNK-W-0068](work-units/LNK-W-0068.md#lnk-w-0068)
 
 cites: [LNK-D-0072](decisions.md#lnk-d-0072)
 
@@ -4894,9 +5138,11 @@ account page shows the enrolled state rather than an empty offer.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0065, and the edge is **hard**. A second factor makes |
-| Discharges | the *MFA, OAuth, OIDC, SSO, SCIM* row in Plan.md's *Not in Phase |
+| Depends on | LNK-M-0065, and the edge is **hard**. A second factor makes lockout strictly more likely, and shipping one into a product where a lost password is permanent would take a known defect and multiply it. Recovery lands first or this does not land. |
+| Discharges | the *MFA, OAuth, OIDC, SSO, SCIM* row in Plan.md's *Not in Phase 2*, **partially** — MFA only. OAuth, OIDC, SSO and SCIM stay on that row, which is amended rather than removed, per the rule that nothing leaves a tracker silently. It also gives `users.mfa_secret` and `users.mfa_enabled_at` (`00200_identity.sql:31-33`, marked `-- Phase 3.` since the first migration) their first writer that **sets** them. *(Amended 2026-08-08: this read "their first writer". LNK-M-0067's erasure sweep landed the same day and clears both to `NULL` — `internal/store/query/accounts.sql:209-210` — so a writer exists, and it is the one that takes a second factor away rather than the one that establishes it.)* |
 | Status | done |
+| Phase | 3 |
+| Phase order | 16 |
 | LinkCtrl | M53 |
 
 ---
@@ -4906,6 +5152,8 @@ account page shows the enrolled state rather than an empty offer.
 **An API key belongs to an account, not to one organization**
 
 milestone · 2026-08-05
+
+work-unit: [LNK-W-0069](work-units/LNK-W-0069.md#lnk-w-0069)
 
 cites: [LNK-F-0103](findings.md#lnk-f-0103)
 
@@ -5046,9 +5294,11 @@ inherited rule.
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0067, and the edge is **hard but narrow**. |
-| Discharges | F75, and Plan.md's *Not in Phase 2* |
+| Depends on | LNK-M-0067, and the edge is **hard but narrow**. `apikeys.sql:89` coalesces a key owner's status to `'deleted'` when `users.deleted_at IS NOT NULL`, a predicate that has never once been true because nothing wrote that column; LNK-M-0067 gives it its first writer. Re-deriving key resolution across tenancies while that predicate changes from dead code to live code in the same phase is the ordering this edge buys. |
+| Discharges | F75, and Plan.md's *Not in Phase 2* row **An API key that reaches more than one organization**. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 17 |
 | LinkCtrl | M54 |
 
 ---
@@ -5058,6 +5308,8 @@ inherited rule.
 **An update checker, and the fifth thing that leaves this product**
 
 milestone · 2026-08-06
+
+work-unit: [LNK-W-0070](work-units/LNK-W-0070.md#lnk-w-0070)
 
 cites: [LNK-M-0052](#lnk-m-0052)
 
@@ -5158,9 +5410,11 @@ tree facts.)*
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. The edge to LNK-M-0017 is backwards, into a phase |
-| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-06, from |
+| Depends on | nothing. The edge to LNK-M-0017 is backwards, into a phase that shipped: the notification model this uses already exists. |
+| Discharges | nothing on the scope tables. Owner-added scope, 2026-08-06, from a queue row asking that instance owners be told when a release exists. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 18 |
 | LinkCtrl | M55 |
 
 ---
@@ -5170,6 +5424,8 @@ tree facts.)*
 **High availability: the failover contract**
 
 milestone · 2026-08-06
+
+work-unit: [LNK-W-0071](work-units/LNK-W-0071.md#lnk-w-0071)
 
 cites: [LNK-D-0077](decisions.md#lnk-d-0077)
 
@@ -5186,6 +5442,10 @@ cites: [LNK-D-0104](decisions.md#lnk-d-0104)
 cites: [LNK-M-0070](#lnk-m-0070)
 
 cites: [LNK-M-0018](#lnk-m-0018)
+
+cites: [LNK-M-0019](#lnk-m-0019)
+
+cites: [LNK-D-0107](decisions.md#lnk-d-0107)
 
 ##### The endpoints stop being an implementation detail and become a contract
 
@@ -5336,9 +5596,11 @@ checked and still resolve.)*
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing in this phase. Backwards edges into LNK-M-0018 |
-| Discharges | the *high availability* half of Plan.md's *Other surfaces* row |
+| Depends on | nothing in this phase. Backwards edges into LNK-M-0018 (cross-replica invalidation) and LNK-M-0019 (shared rate limits), both shipped. |
+| Discharges | the *high availability* half of Plan.md's *Other surfaces* row at Phase 3, and supersedes the explicit negative recorded on 2026-08-06: *"what is not built is high availability as a property somebody could claim — no failover story, no health-gated load-balancer contract, no measurement of behaviour during a rolling deploy beyond the two-leaders window D107 states."* This milestone builds the first two. LNK-M-0072 measures the third. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 19 |
 | LinkCtrl | M56 |
 
 ---
@@ -5348,6 +5610,8 @@ checked and still resolve.)*
 **High availability: measured, and still one container**
 
 milestone · 2026-08-06
+
+work-unit: [LNK-W-0072](work-units/LNK-W-0072.md#lnk-w-0072)
 
 cites: [LNK-M-0060](#lnk-m-0060)
 
@@ -5458,9 +5722,11 @@ and it is 8.)*
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0071. The edge is hard — this milestone measures the |
-| Discharges | the third clause of the 2026-08-06 negative, *"no measurement of |
+| Depends on | LNK-M-0071. The edge is hard — this milestone measures the contract LNK-M-0071 writes, and a measurement of an unstated promise measures nothing. |
+| Discharges | the third clause of the 2026-08-06 negative, *"no measurement of behaviour during a rolling deploy beyond the two-leaders window D107 states"*, and the owner's constraint of the same date that **high availability must not come at the cost of single-instance installs**. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 20 |
 | LinkCtrl | M57 |
 
 ---
@@ -5470,6 +5736,8 @@ and it is 8.)*
 **The six the close left behind**
 
 milestone · 2026-08-11
+
+work-unit: [LNK-W-0073](work-units/LNK-W-0073.md#lnk-w-0073)
 
 cites: [LNK-F-0197](findings.md#lnk-f-0197)
 
@@ -5620,9 +5888,11 @@ cites: [LNK-M-0075](#lnk-m-0075)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0075, hard. Every row here was filed by LNK-M-0075's own build |
-| Discharges | no Plan.md scope row and no known limitation. **Owner-added |
+| Depends on | LNK-M-0075, hard. Every row here was filed by LNK-M-0075's own build passes or by the reviewer runs over them, and one of them (F198) already has half of itself landed as W41. |
+| Discharges | no Plan.md scope row and no known limitation. **Owner-added scope, 2026-08-11**, when the rows Phase 3's close left open were triaged and six were chosen to land before the tag rather than open Phase 4. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 21 |
 | LinkCtrl | M57.5 |
 
 ---
@@ -5632,6 +5902,8 @@ cites: [LNK-M-0075](#lnk-m-0075)
 **Pre-release adversarial review**
 
 milestone · 2026-08-11
+
+work-unit: [LNK-W-0074](work-units/LNK-W-0074.md#lnk-w-0074)
 
 cites: [LNK-M-0053](#lnk-m-0053)
 
@@ -5678,9 +5950,11 @@ cites: [LNK-M-0075](#lnk-m-0075)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0053–LNK-M-0072, and LNK-M-0066 having |
-| Discharges | nothing on the scope tables; it is the gate LNK-M-0075 closes |
+| Depends on | LNK-M-0053–LNK-M-0072, and LNK-M-0066 having already run. |
+| Discharges | nothing on the scope tables; it is the gate LNK-M-0075 closes behind. LNK-M-0036 is the specification it runs to. |
 | Status | done *(reopened run, 2026-08-17)* |
+| Phase | 3 |
+| Phase order | 22 |
 | LinkCtrl | M57.9 |
 
 ---
@@ -5690,6 +5964,8 @@ cites: [LNK-M-0075](#lnk-m-0075)
 **Deferred findings, documentation pass, and the 0.3.0 release**
 
 milestone · 2026-08-07
+
+work-unit: [LNK-W-0075](work-units/LNK-W-0075.md#lnk-w-0075)
 
 cites: [LNK-F-0185](findings.md#lnk-f-0185)
 
@@ -5849,8 +6125,10 @@ and not only the ones this phase touched. Three carry more than usual:
 | Field | Value |
 | --- | --- |
 | Depends on | every milestone, and LNK-M-0074 having run to completion. |
-| Discharges | the phase-end process obligations in |
+| Discharges | the phase-end process obligations in workflow.md. |
 | Status | done |
+| Phase | 3 |
+| Phase order | 23 |
 | LinkCtrl | M58 |
 
 ---
@@ -5890,6 +6168,8 @@ LinkCtrl cites `M58.9` 1 time(s) and its tree holds no phase-details file and no
 **Process debt: the gates that were not watching**
 
 milestone · 2026-08-18
+
+work-unit: [LNK-W-0078](work-units/LNK-W-0078.md#lnk-w-0078)
 
 cites: [LNK-F-0255](findings.md#lnk-f-0255)
 
@@ -6010,9 +6290,11 @@ cites: [LNK-F-0251](findings.md#lnk-f-0251)
 
 | Field | Value |
 | --- | --- |
-| Depends on | nothing. First in the phase deliberately, owner-set 2026-08-18: |
-| Discharges | F248, |
+| Depends on | nothing. First in the phase deliberately, owner-set 2026-08-18: F255 is *nothing asks whether CI is green*, and the phase should not run without that gate. |
+| Discharges | F248, F253, F254, F255 — the four process-debt rows the owner grouped into one early milestone in phase-4-candidates.md. No product behaviour changes; every limb below is a gate, a script or a process document. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 1 |
 | Plan.md order | 1 |
 | Plan.md depends on | — |
 | Plan.md discharges | F248 · F253 · F254 · F255 |
@@ -6025,6 +6307,8 @@ cites: [LNK-F-0251](findings.md#lnk-f-0251)
 **The host: a module loads, or is refused**
 
 milestone · 2026-08-18
+
+work-unit: [LNK-W-0079](work-units/LNK-W-0079.md#lnk-w-0079)
 
 cites: [LNK-D-0218](decisions.md#lnk-d-0218)
 
@@ -6067,6 +6351,8 @@ cites: [LNK-M-0088](#lnk-m-0088)
 cites: [LNK-M-0086](#lnk-m-0086)
 
 cites: [LNK-M-0078](#lnk-m-0078)
+
+cites: [LNK-D-0211](decisions.md#lnk-d-0211)
 
 - **The runtime is wazero, and the binary stays pure Go.** The build is
   `CGO_ENABLED=0` — `Dockerfile:86`, and the Makefile's `dist` cross-compile
@@ -6255,9 +6541,11 @@ cites: [LNK-M-0078](#lnk-m-0078)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0078 *(ordering preference — the CI gate should exist |
-| Discharges | opens Plan.md's *Add-on support* scope row — the row that read |
+| Depends on | LNK-M-0078 *(ordering preference — the CI gate should exist before cross-repo work starts, but nothing here reads LNK-M-0078's output)*. |
+| Discharges | opens Plan.md's *Add-on support* scope row — the row that read *plugin system* until this plan reworded it (D211) — the phase's foundation begins here. Owner-set as the spine, 2026-08-18 (phase-4-candidates.md). |
 | Status | done |
+| Phase | 4 |
+| Phase order | 2 |
 | Plan.md order | 2 |
 | Plan.md depends on | LNK-M-0078 *(ordering)* |
 | Plan.md discharges | Opens the *Add-on support* scope row · owed-work #5 (single-instance gate case) |
@@ -6270,6 +6558,8 @@ cites: [LNK-M-0078](#lnk-m-0078)
 **The ABI: what an add-on may import, written down and versioned**
 
 milestone · 2026-08-18
+
+work-unit: [LNK-W-0080](work-units/LNK-W-0080.md#lnk-w-0080)
 
 cites: [LNK-M-0079](#lnk-m-0079)
 
@@ -6347,8 +6637,10 @@ cites: [LNK-M-0092](#lnk-m-0092)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0079. |
-| Discharges | two of the phase's owed-work items |
+| Discharges | two of the phase's owed-work items (phase-4-candidates.md): the deprecation policy written with the ABI (#2), and the open question *what the host functions actually are*, which this milestone answers as its central artifact. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 3 |
 | Plan.md order | 3 |
 | Plan.md depends on | LNK-M-0079 |
 | Plan.md discharges | Owed-work #2 (deprecation policy) · the host-function question |
@@ -6361,6 +6653,8 @@ cites: [LNK-M-0092](#lnk-m-0092)
 **Declared permissions: an add-on gets what it named and nothing else**
 
 milestone · 2026-08-19
+
+work-unit: [LNK-W-0081](work-units/LNK-W-0081.md#lnk-w-0081)
 
 cites: [LNK-M-0082](#lnk-m-0082)
 
@@ -6686,8 +6980,10 @@ cites: [LNK-M-0079](#lnk-m-0079)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0080. |
-| Discharges | the owner's answer *declared permissions, enforced* |
+| Discharges | the owner's answer *declared permissions, enforced* (phase-4-candidates.md), and the open question of how declaration is expressed and checked. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 4 |
 | Plan.md order | 4 |
 | Plan.md depends on | LNK-M-0080 |
 | Plan.md discharges | The enforcement answer · the permission-expression question |
@@ -6700,6 +6996,8 @@ cites: [LNK-M-0079](#lnk-m-0079)
 **An add-on's tables: a schema of its own, migrated by the host**
 
 milestone · 2026-08-20
+
+work-unit: [LNK-W-0082](work-units/LNK-W-0082.md#lnk-w-0082)
 
 cites: [LNK-M-0080](#lnk-m-0080)
 
@@ -6845,8 +7143,10 @@ cites: [LNK-M-0081](#lnk-m-0081)
 | Field | Value |
 | --- | --- |
 | Depends on | LNK-M-0081. |
-| Discharges | the owner's answer *a Postgres schema per add-on, host-run |
+| Discharges | the owner's answer *a Postgres schema per add-on, host-run migrations* (phase-4-candidates.md), and the named collision *DDL is additive within a minor version — whose additive-ness is an add-on's?* gets its written answer here. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 5 |
 | Plan.md order | 5 |
 | Plan.md depends on | LNK-M-0081 |
 | Plan.md discharges | The schema-per-add-on answer · the DDL-additiveness collision |
@@ -6859,6 +7159,8 @@ cites: [LNK-M-0081](#lnk-m-0081)
 **An add-on reaches the page: routes, templates, config**
 
 milestone · 2026-08-30
+
+work-unit: [LNK-W-0083](work-units/LNK-W-0083.md#lnk-w-0083)
 
 cites: [LNK-M-0020](#lnk-m-0020)
 
@@ -6935,9 +7237,11 @@ cites: [LNK-M-0082](#lnk-m-0082)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0081 *(hard — routes are a declared permission)*; |
-| Discharges | the routes, templates and config limbs of the reach answer |
+| Depends on | LNK-M-0081 *(hard — routes are a declared permission)*; LNK-M-0082 *(ordering — a page with nothing to read is a demo, and the demo should wait one milestone rather than fake its data)*. |
+| Discharges | the routes, templates and config limbs of the reach answer (*everything OIDC needs*, phase-4-candidates.md), and makes the named `ui`-collision argument in writing. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 6 |
 | Plan.md order | 6 |
 | Plan.md depends on | LNK-M-0081 · LNK-M-0082 *(ordering)* |
 | Plan.md discharges | Reach: routes, templates, config |
@@ -6950,6 +7254,8 @@ cites: [LNK-M-0082](#lnk-m-0082)
 **Mid-phase adversarial review**
 
 milestone · 2026-08-11
+
+work-unit: [LNK-W-0084](work-units/LNK-W-0084.md#lnk-w-0084)
 
 cites: [LNK-M-0036](#lnk-m-0036)
 
@@ -6994,9 +7300,11 @@ cites: [LNK-M-0078](#lnk-m-0078)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0078–LNK-M-0083, and any insertion numbered below |
+| Depends on | LNK-M-0078–LNK-M-0083, and any insertion numbered below this file. |
 | Discharges | the first of the phase's two budgeted reviews. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 7 |
 | Plan.md order | 7 |
 | Plan.md depends on | LNK-M-0078–LNK-M-0083 |
 | Plan.md discharges | — |
@@ -7009,6 +7317,8 @@ cites: [LNK-M-0078](#lnk-m-0078)
 **The authentication hook: a session minted on an add-on's word**
 
 milestone · 2026-08-21
+
+work-unit: [LNK-W-0085](work-units/LNK-W-0085.md#lnk-w-0085)
 
 cites: [LNK-D-0300](decisions.md#lnk-d-0300)
 
@@ -7068,9 +7378,11 @@ cites: [LNK-M-0083](#lnk-m-0083)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0080, LNK-M-0081; LNK-M-0083 *(hard — an OIDC |
-| Discharges | the hook-on-session-mint limb of the reach answer — the last |
+| Depends on | LNK-M-0080, LNK-M-0081; LNK-M-0083 *(hard — an OIDC flow needs the callback route LNK-M-0083 built)*. |
+| Discharges | the hook-on-session-mint limb of the reach answer — the last and strongest of *everything OIDC needs* (phase-4-candidates.md). |
 | Status | done |
+| Phase | 4 |
+| Phase order | 8 |
 | Plan.md order | 8 |
 | Plan.md depends on | LNK-M-0080 · LNK-M-0081 · LNK-M-0083 |
 | Plan.md discharges | Reach: the session hook, last limb of *everything OIDC needs* |
@@ -7083,6 +7395,8 @@ cites: [LNK-M-0083](#lnk-m-0083)
 **Add-ons on the redirect path: two classes, a deadline, and a promise rescoped**
 
 milestone · 2026-08-23
+
+work-unit: [LNK-W-0086](work-units/LNK-W-0086.md#lnk-w-0086)
 
 cites: [LNK-M-0081](#lnk-m-0081)
 
@@ -7154,9 +7468,11 @@ cites: [LNK-M-0079](#lnk-m-0079)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0081 *(hard — both classes exist there as grants |
-| Discharges | the redirect-path answer and its three requirements |
+| Depends on | LNK-M-0081 *(hard — both classes exist there as grants nothing may hold)*; LNK-M-0079's instantiation-cost measurements. |
+| Discharges | the redirect-path answer and its three requirements (phase-4-candidates.md), owed-work #1 (the SLO claim restated as core-only), and the open question *what the deadline is*. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 9 |
 | Plan.md order | 9 |
 | Plan.md depends on | LNK-M-0079 · LNK-M-0081 |
 | Plan.md discharges | The redirect answer and its three requirements · owed-work #1 (core-only SLO claim) · the deadline question |
@@ -7169,6 +7485,8 @@ cites: [LNK-M-0079](#lnk-m-0079)
 **Instances are reused, so a visitor stops paying for a cold start**
 
 milestone · 2026-08-23
+
+work-unit: [LNK-W-0087](work-units/LNK-W-0087.md#lnk-w-0087)
 
 cites: [LNK-M-0086](#lnk-m-0086)
 
@@ -7276,9 +7594,11 @@ cites: [LNK-D-0319](decisions.md#lnk-d-0319)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0086 *(hard — the two classes, the two bounds and the |
-| Discharges | owner-added scope, 2026-08-23, on the measurement in |
+| Depends on | LNK-M-0086 *(hard — the two classes, the two bounds and the per-module histogram are what this changes the cost of)*; LNK-M-0079's loader *(ordering — a pool holds what the loader produced)*. |
+| Discharges | owner-added scope, 2026-08-23, on the measurement in decisions.md's LNK-M-0087 entry. It closes no Plan.md promise; it reverses D319, which declined pooling on data taken before anybody had measured an add-on under load. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 10 |
 | Plan.md order | 10 |
 | Plan.md depends on | LNK-M-0086 · LNK-M-0079 *(ordering)* |
 | Plan.md discharges | Owner-added scope 2026-08-23 — reverses D319, which declined pooling before an add-on had been measured under load |
@@ -7291,6 +7611,8 @@ cites: [LNK-D-0319](decisions.md#lnk-d-0319)
 **Runtime lifecycle: an add-on arrives and leaves without a reboot**
 
 milestone · 2026-08-18
+
+work-unit: [LNK-W-0088](work-units/LNK-W-0088.md#lnk-w-0088)
 
 cites: [LNK-D-0098](decisions.md#lnk-d-0098)
 
@@ -7313,6 +7635,10 @@ cites: [LNK-M-0089](#lnk-m-0089)
 cites: [LNK-M-0082](#lnk-m-0082)
 
 cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-M-0061](#lnk-m-0061)
+
+cites: [LNK-M-0062](#lnk-m-0062)
 
 - **The permission exists before the surface**: `addons.manage`, an
   instance-principal scope in the D98 pattern — enumerated, **seeded by an
@@ -7383,9 +7709,11 @@ cites: [LNK-M-0081](#lnk-m-0081)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0079 *(the loader and verification it drives)*, |
-| Discharges | the install/remove halves of the owner's Add-on manager answer |
+| Depends on | LNK-M-0079 *(the loader and verification it drives)*, LNK-M-0081 *(grants are resolved at activation)*, LNK-M-0082 *(removal is what creates an orphan)*, LNK-M-0087 *(hard, added 2026-08-23 — removal has a pool to drain, and the bullet below is unsatisfiable without one)*. |
+| Discharges | the install/remove halves of the owner's Add-on manager answer (phase-4-candidates.md). Split from the manager surface at the plan's review, 2026-08-18 — the LNK-M-0061/LNK-M-0062 precedent: an upload surface and the thing it feeds are two reviewable units, and this is the one whose Risks called it the sharpest permission the UI has ever offered. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 11 |
 | Plan.md order | 11 |
 | Plan.md depends on | LNK-M-0079 · LNK-M-0081 · LNK-M-0082 · LNK-M-0087 |
 | Plan.md discharges | The install/remove halves of the manager answer · split from the surface at the plan's review |
@@ -7398,6 +7726,8 @@ cites: [LNK-M-0081](#lnk-m-0081)
 **The Add-on manager**
 
 milestone · 2026-08-18
+
+work-unit: [LNK-W-0089](work-units/LNK-W-0089.md#lnk-w-0089)
 
 cites: [LNK-D-0177](decisions.md#lnk-d-0177)
 
@@ -7489,9 +7819,11 @@ cites: [LNK-D-0401](decisions.md#lnk-d-0401)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0082 *(orphan enumeration)*, LNK-M-0086 *(the |
-| Discharges | the visible half of the owner's *the Add-on manager is a real |
+| Depends on | LNK-M-0082 *(orphan enumeration)*, LNK-M-0086 *(the performance figures it renders)*, LNK-M-0088 *(the lifecycle API it drives)*; LNK-M-0083 *(ordering — it is a host page, not an add-on page, but it links into add-on pages LNK-M-0083 makes routable)*. |
+| Discharges | the visible half of the owner's *the Add-on manager is a real surface, not a settings page* answer (phase-4-candidates.md) — the listing, the per-module performance, the orphaned data named explicitly, and the purge choice at the point of decision. The install/remove mechanism is LNK-M-0088's; this page is where an operator meets it. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 12 |
 | Plan.md order | 12 |
 | Plan.md depends on | LNK-M-0082 · LNK-M-0086 · LNK-M-0088 · LNK-M-0083 *(ordering)* |
 | Plan.md discharges | The manager answer's visible half: listing, per-module performance, orphaned data, the purge choice |
@@ -7504,6 +7836,8 @@ cites: [LNK-D-0401](decisions.md#lnk-d-0401)
 **An add-on reaches outward, and only where the operator pointed it**
 
 milestone · 2026-08-25
+
+work-unit: [LNK-W-0090](work-units/LNK-W-0090.md#lnk-w-0090)
 
 cites: [LNK-M-0089](#lnk-m-0089)
 
@@ -7521,9 +7855,9 @@ cites: [LNK-M-0030](#lnk-m-0030)
 
 cites: [LNK-M-0091](#lnk-m-0091)
 
-cites: [LNK-F-0334](findings.md#lnk-f-0334)
-
 cites: [LNK-M-0081](#lnk-m-0081)
+
+cites: [LNK-F-0334](findings.md#lnk-f-0334)
 
 cites: [LNK-M-0092](#lnk-m-0092)
 
@@ -7641,9 +7975,11 @@ cites: [LNK-M-0092](#lnk-m-0092)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0080 *(the ABI this adds a function to, and the |
-| Discharges | F334 — an add-on cannot make an |
+| Depends on | LNK-M-0080 *(the ABI this adds a function to, and the deprecation policy that classifies the addition)*, LNK-M-0081 *(it costs a declared permission)*, LNK-M-0083 *(settings are how an operator names an origin)*, LNK-M-0089 *(the page that renders the permission and holds the settings)*. |
+| Discharges | F334 — an add-on cannot make an outbound network request, found at LNK-M-0092's validation and the reason that milestone could not start. Owner-answered scope, 2026-08-25. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 13 |
 | Plan.md order | 13 |
 | Plan.md depends on | LNK-M-0080 · LNK-M-0081 · LNK-M-0083 · LNK-M-0089 *(ordering)* |
 | Plan.md discharges | F334 — the gap LNK-M-0092's validation found; owner-answered scope 2026-08-25 |
@@ -7656,6 +7992,8 @@ cites: [LNK-M-0092](#lnk-m-0092)
 **A module arrives from a URL, because that was always the intention**
 
 milestone · 2026-08-25
+
+work-unit: [LNK-W-0091](work-units/LNK-W-0091.md#lnk-w-0091)
 
 cites: [LNK-M-0088](#lnk-m-0088)
 
@@ -7732,9 +8070,11 @@ cites: [LNK-M-0089](#lnk-m-0089)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0088 *(the install path this widens, and its |
-| Discharges | owner-added scope, 2026-08-25, correcting a constraint no |
+| Depends on | LNK-M-0088 *(the install path this widens, and its verification, staging and rename)*, LNK-M-0090 *(hard — the fetch machinery, the address refusals and the size cap are that milestone's and are not built twice)*, LNK-M-0089 *(the page an operator does it from)*. |
+| Discharges | owner-added scope, 2026-08-25, correcting a constraint no decision ever backed. LNK-M-0088 shipped *install is an upload, never a fetch* and argued SSRF for it; the owner's actual intention is **local and direct-URL installs, with a module store built on top of them later**, and `decisions.md` and `phase-4-candidates.md` between them contain no entry deciding otherwise. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 14 |
 | Plan.md order | 14 |
 | Plan.md depends on | LNK-M-0088 · LNK-M-0090 · LNK-M-0089 *(ordering)* |
 | Plan.md discharges | Owner-added scope 2026-08-25 — corrects LNK-M-0088's *never a fetch*, which no decision backed |
@@ -7747,6 +8087,8 @@ cites: [LNK-M-0089](#lnk-m-0089)
 **The OIDC add-on: the foundation's acceptance test**
 
 milestone · 2026-08-18
+
+work-unit: [LNK-W-0092](work-units/LNK-W-0092.md#lnk-w-0092)
 
 cites: [LNK-M-0083](#lnk-m-0083)
 
@@ -7769,6 +8111,10 @@ cites: [LNK-M-0089](#lnk-m-0089)
 cites: [LNK-M-0082](#lnk-m-0082)
 
 cites: [LNK-M-0090](#lnk-m-0090)
+
+cites: [LNK-F-0334](findings.md#lnk-f-0334)
+
+cites: [LNK-M-0088](#lnk-m-0088)
 
 - **A stock instance signs a user in through OIDC** with the released add-on
   installed: discovery, authorization-code flow with PKCE against a real IdP
@@ -7839,9 +8185,11 @@ cites: [LNK-M-0090](#lnk-m-0090)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0080, LNK-M-0082, LNK-M-0083, LNK-M-0085, |
-| Discharges | the OIDC limb of Plan.md's *MFA, OAuth, OIDC, SSO, SCIM* row — |
+| Depends on | LNK-M-0080, LNK-M-0082, LNK-M-0083, LNK-M-0085, **LNK-M-0090** *(hard, added 2026-08-25 — a relying party's discovery fetch, token exchange and JWKS fetch are outbound requests this foundation could not make, which is F334 and is why this milestone could not start)*; LNK-M-0089 *(ordering preference — installing through the manager page is the better proof, but LNK-M-0088's API and the LNK-M-0079 directory route suffice if it slips)*. |
+| Discharges | the OIDC limb of Plan.md's *MFA, OAuth, OIDC, SSO, SCIM* row — delivered as a first-party add-on rather than in core, the owner's structural answer of 2026-08-18 — and the acceptance test the whole foundation was built toward: *if the OIDC add-on cannot be built, the foundation is wrong.* |
 | Status | done |
+| Phase | 4 |
+| Phase order | 15 |
 | Plan.md order | 15 |
 | Plan.md depends on | LNK-M-0080 · LNK-M-0082 · LNK-M-0083 · LNK-M-0085 · **LNK-M-0090** · LNK-M-0089 *(ordering)* |
 | Plan.md discharges | The OIDC limb of *MFA, OAuth, OIDC, SSO, SCIM* · the acceptance test · owed-work #4 (the add-on repo's LICENSE, checked as a precondition) |
@@ -7854,6 +8202,8 @@ cites: [LNK-M-0090](#lnk-m-0090)
 **Somebody can start the sign-in an add-on made possible**
 
 milestone · 2026-08-27
+
+work-unit: [LNK-W-0093](work-units/LNK-W-0093.md#lnk-w-0093)
 
 cites: [LNK-M-0083](#lnk-m-0083)
 
@@ -7977,9 +8327,11 @@ cites: [LNK-M-0092](#lnk-m-0092)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0085 *(the grant that makes an add-on an authenticator)*, |
-| Discharges | F345 — an add-on that can mint a |
+| Depends on | LNK-M-0085 *(the grant that makes an add-on an authenticator)*, LNK-M-0083 *(the route the control points at)*, LNK-M-0089 *(the manager, where an operator sees what an add-on declared)*, LNK-M-0092 *(hard — the finding is LNK-M-0092's and the add-on that proves this is LNK-M-0092's product)*. |
+| Discharges | F345 — an add-on that can mint a session cannot put a sign-in control anywhere a person will see it. Owner-answered scope, 2026-08-27. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 16 |
 | Plan.md order | 16 |
 | Plan.md depends on | LNK-M-0083 *(ordering)* · LNK-M-0085 *(ordering)* · LNK-M-0089 *(ordering)* · LNK-M-0092 |
 | Plan.md discharges | F345 — the last inch the acceptance test found; owner-answered scope 2026-08-27 |
@@ -7992,6 +8344,8 @@ cites: [LNK-M-0092](#lnk-m-0092)
 **Pre-release adversarial review**
 
 milestone · 2026-08-30
+
+work-unit: [LNK-W-0094](work-units/LNK-W-0094.md#lnk-w-0094)
 
 cites: [LNK-M-0036](#lnk-m-0036)
 
@@ -8010,6 +8364,8 @@ cites: [LNK-M-0083](#lnk-m-0083)
 cites: [LNK-M-0092](#lnk-m-0092)
 
 cites: [LNK-M-0084](#lnk-m-0084)
+
+cites: [LNK-M-0095](#lnk-m-0095)
 
 - The review runs to LNK-M-0036's specification, as every `X.9` since
   has. An independent actor — different model, fresh context, given the tree
@@ -8041,9 +8397,11 @@ cites: [LNK-M-0084](#lnk-m-0084)
 
 | Field | Value |
 | --- | --- |
-| Depends on | LNK-M-0078–LNK-M-0092, LNK-M-0084, and any |
-| Discharges | the second budgeted review. Nothing is numbered above this |
+| Depends on | LNK-M-0078–LNK-M-0092, LNK-M-0084, and any insertion numbered below this file. |
+| Discharges | the second budgeted review. Nothing is numbered above this except LNK-M-0095, the close, per planning.md §4. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 17 |
 | Plan.md order | 17 |
 | Plan.md depends on | everything below it |
 | Plan.md discharges | — |
@@ -8056,6 +8414,8 @@ cites: [LNK-M-0084](#lnk-m-0084)
 **Deferred findings, documentation pass, 0.4.0**
 
 milestone · 2026-08-25
+
+work-unit: [LNK-W-0095](work-units/LNK-W-0095.md#lnk-w-0095)
 
 cites: [LNK-M-0080](#lnk-m-0080)
 
@@ -8137,8 +8497,10 @@ cites: [LNK-M-0092](#lnk-m-0092)
 | Field | Value |
 | --- | --- |
 | Depends on | everything; last by construction. |
-| Discharges | the phase close, and owed-work #3 |
+| Discharges | the phase close, and owed-work #3 (phase-4-candidates.md): the 1.0 sentence rewritten. |
 | Status | done |
+| Phase | 4 |
+| Phase order | 18 |
 | Plan.md order | 18 |
 | Plan.md depends on | all |
 | Plan.md discharges | Phase close · owed-work #3 (the 1.0 sentence) |

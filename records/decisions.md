@@ -238,8 +238,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [LNK-D-0207](#lnk-d-0207) | the section is dated 2026-08-17, the day the fold was made | 2026-08-17 |
 | [LNK-D-0208](#lnk-d-0208) | the gate checks the date too, and every half fails rather than warns | 2026-08-17 |
 | [LNK-D-0209](#lnk-d-0209) | the single-instance check's readiness wait asks `pg_isready` over | 2026-08-18 |
-| [LNK-D-0210](#lnk-d-0210) | D210 | 2026-08-18 |
-| [LNK-D-0211](#lnk-d-0211) | D211 | 2026-08-18 |
+| [LNK-D-0210](#lnk-d-0210) | The owner raised that the agent records in this repository were costing PR review and work audit rather than serving them | 2026-08-18 |
+| [LNK-D-0211](#lnk-d-0211) | The owner's answers of 2026-08-18 — phase-4-candidates.md's record, ten questions in three rounds — set the phase's shape; this entry records what the *plan* added on top of them, which is the part a… | 2026-08-18 |
 | [LNK-D-0212](#lnk-d-0212) | `release-check` derives the compose project and env file itself | 2026-08-18 |
 | [LNK-D-0213](#lnk-d-0213) | The release-time gate is named in workflow.md's Docs row | 2026-08-18 |
 | [LNK-D-0214](#lnk-d-0214) | An amendment, on a fact | 2026-08-18 |
@@ -265,45 +265,45 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [LNK-D-0234](#lnk-d-0234) | A declared cookie prefix must begin with the add-on's own name, and may | 2026-08-19 |
 | [LNK-D-0235](#lnk-d-0235) | Every payload the host composes is a named record, and a test walks | 2026-08-19 |
 | [LNK-D-0236](#lnk-d-0236) | A function no released host implements has no signature to break, and | 2026-08-19 |
-| [LNK-D-0237](#lnk-d-0237) | D237 | 2026-08-19 |
-| [LNK-D-0238](#lnk-d-0238) | D238 | 2026-08-19 |
+| [LNK-D-0237](#lnk-d-0237) | m62.md delegates one design call to this milestone in writing: *"the analogy to `NonDelegableScopes` is examined and the answer recorded … whether add-on permissions reuse that mechanism or parallel … | 2026-08-19 |
+| [LNK-D-0238](#lnk-d-0238) | Three orderings had to be picked and none was forced by m62.md, so each is recorded with what it costs | 2026-08-19 |
 | [LNK-D-0239](#lnk-d-0239) | An amendment on a fact, found by the worker rather than by a review | 2026-08-19 |
 | [LNK-D-0240](#lnk-d-0240) | Owner-answered 2026-08-19, on a prompt raised at acceptance, and the | 2026-08-19 |
-| [LNK-D-0241](#lnk-d-0241) | D241 | 2026-08-19 |
-| [LNK-D-0242](#lnk-d-0242) | D242 | 2026-08-19 |
-| [LNK-D-0243](#lnk-d-0243) | D243 | 2026-08-19 |
-| [LNK-D-0244](#lnk-d-0244) | D244 | 2026-08-19 |
-| [LNK-D-0245](#lnk-d-0245) | D245 | 2026-08-19 |
-| [LNK-D-0246](#lnk-d-0246) | D246 | 2026-08-19 |
-| [LNK-D-0247](#lnk-d-0247) | D247 | 2026-08-19 |
-| [LNK-D-0248](#lnk-d-0248) | D248 | 2026-08-19 |
-| [LNK-D-0249](#lnk-d-0249) | D249 | 2026-08-19 |
-| [LNK-D-0250](#lnk-d-0250) | D250 | 2026-08-19 |
-| [LNK-D-0251](#lnk-d-0251) | D251 | 2026-08-19 |
+| [LNK-D-0241](#lnk-d-0241) | D240 settled *that* what an add-on writes to the log is neutralized, and where | 2026-08-19 |
+| [LNK-D-0242](#lnk-d-0242) | D241 chose an **enumerated** list of invisible code points over Unicode's own category, and this entry replaces that choice with its inverse | 2026-08-19 |
+| [LNK-D-0243](#lnk-d-0243) | D242 replaced an enumeration of invisible code points with a default-deny, for one reason: *a list a Unicode revision can outdate cannot keep the description three documents give it* | 2026-08-19 |
+| [LNK-D-0244](#lnk-d-0244) | `escapeLogRune` emitted `\n`, `\r`, `\t`, `\uXXXX` and `\UXXXXXXXX` and left `\` alone, because a backslash is a graphic character and default-deny leaves those as themselves | 2026-08-19 |
+| [LNK-D-0245](#lnk-d-0245) | Phase 4 inherits *DDL is additive within a minor version*, and phase-4-candidates.md named the collision at planning time rather than leaving it to be discovered: whose additive-ness is an add-on's? … | 2026-08-19 |
+| [LNK-D-0246](#lnk-d-0246) | m63.md asks for an add-on's queries to run "with a role/search-path confined to its schema" | 2026-08-19 |
+| [LNK-D-0247](#lnk-d-0247) | m63.md's second risk says host-run migrations execute DDL an operator did not write, and that *the manifest hash (LNK-M-0079) makes it the add-on author's DDL* | 2026-08-19 |
+| [LNK-D-0248](#lnk-d-0248) | LNK-M-0082's confinement claim was *a role that reaches nothing else*, and its quota answer was *growth is visible by metric* | 2026-08-19 |
+| [LNK-D-0249](#lnk-d-0249) | `pg_advisory_lock` is `EXECUTE` to `PUBLIC`, this product's job leader-election keys are compile-time constants in a **public** repository, and a session-level advisory lock is **not** released by th… | 2026-08-19 |
+| [LNK-D-0250](#lnk-d-0250) | `EnsureAddonSchema` generates a fresh password on every load, which is what makes *the credential lives no longer than the process that uses it and nothing has to store it* true | 2026-08-19 |
+| [LNK-D-0251](#lnk-d-0251) | `AddonObjectsOutsideSchema` enumerated the places an add-on could own something | 2026-08-19 |
 | [LNK-D-0252](#lnk-d-0252) | An out-of-spec edit to a shipped milestone's test, made because the gate | 2026-08-19 |
-| [LNK-D-0253](#lnk-d-0253) | D253 | 2026-08-19 |
-| [LNK-D-0254](#lnk-d-0254) | D254 | 2026-08-19 |
-| [LNK-D-0255](#lnk-d-0255) | D255 | 2026-08-19 |
+| [LNK-D-0253](#lnk-d-0253) | `EnsureAddonSchema` issued `ALTER ROLE … SET search_path` and nothing else, so a setting the add-on's role had been given stayed given | 2026-08-19 |
+| [LNK-D-0254](#lnk-d-0254) | `AddonSchemaBytes` summed `relkind IN ('r', 'm')` | 2026-08-19 |
+| [LNK-D-0255](#lnk-d-0255) | D245 stated the additive-ness answer as an absolute — *the schema boundary is a database role, so no other add-on can read it, and no amount of qualified SQL gets there* — and three other documents s… | 2026-08-19 |
 | [LNK-D-0256](#lnk-d-0256) | A procedural breach, disclosed by the worker that made it, and the | 2026-08-19 |
 | [LNK-D-0257](#lnk-d-0257) | Owner-answered 2026-08-19, on a prompt the loop should have raised one | 2026-08-19 |
-| [LNK-D-0258](#lnk-d-0258) | D258 | 2026-08-20 |
-| [LNK-D-0259](#lnk-d-0259) | D259 | 2026-08-20 |
-| [LNK-D-0260](#lnk-d-0260) | D260 | 2026-08-20 |
-| [LNK-D-0261](#lnk-d-0261) | D261 | 2026-08-20 |
-| [LNK-D-0262](#lnk-d-0262) | D262 | 2026-08-20 |
-| [LNK-D-0263](#lnk-d-0263) | D263 | 2026-08-20 |
-| [LNK-D-0264](#lnk-d-0264) | D264 | 2026-08-20 |
-| [LNK-D-0265](#lnk-d-0265) | D265 | 2026-08-20 |
-| [LNK-D-0266](#lnk-d-0266) | D266 | 2026-08-20 |
-| [LNK-D-0267](#lnk-d-0267) | D267 | 2026-08-20 |
+| [LNK-D-0258](#lnk-d-0258) | m64.md's *session context, not session power* bullet says a route handler can ask the host who is signed in *"when its grant includes it"*, and LNK-M-0081 closed the permission vocabulary at six tokens, non… | 2026-08-20 |
+| [LNK-D-0259](#lnk-d-0259) | m64.md's first risk calls host-wrapped rendering *the load-bearing security claim*, and the validation note for this milestone put it in one sentence: an add-on's output *"is always data, never templ… | 2026-08-20 |
+| [LNK-D-0260](#lnk-d-0260) | m64.md's second risk names the choice — *"an instance per request or a pooled instance"* — and asks this milestone to measure it | 2026-08-20 |
+| [LNK-D-0261](#lnk-d-0261) | Every other dashboard page is behind `signedIn` — a session, and an organization to spend it in | 2026-08-20 |
+| [LNK-D-0262](#lnk-d-0262) | The `HTTPRequest` record documented its body as *"the body, base64 when it is not UTF-8"*, which is not implementable as written on either side: a guest handed a string cannot tell an encoded body fr… | 2026-08-20 |
+| [LNK-D-0263](#lnk-d-0263) | m64.md asks for config to reach an add-on *"the way it reaches the product"*: `LINKCTRL_ADDON_<NAME>_<SETTING>`, read through `internal/config`, handed to the module at load, bounded by the grant, wi… | 2026-08-20 |
+| [LNK-D-0264](#lnk-d-0264) | m64.md requires this milestone to answer the theme gap as a decision rather than discover it: `internal/ui/theme_test.go` walks the **embedded** templates, a module's assets are not in the embed, and… | 2026-08-20 |
+| [LNK-D-0265](#lnk-d-0265) | The demo gate applies to a milestone that adds something somebody can see, and LNK-M-0083 adds a page | 2026-08-20 |
+| [LNK-D-0266](#lnk-d-0266) | The comment on `maxAddonRequestBody` justified a 64 KiB read cap by claiming *"a module's whole request record crosses the ABI boundary as one value, which is bounded at 64 KiB there, so a larger bod… | 2026-08-20 |
+| [LNK-D-0267](#lnk-d-0267) | D232's whole answer to add-on cookie collisions is that the namespace is *structural*: a declared prefix must begin with the add-on's own name and an underscore, so — the argument went — no add-on ca… | 2026-08-20 |
 | [LNK-D-0268](#lnk-d-0268) | the always-read contract grew 3123 bytes, and it is defended rather than trimmed | 2026-08-20 |
 | [LNK-D-0269](#lnk-d-0269) | LNK-M-0078, LNK-M-0079, LNK-M-0081, LNK-M-0082 and LNK-M-0083 are reopened | 2026-08-20 |
 | [LNK-D-0270](#lnk-d-0270) | the sanitizer asks the real property, and legitimate emoji keep working | 2026-08-20 |
 | [LNK-D-0271](#lnk-d-0271) | The repair D269 | 2026-08-20 |
 | [LNK-D-0272](#lnk-d-0272) | The repair D269 | 2026-08-20 |
 | [LNK-D-0273](#lnk-d-0273) | The correction to D272 | 2026-08-20 |
-| [LNK-D-0274](#lnk-d-0274) | D274 | 2026-08-20 |
-| [LNK-D-0275](#lnk-d-0275) | D275 | 2026-08-20 |
+| [LNK-D-0274](#lnk-d-0274) | The third attempt at LNK-M-0079's reopening, and a correction to D273 rather than to what it decided | 2026-08-20 |
+| [LNK-D-0275](#lnk-d-0275) | Bookkeeping, and it is a decision because deferred-findings.md's own rule says removing or moving a row is one | 2026-08-20 |
 | [LNK-D-0278](#lnk-d-0278) | LNK-M-0081 stays reopened and unfinished while LNK-M-0082 and LNK-M-0083's reopenings land | 2026-08-20 |
 | [LNK-D-0279](#lnk-d-0279) | the correction to D253 | 2026-08-20 |
 | [LNK-D-0280](#lnk-d-0280) | the correction to D279's | 2026-08-21 |
@@ -312,10 +312,10 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [LNK-D-0283](#lnk-d-0283) | owner-answered, superseding D270's | 2026-08-21 |
 | [LNK-D-0284](#lnk-d-0284) | the correction to D283 | 2026-08-21 |
 | [LNK-D-0285](#lnk-d-0285) | owner-answered, ending F285's fourth round | 2026-08-21 |
-| [LNK-D-0286](#lnk-d-0286) | D286 | 2026-08-21 |
-| [LNK-D-0287](#lnk-d-0287) | D287 | 2026-08-21 |
-| [LNK-D-0288](#lnk-d-0288) | D288 | 2026-08-21 |
-| [LNK-D-0289](#lnk-d-0289) | D289 | 2026-08-21 |
+| [LNK-D-0286](#lnk-d-0286) | Five findings against LNK-M-0081's fifth attempt, and three of them are one defect | 2026-08-21 |
+| [LNK-D-0287](#lnk-d-0287) | F289 reopened LNK-M-0083: an add-on holding nothing but `routes.own_prefix` could sign a visitor out of LinkCtrl, by volume rather than by naming | 2026-08-21 |
+| [LNK-D-0288](#lnk-d-0288) | F290, the other finding that reopened LNK-M-0083 | 2026-08-21 |
+| [LNK-D-0289](#lnk-d-0289) | The second pass over the reopened LNK-M-0083 | 2026-08-21 |
 | [LNK-D-0291](#lnk-d-0291) | an add-on's callback is a GET redirect, and `response_mode=form_post` is not supported | 2026-08-21 |
 | [LNK-D-0292](#lnk-d-0292) | the ABI grows a real random source and a real clock, inside LNK-M-0085 | 2026-08-21 |
 | [LNK-D-0293](#lnk-d-0293) | the SDK's `crypto/rand` and `time.Now` are repaired underneath, and the two ABI functions are offered *alongside* | 2026-08-21 |
@@ -12529,7 +12529,7 @@ manage.
 
 ## LNK-D-0210
 
-**D210**
+**The owner raised that the agent records in this repository were costing PR review and work audit rather than serving them**
 
 decision · 2026-08-18
 
@@ -12582,7 +12582,7 @@ knows this was the cheap half taken first on purpose.
 
 ## LNK-D-0211
 
-**D211**
+**The owner's answers of 2026-08-18 — phase-4-candidates.md's record, ten questions in three rounds — set the phase's shape; this entry records what the *plan* added on top of them, which is the part a…**
 
 decision · 2026-08-18
 
@@ -14372,7 +14372,7 @@ compile against.
 
 ## LNK-D-0237
 
-**D237**
+**m62.md delegates one design call to this milestone in writing: *"the analogy to `NonDelegableScopes` is examined and the answer recorded … whether add-on permissions reuse that mechanism or parallel …**
 
 decision · 2026-08-19
 
@@ -14485,7 +14485,7 @@ is unaffected.
 
 ## LNK-D-0238
 
-**D238**
+**Three orderings had to be picked and none was forced by m62.md, so each is recorded with what it costs**
 
 decision · 2026-08-19
 
@@ -14665,7 +14665,7 @@ promise about code this project did not write.
 
 ## LNK-D-0241
 
-**D241**
+**D240 settled *that* what an add-on writes to the log is neutralized, and where**
 
 decision · 2026-08-19
 
@@ -14753,7 +14753,7 @@ generated doc comment above it names the permission.
 
 ## LNK-D-0242
 
-**D242**
+**D241 chose an **enumerated** list of invisible code points over Unicode's own category, and this entry replaces that choice with its inverse**
 
 decision · 2026-08-19
 
@@ -14870,7 +14870,7 @@ whoever reads the log.
 
 ## LNK-D-0243
 
-**D243**
+**D242 replaced an enumeration of invisible code points with a default-deny, for one reason: *a list a Unicode revision can outdate cannot keep the description three documents give it***
 
 decision · 2026-08-19
 
@@ -14942,7 +14942,7 @@ expression against a table the package was already importing.
 
 ## LNK-D-0244
 
-**D244**
+**`escapeLogRune` emitted `\n`, `\r`, `\t`, `\uXXXX` and `\UXXXXXXXX` and left `\` alone, because a backslash is a graphic character and default-deny leaves those as themselves**
 
 decision · 2026-08-19
 
@@ -15008,7 +15008,7 @@ which would mangle every message this product logs.
 
 ## LNK-D-0245
 
-**D245**
+**Phase 4 inherits *DDL is additive within a minor version*, and phase-4-candidates.md named the collision at planning time rather than leaving it to be discovered: whose additive-ness is an add-on's? …**
 
 decision · 2026-08-19
 
@@ -15076,7 +15076,7 @@ their release numbering.
 
 ## LNK-D-0246
 
-**D246**
+**m63.md asks for an add-on's queries to run "with a role/search-path confined to its schema"**
 
 decision · 2026-08-19
 
@@ -15162,7 +15162,7 @@ all needs `CREATE` on the database, which this role does not have.
 
 ## LNK-D-0247
 
-**D247**
+**m63.md's second risk says host-run migrations execute DDL an operator did not write, and that *the manifest hash (LNK-M-0079) makes it the add-on author's DDL***
 
 decision · 2026-08-19
 
@@ -15229,7 +15229,7 @@ migration could only ever be a file that did nothing.
 
 ## LNK-D-0248
 
-**D248**
+**LNK-M-0082's confinement claim was *a role that reaches nothing else*, and its quota answer was *growth is visible by metric***
 
 decision · 2026-08-19
 
@@ -15308,7 +15308,7 @@ row.
 
 ## LNK-D-0249
 
-**D249**
+**`pg_advisory_lock` is `EXECUTE` to `PUBLIC`, this product's job leader-election keys are compile-time constants in a **public** repository, and a session-level advisory lock is **not** released by th…**
 
 decision · 2026-08-19
 
@@ -15369,7 +15369,7 @@ lock free* was LNK-M-0071's claim and was unqualified.
 
 ## LNK-D-0250
 
-**D250**
+**`EnsureAddonSchema` generates a fresh password on every load, which is what makes *the credential lives no longer than the process that uses it and nothing has to store it* true**
 
 decision · 2026-08-19
 
@@ -15427,7 +15427,7 @@ fail its load, loudly, which is F277.
 
 ## LNK-D-0251
 
-**D251**
+**`AddonObjectsOutsideSchema` enumerated the places an add-on could own something**
 
 decision · 2026-08-19
 
@@ -15613,7 +15613,7 @@ B derives one of them from the other, never from the clock.**
 
 ## LNK-D-0253
 
-**D253**
+**`EnsureAddonSchema` issued `ALTER ROLE … SET search_path` and nothing else, so a setting the add-on's role had been given stayed given**
 
 decision · 2026-08-19
 
@@ -15702,7 +15702,7 @@ while a disk fills has been told something untrue by this project, and
 
 ## LNK-D-0254
 
-**D254**
+**`AddonSchemaBytes` summed `relkind IN ('r', 'm')`**
 
 decision · 2026-08-19
 
@@ -15840,7 +15840,7 @@ post-condition is the set difference D251 made it. This was the last one.
 
 ## LNK-D-0255
 
-**D255**
+**D245 stated the additive-ness answer as an absolute — *the schema boundary is a database role, so no other add-on can read it, and no amount of qualified SQL gets there* — and three other documents s…**
 
 decision · 2026-08-19
 
@@ -16124,7 +16124,7 @@ of it is.**
 
 ## LNK-D-0258
 
-**D258**
+**m64.md's *session context, not session power* bullet says a route handler can ask the host who is signed in *"when its grant includes it"*, and LNK-M-0081 closed the permission vocabulary at six tokens, non…**
 
 decision · 2026-08-20
 
@@ -16173,7 +16173,7 @@ first cannot become a disclosure.
 
 ## LNK-D-0259
 
-**D259**
+**m64.md's first risk calls host-wrapped rendering *the load-bearing security claim*, and the validation note for this milestone put it in one sentence: an add-on's output *"is always data, never templ…**
 
 decision · 2026-08-20
 
@@ -16225,7 +16225,7 @@ somebody decides that markup from a module is worth a filter.
 
 ## LNK-D-0260
 
-**D260**
+**m64.md's second risk names the choice — *"an instance per request or a pooled instance"* — and asks this milestone to measure it**
 
 decision · 2026-08-20
 
@@ -16297,7 +16297,7 @@ against 250 is not a price worth that.
 
 ## LNK-D-0261
 
-**D261**
+**Every other dashboard page is behind `signedIn` — a session, and an organization to spend it in**
 
 decision · 2026-08-20
 
@@ -16343,7 +16343,7 @@ belong. Left for the milestone that has a case.
 
 ## LNK-D-0262
 
-**D262**
+**The `HTTPRequest` record documented its body as *"the body, base64 when it is not UTF-8"*, which is not implementable as written on either side: a guest handed a string cannot tell an encoded body fr…**
 
 decision · 2026-08-20
 
@@ -16373,7 +16373,7 @@ is a milestone with a case in front of it, not a field added in advance.
 
 ## LNK-D-0263
 
-**D263**
+**m64.md asks for config to reach an add-on *"the way it reaches the product"*: `LINKCTRL_ADDON_<NAME>_<SETTING>`, read through `internal/config`, handed to the module at load, bounded by the grant, wi…**
 
 decision · 2026-08-20
 
@@ -16416,7 +16416,7 @@ therefore takes a restart, which `docs/configuration.md` says.
 
 ## LNK-D-0264
 
-**D264**
+**m64.md requires this milestone to answer the theme gap as a decision rather than discover it: `internal/ui/theme_test.go` walks the **embedded** templates, a module's assets are not in the embed, and…**
 
 decision · 2026-08-20
 
@@ -16463,7 +16463,7 @@ trusted without evidence.
 
 ## LNK-D-0265
 
-**D265**
+**The demo gate applies to a milestone that adds something somebody can see, and LNK-M-0083 adds a page**
 
 decision · 2026-08-20
 
@@ -16500,7 +16500,7 @@ look at, and the demo does not install the thing that would draw it.
 
 ## LNK-D-0266
 
-**D266**
+**The comment on `maxAddonRequestBody` justified a 64 KiB read cap by claiming *"a module's whole request record crosses the ABI boundary as one value, which is bounded at 64 KiB there, so a larger bod…**
 
 decision · 2026-08-20
 
@@ -16574,7 +16574,7 @@ add-on to answer with more than 64 KiB should argue for it where that argument b
 
 ## LNK-D-0267
 
-**D267**
+**D232's whole answer to add-on cookie collisions is that the namespace is *structural*: a declared prefix must begin with the add-on's own name and an underscore, so — the argument went — no add-on ca…**
 
 decision · 2026-08-20
 
@@ -17010,7 +17010,7 @@ arithmetic lived in a code comment, which is not a place an operator meets it;
 
 ## LNK-D-0274
 
-**D274**
+**The third attempt at LNK-M-0079's reopening, and a correction to D273 rather than to what it decided**
 
 decision · 2026-08-20
 
@@ -17087,7 +17087,7 @@ own budget, so instantiation's clock starts fresh.
 
 ## LNK-D-0275
 
-**D275**
+**Bookkeeping, and it is a decision because deferred-findings.md's own rule says removing or moving a row is one**
 
 decision · 2026-08-20
 
@@ -18026,7 +18026,7 @@ that makes what it leaves out survivable.
 
 ## LNK-D-0286
 
-**D286**
+**Five findings against LNK-M-0081's fifth attempt, and three of them are one defect**
 
 decision · 2026-08-21
 
@@ -18140,7 +18140,7 @@ that has been wrong in two consecutive rounds is not made right by a third entry
 
 ## LNK-D-0287
 
-**D287**
+**F289 reopened LNK-M-0083: an add-on holding nothing but `routes.own_prefix` could sign a visitor out of LinkCtrl, by volume rather than by naming**
 
 decision · 2026-08-21
 
@@ -18249,7 +18249,7 @@ is that an add-on is no longer one of them.
 
 ## LNK-D-0288
 
-**D288**
+**F290, the other finding that reopened LNK-M-0083**
 
 decision · 2026-08-21
 
@@ -18328,7 +18328,7 @@ deadline, and a module spinning inside 8 MiB is still a module spinning.
 
 ## LNK-D-0289
 
-**D289**
+**The second pass over the reopened LNK-M-0083**
 
 decision · 2026-08-21
 

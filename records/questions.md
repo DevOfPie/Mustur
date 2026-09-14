@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-147 record(s), by identifier.
+148 record(s), by identifier.
 
 ---
 
@@ -709,6 +709,33 @@ Re-asking LNK-Q-0002, which was imported from LinkCtrl's upcoming-decisions.md a
 | Answer | Plan it for the next phase |
 | Answered | 2026-09-13 23:32 |
 | Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## LNK-Q-0005
+
+**LinkCtrl's phase summaries were deleted by W48 and never imported. Where do they live?**
+
+question · 2026-09-14
+
+work-unit: [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096)
+
+decision: [LNK-D-0952](decisions.md#lnk-d-0952)
+
+Found by the independent review of PR 14. The importer read only the tables in phase-details/phase-1.md to phase-4.md (milestone status and the D1 to D193 decision tables). Their prose is in neither LinkCtrl's tree nor Mustur: phase-1's build status detail, phase-2's and phase-3's Not in Phase N lists with the reason each item was deferred, phase-3's status at the close, and all 51 lines of phase-4.md. phase-3-candidates.md still sends readers to the Not in Phase 2 list. Two conventions from phase-details/README.md are also gone: 'no phase is live, so /work phase refuses to resume' and the 'in progress (reopened)' status. Mustur has no kind for a phase summary.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Merging LinkCtrl PR 14: as it stands the move loses them |
+| Needed to proceed | yes |
+| Option | Keep them in the tree :: Recommended: the prose of the four phase files moves verbatim into one staying file, docs/build-notes/phases.md, minus the tables Mustur now holds; the two conventions go into milestone-rules.md :: MUS-Q-0093's rule applied as LNK-Q-0003 applied it: no kind holds them, so they stay. Nothing is lost, every pointer has a target, and the tables are not held twice. Costs a second new file in a change meant to shrink the tree, about 20 KB. |
+| Option | Import them into Mustur :: each phase becomes a record, a work unit per phase, holding its prose :: The tree shrinks as W48 set out. Costs a kind Mustur uses for milestone files stretched to hold a phase, a change to the importer and a repair of the live store, and PR 14 waits on both. |
+| Option | Restore the four phase files whole :: phase-details/phase-1.md to phase-4.md stay in the tree as they were :: The smallest change to PR 14. Their status and decision tables are then held twice, in the tree and in Mustur, and the two copies drift the first time a status changes. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 00:14 |
 
 ---
 

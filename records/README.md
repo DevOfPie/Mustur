@@ -9,7 +9,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 107 | [milestones.md](milestones.md) |
-| question | 147 | [questions.md](questions.md) |
+| question | 148 | [questions.md](questions.md) |
 | decision | 1138 | [decisions.md](decisions.md) |
 | finding | 554 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
@@ -252,6 +252,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-Q-0002](questions.md#lnk-q-0002) | question | An 'All Workspaces' dashboard scope — which phase, and whose milestone? |
 | [LNK-Q-0003](questions.md#lnk-q-0003) | question | W48: phase-details/README.md's fourteen inherited rules and _template.md are in no Mustur record — where do they go? |
 | [LNK-Q-0004](questions.md#lnk-q-0004) | question | Should LinkCtrl get an 'All Workspaces' view on the dashboard and links pages, and if so, when? |
+| [LNK-Q-0005](questions.md#lnk-q-0005) | question | LinkCtrl's phase summaries were deleted by W48 and never imported. Where do they live? |
 | [LNK-D-0001](decisions.md#lnk-d-0001) | decision | Mailer |
 | [LNK-D-0002](decisions.md#lnk-d-0002) | decision | Cookie / returning-visitor conditions |
 | [LNK-D-0003](decisions.md#lnk-d-0003) | decision | Custom-domain TLS |
@@ -461,8 +462,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-D-0207](decisions.md#lnk-d-0207) | decision | the section is dated 2026-08-17, the day the fold was made |
 | [LNK-D-0208](decisions.md#lnk-d-0208) | decision | the gate checks the date too, and every half fails rather than warns |
 | [LNK-D-0209](decisions.md#lnk-d-0209) | decision | the single-instance check's readiness wait asks `pg_isready` over |
-| [LNK-D-0210](decisions.md#lnk-d-0210) | decision | D210 |
-| [LNK-D-0211](decisions.md#lnk-d-0211) | decision | D211 |
+| [LNK-D-0210](decisions.md#lnk-d-0210) | decision | The owner raised that the agent records in this repository were costing PR review and work audit rather than serving them |
+| [LNK-D-0211](decisions.md#lnk-d-0211) | decision | The owner's answers of 2026-08-18 — phase-4-candidates.md's record, ten questions in three rounds — set the phase's shape; this entry records what the *plan* added on top of them, which is the part a… |
 | [LNK-D-0212](decisions.md#lnk-d-0212) | decision | `release-check` derives the compose project and env file itself |
 | [LNK-D-0213](decisions.md#lnk-d-0213) | decision | The release-time gate is named in workflow.md's Docs row |
 | [LNK-D-0214](decisions.md#lnk-d-0214) | decision | An amendment, on a fact |
@@ -488,45 +489,45 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-D-0234](decisions.md#lnk-d-0234) | decision | A declared cookie prefix must begin with the add-on's own name, and may |
 | [LNK-D-0235](decisions.md#lnk-d-0235) | decision | Every payload the host composes is a named record, and a test walks |
 | [LNK-D-0236](decisions.md#lnk-d-0236) | decision | A function no released host implements has no signature to break, and |
-| [LNK-D-0237](decisions.md#lnk-d-0237) | decision | D237 |
-| [LNK-D-0238](decisions.md#lnk-d-0238) | decision | D238 |
+| [LNK-D-0237](decisions.md#lnk-d-0237) | decision | m62.md delegates one design call to this milestone in writing: *"the analogy to `NonDelegableScopes` is examined and the answer recorded … whether add-on permissions reuse that mechanism or parallel … |
+| [LNK-D-0238](decisions.md#lnk-d-0238) | decision | Three orderings had to be picked and none was forced by m62.md, so each is recorded with what it costs |
 | [LNK-D-0239](decisions.md#lnk-d-0239) | decision | An amendment on a fact, found by the worker rather than by a review |
 | [LNK-D-0240](decisions.md#lnk-d-0240) | decision | Owner-answered 2026-08-19, on a prompt raised at acceptance, and the |
-| [LNK-D-0241](decisions.md#lnk-d-0241) | decision | D241 |
-| [LNK-D-0242](decisions.md#lnk-d-0242) | decision | D242 |
-| [LNK-D-0243](decisions.md#lnk-d-0243) | decision | D243 |
-| [LNK-D-0244](decisions.md#lnk-d-0244) | decision | D244 |
-| [LNK-D-0245](decisions.md#lnk-d-0245) | decision | D245 |
-| [LNK-D-0246](decisions.md#lnk-d-0246) | decision | D246 |
-| [LNK-D-0247](decisions.md#lnk-d-0247) | decision | D247 |
-| [LNK-D-0248](decisions.md#lnk-d-0248) | decision | D248 |
-| [LNK-D-0249](decisions.md#lnk-d-0249) | decision | D249 |
-| [LNK-D-0250](decisions.md#lnk-d-0250) | decision | D250 |
-| [LNK-D-0251](decisions.md#lnk-d-0251) | decision | D251 |
+| [LNK-D-0241](decisions.md#lnk-d-0241) | decision | D240 settled *that* what an add-on writes to the log is neutralized, and where |
+| [LNK-D-0242](decisions.md#lnk-d-0242) | decision | D241 chose an **enumerated** list of invisible code points over Unicode's own category, and this entry replaces that choice with its inverse |
+| [LNK-D-0243](decisions.md#lnk-d-0243) | decision | D242 replaced an enumeration of invisible code points with a default-deny, for one reason: *a list a Unicode revision can outdate cannot keep the description three documents give it* |
+| [LNK-D-0244](decisions.md#lnk-d-0244) | decision | `escapeLogRune` emitted `\n`, `\r`, `\t`, `\uXXXX` and `\UXXXXXXXX` and left `\` alone, because a backslash is a graphic character and default-deny leaves those as themselves |
+| [LNK-D-0245](decisions.md#lnk-d-0245) | decision | Phase 4 inherits *DDL is additive within a minor version*, and phase-4-candidates.md named the collision at planning time rather than leaving it to be discovered: whose additive-ness is an add-on's? … |
+| [LNK-D-0246](decisions.md#lnk-d-0246) | decision | m63.md asks for an add-on's queries to run "with a role/search-path confined to its schema" |
+| [LNK-D-0247](decisions.md#lnk-d-0247) | decision | m63.md's second risk says host-run migrations execute DDL an operator did not write, and that *the manifest hash (LNK-M-0079) makes it the add-on author's DDL* |
+| [LNK-D-0248](decisions.md#lnk-d-0248) | decision | LNK-M-0082's confinement claim was *a role that reaches nothing else*, and its quota answer was *growth is visible by metric* |
+| [LNK-D-0249](decisions.md#lnk-d-0249) | decision | `pg_advisory_lock` is `EXECUTE` to `PUBLIC`, this product's job leader-election keys are compile-time constants in a **public** repository, and a session-level advisory lock is **not** released by th… |
+| [LNK-D-0250](decisions.md#lnk-d-0250) | decision | `EnsureAddonSchema` generates a fresh password on every load, which is what makes *the credential lives no longer than the process that uses it and nothing has to store it* true |
+| [LNK-D-0251](decisions.md#lnk-d-0251) | decision | `AddonObjectsOutsideSchema` enumerated the places an add-on could own something |
 | [LNK-D-0252](decisions.md#lnk-d-0252) | decision | An out-of-spec edit to a shipped milestone's test, made because the gate |
-| [LNK-D-0253](decisions.md#lnk-d-0253) | decision | D253 |
-| [LNK-D-0254](decisions.md#lnk-d-0254) | decision | D254 |
-| [LNK-D-0255](decisions.md#lnk-d-0255) | decision | D255 |
+| [LNK-D-0253](decisions.md#lnk-d-0253) | decision | `EnsureAddonSchema` issued `ALTER ROLE … SET search_path` and nothing else, so a setting the add-on's role had been given stayed given |
+| [LNK-D-0254](decisions.md#lnk-d-0254) | decision | `AddonSchemaBytes` summed `relkind IN ('r', 'm')` |
+| [LNK-D-0255](decisions.md#lnk-d-0255) | decision | D245 stated the additive-ness answer as an absolute — *the schema boundary is a database role, so no other add-on can read it, and no amount of qualified SQL gets there* — and three other documents s… |
 | [LNK-D-0256](decisions.md#lnk-d-0256) | decision | A procedural breach, disclosed by the worker that made it, and the |
 | [LNK-D-0257](decisions.md#lnk-d-0257) | decision | Owner-answered 2026-08-19, on a prompt the loop should have raised one |
-| [LNK-D-0258](decisions.md#lnk-d-0258) | decision | D258 |
-| [LNK-D-0259](decisions.md#lnk-d-0259) | decision | D259 |
-| [LNK-D-0260](decisions.md#lnk-d-0260) | decision | D260 |
-| [LNK-D-0261](decisions.md#lnk-d-0261) | decision | D261 |
-| [LNK-D-0262](decisions.md#lnk-d-0262) | decision | D262 |
-| [LNK-D-0263](decisions.md#lnk-d-0263) | decision | D263 |
-| [LNK-D-0264](decisions.md#lnk-d-0264) | decision | D264 |
-| [LNK-D-0265](decisions.md#lnk-d-0265) | decision | D265 |
-| [LNK-D-0266](decisions.md#lnk-d-0266) | decision | D266 |
-| [LNK-D-0267](decisions.md#lnk-d-0267) | decision | D267 |
+| [LNK-D-0258](decisions.md#lnk-d-0258) | decision | m64.md's *session context, not session power* bullet says a route handler can ask the host who is signed in *"when its grant includes it"*, and LNK-M-0081 closed the permission vocabulary at six tokens, non… |
+| [LNK-D-0259](decisions.md#lnk-d-0259) | decision | m64.md's first risk calls host-wrapped rendering *the load-bearing security claim*, and the validation note for this milestone put it in one sentence: an add-on's output *"is always data, never templ… |
+| [LNK-D-0260](decisions.md#lnk-d-0260) | decision | m64.md's second risk names the choice — *"an instance per request or a pooled instance"* — and asks this milestone to measure it |
+| [LNK-D-0261](decisions.md#lnk-d-0261) | decision | Every other dashboard page is behind `signedIn` — a session, and an organization to spend it in |
+| [LNK-D-0262](decisions.md#lnk-d-0262) | decision | The `HTTPRequest` record documented its body as *"the body, base64 when it is not UTF-8"*, which is not implementable as written on either side: a guest handed a string cannot tell an encoded body fr… |
+| [LNK-D-0263](decisions.md#lnk-d-0263) | decision | m64.md asks for config to reach an add-on *"the way it reaches the product"*: `LINKCTRL_ADDON_<NAME>_<SETTING>`, read through `internal/config`, handed to the module at load, bounded by the grant, wi… |
+| [LNK-D-0264](decisions.md#lnk-d-0264) | decision | m64.md requires this milestone to answer the theme gap as a decision rather than discover it: `internal/ui/theme_test.go` walks the **embedded** templates, a module's assets are not in the embed, and… |
+| [LNK-D-0265](decisions.md#lnk-d-0265) | decision | The demo gate applies to a milestone that adds something somebody can see, and LNK-M-0083 adds a page |
+| [LNK-D-0266](decisions.md#lnk-d-0266) | decision | The comment on `maxAddonRequestBody` justified a 64 KiB read cap by claiming *"a module's whole request record crosses the ABI boundary as one value, which is bounded at 64 KiB there, so a larger bod… |
+| [LNK-D-0267](decisions.md#lnk-d-0267) | decision | D232's whole answer to add-on cookie collisions is that the namespace is *structural*: a declared prefix must begin with the add-on's own name and an underscore, so — the argument went — no add-on ca… |
 | [LNK-D-0268](decisions.md#lnk-d-0268) | decision | the always-read contract grew 3123 bytes, and it is defended rather than trimmed |
 | [LNK-D-0269](decisions.md#lnk-d-0269) | decision | LNK-M-0078, LNK-M-0079, LNK-M-0081, LNK-M-0082 and LNK-M-0083 are reopened |
 | [LNK-D-0270](decisions.md#lnk-d-0270) | decision | the sanitizer asks the real property, and legitimate emoji keep working |
 | [LNK-D-0271](decisions.md#lnk-d-0271) | decision | The repair D269 |
 | [LNK-D-0272](decisions.md#lnk-d-0272) | decision | The repair D269 |
 | [LNK-D-0273](decisions.md#lnk-d-0273) | decision | The correction to D272 |
-| [LNK-D-0274](decisions.md#lnk-d-0274) | decision | D274 |
-| [LNK-D-0275](decisions.md#lnk-d-0275) | decision | D275 |
+| [LNK-D-0274](decisions.md#lnk-d-0274) | decision | The third attempt at LNK-M-0079's reopening, and a correction to D273 rather than to what it decided |
+| [LNK-D-0275](decisions.md#lnk-d-0275) | decision | Bookkeeping, and it is a decision because deferred-findings.md's own rule says removing or moving a row is one |
 | [LNK-D-0278](decisions.md#lnk-d-0278) | decision | LNK-M-0081 stays reopened and unfinished while LNK-M-0082 and LNK-M-0083's reopenings land |
 | [LNK-D-0279](decisions.md#lnk-d-0279) | decision | the correction to D253 |
 | [LNK-D-0280](decisions.md#lnk-d-0280) | decision | the correction to D279's |
@@ -535,10 +536,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-D-0283](decisions.md#lnk-d-0283) | decision | owner-answered, superseding D270's |
 | [LNK-D-0284](decisions.md#lnk-d-0284) | decision | the correction to D283 |
 | [LNK-D-0285](decisions.md#lnk-d-0285) | decision | owner-answered, ending F285's fourth round |
-| [LNK-D-0286](decisions.md#lnk-d-0286) | decision | D286 |
-| [LNK-D-0287](decisions.md#lnk-d-0287) | decision | D287 |
-| [LNK-D-0288](decisions.md#lnk-d-0288) | decision | D288 |
-| [LNK-D-0289](decisions.md#lnk-d-0289) | decision | D289 |
+| [LNK-D-0286](decisions.md#lnk-d-0286) | decision | Five findings against LNK-M-0081's fifth attempt, and three of them are one defect |
+| [LNK-D-0287](decisions.md#lnk-d-0287) | decision | F289 reopened LNK-M-0083: an add-on holding nothing but `routes.own_prefix` could sign a visitor out of LinkCtrl, by volume rather than by naming |
+| [LNK-D-0288](decisions.md#lnk-d-0288) | decision | F290, the other finding that reopened LNK-M-0083 |
+| [LNK-D-0289](decisions.md#lnk-d-0289) | decision | The second pass over the reopened LNK-M-0083 |
 | [LNK-D-0291](decisions.md#lnk-d-0291) | decision | an add-on's callback is a GET redirect, and `response_mode=form_post` is not supported |
 | [LNK-D-0292](decisions.md#lnk-d-0292) | decision | the ABI grows a real random source and a real clock, inside LNK-M-0085 |
 | [LNK-D-0293](decisions.md#lnk-d-0293) | decision | the SDK's `crypto/rand` and `time.Now` are repaired underneath, and the two ABI functions are offered *alongside* |
