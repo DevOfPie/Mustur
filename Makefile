@@ -76,11 +76,21 @@ surfaces: ## Every page served is a surface docs/ui-surfaces.md briefed first
 # there is none, and the gate says out loud that it did not run rather than
 # reading the export in its place. It never runs the binary against a missing
 # store: openStore creates an empty one, and an empty store passes silently,
-# which would be "no store" reported as "no buried question".
+# which would be "no store" reported as "no buried question". A store that
+# exists and holds no records is the same silence, and a size test cannot tell
+# it apart (an initialised empty store is 147,456 bytes), so records are counted.
+# The store is MUSTUR_DB when set, which is how records-refresh points this at
+# the store it exported.
 questions: ## No open question in the store was left unsurfaced as a prompt
 	@store=$$(scripts/store-path.sh); \
-	  if [ ! -s "$$store" ]; then \
+	  if [ ! -f "$$store" ]; then \
 	    echo "  skip  question gate did not run: no store at $$store, and it reads only the store (MUS-D-0183)"; \
+	    exit 0; \
+	  fi; \
+	  list=$$(go run ./cmd/mustur list --db "$$store") \
+	    || { echo "  FAIL  could not list the records in $$store"; exit 1; }; \
+	  if [ -z "$$list" ]; then \
+	    echo "  skip  question gate did not run: store holds no records at $$store, and an empty store answers nothing (MUS-D-0183)"; \
 	    exit 0; \
 	  fi; \
 	  go run ./cmd/mustur questions --gate --db "$$store" --project MUS \

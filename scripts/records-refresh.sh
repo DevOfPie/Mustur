@@ -46,11 +46,22 @@ if [ "$told" -eq 0 ] && [ "$store" != "$(realpath -m "$live")" ]; then
   printf '        exporting another store proposes replacing the record with it; pass --db PATH if that is meant\n' >&2
   exit 1
 fi
-if [ ! -s "$store" ]; then
+if [ ! -f "$store" ]; then
   # openStore creates a missing database, and an empty export deletes records/.
   printf '  FAIL  no store at %s; refusing to export an empty one over main'\''s records/\n' "$store" >&2
   exit 1
 fi
+# A size test cannot tell an empty store from a full one: an initialised store
+# holding nothing is 147,456 bytes. Count what it holds.
+if ! records=$(go run ./cmd/mustur list --db "$store"); then
+  printf '  FAIL  could not list the records in %s\n' "$store" >&2
+  exit 1
+fi
+if [ -z "$records" ]; then
+  printf '  FAIL  the store at %s holds no records; refusing to export it over main'\''s records/\n' "$store" >&2
+  exit 1
+fi
+printf '  ok    %s holds %d record(s)\n' "$store" "$(grep -c '' <<<"$records")"
 
 git fetch -q origin
 stamp=$(date -u +%Y%m%dT%H%M%SZ)
@@ -73,7 +84,9 @@ if [ -z "$(git -C "$wt" status --porcelain -- records decisions.md)" ]; then
   exit 0
 fi
 
-if ! make -C "$wt" --no-print-directory check; then
+# The question gate reads MUSTUR_DB through scripts/store-path.sh, so the check
+# asks the store that was exported, not whatever this environment defaults to.
+if ! MUSTUR_DB=$store make -C "$wt" --no-print-directory check; then
   printf '  FAIL  make check failed on the refreshed export; %s is left for reading, nothing pushed\n' "$wt" >&2
   exit 1
 fi
