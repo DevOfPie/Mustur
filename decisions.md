@@ -3648,3 +3648,23 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | --- | --- |
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
+
+### MUS-D-0178
+
+**The intake box keeps what is typed as a draft of its own, cleared by filing or by Clear, and pictures are not kept**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0120
+
+fixes: MUS-F-0152
+
+the count it is the seventh of: MUS-Q-0053
+
+the draft it is modelled on: MUS-Q-0034
+
+The owner answered MUS-Q-0120 with a text draft of intake's own. Intake is served no-store, so going to another tab and back was a fresh page with an empty box. Intake now carries a second script, the seventh page to by MUS-Q-0053's count, which that answer makes a new decision rather than a precedent, and this is that decision. The draft lives in the browser under its own key, never the composer's, so filing a jot cannot clear a message being drafted for a session or the reverse; it is restored only into an empty box, so text the server handed back after an error wins; and it is cleared when a filing succeeds, marked by the redirect rather than inferred, or by a Clear button the script reveals. The page still files with the script blocked, and what stops is only the draft. Pictures are not kept, because nothing can refill a file input and holding up to six pictures in the browser was the option not taken. Separately, a jot over the word limit now comes back in the box rather than being lost; one that fails to parse cannot, because the form never reaches the handler. Measured in a headless browser at 390x844 against a throwaway store: typed text survived a link away and back and the Back button, Clear emptied box and draft, both filing paths cleared it, the composer's draft was untouched, and with script blocked the draft row never appeared.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/web/assets/intake.js, internal/web/intake.go |
