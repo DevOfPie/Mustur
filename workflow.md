@@ -197,6 +197,18 @@ out of scope → append one line to queue.md, continue what you were on
 this file is the rule for: what belongs in the queue is what this document says
 belongs in it.
 
+### A record was filed
+
+```
+on a feature branch → commit no export; make export refuses, make check fails
+after merges        → make records-refresh: branch from main, export, PR, never merge
+anchors into
+  records/          → checked for the file only off main; in full on main and refresh
+```
+
+The export is committed on main only
+([MUS-D-0182](records/decisions.md#mus-d-0182)).
+
 ### A claim is about to be written
 
 ```
@@ -228,6 +240,7 @@ never be the reason scope is cut.
 | Links | Every relative link and anchor in tracked `.md` resolves |
 | Scope | One topic per commit |
 | Other repositories | Untouched |
+| Export | Nothing under `records/`, nothing at or below `decisions.md`'s generated marker — unless the branch is `main` or `records/refresh-*` ([MUS-D-0182](records/decisions.md#mus-d-0182)) |
 
 Commit messages are long prose explaining *why*. The diff shows what.
 
