@@ -232,10 +232,10 @@ type subagentRow struct {
 
 // held is the call this session is holding in front of the owner, if any.
 //
-// Unlike subagents below it, this does reach the socket: it goes with the hello
-// frame and on every tick of it. That is worth saying because this function was
-// inserted directly under subagents' own doc comment, which says the opposite,
-// and for one commit that comment read as this function's.
+// Like subagents below it, this reaches the socket: it goes with the hello frame
+// and on every tick of it. That is worth saying because this function was
+// inserted directly under subagents' own doc comment, which for a while said the
+// opposite, and for one commit that comment read as this function's.
 //
 // At most one: the gate declines a sub-agent's own tool calls, and the main
 // conversation runs its tools one at a time. If that ever stops being true the
@@ -254,9 +254,10 @@ func (s *Sessions) held(project string) *askRow {
 
 // subagents reads what the hook recorded for this session.
 //
-// The rows are server-rendered like everything else on this surface bar the
-// output stream: a sub-agent starting is not a keystroke-latency event, and the
-// page is already reloaded to see one. Nothing here reaches the socket.
+// The first paint renders these rows, and the socket pushes the same rows again
+// whenever the log moves (MUS-D-0092), so both take session.Subagents' order
+// as it comes: running first, newest first. This comment used to say nothing
+// here reached the socket, which stopped being true when the push was built.
 func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 	if s.HookDir == "" || project == "" {
 		return nil, 0

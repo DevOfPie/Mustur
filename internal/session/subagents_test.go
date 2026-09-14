@@ -468,11 +468,131 @@ func TestTheParentsAgentPostToolUseIsNotASecondLaunch(t *testing.T) {
 	if len(rows) != 2 {
 		t.Fatalf("%d rows, want 2", len(rows))
 	}
-	if rows[0].Task != "Only once" {
-		t.Errorf("first row task %q", rows[0].Task)
+	// Looked up by identifier: both are running, so the drawer's order puts the
+	// second first.
+	if r := rowByID(rows, "a1"); r.Task != "Only once" {
+		t.Errorf("first row task %q", r.Task)
 	}
-	if rows[1].Task != "" {
-		t.Errorf("second row took a duplicate of the first row's task: %q", rows[1].Task)
+	if r := rowByID(rows, "a2"); r.Task != "" {
+		t.Errorf("second row took a duplicate of the first row's task: %q", r.Task)
+	}
+}
+
+func rowByID(rows []Subagent, id string) Subagent {
+	for _, r := range rows {
+		if r.ID == id {
+			return r
+		}
+	}
+	return Subagent{}
+}
+
+// capturedLine is one payload from testdata/hook-payloads.jsonl, decoded so a
+// test can graft a field onto it.
+func capturedLine(t *testing.T, n int) map[string]any {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("testdata", "hook-payloads.jsonl"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	var p map[string]any
+	if err := json.Unmarshal([]byte(lines[n-1]), &p); err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+// A sub-agent that launches one of its own still says what it asked for.
+//
+// The launching call inside a sub-agent carries agent_id, and the switch used to
+// test for agent_id before it tested for a launch, so the call was logged as the
+// parent reaching for the Agent tool and its description was dropped. The start
+// it caused paired with nothing and the row read "general-purpose" — 257 of 260
+// starts in one session's log (MUS-F-0156).
+//
+// No nested launch was captured. The payload here is composed from captured
+// ones: line 1's PreToolUse for Agent, with the agent_id and agent_type that
+// line 8 shows a sub-agent's own tool call carrying. The start is line 6's shape
+// under a new identifier.
+func TestANestedLaunchTitlesTheSubagentItStarts(t *testing.T) {
+	dir := t.TempDir()
+	at := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	rec := func(p map[string]any) {
+		record(t, dir, "P", at, p)
+		at = at.Add(time.Second)
+	}
+	parent := capturedLine(t, 4)["agent_id"].(string)
+
+	rec(capturedLine(t, 1)) // the main conversation launches "Task ONE"
+	rec(capturedLine(t, 4)) // and it starts
+
+	nested := capturedLine(t, 1)
+	nested["agent_id"], nested["agent_type"] = parent, "general-purpose"
+	nested["tool_input"].(map[string]any)["description"] = "Nested task"
+	rec(nested)
+
+	child := capturedLine(t, 6)
+	child["agent_id"] = "nested-child"
+	rec(child)
+
+	rows, err := Subagents(dir, "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 2 {
+		t.Fatalf("%d rows, want the parent and its child: %+v", len(rows), rows)
+	}
+	if r := rowByID(rows, "nested-child"); r.Task != "Nested task" {
+		t.Errorf("child task %q, want the description its parent launched it with", r.Task)
+	}
+	p := rowByID(rows, parent)
+	if p.Task != "Task ONE" {
+		t.Errorf("parent task %q, want Task ONE", p.Task)
+	}
+	if p.Doing != "Agent" {
+		t.Errorf("parent doing %q while its launch is in flight, want Agent", p.Doing)
+	}
+
+	post := capturedLine(t, 1)
+	post["hook_event_name"], post["agent_id"] = "PostToolUse", parent
+	rec(post)
+	rows, _ = Subagents(dir, "P")
+	if p := rowByID(rows, parent); p.Doing != "" {
+		t.Errorf("parent doing %q after its launch returned, want nothing", p.Doing)
+	}
+	if r := rowByID(rows, "nested-child"); r.Task != "Nested task" {
+		t.Errorf("the parent's PostToolUse relabelled the child: %q", r.Task)
+	}
+}
+
+// What is running is what the drawer is opened to see, so it comes first, and
+// within running and within ended the newest leads (MUS-F-0156). Ended rows are
+// all still here: what happens to them is the owner's question, not this sort's.
+func TestRunningRowsComeFirstAndNewestLeads(t *testing.T) {
+	dir := t.TempDir()
+	t0 := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	for i, id := range []string{"run-old", "end-old", "run-new", "end-new"} {
+		record(t, dir, "P", t0.Add(time.Duration(i)*time.Second), map[string]any{
+			"hook_event_name": "SubagentStart", "agent_id": id, "agent_type": "general-purpose",
+		})
+	}
+	for _, id := range []string{"end-new", "end-old"} {
+		record(t, dir, "P", t0.Add(time.Minute), map[string]any{
+			"hook_event_name": "SubagentStop", "agent_id": id, "last_assistant_message": "done",
+		})
+	}
+	rows, err := Subagents(dir, "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, r := range rows {
+		got = append(got, r.ID)
+	}
+	want := []string{"run-new", "run-old", "end-new", "end-old"}
+	if strings.Join(got, " ") != strings.Join(want, " ") {
+		t.Errorf("order %v, want %v", got, want)
 	}
 }
 
