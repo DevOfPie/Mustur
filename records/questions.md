@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-138 record(s), by identifier.
+147 record(s), by identifier.
 
 ---
 
@@ -528,6 +528,31 @@ hoard-server 1.1.7 refuses to start: migration 22 was applied but the binary sto
 
 ---
 
+## HRD-Q-0020
+
+**The disk fills every few hours of Hoard work. Bigger disk, or a clean-between-runs rule?**
+
+question · 2026-09-13
+
+d: [HRD-D-0009](decisions.md#hrd-d-0009)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+whippy-vm has 124 GB. A full workspace debug build with every test binary is 30 to 40 GB, each git worktree that builds adds its own copies of the workspace crates to the shared target, and the two release targets add a few GB more. The Docker cache prune (HRD-D-0009) bought 43 GB and it was gone in a day. I have now cleared target/debug three times; each clear costs a cold rebuild of about fifteen minutes on the next run. The demo and test servers share the disk, so a full disk is an outage for you, not only a slow build.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Nothing right now; every full build risks taking the demo and test servers down with it (the test instance answered db_error at 100 percent on 2026-09-13 23:34) |
+| Option | Grow the disk :: Recommended: 250 GB or more for the root volume, which is a host-side change only you can make :: Removes the outage risk and the cold rebuilds. Everything else stays as it is. |
+| Option | Clean between runs :: I delete target/debug after every full verification and keep worktrees to one at a time :: No host change; every verification after the first in a session costs a fifteen-minute cold build, and a parallel review or agent can still push the disk over. |
+| Option | Move the servers' data off the root disk :: the demo and test data directories go to another volume, so a full build disk no longer takes a server down :: Needs a second volume from the host; builds still fail when the disk fills, but only builds. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+
+---
+
 ## LNK-Q-0001
 
 **LNK-M-0070 — Does the update checker default on or off?**
@@ -622,8 +647,68 @@ reasons.
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Surfaced | 2026-09-13 08:09 |
+| Answered | 2026-09-13 23:33 |
+| Answer | Plan it for the next phase: an All Workspaces view on the dashboard and links pages is a candidate for LinkCtrl's next phase, beside moving links between workspaces wherever that lands. |
+| Relayed | written down by whippy, from Mustur, on LNK-Q-0004, which re-asked this question with current options on 2026-09-13 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## LNK-Q-0003
+
+**W48: phase-details/README.md's fourteen inherited rules and _template.md are in no Mustur record — where do they go?**
+
+question · 2026-09-13
+
+work-unit: [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096)
+
+decision: [LNK-D-0950](decisions.md#lnk-d-0950)
+
+LNK-W-0096 says phase-details/ (all) leaves, already imported. Measured against the export: the 74 milestone files and the status tables are held (LNK-W-*, LNK-M-* Status), but 'What every milestone inherits' — 14 product invariants (never 301/308, no IP column, ui stdlib-only, sabotage a first-pass test, demo seeder…) — matches no record, only mentions in decisions; and LinkCtrl's 42-line _template.md differs from Mustur's generic unit template. Both are rules, not records, so by MUS-Q-0093's test (leaves iff Mustur has a kind that holds it) they stay; deleting them as written loses them to git history.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | W48's deletion of phase-details/, and every pointer to the inherited rules (workflow.md Demo gate, phase-loop step 1, planning.md, /preview-decisions). The link, build and rules-file work proceeds meanwhile. |
+| Needed to proceed | yes |
+| Option | Keep in tree (Recommended) :: move both into one staying file, docs/build-notes/milestone-rules.md :: The 14 rules and the template move verbatim into a new staying file beside phase-loop.md; every pointer repoints there; phase-details/ still leaves whole. Buys: nothing lost, MUS-Q-0093 applied as written, the loop's step 1 still reads its inputs. Costs: one new file in a change meant to shrink the tree (~6 KB, charged to every /work phase resume as today), and a departure from the unit's literal 'phase-details/ (all)'. Default if you say 'you decide'. |
+| Option | File them in Mustur :: add the rules and template to Mustur as records before deleting :: Buys: the tree shrinks as the unit says. Costs: Mustur has no kind for rules — MUS-D-0023 says the store holds records and contract files keep their prose — so this is a second decision on Mustur's side, and W48 waits on it. |
+| Option | Delete as written :: phase-details/ leaves whole, rules and template included :: Buys: the literal unit, smallest diff. Costs: 14 inherited rules and the milestone template exist only in git history; phase-loop step 1 and planning.md's five artifacts then point at nothing, which is a rules change nobody approved. |
+| Asked by | whippy |
+| Session project | LinkCtrl_W48 |
+| Surfaced | 2026-09-13 08:27 |
+| Answer | Keep in tree (Recommended) |
+| Answered | 2026-09-13 23:28 |
+| Delivered | typed into mustur/LinkCtrl_W48 |
+
+---
+
+## LNK-Q-0004
+
+**Should LinkCtrl get an 'All Workspaces' view on the dashboard and links pages, and if so, when?**
+
+question · 2026-09-13
+
+re-asks: [LNK-Q-0002](#lnk-q-0002)
+
+Re-asking LNK-Q-0002, which was imported from LinkCtrl's upcoming-decisions.md as written on 2026-08-01 and whose options have gone stale: every milestone they name has since shipped (the 0.2.0 and 0.3.0 releases included). What it asks: LinkCtrl's dashboard and links pages always show only the workspace you are acting in, and nothing lets someone with several workspaces see across them at once. Building it means widening every workspace-scoped query in internal/link and internal/analytics, the same hard part as moving links between workspaces, which the owner deferred to Phase 4 on 2026-08-07. Whether that has since been built was not checked for this question.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing. Unanswered, the feature stays unbuilt, as today |
+| Option | Plan it for the next phase :: Recommended if you want it: a candidate for LinkCtrl's next phase, beside moving links between workspaces wherever that lands :: The two cross-workspace features share the query work, so building them together is cheaper than twice. Nothing is built now; it enters the next phase's planning as a named candidate. |
+| Option | Leave it unscheduled :: the question closes as not now; it is raised again if somebody asks for it a second time :: The status quo and the original default. Costs nothing until the need comes back. |
+| Option | Drop it :: LinkCtrl stays per-workspace by design :: Closes the idea rather than parking it. Someone with several workspaces keeps switching between them to compare. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 23:30 |
+| Answer | Plan it for the next phase |
+| Answered | 2026-09-13 23:32 |
+| Delivered | typed into mustur/LinkCtrl_Target |
 
 ---
 
@@ -3459,3 +3544,118 @@ Three reviewers and a second read are dispositioned on Mustur PR 69; the importe
 | Answer | Approve it as restated |
 | Answered | 2026-09-13 08:08 |
 | Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0118
+
+**Should links in the session view be clickable, when MUS-D-0132 says pane output must never become markup?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0147 |
+| Option | The CLI's own links :: Recommended: turn OSC 8 hyperlinks into links that open a new tab, http and https only, address escaped :: The CLI already emits OSC 8 (MUS-F-0054) and the renderer strips it (internal/ansi/ansi.go:156, locked in by ansi_test.go:59). This is one scoped exception to MUS-D-0132. Repaints would also be held while a pointer is down, because today a frame arriving between press and release swaps the element out and the click is lost. |
+| Option | Those plus bare addresses :: also link any http or https address printed as plain text :: Covers tools that print a URL without OSC 8. It guesses at more text, and an address cut by a wrapped or truncated line links somewhere wrong. |
+| Option | Leave them as text :: nothing changes; copy the address out instead :: MUS-D-0132 stands unamended. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+
+---
+
+## MUS-Q-0119
+
+**How should question text be rendered on the decisions page?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0151 |
+| Option | A small renderer of our own :: Recommended: paragraphs, bold, italics, code and tables; everything escaped first, a fixed set of tags out, tables scrolling in their own box :: No new dependency. Bodies are now imported from other projects' files and HTML pages carry no CSP, so escaping is the only barrier, and a renderer passing raw HTML through would be a hole. Used on the records page too, so a body reads the same in both. Option text still cannot carry markdown: the export flattens it into a table cell (internal/export/export.go:265). |
+| Option | goldmark :: full CommonMark from a third-party library :: The first markdown dependency, measured against the bar in decisions.md for adding one (pure Go, no transitive dependencies), with raw HTML switched off. |
+| Option | Line breaks only :: keep newlines with CSS and show the markdown as typed :: One line of CSS. Tables and bold still read as pipes and asterisks. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+
+---
+
+## MUS-Q-0120
+
+**Keeping an intake draft needs a second script on intake. Which, if any?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0152 |
+| Option | Text, its own draft :: Recommended: about 30 lines copied from the composer; the draft is kept per browser under its own key and cleared on filing or by a Clear button :: The seventh page with a script by MUS-Q-0053's count, which that answer makes a new decision, and intake was declined a script once on MUS-Q-0062. Pictures are not kept. |
+| Option | Text, shared with the composer :: the same, but intake, the composer and the session box hold one draft between them :: Filing a jot would clear a message being drafted for a session, and sending that message would clear the jot. |
+| Option | Text and pictures :: also keep up to six pictures in the browser's IndexedDB :: Up to about 60 MB stored in the browser, restoring a file input is unreliable on iOS Safari, and filing would move to fetch with the redirect and error pages handled by hand. Several times the size of the text draft. |
+| Option | No script :: only stop dropping the text on the two error paths that lose it :: Intake re-renders without the text when the upload is over the cap or the words over the limit (internal/web/intake.go:224, :232). Switching tabs still loses everything, which is what you reported. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+
+---
+
+## MUS-Q-0121
+
+**Does replacing the visual plan tool, with plans held in Mustur, become a milestone?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0148 |
+| Option | Milestone, plans first :: Recommended: a scope row and a milestone whose first half is MUS-F-0144 (a plan handed to Mustur, read beside its questions) and second half is drawing :: Nothing in Plan.md covers plans or wireframes, so this is a scope-table change and yours. The document shape first gives plan questions something to link to, and answered state shown on both needs a two-way link that does not exist today: refs point one way and nothing writes a decision from an answer. Constraints: never embed a backend in a frame (Plan.md:98); a plan in another project's checkout is that project's file. |
+| Option | Milestone, drawing first :: build the wireframe surface, fold plan documents in after :: The part you filed as the push. The larger build, and its questions have nowhere to link until plans exist. |
+| Option | Plans only :: hold plans as documents in Mustur, keep the external tool for drawing :: Fixes MUS-F-0144 and the question link; the tool's limits stay, including refusing SVG (MUS-F-0048) and HRD-Q-0015 being asked against a drawn modal the app never had. |
+| Option | Not yet :: both stay findings :: Hoard's plan stays a file on the VM. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+
+---
+
+## MUS-Q-0122
+
+**records/ here carries LinkCtrl's uncommitted import. Commit the triage export now, or after the import stack merges?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | committing this intake triage |
+| Option | After the import stack :: Recommended: the triage lives in the store and on the served pages now; the export commit follows once stack/m9-3-the-importer merges :: records/ is rendered whole from the store (MUS-F-0066), so any export commit now carries about 100k lines the import session commits on its own branch. mustur verify passes on the tree as it stands. |
+| Option | Now :: one export commit on an intake branch carrying everything in the store :: The import stack then rebases onto records it did not write, and this pull request carries LinkCtrl's records as noise. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+
+---
+
+## MUS-Q-0123
+
+**After Stop, which running session should the Sessions page land on?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | MUS-F-0143 |
+| Option | Most recently active :: Recommended: sort sessions by the existing activity order, so the top is where you just were, and the picker reorders to match :: session.ByActivity (internal/session/session.go:582) is already the composer's order under MUS-D-0013. Using it in the Sessions list changes which session is first and the order of the picker MUS-D-0150 designed. The redirect and the picker's dead first choice are fixed whichever you pick. |
+| Option | Whatever tmux lists first :: keep today's order; fix only the redirect and the picker :: The order is whatever tmux list-sessions returns, which nothing in the code defines. |
+| Option | The start page, as now :: Stop keeps landing on the start form; only the picker's dead first choice is fixed :: The redirect to /sessions?new=1 is deliberate (internal/web/start.go:372-374). Keeping it costs a tap after every Stop. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:38 |

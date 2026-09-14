@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-547 record(s), by identifier.
+554 record(s), by identifier.
 
 ## The queue
 
@@ -22,6 +22,8 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [HRD-F-0010](#hrd-f-0010) | The desktop has an interactive in-game HUD on Alt+H that the UI survey missed, and HRD-Q-0017 was raised on the wrong overlay |  |  |
 | [HRD-F-0011](#hrd-f-0011) | Moving the demo from a branch to the v1.1.7 release took it down: the database was ahead of the binary's migrations |  | resolved 2026-09-13 08:3x by HRD-D-0017; total downtime about 35 minutes |
 | [HRD-F-0012](#hrd-f-0012) | The desktop's delete-group text promises what the server refuses |  |  |
+| [HRD-F-0013](#hrd-f-0013) | Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group |  |  |
+| [HRD-F-0014](#hrd-f-0014) | Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -550,13 +552,18 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
 | [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
 | [MUS-F-0142](#mus-f-0142) | One project's unsurfaced question fails every other project's commit gate | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. | fixed for the gate; the export still carries every project's records |
-| [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… |  | unreviewed |
-| [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  |  |
+| [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… | Stop redirects to /sessions?new=1 (internal/web/start.go:374), and new=1 is the flag that skips the jump into a running session (internal/web/sessions.go:371, :376), so the start form renders. On that page no option in the session picker is selected (sessions.go:1409-1412), so the browser shows the first running session as chosen, and choosing it fires no change event (internal/web/assets/session.js:29-31): hence switching away and back. What 'top' means is undefined: the list is tmux's own order, and session.ByActivity (internal/session/session.go:582) is used only by the composer. | confirmed; the redirect and the picker's dead first choice are fixed whatever MUS-Q-0123 says, and which session is first is MUS-Q-0123's |
+| [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  | raised as MUS-Q-0121, with MUS-F-0148 |
 | [MUS-F-0145](#mus-f-0145) | A session restarted under the same name kept tmux's 80x24, so it had no scrollback | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. | fixed |
 | [MUS-F-0146](#mus-f-0146) | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation | raised as MUS-Q-0112 and MUS-Q-0113 |
-| [MUS-F-0147](#mus-f-0147) | I can't click or ctrl+click on links in the session |  | unreviewed |
-| [MUS-F-0148](#mus-f-0148) | Push up replacing the visual plan mcp |  | unreviewed |
+| [MUS-F-0147](#mus-f-0147) | I can't click or ctrl+click on links in the session | Never built rather than broken. The pane is rendered by ansi.HTML, which writes colour spans only and skips OSC 8 hyperlinks (internal/ansi/ansi.go:156-161), and a test requires the link's address not to reach the page (internal/ansi/ansi_test.go:59-62). Nothing linkifies plain addresses. Even with a link on the page, a frame arriving between press and release replaces the element (session.js:206) and the click is lost, and a frame held by MUS-F-0128's selection guard is painted by the mousedown that clears the selection (session.js:214-216). | raised as MUS-Q-0118, because a link is markup and MUS-D-0132 says pane output never is |
+| [MUS-F-0148](#mus-f-0148) | Push up replacing the visual plan mcp | No scope row or milestone covers plans or wireframes (Plan.md scope table and milestone table). The plan named is plan-523b4a30c7d3409b, Hoard's phase 3 desktop UI (HRD-W-0001), whose questions are HRD-Q-0014 to 0016. Its drawn claim modal was not what the app had: HRD-Q-0015 was asked against it and superseded twice, ending on HRD-D-0014 in the HUD. Questions and decisions cite each other one way only (internal/record/record.go:35), nothing shows answered state on the citing record (internal/web/records.go:97-105), and an answer given in a plan reaches the store only by relay (internal/question/question.go:377). | raised as MUS-Q-0121: a scope-table change, so the owner's |
 | [MUS-F-0149](#mus-f-0149) | The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives | mustur_route repository=DevOfPie/LinkCtrl returned 50.5 KB (Claude Code persisted it as a file); mustur list counts the live store and the rehearsal store | open |
+| [MUS-F-0150](#mus-f-0150) | Decisions should show near the top what project they are for. | A question's project is its identifier prefix, shown only as the faded identifier at the foot of the card (internal/web/questions.go:501, :456). The page is handed its project and never draws it (:136, :469). The queue sorts by identifier string, so projects bunch by prefix with no heading (internal/question/question.go:218-228). The artboard had a project pill, and docs/ui-surfaces.md:224 dropped it because 'One project exists', which stopped being true when the store took IDW, HRD and LNK. A prefix-to-name lookup already exists (internal/web/accountpage.go:56-81). | confirmed; no decision needed, since the drawing had the pill and only a reason that is now false removed it |
+| [MUS-F-0151](#mus-f-0151) | Allow decisions to have their questions written in markdown to make them more readable | Body and option detail are printed as escaped plain text in one paragraph (internal/web/questions.go:485, :493), so newlines collapse and asterisks and table pipes show as typed; the records page does the same (internal/web/records.go:509). No markdown renderer is in the module (go.mod). Option text cannot carry markdown at all, because the export flattens every field into a table cell (internal/export/export.go:265-268). HTML pages carry no CSP, so escaping is the only barrier against a body imported from another project's files. | raised as MUS-Q-0119 |
+| [MUS-F-0152](#mus-f-0152) | The intake text box should keep what is typed and uploaded as a draft unless it is cleared or… | Intake is served with Cache-Control no-store (internal/web/intake.go:447), so going back is a fresh GET and the box renders empty. The page loads bar.js and nothing else (:585), and a test holds it to exactly one script (internal/web/sessions_test.go:271-279). Two error paths also drop the text: an upload over the cap (:224) and words over MaxJot (:232). A picked picture cannot be kept by any server path, since nothing can refill a file input. | raised as MUS-Q-0120: a second script on intake is the seventh by MUS-Q-0053's count |
+| [MUS-F-0153](#mus-f-0153) | CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25 | records/questions.md MUS-Q-0053: Status answered, 2026-08-25; CLAUDE.md line 166-168 calls it open |  |
+| [MUS-F-0154](#mus-f-0154) | intake.go's comments say the page carries no script and no stylesheet, and it carries both | intake.go loads /assets/bar.js at :585 and carries a style block at :466-545; sessions_test.go:277 requires one script on /intake |  |
 
 ---
 
@@ -755,6 +762,34 @@ finding · 2026-09-13
 w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 groups.delete_body in the desktop locales says shared worlds go back to their owners when a group is deleted; routes/groups.rs:246-250 refuses to delete a group while a shared_saves row exists (HRD-D-0001's guard). Found while writing SHARING_GUIDE.md on 2026-09-13. Fix: the string says the group must be emptied first, or the desktop unshares on the owner's behalf before deleting, which the server's take_back helper already supports. To be settled with PR 10's review fixes.
+
+---
+
+## HRD-F-0013
+
+**Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Posted on https://github.com/DevOfPie/hoard/pull/7 at 7dd2c31 on 2026-09-13 from six review angles. Correctness: remember_save drops a shared row's include list; adopt seeds an empty list when the server errs and seats the slot unscoped; a restore with a destination override builds its safety copy and gate from an empty list; share_save loads state.json before its HTTP calls and clobbers hoardd's writes; share and unshare resume a paused row; a local failure after the server succeeded reports an error with the server already moved; the server never enforces include_json on a push; the include grammar cannot name a per-world directory and is a persisted format. Structure: SharedRef should carry include; one RestoreGate::for_row; LiveReseat instead of a second reseat path. Efficiency: per-file allocations in included, no directory pruning, blocking IO on the IPC task. The reviews of PR 4 and PR 8 died on the session's API limit (resets 11:10 UTC) and rerun after it.
+
+| Field | Value |
+| --- | --- |
+| Severity | one design change (server-side enforcement plus prefix grammar) before any row exists |
+
+---
+
+## HRD-F-0014
+
+**Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night**
+
+finding · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Reviewed by hand on 2026-09-14 while agent reviews were blocked by the API limit; posted on the PRs, fixed with tests, merged up the stack. PR 8, claim.rs: a View choice stuck to the slot for good because nothing reset the role at session end; a relaunch during a side copy replaced the stopped session so the copy's landing cleared the live game's pending writes; a write under an unknown lease was forgotten. PR 4, lease.rs: a stale acquire looped every two seconds for the whole session (the engine cleared its request on every verdict and re-asked with the same head); a transport error on the first acquire silenced the request for the session; a refresh called any live lease mine while the task held one, naming the server's holder. Commits f9af555, b72194c, dc677ca.
 
 ---
 
@@ -15804,15 +15839,18 @@ finding · 2026-09-13
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+raised as: [MUS-Q-0123](questions.md#mus-q-0123)
+
 After I close a session the create a session screen shows up instead of the top session and I need to switch the session and go back before it loads.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | Stop redirects to /sessions?new=1 (internal/web/start.go:374), and new=1 is the flag that skips the jump into a running session (internal/web/sessions.go:371, :376), so the start form renders. On that page no option in the session picker is selected (sessions.go:1409-1412), so the browser shows the first running session as chosen, and choosing it fires no change event (internal/web/assets/session.js:29-31): hence switching away and back. What 'top' means is undefined: the list is tmux's own order, and session.ByActivity (internal/session/session.go:582) is used only by the composer. |
+| Status | confirmed; the redirect and the picker's dead first choice are fixed whatever MUS-Q-0123 says, and which session is first is MUS-Q-0123's |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/web/start.go, stop; internal/web/sessions.go, list and the picker |
 
 ---
 
@@ -15826,12 +15864,15 @@ w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 q: [HRD-Q-0008](questions.md#hrd-q-0008)
 
+raised as: [MUS-Q-0121](questions.md#mus-q-0121)
+
 Raised by Pie on 2026-09-13: plans provided as files on the agent's system are inconvenient to access, and Mustur needs a way of providing them. The case: the Hoard group-sharing plan lives at .local/group-sharing/plan.md in ~/repos/DevOfPie/hoard on whippy-vm, an ignored path because upstream bans agent files in commits. HRD-W-0001 carries only the path, HRD-Q-0008 asks Pie to read the plan before phase 1 starts, and the only way to read it is a shell on the VM. Mustur's records hold a title, a body and fields; nothing holds a document the size of a plan, and no surface renders one. What is wanted: a way for a session to hand Mustur a plan, and for the owner to read it where the decisions are.
 
 | Field | Value |
 | --- | --- |
 | Raised by | Pie, in the Hoard_Work session |
 | Consequence | until this exists, a plan is a file Pie must open on the VM |
+| Status | raised as MUS-Q-0121, with MUS-F-0148 |
 
 ---
 
@@ -15894,15 +15935,18 @@ finding · 2026-09-13
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+raised as: [MUS-Q-0118](questions.md#mus-q-0118)
+
 I can't click or ctrl+click on links in the session
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | Never built rather than broken. The pane is rendered by ansi.HTML, which writes colour spans only and skips OSC 8 hyperlinks (internal/ansi/ansi.go:156-161), and a test requires the link's address not to reach the page (internal/ansi/ansi_test.go:59-62). Nothing linkifies plain addresses. Even with a link on the page, a frame arriving between press and release replaces the element (session.js:206) and the click is lost, and a frame held by MUS-F-0128's selection guard is painted by the mousedown that clears the selection (session.js:214-216). |
+| Status | raised as MUS-Q-0118, because a link is markup and MUS-D-0132 says pane output never is |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
+| Where | internal/ansi/ansi.go, HTML; internal/web/assets/session.js, paint |
 
 ---
 
@@ -15914,12 +15958,16 @@ finding · 2026-09-13
 
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
+raised as: [MUS-Q-0121](questions.md#mus-q-0121)
+
+the other half: [MUS-F-0144](#mus-f-0144)
+
 Push up replacing the visual plan mcp. Te plan proposed in `https://plan.agent-native.com/plans/plan-523b4a30c7d3409b` looks like it would cause significant changes to the existing UI which I assume is due to limitations in the MCP. Our replacement should allow much better and freer wireframes as the current implentation leaves a lot up to chance. The only good things the current one has going is the ability to give feedback anywhere on the design. Wireframes should be quick and efficient to generate, but not sacrifice the feeling of the UI being planned. Any questions on a plan should be linked to a decision and appear in both as well as showing they have been answered on both.
 
 | Field | Value |
 | --- | --- |
-| Evidence |  |
-| Status | unreviewed |
+| Evidence | No scope row or milestone covers plans or wireframes (Plan.md scope table and milestone table). The plan named is plan-523b4a30c7d3409b, Hoard's phase 3 desktop UI (HRD-W-0001), whose questions are HRD-Q-0014 to 0016. Its drawn claim modal was not what the app had: HRD-Q-0015 was asked against it and superseded twice, ending on HRD-D-0014 in the HUD. Questions and decisions cite each other one way only (internal/record/record.go:35), nothing shows answered state on the citing record (internal/web/records.go:97-105), and an answer given in a plan reaches the store only by relay (internal/question/question.go:377). |
+| Status | raised as MUS-Q-0121: a scope-table change, so the owner's |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -15942,3 +15990,101 @@ mustur_route with no identifier returns the routing and an index line for every 
 | --- | --- |
 | Evidence | mustur_route repository=DevOfPie/LinkCtrl returned 50.5 KB (Claude Code persisted it as a file); mustur list counts the live store and the rehearsal store |
 | Status | open |
+
+---
+
+## MUS-F-0150
+
+**Decisions should show near the top what project they are for.**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+Decisions should show near the top what project they are for.
+
+| Field | Value |
+| --- | --- |
+| Evidence | A question's project is its identifier prefix, shown only as the faded identifier at the foot of the card (internal/web/questions.go:501, :456). The page is handed its project and never draws it (:136, :469). The queue sorts by identifier string, so projects bunch by prefix with no heading (internal/question/question.go:218-228). The artboard had a project pill, and docs/ui-surfaces.md:224 dropped it because 'One project exists', which stopped being true when the store took IDW, HRD and LNK. A prefix-to-name lookup already exists (internal/web/accountpage.go:56-81). |
+| Status | confirmed; no decision needed, since the drawing had the pill and only a reason that is now false removed it |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/questions.go, open and queueTmpl; docs/ui-surfaces.md:224 |
+
+---
+
+## MUS-F-0151
+
+**Allow decisions to have their questions written in markdown to make them more readable**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+raised as: [MUS-Q-0119](questions.md#mus-q-0119)
+
+the question that prompted it: [LNK-Q-0002](questions.md#lnk-q-0002)
+
+Allow decisions to have their questions written in markdown to make them more readable. LNK-Q-0002 is what lead to me thinking of this.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Body and option detail are printed as escaped plain text in one paragraph (internal/web/questions.go:485, :493), so newlines collapse and asterisks and table pipes show as typed; the records page does the same (internal/web/records.go:509). No markdown renderer is in the module (go.mod). Option text cannot carry markdown at all, because the export flattens every field into a table cell (internal/export/export.go:265-268). HTML pages carry no CSP, so escaping is the only barrier against a body imported from another project's files. |
+| Status | raised as MUS-Q-0119 |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0152
+
+**The intake text box should keep what is typed and uploaded as a draft unless it is cleared or…**
+
+finding · 2026-09-13
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+raised as: [MUS-Q-0120](questions.md#mus-q-0120)
+
+The intake text box should keep what is typed and uploaded as a draft unless it is cleared or filed, sometimes I eed to switch to the session or decisions to reference something and having to retype my issue is annoying.
+
+| Field | Value |
+| --- | --- |
+| Evidence | Intake is served with Cache-Control no-store (internal/web/intake.go:447), so going back is a fresh GET and the box renders empty. The page loads bar.js and nothing else (:585), and a test holds it to exactly one script (internal/web/sessions_test.go:271-279). Two error paths also drop the text: an upload over the cap (:224) and words over MaxJot (:232). A picked picture cannot be kept by any server path, since nothing can refill a file input. |
+| Status | raised as MUS-Q-0120: a second script on intake is the seventh by MUS-Q-0053's count |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+| Where | internal/web/intake.go |
+
+---
+
+## MUS-F-0153
+
+**CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25**
+
+finding · 2026-09-13
+
+CLAUDE.md's paragraph beginning 'What the rule counts is still open' cites MUS-Q-0053 as unsettled. records/questions.md has MUS-Q-0053 with Status answered, dated 2026-08-25, and an answer that counts script tags and says a seventh is a new decision again. MUS-Q-0078 moved the count afterwards without reopening it. The contract a session reads first states the opposite of the record, and the intake draft question turns on exactly this count. Found while triaging MUS-F-0152.
+
+| Field | Value |
+| --- | --- |
+| Where | CLAUDE.md, 'What the rule counts is still open' |
+| Evidence | records/questions.md MUS-Q-0053: Status answered, 2026-08-25; CLAUDE.md line 166-168 calls it open |
+
+---
+
+## MUS-F-0154
+
+**intake.go's comments say the page carries no script and no stylesheet, and it carries both**
+
+finding · 2026-09-13
+
+The package comment at internal/web/intake.go:1-4 says 'no per-project client state', and the template comment at :453-457 says 'No stylesheet, no script, no font, no image'. The page has an inline style block and loads /assets/bar.js since MUS-Q-0078, and sessions_test.go:271-279 asserts exactly that one script. A reader weighing a draft script for intake (MUS-F-0152) meets a promise the page already stopped keeping. Found while triaging MUS-F-0152.
+
+| Field | Value |
+| --- | --- |
+| Where | internal/web/intake.go:1-4, :453-457 |
+| Evidence | intake.go loads /assets/bar.js at :585 and carries a style block at :466-545; sessions_test.go:277 requires one script on /intake |

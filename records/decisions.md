@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-1136 record(s), by identifier.
+1138 record(s), by identifier.
 
 ## Index
 
@@ -976,6 +976,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [LNK-D-0948](#lnk-d-0948) | the OIDC fixture moves to the release LNK-M-0095 owed another repository | 2026-09-08 |
 | [LNK-D-0949](#lnk-d-0949) | the release date the records carried was the date of a tag that published nothing | 2026-09-08 |
 | [LNK-D-0950](#lnk-d-0950) | W48 approved: this repository's records move to Mustur, and the rules that filed into them file into Mustur | 2026-09-13 |
+| [LNK-D-0951](#lnk-d-0951) | An All Workspaces view is a candidate for the next phase, beside moving links between workspaces | 2026-09-13 |
+| [LNK-D-0952](#lnk-d-0952) | W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md | 2026-09-13 |
 | [MUS-D-0001](#mus-d-0001) | Why this is not a local file | 2026-08-19 |
 | [MUS-D-0002](#mus-d-0002) | Inject, never offer | 2026-08-19 |
 | [MUS-D-0003](#mus-d-0003) | Link-out is conditional | 2026-08-19 |
@@ -80079,6 +80081,46 @@ Owner-approved on 2026-09-13, on Mustur's MUS-Q-0117, as restated there: the par
 | Field | Value |
 | --- | --- |
 | W row | W48 |
+
+---
+
+## LNK-D-0951
+
+**An All Workspaces view is a candidate for the next phase, beside moving links between workspaces**
+
+decision · 2026-09-13
+
+answers: [LNK-Q-0004](questions.md#lnk-q-0004)
+
+answers: [LNK-Q-0002](questions.md#lnk-q-0002)
+
+Owner-answered on 2026-09-13 on LNK-Q-0004, which re-asked LNK-Q-0002 after every milestone its options named had shipped. The dashboard and links pages stay scoped to the acting workspace until then. A view across all of an actor's workspaces enters the next phase's planning as a named candidate, planned beside moving links between workspaces, because both widen every workspace-scoped query in internal/link and internal/analytics and share that work. Nothing is built now. Whether moving links between workspaces has already been built was not checked when the question was asked; the next phase's planning checks it first.
+
+| Field | Value |
+| --- | --- |
+| Status | candidate for the next phase |
+
+---
+
+## LNK-D-0952
+
+**W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md**
+
+decision · 2026-09-13
+
+answers: [LNK-Q-0003](questions.md#lnk-q-0003)
+
+work-unit: [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096)
+
+amends: [LNK-D-0950](#lnk-d-0950)
+
+LNK-W-0096 said phase-details/ leaves whole. Measured against the export, the milestone files and status tables are held as LNK work units and milestone Status, but the fourteen rules of What every milestone inherits and LinkCtrl's milestone template match no record. Both are rules, not records, so by MUS-Q-0093's test they stay. The owner answered LNK-Q-0003 on 2026-09-13 with the recommended option: both move verbatim into one staying file beside phase-loop.md, every pointer repoints there, and phase-details/ still leaves. Links inside them that pointed at milestone files became LNK identifiers.
+
+| Field | Value |
+| --- | --- |
+| Applies to | phase-details/README.md's What every milestone inherits, and phase-details/_template.md |
+| Where | docs/build-notes/milestone-rules.md |
+| Costs | one new staying file (about 10 KB), charged to every /work phase resume as phase-details/README.md was; a departure from LNK-W-0096's literal 'phase-details/ (all)' |
 
 ---
 

@@ -9,9 +9,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | Kind | Records | Where |
 | --- | --- | --- |
 | milestone | 107 | [milestones.md](milestones.md) |
-| question | 138 | [questions.md](questions.md) |
-| decision | 1136 | [decisions.md](decisions.md) |
-| finding | 547 | [findings.md](findings.md) |
+| question | 147 | [questions.md](questions.md) |
+| decision | 1138 | [decisions.md](decisions.md) |
+| finding | 554 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 100 | [work-units/index.md](work-units/index.md) |
 | investigation | 5 | [investigations/index.md](investigations/index.md) |
@@ -40,6 +40,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0017](questions.md#hrd-q-0017) | question | Re-asking how the claim prompt appears, with what the overlay can and cannot do |
 | [HRD-Q-0018](questions.md#hrd-q-0018) | question | Re-asking how the claim prompt appears, now on the Alt+H HUD that exists |
 | [HRD-Q-0019](questions.md#hrd-q-0019) | question | The demo is down on v1.1.7 because its database is ahead of the release. Which way up? |
+| [HRD-Q-0020](questions.md#hrd-q-0020) | question | The disk fills every few hours of Hoard work. Bigger disk, or a clean-between-runs rule? |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -69,6 +70,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-F-0010](findings.md#hrd-f-0010) | finding | The desktop has an interactive in-game HUD on Alt+H that the UI survey missed, and HRD-Q-0017 was raised on the wrong overlay |
 | [HRD-F-0011](findings.md#hrd-f-0011) | finding | Moving the demo from a branch to the v1.1.7 release took it down: the database was ahead of the binary's migrations |
 | [HRD-F-0012](findings.md#hrd-f-0012) | finding | The desktop's delete-group text promises what the server refuses |
+| [HRD-F-0013](findings.md#hrd-f-0013) | finding | Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group |
+| [HRD-F-0014](findings.md#hrd-f-0014) | finding | Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
@@ -247,6 +250,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096) | work-unit | W48: this repository's records move to Mustur |
 | [LNK-Q-0001](questions.md#lnk-q-0001) | question | LNK-M-0070 — Does the update checker default on or off? |
 | [LNK-Q-0002](questions.md#lnk-q-0002) | question | An 'All Workspaces' dashboard scope — which phase, and whose milestone? |
+| [LNK-Q-0003](questions.md#lnk-q-0003) | question | W48: phase-details/README.md's fourteen inherited rules and _template.md are in no Mustur record — where do they go? |
+| [LNK-Q-0004](questions.md#lnk-q-0004) | question | Should LinkCtrl get an 'All Workspaces' view on the dashboard and links pages, and if so, when? |
 | [LNK-D-0001](decisions.md#lnk-d-0001) | decision | Mailer |
 | [LNK-D-0002](decisions.md#lnk-d-0002) | decision | Cookie / returning-visitor conditions |
 | [LNK-D-0003](decisions.md#lnk-d-0003) | decision | Custom-domain TLS |
@@ -1194,6 +1199,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-D-0948](decisions.md#lnk-d-0948) | decision | the OIDC fixture moves to the release LNK-M-0095 owed another repository |
 | [LNK-D-0949](decisions.md#lnk-d-0949) | decision | the release date the records carried was the date of a tag that published nothing |
 | [LNK-D-0950](decisions.md#lnk-d-0950) | decision | W48 approved: this repository's records move to Mustur, and the rules that filed into them file into Mustur |
+| [LNK-D-0951](decisions.md#lnk-d-0951) | decision | An All Workspaces view is a candidate for the next phase, beside moving links between workspaces |
+| [LNK-D-0952](decisions.md#lnk-d-0952) | decision | W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md |
 | [LNK-F-0001](findings.md#lnk-f-0001) | finding | Release-notes extraction sweeps up the changelog's link-reference block |
 | [LNK-F-0002](findings.md#lnk-f-0002) | finding | A stalled Redis stretches a link edit to about nine seconds |
 | [LNK-F-0003](findings.md#lnk-f-0003) | finding | Dark mode has no effect on the UI: the light tokens are unlayered and beat every dark rule |
@@ -1729,6 +1736,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0115](questions.md#mus-q-0115) | question | Milestone 7's done-when is still 'its own verdict'. What must be true for LinkCtrl's move to be accepted? |
 | [MUS-Q-0116](questions.md#mus-q-0116) | question | Success criterion 9 says no other project's file changed before its onboarding started. LinkCtrl's own session changed two on 09-09. Reword it, or record it as failed? |
 | [MUS-Q-0117](questions.md#mus-q-0117) | question | The import has its verdict. Do you approve W48, LinkCtrl's change that moves its records out, as it really is? |
+| [MUS-Q-0118](questions.md#mus-q-0118) | question | Should links in the session view be clickable, when MUS-D-0132 says pane output must never become markup? |
+| [MUS-Q-0119](questions.md#mus-q-0119) | question | How should question text be rendered on the decisions page? |
+| [MUS-Q-0120](questions.md#mus-q-0120) | question | Keeping an intake draft needs a second script on intake. Which, if any? |
+| [MUS-Q-0121](questions.md#mus-q-0121) | question | Does replacing the visual plan tool, with plans held in Mustur, become a milestone? |
+| [MUS-Q-0122](questions.md#mus-q-0122) | question | records/ here carries LinkCtrl's uncommitted import. Commit the triage export now, or after the import stack merges? |
+| [MUS-Q-0123](questions.md#mus-q-0123) | question | After Stop, which running session should the Sessions page land on? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -2050,6 +2063,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0147](findings.md#mus-f-0147) | finding | I can't click or ctrl+click on links in the session |
 | [MUS-F-0148](findings.md#mus-f-0148) | finding | Push up replacing the visual plan mcp |
 | [MUS-F-0149](findings.md#mus-f-0149) | finding | The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives |
+| [MUS-F-0150](findings.md#mus-f-0150) | finding | Decisions should show near the top what project they are for. |
+| [MUS-F-0151](findings.md#mus-f-0151) | finding | Allow decisions to have their questions written in markdown to make them more readable |
+| [MUS-F-0152](findings.md#mus-f-0152) | finding | The intake text box should keep what is typed and uploaded as a draft unless it is cleared or… |
+| [MUS-F-0153](findings.md#mus-f-0153) | finding | CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25 |
+| [MUS-F-0154](findings.md#mus-f-0154) | finding | intake.go's comments say the page carries no script and no stylesheet, and it carries both |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
