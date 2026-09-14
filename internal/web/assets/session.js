@@ -193,7 +193,7 @@
     return out.contains(sel.anchorNode) || out.contains(sel.focusNode);
   }
 
-  function held() {
+  function holding() {
     return pressed || selecting();
   }
 
@@ -204,7 +204,7 @@
     // The screen is stale for as long as the selection is held, deliberately:
     // a terminal that repaints under the thumb cannot be copied from, and the
     // pill and the chips go on saying what the session is doing meanwhile.
-    if (held()) {
+    if (holding()) {
       pending = html;
       return true;
     }
@@ -222,7 +222,7 @@
   // collapses one, which is why the pointer holds the frame too: painting there
   // lost the first click after a selection.
   document.addEventListener("selectionchange", function () {
-    if (pending !== null && !held()) paint(pending);
+    if (pending !== null && !holding()) paint(pending);
   });
 
   out.addEventListener("pointerdown", function () { pressed = true; });
@@ -232,7 +232,7 @@
     if (!pressed) return;
     pressed = false;
     setTimeout(function () {
-      if (pending !== null && !held()) paint(pending);
+      if (pending !== null && !holding()) paint(pending);
     }, 0);
   }
   document.addEventListener("pointerup", release);
