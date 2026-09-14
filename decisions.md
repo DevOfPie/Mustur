@@ -3648,3 +3648,22 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | --- | --- |
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
+
+### MUS-D-0180
+
+**Nothing is deployed to mustur.devofpie.com before it is on main; a test instance carries a change between pull requests**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0125
+
+the deploy it ends: MUS-F-0092
+
+the build that nearly shipped broken: MUS-F-0155
+
+The owner answered MUS-Q-0125: after merge, and no pre-main deploys from now on, because the last one caused issues; a change may go to a test instance between pull requests. Until now make deploy ran from the session that made a change, on whatever branch it was on, and PR 64's fix went live before it merged. The integration build raised under MUS-Q-0125 would have shipped a blank session view had it been deployed, because every Go gate passed it (MUS-F-0155). So the live site follows main: a change reaches it only after the owner merges it, deployed from main. Seeing a change running before merge means a test instance, which never shares the live service, its store, its port or its tmux sessions.
+
+| Field | Value |
+| --- | --- |
+| Status | taken; CLAUDE.md's deploy paragraph to say so |
+| Applies to | make deploy and anything else that replaces the running mustur.service |
