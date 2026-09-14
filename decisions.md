@@ -3648,3 +3648,22 @@ MUS-Q-0108 asked how Hoard enters Mustur, given that onboarding a repository has
 | --- | --- |
 | Applies to | a new project that brings no existing records |
 | Unchanged | MUS-M-0009 is still LinkCtrl's transition |
+
+### MUS-D-0177
+
+**Question text renders as markdown through goldmark v1, with raw HTML and dangerous URLs refused by its defaults**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0119
+
+for: MUS-F-0151
+
+the question that prompted it: LNK-Q-0002
+
+The owner answered MUS-Q-0119 with goldmark, and asked that it be verified as the best dependency with no comparable alternative. Verified on 2026-09-14 by building each candidate in a scratch module and running one hostile input through it, CGO disabled: bold, italic, code, a pipe table, a script block, an inline img with onerror, and javascript:, data:text/html and vbscript: URLs in plain, mixed-case and entity-encoded forms. github.com/yuin/goldmark v1.8.6 lists no packages outside its own, which is the bar decisions.md holds a dependency to (pure Go, no transitive dependencies); drops raw HTML and blanks every dangerous link and image URL with its defaults, including the entity-encoded bypass fixed in 1.7.17 (GHSA-c97m-vxhj-p7j6); implements CommonMark 0.31.2 with tables as a bundled extension; and is what Hugo pins. The v2 module has the same properties and no importers yet, and v1 keeps security fixes, so v1 is the one taken. gomarkdown and blackfriday pass raw HTML and image javascript: URLs even with their safe flags; golang-commonmark pulls in golang.org/x/text and four modules and has had no commit since 2021; go-commonmark panics on a table followed by a paragraph; malcolmston/markdown has no tables and no URL filter; lute brings chroma and x/text and still emits data: and vbscript: links with sanitizing on. So goldmark v1, with WithUnsafe never set: HTML pages carry no CSP and bodies arrive from other projects' files, so its defaults are the barrier.
+
+| Field | Value |
+| --- | --- |
+| Status | taken; building on MUS-F-0151 |
+| Pinned | github.com/yuin/goldmark v1.8.6 |
