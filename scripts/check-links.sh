@@ -22,6 +22,22 @@ cd "$(dirname "$0")/.." || exit 1
 
 fails=0
 checked=0
+deferred=0
+
+# Anchors into records/ wait for main on a feature branch (MUS-D-0182).
+#
+# The export is committed on main only, so a branch carries main's records/ and
+# not its own. A document on that branch linking to a record it has just filed
+# points at a file that exists and a heading that will not, until a
+# records/refresh-* pull request lands it. The file is still checked; the
+# anchor is counted, said out loud, and checked in full on main and on the
+# refresh branch, which is where the export it names is committed. Links from
+# inside records/ are generated alongside their targets and stay checked.
+defer_records_anchors=0
+if ! branch=$(scripts/export-branch.sh); then
+  defer_records_anchors=1
+fi
+records_dir=$(realpath records 2>/dev/null || true)
 
 # Tracked *and* newly added, which `git ls-files` alone is not.
 #
@@ -106,6 +122,17 @@ while IFS= read -r file; do
     [ -d "$target" ] && continue
     [ -n "$anchor" ] || continue
 
+    if [ "$defer_records_anchors" -eq 1 ] && [ -n "$path" ] && [ -n "$records_dir" ]; then
+      case "$file" in
+        records/*) ;;
+        *)
+          case "$(realpath "$target")" in
+            "$records_dir"/*.md) deferred=$((deferred + 1)); continue ;;
+          esac
+          ;;
+      esac
+    fi
+
     # Not `slugs "$target" | grep -qxF`: `grep -q` exits at the first match, the
     # writers upstream of it take SIGPIPE, and `pipefail` then reports 141 for a
     # pipeline that succeeded. That failed roughly one anchor in five, a
@@ -121,6 +148,11 @@ if [ "$fails" -eq 0 ]; then
   printf '  ok    %d links resolve\n' "$checked"
 else
   printf '  %d broken link(s) of %d\n' "$fails" "$checked"
+fi
+if [ "$deferred" -gt 0 ]; then
+  printf '  defer %d anchor(s) into records/ checked for the file only: %s carries main'\''s export,\n' \
+    "$deferred" "${branch:-this detached HEAD}"
+  printf '        so their headings are checked on main and records/refresh-* (MUS-D-0182)\n'
 fi
 
 # Table rows against their own header.
