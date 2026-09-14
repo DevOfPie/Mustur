@@ -497,6 +497,98 @@ func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 	}
 }
 
+// Finished sub-agents fold under one line that counts them (MUS-D-0181).
+//
+// The owner chose this on MUS-Q-0126 over hiding, capping or ageing rows out:
+// nothing leaves the drawer, the running ones stay listed, and what finished
+// is one line away. Shut on arrival and with script blocked, which is what a
+// <details> is without anyone's help.
+func TestFinishedSubagentsFoldUnderACount(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	s := &Sessions{
+		Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie",
+		HookDir: dir, Now: func() time.Time { return now.Add(3 * time.Minute) },
+	}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	rec := func(payload string, at time.Time) {
+		session.RecordHookEvent(dir, "Mustur", []byte(payload), at)
+	}
+	start := func(id string, at time.Time) {
+		rec(`{"hook_event_name":"SubagentStart","agent_id":"`+id+`","agent_type":"Explore"}`, at)
+	}
+	stop := func(id string, at time.Time) {
+		rec(`{"hook_event_name":"SubagentStop","agent_id":"`+id+`","last_assistant_message":"said by `+id+`"}`, at)
+	}
+
+	// One running, nothing finished: no fold at all, rather than "0 finished".
+	start("r1", now)
+	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, `class="fold"`) {
+		t.Error("a fold is drawn with nothing finished in it")
+	}
+
+	start("f1", now.Add(time.Second))
+	start("f2", now.Add(2*time.Second))
+	start("r2", now.Add(3*time.Second))
+	stop("f1", now.Add(time.Minute))
+	stop("f2", now.Add(time.Minute))
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	list := between(body, `<div class="dlist" id="dlist">`, "</div>\n    <div class=\"dread\"")
+	fold := strings.Index(list, `<details class="fold">`)
+	if fold < 0 {
+		t.Fatalf("no shut fold in the list:\n%s", list)
+	}
+	if !strings.Contains(list[fold:], `<summary>2 finished</summary>`) {
+		t.Error("the fold does not say how many finished")
+	}
+	for _, id := range []string{"r1", "r2"} {
+		at := strings.Index(list, `data-id="`+id+`"`)
+		if at < 0 || at > fold {
+			t.Errorf("running %s is not listed before the fold", id)
+		}
+	}
+	for _, id := range []string{"f1", "f2"} {
+		if !strings.Contains(list[fold:], `class="agent" data-id="`+id+`"`) {
+			t.Errorf("finished %s is not inside the fold", id)
+		}
+		// Still openable: the reading pane reads the message from beside the row.
+		if !strings.Contains(list[fold:], `<div class="say" data-for="`+id+`">said by `+id+`</div>`) {
+			t.Errorf("finished %s's message is not inside the fold with it", id)
+		}
+	}
+	// The counts outside the drawer are untouched by the fold (MUS-D-0123).
+	if !strings.Contains(body, `class="badge" id="badge">2<`) {
+		t.Error("the badge stopped counting what is running")
+	}
+	if !strings.Contains(body, `id="dcount">4 · 2 running<`) {
+		t.Error("the drawer header stopped counting every row")
+	}
+
+	// The script draws the same fold from a frame, and a redraw — every second,
+	// and on every frame — keeps it as the reader left it rather than shutting
+	// it under them.
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`el("details", "fold")`,
+		`" finished"`,
+		"finishedOpen = old.open",
+		"fold.open = finishedOpen",
+	} {
+		if !strings.Contains(string(js), want) {
+			t.Errorf("the script does not draw or keep the fold: no %q", want)
+		}
+	}
+}
+
 // Live sub-agent rows, over the socket, against real tmux.
 //
 // The owner chose this over a page reload on MUS-Q-0029, against the
