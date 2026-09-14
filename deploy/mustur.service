@@ -83,7 +83,7 @@ After=network-online.target
 Type=simple
 # Loopback only. The tunnel is what publishes it, and `serve` refuses any
 # address that is not loopback for that reason.
-ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --export %h/repos/DevOfPie/Mustur/records --sessions --origin https://mustur.devofpie.com --accounts
+ExecStart=%h/.local/bin/mustur serve --addr 127.0.0.1:7777 --sessions --origin https://mustur.devofpie.com --accounts
 # Not on-failure: systemd counts a SIGTERM as a clean exit, so on-failure left a
 # TERMed process dead with no restart scheduled and nothing watching. Access
 # answers 302 whether or not the origin is up, so the hostname check in
@@ -97,7 +97,7 @@ Environment=MUSTUR_DB=%h/.local/share/mustur/mustur.db
 # Records written through the surface are the owner's, not "unknown".
 Environment=MUSTUR_ACTOR=whippy
 
-# It reads a catalog, writes a store and one export tree, and talks to tmux.
+# It reads a catalog, writes a store, and talks to tmux. It writes no export: main's comes from make records-refresh (MUS-D-0184).
 NoNewPrivileges=yes
 # NOT PrivateTmp. tmux's socket is /tmp/tmux-$UID, so a private /tmp cannot
 # reach the owner's tmux server at all — and a review caught that leaving the
@@ -108,7 +108,7 @@ NoNewPrivileges=yes
 PrivateTmp=no
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=%h/.local/share/mustur %h/repos/DevOfPie/Mustur/records
+ReadWritePaths=%h/.local/share/mustur
 
 [Install]
 WantedBy=default.target

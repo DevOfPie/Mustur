@@ -10,7 +10,7 @@
 #
 # workflow.md lists resolving links as a commit gate. A gate nobody runs is how
 # documentation ends up pointing at files that moved, so this is the gate,
-# runnable by hand today and by CI once ci/proposed/ci.yml is applied.
+# runnable by hand and by CI, which runs .github/workflows/ci.yml.
 #
 # External links are not checked: they fail for reasons this repository cannot
 # fix, and a gate that depends on someone else's uptime blocks a merge for no
