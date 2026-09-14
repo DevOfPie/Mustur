@@ -28,6 +28,7 @@ import (
 // fileFor names the export file each record kind lands in, relative to the
 // export root. Kinds in dirFor are one file per record and are absent here.
 var fileFor = map[string]string{
+	"phase":      "phases.md",
 	"milestone":  "milestones.md",
 	"question":   "questions.md",
 	"decision":   "decisions.md",
@@ -53,6 +54,7 @@ var flatFiles = []struct {
 	kinds []string
 	of    string
 }{
+	{"phases.md", "Phases", []string{"phase"}, "Stages a project builds in: each phase's own account of itself, and the milestones it holds."},
 	{"milestones.md", "Milestones", []string{"milestone"}, "What the project has promised to do, and what counts as done."},
 	{"questions.md", "Questions", []string{"question"}, "Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not."},
 	{"decisions.md", "Decisions", []string{"decision"}, "Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is."},

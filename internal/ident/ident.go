@@ -39,12 +39,15 @@ const (
 	Repository    Role = "R"
 	Machine       Role = "H" // H for host: M is already the milestone.
 	Project       Role = "P"
+	Phase         Role = "S" // S for stage: P is already the project (MUS-D-0173).
 )
 
-// Roles lists every role letter in the order records are presented.
-var Roles = []Role{Milestone, WorkUnit, Question, Decision, Finding, Investigation, Repository, Machine, Project}
+// Roles lists every role letter in the order records are presented. A phase
+// comes first because it holds milestones.
+var Roles = []Role{Phase, Milestone, WorkUnit, Question, Decision, Finding, Investigation, Repository, Machine, Project}
 
 var roleNames = map[Role]string{
+	Phase:         "phase",
 	Decision:      "decision",
 	Question:      "question",
 	Finding:       "finding",

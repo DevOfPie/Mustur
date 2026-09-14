@@ -460,6 +460,10 @@ func (t *tree) everyPatternMatches(c Check, read []target, prepare func(string) 
 
 func (t *tree) linksResolve(read []target) (State, string, []string) {
 	var broken []string
+	// A target's anchors are worked out once. Per link, a records export with
+	// thousands of anchors into multi-megabyte files took past go test's
+	// ten-minute timeout.
+	anchors := map[string]map[string]bool{}
 	for _, tg := range read {
 		for _, f := range tg.files {
 			text, err := readFile(f)
@@ -490,12 +494,17 @@ func (t *tree) linksResolve(read []target) (State, string, []string) {
 				if l.anchor == "" {
 					continue
 				}
-				body, readErr := readFile(targetPath)
-				if readErr != nil {
-					broken = append(broken, fmt.Sprintf("%s -> %s (unreadable)", filepath.Base(f), l.raw))
-					continue
+				offered, seen := anchors[targetPath]
+				if !seen {
+					body, readErr := readFile(targetPath)
+					if readErr != nil {
+						broken = append(broken, fmt.Sprintf("%s -> %s (unreadable)", filepath.Base(f), l.raw))
+						continue
+					}
+					offered = slugs(body)
+					anchors[targetPath] = offered
 				}
-				if !slugs(body)[l.anchor] {
+				if !offered[l.anchor] {
 					broken = append(broken, fmt.Sprintf("%s -> %s (no such heading)", filepath.Base(f), l.raw))
 				}
 			}
