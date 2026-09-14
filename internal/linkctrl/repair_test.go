@@ -60,6 +60,25 @@ func TestRepairAmendsOnlyWhatTheImportStillOwns(t *testing.T) {
 	}
 }
 
+// Found by the review of Mustur PR 70: against a store that never had the
+// import, a repair wrote every record one by one, round the run-once refusal.
+func TestRepairRefusesAStoreWithoutAnImport(t *testing.T) {
+	s, ctx := openStore(t)
+	findings, err := Findings(strings.NewReader(findingsFixture), "2026-09-13")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, _, err := Repair(ctx, s, []Source{{Records: findings}}); err == nil || !strings.Contains(err.Error(), "no import to repair") {
+		t.Fatalf("repair on an empty store gave %v", err)
+	}
+	if n, _ := s.Count(ctx); n != 0 {
+		t.Fatalf("a refused repair wrote %d record(s)", n)
+	}
+	if _, err := Apply(ctx, s, []Source{{Records: findings}}); err != nil {
+		t.Fatalf("the import was refused after a refused repair: %v", err)
+	}
+}
+
 // LNK-F-0382's row carries no date, so it is stamped the day it is read. A
 // repair the next day is not a change to it.
 func TestRepairOnAnotherDayKeepsTheImportsDate(t *testing.T) {

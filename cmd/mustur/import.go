@@ -134,7 +134,7 @@ func cmdImport(args []string) error {
 	// Phases come after the stubs are placed, deliberately: a milestone number
 	// cited only in phase prose must not add a stub, because a stub shifts every
 	// serial after it, and those serials are live and cited (MUS-D-0173).
-	phaseRecords, err := linkctrl.Phases(ms, renumber, today)
+	phaseRecords, err := linkctrl.Phases(ms, renumber, milestones, today)
 	if err != nil {
 		return err
 	}

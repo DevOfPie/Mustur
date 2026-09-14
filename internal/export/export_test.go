@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
 )
 
@@ -138,6 +139,23 @@ func TestPruneLeavesAndReportsAStray(t *testing.T) {
 	}
 	if _, statErr := os.Stat(stray); statErr != nil {
 		t.Errorf("the stray was deleted: %v", statErr)
+	}
+}
+
+// A kind the export has a file list entry for but no fileFor entry stopped the
+// first export of a store holding a phase (133c9c9). Every kind gets a record.
+func TestEveryKindExports(t *testing.T) {
+	var rs []record.Record
+	for i, kind := range ident.KindNames() {
+		role, _ := ident.RoleFor(kind)
+		rs = append(rs, record.Record{ID: ident.ID{Project: "MUS", Role: role, Serial: i + 1}.String(), Kind: kind, Title: "one " + kind, At: "2026-09-14"})
+	}
+	files, err := Render(rs)
+	if err != nil {
+		t.Fatalf("a kind cannot be exported: %v", err)
+	}
+	if !strings.Contains(string(files["phases.md"]), "one phase") {
+		t.Fatalf("phases.md does not carry the phase record")
 	}
 }
 

@@ -64,6 +64,24 @@ const RepairActor = "import-linkctrl-repair"
 // what they wrote. Record by record, and safe to run again, since a record
 // already matching is not touched.
 func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, skipped, created []string, err error) {
+	// A repair corrects an import. Against a store that never had one it would
+	// write the whole import record by record, round the run-once refusal and
+	// the one transaction Apply exists to give.
+	existing, err := s.List(ctx, "")
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	imported := false
+	for _, r := range existing {
+		if strings.HasPrefix(r.ID, Prefix+"-") {
+			imported = true
+			break
+		}
+	}
+	if !imported {
+		return nil, nil, nil, fmt.Errorf("the store holds no %s record: there is no import to repair, run --apply", Prefix)
+	}
+	var toCreate []record.Record
 	for _, src := range sources {
 		for _, r := range src.Records {
 			events, err := s.History(ctx, r.ID)
@@ -71,10 +89,7 @@ func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, ski
 				return amended, skipped, created, err
 			}
 			if len(events) == 0 {
-				if err := s.Append(ctx, r, "create", RepairActor); err != nil {
-					return amended, skipped, created, err
-				}
-				created = append(created, r.ID)
+				toCreate = append(toCreate, r)
 				continue
 			}
 			last := events[len(events)-1]
@@ -104,6 +119,16 @@ func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, ski
 				return amended, skipped, created, err
 			}
 			amended = append(amended, r.ID)
+		}
+	}
+	// Records the import reads and the store never held arrive together or not
+	// at all, the way the import itself did.
+	if len(toCreate) > 0 {
+		if err := s.AppendAll(ctx, toCreate, RepairActor); err != nil {
+			return amended, skipped, created, err
+		}
+		for _, r := range toCreate {
+			created = append(created, r.ID)
 		}
 	}
 	return amended, skipped, created, nil
