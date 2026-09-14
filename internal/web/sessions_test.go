@@ -2363,8 +2363,50 @@ func TestTheTerminalIsNotRepaintedUnderASelection(t *testing.T) {
 	}
 	// The held frame has to be painted by something, or the screen never comes
 	// back after a selection is let go.
-	if !strings.Contains(src, "if (pending !== null && !selecting()) paint(pending);") {
+	if !strings.Contains(src, "if (pending !== null && !holding()) paint(pending);") {
 		t.Error("nothing paints the frame held back while a selection was up")
+	}
+	// A pointer down in the terminal holds the frame too, and lets it go after
+	// the click rather than on release: a frame landing between press and
+	// release replaces the link under the pointer (MUS-Q-0118).
+	for _, want := range []string{
+		`out.addEventListener("pointerdown"`,
+		"return pressed || selecting();",
+		`document.addEventListener("pointerup", release);`,
+		`document.addEventListener("pointercancel", release);`,
+		"setTimeout(",
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("the paint path has no %q; a frame can still land under a click", want)
+		}
+	}
+}
+
+// No name in session.js is both a function and a variable.
+//
+// The script is one scope, and a var's assignment replaces a function of the
+// same name. paint's hold check was once called held(), beside the pop-up's
+// `var held = null`; the first frame set it to null, every paint threw, and the
+// terminal drew nothing. Nothing here runs the script, so the only test that
+// could have caught it is one that reads the declarations.
+//
+// Only the wrapper's own scope, which the file indents by two spaces: a var
+// inside a nested function shadows an outer function rather than replacing it,
+// and `var el` inside drawChips beside the top-level el() is exactly that.
+func TestTheSessionScriptDeclaresNoNameTwice(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	vars := map[string]bool{}
+	for _, m := range regexp.MustCompile(`(?m)^  (?:var|let|const)\s+([A-Za-z_$][\w$]*)`).FindAllStringSubmatch(src, -1) {
+		vars[m[1]] = true
+	}
+	for _, m := range regexp.MustCompile(`(?m)^  function\s+([A-Za-z_$][\w$]*)\s*\(`).FindAllStringSubmatch(src, -1) {
+		if vars[m[1]] {
+			t.Errorf("session.js declares %q as a function and as a variable; the variable replaces the function", m[1])
+		}
 	}
 }
 
