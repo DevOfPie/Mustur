@@ -32,12 +32,13 @@ path, one project, revoked the moment you say so.
 
 Every surface that draws the tab bar carries `bar.js`, which is what keeps the
 decision badge live rather than fixed at whatever it said when the page was
-rendered. Six carry a client layer of their own: the session view, the composer,
-and the four authentication surfaces. Only two of those stop working without it — the session
+rendered. Seven carry a client layer of their own: the session view, the composer,
+intake, and the four authentication surfaces. Only two of those stop working without it — the session
 view, because a live terminal cannot be server-rendered, and the passkey
 ceremony, because `navigator.credentials` is a browser API. Everywhere else the
-form posts and the script adds a convenience. What the rule should count is open
-on [MUS-Q-0053](records/questions.md#mus-q-0053).
+form posts and the script adds a convenience. What the rule counts is answered
+on [MUS-Q-0053](records/questions.md#mus-q-0053): script tags, with a seventh a
+new decision, which intake's draft was on MUS-Q-0120.
 That box is published at `mustur.devofpie.com`, behind Cloudflare Access and
 answered by a service that starts at boot; [docs/ingress.md](docs/ingress.md) is
 what it took. 2c's own sentence — a jot filed *from a phone* — was proven there

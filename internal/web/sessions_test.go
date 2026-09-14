@@ -268,13 +268,19 @@ func TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven(t *testing.T) {
 		t.Errorf("the composer loads %d scripts: %v", got, scriptsIn(comp0))
 	}
 
-	// Intake and the queue carry the bar's script and only that.
-	for _, path := range []string{"/intake", "/questions"} {
+	// Intake carries the bar's script and its draft's (MUS-Q-0120); the queue
+	// carries the bar's and only that.
+	for path, want := range map[string][]string{
+		"/intake":    {"/assets/bar.js", "/assets/intake.js"},
+		"/questions": {"/assets/bar.js"},
+	} {
 		body := getFrom(t, other, path)
-		if !loads(body, "/assets/bar.js") {
-			t.Errorf("%s does not keep its badge live", path)
+		for _, src := range want {
+			if !loads(body, src) {
+				t.Errorf("%s does not load %s", path, src)
+			}
 		}
-		if got := scriptsIn(body); len(got) != 1 {
+		if got := scriptsIn(body); len(got) != len(want) {
 			t.Errorf("%s loads %v; the exception has become a suggestion", path, got)
 		}
 	}
