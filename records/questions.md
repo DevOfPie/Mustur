@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-149 record(s), by identifier.
+151 record(s), by identifier.
 
 ---
 
@@ -3740,3 +3740,52 @@ question · 2026-09-13
 | Answer | Most recently active |
 | Answered | 2026-09-14 01:22 |
 | Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0124
+
+**The live store holds phase records the deployed Mustur cannot export, so intake filings report a failure. Deploy the phase-kind branch?**
+
+question · 2026-09-14
+
+decision: [MUS-D-0173](decisions.md#mus-d-0173)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+I ran the importer's repair on the live store at about 01:20 UTC on 2026-09-14. It created LinkCtrl's four phase records (MUS-D-0173) before a binary that knows the phase kind was deployed. That is my sequencing error. The deployed binary still answers mustur_route, lists records and shows the queue; it cannot open an LNK-S record, and its export stops at 'kind phase has no export file'. Question answers and composes ignore that error. An intake filing saves the jot and then shows the failure. make deploy from stack/m9-4-a-phase-kind fixes it: that branch is the deployed build's commit, 95ad146, plus this milestone's commits, so nothing that is live goes away. It has not been reviewed yet; make check passes. Auto mode refused the deploy without your word.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Intake filings on mustur.devofpie.com, which save the jot and then report an export failure; the served records export, which has stopped updating |
+| Needed to proceed | yes |
+| Option | Deploy it now :: Recommended: make deploy from stack/m9-4-a-phase-kind, then check that the service came back and that intake and the export work :: Closes the break within minutes. What goes live is unreviewed: the importer, the audit anchor cache, and the phase kind. The review runs after and any fix deploys again. Sessions survive a deploy since MUS-D-0151. |
+| Option | Restore the store instead :: stop the service, put back the backup taken just before the repair, start it again; deploy after review :: Nothing unreviewed goes live. Costs the four phase records and 77 milestones' phase links until the repair runs again. Anything written to the live store since 01:20 UTC is lost with the restore; I have not checked whether anything was. |
+| Option | Leave it until the branch is reviewed :: nothing changes now :: Intake keeps reporting an export failure on every filing, and the served export stays stale until the review is done and the deploy goes out. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 01:28 |
+| Answer | Deploy it now |
+| Answered | 2026-09-14 01:31 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0125
+
+**Deploy the four intake fixes to mustur.devofpie.com now, from a local integration build, or after you merge?**
+
+question · 2026-09-14
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | the links, Stop, project pill and intake draft fixes reaching mustur.devofpie.com |
+| Option | Now, from the integration build :: Recommended: build a local, unpushed merge of PRs 71, 72, 73 and 75 on origin/main and run make deploy; the markdown PR joins it in a second deploy when built :: The merge was made and tested on 2026-09-14: go vet and go test pass on every package, decisions.md kept all three appended entries, links resolve. The last intake fix (PR 64) was deployed from its branch before it merged, and sessions survive a restart since the tmux server moved to its own scope. The permission layer refused make deploy without your explicit say-so for this target, which is why this is asked. If you then change a PR in review, the live build differs from main until the next deploy. |
+| Option | After you merge :: nothing reaches the site until the PRs are merged; then deploy from main :: The site stays on today's build: links unclickable, Stop lands on the start form, no project pill, no intake draft. No build runs live that main does not hold. |
+| Option | Only some :: say which PRs go live now :: Built the same way from just those branches. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-14 01:38 |

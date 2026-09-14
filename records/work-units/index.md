@@ -100,6 +100,7 @@ is a copy that will drift.
 | [LNK-W-0095](LNK-W-0095.md) | Deferred findings, documentation pass, 0.4.0 | 2026-08-25 |
 | [LNK-W-0096](LNK-W-0096.md) | W48: this repository's records move to Mustur | 2026-09-13 |
 | [LNK-W-0097](LNK-W-0097.md) | W48's review fixes on LinkCtrl PR 14 | 2026-09-14 |
+| [LNK-W-0098](LNK-W-0098.md) | W48's phase pointers and conventions, after LNK-Q-0005 | 2026-09-14 |
 | [MUS-W-0001](MUS-W-0001.md) | An identifier scheme records can be addressed by | 2026-08-19 |
 | [MUS-W-0002](MUS-W-0002.md) | An insert-only store with a materialized latest | 2026-08-19 |
 | [MUS-W-0003](MUS-W-0003.md) | A seed that puts what already exists into the store | 2026-08-19 |

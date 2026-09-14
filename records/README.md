@@ -10,11 +10,11 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | phase | 4 | [phases.md](phases.md) |
 | milestone | 107 | [milestones.md](milestones.md) |
-| question | 149 | [questions.md](questions.md) |
-| decision | 1141 | [decisions.md](decisions.md) |
+| question | 151 | [questions.md](questions.md) |
+| decision | 1147 | [decisions.md](decisions.md) |
 | finding | 555 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
-| work-unit | 101 | [work-units/index.md](work-units/index.md) |
+| work-unit | 102 | [work-units/index.md](work-units/index.md) |
 | investigation | 5 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
@@ -255,6 +255,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-W-0095](work-units/LNK-W-0095.md#lnk-w-0095) | work-unit | Deferred findings, documentation pass, 0.4.0 |
 | [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096) | work-unit | W48: this repository's records move to Mustur |
 | [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097) | work-unit | W48's review fixes on LinkCtrl PR 14 |
+| [LNK-W-0098](work-units/LNK-W-0098.md#lnk-w-0098) | work-unit | W48's phase pointers and conventions, after LNK-Q-0005 |
 | [LNK-Q-0001](questions.md#lnk-q-0001) | question | LNK-M-0070 — Does the update checker default on or off? |
 | [LNK-Q-0002](questions.md#lnk-q-0002) | question | An 'All Workspaces' dashboard scope — which phase, and whose milestone? |
 | [LNK-Q-0003](questions.md#lnk-q-0003) | question | W48: phase-details/README.md's fourteen inherited rules and _template.md are in no Mustur record — where do they go? |
@@ -1753,6 +1754,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0121](questions.md#mus-q-0121) | question | Does replacing the visual plan tool, with plans held in Mustur, become a milestone? |
 | [MUS-Q-0122](questions.md#mus-q-0122) | question | records/ here carries LinkCtrl's uncommitted import. Commit the triage export now, or after the import stack merges? |
 | [MUS-Q-0123](questions.md#mus-q-0123) | question | After Stop, which running session should the Sessions page land on? |
+| [MUS-Q-0124](questions.md#mus-q-0124) | question | The live store holds phase records the deployed Mustur cannot export, so intake filings report a failure. Deploy the phase-kind branch? |
+| [MUS-Q-0125](questions.md#mus-q-0125) | question | Deploy the four intake fixes to mustur.devofpie.com now, from a local integration build, or after you merge? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -1926,6 +1929,12 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0171](decisions.md#mus-d-0171) | decision | Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side |
 | [MUS-D-0172](decisions.md#mus-d-0172) | decision | W48 is approved as restated, and made under LinkCtrl's own workflow loop |
 | [MUS-D-0173](decisions.md#mus-d-0173) | decision | Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases |
+| [MUS-D-0174](decisions.md#mus-d-0174) | decision | The CLI's own hyperlinks open in the session view, and nothing else from the pane becomes a link |
+| [MUS-D-0175](decisions.md#mus-d-0175) | decision | After Stop the Sessions page lands on the most recently active running session, and the picker lists in that order |
+| [MUS-D-0176](decisions.md#mus-d-0176) | decision | Plans move into Mustur as milestone 9, a plan held beside its decisions, and 9b, a plan drawn there |
+| [MUS-D-0177](decisions.md#mus-d-0177) | decision | Question text renders as markdown through goldmark v1, with raw HTML and dangerous URLs refused by its defaults |
+| [MUS-D-0178](decisions.md#mus-d-0178) | decision | The intake box keeps what is typed as a draft of its own, cleared by filing or by Clear, and pictures are not kept |
+| [MUS-D-0179](decisions.md#mus-d-0179) | decision | A phase keeps its file whole, tables included, and is dated by its milestones |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |

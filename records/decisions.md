@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-1141 record(s), by identifier.
+1147 record(s), by identifier.
 
 ## Index
 
@@ -1153,6 +1153,12 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0171](#mus-d-0171) | Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side | 2026-09-13 |
 | [MUS-D-0172](#mus-d-0172) | W48 is approved as restated, and made under LinkCtrl's own workflow loop | 2026-09-13 |
 | [MUS-D-0173](#mus-d-0173) | Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases | 2026-09-14 |
+| [MUS-D-0174](#mus-d-0174) | The CLI's own hyperlinks open in the session view, and nothing else from the pane becomes a link | 2026-09-14 |
+| [MUS-D-0175](#mus-d-0175) | After Stop the Sessions page lands on the most recently active running session, and the picker lists in that order | 2026-09-14 |
+| [MUS-D-0176](#mus-d-0176) | Plans move into Mustur as milestone 9, a plan held beside its decisions, and 9b, a plan drawn there | 2026-09-14 |
+| [MUS-D-0177](#mus-d-0177) | Question text renders as markdown through goldmark v1, with raw HTML and dangerous URLs refused by its defaults | 2026-09-14 |
+| [MUS-D-0178](#mus-d-0178) | The intake box keeps what is typed as a draft of its own, cleared by filing or by Clear, and pictures are not kept | 2026-09-14 |
+| [MUS-D-0179](#mus-d-0179) | A phase keeps its file whole, tables included, and is dated by its milestones | 2026-09-14 |
 
 ---
 
@@ -1403,6 +1409,10 @@ decision · 2026-09-14
 q: [HRD-Q-0020](questions.md#hrd-q-0020)
 
 Answered by Pie on HRD-Q-0020: grow the disk; done on the host on 2026-09-14, no restart needed for the size to show. The partition sda3, the physical volume, the logical volume ubuntu-vg/ubuntu-lv and the root filesystem still had to be grown from inside, which needs root; this session's shell runs with no-new-privileges so Pie runs the four commands from their own terminal.
+
+| Field | Value |
+| --- | --- |
+| Status | done 2026-09-14: root filesystem 250 GB, 168 GB free after the partition, PV, LV and ext4 were grown by Pie |
 
 ---
 
@@ -83367,3 +83377,131 @@ LNK-Q-0005 asked where LinkCtrl's phase summaries live, since W48 deleted the pr
 | --- | --- |
 | Role letter | S |
 | Applies to | LinkCtrl's phase-details/phase-1.md to phase-4.md; any project with phases |
+
+---
+
+## MUS-D-0174
+
+**The CLI's own hyperlinks open in the session view, and nothing else from the pane becomes a link**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0118](questions.md#mus-q-0118)
+
+fixes: [MUS-F-0147](findings.md#mus-f-0147)
+
+the rule it makes one exception to: [MUS-D-0132](#mus-d-0132)
+
+why the readers keep stripping links: [MUS-F-0054](findings.md#mus-f-0054)
+
+The owner answered MUS-Q-0118 with the CLI's own links, and said bare addresses may follow if a need for them turns up. MUS-D-0132's rule that the pane's contents never become markup gains one exception: an OSC 8 hyperlink whose address is http or https with a host renders as a link that opens a new tab, its address escaped as an attribute the way the text around it is. Any other scheme, a hyperlink the capture never terminated, and an address printed as plain text all stay text. Measured on tmux 3.6 on 2026-09-14: capture-pane -p -e -J keeps the OSC 8 sequence whole, parameters and ST terminator included, so the CLI's links reach the renderer rather than being lost before it. A link on the page was not enough on its own. A frame landing between press and release replaced the link under the pointer, so the session view now holds a changed frame while a pointer is down in the terminal and paints it after the click has been dispatched; that also stops the press which collapses a selection from painting the frame MUS-F-0128 held, which used to lose the first click after one. Plain, which the chrome, activity and prompt readers use, still strips a link to its text, because MUS-F-0054 is what reading the URL there broke.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/ansi/ansi.go HTML, internal/web/assets/session.js paint |
+| Left open | bare addresses, if the owner finds a need for them |
+
+---
+
+## MUS-D-0175
+
+**After Stop the Sessions page lands on the most recently active running session, and the picker lists in that order**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0123](questions.md#mus-q-0123)
+
+fixes: [MUS-F-0143](findings.md#mus-f-0143)
+
+the order it borrows: [MUS-D-0013](#mus-d-0013)
+
+the picker it keeps navigating only: [MUS-D-0150](#mus-d-0150)
+
+The owner answered MUS-Q-0123 with the most recently active session. Stop used to redirect to /sessions?new=1, whose only job is to reach the start form while something is running, so ending one session showed the form for starting another. Stop now sends /sessions, which jumps into the first running session or shows the form when none is running, and lost sessions are still never jumped into. Which session is first was whatever tmux list-sessions returned, an order nothing defined; the list is now ordered by session.ByActivity, the order the composer already uses under MUS-D-0013, and the picker lists in that same order so its top is where the landing went. Separately, a page with no option of its own opened the picker with nothing selected, so the browser showed the first session as chosen and choosing it fired no change; such a page now opens on a disabled placeholder, and the picker still only navigates.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/web/start.go stop, internal/web/sessions.go rows and render |
+
+---
+
+## MUS-D-0176
+
+**Plans move into Mustur as milestone 9, a plan held beside its decisions, and 9b, a plan drawn there**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0121](questions.md#mus-q-0121)
+
+the first half: [MUS-F-0144](findings.md#mus-f-0144)
+
+the second half: [MUS-F-0148](findings.md#mus-f-0148)
+
+the tool limit it replaces: [MUS-F-0048](findings.md#mus-f-0048)
+
+The owner answered MUS-Q-0121 with a milestone, plans first. Nothing in Plan.md covered plans or wireframes, so this adds a scope row and two milestone rows rather than building under an existing one. 9 is the document: a session hands Mustur a plan the size of the Hoard group-sharing plan, it becomes a record addressable by identifier and rendered where the owner answers decisions, and a question raised against a plan cites it and shows its answered state on both, which today nothing can do because refs point one way and no surface shows a cited question's state. 9b is the drawing: wireframes generated quickly and drawn freely enough that a surface planned in them looks like the surface built, with feedback left anywhere on the design, which the owner named as the one thing the external tool does well. The split is the owner's order, not an estimate: 9 gives a plan's questions somewhere to link before 9b exists, and 9 is independently useful because MUS-F-0144 is a plan a person cannot currently read without a shell. Constraints carried into both rows: never embed a backend in a frame, and a plan living in another project's checkout stays that project's file until the session hands it over. Rendering a plan's markdown waits on MUS-Q-0119's dependency check.
+
+| Field | Value |
+| --- | --- |
+| Status | scheduled; Plan.md milestone rows 9 and 9b, not started |
+
+---
+
+## MUS-D-0177
+
+**Question text renders as markdown through goldmark v1, with raw HTML and dangerous URLs refused by its defaults**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0119](questions.md#mus-q-0119)
+
+for: [MUS-F-0151](findings.md#mus-f-0151)
+
+the question that prompted it: [LNK-Q-0002](questions.md#lnk-q-0002)
+
+The owner answered MUS-Q-0119 with goldmark, and asked that it be verified as the best dependency with no comparable alternative. Verified on 2026-09-14 by building each candidate in a scratch module and running one hostile input through it, CGO disabled: bold, italic, code, a pipe table, a script block, an inline img with onerror, and javascript:, data:text/html and vbscript: URLs in plain, mixed-case and entity-encoded forms. github.com/yuin/goldmark v1.8.6 lists no packages outside its own, which is the bar decisions.md holds a dependency to (pure Go, no transitive dependencies); drops raw HTML and blanks every dangerous link and image URL with its defaults, including the entity-encoded bypass fixed in 1.7.17 (GHSA-c97m-vxhj-p7j6); implements CommonMark 0.31.2 with tables as a bundled extension; and is what Hugo pins. The v2 module has the same properties and no importers yet, and v1 keeps security fixes, so v1 is the one taken. gomarkdown and blackfriday pass raw HTML and image javascript: URLs even with their safe flags; golang-commonmark pulls in golang.org/x/text and four modules and has had no commit since 2021; go-commonmark panics on a table followed by a paragraph; malcolmston/markdown has no tables and no URL filter; lute brings chroma and x/text and still emits data: and vbscript: links with sanitizing on. So goldmark v1, with WithUnsafe never set: HTML pages carry no CSP and bodies arrive from other projects' files, so its defaults are the barrier.
+
+| Field | Value |
+| --- | --- |
+| Status | taken; building on MUS-F-0151 |
+| Pinned | github.com/yuin/goldmark v1.8.6 |
+
+---
+
+## MUS-D-0178
+
+**The intake box keeps what is typed as a draft of its own, cleared by filing or by Clear, and pictures are not kept**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0120](questions.md#mus-q-0120)
+
+fixes: [MUS-F-0152](findings.md#mus-f-0152)
+
+the count it is the seventh of: [MUS-Q-0053](questions.md#mus-q-0053)
+
+the draft it is modelled on: [MUS-Q-0034](questions.md#mus-q-0034)
+
+The owner answered MUS-Q-0120 with a text draft of intake's own. Intake is served no-store, so going to another tab and back was a fresh page with an empty box. Intake now carries a second script, the seventh page to by MUS-Q-0053's count, which that answer makes a new decision rather than a precedent, and this is that decision. The draft lives in the browser under its own key, never the composer's, so filing a jot cannot clear a message being drafted for a session or the reverse; it is restored only into an empty box, so text the server handed back after an error wins; and it is cleared when a filing succeeds, marked by the redirect rather than inferred, or by a Clear button the script reveals. The page still files with the script blocked, and what stops is only the draft. Pictures are not kept, because nothing can refill a file input and holding up to six pictures in the browser was the option not taken. Separately, a jot over the word limit now comes back in the box rather than being lost; one that fails to parse cannot, because the form never reaches the handler. Measured in a headless browser at 390x844 against a throwaway store: typed text survived a link away and back and the Back button, Clear emptied box and draft, both filing paths cleared it, the composer's draft was untouched, and with script blocked the draft row never appeared.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/web/assets/intake.js, internal/web/intake.go |
+
+---
+
+## MUS-D-0179
+
+**A phase keeps its file whole, tables included, and is dated by its milestones**
+
+decision · 2026-09-14
+
+corrects: [MUS-D-0173](#mus-d-0173)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+Correcting MUS-D-0173, which said a phase holds its prose and every table Mustur does not already hold elsewhere. The independent review of Mustur PR 70 found that the premise was false. LinkCtrl's build-plan tables carry notes in their cells (M57.9's reopened range, M50.8's four reopenings) that no milestone or work unit holds, because a milestone's Depends on and Discharges come from its own file. The status tables carry notes too. The phase-2 decision table's Taken dates reach a D-number record only when the log never defined the number. Dropping those tables as held elsewhere lost history. So a phase keeps its file whole. That duplicates two detail tables phase 1 shares with its milestones and every row the D-number decisions carry, and the duplication cannot drift, because the source file is frozen and leaving LinkCtrl. The same review found a phase dated by the earliest date written in its file, which for phase 2 was 2018, inside a dependency's history. A phase is now dated by the earliest dated milestone it holds. Phase 1's closed status is read from its own State column rather than assumed.
+
+| Field | Value |
+| --- | --- |
+| Corrects | MUS-D-0173's rule for tables, and how a phase is dated |

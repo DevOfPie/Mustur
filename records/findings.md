@@ -553,18 +553,18 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0140](#mus-f-0140) | A stale tmux timestamp would have made the first sweep after a deploy restart a session inside a minute | mustur/Research session_activity read as Thu Sep 10 09:37 on 2026-09-13, three days before the deploy that would have acted on it. TestTheDwellIsNeverLongerThanThePollerHasBeenWatching holds the cap and TestTheScreenIsWhatCountsOnceTheWatchIsLongEnough holds that it stops applying. | fixed before the sweep ran anywhere |
 | [MUS-F-0141](#mus-f-0141) | A question raised with the tmux session name could never be delivered to, and only said so once the owner had answered | HRD-Q-0006's Session project field reads mustur/Hoard_Work and its Delivered field reads 'not delivered: a name cannot contain "/"'. TestAskRefusesATargetNothingCanBeDeliveredTo and TestAskTakesTheTmuxSessionNameAndStoresTheProject hold both halves; TestTheTmuxSessionNameIsAcceptedAsWellAsTheProject holds that an older record still delivers. | fixed; HRD-Q-0006's own answer is still undelivered, because nothing re-delivers a closed question |
 | [MUS-F-0142](#mus-f-0142) | One project's unsurfaced question fails every other project's commit gate | make check failed on 2026-09-13 with 'HRD-Q-0007 never surfaced as a prompt' and 'HRD-Q-0008 never surfaced as a prompt' while committing a Mustur branch. TestTheGateCanBeNarrowedToOneProject holds both directions and that a prefix is not a substring. | fixed for the gate; the export still carries every project's records |
-| [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… | Stop redirects to /sessions?new=1 (internal/web/start.go:374), and new=1 is the flag that skips the jump into a running session (internal/web/sessions.go:371, :376), so the start form renders. On that page no option in the session picker is selected (sessions.go:1409-1412), so the browser shows the first running session as chosen, and choosing it fires no change event (internal/web/assets/session.js:29-31): hence switching away and back. What 'top' means is undefined: the list is tmux's own order, and session.ByActivity (internal/session/session.go:582) is used only by the composer. | confirmed; the redirect and the picker's dead first choice are fixed whatever MUS-Q-0123 says, and which session is first is MUS-Q-0123's |
-| [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  | raised as MUS-Q-0121, with MUS-F-0148 |
+| [MUS-F-0143](#mus-f-0143) | After I close a session the create a session screen shows up instead of the top session and I… | Stop redirects to /sessions?new=1 (internal/web/start.go:374), and new=1 is the flag that skips the jump into a running session (internal/web/sessions.go:371, :376), so the start form renders. On that page no option in the session picker is selected (sessions.go:1409-1412), so the browser shows the first running session as chosen, and choosing it fires no change event (internal/web/assets/session.js:29-31): hence switching away and back. What 'top' means is undefined: the list is tmux's own order, and session.ByActivity (internal/session/session.go:582) is used only by the composer. | fixed on MUS-D-0175: Stop lands on the most recently active running session, the picker lists in that order, and a page with no current session opens the picker on a placeholder |
+| [MUS-F-0144](#mus-f-0144) | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |  | scheduled as milestone 9 on MUS-D-0176 |
 | [MUS-F-0145](#mus-f-0145) | A session restarted under the same name kept tmux's 80x24, so it had no scrollback | tmux on 2026-09-13: mustur/Intake size=80x24 window-size=latest history=0, created 05:24:05; mustur/Hoard_Work size=100x300 window-size=manual, created 04:11:36. No resize error in the service journal, because none was attempted. TestStartSizesTheWindowItself holds the fix. | fixed |
 | [MUS-F-0146](#mus-f-0146) | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records | grep -cE '^## [0-9]{4}-[0-9]{2}-[0-9]{2} — ' decisions.md gives 505; ls phase-details/m*.md gives 74, 24 with a decimal; mustur import linkctrl counts 381 findings, 2 questions, 1 investigation | raised as MUS-Q-0112 and MUS-Q-0113 |
-| [MUS-F-0147](#mus-f-0147) | I can't click or ctrl+click on links in the session | Never built rather than broken. The pane is rendered by ansi.HTML, which writes colour spans only and skips OSC 8 hyperlinks (internal/ansi/ansi.go:156-161), and a test requires the link's address not to reach the page (internal/ansi/ansi_test.go:59-62). Nothing linkifies plain addresses. Even with a link on the page, a frame arriving between press and release replaces the element (session.js:206) and the click is lost, and a frame held by MUS-F-0128's selection guard is painted by the mousedown that clears the selection (session.js:214-216). | raised as MUS-Q-0118, because a link is markup and MUS-D-0132 says pane output never is |
-| [MUS-F-0148](#mus-f-0148) | Push up replacing the visual plan mcp | No scope row or milestone covers plans or wireframes (Plan.md scope table and milestone table). The plan named is plan-523b4a30c7d3409b, Hoard's phase 3 desktop UI (HRD-W-0001), whose questions are HRD-Q-0014 to 0016. Its drawn claim modal was not what the app had: HRD-Q-0015 was asked against it and superseded twice, ending on HRD-D-0014 in the HUD. Questions and decisions cite each other one way only (internal/record/record.go:35), nothing shows answered state on the citing record (internal/web/records.go:97-105), and an answer given in a plan reaches the store only by relay (internal/question/question.go:377). | raised as MUS-Q-0121: a scope-table change, so the owner's |
+| [MUS-F-0147](#mus-f-0147) | I can't click or ctrl+click on links in the session | Never built rather than broken. The pane is rendered by ansi.HTML, which writes colour spans only and skips OSC 8 hyperlinks (internal/ansi/ansi.go:156-161), and a test requires the link's address not to reach the page (internal/ansi/ansi_test.go:59-62). Nothing linkifies plain addresses. Even with a link on the page, a frame arriving between press and release replaces the element (session.js:206) and the click is lost, and a frame held by MUS-F-0128's selection guard is painted by the mousedown that clears the selection (session.js:214-216). | fixed on MUS-D-0174: the CLI's OSC 8 links open in a new tab, and a frame no longer lands between press and release; bare addresses stay text |
+| [MUS-F-0148](#mus-f-0148) | Push up replacing the visual plan mcp | No scope row or milestone covers plans or wireframes (Plan.md scope table and milestone table). The plan named is plan-523b4a30c7d3409b, Hoard's phase 3 desktop UI (HRD-W-0001), whose questions are HRD-Q-0014 to 0016. Its drawn claim modal was not what the app had: HRD-Q-0015 was asked against it and superseded twice, ending on HRD-D-0014 in the HUD. Questions and decisions cite each other one way only (internal/record/record.go:35), nothing shows answered state on the citing record (internal/web/records.go:97-105), and an answer given in a plan reaches the store only by relay (internal/question/question.go:377). | scheduled as milestones 9 and 9b on MUS-D-0176, plans first |
 | [MUS-F-0149](#mus-f-0149) | The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives | mustur_route repository=DevOfPie/LinkCtrl returned 50.5 KB (Claude Code persisted it as a file); mustur list counts the live store and the rehearsal store | open |
-| [MUS-F-0150](#mus-f-0150) | Decisions should show near the top what project they are for. | A question's project is its identifier prefix, shown only as the faded identifier at the foot of the card (internal/web/questions.go:501, :456). The page is handed its project and never draws it (:136, :469). The queue sorts by identifier string, so projects bunch by prefix with no heading (internal/question/question.go:218-228). The artboard had a project pill, and docs/ui-surfaces.md:224 dropped it because 'One project exists', which stopped being true when the store took IDW, HRD and LNK. A prefix-to-name lookup already exists (internal/web/accountpage.go:56-81). | confirmed; no decision needed, since the drawing had the pill and only a reason that is now false removed it |
+| [MUS-F-0150](#mus-f-0150) | Decisions should show near the top what project they are for. | A question's project is its identifier prefix, shown only as the faded identifier at the foot of the card (internal/web/questions.go:501, :456). The page is handed its project and never draws it (:136, :469). The queue sorts by identifier string, so projects bunch by prefix with no heading (internal/question/question.go:218-228). The artboard had a project pill, and docs/ui-surfaces.md:224 dropped it because 'One project exists', which stopped being true when the store took IDW, HRD and LNK. A prefix-to-name lookup already exists (internal/web/accountpage.go:56-81). | fixed: each card's first pill names its project from the project records, falling back to the prefix; docs/ui-surfaces.md no longer records the pill as a departure |
 | [MUS-F-0151](#mus-f-0151) | Allow decisions to have their questions written in markdown to make them more readable | Body and option detail are printed as escaped plain text in one paragraph (internal/web/questions.go:485, :493), so newlines collapse and asterisks and table pipes show as typed; the records page does the same (internal/web/records.go:509). No markdown renderer is in the module (go.mod). Option text cannot carry markdown at all, because the export flattens every field into a table cell (internal/export/export.go:265-268). HTML pages carry no CSP, so escaping is the only barrier against a body imported from another project's files. | raised as MUS-Q-0119 |
-| [MUS-F-0152](#mus-f-0152) | The intake text box should keep what is typed and uploaded as a draft unless it is cleared or… | Intake is served with Cache-Control no-store (internal/web/intake.go:447), so going back is a fresh GET and the box renders empty. The page loads bar.js and nothing else (:585), and a test holds it to exactly one script (internal/web/sessions_test.go:271-279). Two error paths also drop the text: an upload over the cap (:224) and words over MaxJot (:232). A picked picture cannot be kept by any server path, since nothing can refill a file input. | raised as MUS-Q-0120: a second script on intake is the seventh by MUS-Q-0053's count |
-| [MUS-F-0153](#mus-f-0153) | CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25 | records/questions.md MUS-Q-0053: Status answered, 2026-08-25; CLAUDE.md line 166-168 calls it open |  |
-| [MUS-F-0154](#mus-f-0154) | intake.go's comments say the page carries no script and no stylesheet, and it carries both | intake.go loads /assets/bar.js at :585 and carries a style block at :466-545; sessions_test.go:277 requires one script on /intake |  |
+| [MUS-F-0152](#mus-f-0152) | The intake text box should keep what is typed and uploaded as a draft unless it is cleared or… | Intake is served with Cache-Control no-store (internal/web/intake.go:447), so going back is a fresh GET and the box renders empty. The page loads bar.js and nothing else (:585), and a test holds it to exactly one script (internal/web/sessions_test.go:271-279). Two error paths also drop the text: an upload over the cap (:224) and words over MaxJot (:232). A picked picture cannot be kept by any server path, since nothing can refill a file input. | fixed: the box keeps typed text as its own draft until filed or cleared; pictures are not kept, on MUS-Q-0120 |
+| [MUS-F-0153](#mus-f-0153) | CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25 | records/questions.md MUS-Q-0053: Status answered, 2026-08-25; CLAUDE.md line 166-168 calls it open | fixed: CLAUDE.md, Plan.md, README.md and docs/ui-surfaces.md now say MUS-Q-0053 was answered on 2026-08-25, alongside the seventh script it made a decision |
+| [MUS-F-0154](#mus-f-0154) | intake.go's comments say the page carries no script and no stylesheet, and it carries both | intake.go loads /assets/bar.js at :585 and carries a style block at :466-545; sessions_test.go:277 requires one script on /intake | fixed: intake.go's package and template comments now say what the page carries |
 
 ---
 
@@ -15860,12 +15860,14 @@ Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
 raised as: [MUS-Q-0123](questions.md#mus-q-0123)
 
+the decision: [MUS-D-0175](decisions.md#mus-d-0175)
+
 After I close a session the create a session screen shows up instead of the top session and I need to switch the session and go back before it loads.
 
 | Field | Value |
 | --- | --- |
 | Evidence | Stop redirects to /sessions?new=1 (internal/web/start.go:374), and new=1 is the flag that skips the jump into a running session (internal/web/sessions.go:371, :376), so the start form renders. On that page no option in the session picker is selected (sessions.go:1409-1412), so the browser shows the first running session as chosen, and choosing it fires no change event (internal/web/assets/session.js:29-31): hence switching away and back. What 'top' means is undefined: the list is tmux's own order, and session.ByActivity (internal/session/session.go:582) is used only by the composer. |
-| Status | confirmed; the redirect and the picker's dead first choice are fixed whatever MUS-Q-0123 says, and which session is first is MUS-Q-0123's |
+| Status | fixed on MUS-D-0175: Stop lands on the most recently active running session, the picker lists in that order, and a page with no current session opens the picker on a placeholder |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -15885,13 +15887,15 @@ q: [HRD-Q-0008](questions.md#hrd-q-0008)
 
 raised as: [MUS-Q-0121](questions.md#mus-q-0121)
 
+scheduled by: [MUS-D-0176](decisions.md#mus-d-0176)
+
 Raised by Pie on 2026-09-13: plans provided as files on the agent's system are inconvenient to access, and Mustur needs a way of providing them. The case: the Hoard group-sharing plan lives at .local/group-sharing/plan.md in ~/repos/DevOfPie/hoard on whippy-vm, an ignored path because upstream bans agent files in commits. HRD-W-0001 carries only the path, HRD-Q-0008 asks Pie to read the plan before phase 1 starts, and the only way to read it is a shell on the VM. Mustur's records hold a title, a body and fields; nothing holds a document the size of a plan, and no surface renders one. What is wanted: a way for a session to hand Mustur a plan, and for the owner to read it where the decisions are.
 
 | Field | Value |
 | --- | --- |
 | Raised by | Pie, in the Hoard_Work session |
 | Consequence | until this exists, a plan is a file Pie must open on the VM |
-| Status | raised as MUS-Q-0121, with MUS-F-0148 |
+| Status | scheduled as milestone 9 on MUS-D-0176 |
 
 ---
 
@@ -15956,12 +15960,14 @@ Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
 raised as: [MUS-Q-0118](questions.md#mus-q-0118)
 
+the decision: [MUS-D-0174](decisions.md#mus-d-0174)
+
 I can't click or ctrl+click on links in the session
 
 | Field | Value |
 | --- | --- |
 | Evidence | Never built rather than broken. The pane is rendered by ansi.HTML, which writes colour spans only and skips OSC 8 hyperlinks (internal/ansi/ansi.go:156-161), and a test requires the link's address not to reach the page (internal/ansi/ansi_test.go:59-62). Nothing linkifies plain addresses. Even with a link on the page, a frame arriving between press and release replaces the element (session.js:206) and the click is lost, and a frame held by MUS-F-0128's selection guard is painted by the mousedown that clears the selection (session.js:214-216). |
-| Status | raised as MUS-Q-0118, because a link is markup and MUS-D-0132 says pane output never is |
+| Status | fixed on MUS-D-0174: the CLI's OSC 8 links open in a new tab, and a frame no longer lands between press and release; bare addresses stay text |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -15981,12 +15987,14 @@ raised as: [MUS-Q-0121](questions.md#mus-q-0121)
 
 the other half: [MUS-F-0144](#mus-f-0144)
 
+scheduled by: [MUS-D-0176](decisions.md#mus-d-0176)
+
 Push up replacing the visual plan mcp. Te plan proposed in `https://plan.agent-native.com/plans/plan-523b4a30c7d3409b` looks like it would cause significant changes to the existing UI which I assume is due to limitations in the MCP. Our replacement should allow much better and freer wireframes as the current implentation leaves a lot up to chance. The only good things the current one has going is the ability to give feedback anywhere on the design. Wireframes should be quick and efficient to generate, but not sacrifice the feeling of the UI being planned. Any questions on a plan should be linked to a decision and appear in both as well as showing they have been answered on both.
 
 | Field | Value |
 | --- | --- |
 | Evidence | No scope row or milestone covers plans or wireframes (Plan.md scope table and milestone table). The plan named is plan-523b4a30c7d3409b, Hoard's phase 3 desktop UI (HRD-W-0001), whose questions are HRD-Q-0014 to 0016. Its drawn claim modal was not what the app had: HRD-Q-0015 was asked against it and superseded twice, ending on HRD-D-0014 in the HUD. Questions and decisions cite each other one way only (internal/record/record.go:35), nothing shows answered state on the citing record (internal/web/records.go:97-105), and an answer given in a plan reaches the store only by relay (internal/question/question.go:377). |
-| Status | raised as MUS-Q-0121: a scope-table change, so the owner's |
+| Status | scheduled as milestones 9 and 9b on MUS-D-0176, plans first |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -16025,7 +16033,7 @@ Decisions should show near the top what project they are for.
 | Field | Value |
 | --- | --- |
 | Evidence | A question's project is its identifier prefix, shown only as the faded identifier at the foot of the card (internal/web/questions.go:501, :456). The page is handed its project and never draws it (:136, :469). The queue sorts by identifier string, so projects bunch by prefix with no heading (internal/question/question.go:218-228). The artboard had a project pill, and docs/ui-surfaces.md:224 dropped it because 'One project exists', which stopped being true when the store took IDW, HRD and LNK. A prefix-to-name lookup already exists (internal/web/accountpage.go:56-81). |
-| Status | confirmed; no decision needed, since the drawing had the pill and only a reason that is now false removed it |
+| Status | fixed: each card's first pill names its project from the project records, falling back to the prefix; docs/ui-surfaces.md no longer records the pill as a departure |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -16072,7 +16080,7 @@ The intake text box should keep what is typed and uploaded as a draft unless it 
 | Field | Value |
 | --- | --- |
 | Evidence | Intake is served with Cache-Control no-store (internal/web/intake.go:447), so going back is a fresh GET and the box renders empty. The page loads bar.js and nothing else (:585), and a test holds it to exactly one script (internal/web/sessions_test.go:271-279). Two error paths also drop the text: an upload over the cap (:224) and words over MaxJot (:232). A picked picture cannot be kept by any server path, since nothing can refill a file input. |
-| Status | raised as MUS-Q-0120: a second script on intake is the seventh by MUS-Q-0053's count |
+| Status | fixed: the box keeps typed text as its own draft until filed or cleared; pictures are not kept, on MUS-Q-0120 |
 | Routed to | Mustur (MUS-P-0001) |
 | Routing | chosen by the filer |
 | Filed by | dev@killerofpie.com |
@@ -16092,6 +16100,7 @@ CLAUDE.md's paragraph beginning 'What the rule counts is still open' cites MUS-Q
 | --- | --- |
 | Where | CLAUDE.md, 'What the rule counts is still open' |
 | Evidence | records/questions.md MUS-Q-0053: Status answered, 2026-08-25; CLAUDE.md line 166-168 calls it open |
+| Status | fixed: CLAUDE.md, Plan.md, README.md and docs/ui-surfaces.md now say MUS-Q-0053 was answered on 2026-08-25, alongside the seventh script it made a decision |
 
 ---
 
@@ -16107,3 +16116,4 @@ The package comment at internal/web/intake.go:1-4 says 'no per-project client st
 | --- | --- |
 | Where | internal/web/intake.go:1-4, :453-457 |
 | Evidence | intake.go loads /assets/bar.js at :585 and carries a style block at :466-545; sessions_test.go:277 requires one script on /intake |
+| Status | fixed: intake.go's package and template comments now say what the page carries |
