@@ -21,7 +21,14 @@
 # Usage: scripts/records-refresh.sh [--db PATH]
 set -euo pipefail
 
+# The branch detector reads CI's variables before git (scripts/export-branch.sh).
+# Inherited from a caller, they would name some other branch for the worktree
+# this cuts, and its gates would judge the refresh as that branch.
+unset GITHUB_BASE_REF GITHUB_HEAD_REF GITHUB_REF_NAME
+
 cd "$(dirname "$0")/.."
+
+usage() { printf 'usage: scripts/records-refresh.sh [--db PATH]\n' >&2; exit 2; }
 
 gh=${GH:-$HOME/.local/bin/gh}
 live="$HOME/.local/share/mustur/mustur.db"
@@ -29,9 +36,11 @@ live="$HOME/.local/share/mustur/mustur.db"
 store="" told=0
 while [ $# -gt 0 ]; do
   case "$1" in
-    --db) store=${2:?--db needs a path}; told=1; shift 2 ;;
+    --db)
+      [ $# -ge 2 ] && [ -n "$2" ] || { printf '  FAIL  --db needs a path\n' >&2; usage; }
+      store=$2; told=1; shift 2 ;;
     -h|--help) sed -n '2,/^set -euo/p' "$0" | sed 's/^# \{0,1\}//; /^set -euo/d'; exit 0 ;;
-    *) printf '  FAIL  unknown argument %s\n' "$1" >&2; exit 2 ;;
+    *) printf '  FAIL  unknown argument %s\n' "$1" >&2; usage ;;
   esac
 done
 
@@ -68,18 +77,40 @@ stamp=$(date -u +%Y%m%dT%H%M%SZ)
 branch="records/refresh-$stamp"
 wt=".claude/worktrees/records-refresh-$stamp"
 
-git worktree add -q --no-track -b "$branch" "$wt" origin/main
-printf '  ok    %s on %s, cut from origin/main\n' "$wt" "$branch"
-
-cleanup() {
-  git worktree remove --force "$wt"
-  git branch -q -D "$branch"
+# What a failure leaves behind depends on how far the run got, so one trap reads
+# the stage rather than each step cleaning up after itself. Before the push,
+# nothing has left this machine: the worktree and the local branch go. After
+# it, the branch is on origin and removing it here would hide that, so the run
+# says what exists and how to finish by hand.
+stage=none
+on_exit() {
+  local status=$?
+  [ "$status" -eq 0 ] && return
+  case "$stage" in
+    local)
+      git worktree remove --force "$wt" 2>/dev/null || true
+      git branch -q -D "$branch" 2>/dev/null || true
+      printf '  FAIL  nothing pushed; removed %s and the local branch %s\n' "$wt" "$branch" >&2
+      ;;
+    pushed)
+      printf '  FAIL  %s is pushed to origin but no pull request was opened\n' "$branch" >&2
+      printf '        its worktree is %s; open the pull request by hand:\n' "$wt" >&2
+      printf '        %s pr create --repo DevOfPie/Mustur --base main --head %s --fill\n' "$gh" "$branch" >&2
+      ;;
+  esac
 }
+trap on_exit EXIT
+
+git worktree add -q --no-track -b "$branch" "$wt" origin/main
+stage=local
+printf '  ok    %s on %s, cut from origin/main\n' "$wt" "$branch"
 
 MUSTUR_DB=$store make -C "$wt" --no-print-directory export
 
 if [ -z "$(git -C "$wt" status --porcelain -- records decisions.md)" ]; then
-  cleanup
+  git worktree remove --force "$wt"
+  git branch -q -D "$branch"
+  stage=none
   printf '  ok    main'\''s export already matches %s; nothing to refresh, worktree and branch removed\n' "$store"
   exit 0
 fi
@@ -87,7 +118,7 @@ fi
 # The question gate reads MUSTUR_DB through scripts/store-path.sh, so the check
 # asks the store that was exported, not whatever this environment defaults to.
 if ! MUSTUR_DB=$store make -C "$wt" --no-print-directory check; then
-  printf '  FAIL  make check failed on the refreshed export; %s is left for reading, nothing pushed\n' "$wt" >&2
+  printf '  FAIL  make check failed on the refreshed export; its output is above\n' >&2
   exit 1
 fi
 
@@ -110,6 +141,7 @@ EOF
 printf '  ok    committed %s\n' "$(git -C "$wt" log -1 --format='%h %s')"
 
 git -C "$wt" push -q -u origin "$branch"
+stage=pushed
 
 url=$("$gh" pr create --repo DevOfPie/Mustur --base main --head "$branch" \
   --title "Refresh the records export ($stamp)" \
