@@ -7,7 +7,7 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
-        questions surfaces export-scope-test export-scope build serve seed export audit \
+        questions surfaces export-scope-test export-scope build serve seed export records-refresh audit \
         install install-service deploy workflow-proposals help
 
 check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces export-scope-test export-scope ## Every commit gate this tree can enforce mechanically
@@ -115,8 +115,18 @@ build: ## The binary, in this directory
 seed: ## Put what already exists into an empty store
 	@go run ./cmd/mustur seed
 
-export: ## Render the store into records/ and the generated tail of decisions.md
+# Refuses on a feature branch, where the export is not committed (MUS-D-0182).
+# FORCE=1 renders anyway, for resolving a conflicted export by hand.
+export: ## Render the store into records/ and the generated tail of decisions.md — main and records/refresh-* only
+	@if [ "$${FORCE:-}" != 1 ] && ! branch=$$(scripts/export-branch.sh); then \
+	  echo "  FAIL  $${branch:-this detached HEAD} does not commit the export; it is committed on main only (MUS-D-0182)"; \
+	  echo "        run: make records-refresh    (FORCE=1 make export renders here anyway, to resolve by hand)"; \
+	  exit 1; \
+	fi
 	@go run ./cmd/mustur export --out records --decisions decisions.md
+
+records-refresh: ## Export the live store onto a records/refresh-* branch cut from main, gate it, and open a PR. DB=PATH for another store
+	@scripts/records-refresh.sh $(if $(DB),--db "$(DB)")
 
 serve: ## Serve the one tool call on loopback
 	@go run ./cmd/mustur serve
