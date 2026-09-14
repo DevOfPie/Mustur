@@ -369,7 +369,10 @@ func (s *Sessions) stop(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/sessions/"+project+"?error="+urlQuery(err.Error()), http.StatusSeeOther)
 		return
 	}
-	// Nowhere to go back to: the session this was reached from is gone, so the
-	// page that starts one is where this lands.
-	http.Redirect(w, r, "/sessions?new=1", http.StatusSeeOther)
+	// The session this was reached from is gone, so this lands on /sessions
+	// and lets that decide: the most recently active session still running,
+	// or the start form when none is (MUS-Q-0123). It used to send ?new=1,
+	// which skips that jump, and the owner ended one session to be shown the
+	// form for starting another (MUS-F-0143).
+	http.Redirect(w, r, "/sessions", http.StatusSeeOther)
 }
