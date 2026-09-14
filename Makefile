@@ -7,9 +7,21 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
-        questions surfaces build serve seed export audit install install-service deploy workflow-proposals help
+        questions surfaces export-scope-test export-scope build serve seed export audit \
+        install install-service deploy workflow-proposals help
 
-check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces ## Every commit gate this tree can enforce mechanically
+check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces export-scope-test export-scope ## Every commit gate this tree can enforce mechanically
+
+# The export is committed on main only (MUS-D-0182): a branch that commits it
+# carries the whole store at that minute, and two open at once conflict in files
+# git cannot know are generated (MUS-F-0066). The test drives the gate against a
+# throwaway repository first, because a gate that has only ever passed here has
+# not been shown to refuse anything.
+export-scope-test: ## The export-scope gate refuses records/ and the decisions.md tail, and allows the rest
+	@scripts/test-export-scope.sh
+
+export-scope: ## A feature branch changes nothing under records/ or below decisions.md's generated marker
+	@scripts/check-export-scope.sh
 
 check-links: ## Tracked markdown: links and anchors resolve, table rows match their headers
 	@scripts/check-links.sh
