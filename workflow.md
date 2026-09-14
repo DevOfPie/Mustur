@@ -27,7 +27,9 @@ before anything      → milestone 1 has run and passed
 before any estimate  → say what it is based on; estimates here run long
 before touching a
   file outside this
-  repository         → DON'T. Onboarding is a milestone with its own verdict.
+  repository         → DON'T until it is registered. Records to take over: a
+                       milestone with its own verdict. None: an ordinary
+                       project (MUS-D-0162).
 before a milestone
   is accepted        → the reviewers below have read it, and every finding is
                        dispositioned in the open

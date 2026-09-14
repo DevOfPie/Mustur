@@ -33,7 +33,7 @@ type Args struct {
 	// The kind list here is a struct tag and cannot be built at run time, so
 	// TestSchemaListsEveryKind asserts it against ident.KindNames rather than
 	// leaving it to go stale the next time a role letter is added.
-	Kind string `json:"kind,omitempty" jsonschema:"limit the index to one kind: milestone, work-unit, question, decision, finding, investigation, repository, machine, project"`
+	Kind string `json:"kind,omitempty" jsonschema:"limit the index to one kind: phase, milestone, work-unit, question, decision, finding, investigation, repository, machine, project"`
 }
 
 // Server answers tool calls out of a store.

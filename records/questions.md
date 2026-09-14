@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-119 record(s), by identifier.
+154 record(s), by identifier.
 
 ---
 
@@ -295,13 +295,481 @@ HRD-D-0008 needs a minisign keypair: the public half goes into the client and se
 
 | Field | Value |
 | --- | --- |
-| Status | open |
+| Status | answered |
 | Blocks | The fork-only updater commit needs the public key; nothing else waits on it |
 | Option | You generate it on your machine :: Recommended: minisign -G -p hoard-fork.pub -s hoard-fork.key, add the two secrets in the fork's settings, paste the public key to me :: The secret never touches this VM or a chat transcript. Costs you a minisign install and five minutes. |
 | Option | I generate it here :: I install a minisign implementation, write the keypair to a 600 file under ~/hoard-demo, you copy the secret into the fork's settings :: Faster for you, but the secret half lives on this VM and passes through a file you read over the session. |
 | Asked by | whippy |
 | Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
 | Session project | mustur/Hoard_Work |
+| Answer | You generate it on your machine |
+| Answered | 2026-09-13 06:01 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0012
+
+**May I prune the 43 GB Docker build cache on whippy-vm? It is LinkCtrl's, and the disk has hit 100% twice today**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The root filesystem is 124 GB. Hoard's debug target alone is about 30 GB with the desktop crate and every test binary, and the demo's release target is 1.2 GB. docker system df reports 43 GB of build cache, 42.8 GB reclaimable, from the linkctrl images; the running linkctrl containers and their volumes are not touched by a build-cache prune, only their next image build is slower. It is another project's cache, so I have not touched it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing yet; the next full workspace build fills the disk again (12 GB free after clearing incremental caches) |
+| Option | Prune the build cache :: Recommended: docker builder prune -af, once, now :: Frees about 43 GB; LinkCtrl's next image build runs cold. Containers, images in use and volumes stay. |
+| Option | Leave it; I keep Hoard's target small :: I clear target/debug before every full build and accept 10 to 15 minutes of cold build each time :: No effect on LinkCtrl. Every gate run costs a quarter hour more and the disk stays near full. |
+| Option | Something else :: a bigger disk, or a policy of yours; put it in the note :: |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Prune the build cache |
+| Answered | 2026-09-13 06:01 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0013
+
+**How much of upstream's CI should run on a fork pull request push?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+ci.yml runs on every pull_request push: fmt, trailers, clippy (Linux with the frontend build), build and test on ubuntu, ubuntu-arm, windows and macos, a second full workspace build for the sqlx cache check, cargo-deny and cargo-machete. Upstream sized it as the release gate and runs it only on tags and PRs, which for upstream means rarely. The fork pushes to PRs many times a day. Every option below keeps the full matrix on tags and on manual dispatch, so a release is still gated as upstream intended, and adds a concurrency group so a newer push cancels the older run of the same PR.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing; every PR push currently costs about 15 minutes of runner time |
+| Option | Cheap on drafts, Linux on ready PRs :: Recommended: draft PRs run fmt, trailers, clippy and deny only; a PR out of draft adds Linux build and test and the sqlx check; the four-OS matrix runs on tags and dispatch :: A push to a draft costs about 4 minutes, a ready PR about 8, a tag the full 15. Windows and macOS breakage surfaces at release or when dispatched by hand before merging something platform-sensitive. |
+| Option | Linux only on every PR :: PRs run everything once on ubuntu; the matrix runs on tags and dispatch :: About 8 minutes per push regardless of draft state. Simpler rule, no draft distinction. |
+| Option | Keep the full matrix, add cancel-in-progress only :: no job is cut; a newer push cancels the older run :: Still 15 minutes per push, but rapid pushes stop stacking runs. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Cheap on drafts, Linux on ready PRs |
+| Answered | 2026-09-13 06:35 |
+| Note | Include windows tests for releases since that is where it'll actually be run for the most part |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0014
+
+**Desktop UI: where does the Groups screen live?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d3409b (frame: Groups route). Answer here or in the plan's form; either is written down.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 desktop slice, step 2 (the Groups route) |
+| Option | Its own route under Hoard Saves :: Recommended: a sidebar entry beside Library and Dashboard, as drawn :: One more nav item; groups are a first-class thing you visit, with members, invites and the shared worlds' lease state on one page. |
+| Option | A card on the Account page :: no new nav entry; the self-hosted branch of Account gains a Groups card :: Less discoverable, and Account is already a long page of cards. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Its own route under Hoard Saves |
+| Answered | 2026-09-13 07:35 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0015
+
+**Desktop UI: how does the claim prompt appear when the game starts?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+d: [HRD-D-0002](decisions.md#hrd-d-0002)
+
+Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d3409b (frame: Claim prompt on launch). The engine already asks once per session and auto-hosts after 60 s when one free world exists; this is only how the question is shown.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 desktop slice, step 5 (the claim modal) |
+| Option | A modal over the app :: Recommended: dismissible, one row per world with Host / View, Not playing in the footer with the 60 s countdown, as drawn :: The game is in front anyway; the app shows the question when you look. Host is disabled where another member holds the lease. |
+| Option | A bell notification with buttons :: non-blocking and it persists :: A three-way answer per world does not fit a notification row, and the countdown would be text only. |
+| Option | A floating card bottom-right :: like the storage-full banner, stacked with the activity feed :: Visible without a modal, but the same fit problem as the bell once there are several worlds. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | I believe I saw that hoard has an overlay, in which case we should use that and any other options already available in the app. |
+| Answered | 2026-09-13 07:37 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0016
+
+**Desktop UI: where does sharing a world start?**
+
+question · 2026-09-13
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Drawn in the visual plan https://plan.agent-native.com/plans/plan-523b4a30c7d3409b (frames: Library and Share dialog). The dialog itself is the same either way: pick a group, pick a world for games with a template, see what travels.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 desktop slice, step 3 (the share dialog) |
+| Option | Library row icon :: Recommended: first icon in the tracked row's action row, as drawn :: Library is where a save's identity is managed today (rename, untrack, history). |
+| Option | Dashboard card overflow menu :: beside Rename, Pause, History :: Closer to play, but that card is about version state, not membership. |
+| Option | Both :: one dialog, two entry points :: Costs one more menu item and a second place to keep in step. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Both |
+| Answered | 2026-09-13 07:38 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0017
+
+**Re-asking how the claim prompt appears, with what the overlay can and cannot do**
+
+question · 2026-09-13
+
+supersedes: [HRD-Q-0015](#hrd-q-0015)
+
+f: [MUS-F-0137](findings.md#mus-f-0137)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The overlay exists and is not a dialog. hoard-screen is a window-capture compositor (crates/hoard-screen/src/lib.rs:1-30): panels of captured windows, a crosshair, a magnifier. Its window is click-through and it never receives clicks; input is a polled global key or mouse binding (input.rs:3-13). It is Pro-only and gated by cloud entitlements (Feature::Screen, cloud/entitlements.rs; the nav entry is cloud-only), so on the self-hosted fork it does not run today. A prompt in it means un-gating it for self-hosted in the fork, adding a text panel source, and binding keys for Host, View and Not playing, with Wayland capture permissions as a known snag. What the app already has: Modal.svelte (every confirm today), the bell store with action buttons, toasts without a warning level, and hoardd's OS notification, which already fires a nudge on WorldClaimWanted (Linux today; Windows and macOS sinks are stubs). The engine auto-hosts after 60 s regardless, so the prompt only shortens the wait.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 desktop slice, step 5 (the claim prompt); HRD-Q-0015 was closed by a reply that asked about the overlay rather than choosing |
+| Option | Modal in the app now, overlay later :: Recommended: the modal as drawn, plus the OS nudge hoardd already sends; an overlay notice with hotkeys becomes its own phase after the fork un-gates the overlay for self-hosted :: Ships with the rest of phase 3 and needs nothing outside the app. The overlay work is real: un-gating, a text source, key bindings, platform testing. |
+| Option | Overlay notice with hotkeys, modal as fallback :: the fork un-gates hoard-screen for self-hosted and adds a notice panel and three key bindings; the modal shows when the overlay is not running :: The answer arrives in-game without alt-tab. Costs a phase of overlay work before the prompt exists at all, and Windows and macOS need the OS notification sinks finished to nudge. |
+| Option | OS notification with action buttons, modal as fallback :: hoardd's notification gains Host and View actions where the platform supports them (Linux now), the app shows the modal otherwise :: Cheaper than the overlay, but Windows and macOS sinks are stubs today, so most of your testers would only ever see the modal. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | This seems false, with Alt+H there is an overlay that I can interact with that shows the log and my saves |
+| Answered | 2026-09-13 07:41 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0018
+
+**Re-asking how the claim prompt appears, now on the Alt+H HUD that exists**
+
+question · 2026-09-13
+
+supersedes: [HRD-Q-0017](#hrd-q-0017)
+
+f: [HRD-F-0010](findings.md#hrd-f-0010)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The HUD is lib/overlay/Overlay.svelte: a second transparent, always-on-top, maximised webview (commands/overlay.rs:34-53) with three columns, status, the session log and the saves, opened by the shortcut you set (Alt+H by default) and closed by Escape. The app can raise it itself: overlay_set_visible(true) shows it and takes focus (:58-69). One constraint shapes the prompt: Tauri events do not reach that window, so it reads an agent snapshot on a timer (Overlay.svelte:26-35); a prompt shown there is read the same way, from a new pending-prompt field on the snapshot, and its buttons send the world verbs like any other command. The engine auto-hosts after 60 s regardless.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Phase 3 desktop slice, step 5; HRD-Q-0017 rested on a false premise you corrected |
+| Option | The HUD, raised when the game asks :: Recommended: a prompt panel across the top of the HUD with Host, View, Not playing per world and the countdown; the app raises the HUD on WorldClaimWanted, Escape hides it and the clock keeps running; the same panel shows in the main window when that is focused :: The answer arrives in-game, like Steam's overlay taking focus for a moment. Costs the snapshot field, a small polling change, and the panel in two windows. |
+| Option | The HUD, only when you open it :: no auto-raise; the OS nudge hoardd already sends says press Alt+H; the panel sits at the top of the HUD until answered :: Nothing steals focus from the game; a player who misses the nudge is hosted after 60 s anyway. |
+| Option | Main window modal only :: as first drawn, nothing in the HUD :: Simplest, and the answer needs alt-tab. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | The HUD, raised when the game asks |
+| Answered | 2026-09-13 07:44 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0019
+
+**The demo is down on v1.1.7 because its database is ahead of the release. Which way up?**
+
+question · 2026-09-13
+
+f: [HRD-F-0011](findings.md#hrd-f-0011)
+
+d: [HRD-D-0015](decisions.md#hrd-d-0015)
+
+hoard-server 1.1.7 refuses to start: migration 22 was applied but the binary stops at 21 (HRD-F-0011). Dropping the six sharing tables and their six migration rows would fix it in place, keeping your account, your token and everything you synced, but the auto-mode permission classifier refused that command from me because it drops tables. A copy of the current database, sharing tables and all, is already the test instance's database at ~/hoard-test, so nothing is lost either way. Choose how the demo comes back.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The demo server at hoard.killerofpie.com; it restarts in a loop until the database matches the binary |
+| Needed to proceed | yes |
+| Option | Allow the in-place rollback :: Recommended: I stop the demo, back up hoard.db, drop the seven sharing tables and delete the migration rows 22 to 27, start it; your account, token and synced saves stay; needs you to approve the command when this session asks again, or a permission rule for sqlite3 on ~/hoard-demo :: Five minutes, no re-login. The backup file stays beside the database. |
+| Option | Start the demo from an empty data directory :: I move ~/hoard-demo/data aside, let 1.1.7 create a fresh database, recreate the user pie with the same password and mint a new desktop token :: No permission needed, but your desktop must be signed in again with the new token, and the demo's synced snapshots start from zero. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Allow the in-place rollback |
+| Answered | 2026-09-13 08:08 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0020
+
+**The disk fills every few hours of Hoard work. Bigger disk, or a clean-between-runs rule?**
+
+question · 2026-09-13
+
+d: [HRD-D-0009](decisions.md#hrd-d-0009)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+whippy-vm has 124 GB. A full workspace debug build with every test binary is 30 to 40 GB, each git worktree that builds adds its own copies of the workspace crates to the shared target, and the two release targets add a few GB more. The Docker cache prune (HRD-D-0009) bought 43 GB and it was gone in a day. I have now cleared target/debug three times; each clear costs a cold rebuild of about fifteen minutes on the next run. The demo and test servers share the disk, so a full disk is an outage for you, not only a slow build.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing right now; every full build risks taking the demo and test servers down with it (the test instance answered db_error at 100 percent on 2026-09-13 23:34) |
+| Option | Grow the disk :: Recommended: 250 GB or more for the root volume, which is a host-side change only you can make :: Removes the outage risk and the cold rebuilds. Everything else stays as it is. |
+| Option | Clean between runs :: I delete target/debug after every full verification and keep worktrees to one at a time :: No host change; every verification after the first in a session costs a fifteen-minute cold build, and a parallel review or agent can still push the disk over. |
+| Option | Move the servers' data off the root disk :: the demo and test data directories go to another volume, so a full build disk no longer takes a server down :: Needs a second volume from the host; builds still fail when the disk fills, but only builds. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Grow the disk |
+| Answered | 2026-09-14 01:16 |
+| Note | Disk has been grow to 256GB, I'm not sure if the change is immediately present for you or requires a restart |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## LNK-Q-0001
+
+**LNK-M-0070 — Does the update checker default on or off?**
+
+question · 2026-08-08
+
+cites: [LNK-M-0070](milestones.md#lnk-m-0070)
+
+cites: [LNK-D-0149](decisions.md#lnk-d-0149)
+
+cites: [LNK-M-0075](milestones.md#lnk-m-0075)
+
+**Answered 2026-08-08** by the owner, as
+D149 — recorded in
+decisions.md
+with the date it was given, and read by LNK-M-0070, which
+carries what it obliges. The question, its three options and its recommendation
+are in the history of this file; they are not restated here, because a question
+whose answer exists is no longer a question.
+
+Two entries link to this heading and were written while it was open —
+the Phase 3 area-scoping decision
+and phase-3-candidates.md. Both say the default *is
+deliberately not decided here*, which was true when written; D149 is the later
+entry that corrects them, and neither is edited.
+
+**LNK-M-0070 has landed, and this heading stays anyway — checked at
+LNK-M-0075's documentation pass rather than left to be
+noticed.** The rule above says a heading leaves for good once its milestone has
+landed *and the references have moved with it*. The milestone landed; one of the
+two references cannot move. It sits inside an entry in
+decisions.md, which is append-only — *never edit an entry; a
+later entry corrects an earlier one* — so repointing it is not available, and
+deleting this heading would break a link that
+`make check-links` is there to catch.
+
+That is not a conflict between the two rules; it is this section doing the one
+job it was created for, and the first time it has had to. The heading is a
+pointer and holds no answer, which is the whole of what it is permitted to be.
+It leaves when `decisions.md` no longer points at it, which will be never, so in
+practice it is permanent — said plainly here so that a later reader does not
+find an *awaiting the milestone* heading for a shipped milestone and take it for
+an oversight.
+
+| Field | Value |
+| --- | --- |
+| Answer | **Answered 2026-08-08** by the owner, as D149 — recorded in decisions.md with the date it was given, and read by LNK-M-0070, which carries what it obliges. The question, its three options and its recommendation are in the history of this file; they are not restated here, because a question whose answer exists is no longer a question. |
+| Relayed | imported from LinkCtrl's upcoming-decisions.md, where the answer is recorded; not answered in Mustur |
+| Status | answered |
+
+---
+
+## LNK-Q-0002
+
+**An 'All Workspaces' dashboard scope — which phase, and whose milestone?**
+
+question · 2026-08-01
+
+cites: [LNK-M-0075](milestones.md#lnk-m-0075)
+
+cites: [LNK-M-0038](milestones.md#lnk-m-0038)
+
+cites: [LNK-M-0039](milestones.md#lnk-m-0039)
+
+cites: [LNK-M-0042](milestones.md#lnk-m-0042)
+
+cites: [LNK-M-0052](milestones.md#lnk-m-0052)
+
+**Needed by:** nothing yet. It is the feature half of a queue row split on
+2026-08-01; the other half — *the dashboard should show only the selected
+workspace* — turned out to be already built, so only this remains.
+
+The dashboard and links pages scope to the acting workspace and always have.
+What does not exist anywhere is a way to see **across** workspaces at once: no
+handler, no query and no UI takes an all-workspaces scope, and
+`actor.WorkspaceID` is a single value threaded through the service layer rather
+than a filter that could be widened.
+
+| Option | Buys | Costs |
+| --- | --- | --- |
+| **Phase 4, beside *Moving links between workspaces*** *(recommended)* | The two cross-workspace capabilities land together, and they share the hard part — every scoped query in `internal/link` and `internal/analytics` assumes one workspace id. Neither Phase 2 nor Phase 3 has a milestone this belongs inside | Somebody with several workspaces keeps switching to compare until it lands. *(This option read **Phase 3** until LNK-M-0075. Phase 3 is closing without it, and its companion — Plan.md's `Moving links between workspaces` — was deferred to Phase 4 by the owner on 2026-08-07, so the option now names the phase its companion is actually in. The question itself is still open and still the owner's; the two remaining options are Phase 2's and are kept as the record of what was weighed.)* |
+| A Phase 2 milestone of its own | The demo LNK-M-0038 is about to make multi-workspace instances the normal thing to look at, which is exactly when the gap gets noticed | It is a new scope row late in a phase whose remaining milestones are already substrate for each other, and it widens a query path LNK-M-0039–LNK-M-0042 are about to build on |
+| Fold into LNK-M-0042 | LNK-M-0042 is the dashboard milestone, so the surface is already being touched | LNK-M-0042 is about how a *dimension* is visualized, not which workspaces are in scope. Different question wearing the same page |
+
+**Default if unanswered:** it stays unbuilt and unscheduled, which is the status
+quo and costs nothing until somebody asks for it a second time.
+
+**Assumes:** that the dashboard and links pages remain workspace-scoped — true
+and verified on 2026-08-01 by reproduction, not by reading — and that no
+milestone between here and LNK-M-0052 introduces a cross-workspace view for its own
+reasons.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Surfaced | 2026-09-13 08:09 |
+| Answered | 2026-09-13 23:33 |
+| Answer | Plan it for the next phase: an All Workspaces view on the dashboard and links pages is a candidate for LinkCtrl's next phase, beside moving links between workspaces wherever that lands. |
+| Relayed | written down by whippy, from Mustur, on LNK-Q-0004, which re-asked this question with current options on 2026-09-13 |
+| Delivered | not delivered: the question names no session |
+
+---
+
+## LNK-Q-0003
+
+**W48: phase-details/README.md's fourteen inherited rules and _template.md are in no Mustur record — where do they go?**
+
+question · 2026-09-13
+
+work-unit: [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096)
+
+decision: [LNK-D-0950](decisions.md#lnk-d-0950)
+
+LNK-W-0096 says phase-details/ (all) leaves, already imported. Measured against the export: the 74 milestone files and the status tables are held (LNK-W-*, LNK-M-* Status), but 'What every milestone inherits' — 14 product invariants (never 301/308, no IP column, ui stdlib-only, sabotage a first-pass test, demo seeder…) — matches no record, only mentions in decisions; and LinkCtrl's 42-line _template.md differs from Mustur's generic unit template. Both are rules, not records, so by MUS-Q-0093's test (leaves iff Mustur has a kind that holds it) they stay; deleting them as written loses them to git history.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | W48's deletion of phase-details/, and every pointer to the inherited rules (workflow.md Demo gate, phase-loop step 1, planning.md, /preview-decisions). The link, build and rules-file work proceeds meanwhile. |
+| Needed to proceed | yes |
+| Option | Keep in tree (Recommended) :: move both into one staying file, docs/build-notes/milestone-rules.md :: The 14 rules and the template move verbatim into a new staying file beside phase-loop.md; every pointer repoints there; phase-details/ still leaves whole. Buys: nothing lost, MUS-Q-0093 applied as written, the loop's step 1 still reads its inputs. Costs: one new file in a change meant to shrink the tree (~6 KB, charged to every /work phase resume as today), and a departure from the unit's literal 'phase-details/ (all)'. Default if you say 'you decide'. |
+| Option | File them in Mustur :: add the rules and template to Mustur as records before deleting :: Buys: the tree shrinks as the unit says. Costs: Mustur has no kind for rules — MUS-D-0023 says the store holds records and contract files keep their prose — so this is a second decision on Mustur's side, and W48 waits on it. |
+| Option | Delete as written :: phase-details/ leaves whole, rules and template included :: Buys: the literal unit, smallest diff. Costs: 14 inherited rules and the milestone template exist only in git history; phase-loop step 1 and planning.md's five artifacts then point at nothing, which is a rules change nobody approved. |
+| Asked by | whippy |
+| Session project | LinkCtrl_W48 |
+| Surfaced | 2026-09-13 08:27 |
+| Answer | Keep in tree (Recommended) |
+| Answered | 2026-09-13 23:28 |
+| Delivered | typed into mustur/LinkCtrl_W48 |
+
+---
+
+## LNK-Q-0004
+
+**Should LinkCtrl get an 'All Workspaces' view on the dashboard and links pages, and if so, when?**
+
+question · 2026-09-13
+
+re-asks: [LNK-Q-0002](#lnk-q-0002)
+
+Re-asking LNK-Q-0002, which was imported from LinkCtrl's upcoming-decisions.md as written on 2026-08-01 and whose options have gone stale: every milestone they name has since shipped (the 0.2.0 and 0.3.0 releases included). What it asks: LinkCtrl's dashboard and links pages always show only the workspace you are acting in, and nothing lets someone with several workspaces see across them at once. Building it means widening every workspace-scoped query in internal/link and internal/analytics, the same hard part as moving links between workspaces, which the owner deferred to Phase 4 on 2026-08-07. Whether that has since been built was not checked for this question.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing. Unanswered, the feature stays unbuilt, as today |
+| Option | Plan it for the next phase :: Recommended if you want it: a candidate for LinkCtrl's next phase, beside moving links between workspaces wherever that lands :: The two cross-workspace features share the query work, so building them together is cheaper than twice. Nothing is built now; it enters the next phase's planning as a named candidate. |
+| Option | Leave it unscheduled :: the question closes as not now; it is raised again if somebody asks for it a second time :: The status quo and the original default. Costs nothing until the need comes back. |
+| Option | Drop it :: LinkCtrl stays per-workspace by design :: Closes the idea rather than parking it. Someone with several workspaces keeps switching between them to compare. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 23:30 |
+| Answer | Plan it for the next phase |
+| Answered | 2026-09-13 23:32 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## LNK-Q-0005
+
+**LinkCtrl's phase summaries were deleted by W48 and never imported. Where do they live?**
+
+question · 2026-09-14
+
+work-unit: [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096)
+
+decision: [LNK-D-0952](decisions.md#lnk-d-0952)
+
+Found by the independent review of PR 14. The importer read only the tables in phase-details/phase-1.md to phase-4.md (milestone status and the D1 to D193 decision tables). Their prose is in neither LinkCtrl's tree nor Mustur: phase-1's build status detail, phase-2's and phase-3's Not in Phase N lists with the reason each item was deferred, phase-3's status at the close, and all 51 lines of phase-4.md. phase-3-candidates.md still sends readers to the Not in Phase 2 list. Two conventions from phase-details/README.md are also gone: 'no phase is live, so /work phase refuses to resume' and the 'in progress (reopened)' status. Mustur has no kind for a phase summary.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Merging LinkCtrl PR 14: as it stands the move loses them |
+| Needed to proceed | yes |
+| Option | Keep them in the tree :: Recommended: the prose of the four phase files moves verbatim into one staying file, docs/build-notes/phases.md, minus the tables Mustur now holds; the two conventions go into milestone-rules.md :: MUS-Q-0093's rule applied as LNK-Q-0003 applied it: no kind holds them, so they stay. Nothing is lost, every pointer has a target, and the tables are not held twice. Costs a second new file in a change meant to shrink the tree, about 20 KB. |
+| Option | Import them into Mustur :: each phase becomes a record, a work unit per phase, holding its prose :: The tree shrinks as W48 set out. Costs a kind Mustur uses for milestone files stretched to hold a phase, a change to the importer and a repair of the live store, and PR 14 waits on both. |
+| Option | Restore the four phase files whole :: phase-details/phase-1.md to phase-4.md stay in the tree as they were :: The smallest change to PR 14. Their status and decision tables are then held twice, in the tree and in Mustur, and the two copies drift the first time a status changes. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 00:14 |
+| Answer | Import them into Mustur |
+| Answered | 2026-09-14 01:18 |
+| Note | Have Muster add a new record type for phases, which hold the details and links to the Milestone units they encompass |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## LNK-Q-0006
+
+**PR 14's three review-fix commits were pushed without subject lines — rewrite them with a force push, or leave them?**
+
+question · 2026-09-14
+
+work-unit: [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097)
+
+Commits 0b9b14c, 10e750e and 7f17800 on task/records-move-to-mustur went up with their first line lost: a shell heredoc chain ran each subject line as a command, so each commit's subject is its body's first paragraph. The bodies and trailers are intact. Rebuilt commits with the same trees and the subjects restored exist locally (git commit-tree, same content byte for byte); pushing them needs a force-with-lease push to the PR branch, which the auto-mode classifier refused without the owner's word.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing in LNK-W-0097; only how the three commits read in history |
+| Option | Leave them :: Recommended: no rewrite; the what-changed comment on PR 14 names each commit's findings :: Nothing pushed is rewritten and no one's checkout is invalidated. Costs three commits whose subject is a long paragraph in git log --oneline, permanently if PR 14 merges with a merge commit rather than a squash. Default if you say you decide. |
+| Option | Rewrite and force-push :: same trees, subjects restored, git push --force-with-lease pinned to 7f17800 :: History reads correctly. Costs a force push to a public PR branch; the hashes in the PR comment go stale and are corrected in a follow-up comment. Needs your explicit go-ahead, which the classifier requires. |
+| Asked by | whippy |
+| Session | LinkCtrl_W48_fixes |
+| Session project | LinkCtrl_W48_fixes |
+| Surfaced | 2026-09-14 00:41 |
+| Answer | Leave them |
+| Answered | 2026-09-14 01:18 |
+| Delivered | typed into mustur/LinkCtrl_W48_fixes |
 
 ---
 
@@ -2877,3 +3345,527 @@ Your question first. Onboarding is a milestone because of your own instruction, 
 | Answered | 2026-09-13 03:58 |
 | Delivered | not delivered: the question names no session |
 | Surfaced | 2026-09-13 03:58 |
+
+---
+
+## MUS-Q-0109
+
+**LinkCtrl's 947 records import under which identifiers: its own numbers, or fresh serials?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-Q-0091](#mus-q-0091)
+
+MUS-Q-0091 settled that everything imports. LinkCtrl's prose cites D14, F382, M70 thousands of times, and those citations stay in the records that move. mustur add allocates the next serial and cannot be told one, so keeping LinkCtrl's numbers is a store change, not just a parser. Numbering gaps exist (F1 to F382 holds 381 rows).
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The importer for MUS-M-0009; nothing can be imported until this is settled |
+| Needed to proceed | yes |
+| Option | Keep LinkCtrl's numbers :: Recommended: D444 keeps serial 444 under the LNK prefix, F382 serial 382, M70 serial 70 as both milestone and work unit :: Every citation already in the prose resolves by rule, with no lookup table, and the rendering can link a bare D14 to the LNK decision with serial 14 mechanically. Costs a store path that writes an explicit serial, refused if it is taken, and gaps stay visible as gaps. Later records continue from the highest serial, which the store already does. |
+| Option | Fresh serials, old number as a field :: LNK serials from 1 onward in import order, with a 'LinkCtrl id' field on each :: No store change. Every existing D14 in 947 records then needs a lookup to find its record forever, and an identifier that differs from the one in the text beside it is exactly the confusion identifiers exist to remove. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 06:59 |
+| Answer | Keep LinkCtrl's numbers |
+| Answered | 2026-09-13 07:02 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+| Note | Option text restated 2026-09-13 after the answer, without spelled-out LNK identifiers: the record check reads them as citations to records not yet imported. Labels and meaning unchanged. |
+
+---
+
+## MUS-Q-0110
+
+**LinkCtrl's own side of the move is W48, still unapproved. Approve it now, or after the import has a verdict?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+LinkCtrl's transition survey names W48 as the change that moves its records out, and it is unapproved in LinkCtrl's workflow-changes.md. The survey and that W48 line are uncommitted on LinkCtrl's task/correct-the-release-date branch, which is about something else. Criterion 9 means no LinkCtrl file changes until onboarding deliberately touches it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Deleting the records from LinkCtrl and rewriting its links; not the Mustur-side importer |
+| Option | After the import verdict :: Recommended: build and review the importer against a scratch store first, then approve W48 :: Nothing leaves LinkCtrl until 947 records are shown to be in Mustur and counted. Costs a second round with you before the move. |
+| Option | Approve W48 now :: the LinkCtrl-side move is built alongside the importer, in a stack :: Faster to done, and the link rewrites get reviewed with the import. A defect in the importer is then found with the source files already queued for deletion. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 06:59 |
+| Answer | After the import verdict |
+| Answered | 2026-09-13 07:02 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0111
+
+**Plan.md still promises LinkCtrl a committed .mcp.json. Reword the row, or strike it?**
+
+question · 2026-09-13
+
+answers: [MUS-F-0119](findings.md#mus-f-0119)
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+The scope table is authoritative over prose and still promises a committed .mcp.json, which MUS-F-0063 found can only refuse and CLAUDE.md now forbids. LinkCtrl is public, so it can only ever get a mandate clause plus a token set up per machine.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The injection kit LinkCtrl receives in MUS-M-0009; fixing MUS-F-0119 |
+| Option | Reword it :: Recommended: 'a mandate clause in the project's CLAUDE.md, and a per-machine token at user scope' :: Keeps the capability in the scope table, where a second project's onboarding reads it, and makes it true. One row. |
+| Option | Strike it :: remove the row and let CLAUDE.md's setup paragraph carry it :: Less to keep true, but the authoritative table then says nothing about what an onboarded project receives. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 06:59 |
+| Answer | Reword it |
+| Answered | 2026-09-13 07:03 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0112
+
+**LinkCtrl's decision log is 505 dated entries with decision numbers inside them, not 444 decisions. What is one imported decision?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0163](decisions.md#mus-d-0163)
+
+follows: [MUS-Q-0091](#mus-q-0091)
+
+Counted at LinkCtrl 230771a on 2026-09-13. decisions.md holds 505 dated entries. A D number is defined inside one in six forms: its own ### heading (266), a heading ending (D18) (10), a bold lead-in paragraph, a range lead-in covering four at once, and D1 to D193 again as rows in phase-2 and phase-3 tables (177 rows). 283 of the 505 entries define no D number at all, so splitting by number leaves more than half the log's prose with no record to live in once the file leaves. D276 and D277 are reserved and D290 was never issued.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The decisions half of the LinkCtrl importer; findings, the ADR and the questions are being built meanwhile |
+| Needed to proceed | yes |
+| Option | Both, each whole :: Recommended: each dated entry becomes a decision numbered past 444, whole; each D number becomes a decision at its own serial holding its definition and citing its entry :: Nothing is lost and nothing has to be split correctly to survive: the entry is the lossless copy, and a D number's record is an extract that points at it, so a wrong boundary in an extract costs a paragraph, not history. D14 still resolves by rule under MUS-D-0163. Costs about 950 decision records instead of 444, and every defined sentence exists twice; the file they came from is frozen, so the two cannot drift. |
+| Option | Split by number :: each D number is one decision holding its section up to the next definition; entries defining none are filed past 444 :: About 727 records and no duplication. The body of every numbered decision depends on the parser drawing the boundary where the author meant it, across six definition forms, ranges, and headings that mention a number without defining it; a mistake is a paragraph moved into the wrong record permanently, with the source deleted. |
+| Option | Entries only :: 505 decisions numbered past 444, each whole, with the D numbers they define as a field :: The simplest parse and fully lossless. It reverses MUS-D-0163 for decisions in practice: D14 in any prose no longer names a record by rule, and finding it means searching a field. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:07 |
+| Answer | Both, each whole |
+| Answered | 2026-09-13 07:12 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0113
+
+**24 of LinkCtrl's milestones are fractional, like M24.5 and M57.9, and a serial is four whole digits. How are they numbered?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0163](decisions.md#mus-d-0163)
+
+phase-details holds 74 milestone files: M21 to M70 plus 24 fractional ones, where .9 is a review and .1 to .8 added scope. M1 to M20 have no file, only phase-1's summary. An identifier's serial is exactly four digits and ident.Parse refuses anything else; its own comment says widening the field would resort every identifier already written. MUS-D-0163 wants a citation to resolve by rule.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Milestones and work units in the LinkCtrl importer |
+| Needed to proceed | yes |
+| Option | Tenths :: Recommended: the serial is the milestone number times ten, so M24.5 is serial 245 and M59 is serial 590 :: One rule covers all 94 milestones and every citation, and ordering by serial is LinkCtrl's own order, fractions included. Costs a rule a reader has to know, since M59 does not read as serial 590, and the same rule has to be applied to work units. |
+| Option | Whole ones keep theirs, fractions go past 70 :: M59 is serial 59; the 24 fractional ones take 71 onward with their LinkCtrl number as a field :: Whole milestones read naturally. The 24 fractional ones stop resolving by rule, and they include the reviews, which are the ones most cited from findings. |
+| Option | Widen the identifier :: allow a one-digit decimal suffix in the serial :: Every number kept exactly. Changes the identifier grammar for every project, the anchor rule, and the sort order ident.go warns about, which is a Mustur milestone of its own before LinkCtrl can move. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:08 |
+| Answer | Renumber them from the beginning to fit them in the new format in their existing order. Make sure any references to them will be updated to properly point to the correct new number. Note the old number in a field in-case something was missed |
+| Answered | 2026-09-13 07:15 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0114
+
+**18 milestone numbers are cited in LinkCtrl and defined nowhere, so renumbering cannot start at the beginning. Stub them, or leave those 40 references as written?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0167](decisions.md#mus-d-0167)
+
+Found by the done-when review of MUS-M-0009. LinkCtrl's tree has a source for M18 to M20 (phase-1.md) and the 74 files, and nothing for M0.5, M4, M7, M8, M9, M11 to M17, the withdrawn M24.6, M30.5, M32.6, M44.5, M58.5 or M58.9, which are cited 40 times, e.g. decisions.md:2675 'M0.5 set the precedent'. Your MUS-Q-0113 answer asked that every reference point at its new number. M1, M2, M3, M5, M6 and M10 are neither defined nor cited.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The live import: the answer shifts every milestone's new serial |
+| Needed to proceed | yes |
+| Option | Stub the cited ones :: Recommended: each of the 18 gets a milestone record in its place in the order, saying it is cited and never defined, and every reference then points at a record :: Meets your answer as given: numbering starts at M0.5, every one of the 40 references resolves, and the stub says honestly that LinkCtrl holds nothing more. Costs 18 records with no content beyond where they are cited, and every milestone after M0.5 moves up by the stubs before it. |
+| Option | Leave them as written :: numbering starts at M18; the 40 references keep their old text :: No record without content. The 40 references stay readable as LinkCtrl's own numbers and a reader can search the old-number field, but they point at nothing, which is the gap your answer asked to close. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:29 |
+| Answer | Stub the cited ones |
+| Answered | 2026-09-13 07:39 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0115
+
+**Milestone 7's done-when is still 'its own verdict'. What must be true for LinkCtrl's move to be accepted?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+Found by the done-when review. Plan.md milestone 7 reads 'Its own verdict, not assumed here', so a review can only check the plan in MUS-W-0024, which is the builder's account. Writing the clause is scope, which is yours.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The verdict on MUS-M-0009; the reviewers had no clause to check the tree against |
+| Needed to proceed | yes |
+| Option | The whole move :: Recommended: every LinkCtrl record Mustur has a kind for is in the store and reconciled per source to LinkCtrl's tree; the files holding them are gone from LinkCtrl with every link rewritten and its gates green; a LinkCtrl session reaches mustur_route with a token :: Matches MUS-Q-0092 and MUS-Q-0093's goal: acceptance means the records moved, not that an importer exists. Holds the milestone open until LinkCtrl's side, which waits on the import verdict (MUS-D-0164), is done too. |
+| Option | Mustur's side only :: the import is in the live store, reconciled per source, the export passes make check, and nothing in LinkCtrl has changed :: Can be accepted now-ish, and gives MUS-D-0164 a verdict to wait on. LinkCtrl's side then needs a milestone or work unit of its own, and 'moved in' is true of Mustur while LinkCtrl still holds every file. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:29 |
+| Answer | The whole move |
+| Answered | 2026-09-13 07:41 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0116
+
+**Success criterion 9 says no other project's file changed before its onboarding started. LinkCtrl's own session changed two on 09-09. Reword it, or record it as failed?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+Found by the shipped-claims review. MUS-M-0009 started 2026-09-13; LinkCtrl's tree has mustur-transition.md added and workflow-changes.md modified on 2026-09-09, uncommitted, by a LinkCtrl session preparing the survey that Plan.md assigns to 'that repository's agents'. Nothing from Mustur touched it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing in the import; whether Plan.md's criterion 9 stays a true claim |
+| Option | Reword it :: Recommended: no file in another project is modified by Mustur, or by a session working on Mustur, before its onboarding starts; a project's own agents preparing their side in their own tree is not that :: Keeps what the criterion protects, a router that edits repositories before it is trusted, and makes it true of what happened, which is the preparation Plan.md itself assigned to LinkCtrl's agents. |
+| Option | Record it as failed for LinkCtrl :: the criterion stands as written and a finding says it was not met :: The literal reading. It records a failure for work the plan asked for, and every future onboarding that prepares its own side fails it the same way. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:30 |
+| Answer | Reword it |
+| Answered | 2026-09-13 07:42 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0117
+
+**The import has its verdict. Do you approve W48, LinkCtrl's change that moves its records out, as it really is?**
+
+question · 2026-09-13
+
+blocks: [MUS-M-0009](milestones.md#mus-m-0009)
+
+follows: [MUS-D-0164](decisions.md#mus-d-0164)
+
+follows: [MUS-D-0170](decisions.md#mus-d-0170)
+
+Three reviewers and a second read are dispositioned on Mustur PR 69; the importer yields 1,499 records and a rehearsal on a copy of the live store passes Mustur's gates. LinkCtrl's workflow-changes.md makes approval of a W row yours alone. W48 as drafted on 2026-09-09 is uncommitted in LinkCtrl's main checkout on an already-merged branch, and understates the change: every LinkCtrl rule that files into decisions.md, deferred-findings.md, phase-details or upcoming-decisions.md has to file into Mustur instead, 446 links from staying files are rewritten, test/docs/decisions_index_test.go goes, and check-links.sh and doc-cost.sh stop naming the leaving paths. The live import would run immediately before the change is made, so LinkCtrl's files and Mustur's copy never sit apart.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The live import and all of LinkCtrl's side of MUS-M-0009 |
+| Needed to proceed | yes |
+| Option | Approve it as restated :: Recommended: W48 is restated to the change above and made by LinkCtrl's own workflow loop in a Mustur-started LinkCtrl session on a task branch, with the live import run just before; your approval is recorded on the row and as a LinkCtrl decision in Mustur :: The move happens under LinkCtrl's own process, one actor, gates green, as a pull request you merge. One departure from LinkCtrl's rule, stated: approval normally gets a decisions.md entry in the same commit, and decisions.md is the file leaving, so the entry is written in Mustur instead. Costs the largest diff LinkCtrl has taken that is not product code. |
+| Option | Restate it first, approve after reading :: the LinkCtrl session commits W48's restated row as a proposal and stops, and you approve it there :: You read the exact row before anything moves, at the cost of one more round with you; nothing is imported until you do. |
+| Option | Not yet :: nothing is imported and nothing in LinkCtrl changes; MUS-M-0009 stays open with its importer built :: Keeps LinkCtrl free to keep writing its files. Every LinkCtrl record written meanwhile is one the importer reads at whatever commit it finally runs against, so nothing is lost, but the milestone cannot be accepted. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-13 07:57 |
+| Answer | Approve it as restated |
+| Answered | 2026-09-13 08:08 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0118
+
+**Should links in the session view be clickable, when MUS-D-0132 says pane output must never become markup?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0147 |
+| Option | The CLI's own links :: Recommended: turn OSC 8 hyperlinks into links that open a new tab, http and https only, address escaped :: The CLI already emits OSC 8 (MUS-F-0054) and the renderer strips it (internal/ansi/ansi.go:156, locked in by ansi_test.go:59). This is one scoped exception to MUS-D-0132. Repaints would also be held while a pointer is down, because today a frame arriving between press and release swaps the element out and the click is lost. |
+| Option | Those plus bare addresses :: also link any http or https address printed as plain text :: Covers tools that print a URL without OSC 8. It guesses at more text, and an address cut by a wrapped or truncated line links somewhere wrong. |
+| Option | Leave them as text :: nothing changes; copy the address out instead :: MUS-D-0132 stands unamended. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+| Answer | The CLI's own links |
+| Answered | 2026-09-14 01:19 |
+| Note | Subject to change later If i find a need for bare addresses |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0119
+
+**How should question text be rendered on the decisions page?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0151 |
+| Option | A small renderer of our own :: Recommended: paragraphs, bold, italics, code and tables; everything escaped first, a fixed set of tags out, tables scrolling in their own box :: No new dependency. Bodies are now imported from other projects' files and HTML pages carry no CSP, so escaping is the only barrier, and a renderer passing raw HTML through would be a hole. Used on the records page too, so a body reads the same in both. Option text still cannot carry markdown: the export flattens it into a table cell (internal/export/export.go:265). |
+| Option | goldmark :: full CommonMark from a third-party library :: The first markdown dependency, measured against the bar in decisions.md for adding one (pure Go, no transitive dependencies), with raw HTML switched off. |
+| Option | Line breaks only :: keep newlines with CSS and show the markdown as typed :: One line of CSS. Tables and bold still read as pipes and asterisks. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+| Answer | goldmark |
+| Answered | 2026-09-14 01:21 |
+| Note | Verify this is the best dependency to use and that no other similar ones exist |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0120
+
+**Keeping an intake draft needs a second script on intake. Which, if any?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0152 |
+| Option | Text, its own draft :: Recommended: about 30 lines copied from the composer; the draft is kept per browser under its own key and cleared on filing or by a Clear button :: The seventh page with a script by MUS-Q-0053's count, which that answer makes a new decision, and intake was declined a script once on MUS-Q-0062. Pictures are not kept. |
+| Option | Text, shared with the composer :: the same, but intake, the composer and the session box hold one draft between them :: Filing a jot would clear a message being drafted for a session, and sending that message would clear the jot. |
+| Option | Text and pictures :: also keep up to six pictures in the browser's IndexedDB :: Up to about 60 MB stored in the browser, restoring a file input is unreliable on iOS Safari, and filing would move to fetch with the redirect and error pages handled by hand. Several times the size of the text draft. |
+| Option | No script :: only stop dropping the text on the two error paths that lose it :: Intake re-renders without the text when the upload is over the cap or the words over the limit (internal/web/intake.go:224, :232). Switching tabs still loses everything, which is what you reported. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+| Answer | Text, its own draft |
+| Answered | 2026-09-14 01:21 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0121
+
+**Does replacing the visual plan tool, with plans held in Mustur, become a milestone?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0148 |
+| Option | Milestone, plans first :: Recommended: a scope row and a milestone whose first half is MUS-F-0144 (a plan handed to Mustur, read beside its questions) and second half is drawing :: Nothing in Plan.md covers plans or wireframes, so this is a scope-table change and yours. The document shape first gives plan questions something to link to, and answered state shown on both needs a two-way link that does not exist today: refs point one way and nothing writes a decision from an answer. Constraints: never embed a backend in a frame (Plan.md:98); a plan in another project's checkout is that project's file. |
+| Option | Milestone, drawing first :: build the wireframe surface, fold plan documents in after :: The part you filed as the push. The larger build, and its questions have nowhere to link until plans exist. |
+| Option | Plans only :: hold plans as documents in Mustur, keep the external tool for drawing :: Fixes MUS-F-0144 and the question link; the tool's limits stay, including refusing SVG (MUS-F-0048) and HRD-Q-0015 being asked against a drawn modal the app never had. |
+| Option | Not yet :: both stay findings :: Hoard's plan stays a file on the VM. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+| Answer | Milestone, plans first |
+| Answered | 2026-09-14 01:22 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0122
+
+**records/ here carries LinkCtrl's uncommitted import. Commit the triage export now, or after the import stack merges?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | committing this intake triage |
+| Option | After the import stack :: Recommended: the triage lives in the store and on the served pages now; the export commit follows once stack/m9-3-the-importer merges :: records/ is rendered whole from the store (MUS-F-0066), so any export commit now carries about 100k lines the import session commits on its own branch. mustur verify passes on the tree as it stands. |
+| Option | Now :: one export commit on an intake branch carrying everything in the store :: The import stack then rebases onto records it did not write, and this pull request carries LinkCtrl's records as noise. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:37 |
+| Answer | After the import stack |
+| Answered | 2026-09-14 01:22 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0123
+
+**After Stop, which running session should the Sessions page land on?**
+
+question · 2026-09-13
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0143 |
+| Option | Most recently active :: Recommended: sort sessions by the existing activity order, so the top is where you just were, and the picker reorders to match :: session.ByActivity (internal/session/session.go:582) is already the composer's order under MUS-D-0013. Using it in the Sessions list changes which session is first and the order of the picker MUS-D-0150 designed. The redirect and the picker's dead first choice are fixed whichever you pick. |
+| Option | Whatever tmux lists first :: keep today's order; fix only the redirect and the picker :: The order is whatever tmux list-sessions returns, which nothing in the code defines. |
+| Option | The start page, as now :: Stop keeps landing on the start form; only the picker's dead first choice is fixed :: The redirect to /sessions?new=1 is deliberate (internal/web/start.go:372-374). Keeping it costs a tap after every Stop. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-13 23:38 |
+| Answer | Most recently active |
+| Answered | 2026-09-14 01:22 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0124
+
+**The live store holds phase records the deployed Mustur cannot export, so intake filings report a failure. Deploy the phase-kind branch?**
+
+question · 2026-09-14
+
+decision: [MUS-D-0173](decisions.md#mus-d-0173)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+I ran the importer's repair on the live store at about 01:20 UTC on 2026-09-14. It created LinkCtrl's four phase records (MUS-D-0173) before a binary that knows the phase kind was deployed. That is my sequencing error. The deployed binary still answers mustur_route, lists records and shows the queue; it cannot open an LNK-S record, and its export stops at 'kind phase has no export file'. Question answers and composes ignore that error. An intake filing saves the jot and then shows the failure. make deploy from stack/m9-4-a-phase-kind fixes it: that branch is the deployed build's commit, 95ad146, plus this milestone's commits, so nothing that is live goes away. It has not been reviewed yet; make check passes. Auto mode refused the deploy without your word.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Intake filings on mustur.devofpie.com, which save the jot and then report an export failure; the served records export, which has stopped updating |
+| Needed to proceed | yes |
+| Option | Deploy it now :: Recommended: make deploy from stack/m9-4-a-phase-kind, then check that the service came back and that intake and the export work :: Closes the break within minutes. What goes live is unreviewed: the importer, the audit anchor cache, and the phase kind. The review runs after and any fix deploys again. Sessions survive a deploy since MUS-D-0151. |
+| Option | Restore the store instead :: stop the service, put back the backup taken just before the repair, start it again; deploy after review :: Nothing unreviewed goes live. Costs the four phase records and 77 milestones' phase links until the repair runs again. Anything written to the live store since 01:20 UTC is lost with the restore; I have not checked whether anything was. |
+| Option | Leave it until the branch is reviewed :: nothing changes now :: Intake keeps reporting an export failure on every filing, and the served export stays stale until the review is done and the deploy goes out. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 01:28 |
+| Answer | Deploy it now |
+| Answered | 2026-09-14 01:31 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0125
+
+**Deploy the four intake fixes to mustur.devofpie.com now, from a local integration build, or after you merge?**
+
+question · 2026-09-14
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | the links, Stop, project pill and intake draft fixes reaching mustur.devofpie.com |
+| Option | Now, from the integration build :: Recommended: build a local, unpushed merge of PRs 71, 72, 73 and 75 on origin/main and run make deploy; the markdown PR joins it in a second deploy when built :: The merge was made and tested on 2026-09-14: go vet and go test pass on every package, decisions.md kept all three appended entries, links resolve. The last intake fix (PR 64) was deployed from its branch before it merged, and sessions survive a restart since the tmux server moved to its own scope. The permission layer refused make deploy without your explicit say-so for this target, which is why this is asked. If you then change a PR in review, the live build differs from main until the next deploy. |
+| Option | After you merge :: nothing reaches the site until the PRs are merged; then deploy from main :: The site stays on today's build: links unclickable, Stop lands on the start form, no project pill, no intake draft. No build runs live that main does not hold. |
+| Option | Only some :: say which PRs go live now :: Built the same way from just those branches. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-14 01:38 |
+| Correction | Since this was raised: the integration build it describes passed every Go test and still drew nothing in the session view. A browser run found PR 73's paint check named held(), which the pop-up's var held replaced, so every frame threw. Fixed in 060ca8f with a test that catches the clash. The same browser run repeated against the unpatched fix came back clean on 2026-09-14: no page errors, 10 of 10 clicks and 5 of 5 ctrl+clicks opened the link. The integration build carries the fix and passes its tests. |
+| Answer | After you merge |
+| Answered | 2026-09-14 01:54 |
+| Note | The last pre main deploy caused issues, so lets avoid pre main deploys from now on. You can deploy to a test instance if needed between PRs. |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0126
+
+**Finished sub-agents fill the drawer. Collapse them, keep them all listed, or let them go?**
+
+question · 2026-09-14
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0156 |
+| Option | Collapse under a count :: Recommended: running rows listed first, finished ones folded under one 'N finished' line that opens to list them, each still readable :: MUS-D-0123 keeps finished rows because their reports are worth reading once they end, and the badge falls back to the total for that reason; folding keeps every report one tap away while the list shows what is running. Hoard_Work's drawer holds 47 rows with 14 running, and more that the log window already dropped. |
+| Option | All listed, running first :: keep every row visible; only the order changes :: The order fix is being built either way. The list still grows with every sub-agent a long session runs. |
+| Option | Let finished ones go :: drop a finished row after a while, or keep only the last few :: Against MUS-D-0123's reason as written, so it would amend it: a report nobody opened in time is gone from the surface, though the session's own transcript keeps it. |
+| Asked by | whippy |
+| Session project | Intake |
+| Surfaced | 2026-09-14 02:01 |
+| Answer | Collapse under a count |
+| Answered | 2026-09-14 02:10 |
+| Delivered | typed into mustur/Intake |
+
+---
+
+## MUS-Q-0127
+
+**Adding the times-in-Pacific trait puts Whippy's core at ~823 tokens, over its 800 budget. Raise the budget, or retire a trait?**
+
+question · 2026-09-14
+
+The trait from your instruction on time zones is saved and in the core's trait list: 'Every time given to Pie is Pacific, tagged PDT or PST — never bare, never UTC.' It is the tenth trait, under the cap of twelve, but the core is now 3295 bytes, about 823 tokens, against an 800-token budget. The protocol reduces the core by retiring or promoting traits, not by rewording, and each past overrun (650, 700, 750, 800) was settled at your direction by raising the budget. By the protocol's rule the weakest trait is the lowest-confirmed and oldest, which is sole-tenancy, the most load-bearing one.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Finishing the trait write: whippy/check.sh must run silent, and it reports the core over budget |
+| Option | Raise the budget to 850 :: Recommended: all ten traits stay; protocol.md's format note records the raise and why :: What every previous overrun chose. Costs about 25 more tokens loaded into every session, and the next trait will likely force this question again. |
+| Option | Retire comment-density-matches-file :: one confirmation, added 2026-08-10, the narrowest trait in the core :: Stays on disk and out of the core, so the budget holds at 800. Its rule, trimming comments to the file's density, stops being loaded every session. |
+| Option | Retire sole-tenancy :: the protocol's literal pick, one confirmation, oldest :: Follows the rule to the letter, and drops the trait that lets me act freely on this VM and account, which most of today's work leaned on. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 02:07 |
+| Answer | Retire comment-density-matches-file |
+| Answered | 2026-09-14 02:11 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0128
+
+**LinkCtrl's /work registry row in ~/.claude/commands/work.md: retire it now that W48 merged, or keep it?**
+
+question · 2026-09-14
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+work-unit: [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024)
+
+MUS-W-0024's plan said the row is retired after W48 merges, and LinkCtrl's transition survey called that row the global file Mustur's success criterion 1 wants gone. That was my plan, never your approval. Mustur holds LinkCtrl's routing record (MUS-R-0003, dispatch kinds phase and workflow) but nothing reads it to dispatch: /work is still the global command, and its row is the only thing that routes /work linkctrl from outside the checkout. Inside the checkout LinkCtrl's own /work still works either way.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Only whether /work linkctrl still dispatches from outside LinkCtrl's checkout |
+| Option | Keep it for now :: Recommended: the row stays until Mustur can dispatch from MUS-R-0003; a finding records that criterion 1 is not yet true for LinkCtrl :: Nothing that works today stops working. The cost is that the global file criterion 1 wants gone stays, and the routing lives in two places until Mustur takes it over. |
+| Option | Retire it now :: remove the row; /work linkctrl from outside the checkout then prompts as an unknown target :: Criterion 1 holds for LinkCtrl in the sense that no global file routes it. The cost is that dispatching into LinkCtrl from another directory stops working until something replaces it; running /work inside LinkCtrl's checkout is unaffected. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 02:25 |
+| Answer | Keep it for now |
+| Answered | 2026-09-14 02:27 |
+| Delivered | typed into mustur/LinkCtrl_Target |
