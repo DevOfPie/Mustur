@@ -1,9 +1,12 @@
-# Every target runs offline against this working tree, by hand, today —
-# workflow.md's rule — except `questions`, which reads the store and says it did
-# not run where there is none (MUS-D-0183). CI (ci/proposed/ci.yml, once the
-# owner applies it) calls these same targets and adds nothing of its own: what
-# a check *does* lives here, what a check *is* lives in the workflow file.
-# ci/proposed/README.md argues that split.
+# The gates run against this working tree, by hand, today — workflow.md's rule.
+# Not every target is offline: `questions` reads the store and says it did not
+# run where there is none or it holds no records (MUS-D-0183); `export-scope`
+# fetches main from origin when the checkout has none, and says it did not run
+# when that fails (MUS-D-0182); `records-refresh` fetches, pushes and opens a
+# pull request; `install-service` and `deploy` act on this machine's systemd.
+# CI (.github/workflows/ci.yml) calls these same targets and adds nothing of its
+# own: what a check *does* lives here, what a check *is* lives in the workflow
+# file. ci/proposed/README.md argues that split.
 
 SHELL := bash
 

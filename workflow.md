@@ -16,10 +16,13 @@ Keep them liftable.
 
 **Every rule below is executable by hand today.** That was free while nothing
 was built; since milestone 2 it is a constraint, and `make check` is where it is
-kept — every gate runs offline against the working tree, except the question
-gate, which reads Mustur's own store and never the committed export, and says
-out loud that it did not run where there is no store
-([MUS-D-0183](records/decisions.md#mus-d-0183)).
+kept — every gate runs offline against the working tree, except two. The
+question gate reads Mustur's own store and never the committed export, and says
+out loud that it did not run where there is no store or the store holds no
+records ([MUS-D-0183](records/decisions.md#mus-d-0183)). The export-scope gate
+needs origin: it fetches `main` when the checkout has none to compare with, and
+says out loud that it did not run when the fetch fails
+([MUS-D-0182](records/decisions.md#mus-d-0182)).
 
 ---
 
