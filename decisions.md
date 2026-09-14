@@ -3667,3 +3667,22 @@ The owner answered MUS-Q-0125: after merge, and no pre-main deploys from now on,
 | --- | --- |
 | Status | taken; CLAUDE.md's deploy paragraph to say so |
 | Applies to | make deploy and anything else that replaces the running mustur.service |
+### MUS-D-0175
+
+**After Stop the Sessions page lands on the most recently active running session, and the picker lists in that order**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0123
+
+fixes: MUS-F-0143
+
+the order it borrows: MUS-D-0013
+
+the picker it keeps navigating only: MUS-D-0150
+
+The owner answered MUS-Q-0123 with the most recently active session. Stop used to redirect to /sessions?new=1, whose only job is to reach the start form while something is running, so ending one session showed the form for starting another. Stop now sends /sessions, which jumps into the first running session or shows the form when none is running, and lost sessions are still never jumped into. Which session is first was whatever tmux list-sessions returned, an order nothing defined; the list is now ordered by session.ByActivity, the order the composer already uses under MUS-D-0013, and the picker lists in that same order so its top is where the landing went. Separately, a page with no option of its own opened the picker with nothing selected, so the browser showed the first session as chosen and choosing it fired no change; such a page now opens on a disabled placeholder, and the picker still only navigates.
+
+| Field | Value |
+| --- | --- |
+| Status | built; internal/web/start.go stop, internal/web/sessions.go rows and render |
