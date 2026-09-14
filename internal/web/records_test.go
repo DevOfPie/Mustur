@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -41,9 +42,10 @@ func fetch(t *testing.T, srv *httptest.Server, path string) (string, int) {
 		t.Fatal(err)
 	}
 	defer res.Body.Close()
-	b := make([]byte, 65536)
-	n, _ := res.Body.Read(b)
-	return string(b[:n]), res.StatusCode
+	// ReadAll, not one Read: a single Read returns whatever the first chunk
+	// held, and the page outgrew it once the markdown CSS arrived.
+	b, _ := io.ReadAll(res.Body)
+	return string(b), res.StatusCode
 }
 
 func decision(id, title, body string, refs ...record.Field) record.Record {
