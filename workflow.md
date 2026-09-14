@@ -16,7 +16,10 @@ Keep them liftable.
 
 **Every rule below is executable by hand today.** That was free while nothing
 was built; since milestone 2 it is a constraint, and `make check` is where it is
-kept — every gate runs offline against the working tree.
+kept — every gate runs offline against the working tree, except the question
+gate, which reads Mustur's own store and never the committed export, and says
+out loud that it did not run where there is no store
+([MUS-D-0183](records/decisions.md#mus-d-0183)).
 
 ---
 

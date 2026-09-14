@@ -1,8 +1,9 @@
 # Every target runs offline against this working tree, by hand, today —
-# workflow.md's rule. CI (ci/proposed/ci.yml, once the owner applies it) calls
-# these same targets and adds nothing of its own: what a check *does* lives
-# here, what a check *is* lives in the workflow file. ci/proposed/README.md
-# argues that split.
+# workflow.md's rule — except `questions`, which reads the store and says it did
+# not run where there is none (MUS-D-0183). CI (ci/proposed/ci.yml, once the
+# owner applies it) calls these same targets and adds nothing of its own: what
+# a check *does* lives here, what a check *is* lives in the workflow file.
+# ci/proposed/README.md argues that split.
 
 SHELL := bash
 

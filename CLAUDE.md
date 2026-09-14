@@ -236,8 +236,11 @@ Three rules bind every session in this repository:
   and a bare question makes the owner reconstruct them. Prefix one option's line
   with `Recommended` if you have a view. Omit them only when the question
   genuinely has no shortlist.
-  `make check` reads `records/` and fails while any open question has never been
-  surfaced, so work cannot be reported complete around one.
+  `make check` reads the store and fails while any open question has never been
+  surfaced, so work cannot be reported complete around one. It never reads the
+  committed `records/` export, which is a backup; where there is no store, as in
+  CI, it says the gate did not run
+  ([MUS-D-0183](records/decisions.md#mus-d-0183)).
 
   **Being asked is usually enough** — the owner may be away, and stopping for an
   absent owner is a cost this refuses to pay. The exception is a question the
