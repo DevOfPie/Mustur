@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-157 record(s), by identifier.
+164 record(s), by identifier.
 
 ---
 
@@ -553,6 +553,86 @@ whippy-vm has 124 GB. A full workspace debug build with every test binary is 30 
 | Answer | Grow the disk |
 | Answered | 2026-09-14 01:16 |
 | Note | Disk has been grow to 256GB, I'm not sure if the change is immediately present for you or requires a restart |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0021
+
+**After sharing a Valheim world, the owner's characters and other worlds in that folder stop being backed up. Keep them backed up?**
+
+question · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+The second end-to-end run (2026-09-14) shared world Alpha from a folder that also held the owner's character and a second world, Beta. From the share on, the owner's own uploads carried only Alpha: version 2 held 2 files where version 1 held 5. The include list scopes every upload of a shared save, the owner's included, so the owner's characters_local and Beta are no longer backed up by Hoard for as long as the world is shared. The guide says characters are untouched, which is true on disk, and says nothing about backups. Members already see only the shared files on every version (fixed today), so the server can hold a fuller owner upload without exposing it.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing today; decides how the owner's backups of a shared folder work before the stack leaves draft |
+| Option | Keep the owner's whole folder backed up :: Recommended: the owner uploads the whole folder, members read and push only the world, and a pull never deletes files outside the list :: Nothing the owner had stops being protected by sharing. Costs a change on the server (accept the owner's full upload) and in the pull path (keep files outside the list), with tests; about a day of work across the stack. |
+| Option | Accept it and say so :: The guide and the share command warn that the rest of the folder stops being backed up while the world is shared :: No code change. An owner who misses the warning loses backups of their characters without noticing. |
+| Option | Back the rest up as a second private save :: Sharing splits the folder: the world goes to the group, everything else becomes the owner's own save :: Clean separation, but two saves on one folder is a new shape for the engine, with its own watch and restore rules; the most work of the three. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Keep the owner's whole folder backed up |
+| Answered | 2026-09-14 08:16 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0022
+
+**Two older Hoard bugs showed up in testing: fix them in the fork, report them upstream, or leave them?**
+
+question · 2026-09-14
+
+f: [HRD-F-0020](findings.md#hrd-f-0020)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Both are in upstream code the sharing work did not change, found during the third end-to-end run on 2026-09-14 (HRD-F-0020). 1. hoard restore --force overwrites local files that were never backed up, with no conflict copy (crates/hoard-agent/src/restore.rs ~:302-311); the help says only 'allow extracting into a non-empty directory', and the run lost a test file this way. The sync service's own pull already keeps a conflict copy, so the fix is to route the CLI restore through the same merge. 2. On a machine with no keyring and logs at debug, the log shipper re-sends its own credentials debug line in a loop (~2,300 lines per second) until the server's rate limiter refuses everything from that address (logship.rs ~:91 and :532, credentials.rs ~:288); it left about 1,000 log rows on the test server. The fix is a few lines in the shipper's self-filter.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing in the sharing work; decides whether two pre-existing bugs get fixed here |
+| Option | Fix both in the fork :: Recommended: one small PR from main in the fork, kept upstreamable; offering it upstream follows your standing answer on upstream contact :: Both bugs stop here, and the sharing stack is unaffected. About an hour of work plus review. |
+| Option | Report them upstream only :: Open two issues on rleeon/hoard with the evidence and leave the code alone :: No fork divergence; the bugs stay until upstream fixes them, and filing is outward-facing contact with upstream. |
+| Option | Leave them :: Record them and do nothing now :: No work; restore --force stays able to destroy unsaved files for anyone who uses it. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Leave them |
+| Answered | 2026-09-15 01:48 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
+## HRD-Q-0023
+
+**The newest fix commits across the sharing PRs were never code-reviewed. Review them before you review the stack?**
+
+question · 2026-09-15
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Every PR that changes code had at least one review, and several had two or three, but everything written after the second end-to-end run went in tested and never reviewed. Unreviewed commits: #4 ba973ad (lease and group replies made encodable, reply encode check); #7 8a0a940 (member-read privacy limits on snapshot and CAS routes), 6360e7a (member save sizes), 1fd3cb1; #8 572a13a (adopt deadlock and stale refusal, +508 lines), e8e39d2 (requested release, cancelled acquire), c5d9510 (out-of-session lease); #9 968d111 (hoard adopt, verdict wait, pushed code); #10 4b6cb71 (account-checked here, owner restore), 413d1eb (engine_down), the stale answer in merge 9106365; #12 4d3fd68 (owner behind the head server rule), 9706ef0 (watcher paths, world fingerprint), b0cfdf6 (owner restore). #11, the guide, has had no review at all. The third and fourth end-to-end runs exercised much of this code on the test server, which catches behaviour but not everything a review does; the last fix-commit review found two high-severity bugs in fixes the tests had passed.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing is running; decides whether the stack gets one more review pass before Pie reviews it |
+| Option | Review only the unreviewed commits :: Recommended: one focused correctness review per PR over the commits since its last review, findings posted to each PR and fixed :: About 300-400k agent tokens and a couple of hours; covers the code most likely to hold a bug. |
+| Option | Full multi-angle review of every PR :: The eight-angle review with verification on each of the eight PRs, whole diff :: About 1.2M agent tokens and most of a day; re-reviews code that already had reviews and fixes. |
+| Option | No more reviews :: Hand the stack to your own review as it is :: No cost; the newest and largest changes reach your review with only tests and end-to-end runs behind them. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Review only the unreviewed commits |
+| Answered | 2026-09-15 04:18 |
 | Delivered | typed into mustur/Hoard_Work |
 
 ---
@@ -3958,3 +4038,116 @@ LinkCtrl PR 14 merged into LinkCtrl main and Mustur PR 82 into Mustur main on 20
 | Answer | There are still PRs left un merged for the LinkCtrl move that I am waiting on the decision conflict fix before merging |
 | Answered | 2026-09-14 02:52 |
 | Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0132
+
+**Six open PRs conflict with main only in decisions.md's generated tail. May I push the one-commit fix to their branches?**
+
+question · 2026-09-14
+
+decision: [MUS-D-0182](decisions.md#mus-d-0182)
+
+finding: [MUS-F-0066](findings.md#mus-f-0066)
+
+Checked against main at 19:55 PDT (Sep 13). #73, #74, #75, #76, #77 and #81 each change decisions.md only below its generated marker, the tail rendered from the store, and that tail is their only conflict with main. None touches records/. #78 merges clean. The fix is the same for each: a normal commit setting decisions.md to main's version, with no force push, and each branch's decisions reach main's export through the records refresh (#84 is the first). Auto mode refused my pushing to those branches, since they are other sessions' pull requests. The export fix itself is #84, the refresh, then #83, the rule; #83 merges after #84 so main's anchors resolve.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Merging #73, #74, #75, #76, #77 and #81 |
+| Option | Yes, push the fix to all six :: Recommended: one commit per branch restoring main's decisions.md, and a comment on each PR saying why :: They become mergeable in minutes, in any order, before or after #83. Other sessions have worktrees on some of these branches, and those checkouts fall one commit behind; they catch up with a normal pull. |
+| Option | Leave them to their own sessions :: each session hands back decisions.md's tail when its branch is next worked on; after #83, make check fails such a branch and names the file :: No change to anyone else's branch. The six stay unmergeable until each session is resumed, and some of those sessions may not be running. |
+| Option | Merge them locally as they come :: for each PR, a landing branch from main like #82, regenerating decisions.md, and a new PR replacing it :: Every original branch stays untouched. Costs six replacement PRs, and closes the six you reviewed in favour of copies. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 02:56 |
+| Answer | Yes, push the fix to all six |
+| Answered | 2026-09-14 02:57 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0133
+
+**The live service writes its export into the Mustur checkout on every filing. Where should it write, if anywhere?**
+
+question · 2026-09-14
+
+decision: [MUS-D-0182](decisions.md#mus-d-0182)
+
+decision: [MUS-D-0183](decisions.md#mus-d-0183)
+
+deploy/mustur.service runs serve with --export %h/repos/DevOfPie/Mustur/records, so every intake filing, answer and compose rewrites records/ in the main checkout, which is the tree sessions work in. Under MUS-D-0182 a branch commits no export, so that checkout now always carries changes the gate rejects; it has 89 paths changed today. MUS-D-0183 makes the export a backup and a conformance surface only, and make records-refresh renders it from the store into its own worktree, so the running service writing it is no longer what gets it to main. Changing the unit means reinstalling and restarting the service, which is a deployment.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The review finding on #83 that the new export gate fails make check in the main Mustur checkout |
+| Option | Stop the service exporting :: Recommended: drop --export from the unit; the store is the record, and main's export comes only from make records-refresh :: The checkout stops being dirtied, and nothing depends on that export any more. Costs the always-current copy on disk: between refreshes, the newest records are in the store only, so a store lost between refreshes loses them from the backup too. Applying it needs make install-service and a restart. |
+| Option | Export outside the checkout :: point --export at a directory of its own, such as ~/.local/share/mustur/export :: Keeps an always-current backup on disk that no git tree sees. Costs a second rendered copy nobody reads, and the same reinstall and restart. |
+| Option | Leave the unit as it is :: sessions working in the main checkout discard the service's export writes before make check :: No deployment change. Every session in that checkout has to know to discard them, and make check fails for any that doesn't. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 03:07 |
+| Answer | Stop the service exporting |
+| Answered | 2026-09-14 03:14 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0134
+
+**The old service left 89 export files changed in the main Mustur checkout. Discard them?**
+
+question · 2026-09-15
+
+decision: [MUS-D-0184](decisions.md#mus-d-0184)
+
+decision: [MUS-D-0183](decisions.md#mus-d-0183)
+
+The service stopped exporting when the unit from PR 83 was installed and restarted from main on 2026-09-14 PDT (MUS-D-0184). Before that it rewrote records/ and decisions.md's generated tail in the main Mustur checkout on every filing, so that checkout holds 89 changed export paths; 0 other tracked files are changed there, and they are not part of this question. Nothing reads the committed export to decide anything (MUS-D-0183), and every record in those files is in the store, which make records-refresh renders from. The checkout is on intake/a-started-session-is-born-tall, where other sessions have worked.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | make check in the main Mustur checkout, which fails the export-scope gate while those files are changed |
+| Option | Discard them :: Recommended: restore records/ and decisions.md in that checkout to its branch's committed versions; nothing outside them is touched :: The checkout's make check passes the export-scope gate again, and nothing is lost, because the store holds every record and the next refresh renders them for main. Costs the only on-disk copy of the newest records between now and that refresh, which the store already makes redundant. |
+| Option | Leave them :: the checkout keeps the changes until a session there deals with them :: Nothing is touched in a checkout other sessions use. Every session working there fails make check on the export-scope gate until someone discards them. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-15 04:28 |
+
+---
+
+## MUS-Q-0135
+
+**Everything for LinkCtrl's move is merged, including the export fix you were waiting on. Do you accept milestone 7?**
+
+question · 2026-09-15
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+work-unit: [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024)
+
+decision: [MUS-D-0170](decisions.md#mus-d-0170)
+
+answers: [MUS-Q-0131](#mus-q-0131)
+
+MUS-Q-0131 was answered by holding acceptance until the remaining PRs merged after the decisions.md conflict fix. They have. LinkCtrl PR 14 is merged into LinkCtrl main. Mustur PRs 67 to 70 landed on main through PR 82. The export fix is PRs 83 and 84 (MUS-D-0182 to MUS-D-0184), and the service now runs main's build with no export. The done-when you set (MUS-D-0170) holds: LinkCtrl's records are in the store and reconciled (1,503 records), the files that held them are gone from LinkCtrl with its CI green, and LinkCtrl sessions reached mustur_route with the machine's token. Still open, each recorded where it lives: LNK-F-0383 (373 LinkCtrl code comments name deleted files), MUS-F-0165 (LinkCtrl's /work row), and MUS-F-0149 (the mandated call returns every record's index line, now about four times larger). No independent reviewer read LinkCtrl's four W48 fix commits.
+
+| Field | Value |
+| --- | --- |
+| Status | open |
+| Blocks | Whether Plan.md and CLAUDE.md may call milestone 7 passed |
+| Option | Accept it :: Recommended: MUS-M-0009 is recorded as passed, and Plan.md and CLAUDE.md say so; the open findings stay open as their own work :: The done-when is met as you worded it, and every loose end has a record. Costs calling it passed while the mandated call every session makes is four times its old size. |
+| Option | Accept after MUS-F-0149 :: fix mustur_route so its index covers only the repository named, then record the milestone passed :: Acceptance then includes the cost the import put on every session. Holds the milestone open on work outside its done-when. |
+| Option | Review the W48 fixes first :: an independent reviewer reads LinkCtrl's four fix commits, then you decide :: Closes the one part of the milestone nobody fresh read. Findings would become follow-up work, since it is merged. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-15 04:28 |

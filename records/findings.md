@@ -4,7 +4,7 @@
 
 Things noticed. A finding is a report, not a task. The rule deciding what belongs here is [workflow.md](../workflow.md); the loose intake it routes from is [queue.md](../queue.md).
 
-568 record(s), by identifier.
+575 record(s), by identifier.
 
 ## The queue
 
@@ -25,6 +25,12 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [HRD-F-0013](#hrd-f-0013) | Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group |  |  |
 | [HRD-F-0014](#hrd-f-0014) | Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night |  |  |
 | [HRD-F-0015](#hrd-f-0015) | Second-round reviews of PRs 8, 9 and 10 found and fixed engine, CLI and UI defects; the stack verifies at 1,236 tests |  |  |
+| [HRD-F-0016](#hrd-f-0016) | My review fixes introduced two high-severity lease bugs: every release reads as lost, and View during an acquire can push |  |  |
+| [HRD-F-0017](#hrd-f-0017) | First end-to-end run: members read pre-share history, world lease never answers, members cannot adopt from the CLI, owner's claim after share is dropped |  |  |
+| [HRD-F-0018](#hrd-f-0018) | Second end-to-end run: every first-run finding fixed; a member's adopt can deadlock hosting, and sharing stops the owner's other files being backed up |  |  |
+| [HRD-F-0019](#hrd-f-0019) | Review of PR 12: the owner's write filter never filtered, and the owner's lease exemption lasted one tick |  |  |
+| [HRD-F-0020](#hrd-f-0020) | Third end-to-end run: the owner's whole folder stays backed up, but an owner behind the head deadlocks while a member hosts |  |  |
+| [HRD-F-0021](#hrd-f-0021) | Fourth end-to-end run: the owner whole-folder design works end to end; the owner's restore depends on a local account cache that a service-less login clears |  |  |
 | [IDW-F-0001](#idw-f-0001) | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… | The identifier this record carries. A jot naming no project was filed under IDW and routed to the idea inbox, which is the whole of what it set out to check. | verified |
 | [IDW-F-0002](#idw-f-0002) | Test image, dicard after verfication | Verified 2026-08-26. A 2605x1682 PNG, 150 KB, filed from the owner's laptop and read back byte-identical. It shows the intake surface in a desktop browser: the four destinations as a left rail with Intake marked current and no bottom bar, the jot box, the new picture field with its note that the record carries what an agent reads rather than the image, the destination chips, and the recent filings with their identifiers rendered as links. So it confirms four things at once — the rail replacing the bar above the breakpoint, the picture field reaching a real browser, an upload surviving the round trip from a phone-sized form to the store, and identifiers being followable rather than text to retype. One defect is visible in it and is now MUS-F-0036: the destination row is cut off mid-chip, so 'Idea inbox' — the destination this very jot went to — cannot be seen without scrolling sideways. The picture itself was discarded after this reading, as the jot asked. | verified |
 | [IDW-F-0003](#idw-f-0003) | Testing image on mobile | Verified 2026-08-26. A 540x9669 JPEG, 2.4 MB, filed from the owner's Android phone and read back intact — a full-page scroll capture of the session view. It shows the Demo session running with three sub-agents, each row carrying what its agent was asked to do, how long it ran and what it said when it finished, all of it readable prose rather than terminal escapes. At the bottom, in order: the output, the quiet timer, the destination row with its Compose link, the reply box and Send, then the four tabs evenly spaced across the foot of the screen. So it confirms the bar pinned on a phone with MUS-D-0041's four destinations intact, the docked lower section holding the bottom edge, and the sub-agent rows of milestone 4c working on a real device. It also confirms the upload path end to end from Android at a size a phone actually produces, which is twenty times the test fixtures. One thing to check with an ordinary screenshot rather than a scroll capture: the output's last line appears clipped where the dock begins. A stitched capture is poor evidence of a seam, so it is not recorded as a defect on this alone. The file carried camera-style metadata naming the device it came from, which this had not been stripping — MUS-F-0037. The picture was discarded after this reading. | verified |
@@ -477,7 +483,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0063](#mus-f-0063) | A checked-in .mcp.json could only refuse, and was preferred over the configuration that worked | A token at user scope: 'Needs authentication', with `claude mcp get mustur` reporting 'Scope: Project config'. The same token at local scope: 'Connected'. Over the wire with the token, initialize, tools/list and a mustur_route call all answer 200 and return this repository's routing, which is the mandated call working. | fixed |
 | [MUS-F-0064](#mus-f-0064) | I added added a user and they are not showing in the people list, as soon as the invite is… | Against the rendered page at 1366x900 and 390x844: an invitation appears immediately as its address, an 'invited' pill, the role and the expiry, with no forms on the row; after Redeem the same address is an ordinary row with its role select and Disable button, appearing once. Removing the Pending lookup fails the test with 'an invited person is not on the screen'. | fixed |
 | [MUS-F-0065](#mus-f-0065) | Nothing ignored the directory agents work inside, so the main checkout offered its own worktrees to be committed | In a worktree with a file under .claude/worktrees/, `git status --short` reports '?? .claude/' without the rule and nothing with it; `git check-ignore -v` names .gitignore for both the settings file and a worktree file. `git ls-files` matches nothing under .claude/, so no history changes. | fixed |
-| [MUS-F-0066](#mus-f-0066) | Two branches open at once conflict in records/, because each exports the whole store rather than its own change | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. | open |
+| [MUS-F-0066](#mus-f-0066) | Two branches open at once conflict in records/, because each exports the whole store rather than its own change | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. | fixed 2026-09-14 by MUS-D-0182, MUS-D-0183 and MUS-D-0184, merged as PR 83 with the first refresh as PR 84: branches carry no export, main's export arrives by records refresh PR, nothing reads the committed export to decide anything, and the service writes none |
 | [MUS-F-0067](#mus-f-0067) | The session input should send on enter and add a newline on shift+enter | TestEnterSendsOnlyWhereThereIsAShiftKeyToHold in internal/web/sessions_test.go: the handler consults the media query at the keystroke, lets Shift+Enter and an IME's Enter through, keeps the modifier shortcut, and the rendered /sessions/Mustur still carries an unconditional Send button. Asserted rather than measured: that the query is true on the owner's desktop and false on their phone rests on the pointer and hover specification, not on a hands-on check of either device. | fixed |
 | [MUS-F-0068](#mus-f-0068) | The spinner makes the status text hard to read at certain positions | TestTheTurningRingDoesNotPaintOverTheStatusPill asserts both properties on the served stylesheet and that the running state no longer takes --accent-soft alone. The cause was read off the rules rather than measured in a browser: an absolutely positioned pseudo-element paints above an unpositioned sibling box, and #6a8fd820 is 12.5% alpha. | fixed |
 | [MUS-F-0069](#mus-f-0069) | The decision prompt in the session came up but the ui didn't update to show that a decision was… | TestTheHelloFrameCarriesTheDecisionCount opens a real socket against a real tmux session with one open question in the store and reads 1 off the first frame. TestTheDecisionCountRidesTheSocket holds the client half: it finds the Decisions tab, handles the count before the frame kinds, and removes the badge rather than emptying it at zero. TestNoStoreMeansNoCountRatherThanZero holds the nil-store case. | fixed |
@@ -578,6 +584,7 @@ Things noticed. A finding is a report, not a task. The rule deciding what belong
 | [MUS-F-0164](#mus-f-0164) | Opening the Records tab is slow because it seems to be loading in everything at once |  | unreviewed |
 | [MUS-F-0165](#mus-f-0165) | LinkCtrl still dispatches through a global file, so success criterion 1 is not yet true for it | ~/.claude/commands/work.md:23 routes linkctrl to /home/whippy/repos/DevOfPie/LinkCtrl and docs/build-notes/work-loop.md; MUS-R-0003 carries Dispatch kinds phase, workflow, which no code path reads for dispatch | open |
 | [MUS-F-0166](#mus-f-0166) | I can only invite people to the Mustur project and it doesn't seem that I can add existing… |  | unreviewed |
+| [MUS-F-0167](#mus-f-0167) | 1. How is Claude doing prompt isn't caught |  | unreviewed |
 
 ---
 
@@ -816,6 +823,86 @@ finding · 2026-09-14
 w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
 
 Run on 2026-09-14 after the API limit reset. PR 8 (ten findings, a845914): side-copy renames re-armed pending changes and left the folder empty; a failed copy let a viewer's writes push; View on a still-held lease released nothing; a refresh cleared a pending acquire and never renewed a lease it read as ours; sibling sessions never closed; a role chosen before launch was dropped. PR 9 (all ten items, a7b1154, f7a2c7d, 1987d19, 9239fae): hoard saves and hoard status asked the server once per shared save, serially, up to a minute offline, now one local status call; the host column could claim nobody hosts when the answer was unknown; here was decided by device instead of account; refusal codes were lost over the socket; the world rule for template games lived only in the CLI; world verbs on an unwatched save reported success. PR 10 (da66a04, 71e209f): a request loop in the share dialog with no groups, the claim question open in both windows, success toasts before the server's verdict, and a replay gate I had added on a wrong premise (removed). Build lesson recorded outside the repo: parallel worktrees on one cargo target clobber each other. Tip 9239fae: 1,236 passed, 0 failed, 4 ignored; baseline 1,081.
+
+---
+
+## HRD-F-0016
+
+**My review fixes introduced two high-severity lease bugs: every release reads as lost, and View during an acquire can push**
+
+finding · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+A correctness review of the fix commits (2026-09-14, stack tip 9239fae) found eight issues, posted on PRs 7, 8 and 10. High: on_lease emits WorldLeaseLost for every Mine to Free change, including releases this machine asked for, so each hosted session ends with a persistent lost-lease notice (engine rule older, made visible by 71e209f and a845914); View or Release while a Host acquire is in flight or waiting in the lease task's retry map releases nothing, and the verdict lands Mine on a View slot whose writes the role-blind reducer pushes (a845914). Medium: here trusts the engine's Unknown lease after a service restart (9239fae); every EngineDown maps to no_session and exit 2, including a starting engine (9239fae). Low: a relaunch prompt repeats for a world whose side copy landed; role_pinned catches answers to stopped sessions; bell refresh keeps the old time; share's state read and world scan back on the IPC task (a7b1154). Lesson: fixes written against a finding's scenario need the same adversarial review as the original code before they merge up.
+
+---
+
+## HRD-F-0017
+
+**First end-to-end run: members read pre-share history, world lease never answers, members cannot adopt from the CLI, owner's claim after share is dropped**
+
+finding · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Two accounts (e2e-alice, e2e-bob) on the test server at 9239fae, CLI only, 2026-09-14; transcript at ~/repos/DevOfPie/e2e/transcript.log. Worked: login, track, group create/invite/join, share refusing a world-less Valheim share with its worlds, share --world Alpha, saves/status host fields, not_watched on an unknown save, server-side held and pushed refusals. Failed: (1) the include list filters only pushes, so bob restored v1 from before the share and got alice's characters_local/x.fch and the unshared Beta world byte for byte; (2) hoard world lease always times out: Payload::Lease(Option<Box<Lease>>) is an internally tagged newtype holding an Option, which serde refuses to serialize, and hoardd's writer task dies logging at debug while the client waits 15 s (the desktop get_lease is hit too); (3) a member has no CLI adopt, so every world verb on the shared save exits not_watched; (4) the share re-seats the slot with known_version None, the claim acquires at base 0, the server refuses stale, and the stale cache drops repeats until a service restart. Also: stopping the service leaves the lease live; after restart the engine took the lease with no claim or game to push; world force exits 0 on a server refusal; the server's pushed code is missing from SKILL.md; unit tests never round-tripped the lease payload through serde.
+
+---
+
+## HRD-F-0018
+
+**Second end-to-end run: every first-run finding fixed; a member's adopt can deadlock hosting, and sharing stops the owner's other files being backed up**
+
+finding · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+q: [HRD-Q-0021](questions.md#hrd-q-0021)
+
+Fresh accounts e2e2-alice and e2e2-bob on the test server at 0689ebf, 2026-09-14; transcript ~/repos/DevOfPie/e2e2/transcript.log. Fixed and shown: world lease answers in milliseconds; members read only the shared world on every version (bob's v1 restore held 2 of 5 files, hashes matched); the owner hosts right after sharing; group list answers; needs_input, held, pushed and not_watched arrive with their exit codes; release no longer reads as a loss; an out-of-session push takes and gives back the lease; stopping the service releases the lease. New: (F1, high) adopt seats no version and no own-touch stamp, the fresh folder vetoes the pull for 5 minutes, a claim then caches a stale refusal, and any local write in the window deadlocks the slot (pull vetoed for pending changes, push held for want of a lease) until untrack and re-adopt; (F2, medium) stopping while hosting still logs a lost lease and tries a notice; (F3, low) the here fallback uses the machine fingerprint, which two accounts on one computer share; (F4, medium) the owner's CLI restore of a shared save is narrowed to the include list; (F5) member sizes sum every version, same definition as the owner's. Design consequence raised as HRD-Q-0021: the owner's own uploads of a shared folder carry only the shared world, so their characters and other worlds stop being backed up.
+
+---
+
+## HRD-F-0019
+
+**Review of PR 12: the owner's write filter never filtered, and the owner's lease exemption lasted one tick**
+
+finding · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+d: [HRD-D-0019](decisions.md#hrd-d-0019)
+
+Correctness review of the owner whole-folder change (PR 12 at 7c4fbf4, 2026-09-14), posted inline on the PR. High: claim.rs on_write_at checks whether a changed path is inside the shared world, but the file watcher only ever sends the save folder's own path (agent.rs ~:4382), so every write counts as a world write and a character-only change still takes the world's lease and locks members out; the new test passed by feeding paths the real watcher never sends. Medium: the kernel lets the owner push without the lease only when the observation carries a world fingerprint equal to the synced one, and the shell computes that fingerprint only on the tick after a change is noticed; if that tick is held by the minimum interval, a backoff or locked files (always, under the data_saver preset), later ticks carry none and wait for the lease. Checked sound: carried-forward refcounts, the side-copy guard, the owner's fast-forward rule. Fixes running: the watcher forwards changed paths; the slot keeps the last world fingerprint until the next file event. Lesson: a test must feed the shape the production caller sends.
+
+---
+
+## HRD-F-0020
+
+**Third end-to-end run: the owner's whole folder stays backed up, but an owner behind the head deadlocks while a member hosts**
+
+finding · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+d: [HRD-D-0019](decisions.md#hrd-d-0019)
+
+Fresh accounts e2e3-alice and e2e3-bob on the test server at 7c4fbf4, 2026-09-14; transcript ~/repos/DevOfPie/e2e3/transcript.log. Confirmed: all versions keep the owner's 5 files; a character change backs up without the lease; member pushes carry the owner's files forward and never reach the member's folder; adopt then claim hosts at once; here is right per account; member restore gets the world, owner restore all 5; no lost-lease report on release or stop. High: the server compares an owner's lease-free push with the head's world, so an owner behind a member's newer world is refused, the client forgets its world fingerprint, the pull is vetoed for pending changes, and nothing of the owner's backs up until the member releases. Medium: sharing re-uploads identical content under a lease it takes and releases; an owner's world edits while a member hosts are neither set aside nor let the rest back up. Low: a set-aside moved a file identical to the head. Pre-existing upstream, not fixed here: hoard restore --force overwrites un-backed-up local files without a conflict copy (the run lost one test file this way); with no keyring and hoard_agent=debug the log shipper ships its own credentials debug line in a loop until the server rate-limits (~2,300 lines/s, 1,052 client_logs rows left on the test server).
+
+---
+
+## HRD-F-0021
+
+**Fourth end-to-end run: the owner whole-folder design works end to end; the owner's restore depends on a local account cache that a service-less login clears**
+
+finding · 2026-09-14
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+d: [HRD-D-0019](decisions.md#hrd-d-0019)
+
+Fresh accounts e2e4-alice and e2e4-bob on the test server at 4d3fd68, 2026-09-14; transcript ~/repos/DevOfPie/e2e4/transcript.log. Passed: all eight versions keep the owner's five files; sharing takes no lease and pushes nothing; a character-only change backs up without the lease and makes no acquire attempt on a real watcher event; member pushes carry the owner's files forward; an owner behind a member's newer push backs up without the lease, keeps the member's world and pulls it later with nothing lost; the owner's world edits under a member's lease are set aside with bytes kept while the rest backs up; release, claim, push under the lease, stop and member restore behave. Medium: the CLI decides the owner's restore from the cached whoami in session.toml, which a login made without the service leaves as a signed-out tombstone, so the owner's restore is narrowed to the world (safe side); fix by deciding from SharedRef.caller_owns. Low: the owner's pull waits the 300 s grace after their own write; conflict copies of already-versioned files and set-asides of files identical to the head clutter the conflicts folder.
 
 ---
 
@@ -13779,7 +13866,7 @@ What would remove it is not committing the export at all, and that is a decision
 | --- | --- |
 | Where | Makefile, records/ |
 | Evidence | git merge-tree over origin/main and the three open branches, in two orders: one clean merge then a conflict on records/README.md, records/findings.md and records/questions.md, either way round. After rebasing the newest branch onto the one below it, that pair merges clean and only the independent branch collides. |
-| Status | open |
+| Status | fixed 2026-09-14 by MUS-D-0182, MUS-D-0183 and MUS-D-0184, merged as PR 83 with the first refresh as PR 84: branches carry no export, main's export arrives by records refresh PR, nothing reads the committed export to decide anything, and the service writes none |
 
 ---
 
@@ -16382,6 +16469,27 @@ finding · 2026-09-14
 Routed to: [MUS-P-0001](routing.md#mus-p-0001)
 
 I can only invite people to the Mustur project and it doesn't seem that I can add existing people to additional projects
+
+| Field | Value |
+| --- | --- |
+| Evidence |  |
+| Status | unreviewed |
+| Routed to | Mustur (MUS-P-0001) |
+| Routing | chosen by the filer |
+| Filed by | dev@killerofpie.com |
+
+---
+
+## MUS-F-0167
+
+**1. How is Claude doing prompt isn't caught**
+
+finding · 2026-09-15
+
+Routed to: [MUS-P-0001](routing.md#mus-p-0001)
+
+1. How is Claude doing prompt isn't caught
+2. The progress spinner isn't captured when the how is claude doing prompt on the screen
 
 | Field | Value |
 | --- | --- |

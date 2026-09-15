@@ -4046,3 +4046,21 @@ MUS-Q-0130 asked whether the question gate should read the store once branches s
 | Field | Value |
 | --- | --- |
 | Supersedes | MUS-D-0050 |
+
+### MUS-D-0184
+
+**The live service does not export; main's export comes only from a records refresh**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0133
+
+decision: MUS-D-0182
+
+decision: MUS-D-0183
+
+MUS-Q-0133 asked where the live service should write its export. deploy/mustur.service ran serve with --export into the main Mustur checkout, so every filing rewrote records/ there, and under MUS-D-0182 that checkout then always carried changes the export-scope gate rejects: 89 paths on 2026-09-14. The owner chose to stop the service exporting. The unit drops --export, the store is the record (MUS-D-0183), and main's export is rendered only by make records-refresh into a worktree of its own. The cost is stated in the option the owner chose. Between refreshes, the newest records exist in the store and nowhere on disk, so a store lost between refreshes loses them from the backup as well. Applying it is a change to the installed unit and a restart, done from main once the change has merged.
+
+| Field | Value |
+| --- | --- |
+| Applies to | deploy/mustur.service |
