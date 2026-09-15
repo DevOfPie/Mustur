@@ -1,6 +1,8 @@
 package web
 
 import (
+	"io"
+	"net/url"
 	"regexp"
 	"strings"
 	"testing"
@@ -135,5 +137,83 @@ func TestACitationInARenderedBodyStillResolves(t *testing.T) {
 	res, code := fetch(t, srv, "/records/MUS-D-0001")
 	if code != 200 || !strings.Contains(res, "The cited one") {
 		t.Errorf("the rewritten citation does not resolve: %d", code)
+	}
+}
+
+// MUS-F-0168: every identifier on the decision queue is a link to its record,
+// wherever on the card it is written, and it opens a new tab so a note already
+// typed into the answer box survives following it.
+func TestEveryIdentifierOnTheQueueLinksToItsRecord(t *testing.T) {
+	q := withOptions("MUS-Q-0001", "Does MUS-D-0040 still hold?",
+		"Keep MUS-D-0001 :: costs MUS-F-0027 a rerun :: As MUS-F-0033 found, and `MUS-D-9999` is quoted.")
+	q.Body = "Raised by MUS-F-0164.\n\n" +
+		"| Record | Why |\n| --- | --- |\n| LNK-S-0001 | **HRD-W-0001** |\n\n" +
+		"[already linked](decisions.md#mus-d-0002) and [MUS-D-0003](https://example.com/)."
+	q.Data[1] = record.Field{Key: question.FieldBlocks, Value: "MUS-F-0164"}
+	srv, _ := serveQuestions(t, q)
+	body := getFrom(t, srv, "/questions")
+
+	link := func(id string) string {
+		return `<a href="/records/` + id + `" target="_blank" rel="noopener">` + id + `</a>`
+	}
+	for where, id := range map[string]string{
+		"the body":            "LNK-S-0001",
+		"emphasis in a table": "HRD-W-0001",
+		"the title":           "MUS-D-0040",
+		"an option's label":   "MUS-D-0001",
+		"an option's line":    "MUS-F-0027",
+		"an option's detail":  "MUS-F-0033",
+		"the card's own id":   "MUS-Q-0001",
+	} {
+		if !strings.Contains(body, link(id)) {
+			t.Errorf("%s: %s is not a link to its record", where, id)
+		}
+	}
+	if !strings.Contains(body, "blocks "+link("MUS-F-0164")) {
+		t.Error("what the question blocks is not a link to its record")
+	}
+	if !strings.Contains(body, "Raised by "+link("MUS-F-0164")) {
+		t.Error("an identifier in the body's prose is not a link")
+	}
+	// A body's own citation link is pointed at the record, and opens a tab too.
+	if !strings.Contains(body, `<a href="/records/MUS-D-0002" target="_blank" rel="noopener">already linked</a>`) {
+		t.Error("a citation written as a link does not reach its record in a new tab")
+	}
+	// Quoted code stays quoted, and a link's text is not linked a second time.
+	if !strings.Contains(body, "<code>MUS-D-9999</code>") || strings.Contains(body, "/records/MUS-D-9999") {
+		t.Error("an identifier inside code was turned into a link")
+	}
+	if !strings.Contains(body, `<a href="https://example.com/" target="_blank" rel="noopener">MUS-D-0003</a>`) ||
+		strings.Contains(body, "/records/MUS-D-0003") {
+		t.Error("the text of a link off site was linked inside it")
+	}
+	// What the form sends is still the label as written, not markup.
+	if !strings.Contains(body, `value="Keep MUS-D-0001"`) {
+		t.Error("linking the label changed the option's submitted value")
+	}
+
+	// The banner after answering names the question it answered, as a link.
+	res, err := srv.Client().PostForm(srv.URL+"/questions", url.Values{
+		"id": {"MUS-Q-0001"}, "option": {"Keep MUS-D-0001"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	after, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	if !strings.Contains(string(after), "Answered <code>"+link("MUS-Q-0001")+"</code>") {
+		t.Error("the answered banner does not link the question it answered")
+	}
+}
+
+// Records keeps expanding an identifier in place (MUS-D-0040): the queue's
+// linking does not reach the records page's rendering.
+func TestRecordsDoesNotLinkBareIdentifiersInItsBody(t *testing.T) {
+	srv := serveRecords(t, "",
+		decision("MUS-D-0001", "The cited one", "First."),
+		decision("MUS-D-0009", "Cites", "As MUS-D-0001 bare."))
+	body, _ := fetch(t, srv, "/records/MUS-D-0009")
+	if strings.Contains(body, `target="_blank"`) || !strings.Contains(body, "<p>As MUS-D-0001 bare.</p>") {
+		t.Error("the records page's body picked up the queue's identifier links")
 	}
 }
