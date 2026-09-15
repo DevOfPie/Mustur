@@ -79,6 +79,18 @@ func unbox(line string) (string, bool) {
 // case: a pane with no legend gets no controls and keeps its terminal, and
 // nothing is guessed (MUS-D-0142). Every failure here is that one.
 func ReadPrompt(screen string) *Prompt {
+	// Two shapes, tried in turn. Not one after the other on the same lines:
+	// a tall pane can hold a dead dialog a hundred lines up and a live survey
+	// at the bottom, and the dialog reader refusing the first must not stop
+	// the second being looked for (MUS-F-0167).
+	if p := readDialog(screen); p != nil {
+		return p
+	}
+	return readSurvey(screen)
+}
+
+// readDialog reads the shapes anchored on a "X to Y · X to Y" legend.
+func readDialog(screen string) *Prompt {
 	lines := strings.Split(ansi.Plain(screen), "\n")
 
 	// The legend anchors everything. Searched from the bottom, because the
@@ -385,6 +397,111 @@ func (a *Adapter) SendChoice(ctx context.Context, project, key string) error {
 		return fmt.Errorf("tmux send-keys -l %q: %w: %s", k, err, strings.TrimSpace(out))
 	}
 	return nil
+}
+
+// The session survey: a fourth shape, with no legend line and no boundary.
+//
+// MUS-F-0167. The owner saw "How is Claude doing this session?" on a pane and
+// nothing offered for it. Read out of Claude Code 2.1.272 rather than
+// remembered: the component draws a cyan "●" in a two-column box, the question
+// in bold beside it, and under that, two columns in, one ten-column cell per
+// choice -- "1: Bad", "2: Fine", "3: Good", optionally "4: Unsure", and always
+// "0: Dismiss" last. A digit is pressed on its own; there is no Enter, no
+// "X to Y · X to Y" line and no rule or box around any of it. So readDialog,
+// which anchors on exactly those, refused it twice over.
+//
+// The row is the legend. MUS-D-0190 extends MUS-D-0142 to say so: a row made
+// entirely of the CLI's own "key: label" cells is a legend, and the choices are
+// read off it rather than assumed.
+//
+// The guards are the component's own shape, all of them required: the row is
+// indented, every cell on it is a digit, a colon and a label with nothing
+// between cells but padding, the last cell is 0, and the lines above it up to
+// the "●" in the first column are the question and nothing else.
+var surveyCell = regexp.MustCompile(`(\d): (\D+)`)
+
+// surveyRow reads a line of survey choices, or returns nil.
+func surveyRow(line string) []Choice {
+	if !strings.HasPrefix(line, "  ") {
+		return nil
+	}
+	t := strings.TrimSpace(line)
+	cells := surveyCell.FindAllStringSubmatch(t, -1)
+	if len(cells) < 2 {
+		return nil
+	}
+	var whole strings.Builder
+	var out []Choice
+	for _, c := range cells {
+		whole.WriteString(c[0])
+		label := strings.TrimSpace(c[2])
+		// A label is a word or two. Padding inside one means two cells ran
+		// together, or this is prose that happens to have digits and colons.
+		if label == "" || strings.Contains(label, "  ") {
+			return nil
+		}
+		out = append(out, Choice{Key: c[1], Label: label, Sendable: true})
+	}
+	// Every character on the line belongs to a cell: "Step 1: Bad" is prose.
+	if whole.String() != t || out[len(out)-1].Key != "0" {
+		return nil
+	}
+	return out
+}
+
+// How far above its row a survey's "●" may be. The question is one line, and
+// the memory survey's is a short paragraph with blanks in it.
+const surveyHeading = 12
+
+// surveyAt finds a survey at the tail of a transcript's plain lines and returns
+// the line its "●" is on and the line its choices are on, or -1, -1.
+//
+// The tail only. That is what makes it live: the survey is drawn in the band
+// above the input box, under everything the conversation has said, so anything
+// printed below its row means the conversation has moved past it (MUS-F-0092).
+func surveyAt(lines []string) (int, int) {
+	row := len(lines) - 1
+	for row >= 0 && strings.TrimSpace(lines[row]) == "" {
+		row--
+	}
+	if row < 0 || surveyRow(lines[row]) == nil {
+		return -1, -1
+	}
+	for i := row - 1; i >= 0 && i >= row-surveyHeading; i-- {
+		l := strings.TrimRight(lines[i], " ")
+		switch {
+		case l == "":
+		case strings.HasPrefix(l, "● "):
+			return i, row
+		case strings.HasPrefix(l, "  "):
+			// The question wraps inside its box, two columns in.
+		default:
+			return -1, -1
+		}
+	}
+	return -1, -1
+}
+
+// readSurvey reads the session survey off the transcript's tail.
+//
+// From the body SplitChrome leaves, because the survey sits directly above the
+// CLI's own furniture and "the tail of the transcript" means nothing until that
+// furniture is off.
+func readSurvey(screen string) *Prompt {
+	body, _ := SplitChrome(screen)
+	lines := strings.Split(ansi.Plain(body), "\n")
+	head, row := surveyAt(lines)
+	if head < 0 {
+		return nil
+	}
+	title := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(lines[head]), "●"))
+	var rest []string
+	for i := head + 1; i < row; i++ {
+		if t := strings.TrimSpace(lines[i]); t != "" {
+			rest = append(rest, t)
+		}
+	}
+	return &Prompt{Title: title, Body: strings.Join(rest, " "), Options: surveyRow(lines[row])}
 }
 
 // plainForTest exposes the same stripping ReadPrompt does, so a test can assert
