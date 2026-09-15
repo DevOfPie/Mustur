@@ -410,9 +410,9 @@ func (a *Adapter) SendChoice(ctx context.Context, project, key string) error {
 // "X to Y · X to Y" line and no rule or box around any of it. So readDialog,
 // which anchors on exactly those, refused it twice over.
 //
-// It is still what MUS-D-0142 reads: the CLI printing which key does what, in
-// its own words. The row is the legend, written "key: action" instead of "key to
-// action", and the choices are read off it rather than assumed.
+// The row is the legend. MUS-D-0190 extends MUS-D-0142 to say so: a row made
+// entirely of the CLI's own "key: label" cells is a legend, and the choices are
+// read off it rather than assumed.
 //
 // The guards are the component's own shape, all of them required: the row is
 // indented, every cell on it is a digit, a colon and a label with nothing
