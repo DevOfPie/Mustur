@@ -321,6 +321,10 @@ type Request struct {
 	// first minute after filing. That is the minute in which somebody notices
 	// the routing was wrong (MUS-F-0056).
 	Deliberate bool
+	// Approved names the owner who approved a reader's held jot, and is empty
+	// for everything else. Actor is still the reader: they wrote it, and the
+	// record says so, and says separately who let it in (MUS-D-0189).
+	Approved string
 }
 
 // Resolve says where a jot would go: the chosen routing record when one is
@@ -411,6 +415,9 @@ func draft(ctx context.Context, s *store.Store, req Request, trimmed string) (re
 		// The destination the jot named and was kept from, so moving it there
 		// later is a confirmation of something the record already says.
 		r.Data = append(r.Data, record.Field{Key: NamesField, Value: strings.Join(to.Names, ", ")})
+	}
+	if req.Approved != "" {
+		r.Data = append(r.Data, record.Field{Key: "Approved by", Value: req.Approved})
 	}
 	if to.ID != "" {
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}
