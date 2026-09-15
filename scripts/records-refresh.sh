@@ -37,7 +37,7 @@ store="" told=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --db)
-      [ $# -ge 2 ] && [ -n "$2" ] || { printf '  FAIL  --db needs a path\n' >&2; usage; }
+      if [ $# -lt 2 ] || [ -z "$2" ]; then printf '  FAIL  --db needs a path\n' >&2; usage; fi
       store=$2; told=1; shift 2 ;;
     -h|--help) sed -n '2,/^set -euo/p' "$0" | sed 's/^# \{0,1\}//; /^set -euo/d'; exit 0 ;;
     *) printf '  FAIL  unknown argument %s\n' "$1" >&2; usage ;;
