@@ -29,7 +29,7 @@ import (
 
 func cmdAccount(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("account needs a verb: invite, list, grant, token, tokens, revoke")
+		return fmt.Errorf("account needs a verb: invite, list, grant, ungrant, token, tokens, revoke")
 	}
 	verb, rest := args[0], args[1:]
 
@@ -266,6 +266,44 @@ func cmdAccount(args []string) error {
 			}
 		}
 		return fmt.Errorf("no account for %s; invite them first", want)
+
+	case "ungrant":
+		// What People does when an owner picks "no access", so the command
+		// line can do what the screen can (MUS-D-0188). Nothing removed a role
+		// before this, from anywhere (MUS-F-0166).
+		fs := flag.NewFlagSet("account ungrant", flag.ContinueOnError)
+		db := dbFlag(fs)
+		email := fs.String("email", "", "which account")
+		project := fs.String("project", "", "the project whose role is removed")
+		if err := fs.Parse(rest); err != nil {
+			return err
+		}
+		// No default project, unlike grant: a removal aimed at MUS because a
+		// flag was forgotten takes access away from the wrong place.
+		if strings.TrimSpace(*email) == "" || strings.TrimSpace(*project) == "" {
+			return fmt.Errorf("account ungrant needs --email and --project")
+		}
+		s, storeCtx, err := openStore(*db)
+		if err != nil {
+			return err
+		}
+		defer s.Close()
+		accounts := account.New(s.DB())
+		people, err := accounts.Accounts(storeCtx)
+		if err != nil {
+			return err
+		}
+		want := strings.ToLower(strings.TrimSpace(*email))
+		for _, p := range people {
+			if p.Email == want {
+				if err := accounts.Ungrant(storeCtx, p.ID, *project, defaultActor()); err != nil {
+					return err
+				}
+				fmt.Printf("%s has no role on %s now\n", p.Email, *project)
+				return nil
+			}
+		}
+		return fmt.Errorf("no account for %s", want)
 	}
-	return fmt.Errorf("account has no verb %q: invite, list, grant", verb)
+	return fmt.Errorf("account has no verb %q: invite, list, grant, ungrant, token, tokens, revoke", verb)
 }
