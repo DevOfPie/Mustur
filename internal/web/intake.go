@@ -55,6 +55,11 @@ type Intake struct {
 	// `make export`, which is what makes this the surface's problem rather
 	// than the operator's.
 	ExportTo string
+
+	// Roles answers whether the viewer owns the project a held jot is routed
+	// to, so an owner's badge counts only what they may approve. Nil without
+	// accounts, where nobody holds anything.
+	Roles Roles
 }
 
 // intakeJS keeps the box's text as a draft in the browser (MUS-F-0152). The
@@ -184,6 +189,23 @@ type page struct {
 	// (MUS-D-0193). bar.js keeps it true after this render, as it does the
 	// count above.
 	Attention int
+
+	// Reader says the viewer's jots are held rather than filed (MUS-D-0189).
+	// The box is the same box; the button says what will happen, no picture
+	// field is offered, and scratch is not a destination, because a reader's
+	// send is a hold and a hold is not a scratch filing.
+	Reader bool
+	// Sent says a reader's jot was held on the way to this page.
+	Sent bool
+	// Held is the reader's own jots still waiting, so what they sent does not
+	// vanish between pressing the button and an owner acting on it.
+	Held []heldLine
+}
+
+type heldLine struct {
+	Text string
+	When string
+	To   string
 }
 
 type recentJot struct {
@@ -231,7 +253,68 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	}
 	p.OpenQuestions = OpenCount(r.Context(), in.Store)
 	p.Attention = intake.AttentionCount(r.Context(), in.Store)
+	p.Reader = IsReader(r)
+	p.Sent = r.URL.Query().Get("sent") == "1"
+	if viewer, ok := Viewer(r); ok && p.Reader {
+		names := map[string]string{}
+		for _, d := range p.Destinations {
+			names[d.ID] = d.Name
+		}
+		if held, err := in.Store.HeldJots(r.Context(), viewer.ID); err == nil {
+			for _, h := range held {
+				to := "Route it for me"
+				if h.To != "" {
+					to = names[h.To]
+				}
+				p.Held = append(p.Held, heldLine{Text: h.Text, When: pacific(h.Created), To: to})
+			}
+		}
+	} else {
+		// The badge counts held jots this owner may approve (MUS-Q-0143), and
+		// the server-rendered count has to agree with the poll that corrects it.
+		held, _ := approvable(r, in.Store, in.Roles, in.Project)
+		p.OpenQuestions += len(held)
+	}
 	render(w, p)
+}
+
+// hold keeps a reader's jot for an owner instead of filing it (MUS-D-0189).
+//
+// The guard let this POST through because it is a reader's send to the box and
+// nothing else; everything here is what makes it a hold and not a filing. No
+// picture: the plan keeps unreviewed images out of the store in this cut, so a
+// picture is refused with the words kept rather than dropped silently.
+func (in *Intake) hold(w http.ResponseWriter, r *http.Request, text string) {
+	refuse := func(why string) {
+		render(w, page{Error: why, Project: in.Project, Jot: text, Reader: true,
+			ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
+	}
+	if images, err := readImages(r); err != nil || len(images) > 0 {
+		refuse("pictures are not taken from a reader's jot; send the words, and an owner can add one once it is filed")
+		return
+	}
+	to := strings.TrimSpace(r.PostFormValue("to"))
+	if to == scratchTo {
+		refuse("scratch is not a destination for a jot an owner has to approve")
+		return
+	}
+	// Checked now, so a destination that does not exist is said to the person
+	// who chose it rather than to the owner who approves it.
+	if _, err := intake.Resolve(r.Context(), in.Store, text, to); err != nil {
+		refuse(err.Error())
+		return
+	}
+	viewer, ok := Viewer(r)
+	if !ok {
+		refuse("this send has no account to hold it for")
+		return
+	}
+	if _, err := in.Store.Hold(r.Context(), text, to, viewer.ID); err != nil {
+		refuse(err.Error())
+		return
+	}
+	// done=1 lets the draft go, exactly as a filing does.
+	http.Redirect(w, r, "/intake?done=1&sent=1", http.StatusSeeOther)
 }
 
 func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
@@ -250,7 +333,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 		// an error it returns no form, so a jot whose pictures tripped the cap
 		// arrives with its words unreadable too. The browser's draft is the
 		// copy that survives this one.
-		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
+		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, Reader: IsReader(r), ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
 	text := r.PostFormValue("jot")
@@ -260,8 +343,12 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	if len(text) > MaxJot {
 		render(w, page{
 			Error:   "that is longer than this box takes; it is for a line, not a document",
-			Project: in.Project, Jot: text, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
+			Project: in.Project, Jot: text, Reader: IsReader(r), ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
 		})
+		return
+	}
+	if IsReader(r) {
+		in.hold(w, r, text)
 		return
 	}
 
@@ -585,6 +672,12 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .draft[hidden] { display: none; }
   .draft span { opacity: .6; }
   .draft button { width: auto; margin: 0 0 0 auto; padding: .2rem .8rem; }
+  /* A reader's own jots, waiting (MUS-D-0189). A heading because it is a
+     different list from what was filed, and the text keeps its line breaks and
+     wraps anywhere, so a pasted link cannot push the page sideways. */
+  h2.held { font-size: .9rem; font-weight: 600; opacity: .7; margin: 1.5rem 0 0; }
+  ul.held { margin-top: .4rem; }
+  ul.held .txt { white-space: pre-line; overflow-wrap: anywhere; }
 ` + shellCSS + `
 </style>
 </head>
@@ -592,7 +685,8 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <h1>Mustur — {{.Project}}{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</h1>
 {{if .OpenQuestions}}<p class="waiting"><a href="/questions">{{.OpenQuestions}} decision{{if ne .OpenQuestions 1}}s{{end}} waiting on you</a></p>{{end}}
 {{if .Attention}}<p class="waiting att"><a href="/records">{{.Attention}} record{{if ne .Attention 1}}s need{{else}} needs{{end}} attention</a></p>{{end}}
-{{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
+{{if .Error}}<p class="said">Not {{if .Reader}}sent{{else}}filed{{end}}: {{.Error}}</p>{{end}}
+{{if .Sent}}<p class="said">Sent for approval. An owner files it or discards it.</p>{{end}}
 {{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
@@ -601,21 +695,25 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
             placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
   <p class="draft" id="draft" hidden><span id="kept">draft kept</span>
     <button type="button" id="clear">Clear</button></p>
-  <label class="pic">Pictures, if a picture says it faster
+  {{if not .Reader}}<label class="pic">Pictures, if a picture says it faster
     <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp" multiple>
     <small>Held privately. The record carries what an agent reads in them, never the pictures.</small>
-  </label>
+  </label>{{end}}
   <label class="to"><span>Where</span>
     <select name="to">
       <option value="" selected>Route it for me</option>
       {{range .Groups}}<optgroup label="{{.Label}}">
         {{range .Items}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
       </optgroup>{{end}}
-      <option value="scratch">Scratch &mdash; not kept, not counted</option>
+      {{if not .Reader}}<option value="scratch">Scratch &mdash; not kept, not counted</option>{{end}}
     </select>
   </label>
-  <button type="submit">File it</button>
+  <button type="submit">{{if .Reader}}Send for approval{{else}}File it{{end}}</button>
 </form>
+{{if .Held}}<h2 class="held">Waiting for an owner</h2>
+<ul class="held">
+{{range .Held}}<li><span class="txt">{{.Text}}</span><span class="to">sent {{.When}} · {{.To}}</span></li>{{end}}
+</ul>{{end}}
 {{if .Scratch}}<ul class="scratch">
 {{range .Scratch}}<li><span class="tmp">scratch</span> {{.Text}}<span class="to">goes on restart</span></li>{{end}}
 </ul>{{end}}

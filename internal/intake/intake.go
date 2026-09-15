@@ -323,6 +323,25 @@ type Request struct {
 	Deliberate bool
 }
 
+// Resolve says where a jot would go: the chosen routing record when one is
+// named, and the guess when it is not. It is File's own routing, exported so an
+// owner approving a held jot is checked against the destination File will
+// actually use rather than a second opinion of it.
+func Resolve(ctx context.Context, s *store.Store, text, to string) (Destination, error) {
+	routing, err := routingRecords(ctx, s)
+	if err != nil {
+		return Destination{}, err
+	}
+	d, err := chosen(routing, to)
+	if err != nil {
+		return Destination{}, err
+	}
+	if d.ID == "" {
+		d = Route(strings.TrimSpace(text), routing)
+	}
+	return d, nil
+}
+
 // File writes a jot into the store as a finding and returns the record.
 //
 // It takes the clock from the request rather than reading it, so a caller can
@@ -367,16 +386,9 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 // write.
 func draft(ctx context.Context, s *store.Store, req Request, trimmed string) (record.Record, Destination, string, error) {
 	project, actor, now := req.Project, req.Actor, req.Now
-	routing, err := routingRecords(ctx, s)
+	to, err := Resolve(ctx, s, trimmed, req.To)
 	if err != nil {
 		return record.Record{}, Destination{}, "", err
-	}
-	to, err := chosen(routing, req.To)
-	if err != nil {
-		return record.Record{}, Destination{}, "", err
-	}
-	if to.ID == "" {
-		to = Route(trimmed, routing)
 	}
 
 	r := record.Record{

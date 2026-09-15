@@ -912,6 +912,9 @@ func cmdServe(args []string) error {
 	// enforcement is on: somebody has to be able to register a passkey before
 	// the guard can be turned on without locking everybody out.
 	accounts := account.New(s.DB())
+	// Which held jots a viewer may approve turns on their role in the jot's
+	// destination project, which is not always this install's (MUS-D-0189).
+	intake.Roles = accounts
 	var handler http.Handler = mux
 	if *origin != "" {
 		auth := &web.Auth{
