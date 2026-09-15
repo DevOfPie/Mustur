@@ -784,6 +784,11 @@ func cmdServe(args []string) error {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
 	})
+	// Outermost, so a request the guard refuses is logged too, and stderr,
+	// because that is what systemd puts in the journal. Until this the journal
+	// held the banner and nothing after it, and a surface the owner saw
+	// misrender could not be traced (MUS-F-0162).
+	handler = web.LogRequests(os.Stderr, handler)
 	srv := &http.Server{
 		Addr:              *addr,
 		Handler:           handler,
