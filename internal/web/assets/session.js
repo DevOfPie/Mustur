@@ -290,6 +290,8 @@
   // them, and the only thing computed here is the age, from the stamps, so a
   // running sub-agent's clock moves without a frame per second to move it.
   var agents = null;
+  // Whether the reader left the finished rows open. Shut until they open it.
+  var finishedOpen = false;
 
   function age(from, to) {
     var d = Math.max(0, Math.round((to ? to * 1000 : Date.now()) - from * 1000) / 1000);
@@ -313,7 +315,12 @@
     badge(agents.length, running);
 
     // Rebuilt rather than diffed. A handful of rows is not worth a reconciler,
-    // and a rebuild cannot leave a stale row behind.
+    // and a rebuild cannot leave a stale row behind. The fold is the one thing
+    // a rebuild would lose that the rows do not say, so its state is read off
+    // it first — this runs every second, and a fold that shut itself that often
+    // could not be read.
+    var old = agentsBox.querySelector("details.fold");
+    if (old) finishedOpen = old.open;
     agentsBox.textContent = "";
     if (!agents.length) {
       agentsBox.appendChild(
@@ -322,8 +329,20 @@
       shutRead();
       return;
     }
+    // Running rows, then every finished one under a line that counts them
+    // (MUS-D-0181). The server already sent them in that order.
+    var box = agentsBox;
+    if (agents.length > running) {
+      var fold = el("details", "fold");
+      fold.open = finishedOpen;
+    }
     for (i = 0; i < agents.length; i++) {
       var a = agents[i];
+      if (a.done && box === agentsBox) {
+        fold.appendChild(el("summary", "", agents.length - running + " finished"));
+        agentsBox.appendChild(fold);
+        box = fold;
+      }
       var row = el("button", "agent");
       row.type = "button";
       row.dataset.id = a.id;
@@ -333,13 +352,13 @@
       row.appendChild(el("span", "pill" + (a.done ? " done" : ""), a.state));
       row.appendChild(el("span", "age", age(a.started, a.ended)));
       row.appendChild(el("span", "more", "\u203a"));
-      agentsBox.appendChild(row);
+      box.appendChild(row);
       // Out of view, not out of the page: the reading pane reads from here, so
       // it shows the same text whether or not a frame has arrived yet.
       if (a.said) {
         var say = el("div", "say", a.said);
         say.setAttribute("data-for", a.id);
-        agentsBox.appendChild(say);
+        box.appendChild(say);
       }
     }
     // The rows were just thrown away, so anything being read is now pointing
@@ -439,7 +458,7 @@
       var state = pill ? pill.textContent : "";
       read.textContent = done
         ? "It finished without a final message."
-        : "Nothing said yet \u2014 it is " +
+        : "Nothing said yet — it is " +
           (state === "working" ? "between tool calls" : "in " + state) + ".";
       read.className = "dread quiet";
     }
