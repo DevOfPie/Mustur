@@ -637,7 +637,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
      always been there and stays. Withdraw is deliberately untouched: closing a
      question with no answer is the one thing that must work when nothing is
      chosen. */
-  form:not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown)))
+  form:not(.held):not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown)))
     button.primary { opacity: .45; pointer-events: none; }
   .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem;
           flex-wrap: wrap; }
