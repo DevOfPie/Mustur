@@ -28,6 +28,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -329,6 +330,7 @@ func since(d time.Duration) string {
 func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostRow, bool) {
 	live, err := s.Adapter.List(ctx)
 	if err != nil {
+		log.Printf("sessions: listing failed, showing nothing running or lost: %v", err)
 		return nil, nil, false
 	}
 	// Most recently active first, which is the owner's answer to MUS-Q-0123:

@@ -535,7 +535,9 @@ func (a *Adapter) List(ctx context.Context) ([]Session, error) {
 	if err != nil {
 		// No server running is not an error: it is the honest answer that no
 		// session exists. Distinguished by the message tmux gives, because an
-		// exit status alone cannot tell it from a real failure.
+		// exit status alone cannot tell it from a real failure -- and only by
+		// the exact message, because a failure returned as nil, nil is a
+		// machine with no sessions to every caller (MUS-F-0160).
 		if noServer(out) {
 			return nil, nil
 		}
@@ -878,12 +880,31 @@ func (a *Adapter) kill(ctx context.Context, name string) error {
 
 // noServer reports whether tmux failed because nothing is running, rather than
 // because something went wrong.
+//
+// **The whole output has to be one of the two lines tmux prints for absence.**
+// tmux 3.6, measured against throwaway TMUX_TMPDIR directories, says exactly
+// two things when there is honestly no server:
+//
+//	no server running on <socket>                              connect() gave ECONNREFUSED: a stale socket, a server that exited, a non-socket at the path
+//	error connecting to <socket> (No such file or directory)   connect() gave ENOENT: no socket has ever been made there
+//
+// Every other connect errno is printed through the same "error connecting to
+// <socket> (<strerror>)" format -- measured for Permission denied -- and a
+// server that dies under a call prints "server exited unexpectedly". Those are
+// failures. Matching "error connecting to" on its own, or "no such file or
+// directory" anywhere, read every one of them as a machine with no sessions,
+// and an empty listing is an instruction to adopt to drop every pane
+// (MUS-F-0160, against MUS-D-0062).
+//
+// Anchored to the whole output rather than searched for, so that anything tmux
+// adds around the line is an error. That is the safe direction: an absence
+// misread as a failure refuses to act, while a failure misread as an absence
+// acts on nothing.
 func noServer(out string) bool {
-	s := strings.ToLower(out)
-	return strings.Contains(s, "no server running") ||
-		strings.Contains(s, "error connecting to") ||
-		strings.Contains(s, "no such file or directory")
+	return absentServer.MatchString(strings.TrimSpace(out))
 }
+
+var absentServer = regexp.MustCompile(`^(?:no server running on \S.*|error connecting to \S.* \(No such file or directory\))$`)
 
 // Keys the session surface may send, and the tmux name for each.
 //

@@ -196,6 +196,28 @@ func (refusing) Run(context.Context, string, ...string) (string, error) {
 	return "", errors.New("tmux: permission denied")
 }
 
+// unreachable is a failure in the words tmux 3.6 actually prints for one,
+// through the same "error connecting to" format as its honest no-socket answer.
+// Until MUS-F-0160 that phrase alone read as no sessions, so every remembered
+// session was offered back as lost while it was still running.
+type unreachable struct{}
+
+func (unreachable) Run(context.Context, string, ...string) (string, error) {
+	return "error connecting to /tmp/tmux-1000/default (Permission denied)\n", errors.New("exit status 1")
+}
+
+func TestNothingIsOfferedBackWhenTmuxRefusesTheConnection(t *testing.T) {
+	srv, st, ctx := restoreServer(t, unreachable{})
+	if err := st.RememberSession(ctx, "lost", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"/sessions?new=1", "/sessions/lost"} {
+		if body := getFrom(t, srv, path); strings.Contains(body, "/restore") {
+			t.Errorf("%s: a running session was offered back on a refused connection", path)
+		}
+	}
+}
+
 func postRestore(t *testing.T, srv *httptest.Server, path, origin string) *http.Response {
 	t.Helper()
 	req, err := http.NewRequest(http.MethodPost, srv.URL+path, strings.NewReader(""))

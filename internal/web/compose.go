@@ -33,6 +33,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -141,7 +142,11 @@ func (c *Compose) targets(ctx context.Context, chosen string) []composeTarget {
 	var out []composeTarget
 	if c.Adapter != nil {
 		live, err := c.Adapter.List(ctx)
-		if err == nil {
+		if err != nil {
+			// The inbox is still offered; sessions are not, and the log says
+			// why rather than the list silently shrinking (MUS-F-0160).
+			log.Printf("compose: listing failed, offering no sessions: %v", err)
+		} else {
 			for _, s := range session.ByActivity(live) {
 				out = append(out, composeTarget{
 					ID:     s.Project,
