@@ -92,7 +92,22 @@ func markdown(src string) template.HTML {
 
 // markdownCSS is shared by every surface that renders record text, inside an
 // element with class md. Paragraph margins are left to the page's own rules.
+//
+// Headings are sized here rather than left to the browser. Its defaults put an
+// h5 at .83em and an h6 at .67em -- smaller than the paragraphs beneath them --
+// and the pages' own h2 and h3 rules are for the page's chrome, so a body's
+// "## " came out as a faded uppercase section label. LinkCtrl's phase records
+// nest to ###### and read as a wall of text with footnotes where the headings
+// should be (MUS-F-0163). No level is smaller than the text it heads; weight
+// and space carry the order below h3.
 const markdownCSS = `
+  .md h1, .md h2, .md h3, .md h4, .md h5, .md h6 {
+    font-size: 1em; font-weight: 600; line-height: 1.3; margin: 1rem 0 .3rem;
+    text-transform: none; letter-spacing: normal; opacity: 1;
+    overflow-wrap: anywhere; }
+  .md h1 { font-size: 1.2em; }
+  .md h2 { font-size: 1.12em; }
+  .md h3 { font-size: 1.05em; }
   .md > :first-child { margin-top: 0; }
   .md > :last-child { margin-bottom: 0; }
   .md ul, .md ol { margin: .3rem 0; padding-left: 1.3rem; }
