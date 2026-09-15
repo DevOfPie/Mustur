@@ -129,7 +129,7 @@ type heldCard struct {
 // held builds the cards this viewer may act on, and the destinations each
 // card's select offers.
 func (q *Questions) held(r *http.Request) ([]heldCard, []destGroup) {
-	jots, dests := approvable(r, q.Store, q.Roles, q.Project)
+	jots, dests := approvable(r.Context(), r, q.Store, q.Roles, q.Project)
 	if len(jots) == 0 {
 		return nil, nil
 	}
@@ -189,7 +189,7 @@ func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
 		q.redirect(w, r, "", "scratch files nothing; Discard is how a held jot is let go")
 		return
 	}
-	if _, project := heldProject(ctx, q.Store, h.Text, to, q.Project); !mayApprove(r, q.Roles, project, q.Project) {
+	if _, project := heldProject(ctx, q.Store, h.Text, to, q.Project); !mayApprove(ctx, r, q.Roles, project, q.Project) {
 		http.Error(w, "only an owner of "+project+" may approve a jot filed there", http.StatusForbidden)
 		return
 	}
@@ -236,7 +236,7 @@ func (q *Questions) discardHeld(w http.ResponseWriter, r *http.Request) {
 		q.redirect(w, r, "", err.Error())
 		return
 	}
-	if _, project := heldProject(ctx, q.Store, h.Text, h.To, q.Project); !mayApprove(r, q.Roles, project, q.Project) {
+	if _, project := heldProject(ctx, q.Store, h.Text, h.To, q.Project); !mayApprove(ctx, r, q.Roles, project, q.Project) {
 		http.Error(w, "only an owner of "+project+" may discard a jot sent there", http.StatusForbidden)
 		return
 	}
@@ -856,8 +856,7 @@ func (q *Questions) count(w http.ResponseWriter, r *http.Request) {
 		// Held jots are counted per viewer, outside the shared cache: which
 		// ones a person may approve depends on who is asking (MUS-Q-0143).
 		// An empty held table costs one indexed read and nothing more.
-		held, _ := approvable(r, q.Store, q.Roles, q.Project)
-		n += len(held)
+		n += len(heldWaiting(r.Context(), r, q.Store, q.Roles, q.Project))
 	}
 	writeCount(w, n)
 }

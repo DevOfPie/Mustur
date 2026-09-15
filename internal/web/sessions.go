@@ -107,7 +107,12 @@ type Sessions struct {
 	// Store is read only for the count the Decisions tab carries. Nil means the
 	// tab renders without one.
 	Store *store.Store
-	Actor string
+	// Project and Roles decide which held jots this viewer's badge counts, the
+	// same way the decision queue's count does (MUS-D-0189). Roles is nil
+	// without accounts, where there is no viewer and nothing is held.
+	Project string
+	Roles   Roles
+	Actor   string
 	// HookDir is where the adapter's sub-agent hook logs its events. Empty
 	// means the surface shows no sub-agent rows, which is also what a session
 	// started without the hook shows.
@@ -635,6 +640,17 @@ func statusChips(st session.Status) *statusRow {
 	}
 }
 
+// waiting is the badge's number for this socket's viewer: open questions and
+// the held jots they may approve, which is what /questions/count answers the
+// same viewer (MUS-Q-0143). The two used to differ by the held jots, so the
+// socket and bar.js's poll wrote different numbers into one badge.
+//
+// The viewer is the upgraded request's, which the guard stamped before the
+// upgrade; the store is queried under the connection's own context.
+func (s *Sessions) waiting(ctx context.Context, r *http.Request) int {
+	return OpenCount(ctx, s.Store) + len(heldWaiting(ctx, r, s.Store, s.Roles, s.Project))
+}
+
 func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	if !sameOrigin(r) {
 		// Deliberately terse and deliberately not a redirect: nothing that
@@ -698,7 +714,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 	// terminal, and the badge is simply not a thing it can count.
 	waitingNow := 0
 	if s.Store != nil {
-		waitingNow = OpenCount(conn, s.Store)
+		waitingNow = s.waiting(conn, r)
 	}
 	// What the hello says about a held call is also where the ticker starts
 	// comparing from. Without that the tick's idea of "last sent" was empty
@@ -763,7 +779,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			if s.Store == nil {
 				continue
 			}
-			n := OpenCount(conn, s.Store)
+			n := s.waiting(conn, r)
 			if n == lastWaiting {
 				continue
 			}

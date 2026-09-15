@@ -272,7 +272,7 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// The badge counts held jots this owner may approve (MUS-Q-0143), and
 		// the server-rendered count has to agree with the poll that corrects it.
-		held, _ := approvable(r, in.Store, in.Roles, in.Project)
+		held, _ := approvable(r.Context(), r, in.Store, in.Roles, in.Project)
 		p.OpenQuestions += len(held)
 	}
 	render(w, p)
