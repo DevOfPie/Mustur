@@ -8798,6 +8798,7 @@ Done when: for LinkCtrl, the first project onboarded with records of its own, ev
 | --- | --- |
 | Plan number | 7 |
 | Source | [Plan.md#milestones](../Plan.md#milestones) |
+| Status | passed, accepted by the owner on MUS-Q-0135 (MUS-D-0185) |
 
 ---
 

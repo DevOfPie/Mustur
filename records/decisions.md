@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-1152 record(s), by identifier.
+1157 record(s), by identifier.
 
 ## Index
 
@@ -30,6 +30,9 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [HRD-D-0016](#hrd-d-0016) | The demo deploys releases only; branch builds go to a separate test instance | 2026-09-13 |
 | [HRD-D-0017](#hrd-d-0017) | The demo came back on v1.1.7 by rolling its database back in place | 2026-09-13 |
 | [HRD-D-0018](#hrd-d-0018) | The VM's disk grows to 256 GB | 2026-09-14 |
+| [HRD-D-0019](#hrd-d-0019) | A shared folder stays fully backed up for its owner; members read and push only the shared world | 2026-09-14 |
+| [HRD-D-0020](#hrd-d-0020) | HRD-D-0019 design: the lease guards only the shared world, and the server fills in the owner's other files on member pushes | 2026-09-14 |
+| [HRD-D-0021](#hrd-d-0021) | The two pre-existing upstream bugs stay as they are | 2026-09-15 |
 | [LNK-D-0001](#lnk-d-0001) | Mailer | 2026-07-31 |
 | [LNK-D-0002](#lnk-d-0002) | Cookie / returning-visitor conditions | 2026-07-31 |
 | [LNK-D-0003](#lnk-d-0003) | Custom-domain TLS | 2026-07-31 |
@@ -1164,6 +1167,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0181](#mus-d-0181) | Finished sub-agents fold under one 'N finished' line beneath the running ones, each still readable | 2026-09-14 |
 | [MUS-D-0182](#mus-d-0182) | The records export is committed on main only, and branches carry none | 2026-09-14 |
 | [MUS-D-0183](#mus-d-0183) | Mustur acts only on its own store; the committed records export is a backup and a conformance surface | 2026-09-14 |
+| [MUS-D-0184](#mus-d-0184) | The live service does not export; main's export comes only from a records refresh | 2026-09-14 |
+| [MUS-D-0185](#mus-d-0185) | Milestone 7 is accepted: LinkCtrl has moved in | 2026-09-15 |
 
 ---
 
@@ -1418,6 +1423,48 @@ Answered by Pie on HRD-Q-0020: grow the disk; done on the host on 2026-09-14, no
 | Field | Value |
 | --- | --- |
 | Status | done 2026-09-14: root filesystem 250 GB, 168 GB free after the partition, PV, LV and ext4 were grown by Pie |
+
+---
+
+## HRD-D-0019
+
+**A shared folder stays fully backed up for its owner; members read and push only the shared world**
+
+decision · 2026-09-14
+
+q: [HRD-Q-0021](questions.md#hrd-q-0021)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0021 (2026-09-14): keep the owner's whole folder backed up. Sharing a world must not stop Hoard protecting the owner's characters and other worlds in the same folder. The owner's uploads carry the whole folder; members read only the include list (already enforced on the server) and push only it; a pull never deletes or overwrites files outside the list. Design and implementation follow, mapped first against the backup scope, fingerprint, holds, pulls, the server's push check and the lease.
+
+---
+
+## HRD-D-0020
+
+**HRD-D-0019 design: the lease guards only the shared world, and the server fills in the owner's other files on member pushes**
+
+decision · 2026-09-14
+
+d: [HRD-D-0019](#hrd-d-0019)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Mapped read-only 2026-09-14 at desktop 0689ebf; full change list in .local/group-sharing/owner-backup-design.md. One version chain. Server: the push gate splits by role (owner may upload the whole folder and needs the lease only when the shared world's files change; members as today, including files sent as separate multipart fields, a gap closed here); member pushes carry the head's non-world rows forward so every version is full for the owner and pruning never drops them; lease acquire and member fast-forward accept a base whose shared-world files equal the head's. Wire: SharedInfo.caller_owns (defaults false, so an older server keeps today's narrowing). Client: an owner's walk scope becomes the whole folder at the one setter; the kernel keeps a second fingerprint over the world so a character or other-world change pushes without the lease; side copies, writes that acquire, and the lease-required refusal act only on the world. Side decisions taken, none needing Pie: the owner's world edits without the lease are set aside; the owner's push is held while the game runs and the head moved (never restore mid-session); member notifications, visible history and Cloud quota billing unchanged; server ships first with a client fallback. Ships as its own PR on top of the guide branch after the claim-flow fixes merge up.
+
+---
+
+## HRD-D-0021
+
+**The two pre-existing upstream bugs stay as they are**
+
+decision · 2026-09-15
+
+q: [HRD-Q-0022](questions.md#hrd-q-0022)
+
+f: [HRD-F-0020](findings.md#hrd-f-0020)
+
+Answered by Pie on HRD-Q-0022 (2026-09-15): leave them. hoard restore --force overwriting un-backed-up local files without a conflict copy, and the log shipper's credentials debug loop on a machine with no keyring, are recorded in HRD-F-0020 and not fixed in the fork or reported upstream. Practical consequence for testing here: end-to-end runs keep hoard_agent::credentials and hoard_agent::logship at info, and restore probes go only into empty folders.
 
 ---
 
@@ -83611,3 +83658,39 @@ MUS-Q-0130 asked whether the question gate should read the store once branches s
 | Field | Value |
 | --- | --- |
 | Supersedes | MUS-D-0050 |
+
+---
+
+## MUS-D-0184
+
+**The live service does not export; main's export comes only from a records refresh**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0133](questions.md#mus-q-0133)
+
+decision: [MUS-D-0182](#mus-d-0182)
+
+decision: [MUS-D-0183](#mus-d-0183)
+
+MUS-Q-0133 asked where the live service should write its export. deploy/mustur.service ran serve with --export into the main Mustur checkout, so every filing rewrote records/ there, and under MUS-D-0182 that checkout then always carried changes the export-scope gate rejects: 89 paths on 2026-09-14. The owner chose to stop the service exporting. The unit drops --export, the store is the record (MUS-D-0183), and main's export is rendered only by make records-refresh into a worktree of its own. The cost is stated in the option the owner chose. Between refreshes, the newest records exist in the store and nowhere on disk, so a store lost between refreshes loses them from the backup as well. Applying it is a change to the installed unit and a restart, done from main once the change has merged.
+
+| Field | Value |
+| --- | --- |
+| Applies to | deploy/mustur.service |
+
+---
+
+## MUS-D-0185
+
+**Milestone 7 is accepted: LinkCtrl has moved in**
+
+decision · 2026-09-15
+
+answers: [MUS-Q-0135](questions.md#mus-q-0135)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+work-unit: [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024)
+
+MUS-Q-0135 asked whether the owner accepts MUS-M-0009, now that every PR for LinkCtrl's move had merged, including the export-conflict fix MUS-Q-0131 held acceptance for. The owner accepted it. The done-when set in MUS-D-0170 holds. LinkCtrl's records are in the store and reconciled per source: 1,503 records, per MUS-D-0168, MUS-D-0169, MUS-D-0173 and MUS-D-0179. The files that held them are gone from LinkCtrl, with its links rewritten and its CI green (LinkCtrl PR 14). LinkCtrl sessions reached mustur_route with the machine's token. The findings left open stay open as their own work: LNK-F-0383, MUS-F-0165 and MUS-F-0149. The owner accepted knowing that no independent reviewer read LinkCtrl's four W48 fix commits after the first review.
