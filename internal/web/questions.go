@@ -208,6 +208,9 @@ func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
 		rec, dest, ferr = intake.File(ctx, q.Store, intake.Request{
 			Project: q.Project, Text: got.Text, Actor: filer, To: to,
 			Now: q.now(), Approved: approver,
+			// The select starts on the reader's choice; a different value is
+			// the owner's.
+			ApproverChose: to != got.To,
 		})
 		return ferr
 	})

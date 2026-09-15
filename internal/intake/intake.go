@@ -248,6 +248,11 @@ type Request struct {
 	// for everything else. Actor is still the reader: they wrote it, and the
 	// record says so, and says separately who let it in (MUS-D-0189).
 	Approved string
+	// ApproverChose says the approving owner, not the filer, named To: they
+	// changed the destination the reader left on the jot. Routing then says so,
+	// in the words the filer's own choice uses, rather than crediting the
+	// reader with a destination they never picked.
+	ApproverChose bool
 }
 
 // Resolve says where a jot would go: the chosen routing record when one is
@@ -299,6 +304,11 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 	to, err := Resolve(ctx, s, trimmed, req.To)
 	if err != nil {
 		return record.Record{}, Destination{}, err
+	}
+	// Only a named destination was chosen by anyone. "Route it for me" keeps
+	// the guess's own reason whoever pressed it.
+	if req.ApproverChose && strings.TrimSpace(req.To) != "" {
+		to.Why = "chosen by the approver"
 	}
 
 	r := record.Record{
