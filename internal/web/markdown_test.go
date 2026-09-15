@@ -137,3 +137,37 @@ func TestACitationInARenderedBodyStillResolves(t *testing.T) {
 		t.Errorf("the rewritten citation does not resolve: %d", code)
 	}
 }
+
+// MUS-F-0163: LinkCtrl's phase records nest headings to ######, and left to the
+// browser an h6 is two thirds of the text beneath it while a body's "## " took
+// the page's own faded uppercase section style. Every level a body can write is
+// sized by the markdown rules, on both surfaces that render one.
+func TestABodysHeadingsAreNeverSmallerThanItsText(t *testing.T) {
+	src := "## Two\n\ntext\n\n#### Four\n\ntext\n\n###### Six\n\ntext\n"
+	rec := decision("MUS-D-0001", "Headed", src)
+	srv := serveRecords(t, "", rec)
+	page, _ := fetch(t, srv, "/records/MUS-D-0001")
+	q := openQuestion("MUS-Q-0001", "Headed")
+	q.Body = src
+	qsrv, _ := serveQuestions(t, q)
+	queue := getFrom(t, qsrv, "/questions")
+
+	for where, body := range map[string]string{"the records page": page, "the queue": queue} {
+		for _, want := range []string{"<h2>Two</h2>", "<h4>Four</h4>", "<h6>Six</h6>"} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s does not render %q", where, want)
+			}
+		}
+		i := strings.Index(body, ".md h1, .md h2, .md h3, .md h4, .md h5, .md h6 {")
+		if i < 0 {
+			t.Errorf("%s leaves a body's headings to the browser's sizes", where)
+			continue
+		}
+		rule := body[i : i+strings.Index(body[i:], "}")]
+		for _, want := range []string{"font-size: 1em", "text-transform: none", "opacity: 1"} {
+			if !strings.Contains(rule, want) {
+				t.Errorf("%s: the heading rule lacks %q: %s", where, want, rule)
+			}
+		}
+	}
+}
