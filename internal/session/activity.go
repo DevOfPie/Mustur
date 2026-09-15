@@ -37,9 +37,25 @@ var live = regexp.MustCompile(`^\s*[^\s\w]\s+(\S[^…]*)…\s*\((.+)\)\s*$`)
 // The last one only, and only near the end: the CLI draws it under whatever it
 // has printed so far, and a line matching this shape further up is something
 // the agent wrote rather than something the CLI is doing.
+//
+// One thing is drawn under it and is not the conversation: the session survey,
+// in the band above the input box (MUS-F-0167). Read out of Claude Code
+// 2.1.272, that band renders after the live line, so with a survey up the last
+// line of the body was "1: Bad  2: Fine  3: Good  0: Dismiss" and the live line
+// was taken for something printed past. The search starts above a survey at
+// the tail, and the survey itself stays in the output, because it is on the
+// screen and is answered there as well as from the pop-up.
 func SplitActivity(body string) (string, *Activity) {
 	lines := strings.Split(body, "\n")
-	for i := len(lines) - 1; i >= 0 && i > len(lines)-1-activityWithin; i-- {
+	end := len(lines)
+	plain := make([]string, len(lines))
+	for i, l := range lines {
+		plain[i] = ansi.Plain(l)
+	}
+	if head, _ := surveyAt(plain); head >= 0 {
+		end = head
+	}
+	for i := end - 1; i >= 0 && i > end-1-activityWithin; i-- {
 		plain := strings.TrimRight(ansi.Plain(lines[i]), " ")
 		if strings.TrimSpace(plain) == "" {
 			continue
