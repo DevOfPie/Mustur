@@ -75,7 +75,13 @@ printf '  ok    %s holds %d record(s)\n' "$store" "$(grep -c '' <<<"$records")"
 git fetch -q origin
 stamp=$(date -u +%Y%m%dT%H%M%SZ)
 branch="records/refresh-$stamp"
-wt=".claude/worktrees/records-refresh-$stamp"
+# The worktree goes under the repository's main checkout, never under the
+# checkout this runs from (MUS-F-0169). Run from a worktree, a relative path
+# nests the refresh inside it, and removing that worktree deletes the refresh
+# while git still lists it. The common git directory is the same from every
+# worktree, and its parent is the main checkout.
+main=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+wt="$main/.claude/worktrees/records-refresh-$stamp"
 
 # What a failure leaves behind depends on how far the run got, so one trap reads
 # the stage rather than each step cleaning up after itself. Before the push,
@@ -154,4 +160,5 @@ $count file(s):$stat. Generated; no hand edits. \`scripts/records-refresh.sh\` o
 EOF
 )")
 printf '  ok    pull request %s\n' "$url"
-printf '        %s stays checked out at %s until it merges\n' "$branch" "$wt"
+printf '        %s is checked out at %s; nothing removes it when the pull request merges:\n' "$branch" "$wt"
+printf '        git worktree remove %s && git branch -D %s\n' "$wt" "$branch"
