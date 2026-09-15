@@ -202,6 +202,33 @@ the citation structure is never the primary object. Identifiers here are dense
 and cross-referential, so the graph reading was real; what it cost is in
 [decisions.md](../decisions.md#records-read-as-a-document).
 
+**Amended 2026-09-15: a record is a document, the index is a list**
+(MUS-D-0186, amending MUS-D-0040). The index had been the document too — every
+record rendered in full with every citation resolved, and the kind counts the
+only navigation. Against the store on 2026-09-15 that was 11.4 MB and about half
+a second per load, and there was no way to pick a project or a kind or to search
+by number (MUS-F-0164). What replaced it is drawn in
+[plan-014052cd97a048c4](https://plan.agent-native.com/plans/plan-014052cd97a048c4)
+and was approved with its recommended answers on MUS-Q-0140:
+
+| Question | Settled |
+| --- | --- |
+| What a row shows | One line: identifier, kind, project, title, date. Two lines on a phone, so the title is never cut |
+| `/records` with nothing chosen | Every project, newest first by date, then identifier descending |
+| What the search box matches | A whole identifier the store holds answers 303 to its page; a bare number matches identifier endings in every project and kind; anything else is a case-insensitive substring of the title. Never bodies |
+| Rows per page | 50, with Newer and Older links; a page past the end is shown empty with a Newer link |
+
+`GET /records` takes `project` (the identifier prefix), `kind`, `q` and `page`,
+and ignores a value it does not know rather than refusing it, so a stale
+bookmark still shows something. The project picker lists the prefixes present,
+named through the project records, and the kind picker the kinds within the
+chosen project — phases included — each with its count. A line above the list
+names the total and what is chosen, with Clear. It is a plain GET form: it adds
+no script, so `bar.js` stays the only one on the page, and it works with script
+blocked. The index filters what `Store.List` returns and never renders a body or
+resolves a citation; `/records/{id}` is unchanged, and is where the document
+reading, the in-place expansion and the routing verification now live.
+
 ### 4. Decision queue
 
 **Serves** `/questions`

@@ -5,7 +5,15 @@ package web
 // **A document, not a graph** (MUS-D-0040). Identifiers here are dense and
 // cross-referential and the graph reading was real; what the owner chose is a
 // thing to read, where a citation expands in place with no round trip and no
-// new tab. The counts at the top are the only navigation.
+// new tab.
+//
+// **A record is a document; the index is a list** (MUS-D-0186, amending
+// MUS-D-0040). The index used to be the document too — every record in the
+// store rendered in full with every citation resolved, 11.4 MB for 2,133
+// records, and the kind counts were the only navigation (MUS-F-0164). It is now
+// one line a record, narrowed by project, kind and a search box and paged fifty
+// at a time, and it never renders a body or resolves a citation. What reads as
+// a document is `/records/{id}`, which is unchanged.
 //
 // Expansion is a `<details>` element, which is why this page carries no script:
 // the browser already knows how to open and close a thing, and the decision
@@ -25,10 +33,12 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -132,15 +142,45 @@ type recordView struct {
 	Stale bool
 }
 
-type kindView struct {
-	Kind string
-	// Label is what the count says — singular when there is one of a thing.
-	Label string
-	// Heading is always the plural, because a section heading names a kind
-	// rather than counting it.
-	Heading string
-	Count   int
-	Records []recordView
+// recordsPerPage is the owner's answer on MUS-Q-0140: fifty, which was 43
+// pages of the store when it was asked.
+const recordsPerPage = 50
+
+// A rowView is one line of the index. Nothing in it needs the body or another
+// record, which is the whole reason the index is cheap.
+type rowView struct {
+	ID      string
+	Kind    string
+	Project string
+	Title   string
+	At      string
+}
+
+// A pick is one option in a picker, carrying how many records choosing it
+// holds.
+type pick struct {
+	Value    string
+	Label    string
+	Selected bool
+}
+
+type recordsIndex struct {
+	Projects []pick
+	Kinds    []pick
+	Q        string
+	// Chosen is whether anything narrows the list, which is when Clear is
+	// offered.
+	Chosen  bool
+	Summary string
+	Rows    []rowView
+	Page    int
+	Pages   int
+	// Beyond is a page past the last, which is shown empty rather than
+	// refused: a bookmark outlives the records it was paging through.
+	Beyond bool
+	Pager  bool
+	Newer  string
+	Older  string
 }
 
 type recordsPage struct {
@@ -151,8 +191,8 @@ type recordsPage struct {
 	Project      string
 	ShowSessions bool
 	ShowAccount  bool
-	Kinds        []kindView
-	Total        int
+	// Index is set on /records.
+	Index *recordsIndex
 	// One is set when a single record was asked for by identifier.
 	One     *recordView
 	Missing string
@@ -280,37 +320,207 @@ func (rr *Records) expand(path string) string {
 	return filepath.Join(home, strings.TrimPrefix(path, "~"))
 }
 
+// index is the list of records, narrowed and paged (MUS-D-0186, the plan
+// approved on MUS-Q-0140).
+//
+// It filters what Store.List already returns rather than asking the store a
+// narrower question, because the cost MUS-F-0164 measured was never the query:
+// it was view(), which renders every body and resolves every citation of every
+// record. The index calls neither.
+//
+// Unknown values are ignored rather than refused, so a stale bookmark still
+// shows something.
 func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
-	by, all, err := rr.load(r.Context())
+	all, err := rr.Store.List(r.Context(), "")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	page := recordsPage{Project: rr.Project, Total: len(all), Checked: rr.now().Format("15:04")}
+	query := r.URL.Query()
+	q := strings.TrimSpace(query.Get("q"))
 
-	grouped := map[string][]record.Record{}
+	// A whole identifier is a request for that record, not a search for it.
+	if id := strings.ToUpper(q); id != "" {
+		for _, rec := range all {
+			if rec.ID == id {
+				http.Redirect(w, r, "/records/"+id, http.StatusSeeOther)
+				return
+			}
+		}
+	}
+
+	names := projectNamesIn(all)
+	perProject := map[string]int{}
 	for _, rec := range all {
-		grouped[rec.Kind] = append(grouped[rec.Kind], rec)
+		perProject[prefixOf(rec.ID)]++
+	}
+	project := strings.ToUpper(strings.TrimSpace(query.Get("project")))
+	if perProject[project] == 0 {
+		project = ""
+	}
+	kind := strings.TrimSpace(query.Get("kind"))
+	known := false
+	for _, k := range kinds {
+		known = known || k.Kind == kind
+	}
+	if !known {
+		kind = ""
+	}
+
+	idx := &recordsIndex{Q: q, Chosen: project != "" || kind != "" || q != ""}
+
+	prefixes := make([]string, 0, len(perProject))
+	for p := range perProject {
+		prefixes = append(prefixes, p)
+	}
+	sort.Strings(prefixes)
+	for _, p := range prefixes {
+		idx.Projects = append(idx.Projects, pick{
+			Value: p, Selected: p == project,
+			Label: names.name(p) + " · " + thousands(perProject[p]),
+		})
+	}
+
+	// The kinds within the chosen project, so a picker never offers a choice
+	// that holds nothing. The one chosen is kept even at nought, or the form
+	// would quietly say something other than what the list is showing.
+	perKind := map[string]int{}
+	for _, rec := range all {
+		if project == "" || prefixOf(rec.ID) == project {
+			perKind[rec.Kind]++
+		}
 	}
 	for _, k := range kinds {
-		recs := grouped[k.Kind]
-		if len(recs) == 0 {
+		if perKind[k.Kind] == 0 && k.Kind != kind {
 			continue
 		}
-		sort.Slice(recs, func(i, j int) bool { return less(recs[i].ID, recs[j].ID) })
-		label := k.Many
-		if len(recs) == 1 {
-			label = k.One
-		}
-		kv := kindView{Kind: k.Kind, Label: label, Heading: k.Many, Count: len(recs)}
-		for _, rec := range recs {
-			v := rr.view(rec, by)
-			v.State, v.Stale = rr.verify(rec)
-			kv.Records = append(kv.Records, v)
-		}
-		page.Kinds = append(page.Kinds, kv)
+		idx.Kinds = append(idx.Kinds, pick{
+			Value: k.Kind, Selected: k.Kind == kind,
+			Label: k.One + " · " + thousands(perKind[k.Kind]),
+		})
 	}
-	rr.render(w, r, page)
+
+	var matched []record.Record
+	for _, rec := range all {
+		if project != "" && prefixOf(rec.ID) != project {
+			continue
+		}
+		if kind != "" && rec.Kind != kind {
+			continue
+		}
+		if q != "" && !searchMatches(rec, q) {
+			continue
+		}
+		matched = append(matched, rec)
+	}
+	// Newest first, so what was filed today is at the top whatever project it
+	// belongs to.
+	sort.Slice(matched, func(i, j int) bool {
+		if matched[i].At != matched[j].At {
+			return matched[i].At > matched[j].At
+		}
+		return less(matched[j].ID, matched[i].ID)
+	})
+
+	idx.Pages = max(1, (len(matched)+recordsPerPage-1)/recordsPerPage)
+	idx.Page = 1
+	if n, err := strconv.Atoi(query.Get("page")); err == nil && n > 1 {
+		idx.Page = n
+	}
+	from := (idx.Page - 1) * recordsPerPage
+	if from < len(matched) {
+		for _, rec := range matched[from:min(from+recordsPerPage, len(matched))] {
+			idx.Rows = append(idx.Rows, rowView{
+				ID: rec.ID, Kind: kindLabel(rec.Kind), Title: rec.Title, At: rec.At,
+				Project: names.title(prefixOf(rec.ID)),
+			})
+		}
+	} else {
+		idx.Beyond = idx.Page > 1
+	}
+	link := func(page int) string {
+		v := url.Values{}
+		for key, val := range map[string]string{"project": project, "kind": kind, "q": q} {
+			if val != "" {
+				v.Set(key, val)
+			}
+		}
+		if page > 1 {
+			v.Set("page", strconv.Itoa(page))
+		}
+		if len(v) == 0 {
+			return "/records"
+		}
+		return "/records?" + v.Encode()
+	}
+	if idx.Page > 1 {
+		// Past the end, Newer is the last page that has anything on it rather
+		// than the one before a page that never existed.
+		idx.Newer = link(min(idx.Page-1, idx.Pages))
+	}
+	if idx.Page < idx.Pages {
+		idx.Older = link(idx.Page + 1)
+	}
+	idx.Pager = idx.Pages > 1 || idx.Beyond
+
+	summary := thousands(len(matched)) + " records"
+	if len(matched) == 1 {
+		summary = "1 record"
+	}
+	if q != "" {
+		summary += " match " + q
+	}
+	if project != "" {
+		summary += " · " + names.title(project)
+	}
+	if kind != "" {
+		summary += " · " + kindLabel(kind)
+	}
+	if !idx.Chosen {
+		summary += " · newest first"
+	}
+	if len(matched) > recordsPerPage && len(idx.Rows) > 0 {
+		summary += " · " + thousands(from+1) + "–" + thousands(from+len(idx.Rows))
+	}
+	idx.Summary = summary
+
+	rr.render(w, r, recordsPage{Project: rr.Project, Index: idx, Checked: rr.now().Format("15:04")})
+}
+
+// prefixOf is the project an identifier belongs to, which is its prefix
+// (MUS-D-0093).
+func prefixOf(id string) string {
+	p, _, _ := strings.Cut(id, "-")
+	return p
+}
+
+func kindLabel(kind string) string {
+	for _, k := range kinds {
+		if k.Kind == kind {
+			return k.One
+		}
+	}
+	return kind
+}
+
+// searchMatches is the search box's rule, on MUS-Q-0140: a bare number matches
+// the end of an identifier, in every project and kind, and anything else is
+// words in the title. Never the body — a common word matches hundreds of
+// LinkCtrl's decisions, and the owner chose titles.
+func searchMatches(rec record.Record, q string) bool {
+	if strings.Trim(q, "0123456789") == "" {
+		return strings.HasSuffix(rec.ID, q)
+	}
+	return strings.Contains(strings.ToLower(rec.Title), strings.ToLower(q))
+}
+
+// thousands writes a count the way the page reads it: 2,133.
+func thousands(n int) string {
+	s := strconv.Itoa(n)
+	for i := len(s) - 3; i > 0; i -= 3 {
+		s = s[:i] + "," + s[i:]
+	}
+	return s
 }
 
 // one is the canonical URL for a single record, which is what "every record
@@ -410,16 +620,50 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
-  /* The counts are the only navigation, which is the decision this page rests
-     on: no tree, no filter, no search box. */
-  .counts { display: flex; gap: .4rem; flex-wrap: wrap; padding: .6rem 1rem;
-            border-bottom: 1.4px solid var(--edge); font-size: .82em; }
-  .counts a { border: 1px solid var(--edge); border-radius: 999px;
-              padding: .15rem .6rem; text-decoration: none; color: inherit;
-              opacity: .7; }
-  .counts a:hover { opacity: 1; border-color: var(--accent); }
-  h2 { font-size: .85rem; font-weight: 600; text-transform: uppercase;
-       letter-spacing: .04em; opacity: .55; margin: 1.6rem 1rem .3rem; }
+  /* The index narrows (MUS-D-0186, amending MUS-D-0040). A plain GET form, so
+     the address is the filter and it works with script blocked. Every child
+     may be narrower than its content, or a long project name in a picker
+     widens the page and takes the fixed bar with it (MUS-F-0033). */
+  .narrow { display: flex; flex-wrap: wrap; gap: .5rem; padding: .6rem 1rem;
+            border-bottom: 1.4px solid var(--edge); }
+  .narrow .pick { display: flex; gap: .5rem; flex: 1 1 22rem; min-width: 0; }
+  .narrow .find { display: flex; gap: .5rem; flex: 1 1 16rem; min-width: 0; }
+  .narrow select, .narrow input { flex: 1; min-width: 0; }
+  .narrow select, .narrow input, .narrow button {
+    font: inherit; font-size: .9em; padding: .35rem .5rem; color: inherit;
+    background: Canvas; border: 1px solid var(--edge); border-radius: .4rem; }
+  .narrow button { flex: none; border-color: var(--accent);
+                   background: var(--accent-soft); }
+  .tally { margin: 0; padding: .5rem 1rem; font-size: .82em; }
+  .tally span { opacity: .7; }
+  .tally a { color: inherit; margin-left: .5rem; }
+  /* One line a record on a wide screen, the title taking what is left and
+     cut short with an ellipsis rather than wrapping. */
+  .rows { list-style: none; margin: 0; padding: 0;
+          border-top: 1px solid var(--edge); }
+  .row { display: flex; align-items: baseline; gap: .7rem; padding: .45rem 1rem;
+         border-bottom: 1px solid var(--edge); text-decoration: none;
+         color: inherit; white-space: nowrap; }
+  .row:hover { background: var(--accent-soft); }
+  .row .id { flex: none; width: 6.5rem; font-size: .8em;
+             font-variant-numeric: tabular-nums; }
+  .row .kind, .row .proj, .row .at { flex: none; font-size: .78em; opacity: .65; }
+  .row .kind { width: 6.5rem; }
+  .row .proj { width: 6rem; overflow: hidden; text-overflow: ellipsis; }
+  .row .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+            font-size: .93em; }
+  /* On a phone a row takes two lines so the title is never cut short, as the
+     plan draws it. */
+  @media (max-width: 40rem) {
+    .row { flex-wrap: wrap; row-gap: .1rem; white-space: normal; }
+    .row .id, .row .kind, .row .proj { width: auto; }
+    .row .t { flex-basis: 100%; order: 1; overflow-wrap: anywhere; }
+    .row .at { display: none; }
+  }
+  .pager { display: flex; align-items: baseline; justify-content: space-between;
+           gap: .5rem; padding: .7rem 1rem; font-size: .9em; }
+  .pager span { opacity: .4; }
+  .pager small { opacity: .65; }
   article { padding: .7rem 1rem; border-bottom: 1px solid var(--edge); }
   article .line { display: flex; align-items: baseline; gap: .5rem;
                   flex-wrap: wrap; font-size: .8em; opacity: .65; }
@@ -476,15 +720,36 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 <small>An identifier that is not here is either a typo or a citation to something never written.</small></p>
 {{else if .One}}
 {{template "record" .One}}
-{{else}}
-<div class="counts">
-  {{range .Kinds}}<a href="#{{.Kind}}">{{.Count}} {{.Label}}</a>{{end}}
-</div>
-{{range .Kinds}}
-<h2 id="{{.Kind}}">{{.Heading}}</h2>
-{{range .Records}}{{template "record" .}}{{end}}
+{{else if .Index}}{{with .Index}}
+<form class="narrow" method="get" action="/records" role="search">
+  <div class="pick">
+    <select name="project" aria-label="Project">
+      <option value="">All projects</option>
+      {{range .Projects}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
+    </select>
+    <select name="kind" aria-label="Kind">
+      <option value="">All kinds</option>
+      {{range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
+    </select>
+  </div>
+  <div class="find">
+    <input type="search" name="q" value="{{.Q}}" placeholder="Identifier or words" aria-label="Identifier or words" autocapitalize="characters" autocomplete="off" spellcheck="false">
+    <button type="submit">Show</button>
+  </div>
+</form>
+<p class="tally"><span>{{.Summary}}</span>{{if .Chosen}}<a href="/records">Clear</a>{{end}}</p>
+{{if .Rows}}<ol class="rows">
+{{range .Rows}}<li><a class="row" href="/records/{{.ID}}"><span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span><span class="at">{{.At}}</span></a></li>
+{{end}}</ol>
+{{else if .Beyond}}<p class="none">Nothing on page {{.Page}}. The list ends at page {{.Pages}}.</p>
+{{else}}<p class="none">No records match.</p>
 {{end}}
-{{end}}
+{{if .Pager}}<div class="pager">
+  {{if .Newer}}<a rel="prev" href="{{.Newer}}">Newer</a>{{else}}<span>Newer</span>{{end}}
+  <small>{{if not .Beyond}}Page {{.Page}} of {{.Pages}}{{end}}</small>
+  {{if .Older}}<a rel="next" href="{{.Older}}">Older</a>{{else}}<span>Older</span>{{end}}
+</div>{{end}}
+{{end}}{{end}}
 
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
