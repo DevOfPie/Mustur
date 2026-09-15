@@ -32,7 +32,113 @@ func fixtures() []record.Record {
 	return []record.Record{
 		{ID: "MUS-R-0001", Kind: "repository", Title: "DevOfPie/Mustur", At: "2026-08-19",
 			Data: []record.Field{{Key: "Contract", Value: "workflow.md"}}},
+		{ID: "MUS-R-0002", Kind: "repository", Title: "DevOfPie/hoard", At: "2026-09-13"},
+		{ID: "MUS-R-0003", Kind: "repository", Title: "DevOfPie/LinkCtrl", At: "2026-09-13"},
+		{ID: "MUS-P-0001", Kind: "project", Title: "Mustur", At: "2026-08-19",
+			Data: []record.Field{{Key: "Prefix", Value: "MUS"}, {Key: "Repositories", Value: "MUS-R-0001"}}},
+		// A project with no repository, as the idea inbox is: nothing resolves to it.
+		{ID: "MUS-P-0002", Kind: "project", Title: "Idea inbox", At: "2026-08-22",
+			Data: []record.Field{{Key: "Prefix", Value: "IDW"}}},
+		{ID: "MUS-P-0003", Kind: "project", Title: "Hoard", At: "2026-09-13",
+			Data: []record.Field{{Key: "Prefix", Value: "HRD"}, {Key: "Repositories", Value: "MUS-R-0002"}}},
+		{ID: "MUS-P-0004", Kind: "project", Title: "LinkCtrl", At: "2026-09-13",
+			Data: []record.Field{{Key: "Repositories", Value: "MUS-R-0003"}, {Key: "Prefix", Value: "LNK"}}},
 		{ID: "MUS-D-0001", Kind: "decision", Title: "Inject, never offer", At: "2026-08-19"},
+		{ID: "LNK-D-0001", Kind: "decision", Title: "Links are short", At: "2026-09-13"},
+		{ID: "IDW-F-0001", Kind: "finding", Title: "A jot", At: "2026-09-13"},
+	}
+}
+
+// The no-identifier call lists the named repository's project and no other
+// (MUS-F-0149, on the owner's answer to MUS-Q-0139), under whichever spelling
+// of the name a session passes.
+func TestIndexIsScopedToTheRepositorysProject(t *testing.T) {
+	s, ctx := serverWith(t, fixtures()...)
+	cases := []struct {
+		repo     string
+		want     string
+		unwanted []string
+	}{
+		{"Mustur", "MUS-D-0001", []string{"LNK-D-0001", "IDW-F-0001"}},
+		{"DevOfPie/Mustur", "MUS-D-0001", []string{"LNK-D-0001", "IDW-F-0001"}},
+		{"~/repos/DevOfPie/Mustur/", "MUS-D-0001", []string{"LNK-D-0001"}},
+		{"devofpie/linkctrl", "LNK-D-0001", []string{"MUS-D-0001", "IDW-F-0001"}},
+		{"LinkCtrl", "LNK-D-0001", []string{"MUS-D-0001"}},
+		{"https://github.com/DevOfPie/LinkCtrl.git", "LNK-D-0001", []string{"MUS-D-0001"}},
+		{"Hoard", "This project holds no records yet", []string{"MUS-D-0001", "LNK-D-0001"}},
+	}
+	for _, c := range cases {
+		got, err := s.answer(ctx, Args{Repository: c.repo})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(got, c.want) || !strings.Contains(got, "## Routing") {
+			t.Errorf("%s: missing %q or the routing:\n%s", c.repo, c.want, got)
+		}
+		for _, u := range c.unwanted {
+			if strings.Contains(got, "- "+u+" ") {
+				t.Errorf("%s: the index lists another project's %s:\n%s", c.repo, u, got)
+			}
+		}
+	}
+}
+
+// A name nothing resolves must not fall back to the whole store: that is the
+// flood MUS-F-0149 records. It says what is registered and how to reach records.
+func TestUnknownRepositoryListsNoIndex(t *testing.T) {
+	s, ctx := serverWith(t, fixtures()...)
+	got, err := s.answer(ctx, Args{Repository: "Nope"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"## Routing", "no repository named \"Nope\"", "DevOfPie/Mustur, DevOfPie/hoard, DevOfPie/LinkCtrl", "`id`", "`kind`"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q:\n%s", want, got)
+		}
+	}
+	for _, u := range []string{"- MUS-D-0001", "- LNK-D-0001"} {
+		if strings.Contains(got, u) {
+			t.Errorf("an unknown repository got an index line %q:\n%s", u, got)
+		}
+	}
+}
+
+func TestAmbiguousBareNameIsNotGuessed(t *testing.T) {
+	recs := append(fixtures(), record.Record{ID: "MUS-R-0004", Kind: "repository", Title: "rleeon/hoard", At: "2026-09-13"})
+	s, ctx := serverWith(t, recs...)
+	got, err := s.answer(ctx, Args{Repository: "hoard"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "more than one repository") {
+		t.Errorf("ambiguous name gave:\n%s", got)
+	}
+	got, err = s.answer(ctx, Args{Repository: "DevOfPie/hoard"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "Records of Hoard (HRD)") {
+		t.Errorf("owner/name did not resolve:\n%s", got)
+	}
+}
+
+// The answer's other half: another project's records are reached with an
+// identifier or a kind, from any repository.
+func TestKindAndIdentifierReachEveryProject(t *testing.T) {
+	s, ctx := serverWith(t, fixtures()...)
+	got, err := s.answer(ctx, Args{Repository: "Mustur", Kind: "decision"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "LNK-D-0001") || !strings.Contains(got, "MUS-D-0001") {
+		t.Errorf("a kind did not list every project:\n%s", got)
+	}
+	got, err = s.answer(ctx, Args{Repository: "Mustur", ID: "LNK-D-0001"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "Links are short") {
+		t.Errorf("an identifier in another project was not returned:\n%s", got)
 	}
 }
 
@@ -110,9 +216,8 @@ func TestRepositoryIsRequired(t *testing.T) {
 // cannot be built from ident.KindNames the way the runtime list now is. This is
 // what stops the two drifting: the tag omitted `question` for exactly as long
 // as it took one role letter to be added, while the tool went on describing its
-// own reply as "an index of every record".
-// The index describes itself as "an index of every record". It stopped being
-// that the day `question` was added and this list was written out by hand.
+// own reply as "an index of every record". It is scoped to one project now
+// (MUS-F-0149), but within that project every kind is still listed.
 func TestIndexCarriesEveryKindIncludingQuestions(t *testing.T) {
 	recs := append(fixtures(), record.Record{
 		ID: "MUS-Q-0001", Kind: "question", Title: "Own the session, or attach?", At: "2026-08-21",
