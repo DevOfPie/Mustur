@@ -234,7 +234,7 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 			http.Error(w, "no access to this project", http.StatusForbidden)
 			return
 		}
-		if writes(r) && !role.CanWrite() {
+		if writes(r) && !role.CanWrite() && !holds(r) {
 			http.Error(w, "this account can read but not write", http.StatusForbidden)
 			return
 		}
@@ -242,8 +242,41 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 		// this reader cannot open. The guard refuses correctly and always did;
 		// what it could not do is tell the bar above the page, so a reader was
 		// shown a Sessions tab that answered 403 when pressed.
-		next.ServeHTTP(w, r.WithContext(withRole(r.Context(), role)))
+		next.ServeHTTP(w, r.WithContext(withViewer(withRole(r.Context(), role), acct)))
 	})
+}
+
+// holds is the one write a reader makes, and it is not a filing (MUS-D-0189).
+//
+// The owner chose on MUS-Q-0138 that a reader's jot reaches intake held for
+// approval. So a reader's POST to the box itself passes, and the handler holds
+// it rather than filing it — which is why the exception is the exact path and
+// method and nothing under it: approving or discarding a held jot is under
+// /intake/held/ and stays an owner's write like every other.
+func holds(r *http.Request) bool {
+	return r.Method == http.MethodPost && r.URL.Path == "/intake"
+}
+
+// The viewer's account, beside the role, so a surface can say whose a held jot
+// is and check a role on a project other than this install's.
+type viewerKey struct{}
+
+func withViewer(ctx context.Context, acct account.Account) context.Context {
+	return context.WithValue(ctx, viewerKey{}, acct)
+}
+
+// Viewer is the signed-in account behind a request, and false when the server
+// runs without --accounts.
+func Viewer(r *http.Request) (account.Account, bool) {
+	acct, ok := r.Context().Value(viewerKey{}).(account.Account)
+	return acct, ok
+}
+
+// IsReader says the request carries a role and it cannot write. No role is the
+// server without --accounts, where everybody is the owner (see CanWrite).
+func IsReader(r *http.Request) bool {
+	_, ok := r.Context().Value(roleKey{}).(account.Role)
+	return ok && !CanWrite(r)
 }
 
 // Reader is a convenience for tests and callers that want the role without the
