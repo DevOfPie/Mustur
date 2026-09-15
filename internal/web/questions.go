@@ -174,7 +174,7 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		item := queued{
 			ID:       r.ID,
 			Title:    r.Title,
-			Body:     markdown(strings.TrimSpace(r.Body)),
+			Body:     queueMarkdown(strings.TrimSpace(r.Body)),
 			Asked:    r.At,
 			Needed:   question.Needed(r),
 			Surfaced: question.Surfaced(r),
@@ -190,7 +190,7 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		}
 		for _, o := range question.Options(r) {
 			item.Options = append(item.Options, queuedOption{
-				Label: o.Label, Line: o.Says(), Detail: markdown(o.Detail),
+				Label: o.Label, Line: o.Says(), Detail: queueMarkdown(o.Detail),
 				Recommended: o.IsRecommended(),
 			})
 		}
@@ -376,7 +376,7 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
 // note, and it applies to the two-tab version exactly as much.
-var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
+var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"ids": linkIDs}).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -491,7 +491,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
-{{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
+{{if .Answered}}<p class="said">Answered <code>{{ids .Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
 {{if .Open}}
 {{range $i, $q := .Open}}
 {{if $i}}<hr>{{end}}
@@ -499,19 +499,19 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <input type="hidden" name="id" value="{{$q.ID}}">
   <div class="pills">
     {{if $q.Project}}<span class="pill">{{$q.Project}}</span>{{end}}
-    {{if $q.Blocks}}<span class="pill accent">blocks {{$q.Blocks}}</span>{{end}}
+    {{if $q.Blocks}}<span class="pill accent">blocks {{ids $q.Blocks}}</span>{{end}}
     {{if $q.Needed}}<span class="pill">answer needed to proceed</span>{{end}}
     {{if not $q.Surfaced}}<span class="pill">never surfaced</span>{{end}}
   </div>
-  <h2>{{$q.Title}}</h2>
+  <h2>{{ids $q.Title}}</h2>
   <small class="asked">Asked {{$q.Asked}}</small>
   {{if $q.Body}}<div class="ctx md">{{$q.Body}}</div>{{end}}
   {{range $q.Options}}
   <div class="opt">
     <label class="pick">
       <input type="radio" name="option" value="{{.Label}}">
-      <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec" title="Recommended" aria-label="Recommended">&#9733;</span>{{end}}
-        {{if .Line}}<span class="line">{{.Line}}</span>{{end}}</span>
+      <span class="lbl"><strong>{{ids .Label}}</strong>{{if .Recommended}} <span class="rec" title="Recommended" aria-label="Recommended">&#9733;</span>{{end}}
+        {{if .Line}}<span class="line">{{ids .Line}}</span>{{end}}</span>
     </label>
     {{if .Detail}}<details><summary>more</summary><div class="md">{{.Detail}}</div></details>{{end}}
   </div>
@@ -521,7 +521,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
             placeholder="{{if $q.Options}}A note on your choice, or something else entirely{{else}}Your answer{{end}}"></textarea>
   <button class="primary" type="submit">Answer</button>
   <div class="drop">
-    <span class="id">{{$q.ID}}</span>
+    <span class="id">{{ids $q.ID}}</span>
     <label class="sure"><input type="checkbox" name="sure" value="1">close it with no answer</label>
     <button type="submit" name="withdraw" value="1">Withdraw</button>
   </div>
