@@ -183,6 +183,7 @@ type sessionPage struct {
 	Subagents     []subagentRow
 	Running       int
 	Finished      int // the rows folded under one line (MUS-D-0181)
+	Quiet         int // unfinished rows unheard for SubagentQuietAfter (MUS-D-0191)
 	OpenQuestions int
 	Missing       bool
 	// Starting is the form's data: where a session may be started and what it
@@ -244,6 +245,29 @@ type subagentRow struct {
 	// Earlier is a resumed sub-agent's report from the run before this one,
 	// shown labelled while it runs again (MUS-D-0203).
 	Earlier string `json:"earlier,omitempty"`
+	// Quiet and QuietText are the first paint's. The socket sends heard and
+	// lets the client decide every second, so neither goes in the frame, and
+	// State stays the tool rather than a time written in the server's zone.
+	Quiet     bool   `json:"-"`
+	QuietText string `json:"-"`
+}
+
+// SubagentQuietAfter is how long a running sub-agent can go unheard before its
+// row says when it was last heard from and leaves the running count
+// (MUS-D-0191). It is QUIET_AFTER in assets/session.js, which decides the same
+// thing every second after the first paint; change the two together, or a row
+// reads quiet on load and running a second later.
+const SubagentQuietAfter = 15 * time.Minute
+
+// quietSince is the first paint's time for a quiet row. The server does not
+// know the viewer's zone, so it writes its own with the abbreviation, and the
+// script rewrites it in the viewer's on load from data-heard.
+func quietSince(heard, now time.Time) string {
+	heard, now = heard.In(time.Local), now.In(time.Local)
+	if heard.YearDay() != now.YearDay() || heard.Year() != now.Year() {
+		return "no word since " + heard.Format("Jan 2, 3:04 PM MST")
+	}
+	return "no word since " + heard.Format("3:04 PM MST")
 }
 
 // held is the call this session is holding in front of the owner, if any.
@@ -274,17 +298,19 @@ func (s *Sessions) held(project string) *askRow {
 // whenever the log moves (MUS-D-0092), so both take session.Subagents' order
 // as it comes: running first, newest first. This comment used to say nothing
 // here reached the socket, which stopped being true when the push was built.
-func (s *Sessions) subagents(project string) ([]subagentRow, int) {
+//
+// Running counts only the rows that are running and have been heard from
+// within SubagentQuietAfter; quiet counts the rest of the unfinished ones.
+func (s *Sessions) subagents(project string) (rows []subagentRow, running, quiet int) {
 	if s.HookDir == "" || project == "" {
-		return nil, 0
+		return nil, 0, 0
 	}
 	live, err := session.Subagents(s.HookDir, project)
 	if err != nil || len(live) == 0 {
-		return nil, 0
+		return nil, 0, 0
 	}
 	now := s.now()
-	rows := make([]subagentRow, 0, len(live))
-	running := 0
+	rows = make([]subagentRow, 0, len(live))
 	for _, a := range live {
 		r := subagentRow{
 			ID:    a.ID,
@@ -293,7 +319,12 @@ func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 			Started: a.Started.Unix(), Heard: a.Heard.Unix(),
 		}
 		if a.Running() {
-			running++
+			if now.Sub(a.Heard) > SubagentQuietAfter {
+				quiet++
+				r.Quiet, r.QuietText = true, quietSince(a.Heard, now)
+			} else {
+				running++
+			}
 			// The tool it is in, or "working" between calls. Both halves are
 			// real: the adapter hooks the end of a tool call as well as the
 			// start, so a row leaves a tool when the sub-agent does. The first
@@ -309,7 +340,7 @@ func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 		}
 		rows = append(rows, r)
 	}
-	return rows, running
+	return rows, running, quiet
 }
 
 // since renders an age for the first paint, coarse because a sub-agent's precise
@@ -421,11 +452,12 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	project := r.PathValue("project")
 	rows, gone, found, err := s.rows(r.Context(), project)
-	agents, running := s.subagents(project)
+	agents, running, quiet := s.subagents(project)
 	p := sessionPage{
 		Project: project, Rows: rows, Lost: gone, Missing: !found,
-		Subagents: agents, Running: running, Finished: len(agents) - running,
-		Error: r.URL.Query().Get("error"),
+		Subagents: agents, Running: running, Quiet: quiet,
+		Finished: len(agents) - running - quiet,
+		Error:    r.URL.Query().Get("error"),
 	}
 	if err != nil {
 		// Not found because nobody could look, which is not the same as not
@@ -770,7 +802,7 @@ func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {
 			} else {
 				lastStamp = stamp
 			}
-			rows, running := s.subagents(project)
+			rows, running, _ := s.subagents(project)
 			// Compared on what would be sent, so a tick that changes nothing
 			// sends nothing — including the ages, which move on their own and
 			// are exactly what the viewer is watching.
@@ -1500,7 +1532,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
     <button type="submit" id="endbtn" data-project="{{.Project}}">Stop</button>
   </form>
   <span class="ring{{if .Running}} live{{end}}" id="ring"><button type="button" class="toggle" id="toggle"
-    aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{end}}>Sub-agents<span
+    aria-expanded="false" aria-controls="drawer"{{if not .Subagents}} data-empty{{else}} title="{{template "agentcount" .}}"{{end}}>Sub-agents<span
     class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>{{end}}
 </div>{{end}}
 {{if .Error}}<p class="said err">{{.Error}}</p>{{end}}
@@ -1599,7 +1631,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
     <div class="dhead">
       <button type="button" class="back" id="back" hidden aria-label="Back to the list">&larr;</button>
       <strong id="dtitle">Sub-agents</strong>
-      <small class="count" id="dcount">{{if .Subagents}}{{len .Subagents}}{{if .Running}} · {{.Running}} running{{end}}{{end}}</small>
+      <small class="count" id="dcount">{{if .Subagents}}{{template "agentcount" .}}{{end}}</small>
       <button type="button" class="shut" id="shut" aria-label="Close">&times;</button>
     </div>
     <div class="dmeta" id="dmeta" hidden></div>
@@ -1695,9 +1727,10 @@ that could not ask tmux at all (MUS-F-0160): it draws no picker and no terminal.
 </html>
 {{/* One sub-agent row, drawn above the fold while it runs and inside it once
 it has finished (MUS-D-0181). Its message sits beside it for the reading pane. */}}
+{{define "agentcount"}}{{len .Subagents}}{{if .Running}} · {{.Running}} running{{end}}{{if .Quiet}} · {{.Quiet}} quiet{{end}}{{end}}
 {{define "agentrow"}}<button type="button" class="agent" data-id="{{.ID}}">
       {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
-      <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
+      {{if .Quiet}}<span class="pill quiet" data-heard="{{.Heard}}">{{.QuietText}}</span>{{else}}<span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span>{{end}}<span class="more">&rsaquo;</span>
     </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{else if .Earlier}}<div class="say" data-for="{{.ID}}" data-earlier>{{.Earlier}}</div>{{end}}{{end}}`))
 
 // answerReason is what the agent is told when a call is refused.

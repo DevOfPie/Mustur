@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -552,6 +553,67 @@ func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	if body := getFrom(t, srv, "/sessions/Mustur"); !claimsNoSubagents(body) {
 		t.Error("a session with no hook directory claims sub-agents")
+	}
+}
+
+// A running row unheard for longer than SubagentQuietAfter is quiet from the
+// first paint (MUS-D-0191), not only once the script's first frame lands: the
+// page used to count it running and turn the ring until then, which is the
+// wrong MUS-F-0157 names, shown for a moment on every load.
+func TestAQuietSubagentIsQuietOnTheFirstPaint(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	now := time.Date(2026, 9, 14, 4, 30, 0, 0, time.UTC)
+	s := &Sessions{
+		Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie",
+		HookDir: dir, Now: func() time.Time { return now },
+	}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	rec := func(payload string, at time.Time) {
+		session.RecordHookEvent(dir, "Mustur", []byte(payload), at)
+	}
+	rec(`{"hook_event_name":"SubagentStart","agent_id":"f1","agent_type":"Explore"}`, now.Add(-2*time.Hour))
+	rec(`{"hook_event_name":"SubagentStop","agent_id":"f1","last_assistant_message":"done"}`, now.Add(-time.Hour))
+	rec(`{"hook_event_name":"SubagentStart","agent_id":"q1","agent_type":"Explore"}`, now.Add(-time.Hour))
+	heard := now.Add(-16 * time.Minute)
+	rec(`{"hook_event_name":"PreToolUse","agent_id":"q1","tool_name":"Edit"}`, heard)
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	row := between(body, `data-id="q1"`, "</button>")
+	if !strings.Contains(row, `class="pill quiet" data-heard="`+strconv.FormatInt(heard.Unix(), 10)+`"`) ||
+		!strings.Contains(row, "no word since") {
+		t.Errorf("the row heard 16 minutes ago is not drawn quiet:\n%s", row)
+	}
+	if strings.Contains(row, `class="age"`) || strings.Contains(row, "Edit") {
+		t.Errorf("a quiet row still draws its tool or its age:\n%s", row)
+	}
+	for _, want := range []string{
+		`class="ring" id="ring"`, // not live
+		`id="badge">2</span>`,    // nothing running: the total
+		`title="2 · 1 quiet"`,
+		`id="dcount">2 · 1 quiet</small>`,
+		`<summary>1 finished</summary>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("with only a quiet and a finished row, no %q", want)
+		}
+	}
+
+	// Heard from inside the threshold, a row still runs and turns the ring.
+	rec(`{"hook_event_name":"SubagentStart","agent_id":"r1","agent_type":"Explore"}`, now.Add(-14*time.Minute))
+	body = getFrom(t, srv, "/sessions/Mustur")
+	for _, want := range []string{
+		`class="ring live" id="ring"`,
+		`id="badge">1</span>`,
+		`id="dcount">3 · 1 running · 1 quiet</small>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("with a row heard 14 minutes ago, no %q", want)
+		}
 	}
 }
 
