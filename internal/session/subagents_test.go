@@ -278,15 +278,22 @@ func TestTheHookSurvivesTheShell(t *testing.T) {
 
 // A log longer than the tail still folds, and does not invent a row from the
 // half-line it starts on.
-func TestATruncatedReadDropsRowsRatherThanInventingOne(t *testing.T) {
+// A sub-agent that started early in a long log still has a row.
+//
+// The fold used to read the last 256KB, and one day of Hoard_Work put 213 of
+// 260 starts outside it, gone from the drawer with nothing saying so
+// (MUS-F-0158). This one starts before a megabyte of other events.
+func TestAnEarlySubagentSurvivesALongLog(t *testing.T) {
 	dir := t.TempDir()
 	path := SubagentLog(dir, "P")
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	var b strings.Builder
-	b.WriteString(strings.Repeat(`{"kind":"noise","at":"2026-08-22T12:00:00Z","said":"`+strings.Repeat("x", 900)+`"}`+"\n", 400))
-	b.WriteString(`{"kind":"start","id":"late","type":"general-purpose","at":"2026-08-22T12:00:00Z"}` + "\n")
+	b.WriteString(`{"kind":"start","id":"early","type":"general-purpose","at":"2026-08-22T12:00:00Z"}` + "\n")
+	b.WriteString(strings.Repeat(`{"kind":"noise","at":"2026-08-22T12:00:01Z","said":"`+strings.Repeat("x", 900)+`"}`+"\n", 1200))
+	b.WriteString(`{"kind":"stop","id":"early","said":"done","at":"2026-08-22T13:00:00Z"}` + "\n")
+	b.WriteString(`{"kind":"start","id":"late","type":"general-purpose","at":"2026-08-22T13:00:01Z"}` + "\n")
 	if err := os.WriteFile(path, []byte(b.String()), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -294,8 +301,83 @@ func TestATruncatedReadDropsRowsRatherThanInventingOne(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rows) != 1 || rows[0].ID != "late" {
-		t.Fatalf("rows %+v, want only the one inside the tail", rows)
+	if len(rows) != 2 {
+		t.Fatalf("rows %+v, want both the early one and the late one", rows)
+	}
+	if early := rowByID(rows, "early"); early.Running() || early.Said != "done" {
+		t.Errorf("early row %+v, want it ended by the stop a megabyte later", early)
+	}
+}
+
+// Between calls only what was appended is read, and what is read is folded
+// onto what was already there — including a stop for a start read last time.
+func TestTheFoldCarriesAcrossCalls(t *testing.T) {
+	dir := t.TempDir()
+	t0 := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	record(t, dir, "P", t0, map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+	if rows, _ := Subagents(dir, "P"); len(rows) != 1 || !rows[0].Running() {
+		t.Fatalf("rows %+v, want one running", rows)
+	}
+	record(t, dir, "P", t0.Add(time.Minute), map[string]any{
+		"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "ok",
+	})
+	rows, err := Subagents(dir, "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 1 || rows[0].Running() || rows[0].Said != "ok" {
+		t.Fatalf("rows %+v, want the row read last call ended by the stop appended since", rows)
+	}
+}
+
+// Half a line is not read as a line and then skipped: it is left until the
+// rest of it arrives.
+func TestAHalfWrittenLineWaitsForTheRest(t *testing.T) {
+	dir := t.TempDir()
+	path := SubagentLog(dir, "P")
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	line := `{"kind":"start","id":"a1","type":"general-purpose","at":"2026-08-22T12:00:00Z"}` + "\n"
+	if err := os.WriteFile(path, []byte(line[:30]), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if rows, _ := Subagents(dir, "P"); len(rows) != 0 {
+		t.Fatalf("rows %+v from half a line", rows)
+	}
+	if err := os.WriteFile(path, []byte(line), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if rows, _ := Subagents(dir, "P"); len(rows) != 1 {
+		t.Fatalf("rows %+v, want the line once it was whole", rows)
+	}
+}
+
+// A log forgotten and written again is a new log, even when it is as long as
+// the old one by the time it is next read.
+func TestAForgottenLogIsFoldedAfresh(t *testing.T) {
+	dir := t.TempDir()
+	t0 := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	record(t, dir, "P", t0, map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "old", "agent_type": "general-purpose",
+	})
+	if rows, _ := Subagents(dir, "P"); len(rows) != 1 {
+		t.Fatalf("%d rows before forgetting, want 1", len(rows))
+	}
+	ForgetSubagents(dir, "P")
+	for i, id := range []string{"new1", "new2"} {
+		record(t, dir, "P", t0.Add(time.Duration(i+1)*time.Hour), map[string]any{
+			"hook_event_name": "SubagentStart", "agent_id": id, "agent_type": "general-purpose",
+		})
+	}
+	rows, err := Subagents(dir, "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 2 || rowByID(rows, "old").ID != "" {
+		t.Fatalf("rows %+v, want only the new log's two", rows)
 	}
 }
 

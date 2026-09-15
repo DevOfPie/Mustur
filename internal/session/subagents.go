@@ -29,19 +29,18 @@ package session
 // sub-agents.
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
-
-// TailBytes bounds how much of a session's sub-agent log is read back. A row
-// whose start scrolled out of it does not appear at all, which is the honest
-// failure — a half-read row would say a sub-agent began when it did not.
-const TailBytes = 256 << 10
 
 // LaunchWindow is how long a launching call waits to be claimed by the
 // sub-agent it produced.
@@ -261,111 +260,68 @@ func SubagentStamp(dir, project string) string {
 // The order is decided here and nowhere else — the first paint and the socket
 // both take it as given — because oldest first put a session's live sub-agents
 // under every one that had finished (MUS-F-0156).
+//
+// **The whole log, read once.** It used to read only the last 256KB, and a
+// long session's earlier sub-agents vanished without a word: one day of
+// Hoard_Work was 1.24MB, and 213 of its 260 starts had no row (MUS-F-0158).
+// Reading the whole file on every poll would make each tick cost what the log
+// has grown to, so the fold is kept between calls with the offset it reached,
+// and a call reads only what was appended since. What it keeps is the rows
+// themselves, each bounded by SaidMax, so memory grows with how many sub-agents
+// a session ran rather than with how many tool calls they made.
 func Subagents(dir, project string) ([]Subagent, error) {
-	data, err := tail(SubagentLog(dir, project), TailBytes)
+	path := SubagentLog(dir, project)
+	foldsMu.Lock()
+	defer foldsMu.Unlock()
+	st, err := foldLog(path, folds[path])
 	if err != nil {
+		delete(folds, path)
 		return nil, err
 	}
-
-	rows := map[string]*Subagent{}
-	var order []string
-	// Launches waiting to be claimed by a start, oldest first, keyed by the
-	// type the parent asked for. See the note on pairing below.
-	type launch struct {
-		task string
-		at   time.Time
+	if st == nil {
+		delete(folds, path)
+		return nil, nil
 	}
-	pending := map[string][]launch{}
-
-	for _, line := range strings.Split(string(data), "\n") {
-		if strings.TrimSpace(line) == "" {
-			continue
-		}
-		var e event
-		if json.Unmarshal([]byte(line), &e) != nil {
-			continue // A half-line at the head of a truncated read.
-		}
-		switch e.Kind {
-		case "launch":
-			pending[e.Type] = append(pending[e.Type], launch{task: e.Task, at: e.At})
-			// Launched from inside a sub-agent: that one is now in the Agent
-			// tool, exactly as a "doing" would have said.
-			if r := rows[e.ID]; e.ID != "" && r != nil && r.Ended.IsZero() {
-				r.Doing = "Agent"
-			}
-		case "start":
-			if _, seen := rows[e.ID]; seen {
-				continue
-			}
-			r := &Subagent{ID: e.ID, Type: e.Type, Started: e.At}
-			// Pairing a task to an identifier.
-			//
-			// No documented field connects the parent's launching call to the
-			// sub-agent it produced: the call carries a description and a
-			// tool-use id, the start carries an agent id and a type, and they
-			// share nothing but the type. The one place both appear together is
-			// an undocumented file the owner declined to read (MUS-Q-0025).
-			//
-			// So this pairs by order within a type, inside a window, and the
-			// basis is measured
-			// rather than assumed: three sub-agents of one type launched
-			// together, over three runs, with each one's own tool call as
-			// independent ground truth for which was which — six agents scored,
-			// six paired correctly, none wrongly. Small evidence for a label
-			// whose failure mode is saying a sub-agent is doing something it is
-			// not, which is why an unclaimed start shows no task at all rather
-			// than borrowing the nearest one.
-			// Anything older than the window belongs to a launch that never
-			// produced a sub-agent, and is dropped rather than handed to this
-			// one.
-			q := pending[e.Type]
-			for len(q) > 0 && e.At.Sub(q[0].at) > LaunchWindow {
-				q = q[1:]
-			}
-			if len(q) > 0 {
-				r.Task, q = q[0].task, q[1:]
-			}
-			pending[e.Type] = q
-			rows[e.ID] = r
-			order = append(order, e.ID)
-		case "doing":
-			if r := rows[e.ID]; r != nil && r.Ended.IsZero() {
-				r.Doing = e.Tool
-			}
-		case "done":
-			// Only clears the tool it names. A sub-agent's calls arrive in
-			// order, but a stray PostToolUse for a tool the row is no longer in
-			// should not blank a call that has since started.
-			if r := rows[e.ID]; r != nil && r.Doing == e.Tool {
-				r.Doing = ""
-			}
-		case "stop":
-			// Only a sub-agent that started gets a row. A run against the real
-			// CLI produced stops for work of its own that this hook never saw
-			// start, carrying text that was never in the session; a fold that
-			// made a row from a stop would have shown those as sub-agents.
-			if r := rows[e.ID]; r != nil {
-				r.Ended, r.Said, r.Doing = e.At, e.Said, ""
-			}
-		}
-	}
-
-	out := make([]Subagent, 0, len(order))
-	for _, id := range order {
-		out = append(out, *rows[id])
-	}
-	sort.SliceStable(out, func(i, j int) bool {
-		if out[i].Running() != out[j].Running() {
-			return out[i].Running()
-		}
-		return out[i].Started.After(out[j].Started)
-	})
-	return out, nil
+	folds[path] = st
+	return st.snapshot(), nil
 }
 
-// tail reads at most the last n bytes of a file. A missing file is no events
-// rather than an error: a session that has launched nothing has no log.
-func tail(path string, n int64) ([]byte, error) {
+// folds holds each log's fold between calls, keyed by path. Guarded because
+// the first paint and every open socket read the same log.
+var (
+	foldsMu sync.Mutex
+	folds   = map[string]*logFold{}
+)
+
+// A logFold is a log folded up to offset.
+type logFold struct {
+	// Which file was folded. A log removed by ForgetSubagents and written
+	// again is a different file, and continuing the old fold at the old offset
+	// would graft one session's rows onto another's. The identity alone is not
+	// enough — a filesystem can hand a freed inode straight back — so the
+	// first line is kept too: it carries a nanosecond timestamp, and a new log
+	// that begins with the same bytes is not a thing that happens.
+	info   os.FileInfo
+	head   []byte
+	offset int64
+
+	rows  map[string]*Subagent
+	order []string
+	// Launches waiting to be claimed by a start, oldest first, keyed by the
+	// type the parent asked for. See the note on pairing below.
+	pending map[string][]launch
+}
+
+type launch struct {
+	task string
+	at   time.Time
+}
+
+// foldLog brings a fold up to the end of the log, or starts a new one when the
+// log is not the file it was folded from. A missing log is no events rather
+// than an error — a session that has launched nothing has no log — and returns
+// nil.
+func foldLog(path string, st *logFold) (*logFold, error) {
 	f, err := os.Open(path)
 	if os.IsNotExist(err) {
 		return nil, nil
@@ -378,19 +334,144 @@ func tail(path string, n int64) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if info.Size() <= n {
-		buf := make([]byte, info.Size())
-		_, err := f.ReadAt(buf, 0)
-		if err != nil && err.Error() != "EOF" {
+	if st != nil && !st.same(f, info) {
+		st = nil
+	}
+	if st == nil {
+		st = &logFold{rows: map[string]*Subagent{}, pending: map[string][]launch{}}
+	}
+	st.info = info
+	if info.Size() == st.offset {
+		return st, nil
+	}
+
+	r := bufio.NewReader(io.NewSectionReader(f, st.offset, info.Size()-st.offset))
+	for {
+		line, err := r.ReadBytes('\n')
+		if err != nil {
+			// A line with no newline yet is a hook still writing, or one read
+			// between its bytes landing: left for the next call rather than
+			// folded half-read and then skipped for good.
+			if err == io.EOF {
+				return st, nil
+			}
 			return nil, err
 		}
-		return buf, nil
+		if st.offset == 0 {
+			st.head = line
+		}
+		st.offset += int64(len(line))
+		var e event
+		if json.Unmarshal(line, &e) != nil {
+			continue // A line nothing here wrote. Skipped, as it always was.
+		}
+		st.apply(e)
 	}
-	buf := make([]byte, n)
-	if _, err := f.ReadAt(buf, info.Size()-n); err != nil && err.Error() != "EOF" {
-		return nil, err
+}
+
+// same reports whether the open log is the one this fold was taken from.
+func (st *logFold) same(f *os.File, info os.FileInfo) bool {
+	if st.info == nil || !os.SameFile(st.info, info) || info.Size() < st.offset {
+		return false
 	}
-	return buf, nil
+	if len(st.head) == 0 {
+		return st.offset == 0
+	}
+	got := make([]byte, len(st.head))
+	if _, err := f.ReadAt(got, 0); err != nil {
+		return false
+	}
+	return bytes.Equal(got, st.head)
+}
+
+// snapshot copies the rows out in the order the surface shows them.
+func (st *logFold) snapshot() []Subagent {
+	out := make([]Subagent, 0, len(st.order))
+	for _, id := range st.order {
+		out = append(out, *st.rows[id])
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Running() != out[j].Running() {
+			return out[i].Running()
+		}
+		return out[i].Started.After(out[j].Started)
+	})
+	return out
+}
+
+// apply folds one event into the rows.
+func (st *logFold) apply(e event) {
+	rows, pending := st.rows, st.pending
+	switch e.Kind {
+	case "launch":
+		// Launches nothing claimed within the window are dropped here as well
+		// as at a start, or a type that is launched and never started would
+		// grow its queue for as long as the fold is kept.
+		q := pending[e.Type]
+		for len(q) > 0 && e.At.Sub(q[0].at) > LaunchWindow {
+			q = q[1:]
+		}
+		pending[e.Type] = append(q, launch{task: e.Task, at: e.At})
+		// Launched from inside a sub-agent: that one is now in the Agent
+		// tool, exactly as a "doing" would have said.
+		if r := rows[e.ID]; e.ID != "" && r != nil && r.Ended.IsZero() {
+			r.Doing = "Agent"
+		}
+	case "start":
+		if _, seen := rows[e.ID]; seen {
+			return
+		}
+		r := &Subagent{ID: e.ID, Type: e.Type, Started: e.At}
+		// Pairing a task to an identifier.
+		//
+		// No documented field connects the parent's launching call to the
+		// sub-agent it produced: the call carries a description and a
+		// tool-use id, the start carries an agent id and a type, and they
+		// share nothing but the type. The one place both appear together is
+		// an undocumented file the owner declined to read (MUS-Q-0025).
+		//
+		// So this pairs by order within a type, inside a window, and the
+		// basis is measured
+		// rather than assumed: three sub-agents of one type launched
+		// together, over three runs, with each one's own tool call as
+		// independent ground truth for which was which — six agents scored,
+		// six paired correctly, none wrongly. Small evidence for a label
+		// whose failure mode is saying a sub-agent is doing something it is
+		// not, which is why an unclaimed start shows no task at all rather
+		// than borrowing the nearest one.
+		// Anything older than the window belongs to a launch that never
+		// produced a sub-agent, and is dropped rather than handed to this
+		// one.
+		q := pending[e.Type]
+		for len(q) > 0 && e.At.Sub(q[0].at) > LaunchWindow {
+			q = q[1:]
+		}
+		if len(q) > 0 {
+			r.Task, q = q[0].task, q[1:]
+		}
+		pending[e.Type] = q
+		rows[e.ID] = r
+		st.order = append(st.order, e.ID)
+	case "doing":
+		if r := rows[e.ID]; r != nil && r.Ended.IsZero() {
+			r.Doing = e.Tool
+		}
+	case "done":
+		// Only clears the tool it names. A sub-agent's calls arrive in
+		// order, but a stray PostToolUse for a tool the row is no longer in
+		// should not blank a call that has since started.
+		if r := rows[e.ID]; r != nil && r.Doing == e.Tool {
+			r.Doing = ""
+		}
+	case "stop":
+		// Only a sub-agent that started gets a row. A run against the real
+		// CLI produced stops for work of its own that this hook never saw
+		// start, carrying text that was never in the session; a fold that
+		// made a row from a stop would have shown those as sub-agents.
+		if r := rows[e.ID]; r != nil {
+			r.Ended, r.Said, r.Doing = e.At, e.Said, ""
+		}
+	}
 }
 
 // HookSettings is the `--settings` value that makes a session's sub-agents
