@@ -74,6 +74,12 @@ func TestAnOwnerMeetsHeldJotsAtTheTopOfDecisions(t *testing.T) {
 			t.Errorf("the owner's card is missing %q", want)
 		}
 	}
+	// The rule that dims Answer until an option is chosen matched a held card's
+	// form too — it has no radio and no textarea — and left Approve and file
+	// unpressable; found in a browser, not by a test.
+	if !strings.Contains(page, "form:not(.held):not(:has(input[type=radio]:checked))") {
+		t.Error("the Answer-dimming rule no longer excludes held cards, so Approve is unpressable")
+	}
 	// A reader is not shown anybody's held jots on Decisions.
 	if rp := bodyOf(t, reader, h.srv.URL+"/questions"); strings.Contains(rp, "Jots waiting for approval") {
 		t.Error("a reader is shown the approval section")
