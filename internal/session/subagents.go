@@ -86,6 +86,13 @@ type Subagent struct {
 	// resumed sub-agent runs again and dropped when that run stops with its
 	// own (MUS-F-0172, MUS-D-0203). Never set on a row that has ended.
 	Earlier string
+	// Heard is the stamp of the last start, doing or stop applied to this
+	// row. A row runs until its stop arrives, and a stop can fail to arrive —
+	// an interrupt's only hook carries no agent id (MUS-F-0157) — so what the
+	// surface can honestly say about a row that has gone silent is when it was
+	// last heard from. Nothing here decides that it is quiet: that is a display
+	// rule in the client (MUS-D-0191), and this is only the fact it reads.
+	Heard time.Time
 }
 
 // Running reports whether this sub-agent has yet to stop.
@@ -439,10 +446,10 @@ func (st *logFold) apply(e event) {
 			if r.Said != "" {
 				r.Earlier, r.Said = r.Said, ""
 			}
-			r.Started, r.Ended, r.Doing = e.At, time.Time{}, ""
+			r.Started, r.Ended, r.Doing, r.Heard = e.At, time.Time{}, "", e.At
 			return
 		}
-		r := &Subagent{ID: e.ID, Type: e.Type, Started: e.At}
+		r := &Subagent{ID: e.ID, Type: e.Type, Started: e.At, Heard: e.At}
 		// Pairing a task to an identifier.
 		//
 		// No documented field connects the parent's launching call to the
@@ -475,7 +482,7 @@ func (st *logFold) apply(e event) {
 		st.order = append(st.order, e.ID)
 	case "doing":
 		if r := rows[e.ID]; r != nil && r.Ended.IsZero() {
-			r.Doing = e.Tool
+			r.Doing, r.Heard = e.Tool, e.At
 		}
 	case "done":
 		// Only clears the tool it names. A sub-agent's calls arrive in
@@ -490,7 +497,7 @@ func (st *logFold) apply(e event) {
 		// start, carrying text that was never in the session; a fold that
 		// made a row from a stop would have shown those as sub-agents.
 		if r := rows[e.ID]; r != nil {
-			r.Ended, r.Said, r.Earlier, r.Doing = e.At, e.Said, "", ""
+			r.Ended, r.Said, r.Earlier, r.Doing, r.Heard = e.At, e.Said, "", "", e.At
 		}
 	}
 }

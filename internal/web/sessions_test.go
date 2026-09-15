@@ -759,6 +759,7 @@ func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
 				Title   string `json:"title"`
 				State   string `json:"state"`
 				Started int64  `json:"started"`
+				Heard   int64  `json:"heard"`
 				For     string `json:"for"`
 			} `json:"agents"`
 			Running int `json:"running"`
@@ -777,6 +778,11 @@ func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
 		}
 		if f.Agents[0].Started == 0 {
 			t.Error("no start stamp; the client counts the age from it")
+		}
+		// The last event recorded was the Grep, a second after the start. The
+		// client reads a running row as quiet from this stamp (MUS-D-0191).
+		if want := now.Add(-time.Second).Unix(); f.Agents[0].Heard != want {
+			t.Errorf("heard %d, want %d, the stamp of the row's last event", f.Agents[0].Heard, want)
 		}
 		if f.Agents[0].For != "" {
 			t.Error("a rendered age was sent as well as the stamp, so the two can disagree")
