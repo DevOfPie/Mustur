@@ -762,6 +762,7 @@ func cmdServe(args []string) error {
 	// Which held jots a viewer may approve turns on their role in the jot's
 	// destination project, which is not always this install's (MUS-D-0189).
 	intake.Roles = accounts
+	questions.Roles = accounts
 	var handler http.Handler = mux
 	if *origin != "" {
 		auth := &web.Auth{
