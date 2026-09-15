@@ -179,7 +179,48 @@ func TestTheOwnerCanChangeWhereItIsFiled(t *testing.T) {
 	}
 	got := findings(t, h.st)
 	if len(got) != 1 || !strings.HasPrefix(got[0].ID, "IDW-F-") {
-		t.Errorf("filed as %+v, want under IDW", got)
+		t.Fatalf("filed as %+v, want under IDW", got)
+	}
+	// The reader did not pick the idea inbox, so the record must not say they did.
+	if why, _ := got[0].Get("Routing"); why != "chosen by the approver" {
+		t.Errorf("Routing %q, want the approver credited with the choice", why)
+	}
+}
+
+// Left where the reader pointed it, the choice is still the reader's.
+func TestAnUnchangedDestinationStaysTheFilersChoice(t *testing.T) {
+	h := queueRig(t)
+	reader, _ := h.as(t, "friend@example.com", map[string]account.Role{"MUS": account.Reader})
+	owner, _ := h.as(t, "owner@example.com", map[string]account.Role{"MUS": account.Owner})
+	held := holdOne(t, h, reader, "MUS-P-0001")
+	if res := approveAs(t, h, owner, held.ID, "MUS-P-0001"); res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("approve: %d", res.StatusCode)
+	}
+	got := findings(t, h.st)
+	if len(got) != 1 {
+		t.Fatalf("filed %d", len(got))
+	}
+	if why, _ := got[0].Get("Routing"); why != "chosen by the filer" {
+		t.Errorf("Routing %q, want the filer's choice", why)
+	}
+}
+
+// An owner who moves a reader's chosen destination back to "Route it for me"
+// chose nothing: the record carries the guess's own reason.
+func TestRouteItForMeKeepsTheGuesssReason(t *testing.T) {
+	h := queueRig(t)
+	reader, _ := h.as(t, "friend@example.com", map[string]account.Role{"MUS": account.Reader})
+	owner, _ := h.as(t, "owner@example.com", map[string]account.Role{"MUS": account.Owner})
+	held := holdOne(t, h, reader, "MUS-P-0001")
+	if res := approveAs(t, h, owner, held.ID, ""); res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("approve: %d", res.StatusCode)
+	}
+	got := findings(t, h.st)
+	if len(got) != 1 {
+		t.Fatalf("filed %d", len(got))
+	}
+	if why, _ := got[0].Get("Routing"); strings.HasPrefix(why, "chosen by") {
+		t.Errorf("Routing %q credits a choice for a routed jot", why)
 	}
 }
 
