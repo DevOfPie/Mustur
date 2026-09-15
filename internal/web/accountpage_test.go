@@ -77,9 +77,14 @@ func body(t *testing.T, c *http.Client, url string) string {
 		t.Fatal(err)
 	}
 	defer res.Body.Close()
-	b := make([]byte, 32768)
-	n, _ := res.Body.Read(b)
-	return string(b[:n])
+	// Read to the end. This used to be one Read into 32KiB, which returns
+	// whatever the first chunk held; the page grew past it and every test
+	// that looked at the page saw a page cut off partway through its CSS.
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
 }
 
 func form(t *testing.T, c *http.Client, srv *httptest.Server, path string, v url.Values) *http.Response {
@@ -343,7 +348,10 @@ func TestAddingAPasskeyHappensOnTheAccountPage(t *testing.T) {
 		t.Errorf("the add-a-passkey page still answers with %d", code)
 	}
 	// Everything else still works without script: the role select keeps its
-	// Save button behind a <noscript>, and every action is a form.
+	// Save button behind a <noscript>, and every action is a form. Somebody
+	// else is needed to have a select at all: your own card summarises your
+	// roles rather than offering them as controls (MUS-D-0188).
+	personWith(t, accounts, "other@example.com", "MUS", account.Reader, "k2")
 	people := body(t, owner, srv.URL+"/account/people")
 	if !strings.Contains(people, "<noscript>") {
 		t.Error("the role control has no scriptless path")
@@ -532,6 +540,175 @@ func TestThePeopleScreenIsAboutThisProject(t *testing.T) {
 		t.Errorf("somebody invited twice appears %d times", n)
 	}
 	if strings.Contains(page, "elsewhere@example.com") {
-		t.Error("an invitation to another project is on this project's screen")
+		t.Error("an invitation to a project the viewer does not own is on their screen")
+	}
+}
+
+// grant gives an existing account a further role, as the command line would.
+func grant(t *testing.T, accounts *account.Store, who account.Account, project string, role account.Role) {
+	t.Helper()
+	if err := accounts.Grant(context.Background(), who.ID, project, role, "test"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// An owner of Mustur is not an owner of LinkCtrl (MUS-D-0188). The screen does
+// not offer LinkCtrl to them, and a post naming it is refused all the same —
+// the check is on the write, not on what the form happened to draw.
+func TestAnOwnerOfOneProjectCannotGrantInAnother(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, _ := personWith(t, accounts, "mus@example.com", "MUS", account.Owner, "k")
+	_, lnkOwner := personWith(t, accounts, "lnk@example.com", "LNK", account.Owner, "k2")
+	_, friend := personWith(t, accounts, "friend@example.com", "MUS", account.Reader, "k3")
+
+	// By the form: there is no LinkCtrl line to change and nothing to invite to.
+	page := body(t, owner, srv.URL+"/account/people")
+	if strings.Contains(page, `value="LNK"`) {
+		t.Error("a Mustur-only owner is offered LinkCtrl on the people screen")
+	}
+
+	// By a crafted post, for each way in.
+	for _, c := range []struct {
+		path string
+		form url.Values
+	}{
+		{"/account/role", url.Values{"id": {friend.ID}, "project": {"LNK"}, "role": {"owner"}}},
+		{"/account/role", url.Values{"id": {lnkOwner.ID}, "project": {"LNK"}, "role": {"reader"}}},
+		{"/account/role", url.Values{"id": {lnkOwner.ID}, "project": {"LNK"}, "role": {"none"}}},
+		{"/account/invite", url.Values{"email": {"x@example.com"}, "project": {"LNK"}, "role": {"owner"}}},
+	} {
+		res := form(t, owner, srv, c.path, c.form)
+		res.Body.Close()
+		if res.StatusCode != http.StatusForbidden {
+			t.Errorf("posting %v to %s got %d, want 403", c.form, c.path, res.StatusCode)
+		}
+	}
+	if _, ok := accounts.RoleFor(ctx, friend.ID, "LNK"); ok {
+		t.Error("a Mustur owner granted somebody a role in LinkCtrl")
+	}
+	if role, _ := accounts.RoleFor(ctx, lnkOwner.ID, "LNK"); role != account.Owner {
+		t.Errorf("a Mustur owner changed LinkCtrl's owner to %q", role)
+	}
+	if pending, _ := accounts.Pending(ctx); len(pending) != 0 {
+		t.Errorf("a Mustur owner invited somebody to LinkCtrl: %+v", pending)
+	}
+}
+
+// An owner of two projects sees a line per project on somebody else's card,
+// grants in the second, and takes it away again with "none".
+func TestAnOwnerGivesAnExistingPersonARoleInAnotherProjectAndRemovesIt(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, me := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
+	grant(t, accounts, me, "LNK", account.Owner)
+	_, friend := personWith(t, accounts, "friend@example.com", "MUS", account.Reader, "k2")
+	// A project the viewer does not own, which must not be on the friend's card.
+	grant(t, accounts, friend, "HRD", account.Owner)
+
+	page := body(t, owner, srv.URL+"/account/people")
+	card := page[strings.Index(page, "friend@example.com"):]
+	card = card[:strings.Index(card, "</li>")]
+	for _, want := range []string{`value="MUS"`, `value="LNK"`, `value="none"`, "no access"} {
+		if !strings.Contains(card, want) {
+			t.Errorf("the friend's card lacks %s:\n%s", want, card)
+		}
+	}
+	if strings.Contains(card, "HRD") {
+		t.Errorf("the friend's card shows a project the viewer does not own:\n%s", card)
+	}
+	// Each line still works without script.
+	if n, m := strings.Count(card, "<noscript>"), strings.Count(card, "data-save"); n != m || n != 2 {
+		t.Errorf("%d selects and %d scriptless Save buttons on the card, want 2 of each", m, n)
+	}
+	// The viewer's own card summarises rather than offering controls.
+	mine := page[strings.Index(page, "owner@example.com"):]
+	mine = mine[:strings.Index(mine, "</li>")]
+	if !strings.Contains(mine, "owner in") || strings.Contains(mine, "/account/role") {
+		t.Errorf("the viewer's own card is not a summary:\n%s", mine)
+	}
+
+	res := form(t, owner, srv, "/account/role", url.Values{"id": {friend.ID}, "project": {"LNK"}, "role": {"reader"}})
+	res.Body.Close()
+	if role, _ := accounts.RoleFor(ctx, friend.ID, "LNK"); role != account.Reader {
+		t.Fatalf("granting in LinkCtrl left the role at %q", role)
+	}
+	res = form(t, owner, srv, "/account/role", url.Values{"id": {friend.ID}, "project": {"LNK"}, "role": {"none"}})
+	res.Body.Close()
+	if role, ok := accounts.RoleFor(ctx, friend.ID, "LNK"); ok {
+		t.Errorf("role=none left the role at %q", role)
+	}
+	if said := body(t, owner, srv.URL+res.Header.Get("Location")); !strings.Contains(said, "access removed") {
+		t.Error("removing a role does not say it happened")
+	}
+	// And the other projects were left alone.
+	if role, _ := accounts.RoleFor(ctx, friend.ID, "MUS"); role != account.Reader {
+		t.Errorf("removing LinkCtrl changed Mustur to %q", role)
+	}
+}
+
+// The last owner is refused through the screen in every project, not only the
+// install's, and the refusal names the project.
+func TestTheLastOwnerOfEveryProjectCannotStandDownFromTheScreen(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, me := personWith(t, accounts, "solo@example.com", "MUS", account.Owner, "k")
+	grant(t, accounts, me, "LNK", account.Owner)
+
+	for _, project := range []string{"MUS", "LNK"} {
+		for _, role := range []string{"reader", "none"} {
+			res := form(t, owner, srv, "/account/role", url.Values{"id": {me.ID}, "project": {project}, "role": {role}})
+			res.Body.Close()
+			if got, _ := accounts.RoleFor(ctx, me.ID, project); got != account.Owner {
+				t.Errorf("role=%s on %s left the only owner as %q", role, project, got)
+			}
+			said := body(t, owner, srv.URL+res.Header.Get("Location"))
+			if !strings.Contains(said, "only owner left of "+project) {
+				t.Errorf("role=%s on %s: the refusal does not say why, or which project", role, project)
+			}
+		}
+	}
+}
+
+// The invitation may be for any project the viewer owns, and no other.
+func TestTheInvitePickerListsOnlyOwnedProjects(t *testing.T) {
+	srv, accounts := managed(t)
+	owner, me := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
+	grant(t, accounts, me, "HRD", account.Owner)
+	grant(t, accounts, me, "LNK", account.Reader)
+
+	page := body(t, owner, srv.URL+"/account/people")
+	start := strings.Index(page, `<select name="project">`)
+	if start < 0 {
+		t.Fatal("no project picker on the invitation")
+	}
+	picker := page[start:]
+	picker = picker[:strings.Index(picker, "</select>")]
+	for _, want := range []string{`value="MUS"`, `value="HRD"`} {
+		if !strings.Contains(picker, want) {
+			t.Errorf("the picker lacks an owned project, %s:\n%s", want, picker)
+		}
+	}
+	if strings.Contains(picker, `value="LNK"`) {
+		t.Errorf("the picker offers a project the viewer only reads:\n%s", picker)
+	}
+
+	res := form(t, owner, srv, "/account/invite", url.Values{"email": {"new@example.com"}, "project": {"HRD"}, "role": {"reader"}})
+	res.Body.Close()
+	if res.StatusCode != http.StatusSeeOther || !strings.Contains(res.Header.Get("Location"), "invited=") {
+		t.Errorf("inviting to an owned project other than the install's got %d %q", res.StatusCode, res.Header.Get("Location"))
+	}
+}
+
+// The people screen carries the tab bar, the same nav every surface ends with,
+// so it is never a page with no way anywhere but back (MUS-D-0188).
+func TestThePeopleScreenCarriesTheBar(t *testing.T) {
+	srv, accounts := managed(t)
+	owner, _ := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
+	page := body(t, owner, srv.URL+"/account/people")
+	for _, want := range []string{"<nav>", `href="/questions"`, `href="/intake"`, `href="/records"`, `href="/sessions"`, "position: fixed"} {
+		if !strings.Contains(page, want) {
+			t.Errorf("the people screen lacks %s", want)
+		}
 	}
 }

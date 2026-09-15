@@ -170,21 +170,36 @@ type passkeyRow struct {
 type personRow struct {
 	Email string
 	ID    string
-	// Role in this project. A row on this screen is about this project, so the
-	// list of every project somebody has a role in belonged on their own page
-	// rather than here.
-	Role     string
-	Passkeys int
+	// Lines is this person's role in each project the viewer owns, one line
+	// each (MUS-D-0188, Shape A of plan-90422fb59d474a70). Projects the viewer
+	// does not own are not on the card: what somebody may do in a project is
+	// that project's owners' business.
+	Lines    []projectLine
 	Disabled bool
 	Self     bool
+	// Summary is the viewer's own card: their roles written out rather than
+	// offered as controls, as the plan draws it.
+	Summary string
 	// Invited says this is an invitation rather than an account. It has no
 	// identifier, because nothing has been created yet — so the row carries no
 	// controls: a role select and a disable button would post an empty id.
 	Invited bool
-	// Expires is when the invitation stops working, on an invited row only.
-	// An invitation lives a day, and "invited" without it reads as a state
-	// somebody is in rather than one that runs out.
-	Expires string
+	// Invites says what each open invitation to a project the viewer owns
+	// would grant, and when it stops working. An invitation lives a day, and
+	// "invited" without the expiry reads as a state somebody is in rather than
+	// one that runs out.
+	Invites []string
+}
+
+// A projectLine is one project on a person's card, or one choice in the
+// invitation's project picker.
+type projectLine struct {
+	// AccountID is repeated on every line because each line is its own form.
+	AccountID string
+	Project   string
+	Name      string
+	// Role is empty when the person has no access to the project.
+	Role string
 }
 
 type accountPage struct {
@@ -204,8 +219,11 @@ type accountPage struct {
 	// PeopleScreen renders the second screen rather than the first.
 	PeopleScreen bool
 	People       []personRow
-	Project      string
-	ProjectName  string
+	// Owned is every project this account owns, which is what the invitation
+	// may be for and which projects appear on other people's cards.
+	Owned       []projectLine
+	Project     string
+	ProjectName string
 	// Invited is a link shown exactly once, whole, because the secret is never
 	// stored and cannot be shown again.
 	Invited string
@@ -236,10 +254,53 @@ func (a *Accounts) who(w http.ResponseWriter, r *http.Request) (account.Account,
 	return acct, true
 }
 
-// owns reports whether this account may manage other people.
+// owns reports whether this account may reach the people screen, which is
+// still an owner of this install's project.
 func (a *Accounts) owns(ctx context.Context, acct account.Account) bool {
-	role, ok := a.Store.RoleFor(ctx, acct.ID, a.Project)
+	return a.ownsProject(ctx, acct, a.Project)
+}
+
+// ownsProject is the check every write about somebody's access makes, against
+// the project the write is about (MUS-D-0188). Owning Mustur does not make
+// anybody an owner of LinkCtrl, and a check against the install's project
+// alone would have said it did.
+func (a *Accounts) ownsProject(ctx context.Context, acct account.Account, project string) bool {
+	role, ok := a.Store.RoleFor(ctx, acct.ID, project)
 	return ok && role == account.Owner
+}
+
+// ownedProjects lists the projects acct owns, this install's first and the
+// rest in the order the store keeps them.
+func (a *Accounts) ownedProjects(ctx context.Context, acct account.Account) []string {
+	grants, err := a.Store.Grants(ctx, acct.ID)
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, g := range grants {
+		if g.Role != account.Owner {
+			continue
+		}
+		if g.Project == a.Project {
+			out = append([]string{g.Project}, out...)
+		} else {
+			out = append(out, g.Project)
+		}
+	}
+	return out
+}
+
+// names lists the project records once for a page that names several
+// projects, rather than once per line.
+func (a *Accounts) names(ctx context.Context) projectNames {
+	if a.Records == nil {
+		return nil
+	}
+	list, err := a.Records.List(ctx, "project")
+	if err != nil {
+		return nil
+	}
+	return projectNames(list)
 }
 
 // lastOwner reports whether acct is the only owner the project has left.
@@ -346,18 +407,37 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 	}
 
 	if p.Owner {
-		seen := map[string]bool{}
+		names := a.names(ctx)
+		owned := map[string]bool{}
+		for _, prj := range a.ownedProjects(ctx, acct) {
+			owned[prj] = true
+			p.Owned = append(p.Owned, projectLine{Project: prj, Name: names.name(prj)})
+		}
+		seen := map[string]int{}
 		people, err := a.Store.Accounts(ctx)
 		if err == nil {
 			for _, person := range people {
-				role, _ := a.Store.RoleFor(ctx, person.ID, a.Project)
-				creds, _ := a.Store.Credentials(ctx, person.ID)
-				seen[person.Email] = true
-				p.People = append(p.People, personRow{
+				row := personRow{
 					Email: person.Email, ID: person.ID,
-					Role: string(role), Passkeys: len(creds),
 					Disabled: person.Disabled, Self: person.ID == acct.ID,
-				})
+				}
+				if row.Self {
+					// Your own roles in full, every project and not only the
+					// ones you own, because they are yours to read.
+					row.Summary = summarise(a.Store, ctx, acct.ID, names)
+				} else {
+					// Everybody with an account is listed, with or without a
+					// role in anything you own: an existing person being given
+					// a role in another project is what MUS-F-0166 could not do.
+					for _, o := range p.Owned {
+						role, _ := a.Store.RoleFor(ctx, person.ID, o.Project)
+						row.Lines = append(row.Lines, projectLine{
+							AccountID: person.ID, Project: o.Project, Name: o.Name, Role: string(role),
+						})
+					}
+				}
+				seen[person.Email] = -1
+				p.People = append(p.People, row)
 			}
 		}
 		// An invitation issued and not yet accepted.
@@ -373,17 +453,33 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 		// that makes Accounts return the person. There is no state to keep in
 		// step.
 		if pending, err := a.Store.Pending(ctx); err == nil {
+			reissued := map[string]bool{}
 			for _, inv := range pending {
-				// Scoped to this project, because the screen is. And once per
-				// address: a lost invitation is reissued rather than looked up
-				// (MUS-F-0059), so the same person can hold several.
-				if inv.Project != a.Project || seen[inv.Email] {
+				// Scoped to the projects you own, because the cards are. And
+				// once per person: a lost invitation is reissued rather than
+				// looked up (MUS-F-0059), so the same person can hold several,
+				// and one card carries a line per project they are invited to.
+				if !owned[inv.Project] {
 					continue
 				}
-				seen[inv.Email] = true
+				at, known := seen[inv.Email]
+				if at < 0 {
+					continue
+				}
+				key := inv.Email + "\x00" + inv.Project
+				if reissued[key] {
+					continue
+				}
+				reissued[key] = true
+				line := string(inv.Role) + " in " + names.name(inv.Project) +
+					" · not yet accepted, expires " + inv.Expires.Format("2006-01-02 15:04")
+				if known {
+					p.People[at].Invites = append(p.People[at].Invites, line)
+					continue
+				}
+				seen[inv.Email] = len(p.People)
 				p.People = append(p.People, personRow{
-					Email: inv.Email, Role: string(inv.Role), Invited: true,
-					Expires: inv.Expires.Format("2006-01-02 15:04"),
+					Email: inv.Email, Invited: true, Invites: []string{line},
 				})
 			}
 		}
@@ -394,6 +490,27 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 	if err := accountTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+// summarise writes somebody's roles as one line per role held, "owner in
+// Mustur (MUS), LinkCtrl (LNK) · reader in Hoard (HRD)", for the viewer's own
+// card, which the plan draws as a sentence rather than as controls.
+func summarise(s *account.Store, ctx context.Context, accountID string, names projectNames) string {
+	grants, err := s.Grants(ctx, accountID)
+	if err != nil || len(grants) == 0 {
+		return "no roles on any project"
+	}
+	by := map[account.Role][]string{}
+	for _, g := range grants {
+		by[g.Role] = append(by[g.Role], names.name(g.Project))
+	}
+	var parts []string
+	for _, r := range []account.Role{account.Owner, account.Reader} {
+		if len(by[r]) > 0 {
+			parts = append(parts, string(r)+" in "+strings.Join(by[r], ", "))
+		}
+	}
+	return strings.Join(parts, " · ")
 }
 
 // back returns to the screen the action came from, which for anything about
@@ -428,10 +545,6 @@ func (a *Accounts) invite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cross-origin post refused", http.StatusForbidden)
 		return
 	}
-	if !a.owns(r.Context(), acct) {
-		http.Error(w, "only an owner of this project can invite", http.StatusForbidden)
-		return
-	}
 	if err := r.ParseForm(); err != nil {
 		a.back(w, r, "", "that form did not arrive intact", "")
 		return
@@ -441,6 +554,14 @@ func (a *Accounts) invite(w http.ResponseWriter, r *http.Request) {
 	project := strings.TrimSpace(r.FormValue("project"))
 	if project == "" {
 		project = a.Project
+	}
+	// Against the project the invitation is for, not the install's: the picker
+	// offers only projects you own, and a crafted post naming another is
+	// refused here rather than trusted because the picker would not offer it
+	// (MUS-D-0188).
+	if !a.ownsProject(r.Context(), acct, project) {
+		http.Error(w, "only an owner of that project can invite somebody to it", http.StatusForbidden)
+		return
 	}
 	secret, err := a.Store.Invite(r.Context(), email, project, role, acct.Email)
 	if err != nil {
@@ -452,7 +573,12 @@ func (a *Accounts) invite(w http.ResponseWriter, r *http.Request) {
 	a.back(w, r, "", "", "/invite/"+secret)
 }
 
-// role — owners only, and never the last one demoting themselves.
+// role — owners of the project named, and never a project's last owner
+// demoted or removed.
+//
+// The form names the project alongside the person and the role, and "none"
+// removes the role (MUS-D-0188). A post with no project is about this
+// install's project, which is what the form posted before it named one.
 func (a *Accounts) role(w http.ResponseWriter, r *http.Request) {
 	acct, ok := a.who(w, r)
 	if !ok {
@@ -463,29 +589,48 @@ func (a *Accounts) role(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	if !a.owns(ctx, acct) {
-		http.Error(w, "only an owner of this project can change a role", http.StatusForbidden)
-		return
-	}
 	if err := r.ParseForm(); err != nil {
 		a.back(w, r, "", "that form did not arrive intact", "")
 		return
 	}
+	project := strings.TrimSpace(r.FormValue("project"))
+	if project == "" {
+		project = a.Project
+	}
+	// Checked for every write, against the project it writes to. The screen
+	// only draws lines for projects you own, which is a courtesy; this is the
+	// rule, and a crafted post reaches it the same way the form does.
+	if !a.ownsProject(ctx, acct, project) {
+		http.Error(w, "only an owner of that project can change a role in it", http.StatusForbidden)
+		return
+	}
 	target := r.FormValue("id")
-	role := account.Role(r.FormValue("role"))
-	if !role.Valid() {
-		a.back(w, r, "", "that is not a role", "")
+	value := r.FormValue("role")
+	var err error
+	said := "role changed"
+	if value == "none" {
+		err = a.Store.Ungrant(ctx, target, project, acct.Email)
+		said = "access removed"
+	} else {
+		role := account.Role(value)
+		if !role.Valid() {
+			a.back(w, r, "", "that is not a role", "")
+			return
+		}
+		err = a.Store.Grant(ctx, target, project, role, acct.Email)
+	}
+	if errors.Is(err, account.ErrLastOwner) {
+		// Whoever the last owner is, it is you: you are an owner of this
+		// project, so a sole owner being changed is you changing yourself.
+		a.back(w, r, "", "you are the only owner left of "+projectName(ctx, a.Records, project)+
+			"; make somebody else an owner first", "")
 		return
 	}
-	if target == acct.ID && role != account.Owner && a.lastOwner(ctx, acct) {
-		a.back(w, r, "", "you are the only owner left; make somebody else an owner first", "")
-		return
-	}
-	if err := a.Store.Grant(ctx, target, a.Project, role, acct.Email); err != nil {
+	if err != nil {
 		a.back(w, r, "", err.Error(), "")
 		return
 	}
-	a.back(w, r, "role changed", "", "")
+	a.back(w, r, said, "", "")
 }
 
 // disable — owners only, and never the last owner.
@@ -578,7 +723,18 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
   /* A person is three stacked lines rather than one crowded row: the row
      wrapped into itself on a phone, which a review saw as overlapping text. */
   li.person { display: flex; flex-direction: column; gap: .35rem; }
-  li.person .controls { display: flex; gap: .5rem; align-items: center; }
+  /* A card: who, with Disable beside them, then a line per project you own.
+     Every row wraps rather than squeezing, and the text in it may break
+     anywhere, so a long address or project name pushes its control down a
+     line instead of running underneath it (MUS-D-0188). */
+  li.person .head { display: flex; flex-wrap: wrap; align-items: center;
+                    gap: .35rem .6rem; }
+  li.person .head .email { flex: 1 1 12rem; min-width: 0;
+                           overflow-wrap: anywhere; }
+  li.person form.line { display: flex; flex-wrap: wrap; align-items: center;
+                        gap: .35rem .6rem; }
+  li.person form.line .project { flex: 1 1 8rem; min-width: 0; opacity: .75;
+                                 font-size: .92em; overflow-wrap: anywhere; }
   /* An invitation is a person who is not here yet: named the same, dimmer, and
      carrying no controls, because there is no account to act on. */
   li.person.invited > span:first-child { opacity: .75; }
@@ -637,7 +793,7 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
       <label><span>Role</span>
         <select name="role"><option value="reader">reader</option><option value="owner">owner</option></select></label>
       <label><span>Project</span>
-        <select name="project"><option value="{{.Project}}">{{.ProjectName}}</option></select></label>
+        <select name="project">{{range .Owned}}<option value="{{.Project}}"{{if eq .Project $.Project}} selected{{end}}>{{.Name}}</option>{{end}}</select></label>
     </div>
     <button type="submit" class="primary" style="align-self:flex-start">Invite</button>
   </fieldset>
@@ -645,24 +801,26 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
 
 <h2>People</h2>
 <ul>{{range .People}}<li class="person{{if .Invited}} invited{{end}}">
-  <span>{{.Email}}{{if .Self}} <small>(you)</small>{{end}}{{if .Disabled}} <small>disabled</small>{{end}}</span>
-{{if .Invited}}
-  <small><span class="tag">invited</span> {{.Role}} · not yet accepted, expires {{.Expires}}</small>
-  <span class="controls"></span>
-{{else}}
-  <small>{{if .Role}}{{.Role}}{{else}}no role here{{end}} · {{.Passkeys}} passkey(s)</small>
-  <span class="controls">
-    <form class="inline" method="post" action="/account/role">
-      <input type="hidden" name="id" value="{{.ID}}">
-      <select name="role" data-save><option value="reader"{{if eq .Role "reader"}} selected{{end}}>reader</option><option value="owner"{{if eq .Role "owner"}} selected{{end}}>owner</option></select>
-      <noscript><button type="submit">Save</button></noscript>
-    </form>
-    <form class="inline" method="post" action="/account/disable">
+  <div class="head">
+    <span class="email">{{.Email}}{{if .Self}} <small>(you)</small>{{end}}{{if .Disabled}} <small>disabled</small>{{end}}</span>
+    {{if not (or .Self .Invited)}}<form class="inline" method="post" action="/account/disable">
       <input type="hidden" name="id" value="{{.ID}}">
       {{if .Disabled}}<input type="hidden" name="undo" value="1">{{end}}
       <button type="submit">{{if .Disabled}}Enable{{else}}Disable{{end}}</button>
-    </form>
-  </span>
+    </form>{{end}}
+  </div>
+{{if .Self}}
+  <small>{{.Summary}}</small>
+{{else if .Invited}}
+  {{range .Invites}}<small><span class="tag">invited</span> {{.}}</small>{{end}}
+{{else}}
+  {{range .Lines}}<form class="line" method="post" action="/account/role">
+    <input type="hidden" name="id" value="{{.AccountID}}">
+    <input type="hidden" name="project" value="{{.Project}}">
+    <span class="project">{{.Name}}</span>
+    <select name="role" data-save aria-label="Role in {{.Name}}"><option value="reader"{{if eq .Role "reader"}} selected{{end}}>reader</option><option value="owner"{{if eq .Role "owner"}} selected{{end}}>owner</option><option value="none"{{if eq .Role ""}} selected{{end}}>no access</option></select>
+    <noscript><button type="submit">Save</button></noscript>
+  </form>{{end}}
 {{end}}
 </li>{{end}}</ul>
 
