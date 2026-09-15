@@ -308,11 +308,13 @@ func cmdQuestions(args []string) error {
 	db := dbFlag(fs)
 	all := fs.Bool("all", false, "include answered and withdrawn questions")
 	gate := fs.Bool("gate", false, "exit non-zero if any open question was never surfaced")
-	// The gate's source of truth is the exported tree, not the store. workflow.md
-	// requires every gate to run offline against the working tree, and the store
-	// is machine-local: reading it meant the check could only skip on a clone and
-	// in CI, while CLAUDE.md told every session the gate was binding.
-	records := fs.String("records", "", "read questions from this exported tree instead of the store")
+	// There is no reading from the exported tree. It had a --records flag for
+	// that, and the Makefile's gate used it (MUS-D-0050); since the export is
+	// committed on main only (MUS-D-0182) a branch's tree does not hold the
+	// questions that branch raised. Mustur acts only on its own store, and the
+	// export is a backup (MUS-D-0183). Where no store exists, the Makefile says
+	// the gate did not run rather than opening one: openStore creates it empty.
+	//
 	// Which project's work is being gated.
 	//
 	// The gate exists so a session cannot report *its* work complete around
@@ -328,17 +330,6 @@ func cmdQuestions(args []string) error {
 	only := fs.String("project", "", "gate only on this identifier prefix, for a store holding more than one project")
 	if err := fs.Parse(args); err != nil {
 		return err
-	}
-
-	if *records != "" {
-		qs, err := question.FromTree(*records)
-		if err != nil {
-			return err
-		}
-		if *gate {
-			return question.Gate(question.OfProject(qs, *only))
-		}
-		return listQuestions(qs, *all)
 	}
 
 	s, ctx, err := openStore(*db)

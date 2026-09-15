@@ -103,8 +103,10 @@ make install-service            # build the binary and install the unit
 systemctl --user enable --now mustur
 ```
 
-Verified enabled and active. Confined to two writable paths — the store and the
-export tree — with `ProtectSystem=strict` and `ProtectHome` read-only.
+Verified enabled and active. Confined to one writable path, the store, with
+`ProtectSystem=strict` and `ProtectHome` read-only. It also wrote the export tree
+until the service stopped exporting
+([MUS-D-0184](../records/decisions.md#mus-d-0184)).
 
 It restarts from `kill -9` (`status=9/KILL` 03:08:32, `Started` 03:08:37) and
 from `kill -TERM` (`MainPID` 933302 → 934515, `NRestarts=1`, `/healthz` 200

@@ -10,7 +10,7 @@
 #
 # workflow.md lists resolving links as a commit gate. A gate nobody runs is how
 # documentation ends up pointing at files that moved, so this is the gate,
-# runnable by hand today and by CI once ci/proposed/ci.yml is applied.
+# runnable by hand and by CI, which runs .github/workflows/ci.yml.
 #
 # External links are not checked: they fail for reasons this repository cannot
 # fix, and a gate that depends on someone else's uptime blocks a merge for no
@@ -22,6 +22,38 @@ cd "$(dirname "$0")/.." || exit 1
 
 fails=0
 checked=0
+deferred=0
+
+# Links into records/ wait for a refresh branch, everywhere else (MUS-D-0182).
+#
+# The export is committed only by a records/refresh-* pull request, so records/
+# on every other branch, main included, is main's last export and lags the
+# store. A document linking to a record filed since then points at a heading,
+# or a whole file, that is not there yet: on the branch that filed it, and on
+# main after that branch merges, until a refresh lands. Failing on either would
+# turn main red after an ordinary merge. So off a refresh branch, a link from
+# outside records/ into records/ that does not resolve is named and counted as
+# deferred, not failed. A refresh branch renders main's documents together with
+# a fresh export, so it checks them in full, and a link that is really broken
+# fails there, before the refresh merges. Links from inside records/ are
+# generated alongside their targets and are checked everywhere.
+full_records=0
+branch=$(scripts/export-branch.sh) || true
+case "$branch" in
+  records/refresh-*) full_records=1 ;;
+esac
+records_dir=$(realpath -m records)
+
+# into_records TARGET — succeeds when a broken link from $file to TARGET waits
+# for a refresh branch rather than failing here.
+into_records() {
+  [ "$full_records" -eq 0 ] || return 1
+  case "$file" in records/*) return 1 ;; esac
+  case "$(realpath -m "$1")" in
+    "$records_dir"|"$records_dir"/*) return 0 ;;
+  esac
+  return 1
+}
 
 # Tracked *and* newly added, which `git ls-files` alone is not.
 #
@@ -95,8 +127,13 @@ while IFS= read -r file; do
     if [ -n "$path" ]; then
       target="$dir/$path"
       if [ ! -e "$target" ]; then
-        printf '  FAIL  %s -> %s (no such file)\n' "$file" "$link"
-        fails=$((fails + 1))
+        if into_records "$target"; then
+          printf '  defer %s -> %s (no such file yet)\n' "$file" "$link"
+          deferred=$((deferred + 1))
+        else
+          printf '  FAIL  %s -> %s (no such file)\n' "$file" "$link"
+          fails=$((fails + 1))
+        fi
         continue
       fi
     fi
@@ -111,16 +148,26 @@ while IFS= read -r file; do
     # pipeline that succeeded. That failed roughly one anchor in five, a
     # different one each run.
     if ! grep -qxF "$anchor" <<<"$(anchors_for "$target")"; then
-      printf '  FAIL  %s -> %s (no such heading)\n' "$file" "$link"
-      fails=$((fails + 1))
+      if into_records "$target"; then
+        printf '  defer %s -> %s (no such heading yet)\n' "$file" "$link"
+        deferred=$((deferred + 1))
+      else
+        printf '  FAIL  %s -> %s (no such heading)\n' "$file" "$link"
+        fails=$((fails + 1))
+      fi
     fi
   done < <(grep -oE '\]\([^)]*\)' "$file" | sed -E 's/^\]\(//; s/\)$//')
 done < <(tracked_markdown)
 
 if [ "$fails" -eq 0 ]; then
-  printf '  ok    %d links resolve\n' "$checked"
+  printf '  ok    %d links resolve\n' "$((checked - deferred))"
 else
   printf '  %d broken link(s) of %d\n' "$fails" "$checked"
+fi
+if [ "$deferred" -gt 0 ]; then
+  printf '  defer %d link(s) into records/ do not resolve on %s, whose records/ is main'\''s last export;\n' \
+    "$deferred" "${branch:-this detached HEAD}"
+  printf '        they are checked in full on records/refresh-*, where a fresh export meets these documents (MUS-D-0182)\n'
 fi
 
 # Table rows against their own header.

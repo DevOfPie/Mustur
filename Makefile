@@ -1,15 +1,31 @@
-# Every target runs offline against this working tree, by hand, today —
-# workflow.md's rule. CI (ci/proposed/ci.yml, once the owner applies it) calls
-# these same targets and adds nothing of its own: what a check *does* lives
-# here, what a check *is* lives in the workflow file. ci/proposed/README.md
-# argues that split.
+# The gates run against this working tree, by hand, today — workflow.md's rule.
+# Not every target is offline: `questions` reads the store and says it did not
+# run where there is none or it holds no records (MUS-D-0183); `export-scope`
+# fetches main from origin when the checkout has none, and says it did not run
+# when that fails (MUS-D-0182); `records-refresh` fetches, pushes and opens a
+# pull request; `install-service` and `deploy` act on this machine's systemd.
+# CI (.github/workflows/ci.yml) calls these same targets and adds nothing of its
+# own: what a check *does* lives here, what a check *is* lives in the workflow
+# file. ci/proposed/README.md argues that split.
 
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
-        questions surfaces build serve seed export audit install install-service deploy deploy-from-main workflow-proposals help
+        questions surfaces export-scope-test export-scope build serve seed export records-refresh audit \
+        install install-service deploy deploy-from-main workflow-proposals help
 
-check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces ## Every commit gate this tree can enforce mechanically
+check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces export-scope-test export-scope ## Every commit gate this tree can enforce mechanically
+
+# The export is committed on main only (MUS-D-0182): a branch that commits it
+# carries the whole store at that minute, and two open at once conflict in files
+# git cannot know are generated (MUS-F-0066). The test drives the gate against a
+# throwaway repository first, because a gate that has only ever passed here has
+# not been shown to refuse anything.
+export-scope-test: ## The export-scope gate refuses records/ and the decisions.md tail, and allows the rest
+	@scripts/test-export-scope.sh
+
+export-scope: ## A feature branch changes nothing under records/ or below decisions.md's generated marker
+	@scripts/check-export-scope.sh
 
 check-links: ## Tracked markdown: links and anchors resolve, table rows match their headers
 	@scripts/check-links.sh
@@ -56,14 +72,32 @@ surfaces: ## Every page served is a surface docs/ui-surfaces.md briefed first
 	  fi; \
 	  exit $$status
 
-# Reads records/, not the store. The store is machine-local, so a store-backed
-# gate could only skip on a clone and in CI — and it could not tell "no store"
-# from "no buried question", which is the substitution DL-03 already made once
-# here. Against the tree there is nothing to skip: an absent or empty
-# questions.md is the tree saying there are none, which is a fact and not a gap.
-questions: ## No open question was left unsurfaced as a prompt
-	@go run ./cmd/mustur questions --gate --records records --project MUS \
-	  && echo "  ok    no open question of this project's was left unsurfaced"
+# Reads the store, never records/. Mustur acts only on its own store; the export
+# is a backup and a conformance surface, and on a feature branch it is main's,
+# not this branch's, so a question raised here is not in it (MUS-D-0183, which
+# supersedes MUS-D-0050). The store is machine-local, so on a clone and in CI
+# there is none, and the gate says out loud that it did not run rather than
+# reading the export in its place. It never runs the binary against a missing
+# store: openStore creates an empty one, and an empty store passes silently,
+# which would be "no store" reported as "no buried question". A store that
+# exists and holds no records is the same silence, and a size test cannot tell
+# it apart (an initialised empty store is 147,456 bytes), so records are counted.
+# The store is MUSTUR_DB when set, which is how records-refresh points this at
+# the store it exported.
+questions: ## No open question in the store was left unsurfaced as a prompt
+	@store=$$(scripts/store-path.sh); \
+	  if [ ! -f "$$store" ]; then \
+	    echo "  skip  question gate did not run: no store at $$store, and it reads only the store (MUS-D-0183)"; \
+	    exit 0; \
+	  fi; \
+	  list=$$(go run ./cmd/mustur list --db "$$store") \
+	    || { echo "  FAIL  could not list the records in $$store"; exit 1; }; \
+	  if [ -z "$$list" ]; then \
+	    echo "  skip  question gate did not run: store holds no records at $$store, and an empty store answers nothing (MUS-D-0183)"; \
+	    exit 0; \
+	  fi; \
+	  go run ./cmd/mustur questions --gate --db "$$store" --project MUS \
+	    && echo "  ok    no open question of this project's in $$store was left unsurfaced"
 
 # go.mod said a directly imported package was `// indirect` for one commit, and
 # nothing noticed. An earlier version of this comment said "a whole milestone",
@@ -113,8 +147,18 @@ build: ## The binary, in this directory
 seed: ## Put what already exists into an empty store
 	@go run ./cmd/mustur seed
 
-export: ## Render the store into records/ and the generated tail of decisions.md
+# Refuses on a feature branch, where the export is not committed (MUS-D-0182).
+# FORCE=1 renders anyway, for resolving a conflicted export by hand.
+export: ## Render the store into records/ and the generated tail of decisions.md — main and records/refresh-* only
+	@if [ "$${FORCE:-}" != 1 ] && ! branch=$$(scripts/export-branch.sh); then \
+	  echo "  FAIL  $${branch:-this detached HEAD} does not commit the export; it is committed on main only (MUS-D-0182)"; \
+	  echo "        run: make records-refresh    (FORCE=1 make export renders here anyway, to resolve by hand)"; \
+	  exit 1; \
+	fi
 	@go run ./cmd/mustur export --out records --decisions decisions.md
+
+records-refresh: ## Export the live store onto a records/refresh-* branch cut from main, gate it, and open a PR. DB=PATH for another store
+	@scripts/records-refresh.sh $(if $(DB),--db "$(DB)")
 
 serve: ## Serve the one tool call on loopback
 	@go run ./cmd/mustur serve

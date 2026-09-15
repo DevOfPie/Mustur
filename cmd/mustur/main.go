@@ -50,7 +50,8 @@ const usage = `mustur — records and routing for one project
                   [--needed]                  the work cannot proceed without the answer
   mustur surfaced ID                          record that it reached a prompt
   mustur answer   ID --answer A               record what the owner said, or --withdraw
-  mustur questions [--all] [--gate]           open questions; --gate exits non-zero on buried ones
+  mustur questions [--all] [--gate]           open questions in the store; --gate exits non-zero on buried ones
+                  [--project P]               only this identifier prefix's; the export is never read
   mustur session  start P --dir D --cmd C     start a session Mustur owns, inside tmux
                   list | stop P               there is no send: see cmd/mustur/sessions.go
   mustur account  invite --email E [--role R]  a one-time link; printed once, never stored

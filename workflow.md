@@ -16,7 +16,13 @@ Keep them liftable.
 
 **Every rule below is executable by hand today.** That was free while nothing
 was built; since milestone 2 it is a constraint, and `make check` is where it is
-kept — every gate runs offline against the working tree.
+kept — every gate runs offline against the working tree, except two. The
+question gate reads Mustur's own store and never the committed export, and says
+out loud that it did not run where there is no store or the store holds no
+records ([MUS-D-0183](records/decisions.md#mus-d-0183)). The export-scope gate
+needs origin: it fetches `main` when the checkout has none to compare with, and
+says out loud that it did not run when the fetch fails
+([MUS-D-0182](records/decisions.md#mus-d-0182)).
 
 ---
 
@@ -199,6 +205,19 @@ out of scope → append one line to queue.md, continue what you were on
 this file is the rule for: what belongs in the queue is what this document says
 belongs in it.
 
+### A record was filed
+
+```
+on a feature branch → commit no export; make export refuses, make check fails
+after merges        → make records-refresh: branch from main, export, PR, never merge
+links into
+  records/          → unresolved ones deferred and counted everywhere, main included;
+                      checked in full only on records/refresh-*
+```
+
+The export is committed on main only
+([MUS-D-0182](records/decisions.md#mus-d-0182)).
+
 ### A claim is about to be written
 
 ```
@@ -230,6 +249,7 @@ never be the reason scope is cut.
 | Links | Every relative link and anchor in tracked `.md` resolves |
 | Scope | One topic per commit |
 | Other repositories | Untouched |
+| Export | Nothing under `records/`, nothing at or below `decisions.md`'s generated marker — unless the branch is `main`; a `records/refresh-*` branch changes those and nothing else ([MUS-D-0182](records/decisions.md#mus-d-0182)) |
 
 Commit messages are long prose explaining *why*. The diff shows what.
 
