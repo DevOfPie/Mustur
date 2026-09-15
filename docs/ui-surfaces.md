@@ -422,6 +422,34 @@ Must also answer: a control that appears to do something must do it. Changing a
 role saves it; there is no separate button to press afterwards, which the review
 named as the failure it is.
 
+**Access across projects** is drawn in
+[plan-90422fb59d474a70](https://plan.agent-native.com/plans/plan-90422fb59d474a70),
+after MUS-F-0166 found an owner could invite people only to Mustur and could not
+give somebody who already had an account a role anywhere else. The owner chose
+Shape A on MUS-Q-0142 (MUS-D-0188):
+
+- Each person is listed once, with a line for every project **the viewer owns**:
+  the project's name and a select of reader, owner or no access. Changing a line
+  saves it; *no access* removes the role. Projects the viewer does not own are
+  not on anybody else's card.
+- The viewer's own card is a sentence — *owner in Mustur (MUS), LinkCtrl
+  (LNK)* — rather than controls.
+- The invitation's project picker lists the projects the viewer owns.
+- **An owner grants only where they own.** Every grant, change, removal and
+  invitation is checked against the actor owning *that* project, so owning
+  Mustur does not confer ownership of LinkCtrl. A crafted post is refused the
+  same as the form.
+- The only owner of a project cannot be demoted or removed, in every project and
+  not only this install's. The store refuses it, so the command line
+  (`mustur account grant`, `mustur account ungrant`) meets the same rule.
+- The tab bar stays visible with the content scrolling behind it, pinned at the
+  bottom on a phone and a rail on a wide screen — the shared chrome of
+  `internal/web/shell.go`, which this screen already used.
+
+Still reaching the screen at all takes an owner of this install's project; an
+owner of LinkCtrl alone who reads Mustur can make the writes and has no screen
+to make them from.
+
 ## Not surfaces
 
 | Not building | Because |
