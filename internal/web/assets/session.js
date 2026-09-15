@@ -313,7 +313,9 @@
   // row that runs until its stop then reads as work in flight for hours
   // (MUS-F-0157). Longer than a slow build inside one tool call. Display only:
   // the row is not ended, its next event makes it running again, and changing
-  // this needs nothing on the server.
+  // this needs no migration. The first paint decides the same thing on the
+  // server with SubagentQuietAfter in internal/web/sessions.go; change the two
+  // together, or a row reads quiet on load and running a second later.
   var QUIET_AFTER = 15 * 60;
 
   // Not called quiet: that name is the footer's silence counter above, and a
@@ -338,6 +340,16 @@
       return d.toLocaleString();
     }
   }
+
+  // The first paint marks quiet rows too, but writes the time in the server's
+  // zone, which is not the viewer's. Rewritten here before the first frame.
+  (function () {
+    var pills = document.querySelectorAll(".agent .pill.quiet[data-heard]");
+    for (var k = 0; k < pills.length; k++) {
+      pills[k].textContent =
+        "no word since " + heardAt(Number(pills[k].getAttribute("data-heard")));
+    }
+  })();
 
   function drawAgents() {
     if (!agentsBox || agents === null) return;
@@ -434,23 +446,20 @@
       badgeEl.textContent = String(running || total || "");
     }
     if (ring) ring.classList.toggle("live", running > 0);
+    // One wording for the button's title and the drawer's header, as the
+    // server's "agentcount" template writes both on the first paint.
+    var count = total
+      ? total +
+        (running ? " · " + running + " running" : "") +
+        (silent ? " · " + silent + " quiet" : "")
+      : "";
     if (toggle) {
       if (total) toggle.removeAttribute("data-empty");
       else toggle.setAttribute("data-empty", "");
-      if (total) {
-        toggle.title =
-          total +
-          (running ? " · " + running + " running" : "") +
-          (silent ? " · " + silent + " quiet" : "");
-      } else {
-        toggle.removeAttribute("title");
-      }
+      if (total) toggle.title = count;
+      else toggle.removeAttribute("title");
     }
-    if (dcount) {
-      dcount.textContent = total
-        ? total + (running ? " \u00b7 " + running + " running" : "")
-        : "";
-    }
+    if (dcount) dcount.textContent = count;
   }
 
   // The drawer.

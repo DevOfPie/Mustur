@@ -628,8 +628,9 @@ func TestAResumedSubagentReadsRunningUntilItStopsAgain(t *testing.T) {
 	}
 }
 
-// Heard is when the row was last heard from: its start, each tool it reaches
-// for, its stop, and the start that resumes it. The client reads a running row
+// Heard is when the row was last heard from, by any event of the row: its
+// start, each tool call's start and end, a launch from inside it, its stop,
+// and the start that resumes it. The client reads a running row
 // with an old Heard as quiet (MUS-D-0191), so a stamp that lagged an event
 // would call a working sub-agent silent, and one that moved without an event
 // would hide the stop that never came (MUS-F-0157).
@@ -662,11 +663,31 @@ func TestHeardFollowsEveryEventOfTheRow(t *testing.T) {
 	})
 	heard(doing, "a tool call")
 
+	ended := t0.Add(22 * time.Minute)
+	record(t, dir, "P", ended, map[string]any{
+		"hook_event_name": "PostToolUse", "agent_id": "a1", "tool_name": "Grep",
+	})
+	heard(ended, "a tool call's end")
+
+	// A stray end for a tool the row is no longer in is still the row.
+	stray := t0.Add(23 * time.Minute)
+	record(t, dir, "P", stray, map[string]any{
+		"hook_event_name": "PostToolUse", "agent_id": "a1", "tool_name": "Bash",
+	})
+	heard(stray, "an end naming another tool")
+
+	nested := t0.Add(24 * time.Minute)
+	record(t, dir, "P", nested, map[string]any{
+		"hook_event_name": "PreToolUse", "agent_id": "a1", "tool_name": "Agent",
+		"tool_input": map[string]any{"description": "Look deeper", "subagent_type": "Explore"},
+	})
+	heard(nested, "a launch from inside it")
+
 	// Another sub-agent's events are not this one's.
 	record(t, dir, "P", t0.Add(25*time.Minute), map[string]any{
 		"hook_event_name": "PreToolUse", "agent_id": "someone-else", "tool_name": "Read",
 	})
-	heard(doing, "another id's tool call")
+	heard(nested, "another id's tool call")
 
 	stop := t0.Add(30 * time.Minute)
 	record(t, dir, "P", stop, map[string]any{

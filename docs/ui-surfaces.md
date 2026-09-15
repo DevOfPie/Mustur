@@ -343,14 +343,16 @@ rather than infer an end, and approved
 [plan-11f1635921db4c62](https://plan.agent-native.com/plans/plan-11f1635921db4c62)
 on [MUS-Q-0148](../records/questions.md#mus-q-0148) with its recommended
 answers ([MUS-D-0191](../records/decisions.md#mus-d-0191)). The server stamps
-each row with when its last start, tool call or stop arrived. A running row
+each row with when any event of that row last arrived. A running row
 whose stamp is more than **15 minutes** old swaps its pill for *no word since*
 and that time, in the viewer's zone with its abbreviation, and draws no age. It
 **stays where it was** among the running rows. It leaves the badge's count and
 the ring, and the button's title names how many are quiet; with only quiet and
 finished rows left the badge shows the total. Its next event makes it running
-again and a stop still finishes it. Quiet is a display rule in the client,
-re-read every second, and not a state the server writes.
+again and a stop still finishes it. Quiet is a display rule, not a state the
+server writes: the first paint applies it with one constant, the script
+re-applies it every second with another of the same value, and the drawer's
+header counts quiet rows the way the button's title does.
 
 **The connection is the first one that carries keystrokes in**, not only records
 out. A flaw here is not a wrong page; it is somebody else typing into an agent

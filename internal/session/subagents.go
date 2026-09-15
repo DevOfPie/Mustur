@@ -82,8 +82,9 @@ type Subagent struct {
 	Ended   time.Time // zero while it is still running
 	Doing   string    // the tool it last reached for, while running
 	Said    string    // its final message, once it has ended
-	// Heard is the stamp of the last start, doing or stop applied to this
-	// row. A row runs until its stop arrives, and a stop can fail to arrive —
+	// Heard is the stamp of the last event of any kind applied to this row:
+	// its start, a resume, a tool call's start or end, a launch from inside
+	// it, its stop. A row runs until its stop arrives, and a stop can fail to arrive —
 	// an interrupt's only hook carries no agent id (MUS-F-0157) — so what the
 	// surface can honestly say about a row that has gone silent is when it was
 	// last heard from. Nothing here decides that it is quiet: that is a display
@@ -422,7 +423,7 @@ func (st *logFold) apply(e event) {
 		// Launched from inside a sub-agent: that one is now in the Agent
 		// tool, exactly as a "doing" would have said.
 		if r := rows[e.ID]; e.ID != "" && r != nil && r.Ended.IsZero() {
-			r.Doing = "Agent"
+			r.Doing, r.Heard = "Agent", e.At
 		}
 	case "start":
 		// A start for an identifier already seen is that sub-agent resumed,
@@ -478,8 +479,14 @@ func (st *logFold) apply(e event) {
 		// Only clears the tool it names. A sub-agent's calls arrive in
 		// order, but a stray PostToolUse for a tool the row is no longer in
 		// should not blank a call that has since started.
-		if r := rows[e.ID]; r != nil && r.Doing == e.Tool {
-			r.Doing = ""
+		// It is still the row being heard from, whichever tool it names: the
+		// end of a long call is exactly the event a row gone quiet during that
+		// call is waiting for.
+		if r := rows[e.ID]; r != nil {
+			r.Heard = e.At
+			if r.Doing == e.Tool {
+				r.Doing = ""
+			}
 		}
 	case "stop":
 		// Only a sub-agent that started gets a row. A run against the real
