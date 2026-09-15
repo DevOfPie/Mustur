@@ -646,7 +646,8 @@ func TestTheAnswererIsToldWhereTheAnswerWent(t *testing.T) {
 		t.Fatal(err)
 	}
 	// The client follows the redirect, so this is the page the owner lands on.
-	if !strings.Contains(string(body), "Answered <code>MUS-Q-0001</code>") {
+	// The identifier is a link to the record since MUS-F-0168.
+	if !strings.Contains(string(body), `Answered <code><a href="/records/MUS-Q-0001" target="_blank" rel="noopener">MUS-Q-0001</a></code>`) {
 		t.Fatal("the queue does not confirm the answer at all")
 	}
 	if !strings.Contains(string(body), "not delivered") {

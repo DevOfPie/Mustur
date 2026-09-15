@@ -70,6 +70,96 @@ func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context)
 	})
 }
 
+// The decision queue renders the same markdown, and every identifier in it is a
+// link to that record (MUS-F-0168). The owner met "MUS-F-0164" and "MUS-F-0027"
+// in a question and its options and had no way to them but typing the address.
+//
+// Only here, not on Records: that surface expands an identifier in place, below
+// the body, which is MUS-D-0040's answer for it, and a link in the prose beside
+// the expansion would be a second way to do the same thing.
+//
+// Every link the queue renders opens a new tab, which is the constraint every
+// surface inherits (docs/ui-surfaces.md, "Link-out is conditional"), and here it
+// is also what keeps a half-written note: the answer box has no draft, so
+// following a link in the same tab would lose what the owner had typed.
+var mdQueue = goldmark.New(
+	goldmark.WithExtensions(extension.Table),
+	goldmark.WithParserOptions(parser.WithASTTransformers(
+		util.Prioritized(recordLinks{}, 100),
+		util.Prioritized(queueLinks{}, 200),
+	)),
+)
+
+// queueLinks links bare identifiers, then points every link at a new tab. Both
+// steps are in one transformer so their order does not rest on how priorities
+// sort.
+type queueLinks struct{}
+
+func (queueLinks) Transform(doc *ast.Document, reader text.Reader, _ parser.Context) {
+	src := reader.Source()
+	// Collected first and split after, because inserting siblings while
+	// walking them is how a walk visits a node twice or skips one.
+	var texts []*ast.Text
+	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+		switch n := n.(type) {
+		// Code is quoted text, and a link's text is already a link.
+		case *ast.Link, *ast.AutoLink, *ast.Image, *ast.CodeSpan, *ast.RawHTML:
+			return ast.WalkSkipChildren, nil
+		case *ast.Text:
+			texts = append(texts, n)
+		}
+		return ast.WalkContinue, nil
+	})
+	for _, t := range texts {
+		linkBare(t, src)
+	}
+	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if l, ok := n.(*ast.Link); ok && entering {
+			l.SetAttributeString("target", "_blank")
+			l.SetAttributeString("rel", "noopener")
+		}
+		return ast.WalkContinue, nil
+	})
+}
+
+// linkBare splits one text node around the identifiers in it. The node itself
+// keeps the tail, so a line break that ends it still ends it.
+func linkBare(t *ast.Text, src []byte) {
+	seg := t.Segment
+	if t.IsRaw() || seg.Padding != 0 {
+		return
+	}
+	value := seg.Value(src)
+	found := idInProse.FindAllIndex(value, -1)
+	if found == nil {
+		return
+	}
+	parent := t.Parent()
+	pos := 0
+	for _, m := range found {
+		if m[0] > pos {
+			parent.InsertBefore(parent, t, ast.NewTextSegment(text.NewSegment(seg.Start+pos, seg.Start+m[0])))
+		}
+		l := ast.NewLink()
+		l.Destination = []byte("/records/" + string(value[m[0]:m[1]]))
+		l.AppendChild(l, ast.NewTextSegment(text.NewSegment(seg.Start+m[0], seg.Start+m[1])))
+		parent.InsertBefore(parent, t, l)
+		pos = m[1]
+	}
+	t.Segment = text.NewSegment(seg.Start+pos, seg.Stop)
+}
+
+// linkIDs is the same for text that is not markdown -- a title, what a question
+// blocks, an option's label and line. Escaped first, and the pattern is capitals,
+// digits and hyphens, so nothing escaping writes can be mistaken for one.
+func linkIDs(s string) template.HTML {
+	return template.HTML(idInProse.ReplaceAllString(template.HTMLEscapeString(s),
+		`<a href="/records/$0" target="_blank" rel="noopener">$0</a>`))
+}
+
 // markdown renders src for a page.
 //
 // A table is wrapped in a container of its own that scrolls sideways, because a
@@ -79,8 +169,17 @@ func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context)
 // dropped and text is escaped, so a literal <table> in the output can only be
 // the renderer's.
 func markdown(src string) template.HTML {
+	return renderMarkdown(md, src)
+}
+
+// queueMarkdown renders src for the decision queue, identifiers linked.
+func queueMarkdown(src string) template.HTML {
+	return renderMarkdown(mdQueue, src)
+}
+
+func renderMarkdown(m goldmark.Markdown, src string) template.HTML {
 	var b bytes.Buffer
-	if err := md.Convert([]byte(src), &b); err != nil {
+	if err := m.Convert([]byte(src), &b); err != nil {
 		// Convert fails only on a writer error, and a bytes.Buffer has none.
 		// Escaped text is still better than nothing if that ever changes.
 		return template.HTML(template.HTMLEscapeString(src))
