@@ -542,19 +542,122 @@ func (s *Store) RoleFor(ctx context.Context, accountID, project string) (Role, b
 	return r, true
 }
 
+// ErrLastOwner refuses a change that would leave a project with nobody able to
+// administer it: the only owner demoted or removed.
+//
+// It is checked here, per project, rather than by the surface against the
+// install's project alone. The screen used to guard the one project it knew,
+// and once it can change a role in LinkCtrl or Hoard, a check that only knows
+// Mustur is a check the other projects do not have (MUS-D-0188).
+var ErrLastOwner = errors.New("that is the only owner this project has left")
+
+// soleOwner reports whether accountID is an owner of project and no other
+// enabled account is. A disabled owner cannot sign in to administer anything,
+// so it does not count as the other owner — the same rule the surface used.
+func soleOwner(ctx context.Context, tx *sql.Tx, accountID, project string) (bool, error) {
+	var role string
+	err := tx.QueryRowContext(ctx,
+		`SELECT role FROM grant_role WHERE account_id = ? AND project = ?`,
+		accountID, project).Scan(&role)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if Role(role) != Owner {
+		return false, nil
+	}
+	var others int
+	if err := tx.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM grant_role g JOIN account a ON a.id = g.account_id
+		 WHERE g.project = ? AND g.role = 'owner' AND g.account_id <> ?
+		   AND COALESCE(a.disabled, '') = ''`,
+		project, accountID).Scan(&others); err != nil {
+		return false, err
+	}
+	return others == 0, nil
+}
+
 // Grant sets a role directly, which is what the command line does when there is
-// nobody yet to send an invitation to.
+// nobody yet to send an invitation to, and what People does when an owner
+// changes somebody's role in a project they own.
+//
+// Demoting a project's only owner is refused with ErrLastOwner, in whichever
+// project that is.
 func (s *Store) Grant(ctx context.Context, accountID, project string, role Role, by string) error {
 	if !role.Valid() {
 		return fmt.Errorf("%q is not a role", role)
 	}
-	_, err := s.db.ExecContext(ctx,
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if role != Owner {
+		sole, err := soleOwner(ctx, tx, accountID, project)
+		if err != nil {
+			return err
+		}
+		if sole {
+			return ErrLastOwner
+		}
+	}
+	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO grant_role (account_id, project, role, granted, granted_by)
 		 VALUES (?, ?, ?, ?, ?)
 		 ON CONFLICT (account_id, project) DO UPDATE SET
 		   role = excluded.role, granted = excluded.granted, granted_by = excluded.granted_by`,
-		accountID, project, string(role), s.now().UTC().Format(stamp), by)
-	return err
+		accountID, project, string(role), s.now().UTC().Format(stamp), by); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// Ungrant takes an account's role in one project away.
+//
+// Until this existed nothing removed a role once granted — not the screen and
+// not the command line (MUS-F-0166). The removal is written to grant_removed
+// with who did it, because deleting the grant_role row deletes the only place
+// that said who acted, and a removal is the act most worth attributing.
+//
+// Removing a project's only owner is refused with ErrLastOwner. Removing a role
+// the account does not hold is an error rather than a silent success, so a
+// typo in a project prefix on the command line says so.
+func (s *Store) Ungrant(ctx context.Context, accountID, project, by string) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var role string
+	err = tx.QueryRowContext(ctx,
+		`SELECT role FROM grant_role WHERE account_id = ? AND project = ?`,
+		accountID, project).Scan(&role)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("that account has no role on %s", project)
+	}
+	if err != nil {
+		return err
+	}
+	sole, err := soleOwner(ctx, tx, accountID, project)
+	if err != nil {
+		return err
+	}
+	if sole {
+		return ErrLastOwner
+	}
+	if _, err := tx.ExecContext(ctx,
+		`DELETE FROM grant_role WHERE account_id = ? AND project = ?`, accountID, project); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx,
+		`INSERT INTO grant_removed (account_id, project, role, removed, removed_by)
+		 VALUES (?, ?, ?, ?, ?)`,
+		accountID, project, role, s.now().UTC().Format(stamp), by); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // Accounts lists everybody Mustur knows.

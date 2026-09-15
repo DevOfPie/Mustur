@@ -121,6 +121,19 @@ CREATE TABLE IF NOT EXISTS grant_role (
   PRIMARY KEY (account_id, project)
 );
 
+-- A role taken away, and who took it. grant_role says who granted a role in
+-- the row itself; a removal deletes that row, so without this the one act that
+-- takes access away would be the one act nobody is recorded doing
+-- (MUS-D-0188). Insert-only: a role granted again later is a new grant_role
+-- row, and this keeps saying it was once removed.
+CREATE TABLE IF NOT EXISTS grant_removed (
+  account_id TEXT NOT NULL REFERENCES account (id),
+  project    TEXT NOT NULL,
+  role       TEXT NOT NULL,
+  removed    TEXT NOT NULL,
+  removed_by TEXT NOT NULL
+);
+
 -- An invitation carries the role it will grant, so accepting it is not a second
 -- decision. The token is stored hashed: this file is a backup away from being
 -- somewhere else, and a live invite is a way in.
