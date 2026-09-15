@@ -307,12 +307,51 @@
     return n;
   }
 
+  // How long a running sub-agent can go without an event before its row says
+  // when it was last heard from instead of what it is doing (MUS-D-0191). A stop
+  // can fail to arrive — an interrupt's only hook carries no agent id — and a
+  // row that runs until its stop then reads as work in flight for hours
+  // (MUS-F-0157). Longer than a slow build inside one tool call. Display only:
+  // the row is not ended, its next event makes it running again, and changing
+  // this needs nothing on the server.
+  var QUIET_AFTER = 15 * 60;
+
+  // Not called quiet: that name is the footer's silence counter above, and a
+  // second declaration in this scope silently replaces it.
+  function unheard(a, now) {
+    return !a.done && !!a.heard && now - a.heard > QUIET_AFTER;
+  }
+
+  // The time a quiet row was last heard from, in the viewer's zone and named,
+  // because a bare 9:09 read on a phone in another zone is a different moment.
+  // A day that is not today says which.
+  function heardAt(stamp) {
+    var d = new Date(stamp * 1000);
+    var opts = { hour: "numeric", minute: "2-digit", timeZoneName: "short" };
+    if (d.toDateString() !== new Date().toDateString()) {
+      opts.month = "short";
+      opts.day = "numeric";
+    }
+    try {
+      return new Intl.DateTimeFormat(undefined, opts).format(d);
+    } catch (e) {
+      return d.toLocaleString();
+    }
+  }
+
   function drawAgents() {
     if (!agentsBox || agents === null) return;
+    var now = Date.now() / 1000;
     var running = 0;
+    var silent = 0;
+    var finished = 0;
     var i;
-    for (i = 0; i < agents.length; i++) if (!agents[i].done) running++;
-    badge(agents.length, running);
+    for (i = 0; i < agents.length; i++) {
+      if (agents[i].done) finished++;
+      else if (unheard(agents[i], now)) silent++;
+      else running++;
+    }
+    badge(agents.length, running, silent);
 
     // Rebuilt rather than diffed. A handful of rows is not worth a reconciler,
     // and a rebuild cannot leave a stale row behind. The fold is the one thing
@@ -332,14 +371,14 @@
     // Running rows, then every finished one under a line that counts them
     // (MUS-D-0181). The server already sent them in that order.
     var box = agentsBox;
-    if (agents.length > running) {
+    if (finished) {
       var fold = el("details", "fold");
       fold.open = finishedOpen;
     }
     for (i = 0; i < agents.length; i++) {
       var a = agents[i];
       if (a.done && box === agentsBox) {
-        fold.appendChild(el("summary", "", agents.length - running + " finished"));
+        fold.appendChild(el("summary", "", finished + " finished"));
         agentsBox.appendChild(fold);
         box = fold;
       }
@@ -349,8 +388,15 @@
       row.appendChild(
         a.title ? el("span", "what", a.title) : el("span", "what untitled", a.type)
       );
-      row.appendChild(el("span", "pill" + (a.done ? " done" : ""), a.state));
-      row.appendChild(el("span", "age", age(a.started, a.ended)));
+      // A quiet row stays where it was and loses its clock: a clock counting up
+      // from a silence reads as progress. Recomputed on every one-second
+      // redraw, so it turns quiet, and back, without a frame to say so.
+      if (unheard(a, now)) {
+        row.appendChild(el("span", "pill quiet", "no word since " + heardAt(a.heard)));
+      } else {
+        row.appendChild(el("span", "pill" + (a.done ? " done" : ""), a.state));
+        row.appendChild(el("span", "age", age(a.started, a.ended)));
+      }
       row.appendChild(el("span", "more", "\u203a"));
       box.appendChild(row);
       // Out of view, not out of the page: the reading pane reads from here, so
@@ -378,7 +424,11 @@
   var toggle = document.getElementById("toggle");
   var dcount = document.getElementById("dcount");
 
-  function badge(total, running) {
+  // A quiet row is in neither count shown and is named only in the button's
+  // title (MUS-D-0191): the ring turning for it is the wrong it was built to
+  // stop, and with only quiet rows left the badge shows the total, as it does
+  // when everything has finished.
+  function badge(total, running, silent) {
     if (badgeEl) {
       badgeEl.hidden = !total;
       badgeEl.textContent = String(running || total || "");
@@ -387,6 +437,14 @@
     if (toggle) {
       if (total) toggle.removeAttribute("data-empty");
       else toggle.setAttribute("data-empty", "");
+      if (total) {
+        toggle.title =
+          total +
+          (running ? " · " + running + " running" : "") +
+          (silent ? " · " + silent + " quiet" : "");
+      } else {
+        toggle.removeAttribute("title");
+      }
     }
     if (dcount) {
       dcount.textContent = total
@@ -458,6 +516,8 @@
       var state = pill ? pill.textContent : "";
       read.textContent = done
         ? "It finished without a final message."
+        : pill && pill.classList.contains("quiet")
+        ? "Nothing said yet — " + state + "."
         : "Nothing said yet — it is " +
           (state === "working" ? "between tool calls" : "in " + state) + ".";
       read.className = "dread quiet";

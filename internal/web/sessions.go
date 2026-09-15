@@ -228,7 +228,11 @@ type subagentRow struct {
 	For     string `json:"-"`
 	Started int64  `json:"started"`
 	Ended   int64  `json:"ended,omitempty"`
-	Said    string `json:"said,omitempty"`
+	// Heard is when the row's last event arrived. The client reads a running
+	// row whose heard stamp is old as quiet (MUS-D-0191); every row has one, so
+	// unlike ended it is never omitted.
+	Heard int64  `json:"heard"`
+	Said  string `json:"said,omitempty"`
 }
 
 // held is the call this session is holding in front of the owner, if any.
@@ -274,7 +278,7 @@ func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 		r := subagentRow{
 			ID:    a.ID,
 			Title: a.Task, Type: a.Type, For: since(a.For(now)), Said: a.Said,
-			Started: a.Started.Unix(),
+			Started: a.Started.Unix(), Heard: a.Heard.Unix(),
 		}
 		if a.Running() {
 			running++
@@ -1370,6 +1374,16 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   .agent .pill { border: 1px solid var(--edge); border-radius: 999px;
                  padding: .05rem .5rem; font-size: .78em; }
   .agent .pill.done { border-color: var(--accent); background: var(--accent-soft); }
+  /* A running row nothing has been heard from for a while (MUS-D-0191). The
+     border borrows the failing-check chip's colour rather than adding one; the
+     words say what happened, the colour only says to look. */
+  .agent .pill.quiet { border-color: #c0392b; }
+  /* A time from before today carries its date, and at the wide screen's
+     default 17rem drawer that is about 20px more than the row has once the
+     title has given up all it can. Wrapped inside the pill rather than cut:
+     the zone is the part that would be cut, and a time without it is the
+     thing the pill must not show. Only wraps where it does not fit. */
+  .agent .pill.quiet { min-width: 0; white-space: normal; border-radius: .7rem; }
   .agent .age { opacity: .6; font-size: .82em; }
   /* Every finished row, under one line that counts them (MUS-D-0181). Drawn as
      a row of the list — same rule, same size — rather than as a control, and
