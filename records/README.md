@@ -10,9 +10,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | phase | 4 | [phases.md](phases.md) |
 | milestone | 107 | [milestones.md](milestones.md) |
-| question | 157 | [questions.md](questions.md) |
-| decision | 1152 | [decisions.md](decisions.md) |
-| finding | 568 | [findings.md](findings.md) |
+| question | 164 | [questions.md](questions.md) |
+| decision | 1157 | [decisions.md](decisions.md) |
+| finding | 580 | [findings.md](findings.md) |
 | repository, machine, project | 8 | [routing.md](routing.md) |
 | work-unit | 102 | [work-units/index.md](work-units/index.md) |
 | investigation | 5 | [investigations/index.md](investigations/index.md) |
@@ -42,6 +42,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0018](questions.md#hrd-q-0018) | question | Re-asking how the claim prompt appears, now on the Alt+H HUD that exists |
 | [HRD-Q-0019](questions.md#hrd-q-0019) | question | The demo is down on v1.1.7 because its database is ahead of the release. Which way up? |
 | [HRD-Q-0020](questions.md#hrd-q-0020) | question | The disk fills every few hours of Hoard work. Bigger disk, or a clean-between-runs rule? |
+| [HRD-Q-0021](questions.md#hrd-q-0021) | question | After sharing a Valheim world, the owner's characters and other worlds in that folder stop being backed up. Keep them backed up? |
+| [HRD-Q-0022](questions.md#hrd-q-0022) | question | Two older Hoard bugs showed up in testing: fix them in the fork, report them upstream, or leave them? |
+| [HRD-Q-0023](questions.md#hrd-q-0023) | question | The newest fix commits across the sharing PRs were never code-reviewed. Review them before you review the stack? |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -60,6 +63,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-D-0016](decisions.md#hrd-d-0016) | decision | The demo deploys releases only; branch builds go to a separate test instance |
 | [HRD-D-0017](decisions.md#hrd-d-0017) | decision | The demo came back on v1.1.7 by rolling its database back in place |
 | [HRD-D-0018](decisions.md#hrd-d-0018) | decision | The VM's disk grows to 256 GB |
+| [HRD-D-0019](decisions.md#hrd-d-0019) | decision | A shared folder stays fully backed up for its owner; members read and push only the shared world |
+| [HRD-D-0020](decisions.md#hrd-d-0020) | decision | HRD-D-0019 design: the lease guards only the shared world, and the server fills in the owner's other files on member pushes |
+| [HRD-D-0021](decisions.md#hrd-d-0021) | decision | The two pre-existing upstream bugs stay as they are |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
@@ -75,6 +81,14 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-F-0013](findings.md#hrd-f-0013) | finding | Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group |
 | [HRD-F-0014](findings.md#hrd-f-0014) | finding | Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night |
 | [HRD-F-0015](findings.md#hrd-f-0015) | finding | Second-round reviews of PRs 8, 9 and 10 found and fixed engine, CLI and UI defects; the stack verifies at 1,236 tests |
+| [HRD-F-0016](findings.md#hrd-f-0016) | finding | My review fixes introduced two high-severity lease bugs: every release reads as lost, and View during an acquire can push |
+| [HRD-F-0017](findings.md#hrd-f-0017) | finding | First end-to-end run: members read pre-share history, world lease never answers, members cannot adopt from the CLI, owner's claim after share is dropped |
+| [HRD-F-0018](findings.md#hrd-f-0018) | finding | Second end-to-end run: every first-run finding fixed; a member's adopt can deadlock hosting, and sharing stops the owner's other files being backed up |
+| [HRD-F-0019](findings.md#hrd-f-0019) | finding | Review of PR 12: the owner's write filter never filtered, and the owner's lease exemption lasted one tick |
+| [HRD-F-0020](findings.md#hrd-f-0020) | finding | Third end-to-end run: the owner's whole folder stays backed up, but an owner behind the head deadlocks while a member hosts |
+| [HRD-F-0021](findings.md#hrd-f-0021) | finding | Fourth end-to-end run: the owner whole-folder design works end to end; the owner's restore depends on a local account cache that a service-less login clears |
+| [HRD-F-0022](findings.md#hrd-f-0022) | finding | Review of the never-reviewed commits: two high and eight medium findings across the stack, no privacy leak |
+| [HRD-F-0023](findings.md#hrd-f-0023) | finding | I believe this project would benefit by separating save backups by world/character where… |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
@@ -1764,6 +1778,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0129](questions.md#mus-q-0129) | question | Every branch commits a whole-store export, so two branches that add records conflict in the generated files. How do we stop it? |
 | [MUS-Q-0130](questions.md#mus-q-0130) | question | With the export on main only, the question gate goes blind to questions raised on a branch. Read the store as well, or keep reading only the tree? |
 | [MUS-Q-0131](questions.md#mus-q-0131) | question | Milestone 7, LinkCtrl moving in, has landed on both mains. Do you accept it? |
+| [MUS-Q-0132](questions.md#mus-q-0132) | question | Six open PRs conflict with main only in decisions.md's generated tail. May I push the one-commit fix to their branches? |
+| [MUS-Q-0133](questions.md#mus-q-0133) | question | The live service writes its export into the Mustur checkout on every filing. Where should it write, if anywhere? |
+| [MUS-Q-0134](questions.md#mus-q-0134) | question | The old service left 89 export files changed in the main Mustur checkout. Discard them? |
+| [MUS-Q-0135](questions.md#mus-q-0135) | question | Everything for LinkCtrl's move is merged, including the export fix you were waiting on. Do you accept milestone 7? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -1947,6 +1965,8 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0181](decisions.md#mus-d-0181) | decision | Finished sub-agents fold under one 'N finished' line beneath the running ones, each still readable |
 | [MUS-D-0182](decisions.md#mus-d-0182) | decision | The records export is committed on main only, and branches carry none |
 | [MUS-D-0183](decisions.md#mus-d-0183) | decision | Mustur acts only on its own store; the committed records export is a backup and a conformance surface |
+| [MUS-D-0184](decisions.md#mus-d-0184) | decision | The live service does not export; main's export comes only from a records refresh |
+| [MUS-D-0185](decisions.md#mus-d-0185) | decision | Milestone 7 is accepted: LinkCtrl has moved in |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -2113,6 +2133,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0164](findings.md#mus-f-0164) | finding | Opening the Records tab is slow because it seems to be loading in everything at once |
 | [MUS-F-0165](findings.md#mus-f-0165) | finding | LinkCtrl still dispatches through a global file, so success criterion 1 is not yet true for it |
 | [MUS-F-0166](findings.md#mus-f-0166) | finding | I can only invite people to the Mustur project and it doesn't seem that I can add existing… |
+| [MUS-F-0167](findings.md#mus-f-0167) | finding | 1. How is Claude doing prompt isn't caught |
+| [MUS-F-0168](findings.md#mus-f-0168) | finding | None of the references in Decisions link out to their records, I believe this was included in… |
+| [MUS-F-0169](findings.md#mus-f-0169) | finding | make records-refresh nests its worktree inside whatever checkout it runs from, so removing that checkout deletes the refresh |
+| [MUS-F-0170](findings.md#mus-f-0170) | finding | Viewers should be able to submit items to intake, with them going through an approval queue… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |

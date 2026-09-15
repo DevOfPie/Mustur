@@ -4046,3 +4046,35 @@ MUS-Q-0130 asked whether the question gate should read the store once branches s
 | Field | Value |
 | --- | --- |
 | Supersedes | MUS-D-0050 |
+
+### MUS-D-0184
+
+**The live service does not export; main's export comes only from a records refresh**
+
+decision · 2026-09-14
+
+answers: MUS-Q-0133
+
+decision: MUS-D-0182
+
+decision: MUS-D-0183
+
+MUS-Q-0133 asked where the live service should write its export. deploy/mustur.service ran serve with --export into the main Mustur checkout, so every filing rewrote records/ there, and under MUS-D-0182 that checkout then always carried changes the export-scope gate rejects: 89 paths on 2026-09-14. The owner chose to stop the service exporting. The unit drops --export, the store is the record (MUS-D-0183), and main's export is rendered only by make records-refresh into a worktree of its own. The cost is stated in the option the owner chose. Between refreshes, the newest records exist in the store and nowhere on disk, so a store lost between refreshes loses them from the backup as well. Applying it is a change to the installed unit and a restart, done from main once the change has merged.
+
+| Field | Value |
+| --- | --- |
+| Applies to | deploy/mustur.service |
+
+### MUS-D-0185
+
+**Milestone 7 is accepted: LinkCtrl has moved in**
+
+decision · 2026-09-15
+
+answers: MUS-Q-0135
+
+milestone: MUS-M-0009
+
+work-unit: MUS-W-0024
+
+MUS-Q-0135 asked whether the owner accepts MUS-M-0009, now that every PR for LinkCtrl's move had merged, including the export-conflict fix MUS-Q-0131 held acceptance for. The owner accepted it. The done-when set in MUS-D-0170 holds. LinkCtrl's records are in the store and reconciled per source: 1,503 records, per MUS-D-0168, MUS-D-0169, MUS-D-0173 and MUS-D-0179. The files that held them are gone from LinkCtrl, with its links rewritten and its CI green (LinkCtrl PR 14). LinkCtrl sessions reached mustur_route with the machine's token. The findings left open stay open as their own work: LNK-F-0383, MUS-F-0165 and MUS-F-0149. The owner accepted knowing that no independent reviewer read LinkCtrl's four W48 fix commits after the first review.
