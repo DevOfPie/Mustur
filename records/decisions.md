@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-1150 record(s), by identifier.
+1152 record(s), by identifier.
 
 ## Index
 
@@ -1162,6 +1162,8 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0179](#mus-d-0179) | A phase keeps its file whole, tables included, and is dated by its milestones | 2026-09-14 |
 | [MUS-D-0180](#mus-d-0180) | Nothing is deployed to mustur.devofpie.com before it is on main; a test instance carries a change between pull requests | 2026-09-14 |
 | [MUS-D-0181](#mus-d-0181) | Finished sub-agents fold under one 'N finished' line beneath the running ones, each still readable | 2026-09-14 |
+| [MUS-D-0182](#mus-d-0182) | The records export is committed on main only, and branches carry none | 2026-09-14 |
+| [MUS-D-0183](#mus-d-0183) | Mustur acts only on its own store; the committed records export is a backup and a conformance surface | 2026-09-14 |
 
 ---
 
@@ -83569,3 +83571,43 @@ The owner answered MUS-Q-0126 with collapse under a count. A session that runs m
 | Field | Value |
 | --- | --- |
 | Status | built; internal/web/sessions.go drawer template, internal/web/assets/session.js drawAgents, on branch intake/finished-sub-agents-fold-under-a-count stacked on PR 78 |
+
+---
+
+## MUS-D-0182
+
+**The records export is committed on main only, and branches carry none**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0129](questions.md#mus-q-0129)
+
+amends: [MUS-D-0024](#mus-d-0024)
+
+finding: [MUS-F-0066](findings.md#mus-f-0066)
+
+MUS-Q-0129 asked how to stop two branches conflicting in the generated export, which MUS-F-0066 recorded on 2026-09-03 and #80 hit when both sides appended decisions to decisions.md's generated tail. The owner chose to export only on main. A branch that changes code, rules or docs commits no change to records/ and none to decisions.md below its generated marker. Main's export is refreshed by a pull request of its own, cut from main after merges, and that is the only kind of branch that commits the export. This narrows MUS-D-0024: the export is still committed and still the reviewable half, but on main rather than on every branch, so nothing a clone reads is lost. The cost is stated in the option the owner chose. A branch whose docs link to a record it just filed cannot see that record's anchor until the refresh lands, so anchors into records/ are verified on main's refresh branches rather than on feature branches.
+
+| Field | Value |
+| --- | --- |
+| Amends | MUS-D-0024, where the export is committed |
+
+---
+
+## MUS-D-0183
+
+**Mustur acts only on its own store; the committed records export is a backup and a conformance surface**
+
+decision · 2026-09-14
+
+answers: [MUS-Q-0130](questions.md#mus-q-0130)
+
+supersedes: [MUS-D-0050](#mus-d-0050)
+
+decision: [MUS-D-0182](#mus-d-0182)
+
+MUS-Q-0130 asked whether the question gate should read the store once branches stop committing the export (MUS-D-0182). The owner answered past the options: no function of Mustur relies on the committed records export. The export exists only as a backup and as what tests and StrucGu conformance run against, and every action Mustur takes relies on its own store. So the question gate reads the store, and nothing reads records/ to decide anything. This supersedes MUS-D-0050, which had the gate read the exported tree rather than the store. Where there is no store, as in CI, a check that needs one says out loud that it did not run rather than reading the export in its place. Checks of the export's own integrity (verify-records, check-links over it, the StrucGu audit and conformance) remain, because checking the backup is what the backup is for.
+
+| Field | Value |
+| --- | --- |
+| Supersedes | MUS-D-0050 |

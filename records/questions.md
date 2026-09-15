@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-154 record(s), by identifier.
+157 record(s), by identifier.
 
 ---
 
@@ -3868,4 +3868,93 @@ MUS-W-0024's plan said the row is retired after W48 merges, and LinkCtrl's trans
 | Surfaced | 2026-09-14 02:25 |
 | Answer | Keep it for now |
 | Answered | 2026-09-14 02:27 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0129
+
+**Every branch commits a whole-store export, so two branches that add records conflict in the generated files. How do we stop it?**
+
+question · 2026-09-14
+
+finding: [MUS-F-0066](findings.md#mus-f-0066)
+
+decision: [MUS-D-0024](decisions.md#mus-d-0024)
+
+MUS-F-0066, open since 2026-09-03 and recorded rather than solved. make export renders the whole store, so each branch commits the store as it stood when the branch was exported. Two branches that each add decisions both append the newest ones at the end of decisions.md's generated tail, so they collide at the same lines. That was #80's only conflict, after #71 and #72 merged. Sorted tables, such as records/README.md, usually merge cleanly because new rows land apart. The right resolution is always a fresh export on the merged tree, so resolving is running a command, not reading a diff. Not committing the export at all was decided against on purpose: records/ is the reviewable half (MUS-D-0024).
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing today; every future pair of branches that both file records hits it, as #80 did |
+| Option | Export only on main :: Recommended: branches stop committing records/ and decisions.md's tail; a small follow-up PR refreshes main's export after merges :: Removes the conflict, and main still carries the reviewable export. Costs a records PR after each merge, or a batch of merges, since main is protected. A branch whose own docs link to a record it just filed fails check-links until that refresh, so the link gate has to skip record anchors on branches or wait for it. |
+| Option | Split the generated files per record :: the decision log's tail becomes one file per decision, the way work units already are :: The appended tail stops colliding. Index tables still collide when two branches add the newest identifiers of the same kind, so conflicts get rarer, not gone, and every link into decisions.md#mus-d-… moves to a new path. |
+| Option | Keep it, and make resolving one command :: a make target that regenerates the export mid-merge, plus a workflow.md line saying a records conflict is resolved by running it :: No change to what is committed and no new process. GitHub still shows every such conflict, and a merge from the GitHub page cannot run the command, so each conflicting PR needs a local merge like #82. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 02:40 |
+| Answer | Export only on main |
+| Answered | 2026-09-14 02:40 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0130
+
+**With the export on main only, the question gate goes blind to questions raised on a branch. Read the store as well, or keep reading only the tree?**
+
+question · 2026-09-14
+
+decision: [MUS-D-0182](decisions.md#mus-d-0182)
+
+decision: [MUS-D-0050](decisions.md#mus-d-0050)
+
+make questions runs mustur questions --gate --records records --project MUS, which reads the exported tree, as MUS-D-0050 decided. Under MUS-D-0182 a feature branch commits no export, so a question raised while working on that branch never reaches its records/. The gate then passes on work that turned on an unsurfaced question, which is exactly what the gate exists to stop, until the next refresh on main. CI has no store to read; this machine does.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The question-gate part of making MUS-D-0182 real; the export scope gate, records-refresh and the link rule proceed meanwhile |
+| Needed to proceed | yes |
+| Option | Read the store too, where there is one :: Recommended: locally the gate reads the store as well as the tree, and fails on an unsurfaced question in either; CI, which has no store, reads the tree as today :: Keeps the gate's guarantee on the machine where questions are raised and work is reported complete, and CI keeps checking what main's export holds. It departs from MUS-D-0050's tree-only rule for local runs, so a local pass and a CI pass stop meaning exactly the same thing. |
+| Option | Keep the tree only :: the gate reads records/ as MUS-D-0050 says, and a branch's questions are gated from the next refresh on main :: No departure from MUS-D-0050, and local and CI stay identical. A branch can be reported complete around a question raised on it, until the refresh after it merges. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 02:42 |
+| Answer | No function of Mustur should rely on the committed records store as it's only there as a backup and testing/strucgu conformity. Every action Mustur takes should rely on its own store. |
+| Answered | 2026-09-14 02:45 |
+| Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0131
+
+**Milestone 7, LinkCtrl moving in, has landed on both mains. Do you accept it?**
+
+question · 2026-09-14
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+work-unit: [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024)
+
+decision: [MUS-D-0170](decisions.md#mus-d-0170)
+
+LinkCtrl PR 14 merged into LinkCtrl main and Mustur PR 82 into Mustur main on 2026-09-13 PDT. The done-when you set (MUS-D-0170) holds. LinkCtrl's records are in the store, reconciled per source: 1,503 records, MUS-D-0168, MUS-D-0169, MUS-D-0173, MUS-D-0179. The files that held them are gone from LinkCtrl, with its links rewritten and its CI green. LinkCtrl sessions reached mustur_route with the machine's token. Every review is dispositioned on Mustur PRs 69 and 70 and LinkCtrl PR 14. Still open and deliberately left: LNK-F-0383 (373 LinkCtrl code comments still name deleted files, unapproved), MUS-F-0165 (LinkCtrl's /work row keeps a global file routing it), MUS-F-0149 (the mandated call returns every record's index line, now about four times larger), and the four W48 fix commits no independent reviewer read after the first review. How acceptance is recorded is itself undefined (MUS-F-0127).
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Nothing in flight; whether Plan.md and CLAUDE.md may call milestone 7 passed |
+| Option | Accept it :: Recommended: MUS-M-0009 is recorded as passed, and Plan.md and CLAUDE.md say so; the open findings stay open as their own work :: The done-when is met as you worded it, and every open item is recorded where it lives. What it costs is calling the milestone passed while its most visible side effect, a mandated call four times the size, is still unaddressed. |
+| Option | Accept after the mandated call is fixed :: MUS-F-0149 is fixed first: mustur_route scopes its index to the repository named, then MUS-M-0009 is recorded as passed :: Acceptance then includes the cost every session now pays for the import. Holds the milestone open on work outside its done-when. |
+| Option | Hold for a review of the W48 fixes :: an independent reviewer reads LinkCtrl's four fix commits before acceptance :: Closes the one part of the milestone no fresh reader checked after the first review. Costs a review on work already merged, and any finding becomes a follow-up rather than a fix before merge. |
+| Asked by | whippy |
+| Session | mustur/LinkCtrl_Target |
+| Session project | LinkCtrl_Target |
+| Surfaced | 2026-09-14 02:49 |
+| Answer | There are still PRs left un merged for the LinkCtrl move that I am waiting on the decision conflict fix before merging |
+| Answered | 2026-09-14 02:52 |
 | Delivered | typed into mustur/LinkCtrl_Target |
