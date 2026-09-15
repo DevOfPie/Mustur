@@ -8,8 +8,9 @@ kept — where work goes, which machine holds it, what has been decided, who may
 see it — and it delivers them into a session by being **called**, from a thin
 repo-local file that mandates the call.
 
-**Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built, reviewed
-and awaiting acceptance; 5 is built, reviewed twice and rebuilt after the first
+**Milestones 1, 2 and 7 have passed — 7, LinkCtrl moving in, accepted on
+2026-09-15 ([MUS-D-0185](records/decisions.md#mus-d-0185)); 2b, 2c, 3, 4a, 4b and 4c are
+built, reviewed and awaiting acceptance; 5 is built, reviewed twice and rebuilt after the first
 review, and everything through it is merged. 5b, accounts, was raised on
 2026-08-24 and inserted before 6; 5c, the credential an agent can hold, came out
 of 5b's own review. Both are built and merged — pull requests 30 and 31, on
