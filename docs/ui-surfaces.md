@@ -238,6 +238,23 @@ until it is answered, so latency here is work stopped.
 Must show what is blocked on each decision, so the owner can tell a question that
 holds up a milestone from one that holds up a sentence.
 
+**Readers' held jots are reviewed here**, above the questions, on
+[MUS-Q-0143](../records/questions.md#mus-q-0143), which approved
+[plan-f8ce08918ff441f7](https://plan.agent-native.com/plans/plan-f8ce08918ff441f7)
+with its recommended answers ([MUS-D-0189](../records/decisions.md#mus-d-0189)).
+What it settled:
+
+| Settled | How it is built |
+| --- | --- |
+| Held jots are reviewed at the top of Decisions and counted in the badge | A "Jots waiting for approval" section above the questions. `/questions/count` adds the held jots the viewer may approve, per viewer, and the rendered badge counts the same |
+| Approving files the jot through the one filing path | `POST /intake/held/{id}/approve` calls `intake.File` with the reader as `Filed by` and adds `Approved by` naming the owner. The row is claimed first, so a second press files nothing |
+| The owner can change where it goes | A "File to" select on each card, starting on the reader's choice or on "Route it for me" with the guess named |
+| Only an owner of the destination may approve | Checked against the destination the press names, resolved the way `intake.File` resolves it; anyone else gets 403 and the jot stays waiting. A jot is shown and counted only to those who may approve it |
+| Discard leaves nothing | `POST /intake/held/{id}/discard` deletes the held row. It was never a record, so the log is untouched |
+
+Discarding is held to the same owner rule as approving. The plan named the rule
+for approving; applying it to discarding is the build's reading, not the owner's.
+
 ### 5. Intake
 
 **Serves** `/intake`, and `/` where it is the front door
@@ -258,6 +275,25 @@ require a decision to file — naming a thing requires understanding it, and at
 capture time you do not.
 
 Routing hint where one is obvious, defaulting to the idea inbox where it is not.
+
+**A reader can send from it, and what they send is held** for an owner, on
+[MUS-Q-0138](../records/questions.md#mus-q-0138) and
+[plan-f8ce08918ff441f7](https://plan.agent-native.com/plans/plan-f8ce08918ff441f7),
+approved on [MUS-Q-0143](../records/questions.md#mus-q-0143)
+([MUS-D-0189](../records/decisions.md#mus-d-0189)). Before it a reader was shown
+the owner's box and pressing File it answered a bare 403. What it settled:
+
+| Settled | How it is built |
+| --- | --- |
+| A reader's POST `/intake` is the one reader write, and it is a hold | The guard lets exactly that method and path through; the handler writes a `held_jot` row, never a record |
+| A held jot is not a record | Its own table, like `scratch` and `attachment`: not routed, not exported, not in `mustur list`, `mustur_route` or `/records` until approved |
+| The button says what will happen | "Send for approval", and after sending "Sent for approval. An owner files it or discards it." |
+| What was sent does not vanish | A "Waiting for an owner" list of the reader's own held jots, each with when it was sent, in Pacific, and where it was pointed |
+| No pictures from readers in this cut | No picture field is rendered for a reader, and the handler refuses a picture with the words kept |
+
+Scratch is not offered to a reader and is refused if posted. The plan did not draw
+it; a reader's send waits for an owner and a scratch filing is one nobody reviews,
+so the two do not combine. That is the build's reading, not the owner's.
 
 ### 6. Routing
 
