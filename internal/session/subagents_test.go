@@ -569,6 +569,88 @@ func rowByID(rows []Subagent, id string) Subagent {
 	return Subagent{}
 }
 
+// A resumed sub-agent is running again.
+//
+// The CLI resumes a sub-agent under the identifier it already had, with a
+// second SubagentStart. The fold skipped a start it had seen, so the row read
+// finished for the whole second run and ignored what it did (MUS-F-0172).
+func TestAResumedSubagentReadsRunningUntilItStopsAgain(t *testing.T) {
+	dir := t.TempDir()
+	t0 := time.Date(2026, 9, 14, 3, 0, 0, 0, time.UTC)
+	record(t, dir, "P", t0, map[string]any{
+		"hook_event_name": "PreToolUse", "tool_name": "Agent",
+		"tool_input": map[string]any{"description": "Trace the lease", "subagent_type": "general-purpose"},
+	})
+	record(t, dir, "P", t0.Add(time.Second), map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+	record(t, dir, "P", t0.Add(time.Minute), map[string]any{
+		"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "first",
+	})
+	if rows, _ := Subagents(dir, "P"); rows[0].Running() {
+		t.Fatalf("row %+v, want it finished after its first stop", rows[0])
+	}
+
+	resumed := t0.Add(2 * time.Minute)
+	record(t, dir, "P", resumed, map[string]any{
+		"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+	})
+	record(t, dir, "P", resumed.Add(time.Second), map[string]any{
+		"hook_event_name": "PreToolUse", "agent_id": "a1", "tool_name": "Grep",
+	})
+	rows, err := Subagents(dir, "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 1 {
+		t.Fatalf("%d rows, want the one sub-agent reopened rather than a second row", len(rows))
+	}
+	r := rows[0]
+	if !r.Running() {
+		t.Errorf("row %+v, want running again after the second start", r)
+	}
+	if r.Doing != "Grep" {
+		t.Errorf("doing %q, want the resumed run's tool", r.Doing)
+	}
+	if !r.Started.Equal(resumed) {
+		t.Errorf("started %v, want the start that resumed it, %v", r.Started, resumed)
+	}
+	if r.Task != "Trace the lease" {
+		t.Errorf("task %q, want the original launch's", r.Task)
+	}
+
+	record(t, dir, "P", resumed.Add(3*time.Minute), map[string]any{
+		"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "second",
+	})
+	rows, _ = Subagents(dir, "P")
+	if r := rows[0]; r.Running() || r.Said != "second" || r.For(resumed.Add(time.Hour)) != 3*time.Minute {
+		t.Errorf("row %+v, want it finished by the second stop, saying so, after three minutes", r)
+	}
+}
+
+// Three starts, as a95ea5d19101ad92d had in Hoard_Work: each stop ends the run
+// before it, each start reopens, and it is still one row.
+func TestThreeStartsAreOneRowRunningEachTime(t *testing.T) {
+	dir := t.TempDir()
+	t0 := time.Date(2026, 9, 14, 3, 0, 0, 0, time.UTC)
+	for run := 0; run < 3; run++ {
+		at := t0.Add(time.Duration(run) * 10 * time.Minute)
+		record(t, dir, "P", at, map[string]any{
+			"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+		})
+		rows, _ := Subagents(dir, "P")
+		if len(rows) != 1 || !rows[0].Running() || !rows[0].Started.Equal(at) {
+			t.Fatalf("run %d: rows %+v, want one row running since %v", run+1, rows, at)
+		}
+		record(t, dir, "P", at.Add(time.Minute), map[string]any{
+			"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "done",
+		})
+		if rows, _ := Subagents(dir, "P"); rows[0].Running() {
+			t.Fatalf("run %d: still running after its stop", run+1)
+		}
+	}
+}
+
 // capturedLine is one payload from testdata/hook-payloads.jsonl, decoded so a
 // test can graft a field onto it.
 func capturedLine(t *testing.T, n int) map[string]any {

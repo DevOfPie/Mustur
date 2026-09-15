@@ -418,7 +418,18 @@ func (st *logFold) apply(e event) {
 			r.Doing = "Agent"
 		}
 	case "start":
-		if _, seen := rows[e.ID]; seen {
+		// A start for an identifier already seen is that sub-agent resumed,
+		// and it is running again. This used to be skipped, so a resumed
+		// sub-agent read *finished* for the whole of its second run, its tool
+		// calls ignored because the row had ended: 9 of 36 sub-agents in one
+		// day of Hoard_Work were resumed at least once (MUS-F-0172). The row
+		// is reopened rather than replaced, so it keeps the task its original
+		// launch gave it — a resume has no launching call of its own, and
+		// pairing one would hand it somebody else's — and its last report,
+		// which the next stop overwrites. How long it has run counts from the
+		// start that made it run again.
+		if r, seen := rows[e.ID]; seen {
+			r.Started, r.Ended, r.Doing = e.At, time.Time{}, ""
 			return
 		}
 		r := &Subagent{ID: e.ID, Type: e.Type, Started: e.At}
