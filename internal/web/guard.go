@@ -26,6 +26,7 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -196,6 +197,9 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 		// turned on.
 		if toolCall(r.URL.Path) {
 			if t, ok := g.agent(r); ok {
+				// The label, never the secret: the label is what `mustur
+				// account tokens` lists, so a line can be matched to a token.
+				noteWho(r, "token:"+quoteLabel(t.Label), t.Role)
 				if t.Project != g.Project {
 					http.Error(w, "no access to this project", http.StatusForbidden)
 					return
@@ -228,6 +232,7 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 			return
 		}
 		role, granted := g.Auth.Accounts.RoleFor(r.Context(), acct.ID, g.Project)
+		noteWho(r, acct.Email, role)
 		if !granted {
 			// No role is not a lesser role. An account with nothing on this
 			// project cannot read it either.
@@ -244,6 +249,15 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 		// shown a Sessions tab that answered 403 when pressed.
 		next.ServeHTTP(w, r.WithContext(withRole(r.Context(), role)))
 	})
+}
+
+// quoteLabel keeps a token label, which is free text, to one field of one
+// log line.
+func quoteLabel(s string) string {
+	if s == "" || strings.ContainsAny(s, " \t\r\n\"=") {
+		return fmt.Sprintf("%q", s)
+	}
+	return s
 }
 
 // Reader is a convenience for tests and callers that want the role without the
