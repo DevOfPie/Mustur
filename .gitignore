@@ -13,3 +13,8 @@
 # repository living inside it, so `git add -A` in the main checkout stages the
 # whole tree twice ([MUS-F-0065](records/findings.md#mus-f-0065)).
 /.claude/
+
+# CI checks the StrucGu catalog out here for conformance (.github/workflows/ci.yml).
+# It is never committed, and a records refresh branch fails the export-scope
+# gate on any untracked file outside the export, so it is ignored.
+/.strucgu/

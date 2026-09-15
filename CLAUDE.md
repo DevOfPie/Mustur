@@ -3,8 +3,9 @@
 Read [Plan.md](Plan.md) for what is true, [workflow.md](workflow.md) for how the
 work is done, and [decisions.md](decisions.md) for why.
 
-**Milestones 1 and 2 have passed; 2b, 2c, 3, 4a, 4b and 4c are built and not
-yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
+**Milestones 1, 2 and 7 have passed — 7, LinkCtrl moving in, accepted on
+2026-09-15 ([MUS-D-0185](records/decisions.md#mus-d-0185)); 2b, 2c, 3, 4a, 4b and 4c are
+built and not yet accepted; 5 is built, reviewed twice and rebuilt after the first review, and
 everything through it is merged. 5b, accounts, and 5c, agent tokens, are built
 and merged as of 2026-08-28, and both are **deployed and enforced** on this
 machine since 2026-08-26.**
