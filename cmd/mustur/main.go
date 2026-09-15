@@ -708,6 +708,10 @@ func cmdServe(args []string) error {
 			Actor: defaultActor(), HookDir: hookDir,
 			ShowAccount: showAccount,
 			Commands:    *sessionCmds,
+			// The badge the socket pushes counts the held jots this viewer may
+			// approve, as /questions/count does (MUS-D-0189).
+			Project: *project,
+			Roles:   account.New(s.DB()),
 		}
 		sessions.Routes(mux)
 

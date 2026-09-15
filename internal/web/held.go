@@ -55,7 +55,7 @@ func heldProject(ctx context.Context, st *store.Store, text, to, home string) (i
 // surface is the owner's, which is CanWrite's rule. With one, the grant on that
 // project decides; with no way to ask about other projects, only this install's
 // owner role counts, and only for this install's project.
-func mayApprove(r *http.Request, roles Roles, project, home string) bool {
+func mayApprove(ctx context.Context, r *http.Request, roles Roles, project, home string) bool {
 	viewer, ok := Viewer(r)
 	if !ok {
 		return CanWrite(r)
@@ -63,25 +63,35 @@ func mayApprove(r *http.Request, roles Roles, project, home string) bool {
 	if roles == nil {
 		return project == home && CanWrite(r)
 	}
-	role, granted := roles.RoleFor(r.Context(), viewer.ID, project)
+	role, granted := roles.RoleFor(ctx, viewer.ID, project)
 	return granted && role == account.Owner
+}
+
+// heldWaiting is approvable without the destinations, for a count.
+func heldWaiting(ctx context.Context, r *http.Request, st *store.Store, roles Roles, home string) []store.Held {
+	held, _ := approvable(ctx, r, st, roles, home)
+	return held
 }
 
 // approvable lists the held jots this request's viewer may approve, each with
 // the destination it would be filed to as things stand.
-func approvable(r *http.Request, st *store.Store, roles Roles, home string) ([]store.Held, []intake.Destination) {
+//
+// The viewer is read from r and the store is queried under ctx, which are the
+// same thing for a page and not for the session view's socket: that request
+// was upgraded, and its ticker counts under the connection's own context.
+func approvable(ctx context.Context, r *http.Request, st *store.Store, roles Roles, home string) ([]store.Held, []intake.Destination) {
 	if st == nil || IsReader(r) {
 		return nil, nil
 	}
-	all, err := st.HeldJots(r.Context(), "")
+	all, err := st.HeldJots(ctx, "")
 	if err != nil || len(all) == 0 {
 		return nil, nil
 	}
 	var out []store.Held
 	var dests []intake.Destination
 	for _, h := range all {
-		d, project := heldProject(r.Context(), st, h.Text, h.To, home)
-		if mayApprove(r, roles, project, home) {
+		d, project := heldProject(ctx, st, h.Text, h.To, home)
+		if mayApprove(ctx, r, roles, project, home) {
 			out = append(out, h)
 			dests = append(dests, d)
 		}
