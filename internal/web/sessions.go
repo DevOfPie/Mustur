@@ -181,6 +181,7 @@ type sessionPage struct {
 	Rows          []sessionRow
 	Subagents     []subagentRow
 	Running       int
+	Finished      int // the rows folded under one line (MUS-D-0181)
 	OpenQuestions int
 	Missing       bool
 	// Starting is the form's data: where a session may be started and what it
@@ -232,10 +233,10 @@ type subagentRow struct {
 
 // held is the call this session is holding in front of the owner, if any.
 //
-// Unlike subagents below it, this does reach the socket: it goes with the hello
-// frame and on every tick of it. That is worth saying because this function was
-// inserted directly under subagents' own doc comment, which says the opposite,
-// and for one commit that comment read as this function's.
+// Like subagents below it, this reaches the socket: it goes with the hello frame
+// and on every tick of it. That is worth saying because this function was
+// inserted directly under subagents' own doc comment, which for a while said the
+// opposite, and for one commit that comment read as this function's.
 //
 // At most one: the gate declines a sub-agent's own tool calls, and the main
 // conversation runs its tools one at a time. If that ever stops being true the
@@ -254,9 +255,10 @@ func (s *Sessions) held(project string) *askRow {
 
 // subagents reads what the hook recorded for this session.
 //
-// The rows are server-rendered like everything else on this surface bar the
-// output stream: a sub-agent starting is not a keystroke-latency event, and the
-// page is already reloaded to see one. Nothing here reaches the socket.
+// The first paint renders these rows, and the socket pushes the same rows again
+// whenever the log moves (MUS-D-0092), so both take session.Subagents' order
+// as it comes: running first, newest first. This comment used to say nothing
+// here reached the socket, which stopped being true when the push was built.
 func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 	if s.HookDir == "" || project == "" {
 		return nil, 0
@@ -399,7 +401,7 @@ func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	agents, running := s.subagents(project)
 	p := sessionPage{
 		Project: project, Rows: rows, Lost: gone, Missing: !found,
-		Subagents: agents, Running: running,
+		Subagents: agents, Running: running, Finished: len(agents) - running,
 		Error: r.URL.Query().Get("error"),
 	}
 	// A session that is not running but is remembered gets its own page rather
@@ -1066,6 +1068,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
          font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
          word-break: break-word; font-size: .82em; line-height: 1.35;
          overscroll-behavior: contain; }
+  /* A link the CLI printed as a hyperlink (MUS-Q-0118). Its colour stays the
+     terminal's, so the underline is what says it is one. */
+  #out a { color: inherit; text-decoration: underline;
+           text-underline-offset: .15em; }
   /* Something Mustur says about the session, as opposed to something the
      session said. Under the screen, because the screen is replaced whole and
      anything written into it would go with the next frame. */
@@ -1365,6 +1371,13 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
                  padding: .05rem .5rem; font-size: .78em; }
   .agent .pill.done { border-color: var(--accent); background: var(--accent-soft); }
   .agent .age { opacity: .6; font-size: .82em; }
+  /* Every finished row, under one line that counts them (MUS-D-0181). Drawn as
+     a row of the list — same rule, same size — rather than as a control, and
+     ruled off only from rows above it: with nothing running it is the top. */
+  .fold > summary { padding: .5rem 0; cursor: pointer; font-size: .9em;
+                    opacity: .7; }
+  .dlist > * + .fold { border-top: 1px solid var(--edge); }
+  .fold[open] > summary { border-bottom: 1px solid var(--edge); }
   /* Never drawn. Where the reading pane gets a sub-agent's final message from,
      so a tap is answered before the socket has sent a frame — the first paint
      is the server's. display:none, so it has no layout box. */
@@ -1543,10 +1556,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
     </div>
     <div class="dmeta" id="dmeta" hidden></div>
     <div class="dlist" id="dlist">
-      {{if .Subagents}}{{range .Subagents}}<button type="button" class="agent" data-id="{{.ID}}">
-      {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
-      <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
-    </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{end}}{{end}}{{else}}<p class="none">Nothing has been launched from this session.</p>{{end}}
+      {{if .Subagents}}{{range .Subagents}}{{if not .Done}}{{template "agentrow" .}}{{end}}{{end}}
+      {{if .Finished}}<details class="fold"><summary>{{.Finished}} finished</summary>
+      {{range .Subagents}}{{if .Done}}{{template "agentrow" .}}{{end}}{{end}}
+      </details>{{end}}{{else}}<p class="none">Nothing has been launched from this session.</p>{{end}}
     </div>
     <div class="dread" id="dread" hidden></div>
   </aside>
@@ -1622,7 +1635,12 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
 {{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
 </body>
 </html>
-`))
+{{/* One sub-agent row, drawn above the fold while it runs and inside it once
+it has finished (MUS-D-0181). Its message sits beside it for the reading pane. */}}
+{{define "agentrow"}}<button type="button" class="agent" data-id="{{.ID}}">
+      {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
+      <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
+    </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{end}}{{end}}`))
 
 // answerReason is what the agent is told when a call is refused.
 //

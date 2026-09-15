@@ -116,9 +116,12 @@ func (q *Questions) actor(r *http.Request) string {
 }
 
 type queuedOption struct {
-	Label       string
-	Line        string
-	Detail      string
+	Label string
+	Line  string
+	// Detail is rendered as markdown like the body, but the export flattens an
+	// option into one table cell, so only inline markdown survives there: a
+	// table or a second paragraph written here would not reach the record.
+	Detail      template.HTML
 	Recommended bool
 }
 
@@ -132,7 +135,7 @@ type queued struct {
 	// foot of the card (MUS-F-0150).
 	Project  string
 	Title    string
-	Body     string
+	Body     template.HTML
 	Blocks   string
 	Asked    string
 	Needed   bool
@@ -171,7 +174,7 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		item := queued{
 			ID:       r.ID,
 			Title:    r.Title,
-			Body:     strings.TrimSpace(r.Body),
+			Body:     markdown(strings.TrimSpace(r.Body)),
 			Asked:    r.At,
 			Needed:   question.Needed(r),
 			Surfaced: question.Surfaced(r),
@@ -187,7 +190,7 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		}
 		for _, o := range question.Options(r) {
 			item.Options = append(item.Options, queuedOption{
-				Label: o.Label, Line: o.Says(), Detail: o.Detail,
+				Label: o.Label, Line: o.Says(), Detail: markdown(o.Detail),
 				Recommended: o.IsRecommended(),
 			})
 		}
@@ -408,6 +411,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   h2 { margin: 0 0 .25rem; font-size: 1.15rem; }
   .asked { display: block; opacity: .6; font-size: .82em; margin-bottom: .8rem; }
   .ctx { margin: 0 0 1rem; opacity: .85; font-size: .95em; }
+  .ctx p { margin: 0 0 .6rem; }
   /* One line up front, the paragraph behind it only when asked for. <details>
      does that with no script, which keeps the constraint every surface
      inherits. */
@@ -432,7 +436,8 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   .opt details { border-top: 1px solid var(--edge); }
   .opt details > summary { cursor: pointer; padding: .5rem 0; opacity: .6;
                            font-size: .85em; }
-  .opt details p { margin: 0 0 .7rem; font-size: .92em; }
+  .opt details .md { margin: 0 0 .7rem; font-size: .92em; }
+  .opt details p { margin: 0 0 .5rem; }
   /* A textarea rather than a text input, because Enter in a single-line input
      submits the form: the owner pressed it mid-sentence while writing a note
      and the half they had typed was recorded as the answer (MUS-F-0076). Here
@@ -479,7 +484,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
           font-size: .8em; opacity: .75; }
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
-` + shellCSS + `
+` + markdownCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -500,7 +505,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   </div>
   <h2>{{$q.Title}}</h2>
   <small class="asked">Asked {{$q.Asked}}</small>
-  {{if $q.Body}}<p class="ctx">{{$q.Body}}</p>{{end}}
+  {{if $q.Body}}<div class="ctx md">{{$q.Body}}</div>{{end}}
   {{range $q.Options}}
   <div class="opt">
     <label class="pick">
@@ -508,7 +513,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
       <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec" title="Recommended" aria-label="Recommended">&#9733;</span>{{end}}
         {{if .Line}}<span class="line">{{.Line}}</span>{{end}}</span>
     </label>
-    {{if .Detail}}<details><summary>more</summary><p>{{.Detail}}</p></details>{{end}}
+    {{if .Detail}}<details><summary>more</summary><div class="md">{{.Detail}}</div></details>{{end}}
   </div>
   {{end}}
   <textarea name="answer" rows="2" spellcheck="true" autocapitalize="sentences"

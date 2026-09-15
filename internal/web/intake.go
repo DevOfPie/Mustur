@@ -1,11 +1,13 @@
 // Package web serves Mustur's human surfaces. Server-rendered HTML, no
-// per-project client state: the plan rejects a feature on the grounds that it
-// costs client state as it grows, and the intake box is the cheapest surface
-// there is to keep that promise on.
+// per-project server state per client: the plan rejects a feature on the
+// grounds that it costs such state as it grows. What a browser keeps for itself
+// -- the badge's poll, a draft -- is script on a page that works without it,
+// and each such script was the owner's call.
 package web
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"html/template"
@@ -55,6 +57,13 @@ type Intake struct {
 	ExportTo string
 }
 
+// intakeJS keeps the box's text as a draft in the browser (MUS-F-0152). The
+// owner took it on MUS-Q-0120: text only, under its own key, gone on filing or
+// on Clear. Pictures are not kept.
+//
+//go:embed assets/intake.js
+var intakeJS string
+
 // Handler routes the two methods the surface needs. GET renders the box, POST
 // files and redirects — post/redirect/get, so that a phone reloading the page
 // after a dropped connection does not file the same jot twice.
@@ -62,6 +71,11 @@ func (in *Intake) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /intake", in.show)
 	mux.HandleFunc("POST /intake", in.file)
+	mux.HandleFunc("GET /assets/intake.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		_, _ = w.Write([]byte(intakeJS))
+	})
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -129,7 +143,12 @@ type page struct {
 	Routed       string
 	Why          string
 	Error        string
-	Recent       []recentJot
+	// Done says a jot was filed on the way to this page, which is what tells
+	// the draft script to let go. Not Filed: a scratch filing has no
+	// identifier, and a filing that lost a picture renders rather than
+	// redirects.
+	Done   bool
+	Recent []recentJot
 	// Scratch filings, which are not records and have no identifier.
 	Scratch []store.Scratch
 	// Groups are the destinations, gathered by kind. The owner asked why
@@ -184,6 +203,7 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		Routed:       r.URL.Query().Get("routed"),
 		Why:          r.URL.Query().Get("why"),
 		Warn:         r.URL.Query().Get("warn"),
+		Done:         r.URL.Query().Get("done") == "1",
 		Project:      in.Project,
 		Cutoff:       "the last hour",
 	}
@@ -221,6 +241,10 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	// failure rather than as anything a person could act on.
 	r.Body = http.MaxBytesReader(w, r.Body, MaxJot+MaxImages*store.MaxAttachment+(1<<16))
 	if err := r.ParseMultipartForm(1 << 20); err != nil && !errors.Is(err, http.ErrNotMultipart) {
+		// The text cannot come back from here. ReadForm is all or nothing: on
+		// an error it returns no form, so a jot whose pictures tripped the cap
+		// arrives with its words unreadable too. The browser's draft is the
+		// copy that survives this one.
 		render(w, page{Error: "that form did not arrive intact: " + err.Error(), Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 		return
 	}
@@ -231,7 +255,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	if len(text) > MaxJot {
 		render(w, page{
 			Error:   "that is longer than this box takes; it is for a line, not a document",
-			Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
+			Project: in.Project, Jot: text, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
 		})
 		return
 	}
@@ -258,11 +282,12 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 			// pictures with the note rather than leaving them unreachable.
 			if n, err := attachAll(r.Context(), in.Store, sc.ID, images, in.actor(r)); err != nil {
 				render(w, page{Error: fmt.Sprintf("kept the note, and %d of %d images: %s", n, len(images), err),
-					Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
+					Done: true, Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
 				return
 			}
 		}
-		http.Redirect(w, r, "/intake?warn="+template.URLQueryEscaper(
+		// done=1 because warn= alone is also what a failed export says.
+		http.Redirect(w, r, "/intake?done=1&warn="+template.URLQueryEscaper(
 			"filed to scratch: no identifier, not exported, gone on restart"), http.StatusSeeOther)
 		return
 	}
@@ -291,6 +316,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 			render(w, page{
 				Error: fmt.Sprintf("filed %s with %d of %d images; the rest were not stored: %s",
 					rec.ID, n, len(images), err),
+				Done:    true,
 				Project: in.Project, ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount,
 			})
 			return
@@ -303,7 +329,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	if err := in.export(r.Context()); err != nil {
 		exported = err.Error()
 	}
-	q := fmt.Sprintf("/intake?filed=%s&routed=%s&why=%s&warn=%s",
+	q := fmt.Sprintf("/intake?done=1&filed=%s&routed=%s&why=%s&warn=%s",
 		template.URLQueryEscaper(rec.ID), template.URLQueryEscaper(to.Name),
 		template.URLQueryEscaper(to.Why), template.URLQueryEscaper(exported))
 	http.Redirect(w, r, q, http.StatusSeeOther)
@@ -452,9 +478,12 @@ func render(w http.ResponseWriter, p page) {
 
 // tmpl is the whole surface. One box, a button, and what just happened.
 //
-// No stylesheet, no script, no font, no image: everything a phone off the home
-// network has to fetch is another thing between a thought and it being filed,
-// and the target is fifteen seconds including the network.
+// No stylesheet to fetch, no font, no image: the style is inline, and
+// everything a phone off the home network has to fetch is another thing between
+// a thought and it being filed, with a target of fifteen seconds including the
+// network. Two small scripts are the exception, bar.js for the badge
+// (MUS-Q-0078) and intake.js for the draft (MUS-Q-0120), and the form files
+// with both blocked.
 var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 	"trim": strings.TrimSpace,
 }).Parse(`<!doctype html>
@@ -541,6 +570,13 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: auto; }
   h1 { display: flex; align-items: baseline; }
+  /* The draft's row. Hidden in the markup and shown by intake.js, so a page
+     with script blocked has no Clear that does nothing. */
+  .draft { display: flex; align-items: center; gap: .6rem; margin: .3rem 0 0;
+           font-size: .85em; }
+  .draft[hidden] { display: none; }
+  .draft span { opacity: .6; }
+  .draft button { width: auto; margin: 0 0 0 auto; padding: .2rem .8rem; }
 ` + shellCSS + `
 </style>
 </head>
@@ -552,8 +588,10 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <span class="why">{{.Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
 <form method="post" action="/intake" enctype="multipart/form-data">
-  <textarea name="jot" autofocus spellcheck="true" autocapitalize="sentences" autocorrect="on"
+  <textarea id="jot" name="jot"{{if .Done}} data-filed{{end}} autofocus spellcheck="true" autocapitalize="sentences" autocorrect="on"
             placeholder="A line. Nothing to decide.">{{.Jot}}</textarea>
+  <p class="draft" id="draft" hidden><span id="kept">draft kept</span>
+    <button type="button" id="clear">Clear</button></p>
   <label class="pic">Pictures, if a picture says it faster
     <input type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp" multiple>
     <small>Held privately. The record carries what an agent reads in them, never the pictures.</small>
@@ -582,6 +620,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
+<script src="/assets/intake.js"></script>
 <script src="/assets/bar.js"></script>
 </body>
 </html>

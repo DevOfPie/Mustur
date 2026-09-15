@@ -510,3 +510,103 @@ func TestTheIntakeBoxIsSpellChecked(t *testing.T) {
 		t.Error("a phone will not capitalise a sentence typed into it")
 	}
 }
+
+// MUS-F-0152: the box keeps what was typed while the owner goes to look
+// something up. The draft lives in the browser, so what the server owes it is a
+// script to load and an id to find the box by.
+func TestTheBoxLoadsItsDraftScript(t *testing.T) {
+	srv, _ := serve(t)
+	body := get(t, srv.URL+"/intake")
+	for _, want := range []string{"/assets/bar.js", "/assets/intake.js"} {
+		if !loads(body, want) {
+			t.Errorf("intake does not load %s", want)
+		}
+	}
+	if got := scriptsIn(body); len(got) != 2 {
+		t.Errorf("intake loads %v", got)
+	}
+	if !strings.Contains(body, `<textarea id="jot" name="jot"`) {
+		t.Errorf("the box has no id for the script to read:\n%s", body)
+	}
+
+	res, err := http.Get(srv.URL + "/assets/intake.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	js, _ := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK || !strings.HasPrefix(res.Header.Get("Content-Type"), "application/javascript") {
+		t.Fatalf("intake.js: %d %s", res.StatusCode, res.Header.Get("Content-Type"))
+	}
+	// Its own key. The composer's draft is a message to a session; a report
+	// half-typed here turning up there is a different thing sent somewhere else.
+	if !strings.Contains(string(js), `"mustur.intake.draft"`) || strings.Contains(string(js), `"mustur.draft"`) {
+		t.Error("intake.js does not keep its draft under its own key")
+	}
+}
+
+// Both ways a jot is filed must tell the script to drop the draft. The scratch
+// redirect carried only warn=, which a failed export also sets, so nothing on
+// it said a filing had happened.
+func TestBothFilingsSayTheDraftIsDone(t *testing.T) {
+	srv, _ := serve(t)
+	client := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}}
+	for _, to := range []string{"", scratchTo} {
+		res, err := client.PostForm(srv.URL+"/intake", url.Values{"jot": {"a thought filed to " + to}, "to": {to}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode != http.StatusSeeOther {
+			t.Fatalf("to %q: status %d", to, res.StatusCode)
+		}
+		loc := res.Header.Get("Location")
+		u, err := url.Parse(loc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if u.Query().Get("done") != "1" {
+			t.Errorf("to %q: redirect %s carries no done marker", to, loc)
+		}
+		if body := get(t, srv.URL+loc); !strings.Contains(body, "data-filed") {
+			t.Errorf("to %q: the page after filing does not mark the box filed", to)
+		}
+	}
+	if body := get(t, srv.URL+"/intake"); strings.Contains(body, "data-filed") {
+		t.Error("a plain load marks the box filed, which would throw the draft away")
+	}
+}
+
+// A jot that is filed but loses a picture is rendered rather than redirected,
+// and the words are in the store: a draft restored into that box is a second
+// filing waiting for a tap.
+func TestAFilingThatLostAPictureStillEndsTheDraft(t *testing.T) {
+	var b strings.Builder
+	if err := tmpl.Execute(&b, page{Error: "filed MUS-F-0001 with 0 of 1 images", Done: true, Project: "MUS"}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(b.String(), "data-filed") {
+		t.Error("a filed jot's error page does not mark the box filed")
+	}
+}
+
+// Words over MaxJot were refused with an empty box. The server has them, so it
+// hands them back; the draft should not be the only copy that survives.
+func TestAnOverlongJotComesBackWithTheText(t *testing.T) {
+	srv, _ := serve(t)
+	long := "a report that ran long " + strings.Repeat("y", MaxJot)
+	res, err := http.PostForm(srv.URL+"/intake", url.Values{"jot": {long}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+	if !strings.Contains(string(body), "Not filed") {
+		t.Error("the page does not say it was refused")
+	}
+	if !strings.Contains(string(body), long) {
+		t.Error("what was typed did not come back")
+	}
+}

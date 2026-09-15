@@ -4,7 +4,7 @@
 
 Where work goes and which machine holds it.
 
-6 record(s), by identifier.
+8 record(s), by identifier.
 
 ---
 
@@ -14,7 +14,9 @@ Where work goes and which machine holds it.
 
 repository · 2026-08-19
 
-Mustur's own checkout. The only repository in this registry: a routing row for a repository that has not been onboarded would be a claim about a tree nothing here verifies, and onboarding is a milestone with its own verdict.
+finding: [MUS-F-0139](findings.md#mus-f-0139)
+
+Mustur's own checkout. A routing row for a repository is a claim about a tree, so a repository is registered only when it is deliberately moved in: as an ordinary project when it brings no records (MUS-D-0162), and by MUS-M-0009 when it brings a corpus to take over.
 
 | Field | Value |
 | --- | --- |
@@ -44,6 +46,26 @@ The fork of rleeon/hoard where co-op group save sharing is built: shared worlds 
 
 ---
 
+## MUS-R-0003
+
+**DevOfPie/LinkCtrl**
+
+repository · 2026-09-13
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+LinkCtrl's checkout, registered to start MUS-M-0009: it brings a corpus of existing records, 1,503 once imported as MUS-D-0168, MUS-D-0169 and MUS-D-0173 count them, so its onboarding is a milestone with its own verdict (MUS-D-0162). Registration routes it; nothing of LinkCtrl's has moved yet, and no file in its tree has been edited from Mustur.
+
+| Field | Value |
+| --- | --- |
+| Remote | https://github.com/DevOfPie/LinkCtrl |
+| Checkout on MUS-H-0001 | ~/repos/DevOfPie/LinkCtrl |
+| Machine | MUS-H-0001 |
+| Contract | CLAUDE.md and docs/build-notes/workflow.md |
+| Dispatch kinds | phase, workflow |
+
+---
+
 ## MUS-H-0001
 
 **whippy-vm**
@@ -55,7 +77,7 @@ The machine holding the checkout and, later, the adapter that supervises session
 | Field | Value |
 | --- | --- |
 | Role | checkout host |
-| Repositories | MUS-R-0001, MUS-R-0002 |
+| Repositories | MUS-R-0001, MUS-R-0002, MUS-R-0003 |
 
 ---
 
@@ -107,3 +129,22 @@ Co-op group save sharing built into Hoard: any member of a group can host a shar
 | Aliases | hoard, save sharing |
 | Repositories | MUS-R-0002 |
 | Machines | MUS-H-0001 |
+
+---
+
+## MUS-P-0004
+
+**LinkCtrl**
+
+project · 2026-09-13
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+The second project with a corpus of its own, imported on 2026-09-13 from LinkCtrl 230771a and reconciled in MUS-D-0168, MUS-D-0169 and MUS-D-0173: 381 findings, 946 decisions (505 dated log entries and 441 issued D numbers), 4 phases, 95 milestones (77 with a source, 18 stubs for numbers cited and defined nowhere) with 74 work units, 2 questions and 1 investigation, 1,503 records. Records file under LNK, and a decision filed after the import continues past serial 949. Moving in is MUS-M-0009, on the boundary MUS-Q-0090 to MUS-Q-0093 settled: no StrucGu adoption in LinkCtrl, everything imports, and a part leaves LinkCtrl if and only if Mustur has a kind that holds it.
+
+| Field | Value |
+| --- | --- |
+| Repositories | MUS-R-0003 |
+| Machines | MUS-H-0001 |
+| Prefix | LNK |
+| Aliases | linkctrl, link ctrl |

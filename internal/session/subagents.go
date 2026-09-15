@@ -181,6 +181,23 @@ func RecordHookEvent(dir, project string, payload []byte, now time.Time) {
 		e = event{Kind: "start", ID: p.AgentID, Type: p.AgentType}
 	case p.Event == "SubagentStop":
 		e = event{Kind: "stop", ID: p.AgentID, Said: clip(p.Said, SaidMax)}
+	case p.Tool == "Agent" && p.Event == "PreToolUse":
+		// A launch. The description is the only place a sub-agent's task is
+		// stated in a documented field.
+		//
+		// The event name is checked because the parent's *Post*ToolUse for the
+		// same call carries no agent_id either, and without this it landed here
+		// as a second launch — one description in the queue for every
+		// sub-agent, twice, which a verified run caught before it shipped.
+		//
+		// Tested before agent_id, because a sub-agent launching one of its own
+		// carries agent_id, and when the agent_id test came first the call was
+		// logged as mere activity and its description thrown away: 257 of 260
+		// starts in one session's log read "general-purpose" (MUS-F-0156). The
+		// identifier is kept, so a nested launch is still the launching
+		// sub-agent's activity — its row says it is in Agent, as it did before,
+		// and its PostToolUse below clears that as it did before.
+		e = event{Kind: "launch", ID: p.AgentID, Type: p.Input.SubagentType, Task: clip(p.Input.Description, 200)}
 	case p.AgentID != "" && p.Event == "PostToolUse":
 		// The tool finished. Without this the row showed the last tool a
 		// sub-agent reached for forever, including after its process died, and
@@ -190,15 +207,6 @@ func RecordHookEvent(dir, project string, payload []byte, now time.Time) {
 		// A tool call inside a sub-agent. This is the only signal for what one
 		// is doing while it runs.
 		e = event{Kind: "doing", ID: p.AgentID, Tool: p.Tool}
-	case p.Tool == "Agent" && p.Event == "PreToolUse":
-		// The parent launching one. The description is the only place a
-		// sub-agent's task is stated in a documented field.
-		//
-		// The event name is checked because the parent's *Post*ToolUse for the
-		// same call carries no agent_id either, and without this it landed here
-		// as a second launch — one description in the queue for every
-		// sub-agent, twice, which a verified run caught before it shipped.
-		e = event{Kind: "launch", Type: p.Input.SubagentType, Task: clip(p.Input.Description, 200)}
 	default:
 		return // Any other tool call in the main conversation. Not ours.
 	}
@@ -247,7 +255,12 @@ func SubagentStamp(dir, project string) string {
 	return fmt.Sprintf("%d-%d", info.Size(), info.ModTime().UnixNano())
 }
 
-// Subagents folds a project's log into rows, oldest first.
+// Subagents folds a project's log into rows: running ones first, then ended
+// ones, newest first within each.
+//
+// The order is decided here and nowhere else — the first paint and the socket
+// both take it as given — because oldest first put a session's live sub-agents
+// under every one that had finished (MUS-F-0156).
 func Subagents(dir, project string) ([]Subagent, error) {
 	data, err := tail(SubagentLog(dir, project), TailBytes)
 	if err != nil {
@@ -275,6 +288,11 @@ func Subagents(dir, project string) ([]Subagent, error) {
 		switch e.Kind {
 		case "launch":
 			pending[e.Type] = append(pending[e.Type], launch{task: e.Task, at: e.At})
+			// Launched from inside a sub-agent: that one is now in the Agent
+			// tool, exactly as a "doing" would have said.
+			if r := rows[e.ID]; e.ID != "" && r != nil && r.Ended.IsZero() {
+				r.Doing = "Agent"
+			}
 		case "start":
 			if _, seen := rows[e.ID]; seen {
 				continue
@@ -336,7 +354,12 @@ func Subagents(dir, project string) ([]Subagent, error) {
 	for _, id := range order {
 		out = append(out, *rows[id])
 	}
-	sort.SliceStable(out, func(i, j int) bool { return out[i].Started.Before(out[j].Started) })
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Running() != out[j].Running() {
+			return out[i].Running()
+		}
+		return out[i].Started.After(out[j].Started)
+	})
 	return out, nil
 }
 

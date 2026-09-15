@@ -15,10 +15,17 @@
 // sequence this does not know is removed rather than printed, because printing
 // it is exactly the defect this package exists to fix. Text is escaped for
 // HTML on the way through; nothing from the pane reaches the page as markup.
+//
+// The one thing it writes on the pane's behalf is a link, and only where the
+// CLI printed an OSC 8 hyperlink to an http or https address (MUS-Q-0118). The
+// address is escaped like the text. A URL printed as plain text stays text:
+// guessing where one ends is exactly the kind of reading this package refuses.
 package ansi
 
 import (
 	"fmt"
+	"html"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -100,12 +107,16 @@ func (s state) style() string {
 
 // HTML converts a captured screen into HTML.
 //
-// The result is a sequence of text and span elements. Every character from the
-// pane is HTML-escaped; the only markup in the output is what this writes.
+// The result is a sequence of text, span and anchor elements. Every character
+// from the pane is HTML-escaped; the only markup in the output is what this
+// writes. An anchor is always outside the spans in it, and closes at a newline
+// for the same reason a span does.
 func HTML(screen string) string {
 	var out strings.Builder
 	var cur state
 	open := false
+	href := "" // the escaped address of the hyperlink in force, or ""
+	inLink := false
 
 	flush := func() {
 		if open {
@@ -113,7 +124,17 @@ func HTML(screen string) string {
 			open = false
 		}
 	}
+	unlink := func() {
+		if inLink {
+			out.WriteString("</a>")
+			inLink = false
+		}
+	}
 	begin := func() {
+		if !inLink && href != "" {
+			out.WriteString(`<a href="` + href + `" target="_blank" rel="noopener noreferrer">`)
+			inLink = true
+		}
 		if open || cur.empty() {
 			return
 		}
@@ -142,6 +163,7 @@ func HTML(screen string) string {
 				// A newline ends the run: a style that spans lines makes a
 				// background bleed across the whole width of the pane.
 				flush()
+				unlink()
 				out.WriteByte('\n')
 			default:
 				begin()
@@ -151,13 +173,20 @@ func HTML(screen string) string {
 			continue
 		}
 
-		// An escape. Only SGR is understood; everything else is dropped,
+		// An escape. SGR and OSC 8 are understood; everything else is dropped,
 		// because leaving it in is the defect.
 		params, final, n := parseCSI(screen[i:])
 		if n == 0 {
-			// Not a CSI at all — an OSC hyperlink, or a stray ESC. Skip to the
-			// terminator rather than printing the payload.
-			i += skipEscape(screen[i:])
+			// Not a CSI. A hyperlink opens or closes a link; any other OSC, or
+			// a stray ESC, is skipped to its terminator rather than printing
+			// the payload.
+			n = skipEscape(screen[i:])
+			if uri, ok := hyperlink(screen[i : i+n]); ok {
+				flush()
+				unlink()
+				href = safeHref(uri)
+			}
+			i += n
 			continue
 		}
 		i += n
@@ -168,7 +197,43 @@ func HTML(screen string) string {
 		cur = apply(cur, params)
 	}
 	flush()
+	unlink()
 	return out.String()
+}
+
+// hyperlink reads a whole OSC 8 sequence, ESC ] 8 ; params ; URI ST, and
+// returns its URI, which is "" for the sequence closing a link. An unterminated
+// one is not a hyperlink: its payload is dropped like any other.
+func hyperlink(seq string) (uri string, ok bool) {
+	var body string
+	switch {
+	case strings.HasSuffix(seq, "\x07"):
+		body = seq[:len(seq)-1]
+	case strings.HasSuffix(seq, "\x1b\\"):
+		body = seq[:len(seq)-2]
+	default:
+		return "", false
+	}
+	body, ok = strings.CutPrefix(body, "\x1b]8;")
+	if !ok {
+		return "", false
+	}
+	_, uri, _ = strings.Cut(body, ";")
+	return uri, true
+}
+
+// safeHref is a hyperlink's address escaped for an attribute, or "" when it is
+// not http or https with a host. The address is somebody else's output as much
+// as the text is, and a javascript: link would be markup by another name.
+func safeHref(uri string) string {
+	if strings.ContainsAny(uri, " \t\r\n") {
+		return ""
+	}
+	u, err := url.Parse(uri)
+	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
+		return ""
+	}
+	return html.EscapeString(uri)
 }
 
 // Plain strips every escape sequence, leaving the text a reader would see.

@@ -80,6 +80,7 @@ var kinds = []struct {
 	One  string
 	Many string
 }{
+	{"phase", "phase", "phases"},
 	{"milestone", "milestone", "milestones"},
 	{"work-unit", "work unit", "work units"},
 	{"question", "question", "questions"},
@@ -114,7 +115,7 @@ type recordView struct {
 	Kind  string
 	Title string
 	At    string
-	Body  string
+	Body  template.HTML
 	Data  []record.Field
 	Refs  []citation
 	// Cites are identifiers found in the prose, which is where most of this
@@ -184,7 +185,9 @@ func (rr *Records) load(ctx context.Context) (map[string]record.Record, []record
 // view builds what the page shows for one record, including its citations
 // resolved so they can expand without another request.
 func (rr *Records) view(r record.Record, by map[string]record.Record) recordView {
-	v := recordView{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Body: r.Body, Data: r.Data}
+	// The body is rendered; the citations below are still read from the text
+	// as written, so markdown cannot hide an identifier from them.
+	v := recordView{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Body: markdown(r.Body), Data: r.Data}
 
 	// A ref field may name several records — "Decided by: MUS-D-0002,
 	// MUS-D-0008, MUS-D-0027" is one field and three citations. Looking the
@@ -463,7 +466,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
            padding: .05rem .5rem; opacity: .75; }
   .badge.stale { border-color: #c2703a; opacity: 1; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-` + shellCSS + `
+` + markdownCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -506,7 +509,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
     {{if .State}}<span class="badge{{if .Stale}} stale{{end}}">{{.State}}</span>{{end}}
   </div>
   <h3>{{.Title}}</h3>
-  {{if .Body}}<p>{{.Body}}</p>{{end}}
+  {{if .Body}}<div class="md">{{.Body}}</div>{{end}}
   {{if .Data}}<div class="fields">
     {{range .Data}}<div><span class="k">{{.Key}}</span><span class="v">{{.Value}}</span></div>{{end}}
   </div>{{end}}

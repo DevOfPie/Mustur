@@ -268,13 +268,19 @@ func TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven(t *testing.T) {
 		t.Errorf("the composer loads %d scripts: %v", got, scriptsIn(comp0))
 	}
 
-	// Intake and the queue carry the bar's script and only that.
-	for _, path := range []string{"/intake", "/questions"} {
+	// Intake carries the bar's script and its draft's (MUS-Q-0120); the queue
+	// carries the bar's and only that.
+	for path, want := range map[string][]string{
+		"/intake":    {"/assets/bar.js", "/assets/intake.js"},
+		"/questions": {"/assets/bar.js"},
+	} {
 		body := getFrom(t, other, path)
-		if !loads(body, "/assets/bar.js") {
-			t.Errorf("%s does not keep its badge live", path)
+		for _, src := range want {
+			if !loads(body, src) {
+				t.Errorf("%s does not load %s", path, src)
+			}
 		}
-		if got := scriptsIn(body); len(got) != 1 {
+		if got := scriptsIn(body); len(got) != len(want) {
 			t.Errorf("%s loads %v; the exception has become a suggestion", path, got)
 		}
 	}
@@ -488,6 +494,98 @@ func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	if body := getFrom(t, srv, "/sessions/Mustur"); !claimsNoSubagents(body) {
 		t.Error("a session with no hook directory claims sub-agents")
+	}
+}
+
+// Finished sub-agents fold under one line that counts them (MUS-D-0181).
+//
+// The owner chose this on MUS-Q-0126 over hiding, capping or ageing rows out:
+// nothing leaves the drawer, the running ones stay listed, and what finished
+// is one line away. Shut on arrival and with script blocked, which is what a
+// <details> is without anyone's help.
+func TestFinishedSubagentsFoldUnderACount(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	now := time.Date(2026, 8, 22, 12, 0, 0, 0, time.UTC)
+	s := &Sessions{
+		Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie",
+		HookDir: dir, Now: func() time.Time { return now.Add(3 * time.Minute) },
+	}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	rec := func(payload string, at time.Time) {
+		session.RecordHookEvent(dir, "Mustur", []byte(payload), at)
+	}
+	start := func(id string, at time.Time) {
+		rec(`{"hook_event_name":"SubagentStart","agent_id":"`+id+`","agent_type":"Explore"}`, at)
+	}
+	stop := func(id string, at time.Time) {
+		rec(`{"hook_event_name":"SubagentStop","agent_id":"`+id+`","last_assistant_message":"said by `+id+`"}`, at)
+	}
+
+	// One running, nothing finished: no fold at all, rather than "0 finished".
+	start("r1", now)
+	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, `class="fold"`) {
+		t.Error("a fold is drawn with nothing finished in it")
+	}
+
+	start("f1", now.Add(time.Second))
+	start("f2", now.Add(2*time.Second))
+	start("r2", now.Add(3*time.Second))
+	stop("f1", now.Add(time.Minute))
+	stop("f2", now.Add(time.Minute))
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	list := between(body, `<div class="dlist" id="dlist">`, "</div>\n    <div class=\"dread\"")
+	fold := strings.Index(list, `<details class="fold">`)
+	if fold < 0 {
+		t.Fatalf("no shut fold in the list:\n%s", list)
+	}
+	if !strings.Contains(list[fold:], `<summary>2 finished</summary>`) {
+		t.Error("the fold does not say how many finished")
+	}
+	for _, id := range []string{"r1", "r2"} {
+		at := strings.Index(list, `data-id="`+id+`"`)
+		if at < 0 || at > fold {
+			t.Errorf("running %s is not listed before the fold", id)
+		}
+	}
+	for _, id := range []string{"f1", "f2"} {
+		if !strings.Contains(list[fold:], `class="agent" data-id="`+id+`"`) {
+			t.Errorf("finished %s is not inside the fold", id)
+		}
+		// Still openable: the reading pane reads the message from beside the row.
+		if !strings.Contains(list[fold:], `<div class="say" data-for="`+id+`">said by `+id+`</div>`) {
+			t.Errorf("finished %s's message is not inside the fold with it", id)
+		}
+	}
+	// The counts outside the drawer are untouched by the fold (MUS-D-0123).
+	if !strings.Contains(body, `class="badge" id="badge">2<`) {
+		t.Error("the badge stopped counting what is running")
+	}
+	if !strings.Contains(body, `id="dcount">4 · 2 running<`) {
+		t.Error("the drawer header stopped counting every row")
+	}
+
+	// The script draws the same fold from a frame, and a redraw — every second,
+	// and on every frame — keeps it as the reader left it rather than shutting
+	// it under them.
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`el("details", "fold")`,
+		`" finished"`,
+		"finishedOpen = old.open",
+		"fold.open = finishedOpen",
+	} {
+		if !strings.Contains(string(js), want) {
+			t.Errorf("the script does not draw or keep the fold: no %q", want)
+		}
 	}
 }
 
@@ -2363,8 +2461,50 @@ func TestTheTerminalIsNotRepaintedUnderASelection(t *testing.T) {
 	}
 	// The held frame has to be painted by something, or the screen never comes
 	// back after a selection is let go.
-	if !strings.Contains(src, "if (pending !== null && !selecting()) paint(pending);") {
+	if !strings.Contains(src, "if (pending !== null && !holding()) paint(pending);") {
 		t.Error("nothing paints the frame held back while a selection was up")
+	}
+	// A pointer down in the terminal holds the frame too, and lets it go after
+	// the click rather than on release: a frame landing between press and
+	// release replaces the link under the pointer (MUS-Q-0118).
+	for _, want := range []string{
+		`out.addEventListener("pointerdown"`,
+		"return pressed || selecting();",
+		`document.addEventListener("pointerup", release);`,
+		`document.addEventListener("pointercancel", release);`,
+		"setTimeout(",
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("the paint path has no %q; a frame can still land under a click", want)
+		}
+	}
+}
+
+// No name in session.js is both a function and a variable.
+//
+// The script is one scope, and a var's assignment replaces a function of the
+// same name. paint's hold check was once called held(), beside the pop-up's
+// `var held = null`; the first frame set it to null, every paint threw, and the
+// terminal drew nothing. Nothing here runs the script, so the only test that
+// could have caught it is one that reads the declarations.
+//
+// Only the wrapper's own scope, which the file indents by two spaces: a var
+// inside a nested function shadows an outer function rather than replacing it,
+// and `var el` inside drawChips beside the top-level el() is exactly that.
+func TestTheSessionScriptDeclaresNoNameTwice(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	vars := map[string]bool{}
+	for _, m := range regexp.MustCompile(`(?m)^  (?:var|let|const)\s+([A-Za-z_$][\w$]*)`).FindAllStringSubmatch(src, -1) {
+		vars[m[1]] = true
+	}
+	for _, m := range regexp.MustCompile(`(?m)^  function\s+([A-Za-z_$][\w$]*)\s*\(`).FindAllStringSubmatch(src, -1) {
+		if vars[m[1]] {
+			t.Errorf("session.js declares %q as a function and as a variable; the variable replaces the function", m[1])
+		}
 	}
 }
 

@@ -174,6 +174,45 @@ func (s *Store) Append(ctx context.Context, r record.Record, op, actor string) e
 	return nil
 }
 
+// AppendAll creates a batch of records in one transaction, so a batch that
+// fails partway leaves nothing behind. An import is the caller: record by
+// record, a failure midway would leave a partial import that its own
+// run-once refusal then locked in.
+func (s *Store) AppendAll(ctx context.Context, rs []record.Record, actor string) error {
+	if actor == "" {
+		return fmt.Errorf("no actor")
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	written := s.now().UTC().Format(time.RFC3339)
+	for _, r := range rs {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+		var n int
+		if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM record_event WHERE record_id = ?`, r.ID).Scan(&n); err != nil {
+			return fmt.Errorf("look up %s: %w", r.ID, err)
+		}
+		if n > 0 {
+			return fmt.Errorf("record %s already exists: amend it or choose a new identifier", r.ID)
+		}
+		payload, err := r.MarshalPayload()
+		if err != nil {
+			return fmt.Errorf("record %s: %w", r.ID, err)
+		}
+		if _, err := tx.ExecContext(ctx,
+			`INSERT INTO record_event (record_id, kind, op, at, actor, payload, written_at)
+			 VALUES (?, ?, 'create', ?, ?, ?, ?)`,
+			r.ID, r.Kind, r.At, actor, string(payload), written); err != nil {
+			return fmt.Errorf("append %s: %w", r.ID, err)
+		}
+	}
+	return tx.Commit()
+}
+
 func (s *Store) exists(ctx context.Context, id string) (bool, error) {
 	var n int
 	err := s.db.QueryRowContext(ctx, `SELECT count(*) FROM record_latest WHERE record_id = ?`, id).Scan(&n)

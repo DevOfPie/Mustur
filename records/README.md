@@ -8,13 +8,14 @@ Mustur's own records, exported from its store. The store is the record; this tre
 
 | Kind | Records | Where |
 | --- | --- | --- |
-| milestone | 12 | [milestones.md](milestones.md) |
-| question | 119 | [questions.md](questions.md) |
-| decision | 170 | [decisions.md](decisions.md) |
-| finding | 157 | [findings.md](findings.md) |
-| repository, machine, project | 6 | [routing.md](routing.md) |
-| work-unit | 24 | [work-units/index.md](work-units/index.md) |
-| investigation | 4 | [investigations/index.md](investigations/index.md) |
+| phase | 4 | [phases.md](phases.md) |
+| milestone | 107 | [milestones.md](milestones.md) |
+| question | 157 | [questions.md](questions.md) |
+| decision | 1152 | [decisions.md](decisions.md) |
+| finding | 568 | [findings.md](findings.md) |
+| repository, machine, project | 8 | [routing.md](routing.md) |
+| work-unit | 102 | [work-units/index.md](work-units/index.md) |
+| investigation | 5 | [investigations/index.md](investigations/index.md) |
 
 ## Every identifier
 
@@ -32,6 +33,15 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0009](questions.md#hrd-q-0009) | question | Which address did you give the desktop app, and what exactly does it say when it refuses the key? |
 | [HRD-Q-0010](questions.md#hrd-q-0010) | question | How do you and your testers get fork builds of the desktop client, and how do those clients update? |
 | [HRD-Q-0011](questions.md#hrd-q-0011) | question | Where is the fork's release signing key generated, and who holds the secret half? |
+| [HRD-Q-0012](questions.md#hrd-q-0012) | question | May I prune the 43 GB Docker build cache on whippy-vm? It is LinkCtrl's, and the disk has hit 100% twice today |
+| [HRD-Q-0013](questions.md#hrd-q-0013) | question | How much of upstream's CI should run on a fork pull request push? |
+| [HRD-Q-0014](questions.md#hrd-q-0014) | question | Desktop UI: where does the Groups screen live? |
+| [HRD-Q-0015](questions.md#hrd-q-0015) | question | Desktop UI: how does the claim prompt appear when the game starts? |
+| [HRD-Q-0016](questions.md#hrd-q-0016) | question | Desktop UI: where does sharing a world start? |
+| [HRD-Q-0017](questions.md#hrd-q-0017) | question | Re-asking how the claim prompt appears, with what the overlay can and cannot do |
+| [HRD-Q-0018](questions.md#hrd-q-0018) | question | Re-asking how the claim prompt appears, now on the Alt+H HUD that exists |
+| [HRD-Q-0019](questions.md#hrd-q-0019) | question | The demo is down on v1.1.7 because its database is ahead of the release. Which way up? |
+| [HRD-Q-0020](questions.md#hrd-q-0020) | question | The disk fills every few hours of Hoard work. Bigger disk, or a clean-between-runs rule? |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -40,6 +50,16 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-D-0006](decisions.md#hrd-d-0006) | decision | A shared save names its files with a per-save include filter, set from a per-game template |
 | [HRD-D-0007](decisions.md#hrd-d-0007) | decision | The plan is approved and phase 1 starts |
 | [HRD-D-0008](decisions.md#hrd-d-0008) | decision | The fork publishes its own signed desktop releases and its clients update from them |
+| [HRD-D-0009](decisions.md#hrd-d-0009) | decision | The Docker build cache on whippy-vm is pruned when Hoard's builds need the room |
+| [HRD-D-0010](decisions.md#hrd-d-0010) | decision | Draft PRs run the cheap CI, ready PRs build and test on ubuntu, tags run every platform |
+| [HRD-D-0011](decisions.md#hrd-d-0011) | decision | Workflow changes in the fork travel as proposals under ci/proposed, and the token keeps no workflow scope |
+| [HRD-D-0012](decisions.md#hrd-d-0012) | decision | Groups is its own route under Hoard Saves |
+| [HRD-D-0013](decisions.md#hrd-d-0013) | decision | Sharing starts from both the Library row and the Dashboard card menu |
+| [HRD-D-0014](decisions.md#hrd-d-0014) | decision | The claim prompt lives in the Alt+H HUD, which the app raises when the game asks |
+| [HRD-D-0015](decisions.md#hrd-d-0015) | decision | The demo server runs the fork's releases and follows them on its own |
+| [HRD-D-0016](decisions.md#hrd-d-0016) | decision | The demo deploys releases only; branch builds go to a separate test instance |
+| [HRD-D-0017](decisions.md#hrd-d-0017) | decision | The demo came back on v1.1.7 by rolling its database back in place |
+| [HRD-D-0018](decisions.md#hrd-d-0018) | decision | The VM's disk grows to 256 GB |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
@@ -47,12 +67,1536 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-F-0005](findings.md#hrd-f-0005) | finding | The desktop app's connection test passes on a plain-http address behind Cloudflare, and sign-in then fails with no useful message |
 | [HRD-F-0006](findings.md#hrd-f-0006) | finding | The desktop game-scan progress bar fills long before the scan finishes, and the view only settles after leaving and returning |
 | [HRD-F-0007](findings.md#hrd-f-0007) | finding | The dashboard game icons' dodge animation moves their corner buttons away from the pointer |
+| [HRD-F-0008](findings.md#hrd-f-0008) | finding | The self-hosted event stream is read by the desktop, not the engine, so lease frames need an engine-side listener |
+| [HRD-F-0009](findings.md#hrd-f-0009) | finding | Review of PR 1 found ten confirmed defects in the server half, three of them data loss |
+| [HRD-F-0010](findings.md#hrd-f-0010) | finding | The desktop has an interactive in-game HUD on Alt+H that the UI survey missed, and HRD-Q-0017 was raised on the wrong overlay |
+| [HRD-F-0011](findings.md#hrd-f-0011) | finding | Moving the demo from a branch to the v1.1.7 release took it down: the database was ahead of the binary's migrations |
+| [HRD-F-0012](findings.md#hrd-f-0012) | finding | The desktop's delete-group text promises what the server refuses |
+| [HRD-F-0013](findings.md#hrd-f-0013) | finding | Review of PR 7 found eight correctness defects, the worst letting a stale client row push characters into the group |
+| [HRD-F-0014](findings.md#hrd-f-0014) | finding | Manual review of PR 4 and PR 8 found five engine defects, all fixed the same night |
+| [HRD-F-0015](findings.md#hrd-f-0015) | finding | Second-round reviews of PRs 8, 9 and 10 found and fixed engine, CLI and UI defects; the stack verifies at 1,236 tests |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
 | [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
 | [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
 | [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
 | [IDW-F-0004](findings.md#idw-f-0004) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
 | [IDW-F-0005](findings.md#idw-f-0005) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
+| [LNK-S-0001](phases.md#lnk-s-0001) | phase | Phase 1 — the milestones added after the review |
+| [LNK-S-0002](phases.md#lnk-s-0002) | phase | Phase 2 — the milestones |
+| [LNK-S-0003](phases.md#lnk-s-0003) | phase | Phase 3 — the milestones |
+| [LNK-S-0004](phases.md#lnk-s-0004) | phase | Phase 4 — the milestones |
+| [LNK-M-0001](milestones.md#lnk-m-0001) | milestone | `M0.5`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0002](milestones.md#lnk-m-0002) | milestone | `M4`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0003](milestones.md#lnk-m-0003) | milestone | `M7`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0004](milestones.md#lnk-m-0004) | milestone | `M8`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0005](milestones.md#lnk-m-0005) | milestone | `M9`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0006](milestones.md#lnk-m-0006) | milestone | `M11`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0007](milestones.md#lnk-m-0007) | milestone | `M12`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0008](milestones.md#lnk-m-0008) | milestone | `M13`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0009](milestones.md#lnk-m-0009) | milestone | `M14`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0010](milestones.md#lnk-m-0010) | milestone | `M15`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0011](milestones.md#lnk-m-0011) | milestone | `M16`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0012](milestones.md#lnk-m-0012) | milestone | `M17`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0013](milestones.md#lnk-m-0013) | milestone | separate management and link hostnames |
+| [LNK-M-0014](milestones.md#lnk-m-0014) | milestone | post-release defect fixes, and a demo seeder |
+| [LNK-M-0015](milestones.md#lnk-m-0015) | milestone | root redirect on the link domain |
+| [LNK-M-0016](milestones.md#lnk-m-0016) | milestone | Audit log: behavior, retention, growth alerting |
+| [LNK-M-0017](milestones.md#lnk-m-0017) | milestone | Notifications: in-app behavior |
+| [LNK-M-0018](milestones.md#lnk-m-0018) | milestone | Cross-replica cache invalidation (pub/sub) |
+| [LNK-M-0019](milestones.md#lnk-m-0019) | milestone | Shared rate limits (credentials and API) |
+| [LNK-M-0020](milestones.md#lnk-m-0020) | milestone | Dark mode |
+| [LNK-M-0021](milestones.md#lnk-m-0021) | milestone | `M24.6`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0022](milestones.md#lnk-m-0022) | milestone | Workspace and organization switcher |
+| [LNK-M-0023](milestones.md#lnk-m-0023) | milestone | Mailer: optional SMTP delivery |
+| [LNK-M-0024](milestones.md#lnk-m-0024) | milestone | Dashboard header: identity menu and notification bell |
+| [LNK-M-0025](milestones.md#lnk-m-0025) | milestone | Bounded Redis failure, when the server never answers |
+| [LNK-M-0026](milestones.md#lnk-m-0026) | milestone | Organizations: invitations and joining |
+| [LNK-M-0027](milestones.md#lnk-m-0027) | milestone | Team management, workspaces, and org creation |
+| [LNK-M-0028](milestones.md#lnk-m-0028) | milestone | Organization deletion and tenancy teardown |
+| [LNK-M-0029](milestones.md#lnk-m-0029) | milestone | Self-serve signup, switchable at runtime |
+| [LNK-M-0030](milestones.md#lnk-m-0030) | milestone | Destination blocking: tiers and logging |
+| [LNK-M-0031](milestones.md#lnk-m-0031) | milestone | `M30.5`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0032](milestones.md#lnk-m-0032) | milestone | Blocked-attempt disputes and owner review |
+| [LNK-M-0033](milestones.md#lnk-m-0033) | milestone | Opt-in reputation and malware feeds |
+| [LNK-M-0034](milestones.md#lnk-m-0034) | milestone | Bot blocking, per domain and per link |
+| [LNK-M-0035](milestones.md#lnk-m-0035) | milestone | `M32.6`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0036](milestones.md#lnk-m-0036) | milestone | Mid-phase adversarial review |
+| [LNK-M-0037](milestones.md#lnk-m-0037) | milestone | Deep-link path forwarding |
+| [LNK-M-0038](milestones.md#lnk-m-0038) | milestone | A demo that shows the phase, not just its links |
+| [LNK-M-0039](milestones.md#lnk-m-0039) | milestone | Routing rules: conditions and first-match evaluation |
+| [LNK-M-0040](milestones.md#lnk-m-0040) | milestone | Gated links: password, signed, one-time, max-click |
+| [LNK-M-0041](milestones.md#lnk-m-0041) | milestone | Split testing: weighted, percentage, sequential, fallback, flags |
+| [LNK-M-0042](milestones.md#lnk-m-0042) | milestone | Dimension visualizations, with the rollup cadence fixed first |
+| [LNK-M-0043](milestones.md#lnk-m-0043) | milestone | Folders: API and tree UI |
+| [LNK-M-0044](milestones.md#lnk-m-0044) | milestone | Per-domain ownership |
+| [LNK-M-0045](milestones.md#lnk-m-0045) | milestone | Custom domains: verification and serving |
+| [LNK-M-0046](milestones.md#lnk-m-0046) | milestone | QR codes and campaigns |
+| [LNK-M-0047](milestones.md#lnk-m-0047) | milestone | Webhooks |
+| [LNK-M-0048](milestones.md#lnk-m-0048) | milestone | Automation rules |
+| [LNK-M-0049](milestones.md#lnk-m-0049) | milestone | API keys: rotation automation and scope choice |
+| [LNK-M-0050](milestones.md#lnk-m-0050) | milestone | `M44.5`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0051](milestones.md#lnk-m-0051) | milestone | Pre-release adversarial review |
+| [LNK-M-0052](milestones.md#lnk-m-0052) | milestone | Deferred findings, documentation pass, and the 0.2.0 release |
+| [LNK-M-0053](milestones.md#lnk-m-0053) | milestone | The shell, the navigation, and the links list |
+| [LNK-M-0054](milestones.md#lnk-m-0054) | milestone | A browser an agent can drive, and a test that outlives it |
+| [LNK-M-0055](milestones.md#lnk-m-0055) | milestone | The workspace pair reads as one control |
+| [LNK-M-0056](milestones.md#lnk-m-0056) | milestone | The link page, taken apart |
+| [LNK-M-0057](milestones.md#lnk-m-0057) | milestone | What every tab says about itself |
+| [LNK-M-0058](milestones.md#lnk-m-0058) | milestone | On-demand panels, and what stops being buried |
+| [LNK-M-0059](milestones.md#lnk-m-0059) | milestone | QR codes sized in pixels, and a PNG to download |
+| [LNK-M-0060](milestones.md#lnk-m-0060) | milestone | More than one QR code per link, told apart in the analytics |
+| [LNK-M-0061](milestones.md#lnk-m-0061) | milestone | The first file this product accepts |
+| [LNK-M-0062](milestones.md#lnk-m-0062) | milestone | A logo in the middle of a QR code |
+| [LNK-M-0063](milestones.md#lnk-m-0063) | milestone | The QR tab stops costing more attention than it is worth |
+| [LNK-M-0064](milestones.md#lnk-m-0064) | milestone | The QR tab's third report, and the first script the dashboard depends on |
+| [LNK-M-0065](milestones.md#lnk-m-0065) | milestone | Account recovery: a forgotten password stops being permanent |
+| [LNK-M-0066](milestones.md#lnk-m-0066) | milestone | Mid-phase adversarial review |
+| [LNK-M-0067](milestones.md#lnk-m-0067) | milestone | Account deletion and subject erasure |
+| [LNK-M-0068](milestones.md#lnk-m-0068) | milestone | A second factor: TOTP, enrolment, and recovery codes |
+| [LNK-M-0069](milestones.md#lnk-m-0069) | milestone | An API key belongs to an account, not to one organization |
+| [LNK-M-0070](milestones.md#lnk-m-0070) | milestone | An update checker, and the fifth thing that leaves this product |
+| [LNK-M-0071](milestones.md#lnk-m-0071) | milestone | High availability: the failover contract |
+| [LNK-M-0072](milestones.md#lnk-m-0072) | milestone | High availability: measured, and still one container |
+| [LNK-M-0073](milestones.md#lnk-m-0073) | milestone | The six the close left behind |
+| [LNK-M-0074](milestones.md#lnk-m-0074) | milestone | Pre-release adversarial review |
+| [LNK-M-0075](milestones.md#lnk-m-0075) | milestone | Deferred findings, documentation pass, and the 0.3.0 release |
+| [LNK-M-0076](milestones.md#lnk-m-0076) | milestone | `M58.5`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0077](milestones.md#lnk-m-0077) | milestone | `M58.9`, cited in LinkCtrl and defined nowhere |
+| [LNK-M-0078](milestones.md#lnk-m-0078) | milestone | Process debt: the gates that were not watching |
+| [LNK-M-0079](milestones.md#lnk-m-0079) | milestone | The host: a module loads, or is refused |
+| [LNK-M-0080](milestones.md#lnk-m-0080) | milestone | The ABI: what an add-on may import, written down and versioned |
+| [LNK-M-0081](milestones.md#lnk-m-0081) | milestone | Declared permissions: an add-on gets what it named and nothing else |
+| [LNK-M-0082](milestones.md#lnk-m-0082) | milestone | An add-on's tables: a schema of its own, migrated by the host |
+| [LNK-M-0083](milestones.md#lnk-m-0083) | milestone | An add-on reaches the page: routes, templates, config |
+| [LNK-M-0084](milestones.md#lnk-m-0084) | milestone | Mid-phase adversarial review |
+| [LNK-M-0085](milestones.md#lnk-m-0085) | milestone | The authentication hook: a session minted on an add-on's word |
+| [LNK-M-0086](milestones.md#lnk-m-0086) | milestone | Add-ons on the redirect path: two classes, a deadline, and a promise rescoped |
+| [LNK-M-0087](milestones.md#lnk-m-0087) | milestone | Instances are reused, so a visitor stops paying for a cold start |
+| [LNK-M-0088](milestones.md#lnk-m-0088) | milestone | Runtime lifecycle: an add-on arrives and leaves without a reboot |
+| [LNK-M-0089](milestones.md#lnk-m-0089) | milestone | The Add-on manager |
+| [LNK-M-0090](milestones.md#lnk-m-0090) | milestone | An add-on reaches outward, and only where the operator pointed it |
+| [LNK-M-0091](milestones.md#lnk-m-0091) | milestone | A module arrives from a URL, because that was always the intention |
+| [LNK-M-0092](milestones.md#lnk-m-0092) | milestone | The OIDC add-on: the foundation's acceptance test |
+| [LNK-M-0093](milestones.md#lnk-m-0093) | milestone | Somebody can start the sign-in an add-on made possible |
+| [LNK-M-0094](milestones.md#lnk-m-0094) | milestone | Pre-release adversarial review |
+| [LNK-M-0095](milestones.md#lnk-m-0095) | milestone | Deferred findings, documentation pass, 0.4.0 |
+| [LNK-W-0016](work-units/LNK-W-0016.md#lnk-w-0016) | work-unit | Audit log: behavior, retention, growth alerting |
+| [LNK-W-0017](work-units/LNK-W-0017.md#lnk-w-0017) | work-unit | Notifications: in-app behavior |
+| [LNK-W-0018](work-units/LNK-W-0018.md#lnk-w-0018) | work-unit | Cross-replica cache invalidation (pub/sub) |
+| [LNK-W-0019](work-units/LNK-W-0019.md#lnk-w-0019) | work-unit | Shared rate limits (credentials and API) |
+| [LNK-W-0020](work-units/LNK-W-0020.md#lnk-w-0020) | work-unit | Dark mode |
+| [LNK-W-0022](work-units/LNK-W-0022.md#lnk-w-0022) | work-unit | Workspace and organization switcher |
+| [LNK-W-0023](work-units/LNK-W-0023.md#lnk-w-0023) | work-unit | Mailer: optional SMTP delivery |
+| [LNK-W-0024](work-units/LNK-W-0024.md#lnk-w-0024) | work-unit | Dashboard header: identity menu and notification bell |
+| [LNK-W-0025](work-units/LNK-W-0025.md#lnk-w-0025) | work-unit | Bounded Redis failure, when the server never answers |
+| [LNK-W-0026](work-units/LNK-W-0026.md#lnk-w-0026) | work-unit | Organizations: invitations and joining |
+| [LNK-W-0027](work-units/LNK-W-0027.md#lnk-w-0027) | work-unit | Team management, workspaces, and org creation |
+| [LNK-W-0028](work-units/LNK-W-0028.md#lnk-w-0028) | work-unit | Organization deletion and tenancy teardown |
+| [LNK-W-0029](work-units/LNK-W-0029.md#lnk-w-0029) | work-unit | Self-serve signup, switchable at runtime |
+| [LNK-W-0030](work-units/LNK-W-0030.md#lnk-w-0030) | work-unit | Destination blocking: tiers and logging |
+| [LNK-W-0032](work-units/LNK-W-0032.md#lnk-w-0032) | work-unit | Blocked-attempt disputes and owner review |
+| [LNK-W-0033](work-units/LNK-W-0033.md#lnk-w-0033) | work-unit | Opt-in reputation and malware feeds |
+| [LNK-W-0034](work-units/LNK-W-0034.md#lnk-w-0034) | work-unit | Bot blocking, per domain and per link |
+| [LNK-W-0036](work-units/LNK-W-0036.md#lnk-w-0036) | work-unit | Mid-phase adversarial review |
+| [LNK-W-0037](work-units/LNK-W-0037.md#lnk-w-0037) | work-unit | Deep-link path forwarding |
+| [LNK-W-0038](work-units/LNK-W-0038.md#lnk-w-0038) | work-unit | A demo that shows the phase, not just its links |
+| [LNK-W-0039](work-units/LNK-W-0039.md#lnk-w-0039) | work-unit | Routing rules: conditions and first-match evaluation |
+| [LNK-W-0040](work-units/LNK-W-0040.md#lnk-w-0040) | work-unit | Gated links: password, signed, one-time, max-click |
+| [LNK-W-0041](work-units/LNK-W-0041.md#lnk-w-0041) | work-unit | Split testing: weighted, percentage, sequential, fallback, flags |
+| [LNK-W-0042](work-units/LNK-W-0042.md#lnk-w-0042) | work-unit | Dimension visualizations, with the rollup cadence fixed first |
+| [LNK-W-0043](work-units/LNK-W-0043.md#lnk-w-0043) | work-unit | Folders: API and tree UI |
+| [LNK-W-0044](work-units/LNK-W-0044.md#lnk-w-0044) | work-unit | Per-domain ownership |
+| [LNK-W-0045](work-units/LNK-W-0045.md#lnk-w-0045) | work-unit | Custom domains: verification and serving |
+| [LNK-W-0046](work-units/LNK-W-0046.md#lnk-w-0046) | work-unit | QR codes and campaigns |
+| [LNK-W-0047](work-units/LNK-W-0047.md#lnk-w-0047) | work-unit | Webhooks |
+| [LNK-W-0048](work-units/LNK-W-0048.md#lnk-w-0048) | work-unit | Automation rules |
+| [LNK-W-0049](work-units/LNK-W-0049.md#lnk-w-0049) | work-unit | API keys: rotation automation and scope choice |
+| [LNK-W-0051](work-units/LNK-W-0051.md#lnk-w-0051) | work-unit | Pre-release adversarial review |
+| [LNK-W-0052](work-units/LNK-W-0052.md#lnk-w-0052) | work-unit | Deferred findings, documentation pass, and the 0.2.0 release |
+| [LNK-W-0053](work-units/LNK-W-0053.md#lnk-w-0053) | work-unit | The shell, the navigation, and the links list |
+| [LNK-W-0054](work-units/LNK-W-0054.md#lnk-w-0054) | work-unit | A browser an agent can drive, and a test that outlives it |
+| [LNK-W-0055](work-units/LNK-W-0055.md#lnk-w-0055) | work-unit | The workspace pair reads as one control |
+| [LNK-W-0056](work-units/LNK-W-0056.md#lnk-w-0056) | work-unit | The link page, taken apart |
+| [LNK-W-0057](work-units/LNK-W-0057.md#lnk-w-0057) | work-unit | What every tab says about itself |
+| [LNK-W-0058](work-units/LNK-W-0058.md#lnk-w-0058) | work-unit | On-demand panels, and what stops being buried |
+| [LNK-W-0059](work-units/LNK-W-0059.md#lnk-w-0059) | work-unit | QR codes sized in pixels, and a PNG to download |
+| [LNK-W-0060](work-units/LNK-W-0060.md#lnk-w-0060) | work-unit | More than one QR code per link, told apart in the analytics |
+| [LNK-W-0061](work-units/LNK-W-0061.md#lnk-w-0061) | work-unit | The first file this product accepts |
+| [LNK-W-0062](work-units/LNK-W-0062.md#lnk-w-0062) | work-unit | A logo in the middle of a QR code |
+| [LNK-W-0063](work-units/LNK-W-0063.md#lnk-w-0063) | work-unit | The QR tab stops costing more attention than it is worth |
+| [LNK-W-0064](work-units/LNK-W-0064.md#lnk-w-0064) | work-unit | The QR tab's third report, and the first script the dashboard depends on |
+| [LNK-W-0065](work-units/LNK-W-0065.md#lnk-w-0065) | work-unit | Account recovery: a forgotten password stops being permanent |
+| [LNK-W-0066](work-units/LNK-W-0066.md#lnk-w-0066) | work-unit | Mid-phase adversarial review |
+| [LNK-W-0067](work-units/LNK-W-0067.md#lnk-w-0067) | work-unit | Account deletion and subject erasure |
+| [LNK-W-0068](work-units/LNK-W-0068.md#lnk-w-0068) | work-unit | A second factor: TOTP, enrolment, and recovery codes |
+| [LNK-W-0069](work-units/LNK-W-0069.md#lnk-w-0069) | work-unit | An API key belongs to an account, not to one organization |
+| [LNK-W-0070](work-units/LNK-W-0070.md#lnk-w-0070) | work-unit | An update checker, and the fifth thing that leaves this product |
+| [LNK-W-0071](work-units/LNK-W-0071.md#lnk-w-0071) | work-unit | High availability: the failover contract |
+| [LNK-W-0072](work-units/LNK-W-0072.md#lnk-w-0072) | work-unit | High availability: measured, and still one container |
+| [LNK-W-0073](work-units/LNK-W-0073.md#lnk-w-0073) | work-unit | The six the close left behind |
+| [LNK-W-0074](work-units/LNK-W-0074.md#lnk-w-0074) | work-unit | Pre-release adversarial review |
+| [LNK-W-0075](work-units/LNK-W-0075.md#lnk-w-0075) | work-unit | Deferred findings, documentation pass, and the 0.3.0 release |
+| [LNK-W-0078](work-units/LNK-W-0078.md#lnk-w-0078) | work-unit | Process debt: the gates that were not watching |
+| [LNK-W-0079](work-units/LNK-W-0079.md#lnk-w-0079) | work-unit | The host: a module loads, or is refused |
+| [LNK-W-0080](work-units/LNK-W-0080.md#lnk-w-0080) | work-unit | The ABI: what an add-on may import, written down and versioned |
+| [LNK-W-0081](work-units/LNK-W-0081.md#lnk-w-0081) | work-unit | Declared permissions: an add-on gets what it named and nothing else |
+| [LNK-W-0082](work-units/LNK-W-0082.md#lnk-w-0082) | work-unit | An add-on's tables: a schema of its own, migrated by the host |
+| [LNK-W-0083](work-units/LNK-W-0083.md#lnk-w-0083) | work-unit | An add-on reaches the page: routes, templates, config |
+| [LNK-W-0084](work-units/LNK-W-0084.md#lnk-w-0084) | work-unit | Mid-phase adversarial review |
+| [LNK-W-0085](work-units/LNK-W-0085.md#lnk-w-0085) | work-unit | The authentication hook: a session minted on an add-on's word |
+| [LNK-W-0086](work-units/LNK-W-0086.md#lnk-w-0086) | work-unit | Add-ons on the redirect path: two classes, a deadline, and a promise rescoped |
+| [LNK-W-0087](work-units/LNK-W-0087.md#lnk-w-0087) | work-unit | Instances are reused, so a visitor stops paying for a cold start |
+| [LNK-W-0088](work-units/LNK-W-0088.md#lnk-w-0088) | work-unit | Runtime lifecycle: an add-on arrives and leaves without a reboot |
+| [LNK-W-0089](work-units/LNK-W-0089.md#lnk-w-0089) | work-unit | The Add-on manager |
+| [LNK-W-0090](work-units/LNK-W-0090.md#lnk-w-0090) | work-unit | An add-on reaches outward, and only where the operator pointed it |
+| [LNK-W-0091](work-units/LNK-W-0091.md#lnk-w-0091) | work-unit | A module arrives from a URL, because that was always the intention |
+| [LNK-W-0092](work-units/LNK-W-0092.md#lnk-w-0092) | work-unit | The OIDC add-on: the foundation's acceptance test |
+| [LNK-W-0093](work-units/LNK-W-0093.md#lnk-w-0093) | work-unit | Somebody can start the sign-in an add-on made possible |
+| [LNK-W-0094](work-units/LNK-W-0094.md#lnk-w-0094) | work-unit | Pre-release adversarial review |
+| [LNK-W-0095](work-units/LNK-W-0095.md#lnk-w-0095) | work-unit | Deferred findings, documentation pass, 0.4.0 |
+| [LNK-W-0096](work-units/LNK-W-0096.md#lnk-w-0096) | work-unit | W48: this repository's records move to Mustur |
+| [LNK-W-0097](work-units/LNK-W-0097.md#lnk-w-0097) | work-unit | W48's review fixes on LinkCtrl PR 14 |
+| [LNK-W-0098](work-units/LNK-W-0098.md#lnk-w-0098) | work-unit | W48's phase pointers and conventions, after LNK-Q-0005 |
+| [LNK-Q-0001](questions.md#lnk-q-0001) | question | LNK-M-0070 — Does the update checker default on or off? |
+| [LNK-Q-0002](questions.md#lnk-q-0002) | question | An 'All Workspaces' dashboard scope — which phase, and whose milestone? |
+| [LNK-Q-0003](questions.md#lnk-q-0003) | question | W48: phase-details/README.md's fourteen inherited rules and _template.md are in no Mustur record — where do they go? |
+| [LNK-Q-0004](questions.md#lnk-q-0004) | question | Should LinkCtrl get an 'All Workspaces' view on the dashboard and links pages, and if so, when? |
+| [LNK-Q-0005](questions.md#lnk-q-0005) | question | LinkCtrl's phase summaries were deleted by W48 and never imported. Where do they live? |
+| [LNK-Q-0006](questions.md#lnk-q-0006) | question | PR 14's three review-fix commits were pushed without subject lines — rewrite them with a force push, or leave them? |
+| [LNK-D-0001](decisions.md#lnk-d-0001) | decision | Mailer |
+| [LNK-D-0002](decisions.md#lnk-d-0002) | decision | Cookie / returning-visitor conditions |
+| [LNK-D-0003](decisions.md#lnk-d-0003) | decision | Custom-domain TLS |
+| [LNK-D-0004](decisions.md#lnk-d-0004) | decision | Version at phase end |
+| [LNK-D-0005](decisions.md#lnk-d-0005) | decision | Audit retention default |
+| [LNK-D-0006](decisions.md#lnk-d-0006) | decision | Invite-path provisioning |
+| [LNK-D-0007](decisions.md#lnk-d-0007) | decision | Signup ceiling vs invites |
+| [LNK-D-0008](decisions.md#lnk-d-0008) | decision | Sequential routing |
+| [LNK-D-0009](decisions.md#lnk-d-0009) | decision | API key rotation |
+| [LNK-D-0010](decisions.md#lnk-d-0010) | decision | `disabled` automation action |
+| [LNK-D-0011](decisions.md#lnk-d-0011) | decision | QR output |
+| [LNK-D-0012](decisions.md#lnk-d-0012) | decision | New-vs-returning analytics split |
+| [LNK-D-0013](decisions.md#lnk-d-0013) | decision | Freshly-registered-domains heuristic |
+| [LNK-D-0014](decisions.md#lnk-d-0014) | decision | Alias-rename 409 |
+| [LNK-D-0015](decisions.md#lnk-d-0015) | decision | Workspace creation |
+| [LNK-D-0016](decisions.md#lnk-d-0016) | decision | `orgs.create` |
+| [LNK-D-0017](decisions.md#lnk-d-0017) | decision | Billing groundwork |
+| [LNK-D-0018](decisions.md#lnk-d-0018) | decision | Delegability stops being a per-permission conversation |
+| [LNK-D-0019](decisions.md#lnk-d-0019) | decision | The growth alert cannot itself require configuration |
+| [LNK-D-0020](decisions.md#lnk-d-0020) | decision | A reconnecting subscriber has no way to catch up |
+| [LNK-D-0021](decisions.md#lnk-d-0021) | decision | The light theme is allowed to move |
+| [LNK-D-0022](decisions.md#lnk-d-0022) | decision | Last-used, with a way to pin it |
+| [LNK-D-0023](decisions.md#lnk-d-0023) | decision | Mail goes through an outbox |
+| [LNK-D-0024](decisions.md#lnk-d-0024) | decision | Header menu mechanism |
+| [LNK-D-0025](decisions.md#lnk-d-0025) | decision | verification tooling is not shipped code |
+| [LNK-D-0026](decisions.md#lnk-d-0026) | decision | one total budget, `REDIS_INVALIDATE_BUDGET`, default 250ms |
+| [LNK-D-0027](decisions.md#lnk-d-0027) | decision | an invite is bound to the address it was issued to |
+| [LNK-D-0028](decisions.md#lnk-d-0028) | decision | an invite may carry any role at or below the inviter's own rank |
+| [LNK-D-0029](decisions.md#lnk-d-0029) | decision | `LINKCTRL_INVITE_TTL`, default 168h |
+| [LNK-D-0030](decisions.md#lnk-d-0030) | decision | a member may manage only ranks strictly below their own; owners are the exception |
+| [LNK-D-0031](decisions.md#lnk-d-0031) | decision | a workspace-scoped membership only ever adds; it never narrows |
+| [LNK-D-0032](decisions.md#lnk-d-0032) | decision | a workspace holding any link refuses to be deleted |
+| [LNK-D-0033](decisions.md#lnk-d-0033) | decision | `orgs.create` delegability |
+| [LNK-D-0034](decisions.md#lnk-d-0034) | decision | an organization's last workspace cannot be deleted either |
+| [LNK-D-0035](decisions.md#lnk-d-0035) | decision | none of this takes a top-level nav slot |
+| [LNK-D-0036](decisions.md#lnk-d-0036) | decision | deletion proceeds, and having no organization becomes a real state |
+| [LNK-D-0037](decisions.md#lnk-d-0037) | decision | an organization holding links refuses deletion, mirroring D32 |
+| [LNK-D-0038](decisions.md#lnk-d-0038) | decision | Who may change the signup mode |
+| [LNK-D-0039](decisions.md#lnk-d-0039) | decision | the shortener list is runtime data, not compiled |
+| [LNK-D-0040](decisions.md#lnk-d-0040) | decision | Where the feed opt-in is disclosed |
+| [LNK-D-0041](decisions.md#lnk-d-0041) | decision | a milestone for the demo's own data, at LNK-M-0038 |
+| [LNK-D-0042](decisions.md#lnk-d-0042) | decision | a second Redis timeout, and why it cannot be the first one |
+| [LNK-D-0043](decisions.md#lnk-d-0043) | decision | What a key-issued invitation may carry |
+| [LNK-D-0044](decisions.md#lnk-d-0044) | decision | The decision |
+| [LNK-D-0045](decisions.md#lnk-d-0045) | decision | reserve in the transaction, rather than refuse the delete |
+| [LNK-D-0046](decisions.md#lnk-d-0046) | decision | one fold in the validator, and the dot is canonicalized rather than refused |
+| [LNK-D-0047](decisions.md#lnk-d-0047) | decision | what a deep link the alias cannot forward gets |
+| [LNK-D-0048](decisions.md#lnk-d-0048) | decision | Owner-answered at LNK-M-0039's validation, before any code, and |
+| [LNK-D-0049](decisions.md#lnk-d-0049) | decision | a rule is guarded by the link's own permissions, and mints none |
+| [LNK-D-0050](decisions.md#lnk-d-0050) | decision | the returning-visitor set is written by the pipeline and read by the path |
+| [LNK-D-0051](decisions.md#lnk-d-0051) | decision | the snapshot carries a destination list, and the slice order is the priority |
+| [LNK-D-0052](decisions.md#lnk-d-0052) | decision | v2, and why this is the field that could not decode as its own absence |
+| [LNK-D-0053](decisions.md#lnk-d-0053) | decision | A POST on the redirect tree, and the CSRF rule it waives |
+| [LNK-D-0054](decisions.md#lnk-d-0054) | decision | The limiter is what makes that safe |
+| [LNK-D-0055](decisions.md#lnk-d-0055) | decision | weights live on the destination, not on the rule |
+| [LNK-D-0056](decisions.md#lnk-d-0056) | decision | a link's split is one kind, and it applies to whoever no rule claimed |
+| [LNK-D-0057](decisions.md#lnk-d-0057) | decision | the rotation is a second column on the budget table, not the budget |
+| [LNK-D-0058](decisions.md#lnk-d-0058) | decision | `click_events.destination_id`: nullable, unreferenced, NULL means the link's own destination |
+| [LNK-D-0059](decisions.md#lnk-d-0059) | decision | v3, the second cache-key bump of an unreleased phase |
+| [LNK-D-0060](decisions.md#lnk-d-0060) | decision | the breakdown reads a rollup, and pays for a pass of its own to do it |
+| [LNK-D-0061](decisions.md#lnk-d-0061) | decision | the demo is seeded into the organization's oldest workspace |
+| [LNK-D-0062](decisions.md#lnk-d-0062) | decision | split attribution buckets on the visitor, not on the click |
+| [LNK-D-0063](decisions.md#lnk-d-0063) | decision | Owner-answered at LNK-M-0042's validation, before any code, and |
+| [LNK-D-0064](decisions.md#lnk-d-0064) | decision | How much longer the dimension cadence is, and what "stale" is measured from |
+| [LNK-D-0065](decisions.md#lnk-d-0065) | decision | What the choropleth is shaded by, and what it refuses to draw |
+| [LNK-D-0066](decisions.md#lnk-d-0066) | decision | deleting a folder is a real DELETE, and that is what makes the links safe |
+| [LNK-D-0067](decisions.md#lnk-d-0067) | decision | no `folders.*` permission, and which limb of D18 that matched |
+| [LNK-D-0068](decisions.md#lnk-d-0068) | decision | Owner-answered at LNK-M-0044's validation, **before any code** |
+| [LNK-D-0069](decisions.md#lnk-d-0069) | decision | Three questions LNK-M-0044 forced once D68 had |
+| [LNK-D-0070](decisions.md#lnk-d-0070) | decision | What happens when a verified domain stops verifying |
+| [LNK-D-0071](decisions.md#lnk-d-0071) | decision | D70 left |
+| [LNK-D-0072](decisions.md#lnk-d-0072) | decision | The QR encoder, and what it was weighed against |
+| [LNK-D-0073](decisions.md#lnk-d-0073) | decision | `scan_count` is dropped rather than wired |
+| [LNK-D-0074](decisions.md#lnk-d-0074) | decision | A QR code does not follow the theme |
+| [LNK-D-0075](decisions.md#lnk-d-0075) | decision | QR codes and campaigns mint no permission |
+| [LNK-D-0076](decisions.md#lnk-d-0076) | decision | How a scan tells the analytics what it is |
+| [LNK-D-0077](decisions.md#lnk-d-0077) | decision | m42.md required this decided and recorded: *"claimed via `FOR UPDATE SKIP LOCKED` |
+| [LNK-D-0078](decisions.md#lnk-d-0078) | decision | m42.md required this **stated explicitly rather than inherited**: *"The redirect |
+| [LNK-D-0079](decisions.md#lnk-d-0079) | decision | The part of a webhook that is a published interface |
+| [LNK-D-0080](decisions.md#lnk-d-0080) | decision | The *What every milestone inherits* table requires the D18 limb to be recorded, or |
+| [LNK-D-0081](decisions.md#lnk-d-0081) | decision | The demo has been build-enforced since LNK-M-0038, and LNK-M-0047's |
+| [LNK-D-0082](decisions.md#lnk-d-0082) | decision | `last_fired_at` is a watermark, and it is the loop guard |
+| [LNK-D-0083](decisions.md#lnk-d-0083) | decision | The cascade a watermark cannot stop, and what does |
+| [LNK-D-0084](decisions.md#lnk-d-0084) | decision | What bounds one evaluation run, and where the numbers live |
+| [LNK-D-0085](decisions.md#lnk-d-0085) | decision | Automation mints two permissions, and one is not delegable |
+| [LNK-D-0086](decisions.md#lnk-d-0086) | decision | What the automation demo shows, and why it changes nobody's links |
+| [LNK-D-0087](decisions.md#lnk-d-0087) | decision | A key that replaces itself, and the leak it can carry |
+| [LNK-D-0088](decisions.md#lnk-d-0088) | decision | How wide a key reaches, and why no permission was minted for it |
+| [LNK-D-0089](decisions.md#lnk-d-0089) | decision | What the key demo shows, and why no secret is on it |
+| [LNK-D-0090](decisions.md#lnk-d-0090) | decision | The tenancy bound an organization-wide key needed |
+| [LNK-D-0091](decisions.md#lnk-d-0091) | decision | `golang.org/x/net/idna` is added, reversing the punycode decision |
+| [LNK-D-0092](decisions.md#lnk-d-0092) | decision | the write is conditional on what was checked, and the pass is drawn in two classes |
+| [LNK-D-0093](decisions.md#lnk-d-0093) | decision | one fold, a browser's profile, and a refusal for what is not a name |
+| [LNK-D-0094](decisions.md#lnk-d-0094) | decision | Which namespace a gate is keyed on, and what a verified password is answered with |
+| [LNK-D-0095](decisions.md#lnk-d-0095) | decision | LNK-M-0047 is reopened on F82 |
+| [LNK-D-0096](decisions.md#lnk-d-0096) | decision | LNK-M-0048 is reopened on F83 |
+| [LNK-D-0097](decisions.md#lnk-d-0097) | decision | the mount list is produced by registering, not written beside it |
+| [LNK-D-0098](decisions.md#lnk-d-0098) | decision | The instance-level principal D38 said did not exist |
+| [LNK-D-0099](decisions.md#lnk-d-0099) | decision | a discarded click costs the same draws as a kept one, and the history ends at the top of the hour |
+| [LNK-D-0100](decisions.md#lnk-d-0100) | decision | the instance default domain is the instance principal's |
+| [LNK-D-0101](decisions.md#lnk-d-0101) | decision | a blocked bot is recorded in every link state, or the rule has an exception |
+| [LNK-D-0102](decisions.md#lnk-d-0102) | decision | the notification inbox gains the workspace filter it was believed to have |
+| [LNK-D-0103](decisions.md#lnk-d-0103) | decision | the dashboard requires JavaScript |
+| [LNK-D-0104](decisions.md#lnk-d-0104) | decision | README describes the released product |
+| [LNK-D-0105](decisions.md#lnk-d-0105) | decision | the outbox's thirty-day purge stays |
+| [LNK-D-0106](decisions.md#lnk-d-0106) | decision | the automation cursor is a (timestamp, id) pair |
+| [LNK-D-0107](decisions.md#lnk-d-0107) | decision | one goroutine per job family, one advisory lock key per family |
+| [LNK-D-0108](decisions.md#lnk-d-0108) | decision | Which work areas Phase 3 takes |
+| [LNK-D-0109](decisions.md#lnk-d-0109) | decision | area A takes two defects, MFA, and the key model |
+| [LNK-D-0110](decisions.md#lnk-d-0110) | decision | area E takes the checker and high availability, under a constraint |
+| [LNK-D-0111](decisions.md#lnk-d-0111) | decision | area F takes all three, and D11 reverses on its own terms |
+| [LNK-D-0112](decisions.md#lnk-d-0112) | decision | the redesign is specified by the owner, in person |
+| [LNK-D-0113](decisions.md#lnk-d-0113) | decision | 0.3.0 |
+| [LNK-D-0114](decisions.md#lnk-d-0114) | decision | B stays at three, and what that costs |
+| [LNK-D-0115](decisions.md#lnk-d-0115) | decision | QR logos, and the target moving |
+| [LNK-D-0116](decisions.md#lnk-d-0116) | decision | The logo milestone is two, and the target moves again |
+| [LNK-D-0117](decisions.md#lnk-d-0117) | decision | the switcher stops offering the workspace you are already in |
+| [LNK-D-0118](decisions.md#lnk-d-0118) | decision | the top-level nav holds two destinations, and API keys is the one that left |
+| [LNK-D-0119](decisions.md#lnk-d-0119) | decision | one hot filter, and the second slot left empty on purpose |
+| [LNK-D-0120](decisions.md#lnk-d-0120) | decision | the analytics go below, and it is the only one of the three options that costs nothing |
+| [LNK-D-0121](decisions.md#lnk-d-0121) | decision | the order, and the point at which the evidence runs out |
+| [LNK-D-0122](decisions.md#lnk-d-0122) | decision | the cap is 60 lines, and the number that fixes it is 21 |
+| [LNK-D-0123](decisions.md#lnk-d-0123) | decision | a panel is a route first and a popup second |
+| [LNK-D-0124](decisions.md#lnk-d-0124) | decision | the QR thumbnail is not above the edit form, and the reason is LNK-M-0056's test |
+| [LNK-D-0125](decisions.md#lnk-d-0125) | decision | where a notification leads |
+| [LNK-D-0126](decisions.md#lnk-d-0126) | decision | a picture in front of the destination box states its own height |
+| [LNK-D-0127](decisions.md#lnk-d-0127) | decision | the bound is a number, because "bounded" is not one |
+| [LNK-D-0128](decisions.md#lnk-d-0128) | decision | one number in the interface, two knobs behind it |
+| [LNK-D-0129](decisions.md#lnk-d-0129) | decision | a form that stopped asking must not answer |
+| [LNK-D-0130](decisions.md#lnk-d-0130) | decision | The default code's identity is the absence of one |
+| [LNK-D-0131](decisions.md#lnk-d-0131) | decision | The identity rides beside `src`, never inside it, and is bounded by resolution |
+| [LNK-D-0132](decisions.md#lnk-d-0132) | decision | Per-code counts are a filter over the referrer dimension, and the Referrers panel does not change |
+| [LNK-D-0133](decisions.md#lnk-d-0133) | decision | The five shipped QR endpoints stay the default-code shorthand |
+| [LNK-D-0134](decisions.md#lnk-d-0134) | decision | A `bytea` column on `qr_codes` |
+| [LNK-D-0135](decisions.md#lnk-d-0135) | decision | the caps, and the row they imply |
+| [LNK-D-0136](decisions.md#lnk-d-0136) | decision | only a named code carries a logo |
+| [LNK-D-0137](decisions.md#lnk-d-0137) | decision | what the orphan sweep collects, under a column |
+| [LNK-D-0138](decisions.md#lnk-d-0138) | decision | uploads get a bucket of their own |
+| [LNK-D-0139](decisions.md#lnk-d-0139) | decision | the default code's logo is the shorthand, and it writes a row |
+| [LNK-D-0140](decisions.md#lnk-d-0140) | decision | the occluded area, and where the number comes from |
+| [LNK-D-0141](decisions.md#lnk-d-0141) | decision | a code with a logo is at level H, and a request naming another one is accepted and overridden |
+| [LNK-D-0142](decisions.md#lnk-d-0142) | decision | the logo travels inside the SVG as a data URI, and `img-src` is pinned because of it |
+| [LNK-D-0143](decisions.md#lnk-d-0143) | decision | No mailer, no recovery, and it says so |
+| [LNK-D-0144](decisions.md#lnk-d-0144) | decision | What the mailbox is told, and how long the link lives |
+| [LNK-D-0145](decisions.md#lnk-d-0145) | decision | What a completed reset ends, what it starts, and where the record goes |
+| [LNK-D-0146](decisions.md#lnk-d-0146) | decision | the eighteen blind tasks cannot be re-run, and the bullet is struck |
+| [LNK-D-0147](decisions.md#lnk-d-0147) | decision | the doc-cost judgement: the growth is real, and half of it is paid back |
+| [LNK-D-0148](decisions.md#lnk-d-0148) | decision | the erased actor's tombstone is a constant, and the ids stay |
+| [LNK-D-0149](decisions.md#lnk-d-0149) | decision | the update checker is on by default, and asks at first run |
+| [LNK-D-0150](decisions.md#lnk-d-0150) | decision | `MFA_SECRET_KEY` is its own variable, and it is optional |
+| [LNK-D-0151](decisions.md#lnk-d-0151) | decision | the second factor lives in `internal/auth` |
+| [LNK-D-0152](decisions.md#lnk-d-0152) | decision | the enrolment offer travels in the form, because the milestone forbids the alternative |
+| [LNK-D-0153](decisions.md#lnk-d-0153) | decision | `RecordSuccessfulLogin` is guarded, not moved |
+| [LNK-D-0154](decisions.md#lnk-d-0154) | decision | four audit actions, one notification kind |
+| [LNK-D-0155](decisions.md#lnk-d-0155) | decision | reach is a second column, and account-wide is the default an unpinned key gets |
+| [LNK-D-0156](decisions.md#lnk-d-0156) | decision | an account-wide key needs an organization-wide membership wherever it lands |
+| [LNK-D-0157](decisions.md#lnk-d-0157) | decision | the organization is resolved one tier above the workspace |
+| [LNK-D-0158](decisions.md#lnk-d-0158) | decision | an administrator narrows somebody else's account-wide key rather than destroying it |
+| [LNK-D-0159](decisions.md#lnk-d-0159) | decision | an instance upgrading into 0.3.0 gets the default, which is on |
+| [LNK-D-0160](decisions.md#lnk-d-0160) | decision | two switches, ANDed, and the variable only ever says no |
+| [LNK-D-0161](decisions.md#lnk-d-0161) | decision | a singleton settings table, and a control on the setup form |
+| [LNK-D-0162](decisions.md#lnk-d-0162) | decision | the comparison reads `vX.Y.Z` and drops everything after it |
+| [LNK-D-0163](decisions.md#lnk-d-0163) | decision | the guard is the notification, keyed on the version |
+| [LNK-D-0164](decisions.md#lnk-d-0164) | decision | What an instance **upgrading** into 0.3.0 gets, corrected |
+| [LNK-D-0165](decisions.md#lnk-d-0165) | decision | Where the upgraded instance is asked, and how often |
+| [LNK-D-0166](decisions.md#lnk-d-0166) | decision | the relay probe moves into a goroutine, not to after the listener |
+| [LNK-D-0167](decisions.md#lnk-d-0167) | decision | the readiness contract is a rule about status codes, not about words |
+| [LNK-D-0168](decisions.md#lnk-d-0168) | decision | the deploy-shaped two-leader window is closed by construction, and the crash-shaped one is not closable |
+| [LNK-D-0169](decisions.md#lnk-d-0169) | decision | the single-instance guarantee is a behavioural check against the release image, not a list of required dependencies |
+| [LNK-D-0170](decisions.md#lnk-d-0170) | decision | the rolling deploy is measured through a load balancer that satisfies the contract, in two columns |
+| [LNK-D-0171](decisions.md#lnk-d-0171) | decision | the server-side histogram is summed per replica, because a rolling deploy destroys the counters a delta would need |
+| [LNK-D-0172](decisions.md#lnk-d-0172) | decision | the doc-cost judgement: the growth is one amendment, and it is defended |
+| [LNK-D-0173](decisions.md#lnk-d-0173) | decision | all four are work, and they are LNK-M-0075's |
+| [LNK-D-0174](decisions.md#lnk-d-0174) | decision | the dispositions |
+| [LNK-D-0175](decisions.md#lnk-d-0175) | decision | all eight are work, and one of them reopens a shipped milestone |
+| [LNK-D-0176](decisions.md#lnk-d-0176) | decision | a scrub reaches the sentence, not only the key |
+| [LNK-D-0177](decisions.md#lnk-d-0177) | decision | the workspace pair shares one bordered container, and the switch |
+| [LNK-D-0178](decisions.md#lnk-d-0178) | decision | tab state is a query parameter, and every write re-derives its own tab |
+| [LNK-D-0179](decisions.md#lnk-d-0179) | decision | the remainder lives in the drawn size |
+| [LNK-D-0180](decisions.md#lnk-d-0180) | decision | the two caps that could not both be named |
+| [LNK-D-0181](decisions.md#lnk-d-0181) | decision | How big the logo may actually be, once the size is measured rather than argued |
+| [LNK-D-0182](decisions.md#lnk-d-0182) | decision | the requested size is exact, and the quiet zone carries the remainder |
+| [LNK-D-0183](decisions.md#lnk-d-0183) | decision | any code can be the default, and the default is what an untagged scan |
+| [LNK-D-0184](decisions.md#lnk-d-0184) | decision | error correction is the highest level that does not grow the symbol |
+| [LNK-D-0185](decisions.md#lnk-d-0185) | decision | What a stored size means once the payload under it can change |
+| [LNK-D-0186](decisions.md#lnk-d-0186) | decision | the tab does not print the level, and names it where it changes |
+| [LNK-D-0187](decisions.md#lnk-d-0187) | decision | the free-level rule is a floor under every code, not a default for |
+| [LNK-D-0188](decisions.md#lnk-d-0188) | decision | the QR tab's prose is bounded at 900 characters |
+| [LNK-D-0189](decisions.md#lnk-d-0189) | decision | the download menus take one anchor name, scoped per row, and not |
+| [LNK-D-0190](decisions.md#lnk-d-0190) | decision | the default indicator renders for a reader who cannot change it, and |
+| [LNK-D-0191](decisions.md#lnk-d-0191) | decision | the third report becomes one new milestone, LNK-M-0064 |
+| [LNK-D-0192](decisions.md#lnk-d-0192) | decision | the tab gets a real tooltip, and the add control grays out at |
+| [LNK-D-0193](decisions.md#lnk-d-0193) | decision | a save returns to a remembered scroll position, not to a fragment; and |
+| [LNK-D-0194](decisions.md#lnk-d-0194) | decision | the QR tab's fourth report reopens LNK-M-0064 for five of its seven limbs |
+| [LNK-D-0195](decisions.md#lnk-d-0195) | decision | the QR tab's `#qr` fragment is taken off the URL by the script that |
+| [LNK-D-0196](decisions.md#lnk-d-0196) | decision | the position is applied before the first paint by *withholding* the |
+| [LNK-D-0197](decisions.md#lnk-d-0197) | decision | the logo's controls move into the style form's grid, by `form="…"` |
+| [LNK-D-0198](decisions.md#lnk-d-0198) | decision | the slider's detents are SVG geometry the template renders |
+| [LNK-D-0199](decisions.md#lnk-d-0199) | decision | a row in the codes list swaps `#link-tabs` on the page the reader is |
+| [LNK-D-0200](decisions.md#lnk-d-0200) | decision | the doc-cost judgement: trim what the ratio says is skipped, defend what it says is read |
+| [LNK-D-0201](decisions.md#lnk-d-0201) | decision | F251: LNK-M-0075 is |
+| [LNK-D-0202](decisions.md#lnk-d-0202) | decision | F248: the gate and the seventeen, both |
+| [LNK-D-0203](decisions.md#lnk-d-0203) | decision | F249 and |
+| [LNK-D-0204](decisions.md#lnk-d-0204) | decision | the QR thumbnail means *this link has a QR code*, so it carries the |
+| [LNK-D-0205](decisions.md#lnk-d-0205) | decision | `qr-size.js` forgets a stored scroll offset on `htmx:afterRequest` |
+| [LNK-D-0206](decisions.md#lnk-d-0206) | decision | the QR picture beside a link's name goes on being the default code's |
+| [LNK-D-0207](decisions.md#lnk-d-0207) | decision | the section is dated 2026-08-17, the day the fold was made |
+| [LNK-D-0208](decisions.md#lnk-d-0208) | decision | the gate checks the date too, and every half fails rather than warns |
+| [LNK-D-0209](decisions.md#lnk-d-0209) | decision | the single-instance check's readiness wait asks `pg_isready` over |
+| [LNK-D-0210](decisions.md#lnk-d-0210) | decision | The owner raised that the agent records in this repository were costing PR review and work audit rather than serving them |
+| [LNK-D-0211](decisions.md#lnk-d-0211) | decision | The owner's answers of 2026-08-18 — phase-4-candidates.md's record, ten questions in three rounds — set the phase's shape; this entry records what the *plan* added on top of them, which is the part a… |
+| [LNK-D-0212](decisions.md#lnk-d-0212) | decision | `release-check` derives the compose project and env file itself |
+| [LNK-D-0213](decisions.md#lnk-d-0213) | decision | The release-time gate is named in workflow.md's Docs row |
+| [LNK-D-0214](decisions.md#lnk-d-0214) | decision | An amendment, on a fact |
+| [LNK-D-0215](decisions.md#lnk-d-0215) | decision | An amendment, on a fact, and the smallest kind there is |
+| [LNK-D-0216](decisions.md#lnk-d-0216) | decision | The add-on manifest: JSON, one directory per add-on, versioned from the |
+| [LNK-D-0217](decisions.md#lnk-d-0217) | decision | The lifecycle: wazero, `_initialize`, no capabilities, and the numbers |
+| [LNK-D-0218](decisions.md#lnk-d-0218) | decision | A correction to D215, and the end of citing that line at all |
+| [LNK-D-0219](decisions.md#lnk-d-0219) | decision | The refusal path's `addon` label is bounded, and the harm it is bounded |
+| [LNK-D-0220](decisions.md#lnk-d-0220) | decision | `internal/addon`'s test fixtures build themselves, the fixture set is |
+| [LNK-D-0221](decisions.md#lnk-d-0221) | decision | A third correction, and the last one, because the citation is gone |
+| [LNK-D-0222](decisions.md#lnk-d-0222) | decision | The single-instance gate's add-on limb is keyed on the image's own |
+| [LNK-D-0223](decisions.md#lnk-d-0223) | decision | The conformance gate's add-on limb skips only on a bare semver triple |
+| [LNK-D-0224](decisions.md#lnk-d-0224) | decision | A record cites content, not a coordinate |
+| [LNK-D-0225](decisions.md#lnk-d-0225) | decision | Compilation and instantiation are timed separately, and one of |
+| [LNK-D-0226](decisions.md#lnk-d-0226) | decision | An amendment to LNK-M-0078, recorded late — and the |
+| [LNK-D-0227](decisions.md#lnk-d-0227) | decision | What the host functions are, and why there is exactly one place they are |
+| [LNK-D-0228](decisions.md#lnk-d-0228) | decision | The ABI's version line, the deprecation window, and the one number a |
+| [LNK-D-0229](decisions.md#lnk-d-0229) | decision | No host function hands an add-on a client address, and a test over the |
+| [LNK-D-0230](decisions.md#lnk-d-0230) | decision | The SDK lives at `sdk/` in this module, depends on the standard library |
+| [LNK-D-0231](decisions.md#lnk-d-0231) | decision | F266 is closed under the deferred-overlap rule, and the fix is in all |
+| [LNK-D-0232](decisions.md#lnk-d-0232) | decision | `HTTPRequest` carries a prefix-filtered cookie set, not the `Cookie` |
+| [LNK-D-0233](decisions.md#lnk-d-0233) | decision | Two amendments, both on facts, both found by LNK-M-0080's review reading the |
+| [LNK-D-0234](decisions.md#lnk-d-0234) | decision | A declared cookie prefix must begin with the add-on's own name, and may |
+| [LNK-D-0235](decisions.md#lnk-d-0235) | decision | Every payload the host composes is a named record, and a test walks |
+| [LNK-D-0236](decisions.md#lnk-d-0236) | decision | A function no released host implements has no signature to break, and |
+| [LNK-D-0237](decisions.md#lnk-d-0237) | decision | m62.md delegates one design call to this milestone in writing: *"the analogy to `NonDelegableScopes` is examined and the answer recorded … whether add-on permissions reuse that mechanism or parallel … |
+| [LNK-D-0238](decisions.md#lnk-d-0238) | decision | Three orderings had to be picked and none was forced by m62.md, so each is recorded with what it costs |
+| [LNK-D-0239](decisions.md#lnk-d-0239) | decision | An amendment on a fact, found by the worker rather than by a review |
+| [LNK-D-0240](decisions.md#lnk-d-0240) | decision | Owner-answered 2026-08-19, on a prompt raised at acceptance, and the |
+| [LNK-D-0241](decisions.md#lnk-d-0241) | decision | D240 settled *that* what an add-on writes to the log is neutralized, and where |
+| [LNK-D-0242](decisions.md#lnk-d-0242) | decision | D241 chose an **enumerated** list of invisible code points over Unicode's own category, and this entry replaces that choice with its inverse |
+| [LNK-D-0243](decisions.md#lnk-d-0243) | decision | D242 replaced an enumeration of invisible code points with a default-deny, for one reason: *a list a Unicode revision can outdate cannot keep the description three documents give it* |
+| [LNK-D-0244](decisions.md#lnk-d-0244) | decision | `escapeLogRune` emitted `\n`, `\r`, `\t`, `\uXXXX` and `\UXXXXXXXX` and left `\` alone, because a backslash is a graphic character and default-deny leaves those as themselves |
+| [LNK-D-0245](decisions.md#lnk-d-0245) | decision | Phase 4 inherits *DDL is additive within a minor version*, and phase-4-candidates.md named the collision at planning time rather than leaving it to be discovered: whose additive-ness is an add-on's? … |
+| [LNK-D-0246](decisions.md#lnk-d-0246) | decision | m63.md asks for an add-on's queries to run "with a role/search-path confined to its schema" |
+| [LNK-D-0247](decisions.md#lnk-d-0247) | decision | m63.md's second risk says host-run migrations execute DDL an operator did not write, and that *the manifest hash (LNK-M-0079) makes it the add-on author's DDL* |
+| [LNK-D-0248](decisions.md#lnk-d-0248) | decision | LNK-M-0082's confinement claim was *a role that reaches nothing else*, and its quota answer was *growth is visible by metric* |
+| [LNK-D-0249](decisions.md#lnk-d-0249) | decision | `pg_advisory_lock` is `EXECUTE` to `PUBLIC`, this product's job leader-election keys are compile-time constants in a **public** repository, and a session-level advisory lock is **not** released by th… |
+| [LNK-D-0250](decisions.md#lnk-d-0250) | decision | `EnsureAddonSchema` generates a fresh password on every load, which is what makes *the credential lives no longer than the process that uses it and nothing has to store it* true |
+| [LNK-D-0251](decisions.md#lnk-d-0251) | decision | `AddonObjectsOutsideSchema` enumerated the places an add-on could own something |
+| [LNK-D-0252](decisions.md#lnk-d-0252) | decision | An out-of-spec edit to a shipped milestone's test, made because the gate |
+| [LNK-D-0253](decisions.md#lnk-d-0253) | decision | `EnsureAddonSchema` issued `ALTER ROLE … SET search_path` and nothing else, so a setting the add-on's role had been given stayed given |
+| [LNK-D-0254](decisions.md#lnk-d-0254) | decision | `AddonSchemaBytes` summed `relkind IN ('r', 'm')` |
+| [LNK-D-0255](decisions.md#lnk-d-0255) | decision | D245 stated the additive-ness answer as an absolute — *the schema boundary is a database role, so no other add-on can read it, and no amount of qualified SQL gets there* — and three other documents s… |
+| [LNK-D-0256](decisions.md#lnk-d-0256) | decision | A procedural breach, disclosed by the worker that made it, and the |
+| [LNK-D-0257](decisions.md#lnk-d-0257) | decision | Owner-answered 2026-08-19, on a prompt the loop should have raised one |
+| [LNK-D-0258](decisions.md#lnk-d-0258) | decision | m64.md's *session context, not session power* bullet says a route handler can ask the host who is signed in *"when its grant includes it"*, and LNK-M-0081 closed the permission vocabulary at six tokens, non… |
+| [LNK-D-0259](decisions.md#lnk-d-0259) | decision | m64.md's first risk calls host-wrapped rendering *the load-bearing security claim*, and the validation note for this milestone put it in one sentence: an add-on's output *"is always data, never templ… |
+| [LNK-D-0260](decisions.md#lnk-d-0260) | decision | m64.md's second risk names the choice — *"an instance per request or a pooled instance"* — and asks this milestone to measure it |
+| [LNK-D-0261](decisions.md#lnk-d-0261) | decision | Every other dashboard page is behind `signedIn` — a session, and an organization to spend it in |
+| [LNK-D-0262](decisions.md#lnk-d-0262) | decision | The `HTTPRequest` record documented its body as *"the body, base64 when it is not UTF-8"*, which is not implementable as written on either side: a guest handed a string cannot tell an encoded body fr… |
+| [LNK-D-0263](decisions.md#lnk-d-0263) | decision | m64.md asks for config to reach an add-on *"the way it reaches the product"*: `LINKCTRL_ADDON_<NAME>_<SETTING>`, read through `internal/config`, handed to the module at load, bounded by the grant, wi… |
+| [LNK-D-0264](decisions.md#lnk-d-0264) | decision | m64.md requires this milestone to answer the theme gap as a decision rather than discover it: `internal/ui/theme_test.go` walks the **embedded** templates, a module's assets are not in the embed, and… |
+| [LNK-D-0265](decisions.md#lnk-d-0265) | decision | The demo gate applies to a milestone that adds something somebody can see, and LNK-M-0083 adds a page |
+| [LNK-D-0266](decisions.md#lnk-d-0266) | decision | The comment on `maxAddonRequestBody` justified a 64 KiB read cap by claiming *"a module's whole request record crosses the ABI boundary as one value, which is bounded at 64 KiB there, so a larger bod… |
+| [LNK-D-0267](decisions.md#lnk-d-0267) | decision | D232's whole answer to add-on cookie collisions is that the namespace is *structural*: a declared prefix must begin with the add-on's own name and an underscore, so — the argument went — no add-on ca… |
+| [LNK-D-0268](decisions.md#lnk-d-0268) | decision | the always-read contract grew 3123 bytes, and it is defended rather than trimmed |
+| [LNK-D-0269](decisions.md#lnk-d-0269) | decision | LNK-M-0078, LNK-M-0079, LNK-M-0081, LNK-M-0082 and LNK-M-0083 are reopened |
+| [LNK-D-0270](decisions.md#lnk-d-0270) | decision | the sanitizer asks the real property, and legitimate emoji keep working |
+| [LNK-D-0271](decisions.md#lnk-d-0271) | decision | The repair D269 |
+| [LNK-D-0272](decisions.md#lnk-d-0272) | decision | The repair D269 |
+| [LNK-D-0273](decisions.md#lnk-d-0273) | decision | The correction to D272 |
+| [LNK-D-0274](decisions.md#lnk-d-0274) | decision | The third attempt at LNK-M-0079's reopening, and a correction to D273 rather than to what it decided |
+| [LNK-D-0275](decisions.md#lnk-d-0275) | decision | Bookkeeping, and it is a decision because deferred-findings.md's own rule says removing or moving a row is one |
+| [LNK-D-0278](decisions.md#lnk-d-0278) | decision | LNK-M-0081 stays reopened and unfinished while LNK-M-0082 and LNK-M-0083's reopenings land |
+| [LNK-D-0279](decisions.md#lnk-d-0279) | decision | the correction to D253 |
+| [LNK-D-0280](decisions.md#lnk-d-0280) | decision | the correction to D279's |
+| [LNK-D-0281](decisions.md#lnk-d-0281) | decision | the sweep's identification clause |
+| [LNK-D-0282](decisions.md#lnk-d-0282) | decision | the reversal of D281 |
+| [LNK-D-0283](decisions.md#lnk-d-0283) | decision | owner-answered, superseding D270's |
+| [LNK-D-0284](decisions.md#lnk-d-0284) | decision | the correction to D283 |
+| [LNK-D-0285](decisions.md#lnk-d-0285) | decision | owner-answered, ending F285's fourth round |
+| [LNK-D-0286](decisions.md#lnk-d-0286) | decision | Five findings against LNK-M-0081's fifth attempt, and three of them are one defect |
+| [LNK-D-0287](decisions.md#lnk-d-0287) | decision | F289 reopened LNK-M-0083: an add-on holding nothing but `routes.own_prefix` could sign a visitor out of LinkCtrl, by volume rather than by naming |
+| [LNK-D-0288](decisions.md#lnk-d-0288) | decision | F290, the other finding that reopened LNK-M-0083 |
+| [LNK-D-0289](decisions.md#lnk-d-0289) | decision | The second pass over the reopened LNK-M-0083 |
+| [LNK-D-0291](decisions.md#lnk-d-0291) | decision | an add-on's callback is a GET redirect, and `response_mode=form_post` is not supported |
+| [LNK-D-0292](decisions.md#lnk-d-0292) | decision | the ABI grows a real random source and a real clock, inside LNK-M-0085 |
+| [LNK-D-0293](decisions.md#lnk-d-0293) | decision | the SDK's `crypto/rand` and `time.Now` are repaired underneath, and the two ABI functions are offered *alongside* |
+| [LNK-D-0294](decisions.md#lnk-d-0294) | decision | the ABI moves to 0.1.1, and the generation does not move |
+| [LNK-D-0295](decisions.md#lnk-d-0295) | decision | `identity_link` is a fourth function, because a table nothing may write is not a bridge |
+| [LNK-D-0296](decisions.md#lnk-d-0296) | decision | a mint is refused on a request that already carries a session |
+| [LNK-D-0297](decisions.md#lnk-d-0297) | decision | the provenance record carries the add-on and the issuer, and nothing about the person |
+| [LNK-D-0298](decisions.md#lnk-d-0298) | decision | two reserved names, refused rather than resolved |
+| [LNK-D-0299](decisions.md#lnk-d-0299) | decision | reading and removing a connection are not built, and the gap is a row rather than an omission |
+| [LNK-D-0300](decisions.md#lnk-d-0300) | decision | the provenance spelling, and the add-on that cannot be disabled |
+| [LNK-D-0301](decisions.md#lnk-d-0301) | decision | a function with a side effect checks the out buffer before it has one |
+| [LNK-D-0302](decisions.md#lnk-d-0302) | decision | the provenance record follows the session, not the assertion |
+| [LNK-D-0303](decisions.md#lnk-d-0303) | decision | four counts were wrong; two tests now count, and two sentences were left alone |
+| [LNK-D-0304](decisions.md#lnk-d-0304) | decision | a shipped guarantee changed by a later milestone, and the note that was missing |
+| [LNK-D-0305](decisions.md#lnk-d-0305) | decision | the limiter covers the whole `/addons/` prefix, not only mint-capable add-ons |
+| [LNK-D-0306](decisions.md#lnk-d-0306) | decision | the counting tests are repaired, not narrowed |
+| [LNK-D-0307](decisions.md#lnk-d-0307) | decision | an unconditional rule has no middleware of its own |
+| [LNK-D-0308](decisions.md#lnk-d-0308) | decision | two more sentences join ties that already exist |
+| [LNK-D-0309](decisions.md#lnk-d-0309) | decision | a path that reaches no add-on is not an add-on route |
+| [LNK-D-0310](decisions.md#lnk-d-0310) | decision | a tie is not complete because it says so |
+| [LNK-D-0311](decisions.md#lnk-d-0311) | decision | this instance is fixed in LNK-M-0085; the general problem is planned |
+| [LNK-D-0312](decisions.md#lnk-d-0312) | decision | the audit sweep walks the tree, and CHANGELOG.md is swept |
+| [LNK-D-0313](decisions.md#lnk-d-0313) | decision | D104 holds, and the orchestrator applied it inconsistently |
+| [LNK-D-0314](decisions.md#lnk-d-0314) | decision | the seventh worker's pass, over eleven findings |
+| [LNK-D-0315](decisions.md#lnk-d-0315) | decision | LNK-M-0079's `degrade` limb no longer reaches an authentication add-on |
+| [LNK-D-0316](decisions.md#lnk-d-0316) | decision | the README fold owes the mechanism clause, not only the count |
+| [LNK-D-0317](decisions.md#lnk-d-0317) | decision | the redirect-inline class gets veto plus a query-only rewrite, and the rewrite is declared separately |
+| [LNK-D-0318](decisions.md#lnk-d-0318) | decision | the inline deadline ships at 25ms, measured, and it is deliberately larger than the 20ms target |
+| [LNK-D-0319](decisions.md#lnk-d-0319) | decision | an inline invocation gets a fresh instance, and there is no pool |
+| [LNK-D-0320](decisions.md#lnk-d-0320) | decision | the extension point sits after the destination and before the gates |
+| [LNK-D-0321](decisions.md#lnk-d-0321) | decision | a veto is a gate refusal, and a gate refusal records no click |
+| [LNK-D-0322](decisions.md#lnk-d-0322) | decision | a saturated host skips the add-on rather than making the visitor queue for it |
+| [LNK-D-0323](decisions.md#lnk-d-0323) | decision | `inline` is a reserved add-on name |
+| [LNK-D-0324](decisions.md#lnk-d-0324) | decision | the redirect handler subtracts the extension point before it observes |
+| [LNK-D-0325](decisions.md#lnk-d-0325) | decision | 25ms stands, confirmed rather than inferred |
+| [LNK-D-0326](decisions.md#lnk-d-0326) | decision | `-timeout 30m` on every suite target, local and CI alike |
+| [LNK-D-0327](decisions.md#lnk-d-0327) | decision | instantiation gets its own bound, and LNK-M-0086 comes back rather than a successor |
+| [LNK-D-0328](decisions.md#lnk-d-0328) | decision | the bound is `LINKCTRL_ADDON_INSTANTIATE_DEADLINE`, and it ships at 500ms |
+| [LNK-D-0329](decisions.md#lnk-d-0329) | decision | the kill counter gains `step`, rather than a second counter |
+| [LNK-D-0330](decisions.md#lnk-d-0330) | decision | the host re-reads the bound after instantiating, rather than trusting the runtime to notice |
+| [LNK-D-0331](decisions.md#lnk-d-0331) | decision | the tests buy room by default and take a hostile bound explicitly |
+| [LNK-D-0332](decisions.md#lnk-d-0332) | decision | instantiation leaves the add-on's *deadline* and stays in the add-on's *histogram* |
+| [LNK-D-0333](decisions.md#lnk-d-0333) | decision | D319 is reversed, on the measurement it was taken without |
+| [LNK-D-0334](decisions.md#lnk-d-0334) | decision | the two the plan review sent back to the owner |
+| [LNK-D-0335](decisions.md#lnk-d-0335) | decision | an instance is reused, and the guest's memory is restored rather than trusted |
+| [LNK-D-0336](decisions.md#lnk-d-0336) | decision | the ceiling gains a term, and the sweep that ties it does not gain a word |
+| [LNK-D-0337](decisions.md#lnk-d-0337) | decision | three corrections the reviewer's read forced, recorded rather than made silently |
+| [LNK-D-0338](decisions.md#lnk-d-0338) | decision | the add-ons directory is the only store, and atomicity is one rename |
+| [LNK-D-0339](decisions.md#lnk-d-0339) | decision | the installed set is an atomic snapshot, not three fields behind a lock |
+| [LNK-D-0340](decisions.md#lnk-d-0340) | decision | in-flight invocations complete, the wait is bounded, and the bound is what interrupts |
+| [LNK-D-0341](decisions.md#lnk-d-0341) | decision | `addons.manage` is the principal's, and is non-delegable in D18's widest form |
+| [LNK-D-0342](decisions.md#lnk-d-0342) | decision | what an upload cannot install, and the two shipped claims this narrowed |
+| [LNK-D-0343](decisions.md#lnk-d-0343) | decision | an audit action is declared in `internal/audit`, whatever package records it |
+| [LNK-D-0344](decisions.md#lnk-d-0344) | decision | a lifecycle act completes on a context the caller cannot cancel |
+| [LNK-D-0345](decisions.md#lnk-d-0345) | decision | an add-on install spends the same upload bucket as a QR code's logo |
+| [LNK-D-0346](decisions.md#lnk-d-0346) | decision | the runtime collision check reads the boot check's set |
+| [LNK-D-0347](decisions.md#lnk-d-0347) | decision | an add-on's settings have two sources, and the environment wins |
+| [LNK-D-0348](decisions.md#lnk-d-0348) | decision | the manager is at `/instance/addons`, not at `/addons` |
+| [LNK-D-0349](decisions.md#lnk-d-0349) | decision | a purge drops the schema, and says what it leaves |
+| [LNK-D-0350](decisions.md#lnk-d-0350) | decision | the demo runs a real add-on, which is D265's deferred answer |
+| [LNK-D-0351](decisions.md#lnk-d-0351) | decision | the count in the removal button is script, and nothing else on the page is |
+| [LNK-D-0352](decisions.md#lnk-d-0352) | decision | per-module performance is read off the registry, not kept twice |
+| [LNK-D-0353](decisions.md#lnk-d-0353) | decision | a menu item is drawn from the wiring, not from the permission |
+| [LNK-D-0354](decisions.md#lnk-d-0354) | decision | a stored secret's secrecy is a property of the column |
+| [LNK-D-0355](decisions.md#lnk-d-0355) | decision | a save drains the add-on's instance pool |
+| [LNK-D-0356](decisions.md#lnk-d-0356) | decision | an answer that gains a source is additive, and LNK-M-0080's promise is what made this a defect |
+| [LNK-D-0357](decisions.md#lnk-d-0357) | decision | the drain reaches an instance that is in flight |
+| [LNK-D-0358](decisions.md#lnk-d-0358) | decision | the demo's coverage row asserts that the module ran |
+| [LNK-D-0359](decisions.md#lnk-d-0359) | decision | the secret's bound is on the page, not on the module |
+| [LNK-D-0360](decisions.md#lnk-d-0360) | decision | a purge leaves four things, and the fourth is counted rather than deleted |
+| [LNK-D-0361](decisions.md#lnk-d-0361) | decision | the test instance runs the sample add-on, so the harness runs at all |
+| [LNK-D-0362](decisions.md#lnk-d-0362) | decision | the add-on is built now, outside the loop, by the actor that built the foundation |
+| [LNK-D-0363](decisions.md#lnk-d-0363) | decision | LNK-M-0092's *tagged release* bullet, amended to *immutable version* |
+| [LNK-D-0364](decisions.md#lnk-d-0364) | decision | an add-on declares that it needs egress; the operator decides where |
+| [LNK-D-0365](decisions.md#lnk-d-0365) | decision | *install is an upload, never a fetch* was nobody's decision |
+| [LNK-D-0366](decisions.md#lnk-d-0366) | decision | Phase 4 proceeds at seventeen, with one slot left and LNK-M-0092 still ahead |
+| [LNK-D-0367](decisions.md#lnk-d-0367) | decision | the shape of egress, decided four ways below one owner answer |
+| [LNK-D-0368](decisions.md#lnk-d-0368) | decision | there is no leak, and the instrument was measuring the wrong window |
+| [LNK-D-0369](decisions.md#lnk-d-0369) | decision | the tripwire could not have caught the line it was written for |
+| [LNK-D-0370](decisions.md#lnk-d-0370) | decision | the route deadline is a bound inside the request deadline, not the first one |
+| [LNK-D-0371](decisions.md#lnk-d-0371) | decision | LNK-M-0090's *no deadline to spend* clause, amended |
+| [LNK-D-0372](decisions.md#lnk-d-0372) | decision | a value the operator typed does not become a destination, and the claim says so rather than the code |
+| [LNK-D-0373](decisions.md#lnk-d-0373) | decision | the refusal list is no longer what stops the next range being missed |
+| [LNK-D-0374](decisions.md#lnk-d-0374) | decision | the inline class keeps LNK-M-0086's refusal, and the documents say which class gets which |
+| [LNK-D-0375](decisions.md#lnk-d-0375) | decision | an address is refused unless it is public, rather than refused if it is listed |
+| [LNK-D-0376](decisions.md#lnk-d-0376) | decision | the shape the inversion took, and the half of it that is honestly weaker |
+| [LNK-D-0377](decisions.md#lnk-d-0377) | decision | the route-deadline nesting rule is guarded on add-ons being enabled |
+| [LNK-D-0378](decisions.md#lnk-d-0378) | decision | `performance` is published when there is a record of **either** kind |
+| [LNK-D-0379](decisions.md#lnk-d-0379) | decision | a guest-drivable refusal warns only when the log is the only channel |
+| [LNK-D-0380](decisions.md#lnk-d-0380) | decision | the response **headers** are bounded, and it is not a knob |
+| [LNK-D-0381](decisions.md#lnk-d-0381) | decision | the URL names a bundle, and the bundle is an uncompressed tar |
+| [LNK-D-0382](decisions.md#lnk-d-0382) | decision | one fetch mechanism with two callers, rather than a second client |
+| [LNK-D-0383](decisions.md#lnk-d-0383) | decision | F337 closed here, and why this is the door that decides it |
+| [LNK-D-0384](decisions.md#lnk-d-0384) | decision | all three formats, and the depth limit is what makes that affordable |
+| [LNK-D-0385](decisions.md#lnk-d-0385) | decision | the three figures a ratio bound needs, and the code it refuses with |
+| [LNK-D-0386](decisions.md#lnk-d-0386) | decision | the figure the decompressor stops at, and how far that was from what was written |
+| [LNK-D-0387](decisions.md#lnk-d-0387) | decision | a bound is pinned where it binds, and a closed list is closed from both ends |
+| [LNK-D-0388](decisions.md#lnk-d-0388) | decision | LNK-M-0091's demo bullet named a mechanism that cannot do the job |
+| [LNK-D-0389](decisions.md#lnk-d-0389) | decision | the sign-in an add-on made possible gets a way to start it |
+| [LNK-D-0390](decisions.md#lnk-d-0390) | decision | what the manifest gains, and why its version does not move |
+| [LNK-D-0391](decisions.md#lnk-d-0391) | decision | a retry of `network_fetch` is answered from what was already fetched |
+| [LNK-D-0392](decisions.md#lnk-d-0392) | decision | the acceptance test relaxes two bounds, under a build tag, and nothing else |
+| [LNK-D-0393](decisions.md#lnk-d-0393) | decision | the add-on is rebuilt from the module proxy, not vendored and not checked out |
+| [LNK-D-0394](decisions.md#lnk-d-0394) | decision | dex, pinned by digest, in a compose file `make up` never reads |
+| [LNK-D-0395](decisions.md#lnk-d-0395) | decision | LNK-M-0092's *minor bump* clause, amended |
+| [LNK-D-0396](decisions.md#lnk-d-0396) | decision | the fixture is the published artifact, and the rebuild is what earns the right to install it |
+| [LNK-D-0397](decisions.md#lnk-d-0397) | decision | the fixture pins the toolchain the release was cut with, read from that release's own go.mod |
+| [LNK-D-0398](decisions.md#lnk-d-0398) | decision | the operator's consent is a setting the *host* declares, riding LNK-M-0089's mechanism |
+| [LNK-D-0399](decisions.md#lnk-d-0399) | decision | the link is drawn from what loaded, and ordered by name |
+| [LNK-D-0400](decisions.md#lnk-d-0400) | decision | the demo states the exemption rather than seeding a module that mints |
+| [LNK-D-0401](decisions.md#lnk-d-0401) | decision | LNK-M-0089's *manifest-declared* exclusion, amended |
+| [LNK-D-0402](decisions.md#lnk-d-0402) | decision | the stock sign-in page's golden compares everything except the built stylesheet's fingerprint |
+| [LNK-D-0403](decisions.md#lnk-d-0403) | decision | `make check` builds the assets it tests against |
+| [LNK-D-0404](decisions.md#lnk-d-0404) | decision | LNK-M-0093's byte-identical bullet, amended |
+| [LNK-D-0405](decisions.md#lnk-d-0405) | decision | nothing in this repository's gates may *require* another project's artifact |
+| [LNK-D-0406](decisions.md#lnk-d-0406) | decision | the pool's non-memory leak is disclosed and filed, not patched |
+| [LNK-D-0407](decisions.md#lnk-d-0407) | decision | the add-on mint's audit surface is documented, not moved |
+| [LNK-D-0408](decisions.md#lnk-d-0408) | decision | everything documentation-shaped is corrected in this milestone |
+| [LNK-D-0409](decisions.md#lnk-d-0409) | decision | four shipped bullets amended, none reopened |
+| [LNK-D-0410](decisions.md#lnk-d-0410) | decision | the always-read contract grew 1433 bytes, and it is defended because the phase close removes most of it |
+| [LNK-D-0411](decisions.md#lnk-d-0411) | decision | `domains.html`'s bare `Change` renames a hostname, so the approved label was wrong |
+| [LNK-D-0412](decisions.md#lnk-d-0412) | decision | the rotation paragraph loses its detail and gains no link, because there is nowhere to link to |
+| [LNK-D-0413](decisions.md#lnk-d-0413) | decision | a glyph is described by what it does, never by which page calls it |
+| [LNK-D-0414](decisions.md#lnk-d-0414) | decision | the SDK bump reaches the published example, not only its main branch |
+| [LNK-D-0415](decisions.md#lnk-d-0415) | decision | the 111 open findings are triaged as a tiered proposal with a recommendation on every row |
+| [LNK-D-0416](decisions.md#lnk-d-0416) | decision | Tiers A and B are both worked into the close, and F315 joins them |
+| [LNK-D-0417](decisions.md#lnk-d-0417) | decision | an add-on's migration timeout is operator-configurable, defaulting to five minutes |
+| [LNK-D-0418](decisions.md#lnk-d-0418) | decision | role adoption is accepted and documented where an operator names roles |
+| [LNK-D-0419](decisions.md#lnk-d-0419) | decision | the log boundary gains a byte budget per add-on per minute |
+| [LNK-D-0420](decisions.md#lnk-d-0420) | decision | `temp_file_limit` becomes a superuser step at install time |
+| [LNK-D-0421](decisions.md#lnk-d-0421) | decision | `template_render` is deprecated under the ABI's own window |
+| [LNK-D-0422](decisions.md#lnk-d-0422) | decision | a vetoed redirect is recorded under its own outcome, and the UI explains nothing |
+| [LNK-D-0423](decisions.md#lnk-d-0423) | decision | the QR contrast warning fires on either metric |
+| [LNK-D-0424](decisions.md#lnk-d-0424) | decision | the QR list sorts on the name that is drawn |
+| [LNK-D-0425](decisions.md#lnk-d-0425) | decision | the QR shorthand stays API-only, and seven view fields are deleted |
+| [LNK-D-0426](decisions.md#lnk-d-0426) | decision | the QR row's overlay stays, and the slug stays unselectable |
+| [LNK-D-0427](decisions.md#lnk-d-0427) | decision | the tab's duplicate tooltip descriptions go, and the focusable hosts are named |
+| [LNK-D-0428](decisions.md#lnk-d-0428) | decision | the host records what it discovered, separately from what it loaded |
+| [LNK-D-0429](decisions.md#lnk-d-0429) | decision | F315 is built in both halves |
+| [LNK-D-0430](decisions.md#lnk-d-0430) | decision | an htmx 4xx is answered by a shared `webError` limb |
+| [LNK-D-0431](decisions.md#lnk-d-0431) | decision | `sign_in_label` takes a positive rule |
+| [LNK-D-0432](decisions.md#lnk-d-0432) | decision | `temp_file_limit` is 256 MB per add-on role |
+| [LNK-D-0433](decisions.md#lnk-d-0433) | decision | the log budget is 8 MiB per add-on per minute |
+| [LNK-D-0434](decisions.md#lnk-d-0434) | decision | the wasm half of the SDK is analysed by `go vet` under `GOOS=wasip1` |
+| [LNK-D-0435](decisions.md#lnk-d-0435) | decision | the browser suite signs in once and shares the context |
+| [LNK-D-0436](decisions.md#lnk-d-0436) | decision | the GeoIP sentence is reworded, and the predicate is not touched |
+| [LNK-D-0437](decisions.md#lnk-d-0437) | decision | the fetch hold is keyed to the invocation |
+| [LNK-D-0438](decisions.md#lnk-d-0438) | decision | the audit count is folded, and the clause beside it is corrected rather than carried |
+| [LNK-D-0439](decisions.md#lnk-d-0439) | decision | 1.0 means the add-on contract is stable, not that identity is built in |
+| [LNK-D-0440](decisions.md#lnk-d-0440) | decision | the always-read contract grew 1217 bytes, and here is what they bought |
+| [LNK-D-0441](decisions.md#lnk-d-0441) | decision | a default gives way to an operator's setting; only two chosen numbers are refused |
+| [LNK-D-0442](decisions.md#lnk-d-0442) | decision | *is anything observing* is asked per batch, not sampled at boot |
+| [LNK-D-0443](decisions.md#lnk-d-0443) | decision | an add-on lifecycle act takes a cluster-wide lock, because the schema is shared |
+| [LNK-D-0444](decisions.md#lnk-d-0444) | decision | the gates are split, and the add-ons run between the two halves |
+| [LNK-D-0445](decisions.md#lnk-d-0445) | decision | Phase 1 planning |
+| [LNK-D-0446](decisions.md#lnk-d-0446) | decision | decisions made while building |
+| [LNK-D-0447](decisions.md#lnk-d-0447) | decision | dashboard (LNK-M-0006) |
+| [LNK-D-0448](decisions.md#lnk-d-0448) | decision | OpenAPI contract (LNK-M-0007) |
+| [LNK-D-0449](decisions.md#lnk-d-0449) | decision | metrics (LNK-M-0008) |
+| [LNK-D-0450](decisions.md#lnk-d-0450) | decision | documentation (LNK-M-0009) |
+| [LNK-D-0451](decisions.md#lnk-d-0451) | decision | planning: the enforcement milestone (LNK-M-0010) |
+| [LNK-D-0452](decisions.md#lnk-d-0452) | decision | enforcement (LNK-M-0010) |
+| [LNK-D-0453](decisions.md#lnk-d-0453) | decision | load validation (LNK-M-0011) |
+| [LNK-D-0454](decisions.md#lnk-d-0454) | decision | release packaging (LNK-M-0012) |
+| [LNK-D-0455](decisions.md#lnk-d-0455) | decision | the Phase 1 completeness review, and what it found |
+| [LNK-D-0456](decisions.md#lnk-d-0456) | decision | planning: signup and host separation (LNK-M-0013, LNK-M-0014) |
+| [LNK-D-0457](decisions.md#lnk-d-0457) | decision | signup deferred to Phase 2, and two milestones added |
+| [LNK-D-0458](decisions.md#lnk-d-0458) | decision | malicious destination blocking, specified rather than named |
+| [LNK-D-0459](decisions.md#lnk-d-0459) | decision | build-notes, a security policy, and the process written down |
+| [LNK-D-0460](decisions.md#lnk-d-0460) | decision | LNK-M-0013: two hostnames, one listener |
+| [LNK-D-0461](decisions.md#lnk-d-0461) | decision | LNK-M-0014: three defects, and the seeder that found them |
+| [LNK-D-0462](decisions.md#lnk-d-0462) | decision | planning: LNK-M-0015, a redirect for the root of the link domain |
+| [LNK-D-0463](decisions.md#lnk-d-0463) | decision | LNK-M-0015 built, and 0.1.0 absorbs everything |
+| [LNK-D-0464](decisions.md#lnk-d-0464) | decision | 0.1.0 tagged |
+| [LNK-D-0465](decisions.md#lnk-d-0465) | decision | Phase 2 planned |
+| [LNK-D-0466](decisions.md#lnk-d-0466) | decision | two development instances, and the link gate's third failure |
+| [LNK-D-0467](decisions.md#lnk-d-0467) | decision | dark mode added to the plan as LNK-M-0020 |
+| [LNK-D-0468](decisions.md#lnk-d-0468) | decision | feature intake written down, and the review slot moves to X.9 |
+| [LNK-D-0469](decisions.md#lnk-d-0469) | decision | docs/ reorganized around its reader |
+| [LNK-D-0470](decisions.md#lnk-d-0470) | decision | the phase loop written down |
+| [LNK-D-0471](decisions.md#lnk-d-0471) | decision | Six decisions taken ahead of an unattended run |
+| [LNK-D-0472](decisions.md#lnk-d-0472) | decision | LNK-M-0016, the audit log gets behavior |
+| [LNK-D-0473](decisions.md#lnk-d-0473) | decision | LNK-M-0017, the inbox and what it is not |
+| [LNK-D-0474](decisions.md#lnk-d-0474) | decision | LNK-M-0018, invalidation that crosses replicas |
+| [LNK-D-0475](decisions.md#lnk-d-0475) | decision | LNK-M-0019, limits that hold across replicas |
+| [LNK-D-0476](decisions.md#lnk-d-0476) | decision | The loop kept stopping for reasons it had invented |
+| [LNK-D-0477](decisions.md#lnk-d-0477) | decision | LNK-M-0020, a dark theme that cannot flash |
+| [LNK-D-0478](decisions.md#lnk-d-0478) | decision | The loop splits into an orchestrator and workers |
+| [LNK-D-0479](decisions.md#lnk-d-0479) | decision | LNK-M-0021, and a test that could not see the defect |
+| [LNK-D-0480](decisions.md#lnk-d-0480) | decision | LNK-M-0021 withdrawn, LNK-M-0020 reopened, and appends get a number |
+| [LNK-D-0481](decisions.md#lnk-d-0481) | decision | Capture, read-ahead, and measuring what the contract costs |
+| [LNK-D-0482](decisions.md#lnk-d-0482) | decision | LNK-M-0020, applying the theme rather than declaring it |
+| [LNK-D-0483](decisions.md#lnk-d-0483) | decision | LNK-M-0022, where a request decides which workspace it is in |
+| [LNK-D-0484](decisions.md#lnk-d-0484) | decision | LNK-M-0023, a mailer that is genuinely optional |
+| [LNK-D-0485](decisions.md#lnk-d-0485) | decision | Plan drift is allowed; silent plan drift is not |
+| [LNK-D-0486](decisions.md#lnk-d-0486) | decision | LNK-M-0020, amendment: the eight pages were nine |
+| [LNK-D-0487](decisions.md#lnk-d-0487) | decision | LNK-M-0034, bot blocking, and why it is not in the blocking cluster |
+| [LNK-D-0488](decisions.md#lnk-d-0488) | decision | The gate that never asked about README |
+| [LNK-D-0489](decisions.md#lnk-d-0489) | decision | LNK-M-0024, the header before four milestones compete for it |
+| [LNK-D-0490](decisions.md#lnk-d-0490) | decision | LNK-M-0025, a stalled Redis and two retry loops that multiply |
+| [LNK-D-0491](decisions.md#lnk-d-0491) | decision | Nothing leaves a tracker silently |
+| [LNK-D-0492](decisions.md#lnk-d-0492) | decision | LNK-M-0024, one query for a count and the rows behind it |
+| [LNK-D-0493](decisions.md#lnk-d-0493) | decision | LNK-M-0024, the Escape bullet and the element that cannot honour it |
+| [LNK-D-0494](decisions.md#lnk-d-0494) | decision | LNK-M-0024, positioning a panel that is not in the header |
+| [LNK-D-0495](decisions.md#lnk-d-0495) | decision | LNK-M-0024, WebKit verified, and what verification is allowed to cost |
+| [LNK-D-0496](decisions.md#lnk-d-0496) | decision | LNK-M-0025, what actually costs nine seconds |
+| [LNK-D-0497](decisions.md#lnk-d-0497) | decision | LNK-M-0025, amending the milestone that diagnosed itself wrong |
+| [LNK-D-0498](decisions.md#lnk-d-0498) | decision | LNK-M-0026, the three questions an invite could not be built without |
+| [LNK-D-0499](decisions.md#lnk-d-0499) | decision | Answered ahead of the loop: LNK-M-0027's rank, scope and deletion rules |
+| [LNK-D-0500](decisions.md#lnk-d-0500) | decision | LNK-M-0026, building an invitation so that no refusal answers a question |
+| [LNK-D-0501](decisions.md#lnk-d-0501) | decision | LNK-M-0026, where the invitation surface hangs, and what LNK-M-0026 left to LNK-M-0027 |
+| [LNK-D-0502](decisions.md#lnk-d-0502) | decision | LNK-M-0026, amending the bullet that said a permission exists |
+| [LNK-D-0503](decisions.md#lnk-d-0503) | decision | LNK-M-0027, managing a member without inventing a second way to be one |
+| [LNK-D-0504](decisions.md#lnk-d-0504) | decision | LNK-M-0027, the audit bullet that quietly required a feature |
+| [LNK-D-0505](decisions.md#lnk-d-0505) | decision | LNK-M-0028, the two answers that had to precede the code |
+| [LNK-D-0506](decisions.md#lnk-d-0506) | decision | LNK-M-0028, building the exit and the empty state behind it |
+| [LNK-D-0507](decisions.md#lnk-d-0507) | decision | LNK-M-0029, verifying an address before the account exists |
+| [LNK-D-0508](decisions.md#lnk-d-0508) | decision | LNK-M-0029, the toggle that was built and then removed |
+| [LNK-D-0509](decisions.md#lnk-d-0509) | decision | LNK-M-0030, three tiers, and the two switches that had to go |
+| [LNK-D-0510](decisions.md#lnk-d-0510) | decision | LNK-M-0030, the owner signs off on two lists and one withdrawal |
+| [LNK-D-0511](decisions.md#lnk-d-0511) | decision | LNK-M-0030, seeding the list D39 moved out of the binary |
+| [LNK-D-0512](decisions.md#lnk-d-0512) | decision | LNK-M-0032, the appeal path and who decides |
+| [LNK-D-0513](decisions.md#lnk-d-0513) | decision | LNK-M-0033, a disclosure needs somewhere to live |
+| [LNK-D-0514](decisions.md#lnk-d-0514) | decision | LNK-M-0033, an exception built so that it stays one |
+| [LNK-D-0515](decisions.md#lnk-d-0515) | decision | LNK-M-0034, the first decision on the hot path |
+| [LNK-D-0516](decisions.md#lnk-d-0516) | decision | LNK-M-0034, amending a bullet that contradicted itself |
+| [LNK-D-0517](decisions.md#lnk-d-0517) | decision | LNK-M-0036, a first pass and an honest account of its depth |
+| [LNK-D-0518](decisions.md#lnk-d-0518) | decision | Draining the queue, and the four rows that could not be verified |
+| [LNK-D-0519](decisions.md#lnk-d-0519) | decision | Five answers, and the port that made a liar of one of them |
+| [LNK-D-0520](decisions.md#lnk-d-0520) | decision | LNK-M-0027 reopened, and four verdicts sent to be refuted |
+| [LNK-D-0521](decisions.md#lnk-d-0521) | decision | LNK-M-0027, the page field that shadowed the shell |
+| [LNK-D-0522](decisions.md#lnk-d-0522) | decision | Two rules the last run earned |
+| [LNK-D-0523](decisions.md#lnk-d-0523) | decision | LNK-M-0036, the second pass, and what refutation cost the findings |
+| [LNK-D-0524](decisions.md#lnk-d-0524) | decision | LNK-M-0036's triage, and five milestones reopened |
+| [LNK-D-0525](decisions.md#lnk-d-0525) | decision | LNK-M-0018, silence is not an answer |
+| [LNK-D-0526](decisions.md#lnk-d-0526) | decision | LNK-M-0026, the rank axis and the credential axis |
+| [LNK-D-0527](decisions.md#lnk-d-0527) | decision | Draining one queue row into a finding that already existed |
+| [LNK-D-0528](decisions.md#lnk-d-0528) | decision | Two gate rules that lived only in an untracked file |
+| [LNK-D-0529](decisions.md#lnk-d-0529) | decision | The Taskfile mirror catches up, and what "verified" means for a mirror |
+| [LNK-D-0530](decisions.md#lnk-d-0530) | decision | LNK-M-0027, a role that owned one workspace and reached the whole organization |
+| [LNK-D-0531](decisions.md#lnk-d-0531) | decision | LNK-M-0028, amendment: a line number its predecessor moved |
+| [LNK-D-0532](decisions.md#lnk-d-0532) | decision | LNK-M-0028 reopened: what a teardown owes an alias |
+| [LNK-D-0533](decisions.md#lnk-d-0533) | decision | LNK-M-0028, amendment: Phase 1 does have a trash, and the reopening depends on it |
+| [LNK-D-0534](decisions.md#lnk-d-0534) | decision | LNK-M-0030 reopened: one character, and the four checks it walked past |
+| [LNK-D-0535](decisions.md#lnk-d-0535) | decision | LNK-M-0030, amendment: the citation the fix moved |
+| [LNK-D-0536](decisions.md#lnk-d-0536) | decision | LNK-M-0037, one alias, and every URL underneath it |
+| [LNK-D-0537](decisions.md#lnk-d-0537) | decision | LNK-M-0038, a demo that fails the build when it stops showing the phase |
+| [LNK-D-0538](decisions.md#lnk-d-0538) | decision | LNK-M-0038, amendment: the audit page that was never built |
+| [LNK-D-0539](decisions.md#lnk-d-0539) | decision | LNK-M-0039, what the city lookup cost is measured against |
+| [LNK-D-0540](decisions.md#lnk-d-0540) | decision | LNK-M-0039, twelve conditions, one refusal, and the ordering that decides a redirect |
+| [LNK-D-0541](decisions.md#lnk-d-0541) | decision | LNK-M-0039, the timezone database, embedded |
+| [LNK-D-0542](decisions.md#lnk-d-0542) | decision | LNK-M-0040, the one POST the redirect tree is allowed |
+| [LNK-D-0543](decisions.md#lnk-d-0543) | decision | LNK-M-0040, what a link may demand before it redirects |
+| [LNK-D-0544](decisions.md#lnk-d-0544) | decision | LNK-M-0040, the numbering collision this milestone caused and repaired |
+| [LNK-D-0545](decisions.md#lnk-d-0545) | decision | LNK-M-0041, dividing one link's traffic without moving anybody else's |
+| [LNK-D-0546](decisions.md#lnk-d-0546) | decision | LNK-M-0041, the demo update that deleted half a demo |
+| [LNK-D-0547](decisions.md#lnk-d-0547) | decision | LNK-M-0042, the first data file this product vendors |
+| [LNK-D-0548](decisions.md#lnk-d-0548) | decision | LNK-M-0042, giving the expensive half of the rollup its own clock |
+| [LNK-D-0549](decisions.md#lnk-d-0549) | decision | LNK-M-0042, what a map is allowed to claim |
+| [LNK-D-0550](decisions.md#lnk-d-0550) | decision | LNK-M-0043, a container that cannot lose what it holds |
+| [LNK-D-0551](decisions.md#lnk-d-0551) | decision | LNK-M-0044, where a domain's owning workspace lives |
+| [LNK-D-0552](decisions.md#lnk-d-0552) | decision | LNK-M-0044, what "managing a domain" means before anything is served |
+| [LNK-D-0553](decisions.md#lnk-d-0553) | decision | LNK-M-0045, what happens when a verified domain stops verifying |
+| [LNK-D-0554](decisions.md#lnk-d-0554) | decision | LNK-M-0045, the numbers in the window, and the four questions serving raised |
+| [LNK-D-0555](decisions.md#lnk-d-0555) | decision | LNK-M-0046, the QR encoder, and what it was weighed against |
+| [LNK-D-0556](decisions.md#lnk-d-0556) | decision | LNK-M-0046, `scan_count` is dropped rather than wired |
+| [LNK-D-0557](decisions.md#lnk-d-0557) | decision | LNK-M-0046, a QR code does not follow the theme |
+| [LNK-D-0558](decisions.md#lnk-d-0558) | decision | LNK-M-0046, QR codes and campaigns mint no permission |
+| [LNK-D-0559](decisions.md#lnk-d-0559) | decision | LNK-M-0046, how a scan tells the analytics what it is |
+| [LNK-D-0560](decisions.md#lnk-d-0560) | decision | LNK-M-0047, amendment: outbound HTTP was not new |
+| [LNK-D-0561](decisions.md#lnk-d-0561) | decision | LNK-M-0047, the queue is Postgres, and how a delivery is claimed |
+| [LNK-D-0562](decisions.md#lnk-d-0562) | decision | LNK-M-0047, the rebinding posture for a fetch the server makes itself |
+| [LNK-D-0563](decisions.md#lnk-d-0563) | decision | LNK-M-0047, the part of a webhook that is a published interface |
+| [LNK-D-0564](decisions.md#lnk-d-0564) | decision | LNK-M-0047, webhooks mint two permissions, and one of them is not delegable |
+| [LNK-D-0565](decisions.md#lnk-d-0565) | decision | LNK-M-0047, what the demo shows, and why it dials nobody |
+| [LNK-D-0566](decisions.md#lnk-d-0566) | decision | LNK-M-0048, `last_fired_at` is a watermark, and it is the loop guard |
+| [LNK-D-0567](decisions.md#lnk-d-0567) | decision | LNK-M-0048, the cascade a watermark cannot stop, and what does |
+| [LNK-D-0568](decisions.md#lnk-d-0568) | decision | LNK-M-0048, what bounds one evaluation run, and where the numbers live |
+| [LNK-D-0569](decisions.md#lnk-d-0569) | decision | LNK-M-0048, automation mints two permissions, and one is not delegable |
+| [LNK-D-0570](decisions.md#lnk-d-0570) | decision | LNK-M-0048, what the demo shows, and why it changes nobody's links |
+| [LNK-D-0571](decisions.md#lnk-d-0571) | decision | LNK-M-0049, a key that replaces itself, and the leak it can carry |
+| [LNK-D-0572](decisions.md#lnk-d-0572) | decision | LNK-M-0049, how wide a key reaches, and why no permission was minted for it |
+| [LNK-D-0573](decisions.md#lnk-d-0573) | decision | LNK-M-0049, what the key demo shows, and why no secret is on it |
+| [LNK-D-0574](decisions.md#lnk-d-0574) | decision | LNK-M-0049, the tenancy bound an organization-wide key needed |
+| [LNK-D-0575](decisions.md#lnk-d-0575) | decision | LNK-M-0051, the pre-release review, and what refutation cost the findings |
+| [LNK-D-0576](decisions.md#lnk-d-0576) | decision | LNK-M-0051's triage, six milestones reopened, and a dependency reversed |
+| [LNK-D-0577](decisions.md#lnk-d-0577) | decision | LNK-M-0045, what a verification may write, and what a pass may be delayed by |
+| [LNK-D-0578](decisions.md#lnk-d-0578) | decision | LNK-M-0030, the same claim in a different alphabet |
+| [LNK-D-0579](decisions.md#lnk-d-0579) | decision | LNK-M-0040, which namespace a gate is keyed on |
+| [LNK-D-0580](decisions.md#lnk-d-0580) | decision | LNK-M-0040's reopening, two amendments made at acceptance |
+| [LNK-D-0581](decisions.md#lnk-d-0581) | decision | LNK-M-0047, what one drain costs, and the fix that would have moved the cost rather than removed it |
+| [LNK-D-0582](decisions.md#lnk-d-0582) | decision | LNK-M-0048, the queue's own clock, and why the watermark could not be it |
+| [LNK-D-0583](decisions.md#lnk-d-0583) | decision | LNK-M-0033, the promise restated as two channels |
+| [LNK-D-0584](decisions.md#lnk-d-0584) | decision | Mounting derived from registration, after eleven routes shipped unreachable |
+| [LNK-D-0585](decisions.md#lnk-d-0585) | decision | LNK-M-0051 lands, and what it leaves for LNK-M-0052 |
+| [LNK-D-0586](decisions.md#lnk-d-0586) | decision | LNK-M-0052, how a hundred and ten rows get reviewed |
+| [LNK-D-0587](decisions.md#lnk-d-0587) | decision | LNK-M-0052's triage, and the widest option four times |
+| [LNK-D-0588](decisions.md#lnk-d-0588) | decision | LNK-M-0052, four ways one membership rule was not read |
+| [LNK-D-0589](decisions.md#lnk-d-0589) | decision | LNK-M-0052, three places a secret was sitting still |
+| [LNK-D-0590](decisions.md#lnk-d-0590) | decision | LNK-M-0052, two refusals that answered a question nobody asked them |
+| [LNK-D-0591](decisions.md#lnk-d-0591) | decision | LNK-M-0052, a disclosure that reads both channels, and a count re-derived |
+| [LNK-D-0592](decisions.md#lnk-d-0592) | decision | LNK-M-0052, four ways the redirect path was not the path it described |
+| [LNK-D-0593](decisions.md#lnk-d-0593) | decision | LNK-M-0052, the queue showed one host and the button deleted another |
+| [LNK-D-0594](decisions.md#lnk-d-0594) | decision | LNK-M-0052, seven comments that were confidently wrong |
+| [LNK-D-0595](decisions.md#lnk-d-0595) | decision | D98, the instance-level principal D38 said did not exist |
+| [LNK-D-0596](decisions.md#lnk-d-0596) | decision | LNK-M-0052, building the principal D98 authorized |
+| [LNK-D-0597](decisions.md#lnk-d-0597) | decision | LNK-M-0052, the demo flake was the random stream moving, not the minute |
+| [LNK-D-0598](decisions.md#lnk-d-0598) | decision | LNK-M-0052's second triage, a standing rule, and a validation that failed |
+| [LNK-D-0599](decisions.md#lnk-d-0599) | decision | LNK-M-0052, two bounds that were nothing but a number somebody typed |
+| [LNK-D-0600](decisions.md#lnk-d-0600) | decision | LNK-M-0032's bullet amended, because D98 moved who "the owner" was |
+| [LNK-D-0601](decisions.md#lnk-d-0601) | decision | LNK-M-0052, an operator's recovery, and three wordings that were short |
+| [LNK-D-0602](decisions.md#lnk-d-0602) | decision | LNK-M-0052, three rows that end without a mechanism |
+| [LNK-D-0603](decisions.md#lnk-d-0603) | decision | LNK-M-0052's third triage, and a rule that changed the recommendation |
+| [LNK-D-0604](decisions.md#lnk-d-0604) | decision | LNK-M-0052, a bound the write half had and the read half did not |
+| [LNK-D-0605](decisions.md#lnk-d-0605) | decision | LNK-M-0052, two questions registration was answering |
+| [LNK-D-0606](decisions.md#lnk-d-0606) | decision | LNK-M-0052, three calls the redirect tree was not bounding |
+| [LNK-D-0607](decisions.md#lnk-d-0607) | decision | LNK-M-0052, a stalled cache paid for twice, and a sentence that was never true of every link |
+| [LNK-D-0608](decisions.md#lnk-d-0608) | decision | LNK-M-0052, an accessor nobody retrofitted and a reason that was never the reason |
+| [LNK-D-0609](decisions.md#lnk-d-0609) | decision | LNK-M-0052, three things the tree carried and nothing read |
+| [LNK-D-0610](decisions.md#lnk-d-0610) | decision | LNK-M-0052, a table that was not the record it claimed, and a guard with no inputs |
+| [LNK-D-0611](decisions.md#lnk-d-0611) | decision | LNK-M-0052, a count that could not stay true and a milestone the enumeration forgot |
+| [LNK-D-0612](decisions.md#lnk-d-0612) | decision | LNK-M-0052, four answers, three of them decisions and one a correction |
+| [LNK-D-0613](decisions.md#lnk-d-0613) | decision | A documentation change needs no permission, and still needs checking |
+| [LNK-D-0614](decisions.md#lnk-d-0614) | decision | LNK-M-0052, building D100, and two orderings that had never been visible |
+| [LNK-D-0615](decisions.md#lnk-d-0615) | decision | LNK-M-0052, five rows that close by being written down |
+| [LNK-D-0616](decisions.md#lnk-d-0616) | decision | LNK-M-0052, building D102, and a test that had been measuring two things at once |
+| [LNK-D-0617](decisions.md#lnk-d-0617) | decision | LNK-M-0052, the redirect-path batch and the one measurement it owes |
+| [LNK-D-0618](decisions.md#lnk-d-0618) | decision | LNK-M-0052, thirteen enumerations, and the one that gets a test |
+| [LNK-D-0619](decisions.md#lnk-d-0619) | decision | LNK-M-0052, four controls that told a reader the wrong thing |
+| [LNK-D-0620](decisions.md#lnk-d-0620) | decision | A command that chooses a loop, and the backlog that had nothing consuming it |
+| [LNK-D-0621](decisions.md#lnk-d-0621) | decision | Two stops, one of which was only ever a sentence |
+| [LNK-D-0622](decisions.md#lnk-d-0622) | decision | The second stop becomes a flag, and the one case where the two stops disagree |
+| [LNK-D-0623](decisions.md#lnk-d-0623) | decision | Describing the commands to a reader who is not here |
+| [LNK-D-0624](decisions.md#lnk-d-0624) | decision | LNK-M-0052, four small rows, two of which were not what they said |
+| [LNK-D-0625](decisions.md#lnk-d-0625) | decision | The loop cannot compact itself, so the checkpoint says when it is safe to |
+| [LNK-D-0626](decisions.md#lnk-d-0626) | decision | A breaking-point harness, and the check that actually moves |
+| [LNK-D-0627](decisions.md#lnk-d-0627) | decision | A target that says where the run stops, not what it builds |
+| [LNK-D-0628](decisions.md#lnk-d-0628) | decision | LNK-M-0052, one scoping rule stated twice, and a status row that outlived its milestone |
+| [LNK-D-0629](decisions.md#lnk-d-0629) | decision | LNK-M-0052, the last write in the package that asked the pre-D44 question |
+| [LNK-D-0630](decisions.md#lnk-d-0630) | decision | LNK-M-0052, a test that raced a flush, and an outbox with no way out |
+| [LNK-D-0631](decisions.md#lnk-d-0631) | decision | LNK-M-0052, the lockout that covered one of the two doors |
+| [LNK-D-0632](decisions.md#lnk-d-0632) | decision | LNK-M-0052, a limit two writers could pass that neither could pass alone |
+| [LNK-D-0633](decisions.md#lnk-d-0633) | decision | LNK-M-0052, three tables that outlived the tenancy, and a sentence that hid them |
+| [LNK-D-0634](decisions.md#lnk-d-0634) | decision | LNK-M-0052, the backstop pub/sub cannot be, and the package with no tests |
+| [LNK-D-0635](decisions.md#lnk-d-0635) | decision | LNK-M-0052, the half-reset that commits, and a test that could not see it |
+| [LNK-D-0636](decisions.md#lnk-d-0636) | decision | LNK-M-0052, a remainder that was being read as an attribution |
+| [LNK-D-0637](decisions.md#lnk-d-0637) | decision | A key belongs to an account, not to an organization — scheduled, not built |
+| [LNK-D-0638](decisions.md#lnk-d-0638) | decision | LNK-M-0052, two right numbers and the silence between them |
+| [LNK-D-0639](decisions.md#lnk-d-0639) | decision | LNK-M-0052, the one audited action nothing bounded, and the LNK-M-0030 bullet it amends |
+| [LNK-D-0640](decisions.md#lnk-d-0640) | decision | LNK-M-0052, the warning that went to everybody who could not act |
+| [LNK-D-0641](decisions.md#lnk-d-0641) | decision | LNK-M-0052, a refusal that could not say whose namespace it was |
+| [LNK-D-0642](decisions.md#lnk-d-0642) | decision | LNK-M-0043 reopened, and a test shape that transferred |
+| [LNK-D-0643](decisions.md#lnk-d-0643) | decision | LNK-M-0052, four answers, and two of them change work already done |
+| [LNK-D-0644](decisions.md#lnk-d-0644) | decision | LNK-M-0052, one home for the audit vocabulary and a count that checks itself |
+| [LNK-D-0645](decisions.md#lnk-d-0645) | decision | LNK-M-0052, one answer to "may an invitation create an account" |
+| [LNK-D-0646](decisions.md#lnk-d-0646) | decision | LNK-M-0052, judging what the docs cost, and a headline number that is wrong |
+| [LNK-D-0647](decisions.md#lnk-d-0647) | decision | CI logic moves into the Makefile, because the token cannot write the workflow |
+| [LNK-D-0648](decisions.md#lnk-d-0648) | decision | F1's fix takes W27's route, because the token cannot push it |
+| [LNK-D-0649](decisions.md#lnk-d-0649) | decision | F1 does not block 0.2.0, and I said it did |
+| [LNK-D-0650](decisions.md#lnk-d-0650) | decision | CI caught the test that F144's fix had just started running |
+| [LNK-D-0651](decisions.md#lnk-d-0651) | decision | F147, the watermark that recorded the instant but not the subject |
+| [LNK-D-0652](decisions.md#lnk-d-0652) | decision | The scheduler splits into families, because inline was a latency contract nobody could keep |
+| [LNK-D-0653](decisions.md#lnk-d-0653) | decision | Two queue rows closed as already built, and where the behaviour lives |
+| [LNK-D-0654](decisions.md#lnk-d-0654) | decision | Phases get shorter, milestones get work areas, and Phase 3 gets a candidate list |
+| [LNK-D-0655](decisions.md#lnk-d-0655) | decision | LNK-M-0052, closing 0.2.0: F1 verified, F1's stated reason corrected, and the read cost defended |
+| [LNK-D-0656](decisions.md#lnk-d-0656) | decision | LNK-M-0052, the fourth obligation: the versioning note named its own contents as future work |
+| [LNK-D-0657](decisions.md#lnk-d-0657) | decision | Phase 2 ran 33 milestones, not 31, and the number feeds a decision |
+| [LNK-D-0658](decisions.md#lnk-d-0658) | decision | The size target is fifteen, and the rule says what it costs |
+| [LNK-D-0659](decisions.md#lnk-d-0659) | decision | Six process rows approved, and the two answers that cost something |
+| [LNK-D-0660](decisions.md#lnk-d-0660) | decision | W13, and the bytes it spends to judge bytes |
+| [LNK-D-0661](decisions.md#lnk-d-0661) | decision | A bullet is spent; a rule recurs |
+| [LNK-D-0662](decisions.md#lnk-d-0662) | decision | The marker that buys back a decision |
+| [LNK-D-0663](decisions.md#lnk-d-0663) | decision | Dispatch is a resolution step, not a `cd` |
+| [LNK-D-0664](decisions.md#lnk-d-0664) | decision | Working past a question without losing it |
+| [LNK-D-0665](decisions.md#lnk-d-0665) | decision | A check that outlives the session that ran it |
+| [LNK-D-0666](decisions.md#lnk-d-0666) | decision | Measuring what the contract reads, not what it names |
+| [LNK-D-0667](decisions.md#lnk-d-0667) | decision | Phase 3 takes four areas, and one of them cannot be planned yet |
+| [LNK-D-0668](decisions.md#lnk-d-0668) | decision | What the resume path reads is the live phase |
+| [LNK-D-0669](decisions.md#lnk-d-0669) | decision | The command catches up with the file it writes |
+| [LNK-D-0670](decisions.md#lnk-d-0670) | decision | Phase 3 planned: what each area takes, and the twelve slots |
+| [LNK-D-0671](decisions.md#lnk-d-0671) | decision | What eighteen blind tasks specified, and the six defects hiding inside a word |
+| [LNK-D-0672](decisions.md#lnk-d-0672) | decision | An independent review of the plan, and the four numbers it caught |
+| [LNK-D-0673](decisions.md#lnk-d-0673) | decision | QR logos, the first file this product accepts, and the target moving |
+| [LNK-D-0674](decisions.md#lnk-d-0674) | decision | The logo milestone was two, and a review found it the same day it was written |
+| [LNK-D-0675](decisions.md#lnk-d-0675) | decision | Reviewing the specification, not only the thing built from it |
+| [LNK-D-0676](decisions.md#lnk-d-0676) | decision | LNK-M-0053, the three choices the milestone gave itself, and the header that could not fit |
+| [LNK-D-0677](decisions.md#lnk-d-0677) | decision | LNK-M-0056, the line count LNK-M-0053 moved |
+| [LNK-D-0678](decisions.md#lnk-d-0678) | decision | LNK-M-0056, the three choices it gave itself, and the 1883 pixels |
+| [LNK-D-0679](decisions.md#lnk-d-0679) | decision | The demo reset could not clean up after itself |
+| [LNK-D-0680](decisions.md#lnk-d-0680) | decision | LNK-M-0058, three facts the last two milestones moved |
+| [LNK-D-0681](decisions.md#lnk-d-0681) | decision | LNK-M-0058, the panel, the thumbnail that could not go where it was asked, and where a notification leads |
+| [LNK-D-0682](decisions.md#lnk-d-0682) | decision | LNK-M-0058, the owner overrules D124: the picture goes up, and the guard narrows |
+| [LNK-D-0683](decisions.md#lnk-d-0683) | decision | LNK-M-0058, the picture goes up: the rule that let it, and the page re-measured |
+| [LNK-D-0684](decisions.md#lnk-d-0684) | decision | LNK-M-0059, what B left behind it |
+| [LNK-D-0685](decisions.md#lnk-d-0685) | decision | LNK-M-0059, the size, the second encoder, and D11 spent on purpose |
+| [LNK-D-0686](decisions.md#lnk-d-0686) | decision | LNK-M-0060, two line numbers, and the references that held |
+| [LNK-D-0687](decisions.md#lnk-d-0687) | decision | LNK-M-0060, the empty slug, the parameter that stayed closed, and the rollup that was not written |
+| [LNK-D-0688](decisions.md#lnk-d-0688) | decision | LNK-M-0061, where an uploaded logo lives |
+| [LNK-D-0689](decisions.md#lnk-d-0689) | decision | LNK-M-0061, the first file this product accepts |
+| [LNK-D-0690](decisions.md#lnk-d-0690) | decision | LNK-M-0061, the owner overrules D136: the default code gets a logo too |
+| [LNK-D-0691](decisions.md#lnk-d-0691) | decision | LNK-M-0061, the shorthand that carries a logo, and the row it has to write |
+| [LNK-D-0692](decisions.md#lnk-d-0692) | decision | LNK-M-0062, the logo in the picture: a cap that is arithmetic, a level that is not a preference, and the ring a measurement bought |
+| [LNK-D-0693](decisions.md#lnk-d-0693) | decision | LNK-M-0062, the logo reference that is still not a reference |
+| [LNK-D-0694](decisions.md#lnk-d-0694) | decision | LNK-M-0065, the migration number this run used up |
+| [LNK-D-0695](decisions.md#lnk-d-0695) | decision | LNK-M-0065, the mail-free instance, and the one rule this product breaks on purpose |
+| [LNK-D-0696](decisions.md#lnk-d-0696) | decision | LNK-M-0065, what the mailbox is told, and how long the link lives |
+| [LNK-D-0697](decisions.md#lnk-d-0697) | decision | LNK-M-0065, what a completed reset ends, what it starts, and where the record goes |
+| [LNK-D-0698](decisions.md#lnk-d-0698) | decision | LNK-M-0066, the mid-phase review: what it checked, what it found, and the one bullet it could not run |
+| [LNK-D-0699](decisions.md#lnk-d-0699) | decision | LNK-M-0053, the overflow bullet narrowed on the milestone's own instruction |
+| [LNK-D-0700](decisions.md#lnk-d-0700) | decision | F174, the demo's QR codes were pictures of a link that answers Gone |
+| [LNK-D-0701](decisions.md#lnk-d-0701) | decision | LNK-M-0067: the residue column nobody counted, and a comment that moved |
+| [LNK-D-0702](decisions.md#lnk-d-0702) | decision | LNK-M-0067: three answers at step 1, and the conflict resolved by the command that meets it |
+| [LNK-D-0703](decisions.md#lnk-d-0703) | decision | LNK-M-0067: a soft delete fires no cascade, and two comments that said it would |
+| [LNK-D-0704](decisions.md#lnk-d-0704) | decision | LNK-M-0067: the cascade the bullet promised, amended at acceptance |
+| [LNK-D-0705](decisions.md#lnk-d-0705) | decision | LNK-M-0068: the two facts the milestone before it moved |
+| [LNK-D-0706](decisions.md#lnk-d-0706) | decision | LNK-M-0068: five choices a second factor forced |
+| [LNK-D-0707](decisions.md#lnk-d-0707) | decision | LNK-M-0069: the second milestone file to reserve a migration number it did not get |
+| [LNK-D-0708](decisions.md#lnk-d-0708) | decision | LNK-M-0069: a key belongs to an account, and the four decisions that had to be re-derived to say so |
+| [LNK-D-0709](decisions.md#lnk-d-0709) | decision | LNK-M-0069: the function the authority bullet named answers one permission |
+| [LNK-D-0710](decisions.md#lnk-d-0710) | decision | LNK-M-0070: four line references, and the one that pointed at the wrong claim |
+| [LNK-D-0711](decisions.md#lnk-d-0711) | decision | LNK-M-0070: an update checker, and the five choices a daily GET turned out to need |
+| [LNK-D-0712](decisions.md#lnk-d-0712) | decision | LNK-M-0070: D159 corrected — an upgraded instance is asked, not assumed |
+| [LNK-D-0713](decisions.md#lnk-d-0713) | decision | LNK-M-0070: where an upgraded instance is asked, and what the third state costs |
+| [LNK-D-0714](decisions.md#lnk-d-0714) | decision | LNK-M-0071: nine references that moved, and one job on the wrong side of a distinction |
+| [LNK-D-0715](decisions.md#lnk-d-0715) | decision | LNK-M-0071: the failover contract, and the probe that was holding the door open |
+| [LNK-D-0716](decisions.md#lnk-d-0716) | decision | LNK-M-0071: a milestone file that had not heard about D104 |
+| [LNK-D-0717](decisions.md#lnk-d-0717) | decision | LNK-M-0072: the proof got a job bigger while the phase was running |
+| [LNK-D-0718](decisions.md#lnk-d-0718) | decision | LNK-M-0072: a rolling deploy that cost nothing, and the window that turned out to be closed |
+| [LNK-D-0719](decisions.md#lnk-d-0719) | decision | LNK-M-0074, the pre-release review: what it checked, what it found, and what it refuted |
+| [LNK-D-0720](decisions.md#lnk-d-0720) | decision | LNK-M-0074's triage: four rows approved, and the one the owner widened |
+| [LNK-D-0721](decisions.md#lnk-d-0721) | decision | LNK-M-0075's triage: sixteen rows, and the conflict that decided seven of them |
+| [LNK-D-0722](decisions.md#lnk-d-0722) | decision | LNK-M-0075, amendment: the SSO comment is not where the bullet says |
+| [LNK-D-0723](decisions.md#lnk-d-0723) | decision | LNK-M-0075: the phase close, and the seven counts that were wrong |
+| [LNK-D-0724](decisions.md#lnk-d-0724) | decision | A third actor, for the claim nobody was checking |
+| [LNK-D-0725](decisions.md#lnk-d-0725) | decision | LNK-M-0075: the eight rows its own work filed, and the bullet that could not be true |
+| [LNK-D-0726](decisions.md#lnk-d-0726) | decision | LNK-M-0075: the second pass, and the three fixes that went wider than their notes |
+| [LNK-D-0727](decisions.md#lnk-d-0727) | decision | LNK-M-0075: the third pass, and the documents a diff falsified on its way past |
+| [LNK-D-0728](decisions.md#lnk-d-0728) | decision | LNK-M-0075: the fourth pass, and counting a class instead of patching a list |
+| [LNK-D-0729](decisions.md#lnk-d-0729) | decision | LNK-M-0075, amendment: the four bot-bypass sites were seven |
+| [LNK-D-0730](decisions.md#lnk-d-0730) | decision | The 2,691 bytes W38 added to every resume, defended |
+| [LNK-D-0731](decisions.md#lnk-d-0731) | decision | LNK-M-0075: the fifth pass, a scope, a scan, and two counts that missed a member |
+| [LNK-D-0732](decisions.md#lnk-d-0732) | decision | LNK-M-0075, amendment: the third move of one number, so the number goes |
+| [LNK-D-0733](decisions.md#lnk-d-0733) | decision | LNK-M-0075: the sixth pass, the response that disagreed with its own transaction, and the demo that would not have resolved |
+| [LNK-D-0734](decisions.md#lnk-d-0734) | decision | LNK-M-0067, reopened: both dispute labels in one statement |
+| [LNK-D-0735](decisions.md#lnk-d-0735) | decision | A queue row typed `issue` against a design that was deliberate |
+| [LNK-D-0736](decisions.md#lnk-d-0736) | decision | The target was aimed at the plan, not at the build |
+| [LNK-D-0737](decisions.md#lnk-d-0737) | decision | A gate nobody runs |
+| [LNK-D-0738](decisions.md#lnk-d-0738) | decision | LNK-M-0073: six repairs a phase close could not have contained |
+| [LNK-D-0739](decisions.md#lnk-d-0739) | decision | A review that is not final is not a review |
+| [LNK-D-0740](decisions.md#lnk-d-0740) | decision | How an agent drives this product's UI, and where that check runs |
+| [LNK-D-0741](decisions.md#lnk-d-0741) | decision | Which review owns a reopening |
+| [LNK-D-0742](decisions.md#lnk-d-0742) | decision | The link page becomes tabs, and what each tab says about itself |
+| [LNK-D-0743](decisions.md#lnk-d-0743) | decision | Seven tabs, and LNK-M-0056 split along the seam the design was drawn on |
+| [LNK-D-0744](decisions.md#lnk-d-0744) | decision | Reviews carry a browser check |
+| [LNK-D-0745](decisions.md#lnk-d-0745) | decision | LNK-M-0054, a browser an agent can drive |
+| [LNK-D-0746](decisions.md#lnk-d-0746) | decision | LNK-M-0073, built: six repairs, and the audit line one of them answers |
+| [LNK-D-0747](decisions.md#lnk-d-0747) | decision | LNK-M-0056, the split repaired in the files that recorded it |
+| [LNK-D-0748](decisions.md#lnk-d-0748) | decision | Citations are true as of their own commit |
+| [LNK-D-0749](decisions.md#lnk-d-0749) | decision | LNK-M-0055, the workspace pair reads as one control |
+| [LNK-D-0750](decisions.md#lnk-d-0750) | decision | LNK-M-0055 built: the boundary, the chevron, and D177 |
+| [LNK-D-0751](decisions.md#lnk-d-0751) | decision | LNK-M-0055, one bullet amended at acceptance |
+| [LNK-D-0752](decisions.md#lnk-d-0752) | decision | LNK-M-0056, a citation amended at validation |
+| [LNK-D-0753](decisions.md#lnk-d-0753) | decision | LNK-M-0056 built: the stack becomes tabs, and D178 |
+| [LNK-D-0754](decisions.md#lnk-d-0754) | decision | LNK-M-0057 built: the badges, the glyph size, and the lie a browser caught |
+| [LNK-D-0755](decisions.md#lnk-d-0755) | decision | LNK-M-0057, one bullet amended at acceptance |
+| [LNK-D-0756](decisions.md#lnk-d-0756) | decision | LNK-M-0055 reopened: the popup the wireframes could not draw |
+| [LNK-D-0757](decisions.md#lnk-d-0757) | decision | LNK-M-0055 rebuilt: the panel, the anchor, and the width from two insets |
+| [LNK-D-0758](decisions.md#lnk-d-0758) | decision | Three reopenings from one look at the running product |
+| [LNK-D-0759](decisions.md#lnk-d-0759) | decision | LNK-M-0042 rebuilt: the antimeridian split, and the ring as the unit of the claim |
+| [LNK-D-0760](decisions.md#lnk-d-0760) | decision | LNK-M-0042, one bullet amended at acceptance |
+| [LNK-D-0761](decisions.md#lnk-d-0761) | decision | LNK-M-0057 reopened: the Edit badge goes |
+| [LNK-D-0762](decisions.md#lnk-d-0762) | decision | LNK-M-0058 reopened: the QR popup folds into its tab |
+| [LNK-D-0763](decisions.md#lnk-d-0763) | decision | Three more reopenings, from the owner's QR-tab report |
+| [LNK-D-0764](decisions.md#lnk-d-0764) | decision | LNK-M-0059 rebuilt: the quiet zone stops absorbing the rounding, and D179 |
+| [LNK-D-0765](decisions.md#lnk-d-0765) | decision | LNK-M-0061 rebuilt: an oversized logo is resized, not refused, and D180 |
+| [LNK-D-0766](decisions.md#lnk-d-0766) | decision | LNK-M-0061, the enforcement-order bullet names a cap that stopped refusing |
+| [LNK-D-0767](decisions.md#lnk-d-0767) | decision | LNK-M-0061, D178's refusal status is now conditional on the caller |
+| [LNK-D-0768](decisions.md#lnk-d-0768) | decision | LNK-M-0062 rebuilt: the logo grows to a measured size, and D181 |
+| [LNK-D-0769](decisions.md#lnk-d-0769) | decision | LNK-M-0062, two amendments to the milestone file, and a worker that made five |
+| [LNK-D-0770](decisions.md#lnk-d-0770) | decision | LNK-M-0059, the size stops snapping, and D182 reverses D179 the same day |
+| [LNK-D-0771](decisions.md#lnk-d-0771) | decision | LNK-M-0060, the default code becomes a property rather than an absence, and D183 |
+| [LNK-D-0772](decisions.md#lnk-d-0772) | decision | LNK-M-0062, the level is the highest that costs nothing, and D184 |
+| [LNK-D-0773](decisions.md#lnk-d-0773) | decision | LNK-M-0063 added: the QR tab stops costing more attention than it is worth |
+| [LNK-D-0774](decisions.md#lnk-d-0774) | decision | LNK-M-0059 built: the size is exact, the floor moves per code, and three modules is measured |
+| [LNK-D-0775](decisions.md#lnk-d-0775) | decision | LNK-M-0059, four amendments the second reopening forced |
+| [LNK-D-0776](decisions.md#lnk-d-0776) | decision | LNK-M-0059, the exact-size claim gets an enforcement on the API |
+| [LNK-D-0777](decisions.md#lnk-d-0777) | decision | LNK-M-0059, what the exact size falsified where nothing was looking |
+| [LNK-D-0778](decisions.md#lnk-d-0778) | decision | LNK-M-0063's plan review, and the three records it caught before anything was built |
+| [LNK-D-0779](decisions.md#lnk-d-0779) | decision | LNK-M-0060 rebuilt: the default is a flag, and the untagged bucket is what makes that free |
+| [LNK-D-0780](decisions.md#lnk-d-0780) | decision | Five owner answers, taken between milestones, before anything is built against them |
+| [LNK-D-0781](decisions.md#lnk-d-0781) | decision | LNK-M-0059, a size is fitted against a payload and a payload can change (D185) |
+| [LNK-D-0782](decisions.md#lnk-d-0782) | decision | LNK-M-0062, the level is a rule and the tab does not print it (D186) |
+| [LNK-D-0783](decisions.md#lnk-d-0783) | decision | LNK-M-0062, the rule binds a level somebody named, and D187 |
+| [LNK-D-0784](decisions.md#lnk-d-0784) | decision | LNK-M-0063's plan, three answers taken before a worker exists |
+| [LNK-D-0785](decisions.md#lnk-d-0785) | decision | LNK-M-0063 built: one anchor name serves twenty menus, and four explanations were spent |
+| [LNK-D-0786](decisions.md#lnk-d-0786) | decision | LNK-M-0063, two answers its reviewer's findings needed |
+| [LNK-D-0787](decisions.md#lnk-d-0787) | decision | LNK-M-0064 added: the QR tab's third report, and the first script |
+| [LNK-D-0788](decisions.md#lnk-d-0788) | decision | LNK-M-0064, the two its plan review turned into questions |
+| [LNK-D-0789](decisions.md#lnk-d-0789) | decision | LNK-M-0064 built: a remembered position, and two readers that mistook the flag for a place |
+| [LNK-D-0790](decisions.md#lnk-d-0790) | decision | LNK-M-0064, two amendments its reviewer forced |
+| [LNK-D-0791](decisions.md#lnk-d-0791) | decision | LNK-M-0064, five more amendments, three of them on a shipped milestone |
+| [LNK-D-0792](decisions.md#lnk-d-0792) | decision | LNK-M-0064, the prose bound moved and the file that derives it did not |
+| [LNK-D-0793](decisions.md#lnk-d-0793) | decision | LNK-M-0064, the fourth report and where its seven items go |
+| [LNK-D-0794](decisions.md#lnk-d-0794) | decision | LNK-M-0064, the fragment yields rather than being out-scrolled |
+| [LNK-D-0795](decisions.md#lnk-d-0795) | decision | LNK-M-0064, the logo picker above the save button, and the prose bound at 300 |
+| [LNK-D-0796](decisions.md#lnk-d-0796) | decision | LNK-M-0064's reopening, four citations its own diff moved |
+| [LNK-D-0797](decisions.md#lnk-d-0797) | decision | three shipped entries the fourth report's removals falsified |
+| [LNK-D-0798](decisions.md#lnk-d-0798) | decision | LNK-M-0064, the paint is held, the logo submits to a form it is not in, and the slider draws its own stops |
+| [LNK-D-0799](decisions.md#lnk-d-0799) | decision | LNK-M-0064, selecting a code is the tab strip's own swap |
+| [LNK-D-0800](decisions.md#lnk-d-0800) | decision | LNK-M-0074's reopened run: what it checked, what it found, what it refuted, and one amendment |
+| [LNK-D-0801](decisions.md#lnk-d-0801) | decision | LNK-M-0074's triage: three rows scheduled, and the one the owner took further than was recommended |
+| [LNK-D-0802](decisions.md#lnk-d-0802) | decision | Two reopenings from LNK-M-0074's triage, and what the QR thumbnail means |
+| [LNK-D-0803](decisions.md#lnk-d-0803) | decision | LNK-M-0064, the offset is forgotten when the request ends, not when it swaps |
+| [LNK-D-0804](decisions.md#lnk-d-0804) | decision | LNK-M-0064, the thumbnail was already right, and D204 asked a question it then over-answered |
+| [LNK-D-0805](decisions.md#lnk-d-0805) | decision | LNK-M-0075, the release notes fold into 0.3.0, and the date a gate keeps honest |
+| [LNK-D-0806](decisions.md#lnk-d-0806) | decision | The conformance gate waits on the socket the application uses, and a streak alone was not enough |
+| [LNK-D-0807](decisions.md#lnk-d-0807) | decision | The records collapse in the diff view and the definitions of done do not |
+| [LNK-D-0808](decisions.md#lnk-d-0808) | decision | Two released phases leave the scope contract, and the headings stay behind |
+| [LNK-D-0809](decisions.md#lnk-d-0809) | decision | Phase 4 planned: the spine and the fourteen slots |
+| [LNK-D-0810](decisions.md#lnk-d-0810) | decision | LNK-M-0078, the two repair shapes the owner chose at the plan's review |
+| [LNK-D-0811](decisions.md#lnk-d-0811) | decision | LNK-M-0078, the F248 population was 83 and not 17 |
+| [LNK-D-0812](decisions.md#lnk-d-0812) | decision | LNK-M-0079, the Makefile line the phase's own first commit moved |
+| [LNK-D-0813](decisions.md#lnk-d-0813) | decision | LNK-M-0079, the manifest is the first artifact that leaves this repository |
+| [LNK-D-0814](decisions.md#lnk-d-0814) | decision | LNK-M-0079, the host loads a reactor and grants it nothing |
+| [LNK-D-0815](decisions.md#lnk-d-0815) | decision | LNK-M-0079, D215 was wrong before the commit carrying it was made |
+| [LNK-D-0816](decisions.md#lnk-d-0816) | decision | LNK-M-0079, a label from a directory entry is a crash risk, not a cardinality one |
+| [LNK-D-0817](decisions.md#lnk-d-0817) | decision | LNK-M-0079, a fixture only make can build is a gate only make can run |
+| [LNK-D-0818](decisions.md#lnk-d-0818) | decision | LNK-M-0079, no entry in this log will cite that line again |
+| [LNK-D-0819](decisions.md#lnk-d-0819) | decision | LNK-M-0079, the gate asks the image what it is before asserting what it does |
+| [LNK-D-0820](decisions.md#lnk-d-0820) | decision | LNK-M-0079, the two answers that unparked the milestone |
+| [LNK-D-0821](decisions.md#lnk-d-0821) | decision | LNK-M-0079, one duration over two steps priced neither |
+| [LNK-D-0822](decisions.md#lnk-d-0822) | decision | LNK-M-0079, the shipped milestone file this diff edited, and what D224 conceded too widely |
+| [LNK-D-0823](decisions.md#lnk-d-0823) | decision | LNK-M-0080, the set of imports is the ABI, and one slice is where it lives |
+| [LNK-D-0824](decisions.md#lnk-d-0824) | decision | LNK-M-0080, an integer in a manifest, and which half of SemVer breaks |
+| [LNK-D-0825](decisions.md#lnk-d-0825) | decision | LNK-M-0080, the stance crosses the boundary as a property, not a review |
+| [LNK-D-0826](decisions.md#lnk-d-0826) | decision | LNK-M-0080, the SDK is importable or it is a header file |
+| [LNK-D-0827](decisions.md#lnk-d-0827) | decision | LNK-M-0080, three builders, one staleness rule, and the proof that was almost stale |
+| [LNK-D-0828](decisions.md#lnk-d-0828) | decision | LNK-M-0080, an add-on sees the cookies it named and never the host's session |
+| [LNK-D-0829](decisions.md#lnk-d-0829) | decision | LNK-M-0080, two bullets that said more than any tree could |
+| [LNK-D-0830](decisions.md#lnk-d-0830) | decision | LNK-M-0080, a cookie namespace comes from the name, not from whoever installed first |
+| [LNK-D-0831](decisions.md#lnk-d-0831) | decision | LNK-M-0080, the host's own answer was the one payload nothing described |
+| [LNK-D-0832](decisions.md#lnk-d-0832) | decision | LNK-M-0080, the policy could not decide the change every milestone after it will make |
+| [LNK-D-0833](decisions.md#lnk-d-0833) | decision | LNK-M-0081, a grant is held, and the mechanism is a parallel rather than a reuse |
+| [LNK-D-0834](decisions.md#lnk-d-0834) | decision | LNK-M-0081, a refusal that comes before the availability status |
+| [LNK-D-0835](decisions.md#lnk-d-0835) | decision | LNK-M-0081, the manager is LNK-M-0089 and two bullets still said LNK-M-0088 |
+| [LNK-D-0836](decisions.md#lnk-d-0836) | decision | LNK-M-0081, two functions cost nothing, and what reaches the log is not trusted |
+| [LNK-D-0837](decisions.md#lnk-d-0837) | decision | LNK-M-0081, how the log is sanitized, and the carve-out a publisher can check |
+| [LNK-D-0838](decisions.md#lnk-d-0838) | decision | LNK-M-0081, the escape set is inverted rather than extended |
+| [LNK-D-0839](decisions.md#lnk-d-0839) | decision | LNK-M-0081, the allowlist is Unicode's property, not a transcription of it |
+| [LNK-D-0840](decisions.md#lnk-d-0840) | decision | LNK-M-0081, the escaping is injective, so a reader can tell what was written |
+| [LNK-D-0841](decisions.md#lnk-d-0841) | decision | LNK-M-0082, an add-on's own schema is additive to nobody, because nobody else reads it |
+| [LNK-D-0842](decisions.md#lnk-d-0842) | decision | LNK-M-0082, a login role is a boundary and SET ROLE is not, measured both ways |
+| [LNK-D-0843](decisions.md#lnk-d-0843) | decision | LNK-M-0082, the manifest names every migration file with its own digest |
+| [LNK-D-0844](decisions.md#lnk-d-0844) | decision | LNK-M-0082, a large object is data outside every schema, and the capability is accounted for rather than closed |
+| [LNK-D-0845](decisions.md#lnk-d-0845) | decision | LNK-M-0082, an add-on may take one of the product's advisory locks and may not hold one |
+| [LNK-D-0846](decisions.md#lnk-d-0846) | decision | LNK-M-0082, a replica whose add-on credential another replica rotated mints a new one |
+| [LNK-D-0847](decisions.md#lnk-d-0847) | decision | LNK-M-0082, the confinement asks a shape rather than a list of places |
+| [LNK-D-0848](decisions.md#lnk-d-0848) | decision | LNK-M-0082, a test that measured the clock rather than the claim |
+| [LNK-D-0849](decisions.md#lnk-d-0849) | decision | LNK-M-0082, the load clears every role-level setting before pinning the search path |
+| [LNK-D-0850](decisions.md#lnk-d-0850) | decision | LNK-M-0082, the size gauge kept the denylist the confinement had stopped keeping |
+| [LNK-D-0851](decisions.md#lnk-d-0851) | decision | LNK-M-0082, the schema boundary stops every other add-on and not the add-on itself |
+| [LNK-D-0852](decisions.md#lnk-d-0852) | decision | LNK-M-0082, the orchestrator confirms an amendment a worker made |
+| [LNK-D-0853](decisions.md#lnk-d-0853) | decision | LNK-M-0082, a grant on an add-on's schema refuses the add-on, operator's or not |
+| [LNK-D-0854](decisions.md#lnk-d-0854) | decision | LNK-M-0083, who is signed in costs a token of its own |
+| [LNK-D-0855](decisions.md#lnk-d-0855) | decision | LNK-M-0083, an add-on returns data and the host renders; templates from a module stay refused |
+| [LNK-D-0856](decisions.md#lnk-d-0856) | decision | LNK-M-0083, one module instance per request, measured against the page budget |
+| [LNK-D-0857](decisions.md#lnk-d-0857) | decision | LNK-M-0083, an add-on's routes are reachable without a session |
+| [LNK-D-0858](decisions.md#lnk-d-0858) | decision | LNK-M-0083, the request body says whether it is encoded, and the response body cannot be |
+| [LNK-D-0859](decisions.md#lnk-d-0859) | decision | LNK-M-0083, an add-on's settings come from the environment, by declared name |
+| [LNK-D-0860](decisions.md#lnk-d-0860) | decision | LNK-M-0083, no add-on CSS is served, so nothing ships unscanned |
+| [LNK-D-0861](decisions.md#lnk-d-0861) | decision | LNK-M-0083, the demo shows no add-on page, and the coverage test cannot say so |
+| [LNK-D-0862](decisions.md#lnk-d-0862) | decision | LNK-M-0083, a request too large to cross is the client's error, and the host says so before the module runs |
+| [LNK-D-0863](decisions.md#lnk-d-0863) | decision | LNK-M-0083, two add-on names in a prefix relation are both refused, and three sentences said they could not be |
+| [LNK-D-0864](decisions.md#lnk-d-0864) | decision | A code path only CI runs was tested nowhere, and the gate that caught it was ten days old |
+| [LNK-D-0865](decisions.md#lnk-d-0865) | decision | LNK-M-0084, the mid-phase adversarial review: what it checked, what it found, and what it refuted |
+| [LNK-D-0866](decisions.md#lnk-d-0866) | decision | LNK-M-0084's triage: five milestones reopened, and the sanitizer fix that is a decision |
+| [LNK-D-0867](decisions.md#lnk-d-0867) | decision | LNK-M-0078, the row-membership check is not a pipeline, and the failure had to be seen first |
+| [LNK-D-0868](decisions.md#lnk-d-0868) | decision | LNK-M-0078, the ninth site of F304 is LNK-M-0078's and the other eight are not |
+| [LNK-D-0869](decisions.md#lnk-d-0869) | decision | LNK-M-0079, a manifest means what it reads as |
+| [LNK-D-0870](decisions.md#lnk-d-0870) | decision | LNK-M-0079, one add-on's load is bounded, and the budget is its own |
+| [LNK-D-0871](decisions.md#lnk-d-0871) | decision | LNK-M-0079, what the load budget bounds is the add-on's own code |
+| [LNK-D-0872](decisions.md#lnk-d-0872) | decision | LNK-M-0079, the compile step was bounded by nothing |
+| [LNK-D-0873](decisions.md#lnk-d-0873) | decision | LNK-M-0079, one defect gets one row |
+| [LNK-D-0874](decisions.md#lnk-d-0874) | decision | LNK-M-0084, LNK-M-0081 is parked and LNK-M-0082 and LNK-M-0083 go ahead of it |
+| [LNK-D-0875](decisions.md#lnk-d-0875) | decision | LNK-M-0082, the reset the load ran cleared one scope of two |
+| [LNK-D-0876](decisions.md#lnk-d-0876) | decision | LNK-M-0082, a prefix is not a proof of ownership |
+| [LNK-D-0877](decisions.md#lnk-d-0877) | decision | LNK-M-0082, a prefix is not a proof of ownership: the amendment |
+| [LNK-D-0878](decisions.md#lnk-d-0878) | decision | LNK-M-0082, detect and refuse; the sweep is removed |
+| [LNK-D-0879](decisions.md#lnk-d-0879) | decision | LNK-M-0081, strip the variation selectors; there is no base set |
+| [LNK-D-0880](decisions.md#lnk-d-0880) | decision | LNK-M-0081, the seventh term: a derivation is not the terms that change an answer |
+| [LNK-D-0881](decisions.md#lnk-d-0881) | decision | LNK-M-0081, invisible is not a property, so the claim narrows and the residue is stated |
+| [LNK-D-0882](decisions.md#lnk-d-0882) | decision | LNK-M-0081, the boundary is a handler, because a list of log sites is a claim about code nobody has written |
+| [LNK-D-0883](decisions.md#lnk-d-0883) | decision | LNK-M-0083, an add-on's cookies go in a jar, because a count it can repeat is not a bound |
+| [LNK-D-0884](decisions.md#lnk-d-0884) | decision | LNK-M-0083, guest memory gets a bound, and the number quoted as one was a measurement |
+| [LNK-D-0885](decisions.md#lnk-d-0885) | decision | LNK-M-0083, a sentence is only as true as what checks it, and one bound was not total |
+| [LNK-D-0886](decisions.md#lnk-d-0886) | decision | LNK-M-0085, the callback arrives as a redirect, and the guest gets a real random source |
+| [LNK-D-0887](decisions.md#lnk-d-0887) | decision | LNK-M-0085, what D292 costs a publisher, and four host rules nobody asked for by name |
+| [LNK-D-0888](decisions.md#lnk-d-0888) | decision | LNK-M-0085, two amendments at step 3.4 |
+| [LNK-D-0889](decisions.md#lnk-d-0889) | decision | LNK-M-0085, the rejection closed: a mint the guest was told did not happen, and four counts nothing counted |
+| [LNK-D-0890](decisions.md#lnk-d-0890) | decision | LNK-M-0085, amending LNK-M-0081's ungated count rather than reopening it |
+| [LNK-D-0891](decisions.md#lnk-d-0891) | decision | LNK-M-0085, every add-on route is rate limited, and the counting tests are repaired rather than narrowed |
+| [LNK-D-0892](decisions.md#lnk-d-0892) | decision | LNK-M-0085, what D305 and D306 came to in the tree |
+| [LNK-D-0893](decisions.md#lnk-d-0893) | decision | LNK-M-0085, what a limiter may charge, and a count claimed complete for the third time |
+| [LNK-D-0894](decisions.md#lnk-d-0894) | decision | The counting problem gets a milestone, after six mechanisms and four phases |
+| [LNK-D-0895](decisions.md#lnk-d-0895) | decision | LNK-M-0085, a sweep that could not fail in the direction that mattered |
+| [LNK-D-0896](decisions.md#lnk-d-0896) | decision | LNK-M-0085, README is not anchored to a count until the tag |
+| [LNK-D-0897](decisions.md#lnk-d-0897) | decision | LNK-M-0085, the two sweeps become one shape, and a gate stops reading working files |
+| [LNK-D-0898](decisions.md#lnk-d-0898) | decision | LNK-M-0085, amending LNK-M-0079's failure-class bullet, and the fold that owes more than a number |
+| [LNK-D-0899](decisions.md#lnk-d-0899) | decision | LNK-M-0086, an inline add-on may rewrite the query and nothing else |
+| [LNK-D-0900](decisions.md#lnk-d-0900) | decision | LNK-M-0086, what the extension point costs and where it sits |
+| [LNK-D-0901](decisions.md#lnk-d-0901) | decision | LNK-M-0086, core's histogram excludes what the add-on held |
+| [LNK-D-0902](decisions.md#lnk-d-0902) | decision | LNK-M-0086, the deadline default put to the owner anyway |
+| [LNK-D-0903](decisions.md#lnk-d-0903) | decision | the test timeout, which had been the default all along |
+| [LNK-D-0904](decisions.md#lnk-d-0904) | decision | LNK-M-0086 reopened, the deadline stops charging the host's setup to the add-on |
+| [LNK-D-0905](decisions.md#lnk-d-0905) | decision | LNK-M-0086 reopened, the second bound and what measuring it under contention said |
+| [LNK-D-0906](decisions.md#lnk-d-0906) | decision | LNK-M-0086, the histogram keeps what the deadline gave up |
+| [LNK-D-0907](decisions.md#lnk-d-0907) | decision | LNK-M-0087 added: pooling, because a well-behaved add-on cost 44.89ms |
+| [LNK-D-0908](decisions.md#lnk-d-0908) | decision | LNK-M-0087, the reset is the host's, because a pooled instance keeps what the last visitor left |
+| [LNK-D-0909](decisions.md#lnk-d-0909) | decision | LNK-M-0088, an add-on arrives and leaves, and the directory is still the only store |
+| [LNK-D-0910](decisions.md#lnk-d-0910) | decision | LNK-M-0088, the caller's context stops deciding whether a removal finished |
+| [LNK-D-0911](decisions.md#lnk-d-0911) | decision | LNK-M-0088, an install reads what the directory claims, not what is running |
+| [LNK-D-0912](decisions.md#lnk-d-0912) | decision | LNK-M-0089, an operator meets the add-on host, and one page is where |
+| [LNK-D-0913](decisions.md#lnk-d-0913) | decision | LNK-M-0089, three answers the rejection needed |
+| [LNK-D-0914](decisions.md#lnk-d-0914) | decision | LNK-M-0089, the ABI policy decides its own case, and the drain reaches the busy instance |
+| [LNK-D-0915](decisions.md#lnk-d-0915) | decision | LNK-M-0089, what a name inherits, and the harness that had never run |
+| [LNK-D-0916](decisions.md#lnk-d-0916) | decision | LNK-M-0092's subject does not exist, and who builds it |
+| [LNK-D-0917](decisions.md#lnk-d-0917) | decision | the foundation cannot reach outward, and one constraint nobody chose |
+| [LNK-D-0918](decisions.md#lnk-d-0918) | decision | the conversation Plan.md promised, and what it decided |
+| [LNK-D-0919](decisions.md#lnk-d-0919) | decision | LNK-M-0090, how an add-on reaches outward: the four shapes the answer took |
+| [LNK-D-0920](decisions.md#lnk-d-0920) | decision | LNK-M-0088 reopened: the leak tripwire measures warm-up |
+| [LNK-D-0921](decisions.md#lnk-d-0921) | decision | LNK-M-0090, the bound that never fired |
+| [LNK-D-0922](decisions.md#lnk-d-0922) | decision | LNK-M-0090, what a refusal list claims and what a stored value authorizes |
+| [LNK-D-0923](decisions.md#lnk-d-0923) | decision | LNK-M-0090, one rule and two refusals, because a document said one |
+| [LNK-D-0924](decisions.md#lnk-d-0924) | decision | LNK-M-0090, the address policy is inverted |
+| [LNK-D-0925](decisions.md#lnk-d-0925) | decision | LNK-M-0090, what "globally routable" is, and a rule that refused an instance running no add-ons |
+| [LNK-D-0926](decisions.md#lnk-d-0926) | decision | LNK-M-0090, an object the API said could not exist, and what a refusal costs to log |
+| [LNK-D-0927](decisions.md#lnk-d-0927) | decision | LNK-M-0091, a module arrives from a URL, and what an operator's digest is worth |
+| [LNK-D-0928](decisions.md#lnk-d-0928) | decision | LNK-M-0091, three containers and one member rule |
+| [LNK-D-0929](decisions.md#lnk-d-0929) | decision | LNK-M-0091, the numbers under D384, and a bound the standard library already held |
+| [LNK-D-0930](decisions.md#lnk-d-0930) | decision | LNK-M-0091, a ratio that is a bound rather than a verdict |
+| [LNK-D-0931](decisions.md#lnk-d-0931) | decision | LNK-M-0091, two vocabularies held from the end that was open |
+| [LNK-D-0932](decisions.md#lnk-d-0932) | decision | LNK-M-0093 added: the acceptance test's last inch |
+| [LNK-D-0933](decisions.md#lnk-d-0933) | decision | LNK-M-0092, the acceptance test's four answers |
+| [LNK-D-0934](decisions.md#lnk-d-0934) | decision | LNK-M-0092, the acceptance test's own amendment |
+| [LNK-D-0935](decisions.md#lnk-d-0935) | decision | LNK-M-0092, the release arrives and the fixture becomes it |
+| [LNK-D-0936](decisions.md#lnk-d-0936) | decision | LNK-M-0092 reopened: the digest was a property of this machine |
+| [LNK-D-0937](decisions.md#lnk-d-0937) | decision | LNK-M-0093, the last inch: an add-on asks, an operator agrees |
+| [LNK-D-0938](decisions.md#lnk-d-0938) | decision | LNK-M-0093 reopened: two greens that measured this machine |
+| [LNK-D-0939](decisions.md#lnk-d-0939) | decision | LNK-M-0094, the pre-release adversarial review: what it checked, what it found, and what it refuted |
+| [LNK-D-0940](decisions.md#lnk-d-0940) | decision | LNK-M-0094's triage: the owner's five answers |
+| [LNK-D-0941](decisions.md#lnk-d-0941) | decision | The UI copy review's changes, approved and applied |
+| [LNK-D-0942](decisions.md#lnk-d-0942) | decision | LNK-M-0095's two opening answers: the published example, and how 111 rows get reviewed |
+| [LNK-D-0943](decisions.md#lnk-d-0943) | decision | LNK-M-0095's triage: the tiers, and the eleven answers |
+| [LNK-D-0944](decisions.md#lnk-d-0944) | decision | LNK-M-0095's fix shapes: ten answers, and the picks taken without asking |
+| [LNK-D-0945](decisions.md#lnk-d-0945) | decision | LNK-M-0095's documentation batch: what three append-only entries now get wrong |
+| [LNK-D-0946](decisions.md#lnk-d-0946) | decision | LNK-M-0095's documentation pass: the fold, the 1.0 gate, and a cost that did not move |
+| [LNK-D-0947](decisions.md#lnk-d-0947) | decision | PR #11's code review: fifteen findings, and the four that changed a rule rather than a line |
+| [LNK-D-0948](decisions.md#lnk-d-0948) | decision | the OIDC fixture moves to the release LNK-M-0095 owed another repository |
+| [LNK-D-0949](decisions.md#lnk-d-0949) | decision | the release date the records carried was the date of a tag that published nothing |
+| [LNK-D-0950](decisions.md#lnk-d-0950) | decision | W48 approved: this repository's records move to Mustur, and the rules that filed into them file into Mustur |
+| [LNK-D-0951](decisions.md#lnk-d-0951) | decision | An All Workspaces view is a candidate for the next phase, beside moving links between workspaces |
+| [LNK-D-0952](decisions.md#lnk-d-0952) | decision | W48 keeps the fourteen inherited rules and the milestone template in the tree, as milestone-rules.md |
+| [LNK-D-0953](decisions.md#lnk-d-0953) | decision | PR 14's three subject-less review-fix commits stay as pushed; no history rewrite |
+| [LNK-D-0954](decisions.md#lnk-d-0954) | decision | W48's three review-fix commits keep the subjects they were pushed with |
+| [LNK-F-0001](findings.md#lnk-f-0001) | finding | Release-notes extraction sweeps up the changelog's link-reference block |
+| [LNK-F-0002](findings.md#lnk-f-0002) | finding | A stalled Redis stretches a link edit to about nine seconds |
+| [LNK-F-0003](findings.md#lnk-f-0003) | finding | Dark mode has no effect on the UI: the light tokens are unlayered and beat every dark rule |
+| [LNK-F-0004](findings.md#lnk-f-0004) | finding | The theme control sits in the page footer, where nobody looks for it |
+| [LNK-F-0005](findings.md#lnk-f-0005) | finding | Two shipped documents still say the audit log has no behaviour |
+| [LNK-F-0006](findings.md#lnk-f-0006) | finding | Account and sign-out sit loose in the header instead of under the name they belong to |
+| [LNK-F-0007](findings.md#lnk-f-0007) | finding | Notifications are a nav link with a badge, where the convention is a bell that previews |
+| [LNK-F-0008](findings.md#lnk-f-0008) | finding | The rate limiter's comment blames a stalled Redis on connection establishment, which measurement contradicts |
+| [LNK-F-0009](findings.md#lnk-f-0009) | finding | An uncached redirect pays `REDIS_READ_TIMEOUT` twice while Redis is stalled, not once |
+| [LNK-F-0010](findings.md#lnk-f-0010) | finding | `docs/usage.md` lists the never-grantable scopes and leaves out `audit.read` |
+| [LNK-F-0011](findings.md#lnk-f-0011) | finding | `TestInvalidationReachesAnotherReplica` is flaky |
+| [LNK-F-0012](findings.md#lnk-f-0012) | finding | D18's text does not describe the map it governs, in two ways: applied literally its two limbs would make an irreversible permission delegable, and its *"either direction"* sentence promises a disarmi… |
+| [LNK-F-0013](findings.md#lnk-f-0013) | finding | Registration answers whether an address already has an account, which on an open instance is a public enumeration oracle |
+| [LNK-F-0014](findings.md#lnk-f-0014) | finding | Anyone who can create a link can now write audit rows at will, because every refused destination is recorded |
+| [LNK-F-0015](findings.md#lnk-f-0015) | finding | Every organization owner on an instance can read every dispute filed on it, and lift a blocklist entry for everybody |
+| [LNK-F-0016](findings.md#lnk-f-0016) | finding | Most dashboard pages are counted as redirects in the HTTP metrics, because the surface classifier's prefix list stopped being updated after Phase 1 |
+| [LNK-F-0017](findings.md#lnk-f-0017) | finding | `docs/SECURITY.md`'s paragraph on what the audit log records is wrong in both directions — it under-reports what is recorded, over-promises what is coming, and contradicts itself |
+| [LNK-F-0018](findings.md#lnk-f-0018) | finding | The audit action vocabulary is split across two packages, so anything enumerating it from `internal/audit` silently misses two actions |
+| [LNK-F-0019](findings.md#lnk-f-0019) | finding | "May an invitation create an account" is derived independently in two places, and only one of them is the enforcement |
+| [LNK-F-0020](findings.md#lnk-f-0020) | finding | `/workspaces` and `/members` return 500 on a plain GET once an organization has more than one workspace |
+| [LNK-F-0021](findings.md#lnk-f-0021) | finding | Picking a workspace in the header dropdown does nothing until **Switch** is pressed, and any navigation silently discards the choice |
+| [LNK-F-0022](findings.md#lnk-f-0022) | finding | Switching workspace from a link detail page lands on a 404 |
+| [LNK-F-0023](findings.md#lnk-f-0023) | finding | Aliases are global across workspaces, so the create form leaks the existence of another workspace's aliases |
+| [LNK-F-0024](findings.md#lnk-f-0024) | finding | The dashboard shows two different numbers for the same link's clicks, side by side |
+| [LNK-F-0025](findings.md#lnk-f-0025) | finding | `ResolveWorkspaceForUser` does not check the organization's `deleted_at` while `ListWorkspacesForUser` does |
+| [LNK-F-0026](findings.md#lnk-f-0026) | finding | A trailing dot on the hostname defeats the unappealable tier **and** the embedded high-confidence list — `http://169.254.169.254./`, `http://127.0.0.1./`, `http://localhost./` and `http://metadata.go… |
+| [LNK-F-0027](findings.md#lnk-f-0027) | finding | LNK-M-0027's workspace-scoped memberships confer **organization-wide** authority: a workspace-scoped admin can grant themselves into any workspace, re-role and remove org-wide members, issue org-wide invita… |
+| [LNK-F-0028](findings.md#lnk-f-0028) | finding | Deleting a workspace or an organization cascades away **trashed** links without writing their aliases to `reserved_aliases`, so a trafficked alias returns to the namespace for anyone on the instance … |
+| [LNK-F-0029](findings.md#lnk-f-0029) | finding | An API key holding `members.write` can mint a full interactive account, reaching every scope `NonDelegableScopes` exists to keep off keys — and the resulting account survives revoking the key |
+| [LNK-F-0030](findings.md#lnk-f-0030) | finding | The invalidation subscriber never detects a Redis that holds the connection open and stops answering: it blocks in `ReceiveMessage` with no deadline, never reconnects, never flushes, and `establish`'… |
+| [LNK-F-0031](findings.md#lnk-f-0031) | finding | A workspace-scoped admin reads the **entire organization's** audit log, including workspaces where they hold no membership at all |
+| [LNK-F-0032](findings.md#lnk-f-0032) | finding | Invitation and email-verification tokens are stored **in clear** in `mail_outbox.body`, so a read of the database yields redeemable credentials |
+| [LNK-F-0033](findings.md#lnk-f-0033) | finding | A dispute stores the host that was **typed**, not the blocklist row that refused it, so the one-open-dispute-per-host bound is defeated by any subdomain — the queue shows the owner one host while **A… |
+| [LNK-F-0034](findings.md#lnk-f-0034) | finding | The full `FEED_URL` — which the tree elsewhere assumes carries an API key in its query string — is written to the application log at WARN on every transport-level feed failure |
+| [LNK-F-0035](findings.md#lnk-f-0035) | finding | The feed disclosure strips a credential from the query string but not from the URL's userinfo, so `https://key:secret@feed.example/` is rendered verbatim to **every signed-in user** |
+| [LNK-F-0036](findings.md#lnk-f-0036) | finding | An instance-wide administrative act is recorded in exactly one tenant's audit log and is invisible to every tenant it changed |
+| [LNK-F-0037](findings.md#lnk-f-0037) | finding | `README.md` still says Phase 1 / 0.1.0 and instructs the reader to pin the tag, on the same page that lists twelve Phase 2 milestones' features in the present tense; `Plan.md` says Phase 2 is unstart… |
+| [LNK-F-0038](findings.md#lnk-f-0038) | finding | Three operator-facing documents state that all rate limits are per instance, which LNK-M-0019 made false for the credential and API limits — and `docs/configuration.md` contradicts itself 37 lines apart |
+| [LNK-F-0039](findings.md#lnk-f-0039) | finding | `TestNoPageDataStructShadowsTheShell` never inspects **embedded** fields, so the exact F20 defect can be reintroduced by an ordinary refactor while the guard reports green |
+| [LNK-F-0040](findings.md#lnk-f-0040) | finding | LNK-M-0020's theme-token guard scans one embed, and the rule it enforces reaches further: it cannot see `funcs.go` — the one file `input.css` explicitly names as a class source — nor the six hand-written … |
+| [LNK-F-0041](findings.md#lnk-f-0041) | finding | `CacheKeyVersion` was not bumped when LNK-M-0034 added bot-policy fields, so a snapshot written by a pre-LNK-M-0034 binary reads as "do not block" for up to `REDIRECT_TTL` |
+| [LNK-F-0042](findings.md#lnk-f-0042) | finding | `Dispute.Liftable` conflates "a blocklist row caused this" with "an allow can succeed", so the review queue draws an **Allow** button on exactly the disputes the code already knows will 409 |
+| [LNK-F-0043](findings.md#lnk-f-0043) | finding | An API key whose owner lost their membership still authenticates, still carries that organization's tenancy, and reaches one state-changing endpoint outside its own scopes |
+| [LNK-F-0044](findings.md#lnk-f-0044) | finding | No account deletion or GDPR erasure exists anywhere, while the schema and four other sites describe both as behaviour that exists — and two tables holding email addresses have no deletion path of any… |
+| [LNK-F-0045](findings.md#lnk-f-0045) | finding | Twelve documentation and comment enumerations have drifted from the code they describe, each in a list that presents itself as complete — thirteen with the one LNK-M-0051 added |
+| [LNK-F-0046](findings.md#lnk-f-0046) | finding | In the dark theme, white text on the two `*-hover` surface tokens fails WCAG AA — `accent-hover` 4.47:1 and `danger-hover` 3.67:1 — and neither pair is in the recorded contrast figures for either the… |
+| [LNK-F-0047](findings.md#lnk-f-0047) | finding | For an account that belongs to nothing, the notification bell's **View all** link is a dead end — `/notifications` sits behind `RequireOrganization` and 303s straight back |
+| [LNK-F-0048](findings.md#lnk-f-0048) | finding | The root-redirect cache refills on the **application** pool with no timeout and no singleflight, from a mux to which no `RequestTimeout` is applied |
+| [LNK-F-0049](findings.md#lnk-f-0049) | finding | The audit-growth warning mails and notifies the owners of **every organization on the instance** with the shared `audit_logs` size, repeating weekly, to people who cannot act on it |
+| [LNK-F-0050](findings.md#lnk-f-0050) | finding | With bot blocking on, a blocked bot writes a click event for **expired and archived** links, which recorded nothing before LNK-M-0034 |
+| [LNK-F-0051](findings.md#lnk-f-0051) | finding | `invite.Redeem` verifies a password with no per-account lockout and no failed-login record |
+| [LNK-F-0052](findings.md#lnk-f-0052) | finding | Clearing `SMTP_HOST` on an instance that had one strands every queued message forever: the drain and the purge are gated on the same nil mailer |
+| [LNK-F-0053](findings.md#lnk-f-0053) | finding | An address that passes `auth.ValidateEmail` but fails `net/mail.ParseAddress` commits a `pending_registrations` row and then answers HTTP 500 — a status the spec does not declare |
+| [LNK-F-0054](findings.md#lnk-f-0054) | finding | The invitation email tells every recipient *"If you do not have an account yet, that form creates one"* — false on a `closed` instance, and the one surface in the flow that cannot derive the answer |
+| [LNK-F-0055](findings.md#lnk-f-0055) | finding | `internal/analytics/visitor.go` carries a dead duplicate of `AnonymizeIP`, statement-for-statement identical to the live `auth` copy, with its own near-duplicate test |
+| [LNK-F-0056](findings.md#lnk-f-0056) | finding | `NonDelegableScopes` is enforced only at mint time, so adding an already-granted permission to it would not disarm keys already issued — and D18 says otherwise |
+| [LNK-F-0057](findings.md#lnk-f-0057) | finding | The shared rate limiter writes the client's full IPv4 address into a Redis key, and nothing tells an operator pointing at a managed Redis that they are now storing addresses |
+| [LNK-F-0058](findings.md#lnk-f-0058) | finding | `SeedBlocklist` accepts malformed `LINKCTRL_DESTINATION_BLOCKLIST` entries silently, inserting rows that can never match |
+| [LNK-F-0059](findings.md#lnk-f-0059) | finding | Two narrow privacy truncation gaps: `/48` preserves the entire client IPv4 for 6to4 addresses, and the in-memory salt cache retains salts past the database deletion described as the de-identification… |
+| [LNK-F-0060](findings.md#lnk-f-0060) | finding | An API key holding `members.write` can promote an existing member to `admin` — F29's escalation through role assignment rather than through an invitation, and D43 bounds only the invitation door |
+| [LNK-F-0061](findings.md#lnk-f-0061) | finding | The API-keys claim in `docs/SECURITY.md` enumerates four of the five never-delegable scopes, reading as exhaustive |
+| [LNK-F-0062](findings.md#lnk-f-0062) | finding | The invite form's role list mirrors D28's rank ceiling and not D43's cap, so a caller authenticated with an API key is offered `owner` and `admin` and gets a `403` on submit |
+| [LNK-F-0063](findings.md#lnk-f-0063) | finding | `CreateWorkspace` gates on the identity's `workspace.write`, so a **workspace-scoped** admin adds workspaces to the whole organization — the one member-adjacent write LNK-M-0027's reopening left on the iden… |
+| [LNK-F-0064](findings.md#lnk-f-0064) | finding | `ServeMux`'s own path-cleaning redirect is the one response on the redirect tree that carries none of the tree's headers — no `nosniff`, no `X-Robots-Tag`, no `Cache-Control` — and it serves an HTML … |
+| [LNK-F-0065](findings.md#lnk-f-0065) | finding | `RedirectHandler.Logger` is dereferenced without a nil check on the redirect path's failure branches, so a handler constructed without one panics on the request it was trying to report |
+| [LNK-F-0066](findings.md#lnk-f-0066) | finding | LNK-M-0039's four decisions are in decisions.md and **absent from Plan.md's decision table**, which the phase-details README calls the place they are *"recorded in full"* |
+| [LNK-F-0067](findings.md#lnk-f-0067) | finding | The per-link rule ceiling and the one-kind-per-split rule are both **read outside the transaction that writes**, so two concurrent creates can pass a check neither would pass alone |
+| [LNK-F-0068](findings.md#lnk-f-0068) | finding | `demoReset` scopes three of its statements to one workspace and the rest to the organization, so an actor resolving anywhere else commits a half-reset that reports success — LNK-M-0041 removed the reachable… |
+| [LNK-F-0069](findings.md#lnk-f-0069) | finding | phase-details/README.md's inherited-rules table says `demoCoverage()`'s **"four trailing rows"** assert zero for milestones not yet built |
+| [LNK-F-0070](findings.md#lnk-f-0070) | finding | `domains.write` is a **role** permission, so on an instance with more than one organization every organization's owner and admin can administer the **instance-wide** default domain — its root redirec… |
+| [LNK-F-0071](findings.md#lnk-f-0071) | finding | `demoCoverage`'s idempotency assertion is **time-dependent**: today's clicks are generated at minute granularity and dropped when they land after the current instant, so two seeder runs seconds apart… |
+| [LNK-F-0072](findings.md#lnk-f-0072) | finding | `config.CanonicalHost` does not fold a **trailing dot** in the `Host` header, so `Host: lnk.example.com.` matches no configured hostname and gets the ops-only 404 — and since LNK-M-0045 the same spelling of… |
+| [LNK-F-0073](findings.md#lnk-f-0073) | finding | The verified-hostname cache has **no periodic reload**, so a replica that misses a pub/sub message serves a stale set until it restarts or hears another one |
+| [LNK-F-0074](findings.md#lnk-f-0074) | finding | `demoCoverage`'s idempotency assertion failed once with a **252-click** delta, which is two orders of magnitude larger than F71's recorded mechanism can produce |
+| [LNK-F-0075](findings.md#lnk-f-0075) | finding | Revoking an API key is scoped to the key's id and its **owner**, with no organization check, while listing keys is scoped to the owner *and* the organization — so the two disagree about which keys an… |
+| [LNK-F-0076](findings.md#lnk-f-0076) | finding | A domain verification can be made to verify a hostname the caller does not control — including the instance's **own** app or link host |
+| [LNK-F-0077](findings.md#lnk-f-0077) | finding | A host spelled with Unicode label separators or fullwidth characters walks past every destination tier, and is stored and served |
+| [LNK-F-0078](findings.md#lnk-f-0078) | finding | An exhausted one-time or max-click link serves its destination to `HEAD`, repeatably and forever |
+| [LNK-F-0079](findings.md#lnk-f-0079) | finding | Signed links are verified against the instance's default domain rather than the link's, so they are wholly broken on custom domains and a signature crosses between same-alias links |
+| [LNK-F-0080](findings.md#lnk-f-0080) | finding | `POST /links/{id}/sign` returns a signed URL on the wrong hostname, which may resolve another workspace's link |
+| [LNK-F-0081](findings.md#lnk-f-0081) | finding | On a `REDIRECT_DEFAULT_STATUS=307` instance, a correct link password is re-POSTed by the browser to the link's third-party destination |
+| [LNK-F-0082](findings.md#lnk-f-0082) | finding | One workspace's webhook backlog stalls every scheduled job on the instance — mail, automation, rollups and domain verification |
+| [LNK-F-0083](findings.md#lnk-f-0083) | finding | An automation rule past the hundredth by watermark is never evaluated, on any instance, permanently |
+| [LNK-F-0084](findings.md#lnk-f-0084) | finding | Custom-domain re-verification can be starved indefinitely by one tenant, which silently disables the only mechanism that takes a lapsed or hijacked hostname out of service |
+| [LNK-F-0085](findings.md#lnk-f-0085) | finding | LNK-M-0047's and LNK-M-0048's entire browser surface is unreachable — eleven registered routes answer 404 on every deployment shape |
+| [LNK-F-0086](findings.md#lnk-f-0086) | finding | Three documents promise that no destination leaves the instance without `LINKCTRL_FEED_URL`; since LNK-M-0047 any workspace member can send every destination to a host of their choosing |
+| [LNK-F-0087](findings.md#lnk-f-0087) | finding | A sequential split on a password-gated link advances the rotation twice per visit, so at any even arm count half the arms are served to nobody |
+| [LNK-F-0088](findings.md#lnk-f-0088) | finding | On a single-host deployment, a `Host` spelling that does not fold serves a customer's verified hostname the dashboard, the API and the default domain's aliases — and on a split-host deployment the sa… |
+| [LNK-F-0089](findings.md#lnk-f-0089) | finding | Bot blocking cannot be set on a custom domain at all, and the link page reads the default domain's policy for every link |
+| [LNK-F-0090](findings.md#lnk-f-0090) | finding | The webhook delivery queue is 40 rows a minute for the whole instance, strictly arrival-ordered, with no per-tenant bound |
+| [LNK-F-0091](findings.md#lnk-f-0091) | finding | Webhook deliveries can spend every attempt without a socket ever being opened, and the row is then re-claimed forever rather than abandoned |
+| [LNK-F-0092](findings.md#lnk-f-0092) | finding | Sign-in tells an unauthenticated caller whether an address has an account, on every instance including `closed` |
+| [LNK-F-0093](findings.md#lnk-f-0093) | finding | A workspace-scoped admin lists and revokes the organization's invitations, including an owner's invitation of a co-owner |
+| [LNK-F-0094](findings.md#lnk-f-0094) | finding | A workspace-scoped owner is notified about every other workspace in the organization, including hostnames and link aliases they hold no membership in |
+| [LNK-F-0095](findings.md#lnk-f-0095) | finding | Any link-creator can flood the instance-wide dispute queue and every organization owner's inbox, one character per host |
+| [LNK-F-0096](findings.md#lnk-f-0096) | finding | The redirect tree has no request deadline, so every database call LNK-M-0040 and LNK-M-0041 added to it is unbounded |
+| [LNK-F-0097](findings.md#lnk-f-0097) | finding | An API key whose owner has been removed from the organization still authenticates, still carries that organization's tenancy, reaches one state-changing endpoint outside its own scopes, and can renew… |
+| [LNK-F-0098](findings.md#lnk-f-0098) | finding | A cached redirect blocks on Redis for a returning-visitor rule, while two operator documents say a memory-answered redirect costs nothing |
+| [LNK-F-0099](findings.md#lnk-f-0099) | finding | The comment justifying which pool the gate service uses describes a property LNK-M-0041 removed |
+| [LNK-F-0100](findings.md#lnk-f-0100) | finding | `HEAD` advances a sequential split's durable rotation, re-phasing every subsequent visitor's arm with no click recorded |
+| [LNK-F-0101](findings.md#lnk-f-0101) | finding | One Redis call on the redirect path carries no deadline, falsifying the premise on which `MaxRetries` was left unpinned |
+| [LNK-F-0102](findings.md#lnk-f-0102) | finding | For the three Redis-shared limiters, the tracked-keys gauge is pinned at zero while the feature works, and the runbook's alert for a degraded shared limit has no expression that can fire |
+| [LNK-F-0103](findings.md#lnk-f-0103) | finding | `GET /api/v1/workspaces` answers an API key with every organization its owner belongs to |
+| [LNK-F-0104](findings.md#lnk-f-0104) | finding | The Permissions rule says nothing may branch on credential type outside two named mechanisms; seven sites do, every one of them correctly |
+| [LNK-F-0105](findings.md#lnk-f-0105) | finding | `notifications.workspace_id` is written on every LNK-M-0045 and LNK-M-0048 notification and read by nothing, while two comments state it produces a per-workspace inbox |
+| [LNK-F-0106](findings.md#lnk-f-0106) | finding | `DeleteOrganization` says the audit trail is all that survives; three rollup tables have no deleter anywhere |
+| [LNK-F-0107](findings.md#lnk-f-0107) | finding | The per-destination breakdown credits split-arm clicks to the link's own destination for up to fifteen minutes, and always reports zero visitors for that row |
+| [LNK-F-0108](findings.md#lnk-f-0108) | finding | Two concurrent folder moves can produce the cycle LNK-M-0043 says can never exist |
+| [LNK-F-0109](findings.md#lnk-f-0109) | finding | A recipient's email address reaches the process log unredacted, on the first bounce |
+| [LNK-F-0110](findings.md#lnk-f-0110) | finding | The audit read API stores, indexes, selects and scans a workspace id it never returns |
+| [LNK-F-0111](findings.md#lnk-f-0111) | finding | `docs/cli.md:83` tells operators to set `MIGRATE_ON_START=false`, which the loader never reads |
+| [LNK-F-0112](findings.md#lnk-f-0112) | finding | `docs/SECURITY.md` promises key minting and revocation will be audited by the milestone that owns them; the code has decided against it, and that milestone has shipped |
+| [LNK-F-0113](findings.md#lnk-f-0113) | finding | Nothing reaps an unverified hostname claim, so a registration holds a name instance-wide forever |
+| [LNK-F-0114](findings.md#lnk-f-0114) | finding | Filing a dispute answers whether an open dispute already exists for any host |
+| [LNK-F-0115](findings.md#lnk-f-0115) | finding | D54's per-alias password limiter has an availability cost nobody recorded, and a correct password spends a token |
+| [LNK-F-0116](findings.md#lnk-f-0116) | finding | With `forward_path` on, the deep-link remainder is visitor-controlled, unbounded to 1 MiB, and walked or copied several times per request |
+| [LNK-F-0117](findings.md#lnk-f-0117) | finding | `canAdminister`'s organization limb authorizes an organization-owned domain from the identity's permission union rather than the covering membership |
+| [LNK-F-0118](findings.md#lnk-f-0118) | finding | Teardown writes alias reservations that the same statement's cascade deletes, for links on an organization- or workspace-owned domain |
+| [LNK-F-0119](findings.md#lnk-f-0119) | finding | LNK-M-0037 is the only shipped Phase 2 milestone with a demo-visible feature and no `demoCoverage` row |
+| [LNK-F-0120](findings.md#lnk-f-0120) | finding | Both `Roles` functions filter on the identity's union rank, so a control offers a role the service then refuses — on the rank axis to a browser, and on the credential axis to an API key |
+| [LNK-F-0121](findings.md#lnk-f-0121) | finding | Six redirect-tree pages carry a second, hand-written palette that LNK-M-0020's scan cannot see |
+| [LNK-F-0122](findings.md#lnk-f-0122) | finding | Three code comments describe an organization-wide API key's reach as something the credential does not have |
+| [LNK-F-0123](findings.md#lnk-f-0123) | finding | The shared limiter's circuit breaker has no half-open state, so every concurrent request retries when the cooldown lapses |
+| [LNK-F-0124](findings.md#lnk-f-0124) | finding | The IPv6 rate-limit key is documented in the code as covering a case it does not |
+| [LNK-F-0125](findings.md#lnk-f-0125) | finding | `disputes.sql` documents a scoping guarantee its only caller defeats |
+| [LNK-F-0126](findings.md#lnk-f-0126) | finding | A migration comment states a salting mechanism the schema does not implement |
+| [LNK-F-0127](findings.md#lnk-f-0127) | finding | `CreateOrganization`'s zero-membership guard claims a serialization it does not have |
+| [LNK-F-0128](findings.md#lnk-f-0128) | finding | Three invitation-redemption outcomes spend twice the argon2 work of every other, against a claim stated three times |
+| [LNK-F-0129](findings.md#lnk-f-0129) | finding | `/tls-check` performs a database write with no deadline from any layer, on an unauthenticated route outside every application middleware |
+| [LNK-F-0130](findings.md#lnk-f-0130) | finding | The guard that closed F39 has nothing holding it in place — the fix's own branches execute against zero inputs |
+| [LNK-F-0131](findings.md#lnk-f-0131) | finding | `MarkDomainVerificationFailed` is still addressed by id alone, so a failed check can write its sentence and its watermark onto a row that was renamed while the lookup was in flight |
+| [LNK-F-0132](findings.md#lnk-f-0132) | finding | A destination stored by an earlier build keeps the spelling it was stored with, so a link created before the UTS-46 fold still holds and still serves a host that the tiers would now refuse |
+| [LNK-F-0133](findings.md#lnk-f-0133) | finding | The mail outbox has the defect F82 named for webhooks, on the same goroutine and one line earlier — a relay that accepts connections and never answers holds every scheduled job on the instance for `S… |
+| [LNK-F-0134](findings.md#lnk-f-0134) | finding | `docs/SECURITY.md`'s *Egress* row counts **two** outbound connections and says nothing else opens a socket outwards; webhooks are a third, and the count cannot be corrected without deciding what that… |
+| [LNK-F-0135](findings.md#lnk-f-0135) | finding | The `/feeds` disclosure page tells every signed-in user *"No destination leaves this instance"* on any instance with no feed configured, which a registered webhook makes false — and six more sites re… |
+| [LNK-F-0136](findings.md#lnk-f-0136) | finding | `internal/link` names the reputation feed *the only way a destination leaves*, in a test name and two comments, and `emitLink` in the same package hands every destination to the webhook queue |
+| [LNK-F-0137](findings.md#lnk-f-0137) | finding | A refusal with no blocklist row behind it is bounded only by the string that was typed, so one filer can still put an unbounded number of disputes in front of every organization owner on the instance… |
+| [LNK-F-0138](findings.md#lnk-f-0138) | finding | A context deadline handed to any Redis call in this tree is inert, because the client never enables the option that would make go-redis honour it |
+| [LNK-F-0139](findings.md#lnk-f-0139) | finding | The organization-wide key's reach is described without the qualifier F122 had corrected in `docs/cli.md`, at five more sites the row did not enumerate |
+| [LNK-F-0140](findings.md#lnk-f-0140) | finding | An instance whose principal loses their account has no in-product way to appoint another one, and the operator's only route is `psql` |
+| [LNK-F-0141](findings.md#lnk-f-0141) | finding | There is no account recovery in this product at all |
+| [LNK-F-0142](findings.md#lnk-f-0142) | finding | `test/integration/feed_test.go`'s `TestNoDestinationLeavesAnInstanceWithNoFeed` names the claim F135 corrected everywhere else, and it is named after m32.md's own first bullet, which says the same th… |
+| [LNK-F-0143](findings.md#lnk-f-0143) | finding | decisions.md's index no longer matches its file order, which its own header requires |
+| [LNK-F-0144](findings.md#lnk-f-0144) | finding | CI's integration job runs a strict subset of what `make test-integration` runs, so one integration test never runs on a runner at all |
+| [LNK-F-0145](findings.md#lnk-f-0145) | finding | API-key rotation is impossible for any key holding a non-delegable scope, and the unit test for the escape route is inverted so it passes on the bug |
+| [LNK-F-0146](findings.md#lnk-f-0146) | finding | The mail scrubber indexes a lowercased copy and slices the original with those offsets, so a case-shifting rune before the recipient leaks the address it exists to redact, or panics the process |
+| [LNK-F-0147](findings.md#lnk-f-0147) | finding | The automation watermark advances to the last capped subject's timestamp while the match queries resume strictly above it, so subjects tied on that timestamp past the 25-row cap are dropped from ever… |
+| [LNK-F-0148](findings.md#lnk-f-0148) | finding | HostCache.Refresh has a lost-wakeup race that strands the pending flag with no reload running, and its error path drops the invalidation outright |
+| [LNK-F-0149](findings.md#lnk-f-0149) | finding | CreateFolder checks both workspace caps against an unlocked snapshot, so concurrent create+create or create+move commit trees the caps forbid |
+| [LNK-F-0150](findings.md#lnk-f-0150) | finding | Refusal responses mark the visitor as returning, so a person whose only contact was a 404/410/403 is routed as a returning visitor on their first real visit |
+| [LNK-F-0151](findings.md#lnk-f-0151) | finding | Caller-supplied durations are multiplied into `time.Duration` unchecked at three sites, so huge values wrap instead of being refused — the contract says refused, the code silently defaults or issues … |
+| [LNK-F-0152](findings.md#lnk-f-0152) | finding | Chunked requests to the sign endpoint skip body decode entirely, so the requested TTL is ignored and the default is issued silently |
+| [LNK-F-0153](findings.md#lnk-f-0153) | finding | The fallback counter does not count breaker-open decisions, so during a Redis outage it moves at ~0.2/s regardless of volume and the operator's fallback-fraction arithmetic is wrong by orders of magn… |
+| [LNK-F-0154](findings.md#lnk-f-0154) | finding | `Stats()` omits the BlockedAudit limiter, so the one limiter guarding audit-table growth has no metrics series at all and the runbook's overflow alert cannot see it |
+| [LNK-F-0155](findings.md#lnk-f-0155) | finding | The runbook's shared-limit alert matches only login and api, omitting link_password whose fallback series is exported, and the metric-label documentation is one limiter stale |
+| [LNK-F-0156](findings.md#lnk-f-0156) | finding | The webhook-deliveries limit parameter is Atoi'd with the error discarded and truncated to int32 unchecked, under a nolint whose rationale the code does not provide |
+| [LNK-F-0157](findings.md#lnk-f-0157) | finding | All eight periodic jobs run inline in one select loop, so the dimension rollup's deliberate 15-minute timeout stalls mail, webhooks, automations and the verified-hostname reload behind it |
+| [LNK-F-0158](findings.md#lnk-f-0158) | finding | `isUniqueViolation` is defined six times with two semantics — dispute's copy matches only `*pgconn.PgError`, the other five any `SQLState()` — so a future fix lands in one copy and misses five |
+| [LNK-F-0159](findings.md#lnk-f-0159) | finding | The live ci.yml still opens with the PROPOSED header — the exact failure class the proposal mechanism forbids, already fixed once for release.yml |
+| [LNK-F-0160](findings.md#lnk-f-0160) | finding | The demo instance can never show the country breakdown or the choropleth |
+| [LNK-F-0161](findings.md#lnk-f-0161) | finding | The domains page can state, in one response, that a hostname is verified and that it is not |
+| [LNK-F-0162](findings.md#lnk-f-0162) | finding | The demo is guaranteed to lose its only verified custom hostname 24 hours after every reseed, and the coverage row that exists to prevent that will fail rather than catch it |
+| [LNK-F-0163](findings.md#lnk-f-0163) | finding | Granting somebody a role weaker than one they already hold reports success and changes nothing |
+| [LNK-F-0164](findings.md#lnk-f-0164) | finding | Every bar chart in this product labels its axis ceiling as the peak |
+| [LNK-F-0165](findings.md#lnk-f-0165) | finding | The dashboard's *Recent links* list shows five links with zero clicks on a demo seeded with 1.9 million of them, and no `demoCoverage()` row constrains it |
+| [LNK-F-0166](findings.md#lnk-f-0166) | finding | One link reports two different click totals on adjacent pages |
+| [LNK-F-0167](findings.md#lnk-f-0167) | finding | Every boolean on the link page's edit form is silently false in every unit test that renders it |
+| [LNK-F-0168](findings.md#lnk-f-0168) | finding | `make demo-update` fails permanently once the second workspace's links have landed in the wrong workspace, and the reset cannot recover it |
+| [LNK-F-0169](findings.md#lnk-f-0169) | finding | The demo's second workspace has never held a single link, so the one thing it exists to demonstrate — that the list, the tags and the analytics change when you switch — is not demonstrated |
+| [LNK-F-0170](findings.md#lnk-f-0170) | finding | A refused QR style posts the reader off the panel's own page and onto the link page |
+| [LNK-F-0171](findings.md#lnk-f-0171) | finding | Uploading a logo can make a code's PNG download stop working |
+| [LNK-F-0172](findings.md#lnk-f-0172) | finding | LNK-M-0053 claims an enforcement it does not have |
+| [LNK-F-0173](findings.md#lnk-f-0173) | finding | A configured but unreachable SMTP relay blocks the whole server from starting, for the full SMTP timeout, at every boot |
+| [LNK-F-0174](findings.md#lnk-f-0174) | finding | Every QR code the demo instance carries is on a link that is expired, so scanning any of them answers `410 Gone` |
+| [LNK-F-0175](findings.md#lnk-f-0175) | finding | The mailer-free `/forgot` page promises the mail it is about to refuse |
+| [LNK-F-0176](findings.md#lnk-f-0176) | finding | Two decisions are in the log and not in the table that says it holds every one of them |
+| [LNK-F-0177](findings.md#lnk-f-0177) | finding | Erasure scrubs the actor snapshot and not an address carried in an audit record's `metadata` |
+| [LNK-F-0178](findings.md#lnk-f-0178) | finding | An owner cannot see that an organization was cut out of their account-wide key's reach |
+| [LNK-F-0179](findings.md#lnk-f-0179) | finding | decisions.md's index is out of file order at five rows, which its own header forbids in four words: *Newest last, matching the file* |
+| [LNK-F-0180](findings.md#lnk-f-0180) | finding | Two leaders of the domains family record one custom-domain verification twice |
+| [LNK-F-0181](findings.md#lnk-f-0181) | finding | A deleted *and erased* account's address is still on the screen |
+| [LNK-F-0182](findings.md#lnk-f-0182) | finding | Both forms that hand out authority default to the most privileged role the actor can assign |
+| [LNK-F-0183](findings.md#lnk-f-0183) | finding | Cutting an organization out of an account-wide key's reach stops it acting there and not reading about it |
+| [LNK-F-0184](findings.md#lnk-f-0184) | finding | `/account/mfa` scrolls sideways on a phone |
+| [LNK-F-0185](findings.md#lnk-f-0185) | finding | The manual *Verify* button has F180's defect at the second of the two sites, twelve lines from the one LNK-M-0075 fixed |
+| [LNK-F-0186](findings.md#lnk-f-0186) | finding | `TestDemoSeederShowsEveryFeatureItClaimsTo`'s LNK-M-0067 row reported zero erased actors in a run where the seeder reported erasing one, and has not done it since |
+| [LNK-F-0187](findings.md#lnk-f-0187) | finding | A self-filed, self-decided dispute keeps one of its two labels through erasure |
+| [LNK-F-0188](findings.md#lnk-f-0188) | finding | An erased account's address survives in the notification sent to whoever invited them |
+| [LNK-F-0189](findings.md#lnk-f-0189) | finding | `instance.principal_moved` carries a second address-bearing key that the erasure scrub does not reach |
+| [LNK-F-0190](findings.md#lnk-f-0190) | finding | The QR size control fits against the level stored on the row, not the level the renderer will actually draw at |
+| [LNK-F-0191](findings.md#lnk-f-0191) | finding | Two `internal/ui` QR fixtures state no width at all, so the panel's wrapper is not exercised by the overflow scan that F184 just taught to see fixed-width SVGs |
+| [LNK-F-0192](findings.md#lnk-f-0192) | finding | The `link_detail` fixture is unfaithful to production in two more ways than F167 named |
+| [LNK-F-0193](findings.md#lnk-f-0193) | finding | Three rows in the *Closed* table carry a surplus cell, so the `Closed by` prose of each is dropped by every markdown renderer that reads the header row for the column count |
+| [LNK-F-0194](findings.md#lnk-f-0194) | finding | Inserting a comment line invalidates the `file:line` citations that shipped milestone files use to prove their own claims, and nothing sees it |
+| [LNK-F-0195](findings.md#lnk-f-0195) | finding | F160's suppression is per link and per window, and the sentence it shows is worded as a fact about the instance |
+| [LNK-F-0196](findings.md#lnk-f-0196) | finding | The release-notes extraction explains itself with a false premise, and the premise is which of its two exits matters |
+| [LNK-F-0197](findings.md#lnk-f-0197) | finding | D65's cell contradicts itself after this milestone narrowed it, and the milestone's own audit says the cell was never touched |
+| [LNK-F-0198](findings.md#lnk-f-0198) | finding | The table-column gate this milestone added misses the strictly larger malformation, and nothing automated runs it |
+| [LNK-F-0199](findings.md#lnk-f-0199) | finding | The half of `TestTheReFitOnlyMovesTheSizeItHasTo` its own comment calls load-bearing never executes |
+| [LNK-F-0200](findings.md#lnk-f-0200) | finding | Two `internal/ui` QR fixtures claim to carry the attributes `qr.Render` emits and omit the class it always emits |
+| [LNK-F-0201](findings.md#lnk-f-0201) | finding | The team and invitation fixtures still pass `Form` as a `map[string]string` where the handlers pass a struct |
+| [LNK-F-0202](findings.md#lnk-f-0202) | finding | `m54.md` is the one shipped milestone file this work materially changed and did not annotate |
+| [LNK-F-0203](findings.md#lnk-f-0203) | finding | Sixty-six cross-references written as `F<n>` pointing at the `#open` anchor now point at findings that are in the *Closed* table |
+| [LNK-F-0204](findings.md#lnk-f-0204) | finding | The shell names the current workspace beside the switcher rather than in it |
+| [LNK-F-0205](findings.md#lnk-f-0205) | finding | LNK-M-0056 reordered the link page's sections and left it a vertical stack of eight sections, so the complaint it discharges is moved rather than answered |
+| [LNK-F-0206](findings.md#lnk-f-0206) | finding | htmx violates the Content-Security-Policy on every page load, in every browser, and the refusal is silent outside a console |
+| [LNK-F-0207](findings.md#lnk-f-0207) | finding | Two `ui_test.go` analytics fixtures set `GeoBase`/`GeoList` without the `tab=analytics` parameter `fillLinkAnalytics` now always emits |
+| [LNK-F-0208](findings.md#lnk-f-0208) | finding | A one-field edit requires scrolling the whole edit form to reach the single Save button at the bottom |
+| [LNK-F-0209](findings.md#lnk-f-0209) | finding | The workspace switcher's opened state is the native select popup, which nothing in the product can govern — and the owner named four symptoms on sight |
+| [LNK-F-0210](findings.md#lnk-f-0210) | finding | Two horizontal grey bands render across the whole world map |
+| [LNK-F-0211](findings.md#lnk-f-0211) | finding | The Edit tab's protections badge counts enabled booleans and the owner judges that not worth a badge |
+| [LNK-F-0212](findings.md#lnk-f-0212) | finding | With the tab layout the QR popup panel is redundant |
+| [LNK-F-0213](findings.md#lnk-f-0213) | finding | Three QR-tab symptoms on LNK-M-0059's surface |
+| [LNK-F-0214](findings.md#lnk-f-0214) | finding | Three upload-flow symptoms on LNK-M-0061's surface |
+| [LNK-F-0215](findings.md#lnk-f-0215) | finding | The logo drawn into the code is smaller than the owner wants |
+| [LNK-F-0216](findings.md#lnk-f-0216) | finding | `ui.QRThumbClass`'s utilities reach the stylesheet by coincidence, and the same trap catches any class Go hands to `internal/qr` |
+| [LNK-F-0217](findings.md#lnk-f-0217) | finding | When the QR read fails, the panel states a size of zero as if it were one |
+| [LNK-F-0218](findings.md#lnk-f-0218) | finding | An `hx-post` control whose handler answers a 4xx does nothing visible at all |
+| [LNK-F-0219](findings.md#lnk-f-0219) | finding | The logo migration states a worst-case row size 10,400 bytes below the bound the code actually enforces |
+| [LNK-F-0220](findings.md#lnk-f-0220) | finding | `Taskfile.yml` no longer mirrors the Makefile, and the file says so about itself twice |
+| [LNK-F-0221](findings.md#lnk-f-0221) | finding | Two symptoms on the size control |
+| [LNK-F-0222](findings.md#lnk-f-0222) | finding | The default code cannot be removed, and one control ignores which code is selected |
+| [LNK-F-0223](findings.md#lnk-f-0223) | finding | A logo pins the code to level H permanently |
+| [LNK-F-0224](findings.md#lnk-f-0224) | finding | The QR tab carries controls and prose that do not earn their place |
+| [LNK-F-0225](findings.md#lnk-f-0225) | finding | Creating a second code copies the default's stored size onto a longer payload, so the new code draws at a size nobody set |
+| [LNK-F-0226](findings.md#lnk-f-0226) | finding | F225's defect moved onto the default code, and the measurement in that row no longer describes it |
+| [LNK-F-0227](findings.md#lnk-f-0227) | finding | Three narrow gaps around the code that materialises a link's default, all in LNK-M-0060's reopening's own new code |
+| [LNK-F-0228](findings.md#lnk-f-0228) | finding | Renaming a link is the other payload change, and no code's stored size is re-fitted for it |
+| [LNK-F-0229](findings.md#lnk-f-0229) | finding | Deleting the preview paragraph left a `links.read` viewer with no size on the page at all |
+| [LNK-F-0230](findings.md#lnk-f-0230) | finding | The sentence that tells a reader their size was raised is asserted by nothing |
+| [LNK-F-0231](findings.md#lnk-f-0231) | finding | The demo seeder names an error-correction level, so the one styled code on the demo carries a floor nothing on the instance else does |
+| [LNK-F-0232](findings.md#lnk-f-0232) | finding | A code whose style names level `L` now draws larger than the size stored on it |
+| [LNK-F-0233](findings.md#lnk-f-0233) | finding | `make verify-scan`'s control half no longer covers four levels, and two decisions say it does |
+| [LNK-F-0234](findings.md#lnk-f-0234) | finding | `Restore defaults` on a code carrying a logo writes a row that does not say `H` |
+| [LNK-F-0235](findings.md#lnk-f-0235) | finding | Three `linkQRView` fields are written on every QR render and read by no template |
+| [LNK-F-0236](findings.md#lnk-f-0236) | finding | Text in a code's row can no longer be selected with the mouse, including the printed slug |
+| [LNK-F-0237](findings.md#lnk-f-0237) | finding | The "no popup here" assertions see only one spelling of a popover |
+| [LNK-F-0238](findings.md#lnk-f-0238) | finding | The QR tab's third report: ten items, and three of them reverse a choice this repository argued for in writing |
+| [LNK-F-0239](findings.md#lnk-f-0239) | finding | The QR tab advises keeping two colours apart and nothing checks whether they are |
+| [LNK-F-0240](findings.md#lnk-f-0240) | finding | A typed size outside the range is refused only while the slider has not been dragged |
+| [LNK-F-0241](findings.md#lnk-f-0241) | finding | The tab's own tooltips announce their control's name a second time, and their hosts are unnamed generic elements to a keyboard |
+| [LNK-F-0242](findings.md#lnk-f-0242) | finding | `make verify-ui` has two sign-ins of headroom left against `LOGIN_RATE_PER_MIN`, and nothing in the suite knows it |
+| [LNK-F-0243](findings.md#lnk-f-0243) | finding | The list sorts by the name a reader gave, and draws one they did not |
+| [LNK-F-0244](findings.md#lnk-f-0244) | finding | The QR tab's fourth report: seven items, and the first of them is a claim LNK-M-0064 just made |
+| [LNK-F-0245](findings.md#lnk-f-0245) | finding | Four fields on the QR view are filled on every render and read by no template — and their doc comments described a panel that stated them |
+| [LNK-F-0246](findings.md#lnk-f-0246) | finding | The QR tab's fifth report: four items, and the first says the reopening that just landed for it did not hold |
+| [LNK-F-0247](findings.md#lnk-f-0247) | finding | The first write after a page load returns the reader to their offset and shows them different content there, because the notice that write renders grows the page above the card |
+| [LNK-F-0248](findings.md#lnk-f-0248) | finding | `make check-links` proves an anchor exists, not that the row a sentence points at is in the table it names |
+| [LNK-F-0249](findings.md#lnk-f-0249) | finding | The QR thumbnail beside the link's heading silently returns the tab to the default code |
+| [LNK-F-0250](findings.md#lnk-f-0250) | finding | Every code selection now stores a scroll offset, and a selection whose swap never arrives leaves it behind for an unrelated later load |
+| [LNK-F-0251](findings.md#lnk-f-0251) | finding | The 0.3.0 release notes will omit every change made after 2026-08-10 — which is the whole dashboard redesign — while the tag contains all of it |
+| [LNK-F-0252](findings.md#lnk-f-0252) | finding | The browser suite's README states each spec's case count so drift fails arithmetic, and nothing checks the arithmetic |
+| [LNK-F-0253](findings.md#lnk-f-0253) | finding | Run the way `docs/releasing.md` offers it, `release-check` silently skips the integration tests |
+| [LNK-F-0254](findings.md#lnk-f-0254) | finding | The per-commit gate requires `[Unreleased]` to be filled and the release gate requires it to be empty, and neither document names the other |
+| [LNK-F-0255](findings.md#lnk-f-0255) | finding | CI was red for nine days and no gate anywhere asks whether it is green |
+| [LNK-F-0256](findings.md#lnk-f-0256) | finding | The single-instance conformance check breaks its readiness wait on Postgres's *temporary* server, then confirms against the gap that follows it |
+| [LNK-F-0257](findings.md#lnk-f-0257) | finding | The container image is private, so the quick start in `README.md` does not work for anybody who is not signed in to GitHub — and it has been that way since 0.2.0 |
+| [LNK-F-0258](findings.md#lnk-f-0258) | finding | Plan.md's data-model section claims 33 tables; the migrations create 43 |
+| [LNK-F-0259](findings.md#lnk-f-0259) | finding | The Taskfile mirror's `check` skips the link gate, so a contributor without `make` runs a weaker gate under the same name |
+| [LNK-F-0260](findings.md#lnk-f-0260) | finding | `test/integration`'s last-resort DSN points at the *demo* instance's Postgres port, so a by-hand run creates and drops a template database on the stack that must not be touched |
+| [LNK-F-0261](findings.md#lnk-f-0261) | finding | The pre-tag gate's integration step runs a narrower suite than `make test-integration`, and the part it drops is the one that asserts the demo shows the features |
+| [LNK-F-0262](findings.md#lnk-f-0262) | finding | The CI `image` job now needs a Go toolchain it never installs |
+| [LNK-F-0263](findings.md#lnk-f-0263) | finding | `addon.Host` has no synchronization, and two of its three methods are exported for milestones that will call them from request paths |
+| [LNK-F-0264](findings.md#lnk-f-0264) | finding | `internal/addon`'s test helper reads the fixture it may be concurrently building, outside the lock that serializes the build |
+| [LNK-F-0265](findings.md#lnk-f-0265) | finding | A symlinked add-on directory is silently not an add-on, and the operator sentence does not cover the case |
+| [LNK-F-0266](findings.md#lnk-f-0266) | finding | The two fixture builders disagree about when a WASM module is stale, so `make test` can run against a module `task test` would have rebuilt |
+| [LNK-F-0267](findings.md#lnk-f-0267) | finding | A `degrade` add-on whose initialization never returns hangs the boot forever, and no milestone owns a load-time deadline |
+| [LNK-F-0268](findings.md#lnk-f-0268) | finding | `config_get` publishes a distinction the manifest format cannot carry: "declared with an empty default" and "declared no default" are the same value |
+| [LNK-F-0269](findings.md#lnk-f-0269) | finding | The `//go:wasmimport` half of the SDK is analysed by nothing, and the comment beside it says the opposite |
+| [LNK-F-0270](findings.md#lnk-f-0270) | finding | Two capabilities this phase's own milestone files cite the ABI for are not in it, and one of them cites the ABI's *absence* as its proof |
+| [LNK-F-0271](findings.md#lnk-f-0271) | finding | The SDK is the third generated artifact and only one of three gates knows it exists |
+| [LNK-F-0272](findings.md#lnk-f-0272) | finding | The deprecation machinery the policy promises is reached by no test, and its first use is the release that needs it |
+| [LNK-F-0273](findings.md#lnk-f-0273) | finding | Two bounds this product documents as numbers are pinned by no test, and the precedent for that is what put them there |
+| [LNK-F-0274](findings.md#lnk-f-0274) | finding | A migration that never returns hangs the boot *and* makes every other replica wait, and it is the one piece of an add-on's own code that nothing bounds |
+| [LNK-F-0275](findings.md#lnk-f-0275) | finding | LNK-M-0082 added three more documented figures with no binding test, which is F273's pattern rather than a new one |
+| [LNK-F-0276](findings.md#lnk-f-0276) | finding | `AddonMaxResultBytes` does not bound the host's heap, and its comment said it did |
+| [LNK-F-0277](findings.md#lnk-f-0277) | finding | `EnsureAddonSchema` is not serialized across replicas, unlike the migrations it precedes |
+| [LNK-F-0278](findings.md#lnk-f-0278) | finding | The connection budget guard does not see add-on pools, and both operator documents tell you to plan against a total the add-ons are not in |
+| [LNK-F-0279](findings.md#lnk-f-0279) | finding | A `WITH HOLD` cursor holds a temporary file for the life of a pooled connection, and it is an object in no catalogue, so the confinement's shape cannot see it |
+| [LNK-F-0280](findings.md#lnk-f-0280) | finding | The confined role can rewrite its own password, so the credential is not only the host's and outlives the process |
+| [LNK-F-0281](findings.md#lnk-f-0281) | finding | An add-on that is installed but did not load is reported as an orphan, and every operator-facing sentence calls an orphan uninstalled |
+| [LNK-F-0282](findings.md#lnk-f-0282) | finding | `LINKCTRL_MIGRATE_ON_START=false` does not reach an add-on's DDL, so the change-controlled deployment shape and the storage capability are only partly compatible |
+| [LNK-F-0283](findings.md#lnk-f-0283) | finding | `template_render` is declared, is backed by LNK-M-0083, and LNK-M-0083 implemented rendering without it — so the ABI's published table describes a function this milestone was supposed to bring to life and did not |
+| [LNK-F-0284](findings.md#lnk-f-0284) | finding | Cross-site unsafe methods to an add-on's routes are 403, and it is not conditional on credentials — so an OIDC `response_mode=form_post` callback is refused while a server-to-server webhook passes |
+| [LNK-F-0285](findings.md#lnk-f-0285) | finding | The log sanitizer passes 260 variation selectors, so a module that declared nothing carries a covert channel into the operator's log |
+| [LNK-F-0286](findings.md#lnk-f-0286) | finding | Duplicate and case-variant JSON keys defeat both the `schema_version` equality check and the permission declaration, so a manifest deceives every reader but the host |
+| [LNK-F-0287](findings.md#lnk-f-0287) | finding | Nothing bounds load-time instantiation, so a `degrade`-class add-on hangs boot forever instead of being skipped |
+| [LNK-F-0288](findings.md#lnk-f-0288) | finding | The per-database variant of a role GUC survives the load's reset, so a confined add-on parks memory settings that outlive every reboot |
+| [LNK-F-0289](findings.md#lnk-f-0289) | finding | An add-on holding only `routes.own_prefix` signs the visitor out, by volume rather than by naming |
+| [LNK-F-0290](findings.md#lnk-f-0290) | finding | Guest linear memory is unbounded, so the documented concurrency price is arithmetic over a term the add-on chooses |
+| [LNK-F-0291](findings.md#lnk-f-0291) | finding | The gate LNK-M-0078 built to close F248 reports present rows as missing and exits 1 on a clean tree |
+| [LNK-F-0292](findings.md#lnk-f-0292) | finding | Every add-on on every deployment draws the same 16 random bytes, and D260's per-request instance guarantees every visitor's nonce is identical rather than fresh |
+| [LNK-F-0293](findings.md#lnk-f-0293) | finding | "An add-on cannot store what it is never handed" is false once composed with `routes.own_prefix`, and it is written at six sites |
+| [LNK-F-0294](findings.md#lnk-f-0294) | finding | An add-on's storage and its log lines sit outside retention and subject erasure, and no document says so |
+| [LNK-F-0295](findings.md#lnk-f-0295) | finding | An add-on's schema spans every organization on the instance, and the published contract never says so in a sentence |
+| [LNK-F-0296](findings.md#lnk-f-0296) | finding | `set_cookie`'s element shape is documented nowhere, so a publisher cannot write a valid one from the published contract |
+| [LNK-F-0297](findings.md#lnk-f-0297) | finding | Three response refusals no document states, a `docs/SECURITY.md` sentence that says the host enforces *only* two things when it enforces five, and a 256 KiB constant no add-on can reach |
+| [LNK-F-0298](findings.md#lnk-f-0298) | finding | The ABI page's completeness argument is false, and `docs/SECURITY.md` states the same overclaim flatly |
+| [LNK-F-0299](findings.md#lnk-f-0299) | finding | `checkLocation`'s scheme-relative refusal is bypassed by a backslash, and the product already knows the trick elsewhere |
+| [LNK-F-0300](findings.md#lnk-f-0300) | finding | Add-on saturation is unobservable: a saturated host shows up only as 503s in a generic counter |
+| [LNK-F-0301](findings.md#lnk-f-0301) | finding | The record of which inherited rules Phase 4 collides with is wrong in both directions |
+| [LNK-F-0302](findings.md#lnk-f-0302) | finding | The doc-cost charge for `Plan.md` swings 68 KB on whether that file happens to be carrying an ordering table |
+| [LNK-F-0303](findings.md#lnk-f-0303) | finding | `TestSchemaSizeCountsEveryRelationWithStorage` fails in the full integration suite and passes in isolation, so `make test-integration` reports red on a tree the test agrees with |
+| [LNK-F-0304](findings.md#lnk-f-0304) | finding | Four other scripts run the shape F291 was reopened for, under `pipefail`, and nothing forbids it outside `check-links.sh` |
+| [LNK-F-0305](findings.md#lnk-f-0305) | finding | A module's `log` calls are bounded per line and not in number, so an add-on can flood an operator's log at whatever rate it likes |
+| [LNK-F-0306](findings.md#lnk-f-0306) | finding | Nothing bounds how long one statement in an add-on's migration runs, so an add-on can hold boot open with SQL rather than with wasm |
+| [LNK-F-0308](findings.md#lnk-f-0308) | finding | The boot's orphan-schema report is unreachable on an instance with no add-ons directory, which is the documented way to run none |
+| [LNK-F-0309](findings.md#lnk-f-0309) | finding | Installing an add-on adopts an operator's hand-made role of the same name, and on the shipped deployment nothing refuses it |
+| [LNK-F-0310](findings.md#lnk-f-0310) | finding | The residual class LNK-M-0081 conceded: characters that render as nothing, are not `Default_Ignorable_Code_Point`, and reach an operator's log as themselves |
+| [LNK-F-0311](findings.md#lnk-f-0311) | finding | The neutralizing-logger property is enforced against one construction spelling and one package |
+| [LNK-F-0312](findings.md#lnk-f-0312) | finding | A guest trap is logged twice and the second copy carries no length bound |
+| [LNK-F-0313](findings.md#lnk-f-0313) | finding | `neutralize` is not idempotent and carries no `logSafe` guard, on a path designed to attract new callers |
+| [LNK-F-0314](findings.md#lnk-f-0314) | finding | The join-vs-two-`%w` discrimination is by shape and nothing pins it |
+| [LNK-F-0315](findings.md#lnk-f-0315) | finding | A connected identity can be created and never removed: there is no surface for reviewing or disconnecting one, and no query that would |
+| [LNK-F-0316](findings.md#lnk-f-0316) | finding | A module that mints a session and then fails loses the cookie, and the session row it created survives with nobody holding it |
+| [LNK-F-0317](findings.md#lnk-f-0317) | finding | `TestTheUngatedFunctionsAreNamed` is one-directional in a way D304 names wrongly, and the direction that is actually open is a name in the list that is not a function at all |
+| [LNK-F-0318](findings.md#lnk-f-0318) | finding | The size of the permission vocabulary is stated in four documents and nothing counts it |
+| [LNK-F-0319](findings.md#lnk-f-0319) | finding | LNK-M-0083's documented-number sweep is blind to a stale number, which is the defect LNK-M-0085 fixed in its own sweep and did not generalise (D311, D312) |
+| [LNK-F-0320](findings.md#lnk-f-0320) | finding | Connecting an external identity writes a standing credential and leaves no audit record, while every other credential on this account is audited |
+| [LNK-F-0321](findings.md#lnk-f-0321) | finding | `docs/data-model.md`'s migration count is hand-maintained and has now been wrong twice |
+| [LNK-F-0322](findings.md#lnk-f-0322) | finding | The documented-number sweep reads a gitignored working file, so writing a note reddens the build |
+| [LNK-F-0323](findings.md#lnk-f-0323) | finding | A vetoed redirect is invisible to analytics, and the two refusal families now disagree about that for reasons neither states |
+| [LNK-F-0324](findings.md#lnk-f-0324) | finding | `maxConcurrentRoutes` now bounds three things and is named for one of them |
+| [LNK-F-0325](findings.md#lnk-f-0325) | finding | `Host.HasInline` reads a field `Host.Close` nils, and neither takes the lock |
+| [LNK-F-0326](findings.md#lnk-f-0326) | finding | The inline deadline covers instantiation, so on hardware slower than the machine it was measured on an add-on is killed before its own code runs |
+| [LNK-F-0327](findings.md#lnk-f-0327) | finding | `internal/config` documents a variable that does not exist |
+| [LNK-F-0328](findings.md#lnk-f-0328) | finding | An add-on that ships migration files cannot be installed through the lifecycle API, and LNK-M-0092's is the first one likely to |
+| [LNK-F-0329](findings.md#lnk-f-0329) | finding | A pooled instance can be returned to a pool that has already been drained, and then nothing ever closes it |
+| [LNK-F-0330](findings.md#lnk-f-0330) | finding | A removal's answer names the schema it leaves and not the identity mappings, and those are what a replacement module inherits |
+| [LNK-F-0331](findings.md#lnk-f-0331) | finding | A per-module p99 that saturates at the top bucket is printed as an ordinary figure, so a module over a second reads as exactly one second |
+| [LNK-F-0332](findings.md#lnk-f-0332) | finding | A removed add-on's stored settings are unreachable and undeletable, and are inherited by whatever is installed under the name next |
+| [LNK-F-0333](findings.md#lnk-f-0333) | finding | `make verify-ui` signs in more times than the login limiter admits, so the kept browser gate fails on its own shape rather than on the product |
+| [LNK-F-0334](findings.md#lnk-f-0334) | finding | An add-on cannot make an outbound network request, so the OIDC add-on this phase was built to prove cannot be written |
+| [LNK-F-0335](findings.md#lnk-f-0335) | finding | *(**Superseded 2026-08-26, before anybody worked from it.** Filed by LNK-M-0090's worker as *the tripwire fails under coverage and fails on main too*, which is true and is not the cause |
+| [LNK-F-0336](findings.md#lnk-f-0336) | finding | A stored setting value becomes an egress destination when a new version of the add-on marks it `origin`, and no operator act named it one |
+| [LNK-F-0337](findings.md#lnk-f-0337) | finding | Azure's WireServer, `168.63.129.16`, is inside globally-routable unicast space and is not carved out, so the address policy will dial it |
+| [LNK-F-0338](findings.md#lnk-f-0338) | finding | The malformed-origin warning is guest-drivable at CPU speed, which is the criterion D378 used to move three others to Debug |
+| [LNK-F-0339](findings.md#lnk-f-0339) | finding | `docs/SECURITY.md` is the one statement of the permission-vocabulary size that nothing ties |
+| [LNK-F-0340](findings.md#lnk-f-0340) | finding | HTTP's own compression layer sits under the bundle reader and has none of its bounds |
+| [LNK-F-0341](findings.md#lnk-f-0341) | finding | A route-serving add-on cannot learn its own URL, so every OAuth add-on will make an operator re-type something the host already knows |
+| [LNK-F-0342](findings.md#lnk-f-0342) | finding | There is no way for an add-on to read a row and consume it atomically, so single-use state has to be spelled as a deliberate primary-key collision |
+| [LNK-F-0343](findings.md#lnk-f-0343) | finding | A route-serving module cannot tell a load-time initialization from a request, so it pays its setup on every request forever |
+| [LNK-F-0344](findings.md#lnk-f-0344) | finding | An add-on that ships migrations cannot be installed by any route this product offers, and the host's own migration runner is unreachable to exactly the add-ons that would keep *DDL is additive* true |
+| [LNK-F-0345](findings.md#lnk-f-0345) | finding | An add-on that can mint a session cannot put a sign-in control anywhere a person will see it |
+| [LNK-F-0346](findings.md#lnk-f-0346) | finding | Every outbound request an add-on makes whose response is over 512 bytes is sent to the other end twice |
+| [LNK-F-0347](findings.md#lnk-f-0347) | finding | `holdFetch` drops its hold when the guest hands back a bad pointer, so the retry it exists to prevent makes the request again |
+| [LNK-F-0348](findings.md#lnk-f-0348) | finding | The OIDC add-on's module does not reproduce on the CI runner, so the acceptance test cannot run there at all and the reproducibility the whole fixture rests on is machine-local |
+| [LNK-F-0349](findings.md#lnk-f-0349) | finding | The stock sign-in page's byte-identity golden embeds the stylesheet's cache-busting fingerprint, so it fails whenever the stylesheet changes — which is every UI milestone |
+| [LNK-F-0350](findings.md#lnk-f-0350) | finding | `make check` does not build the stylesheet and CI's `ci-test` does, so a local green and a CI red can disagree by construction on any test that reads a built asset |
+| [LNK-F-0351](findings.md#lnk-f-0351) | finding | A pooled add-on instance resets the guest's linear memory and nothing else, so a mutable WebAssembly global or a funcref table carries one invocation's state into the next — across visitors and acros… |
+| [LNK-F-0352](findings.md#lnk-f-0352) | finding | `PurgeData` runs outside `installMu`, so its *is this add-on installed* guard is a time-of-check race: an install that lands in the window returns success and has the schema it just created dropped u… |
+| [LNK-F-0353](findings.md#lnk-f-0353) | finding | A failed add-on install never closes the compiled module, so every failed attempt leaks it for the life of the process |
+| [LNK-F-0354](findings.md#lnk-f-0354) | finding | An operator's consent to an add-on drawing a link on the unauthenticated sign-in page is stored against the add-on's *name*, and the product has no upgrade-in-place — so the replacement installed und… |
+| [LNK-F-0355](findings.md#lnk-f-0355) | finding | A pooled instance's generation stamp does not survive the pool object being replaced, so the guard behind `quiet`'s timeout is absent and a removed module's instance can be adopted by its replacement… |
+| [LNK-F-0356](findings.md#lnk-f-0356) | finding | A guest's `time.Sleep` is a busy-loop: `guestModuleConfig` installs the real wall and monotonic clocks and leaves wazero's fake nanosleep in place, so a well-behaved add-on burns a CPU and one of the… |
+| [LNK-F-0357](findings.md#lnk-f-0357) | finding | Nothing bounds how many outbound requests one add-on invocation may make |
+| [LNK-F-0358](findings.md#lnk-f-0358) | finding | `InstallFetchTimeout` is the one egress bound with no nesting check, and its own stated arithmetic goes negative under a configuration the product accepts |
+| [LNK-F-0359](findings.md#lnk-f-0359) | finding | `sign_in_label` refuses control characters but not bidirectional overrides or invisible formatting, on a string drawn on the unauthenticated sign-in page |
+| [LNK-F-0360](findings.md#lnk-f-0360) | finding | `make check` runs `tidy`, which repairs, where CI runs `check-tidy`, which verifies — so an untidy module is a local green and a CI red by construction |
+| [LNK-F-0361](findings.md#lnk-f-0361) | finding | The out-of-band digest the URL-install trust model rests on has no second channel for the first-party add-on, and three sentences across two repositories say it does |
+| [LNK-F-0362](findings.md#lnk-f-0362) | finding | The add-on resident-memory figure the 1 GB floor and 2 GB recommendation rest on was measured before the instance pool existed and has not been measured since |
+| [LNK-F-0363](findings.md#lnk-f-0363) | finding | The pre-tag gate runs the unit suite under Go's default ten-minute timeout while the Makefile's `test` target allows thirty, so `release-check` cannot pass a suite `make check` passes |
+| [LNK-F-0364](findings.md#lnk-f-0364) | finding | `TestRepeatedInstallAndRemovalDoesNotGrowResidentMemory` decides a claim about a trend from one sample, and its tolerance collapses exactly when the sample is worst |
+| [LNK-F-0365](findings.md#lnk-f-0365) | finding | `release.yml` runs `go test` with no timeout, so the release workflow cannot publish a tag its own repository's other gates approve |
+| [LNK-F-0366](findings.md#lnk-f-0366) | finding | The nil-memory guard in the instance pool can never fire, and the fallthrough panics on the observe goroutine |
+| [LNK-F-0367](findings.md#lnk-f-0367) | finding | Add-ons installed after boot never observe anything |
+| [LNK-F-0368](findings.md#lnk-f-0368) | finding | The migration filename check admits files goose silently drops |
+| [LNK-F-0369](findings.md#lnk-f-0369) | finding | `AddonDB.Close` nils the pool without the lock, while `Draining` is a designed concurrent state |
+| [LNK-F-0370](findings.md#lnk-f-0370) | finding | TAB is not filtered from redirect locations, so an add-on can point the host's own second-factor prompt off-origin |
+| [LNK-F-0371](findings.md#lnk-f-0371) | finding | 32 MiB is read before an authorization check that always fails |
+| [LNK-F-0372](findings.md#lnk-f-0372) | finding | An `HX-Request` header turned every dashboard refusal into a `200` |
+| [LNK-F-0373](findings.md#lnk-f-0373) | finding | Inline add-ons ran before the gates, and slot exhaustion means allow |
+| [LNK-F-0374](findings.md#lnk-f-0374) | finding | The `required`-failure path leaks every already-started pgxpool |
+| [LNK-F-0375](findings.md#lnk-f-0375) | finding | A narrowing documented as non-fatal was implemented as fatal |
+| [LNK-F-0376](findings.md#lnk-f-0376) | finding | Two defects on the add-on session audit path |
+| [LNK-F-0377](findings.md#lnk-f-0377) | finding | `PurgeData`'s time-of-check guard is process-local against shared state |
+| [LNK-F-0378](findings.md#lnk-f-0378) | finding | The pool generation is sampled after `_initialize` has read config |
+| [LNK-F-0379](findings.md#lnk-f-0379) | finding | One unchanged setting yielded two boot refusals, over a number the operator never set |
+| [LNK-F-0380](findings.md#lnk-f-0380) | finding | A 3.6 MB compiled binary was committed |
+| [LNK-F-0381](findings.md#lnk-f-0381) | finding | `TestInvalidationReachesAnotherReplica` fails again, from a different cause than F11's |
+| [LNK-F-0382](findings.md#lnk-f-0382) | finding | Tests asserting a timing bound fail under load, and nothing in the suite protects them from it |
+| [LNK-F-0383](findings.md#lnk-f-0383) | finding | Code comments still name the milestone and record files W48 deleted |
+| [LNK-I-0001](investigations/LNK-I-0001.md#lnk-i-0001) | investigation | Analytics partitioning and how sqlc sees it |
 | [MUS-M-0001](milestones.md#mus-m-0001) | milestone | The delivery bet is tested |
 | [MUS-M-0002](milestones.md#mus-m-0002) | milestone | Records and routing, behind one call |
 | [MUS-M-0003](milestones.md#mus-m-0003) | milestone | The audit StrucGu never shipped |
@@ -88,6 +1632,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-W-0021](work-units/MUS-W-0021.md#mus-w-0021) | work-unit | An agent carries a token |
 | [MUS-W-0022](work-units/MUS-W-0022.md#mus-w-0022) | work-unit | A CLI's prompt, read off the pane and offered as controls |
 | [MUS-W-0023](work-units/MUS-W-0023.md#mus-w-0023) | work-unit | The gate, and what it was measured against |
+| [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024) | work-unit | LinkCtrl moves in |
 | [MUS-Q-0001](questions.md#mus-q-0001) | question | Milestone 3's done-when needs milestone 4's machinery. How should the conflict be resolved? |
 | [MUS-Q-0002](questions.md#mus-q-0002) | question | Where should an open question live: its own kind, a status on decisions, or a finding? |
 | [MUS-Q-0003](questions.md#mus-q-0003) | question | The milestone 2c review found a reopening. Correct it inside 2c, reopen milestone 2, or queue it? |
@@ -196,6 +1741,29 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0106](questions.md#mus-q-0106) | question | The seven rebased branches need landing without rewriting anything you would mind rewriting |
 | [MUS-Q-0107](questions.md#mus-q-0107) | question | How should the Hoard group-sharing work enter Mustur, given onboarding a repository is its own milestone? |
 | [MUS-Q-0108](questions.md#mus-q-0108) | question | Re-asking how Hoard enters Mustur, with your question answered and a fourth option |
+| [MUS-Q-0109](questions.md#mus-q-0109) | question | LinkCtrl's 947 records import under which identifiers: its own numbers, or fresh serials? |
+| [MUS-Q-0110](questions.md#mus-q-0110) | question | LinkCtrl's own side of the move is W48, still unapproved. Approve it now, or after the import has a verdict? |
+| [MUS-Q-0111](questions.md#mus-q-0111) | question | Plan.md still promises LinkCtrl a committed .mcp.json. Reword the row, or strike it? |
+| [MUS-Q-0112](questions.md#mus-q-0112) | question | LinkCtrl's decision log is 505 dated entries with decision numbers inside them, not 444 decisions. What is one imported decision? |
+| [MUS-Q-0113](questions.md#mus-q-0113) | question | 24 of LinkCtrl's milestones are fractional, like M24.5 and M57.9, and a serial is four whole digits. How are they numbered? |
+| [MUS-Q-0114](questions.md#mus-q-0114) | question | 18 milestone numbers are cited in LinkCtrl and defined nowhere, so renumbering cannot start at the beginning. Stub them, or leave those 40 references as written? |
+| [MUS-Q-0115](questions.md#mus-q-0115) | question | Milestone 7's done-when is still 'its own verdict'. What must be true for LinkCtrl's move to be accepted? |
+| [MUS-Q-0116](questions.md#mus-q-0116) | question | Success criterion 9 says no other project's file changed before its onboarding started. LinkCtrl's own session changed two on 09-09. Reword it, or record it as failed? |
+| [MUS-Q-0117](questions.md#mus-q-0117) | question | The import has its verdict. Do you approve W48, LinkCtrl's change that moves its records out, as it really is? |
+| [MUS-Q-0118](questions.md#mus-q-0118) | question | Should links in the session view be clickable, when MUS-D-0132 says pane output must never become markup? |
+| [MUS-Q-0119](questions.md#mus-q-0119) | question | How should question text be rendered on the decisions page? |
+| [MUS-Q-0120](questions.md#mus-q-0120) | question | Keeping an intake draft needs a second script on intake. Which, if any? |
+| [MUS-Q-0121](questions.md#mus-q-0121) | question | Does replacing the visual plan tool, with plans held in Mustur, become a milestone? |
+| [MUS-Q-0122](questions.md#mus-q-0122) | question | records/ here carries LinkCtrl's uncommitted import. Commit the triage export now, or after the import stack merges? |
+| [MUS-Q-0123](questions.md#mus-q-0123) | question | After Stop, which running session should the Sessions page land on? |
+| [MUS-Q-0124](questions.md#mus-q-0124) | question | The live store holds phase records the deployed Mustur cannot export, so intake filings report a failure. Deploy the phase-kind branch? |
+| [MUS-Q-0125](questions.md#mus-q-0125) | question | Deploy the four intake fixes to mustur.devofpie.com now, from a local integration build, or after you merge? |
+| [MUS-Q-0126](questions.md#mus-q-0126) | question | Finished sub-agents fill the drawer. Collapse them, keep them all listed, or let them go? |
+| [MUS-Q-0127](questions.md#mus-q-0127) | question | Adding the times-in-Pacific trait puts Whippy's core at ~823 tokens, over its 800 budget. Raise the budget, or retire a trait? |
+| [MUS-Q-0128](questions.md#mus-q-0128) | question | LinkCtrl's /work registry row in ~/.claude/commands/work.md: retire it now that W48 merged, or keep it? |
+| [MUS-Q-0129](questions.md#mus-q-0129) | question | Every branch commits a whole-store export, so two branches that add records conflict in the generated files. How do we stop it? |
+| [MUS-Q-0130](questions.md#mus-q-0130) | question | With the export on main only, the question gate goes blind to questions raised on a branch. Read the store as well, or keep reading only the tree? |
+| [MUS-Q-0131](questions.md#mus-q-0131) | question | Milestone 7, LinkCtrl moving in, has landed on both mains. Do you accept it? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -358,6 +1926,27 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0160](decisions.md#mus-d-0160) | decision | A jot takes six pictures, and six is the owner's number rather than the agent's |
 | [MUS-D-0161](decisions.md#mus-d-0161) | decision | The hub polls every owned session, and the reader stops being a thing a viewer starts |
 | [MUS-D-0162](decisions.md#mus-d-0162) | decision | A new project with no records moves in as an ordinary project, not as a milestone |
+| [MUS-D-0163](decisions.md#mus-d-0163) | decision | LinkCtrl's records keep the numbers they were written with, under the LNK prefix |
+| [MUS-D-0164](decisions.md#mus-d-0164) | decision | Nothing leaves LinkCtrl until the import has a verdict |
+| [MUS-D-0165](decisions.md#mus-d-0165) | decision | An onboarded project receives a mandate clause and a per-machine token, never a committed .mcp.json |
+| [MUS-D-0166](decisions.md#mus-d-0166) | decision | Each LinkCtrl decision-log entry is imported whole, and each D number again as an extract citing it |
+| [MUS-D-0167](decisions.md#mus-d-0167) | decision | LinkCtrl's milestones are renumbered from one in their existing order, and every reference is rewritten to the new number |
+| [MUS-D-0168](decisions.md#mus-d-0168) | decision | Correcting MUS-D-0163 and MUS-D-0164, now that LinkCtrl's import has been measured |
+| [MUS-D-0169](decisions.md#mus-d-0169) | decision | A milestone LinkCtrl cites and never defines becomes a stub in its place in the order |
+| [MUS-D-0170](decisions.md#mus-d-0170) | decision | LinkCtrl's move is accepted when its records are in Mustur, gone from LinkCtrl, and a LinkCtrl session routes through Mustur |
+| [MUS-D-0171](decisions.md#mus-d-0171) | decision | Success criterion 9 is about Mustur touching other projects, not a project's own agents preparing their side |
+| [MUS-D-0172](decisions.md#mus-d-0172) | decision | W48 is approved as restated, and made under LinkCtrl's own workflow loop |
+| [MUS-D-0173](decisions.md#mus-d-0173) | decision | Mustur holds a phase as a record of its own kind, and LinkCtrl's phase summaries move in as phases |
+| [MUS-D-0174](decisions.md#mus-d-0174) | decision | The CLI's own hyperlinks open in the session view, and nothing else from the pane becomes a link |
+| [MUS-D-0175](decisions.md#mus-d-0175) | decision | After Stop the Sessions page lands on the most recently active running session, and the picker lists in that order |
+| [MUS-D-0176](decisions.md#mus-d-0176) | decision | Plans move into Mustur as milestone 9, a plan held beside its decisions, and 9b, a plan drawn there |
+| [MUS-D-0177](decisions.md#mus-d-0177) | decision | Question text renders as markdown through goldmark v1, with raw HTML and dangerous URLs refused by its defaults |
+| [MUS-D-0178](decisions.md#mus-d-0178) | decision | The intake box keeps what is typed as a draft of its own, cleared by filing or by Clear, and pictures are not kept |
+| [MUS-D-0179](decisions.md#mus-d-0179) | decision | A phase keeps its file whole, tables included, and is dated by its milestones |
+| [MUS-D-0180](decisions.md#mus-d-0180) | decision | Nothing is deployed to mustur.devofpie.com before it is on main; a test instance carries a change between pull requests |
+| [MUS-D-0181](decisions.md#mus-d-0181) | decision | Finished sub-agents fold under one 'N finished' line beneath the running ones, each still readable |
+| [MUS-D-0182](decisions.md#mus-d-0182) | decision | The records export is committed on main only, and branches carry none |
+| [MUS-D-0183](decisions.md#mus-d-0183) | decision | Mustur acts only on its own store; the committed records export is a backup and a conformance surface |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -503,12 +2092,35 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0143](findings.md#mus-f-0143) | finding | After I close a session the create a session screen shows up instead of the top session and I… |
 | [MUS-F-0144](findings.md#mus-f-0144) | finding | A plan handed over as a file on the checkout host is inconvenient to reach, and Mustur has no way of providing one |
 | [MUS-F-0145](findings.md#mus-f-0145) | finding | A session restarted under the same name kept tmux's 80x24, so it had no scrollback |
+| [MUS-F-0146](findings.md#mus-f-0146) | finding | LinkCtrl's transition survey counts 444 decisions and 74 milestones, and the tree holds neither as records |
+| [MUS-F-0147](findings.md#mus-f-0147) | finding | I can't click or ctrl+click on links in the session |
+| [MUS-F-0148](findings.md#mus-f-0148) | finding | Push up replacing the visual plan mcp |
+| [MUS-F-0149](findings.md#mus-f-0149) | finding | The mandated call returns every record's index line, so importing LinkCtrl multiplies what every session in every project receives |
+| [MUS-F-0150](findings.md#mus-f-0150) | finding | Decisions should show near the top what project they are for. |
+| [MUS-F-0151](findings.md#mus-f-0151) | finding | Allow decisions to have their questions written in markdown to make them more readable |
+| [MUS-F-0152](findings.md#mus-f-0152) | finding | The intake text box should keep what is typed and uploaded as a draft unless it is cleared or… |
+| [MUS-F-0153](findings.md#mus-f-0153) | finding | CLAUDE.md says what MUS-Q-0053's rule counts is still open, and the record has had it answered since 2026-08-25 |
+| [MUS-F-0154](findings.md#mus-f-0154) | finding | intake.go's comments say the page carries no script and no stylesheet, and it carries both |
+| [MUS-F-0155](findings.md#mus-f-0155) | finding | A paint helper shared its name with the pop-up's state and blanked the session view, and no test runs session.js |
+| [MUS-F-0156](findings.md#mus-f-0156) | finding | The Hoard_Work session has had many sub-agents most of which are completed and clogging up the… |
+| [MUS-F-0157](findings.md#mus-f-0157) | finding | A sub-agent whose stop never arrives reads as running forever, and inflates the count on the drawer button |
+| [MUS-F-0158](findings.md#mus-f-0158) | finding | Only the last 256KB of a session's sub-agent log is read, so a long session's earlier sub-agents silently vanish from the drawer |
+| [MUS-F-0159](findings.md#mus-f-0159) | finding | A session page that renders Missing has a dead picker, and an open tab never leaves it |
+| [MUS-F-0160](findings.md#mus-f-0160) | finding | A tmux connection error is read as 'no server running', so a flake empties every session list |
+| [MUS-F-0161](findings.md#mus-f-0161) | finding | Session tests run against the machine's live tmux server |
+| [MUS-F-0162](findings.md#mus-f-0162) | finding | The server logs no requests, so a surface that misrendered cannot be diagnosed afterwards |
+| [MUS-F-0163](findings.md#mus-f-0163) | finding | Records needs proper rending too, looking at the Phase records for LinkCtrl is un readable |
+| [MUS-F-0164](findings.md#mus-f-0164) | finding | Opening the Records tab is slow because it seems to be loading in everything at once |
+| [MUS-F-0165](findings.md#mus-f-0165) | finding | LinkCtrl still dispatches through a global file, so success criterion 1 is not yet true for it |
+| [MUS-F-0166](findings.md#mus-f-0166) | finding | I can only invite people to the Mustur project and it doesn't seem that I can add existing… |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-R-0002](routing.md#mus-r-0002) | repository | DevOfPie/hoard |
+| [MUS-R-0003](routing.md#mus-r-0003) | repository | DevOfPie/LinkCtrl |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |
 | [MUS-P-0002](routing.md#mus-p-0002) | project | Idea inbox |
 | [MUS-P-0003](routing.md#mus-p-0003) | project | Hoard |
+| [MUS-P-0004](routing.md#mus-p-0004) | project | LinkCtrl |

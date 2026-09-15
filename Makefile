@@ -12,7 +12,7 @@ SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
         questions surfaces export-scope-test export-scope build serve seed export records-refresh audit \
-        install install-service deploy workflow-proposals help
+        install install-service deploy deploy-from-main workflow-proposals help
 
 check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces export-scope-test export-scope ## Every commit gate this tree can enforce mechanically
 
@@ -115,11 +115,21 @@ install: ## Build the binary into ~/.local/bin, where the unit expects it
 	@go build -o "$$HOME/.local/bin/mustur" ./cmd/mustur \
 	  && echo "  ok    $$HOME/.local/bin/mustur $$($$HOME/.local/bin/mustur version)"
 
-deploy: install ## Build, install and restart, so a change is live in one command
+deploy: deploy-from-main install ## Build, install and restart, so a change is live in one command
 	@systemctl --user restart mustur
 	@systemctl --user is-active --quiet mustur \
 	  && echo "  ok    restarted; the running binary is this tree" \
 	  || { echo "  FAIL  mustur did not come back: systemctl --user status mustur"; exit 1; }
+
+# Runs before install, because install is what overwrites the live binary.
+# records/ is left out: the service exports into the live checkout's records/,
+# so that directory is never clean there and says nothing about the build.
+deploy-from-main: ## Refuse to deploy anything but origin/main (MUS-D-0180)
+	@git fetch -q origin main
+	@test "$$(git rev-parse HEAD)" = "$$(git rev-parse origin/main)" \
+	  || { echo "  FAIL  HEAD is not origin/main; nothing is deployed before it is merged (MUS-D-0180)"; exit 1; }
+	@test -z "$$(git status --porcelain -- . ':!records')" \
+	  || { echo "  FAIL  changes outside records/; the binary would not be main (MUS-D-0180)"; exit 1; }
 
 install-service: install ## Install the systemd user unit. Does NOT enable or start it
 	@install -Dm644 deploy/mustur.service "$$HOME/.config/systemd/user/mustur.service" \
