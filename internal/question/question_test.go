@@ -257,20 +257,21 @@ func TestCheckOptionRefusesAMisplacedRecommendation(t *testing.T) {
 // because IsRecommended reads only the line.
 func TestNormaliseOptionMovesAMarkerOffTheLabel(t *testing.T) {
 	for _, c := range []struct{ in, want string }{
-		// Moved to the head of the line, the paragraph untouched.
-		{"Recommended Refuse a foreign Origin :: closes it :: the detail",
-			"Refuse a foreign Origin :: Recommended. closes it :: the detail"},
+		// Marker and punctuation: moved to the head of the line, the
+		// paragraph untouched.
 		{"Recommended: A :: one line", "A :: Recommended. one line"},
 		{"Recommended · A :: one line :: p", "A :: Recommended. one line :: p"},
-		// No line to move it onto: the marker becomes the line.
-		{"Recommended. A", "A :: Recommended"},
+		{"Recommended - Refuse a foreign Origin :: closes it :: the detail",
+			"Refuse a foreign Origin :: Recommended. closes it :: the detail"},
+		{"Recommended| A :: one line", "A :: Recommended. one line"},
 		// Both carry it: the label's copy goes, the line stays as written.
-		{"Recommended A :: Recommended. one line :: p", "A :: Recommended. one line :: p"},
+		{"Recommended. A :: Recommended. one line :: p", "A :: Recommended. one line :: p"},
 		// A bare-word label would leave the option nameless, so it stays.
 		{"Recommended :: one line :: p", "Recommended :: one line :: p"},
-		{"Recommended", "Recommended"},
-		// Not followed by a separator: not the marker.
+		{"Recommended. :: one line :: p", "Recommended. :: one line :: p"},
+		// Not followed by a space or a separator: another word, not the marker.
 		{"Recommendedly cheaper :: one line", "Recommendedly cheaper :: one line"},
+		{"Recommended-grade :: one line", "Recommended-grade :: one line"},
 		// No marker at all: returned exactly as given.
 		{"A :: one line :: p", "A :: one line :: p"},
 	} {
@@ -285,12 +286,54 @@ func TestNormaliseOptionMovesAMarkerOffTheLabel(t *testing.T) {
 
 	// The point of it: the star draws and the label reads as the answer.
 	os := Options(q("MUS-Q-0001", FieldOption,
-		NormaliseOption("Recommended Refuse a foreign Origin :: closes it :: the detail")))
+		NormaliseOption("Recommended: Refuse a foreign Origin :: closes it :: the detail")))
 	if len(os) != 1 {
 		t.Fatalf("Options = %+v, want one", os)
 	}
 	if o := os[0]; !o.IsRecommended() || o.Label != "Refuse a foreign Origin" || o.Says() != "closes it" {
 		t.Errorf("normalised option = %+v, recommended %v, says %q", o, o.IsRecommended(), o.Says())
+	}
+}
+
+// A marker the label may not mean is refused, not moved.
+//
+// "Recommended settings" is either the marker on an answer called "settings"
+// or an answer called "Recommended settings"; moving it would cut the label
+// and draw a star nobody asked for. A marker in another case is plainly meant
+// but is not the spelling IsRecommended reads. Both are left by
+// NormaliseOption and refused by CheckOption with the corrected --option.
+func TestAnAmbiguousMarkerOnTheLabelIsRefused(t *testing.T) {
+	for _, c := range []struct{ in, suggest string }{
+		{"Recommended settings :: keep what ships :: p",
+			`"settings :: Recommended. keep what ships :: p"`},
+		{"Recommended A :: Recommended. one line :: p",
+			`"A :: Recommended. one line :: p"`},
+		{"recommended: A :: one line", `"A :: Recommended. one line"`},
+		{"RECOMMENDED A :: one line", `"A :: Recommended. one line"`},
+		{"Recommended -grade :: one line", `"grade :: Recommended. one line"`},
+	} {
+		if got := NormaliseOption(c.in); got != c.in {
+			t.Errorf("NormaliseOption(%q) = %q, want it untouched", c.in, got)
+		}
+		err := CheckOption(c.in)
+		if err == nil {
+			t.Errorf("CheckOption(%q) accepted a marker on the label", c.in)
+			continue
+		}
+		for _, want := range []string{"one-line part", "--option " + c.suggest, "reword"} {
+			if !strings.Contains(err.Error(), want) {
+				t.Errorf("CheckOption(%q) = %q, want it to contain %q", c.in, err, want)
+			}
+		}
+	}
+	// A separator after spaces is still the marker, and a paragraph written
+	// with the middot gets a suggestion with no stray mark left behind.
+	if got := NormaliseOption("Recommended : A :: one line"); got != "A :: Recommended. one line" {
+		t.Errorf("spaced separator: got %q", got)
+	}
+	err := CheckOption("A :: one line :: Recommended · the paragraph")
+	if err == nil || !strings.Contains(err.Error(), `"A :: Recommended. one line :: the paragraph"`) {
+		t.Errorf("middot paragraph: got %v", err)
 	}
 }
 
