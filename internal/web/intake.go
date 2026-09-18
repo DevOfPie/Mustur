@@ -584,7 +584,9 @@ func render(w http.ResponseWriter, p page) {
 // (MUS-Q-0078) and intake.js for the draft (MUS-Q-0120), and the form files
 // with both blocked.
 var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
-	"trim": strings.TrimSpace,
+	"trim":      strings.TrimSpace,
+	"title":     title,
+	"titleText": titleText,
 }).Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
@@ -685,7 +687,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   h2.held { font-size: .9rem; font-weight: 600; opacity: .7; margin: 1.5rem 0 0; }
   ul.held { margin-top: .4rem; }
   ul.held .txt { white-space: pre-line; overflow-wrap: anywhere; }
-` + shellCSS + `
+` + titleCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -710,7 +712,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
     <select name="to">
       <option value="" selected>Route it for me</option>
       {{range .Groups}}<optgroup label="{{.Label}}">
-        {{range .Items}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+        {{range .Items}}<option value="{{.ID}}">{{titleText .Name}}</option>{{end}}
       </optgroup>{{end}}
       {{if not .Reader}}<option value="scratch">Scratch &mdash; not kept, not counted</option>{{end}}
     </select>
@@ -725,7 +727,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{range .Scratch}}<li><span class="tmp">scratch</span> {{.Text}}<span class="to">goes on restart</span></li>{{end}}
 </ul>{{end}}
 {{if .Recent}}<ul>
-{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
+{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{title .Title}}<span class="to">{{.Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}

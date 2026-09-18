@@ -186,8 +186,9 @@ type recordView struct {
 	// needs attention (MUS-D-0193). CanMove says whether this viewer is shown
 	// the buttons; a reader sees the banner without them.
 	Attention []namedView
-	// AttentionLine is the banner's sentence, from attentionLine.
-	AttentionLine string
+	// AttentionLine is the banner's sentence, from attentionLine, with each
+	// title rendered as title renders it.
+	AttentionLine template.HTML
 	CanMove       bool
 	// MovedFrom and MovedTo are the success line after a move, shown on the
 	// record the move filed.
@@ -207,15 +208,18 @@ type namedView struct {
 }
 
 // attentionLine is the banner's sentence: what the jot names, which of those
-// take a jot only on a confirmed move, and which are not places at all.
-func attentionLine(names []namedView) string {
+// take a jot only on a confirmed move, and which are not places at all. The
+// titles are rendered by title and the words around them are fixed text with
+// nothing to escape, so the sentence is HTML as it stands.
+func attentionLine(names []namedView) template.HTML {
 	var places, others, all []string
 	for _, n := range names {
-		all = append(all, n.Title)
+		t := string(title(n.Title))
+		all = append(all, t)
 		if n.Place {
-			places = append(places, n.Title)
+			places = append(places, t)
 		} else {
-			others = append(others, n.Title)
+			others = append(others, t)
 		}
 	}
 	and := func(ts []string) string { return strings.Join(ts, " and ") }
@@ -226,7 +230,7 @@ func attentionLine(names []namedView) string {
 		return "take"
 	}
 	if len(others) == 0 {
-		return "This jot names " + and(all) + ", which " + takes(places) + " a jot only when a move is confirmed."
+		return template.HTML("This jot names " + and(all) + ", which " + takes(places) + " a jot only when a move is confirmed.")
 	}
 	is := "is"
 	if len(others) > 1 {
@@ -236,7 +240,7 @@ func attentionLine(names []namedView) string {
 	if len(places) > 0 {
 		line += " " + and(places) + " " + takes(places) + " a jot only when a move is confirmed."
 	}
-	return line + " " + and(others) + " " + is + " not a place a jot can go."
+	return template.HTML(line + " " + and(others) + " " + is + " not a place a jot can go.")
 }
 
 // An attentionRow is one line of the pinned section on the index.
@@ -1070,7 +1074,7 @@ func (rr *Records) render(w http.ResponseWriter, r *http.Request, p recordsPage)
 	}
 }
 
-var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(`<!doctype html>
+var recordsTmpl = template.Must(template.New("records").Funcs(titleFuncs).Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -1248,7 +1252,7 @@ var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(
   .done { border: 1px solid var(--edge); border-radius: .5rem;
           padding: .5rem .8rem; margin: 0 0 .6rem; font-size: .93em; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-` + markdownCSS + citesCSS + shellCSS + `
+` + markdownCSS + titleCSS + citesCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -1265,7 +1269,7 @@ var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(
 {{if .Attention}}<section class="attn" aria-label="Needs attention">
 <h2>Needs attention · {{len .Attention}}</h2>
 <ol class="rows">
-{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="dot" title="Needs attention" aria-label="Needs attention"></span><span class="id">{{.ID}}</span><span class="t">{{.Title}}</span>{{range .Names}}<span class="pill">names {{.Title}}{{if .Place}} — move?{{end}}</span>{{end}}</a></li>
+{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="dot" title="Needs attention" aria-label="Needs attention"></span><span class="id">{{.ID}}</span><span class="t">{{title .Title}}</span>{{range .Names}}<span class="pill">names {{title .Title}}{{if .Place}} — move?{{end}}</span>{{end}}</a></li>
 {{end}}</ol>
 </section>{{end}}
 <form class="narrow" method="get" action="/records" role="search">
@@ -1292,7 +1296,7 @@ var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(
 </form>
 <p class="tally"><span>{{.Summary}}</span>{{if .Chosen}}<a href="/records">Clear</a>{{end}}</p>
 {{if .Rows}}<ol class="rows">
-{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span>{{if .Finding}}{{if .State}}<span class="st {{.State}}" title="{{.Status}} · {{.State}}">{{.Status}}</span>{{else}}<span class="st nostate" title="{{if .Status}}{{.Status}} · {{end}}no State">{{if .Status}}{{.Status}}{{else}}no State{{end}}</span>{{end}}{{end}}<span class="at">{{.At}}</span></a></li>
+{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{title .Title}}</span>{{if .Finding}}{{if .State}}<span class="st {{.State}}" title="{{.Status}} · {{.State}}">{{.Status}}</span>{{else}}<span class="st nostate" title="{{if .Status}}{{.Status}} · {{end}}no State">{{if .Status}}{{.Status}}{{else}}no State{{end}}</span>{{end}}{{end}}<span class="at">{{.At}}</span></a></li>
 {{end}}</ol>
 {{else if .Beyond}}<p class="none">Nothing on page {{.Page}}. The list ends at page {{.Pages}}.</p>
 {{else}}<p class="none">No records match.</p>
@@ -1317,12 +1321,12 @@ var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(
 
 {{define "record"}}
 <article id="{{.ID}}">
-  {{if .MovedFrom}}<p class="done" role="status">Moved to {{.MovedTo}}. {{.MovedFrom}} is kept and points here.</p>{{end}}
+  {{if .MovedFrom}}<p class="done" role="status">Moved to {{title .MovedTo}}. {{.MovedFrom}} is kept and points here.</p>{{end}}
   {{if .Kept}}<p class="done" role="status">Kept in the intake box.</p>{{end}}
   {{if .Attention}}<div class="banner" role="note">
     <p><strong>Needs attention.</strong> {{.AttentionLine}}</p>
     {{if .CanMove}}<div class="acts">
-      {{range .Attention}}{{if .Place}}<form method="post" action="/records/{{$.ID}}/move"><input type="hidden" name="to" value="{{.ID}}"><button class="primary" type="submit">Move to {{.Title}}</button></form>
+      {{range .Attention}}{{if .Place}}<form method="post" action="/records/{{$.ID}}/move"><input type="hidden" name="to" value="{{.ID}}"><button class="primary" type="submit">Move to {{title .Title}}</button></form>
       {{end}}{{end}}<form method="post" action="/records/{{.ID}}/keep"><button type="submit">Keep in intake box</button></form>
     </div>{{end}}
   </div>{{end}}
@@ -1332,7 +1336,7 @@ var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(
     <span>{{.At}}</span>
     {{if .State}}<span class="badge{{if .Stale}} stale{{end}}">{{.State}}</span>{{end}}
   </div>
-  <h3>{{.Title}}</h3>
+  <h3>{{title .Title}}</h3>
   {{if .Body}}<div class="md">{{.Body}}</div>{{end}}
   {{if .Data}}<div class="fields">
     {{range .Data}}<div><span class="k">{{.Key}}</span><span class="v">{{.Value}}</span></div>{{end}}
@@ -1345,7 +1349,7 @@ var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(
   </div>{{end}}
   {{range .Refs}}{{if .Plain}}<div class="fields"><div><span class="k">{{.Key}}</span><span class="v">{{.ID}}</span></div></div>{{else}}<details>
     <summary>{{if .Key}}{{.Key}}: {{end}}{{.ID}}{{if .Known}} · {{.Kind}}{{end}}</summary>
-    <div class="inner">{{if .Known}}<strong>{{.Title}}</strong><br><small>{{.At}} · <a href="/records/{{.ID}}">open on its own</a></small>{{else}}Nothing in the store has this identifier.{{end}}</div>
+    <div class="inner">{{if .Known}}<strong>{{title .Title}}</strong><br><small>{{.At}} · <a href="/records/{{.ID}}">open on its own</a></small>{{else}}Nothing in the store has this identifier.{{end}}</div>
   </details>{{end}}{{end}}
   {{template "cites" .Cites}}
 </article>
@@ -1360,7 +1364,7 @@ var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(
 const citesTmpl = `{{define "cites"}}{{if .}}<div class="cites">
     {{range .}}<details>
       <summary class="badge">{{.ID}}</summary>
-      <div class="inner">{{if .Known}}<strong>{{.Title}}</strong><br><small>{{.Kind}} · {{.At}} · <a href="/records/{{.ID}}">open on its own</a></small>{{else}}Nothing in the store has this identifier.{{end}}</div>
+      <div class="inner">{{if .Known}}<strong>{{title .Title}}</strong><br><small>{{.Kind}} · {{.At}} · <a href="/records/{{.ID}}">open on its own</a></small>{{else}}Nothing in the store has this identifier.{{end}}</div>
     </details>{{end}}
   </div>{{end}}{{end}}`
 

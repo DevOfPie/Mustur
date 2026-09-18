@@ -172,7 +172,7 @@ func (c *Compose) targets(ctx context.Context, chosen string) []composeTarget {
 				}
 				out = append(out, composeTarget{
 					ID:     r.ID,
-					Label:  r.Title,
+					Label:  titleText(r.Title),
 					Detail: "files a record; no session is typed into",
 					Jot:    true,
 				})

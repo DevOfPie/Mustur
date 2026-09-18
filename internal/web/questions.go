@@ -605,7 +605,7 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
 // note, and it applies to the two-tab version exactly as much.
-var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(`<!doctype html>
+var queueTmpl = template.Must(template.New("questions").Funcs(titleFuncs).Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -731,7 +731,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(
   .held .acts { display: flex; gap: .6rem; flex-wrap: wrap; }
   .held .acts button { flex: 1 1 auto; }
   .held .acts button.primary { width: auto; margin-top: 0; }
-` + markdownCSS + citesCSS + shellCSS + `
+` + markdownCSS + titleCSS + citesCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -744,13 +744,13 @@ var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(
 {{if .Held}}<section aria-labelledby="held-h">
 <h2 class="sect" id="held-h">Jots waiting for approval</h2>
 {{range .Held}}<form class="held" method="post" action="/intake/held/{{.ID}}/approve">
-  <span class="meta">{{.By}} · {{.When}} · {{.ToName}}</span>
+  <span class="meta">{{.By}} · {{.When}} · {{title .ToName}}</span>
   <span class="txt">{{.Text}}</span>
   <label>File to
     <select name="to">
       <option value=""{{if not .To}} selected{{end}}>Route it for me{{if .Guess}} ({{.Guess}}){{end}}</option>
       {{$to := .To}}{{range $.HeldGroups}}<optgroup label="{{.Label}}">
-        {{range .Items}}<option value="{{.ID}}"{{if eq .ID $to}} selected{{end}}>{{.Name}}</option>{{end}}
+        {{range .Items}}<option value="{{.ID}}"{{if eq .ID $to}} selected{{end}}>{{titleText .Name}}</option>{{end}}
       </optgroup>{{end}}
     </select>
   </label>
@@ -773,7 +773,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(
     {{if $q.Needed}}<span class="pill">answer needed to proceed</span>{{end}}
     {{if not $q.Surfaced}}<span class="pill">never surfaced</span>{{end}}
   </div>
-  <h2>{{$q.Title}}</h2>
+  <h2>{{title $q.Title}}</h2>
   <small class="asked">Asked {{$q.Asked}}</small>
   {{if $q.Body}}<div class="ctx md">{{$q.Body}}</div>{{end}}
   {{template "cites" $q.Cites}}

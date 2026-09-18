@@ -61,7 +61,7 @@ func (s *Sessions) startables(ctx context.Context) []startable {
 				continue
 			}
 			if dir := expandHome(strings.TrimSpace(f.Value)); dir != "" {
-				out = append(out, startable{ID: r.ID, Title: r.Title, Dir: dir})
+				out = append(out, startable{ID: r.ID, Title: titleText(r.Title), Dir: dir})
 			}
 			break
 		}
