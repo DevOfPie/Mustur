@@ -338,6 +338,34 @@ say when one starts, which tool it is in, and when it stops, each tagged with an
 identifier the CLI supplies. Rows above the output are therefore attributed
 rather than inferred, and the pane is untouched. What they do not carry is a
 sub-agent's prose while it runs; that arrives when it finishes.
+A resumed sub-agent that is running again shows its last run's report in the
+reading pane under the label "From the previous run", while its clock counts
+the current run, until its own stop replaces it (MUS-Q-0165, MUS-D-0203).
+
+**A row whose stop never arrives says when it was last heard from**, and is
+not ended. An interrupt's only hook carries no agent id, so on 2026-09-13 two of
+Hoard_Work's rows read running for four hours and the ring turned for work
+nobody was doing ([MUS-F-0157](../records/findings.md#mus-f-0157)). The owner
+chose on [MUS-Q-0146](../records/questions.md#mus-q-0146) to state that fact
+rather than infer an end, and approved
+[plan-11f1635921db4c62](https://plan.agent-native.com/plans/plan-11f1635921db4c62)
+on [MUS-Q-0148](../records/questions.md#mus-q-0148) with its recommended
+answers ([MUS-D-0191](../records/decisions.md#mus-d-0191)). The server stamps
+each row with when any event of that row last arrived. A running row
+whose stamp is more than **15 minutes** old swaps its pill for *no word since*
+and that time, and draws no age. The server writes the time in its own zone on
+the first paint, and the script rewrites it in the viewer's zone, with whatever
+abbreviation the viewer's locale gives for that zone: *PDT* in `en-US`, but
+*GMT-7* in some others. With script blocked it stays in the server's zone. It
+**stays where it was** among the running rows. It leaves the badge's count and
+the ring, and the button's title names how many are quiet; with only quiet and
+finished rows left the badge shows the total. Its next event makes it running
+again and a stop still finishes it. Quiet is decided twice and stored
+nowhere. The server decides it when it renders the page, from its own
+constant, and the script decides it again every second from another constant
+of the same value. Neither writes it into the log or the row, which carries
+only when it was last heard from. The drawer's header counts quiet rows the
+way the button's title does.
 
 **The connection is the first one that carries keystrokes in**, not only records
 out. A flaw here is not a wrong page; it is somebody else typing into an agent

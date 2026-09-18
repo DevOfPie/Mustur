@@ -82,6 +82,20 @@ type Subagent struct {
 	Ended   time.Time // zero while it is still running
 	Doing   string    // the tool it last reached for, while running
 	Said    string    // its final message, once it has ended
+	// Earlier is the final message of a run before this one, kept while a
+	// resumed sub-agent runs again and dropped when that run stops with its
+	// own (MUS-F-0172, MUS-D-0203). Never set on a row that has ended.
+	Earlier string
+	// Heard is the stamp of the last event of any kind applied to this row:
+	// its start, a resume, a tool call's start or end, a launch from inside
+	// it, its stop. A row runs until its stop arrives, and a stop can fail to arrive —
+	// an interrupt's only hook carries no agent id (MUS-F-0157) — so what the
+	// surface can honestly say about a row that has gone silent is when it was
+	// last heard from. This package does not decide that a row is quiet; this
+	// is only the fact that rule reads (MUS-D-0191). The web server applies it
+	// on the first paint (SubagentQuietAfter in internal/web/sessions.go), and
+	// the script re-evaluates it every second after that.
+	Heard time.Time
 }
 
 // Running reports whether this sub-agent has yet to stop.
@@ -415,13 +429,30 @@ func (st *logFold) apply(e event) {
 		// Launched from inside a sub-agent: that one is now in the Agent
 		// tool, exactly as a "doing" would have said.
 		if r := rows[e.ID]; e.ID != "" && r != nil && r.Ended.IsZero() {
-			r.Doing = "Agent"
+			r.Doing, r.Heard = "Agent", e.At
 		}
 	case "start":
-		if _, seen := rows[e.ID]; seen {
+		// A start for an identifier already seen is that sub-agent resumed,
+		// and it is running again. This used to be skipped, so a resumed
+		// sub-agent read *finished* for the whole of its second run, its tool
+		// calls ignored because the row had ended: 9 of 36 sub-agents in one
+		// day of Hoard_Work were resumed at least once (MUS-F-0172). The row
+		// is reopened rather than replaced, so it keeps the task its original
+		// launch gave it — a resume has no launching call of its own, and
+		// pairing one would hand it somebody else's. Its last report moves to
+		// Earlier, so Said keeps meaning the final message of a run that has
+		// ended, and the drawer shows it labelled as from the previous run
+		// until the next stop replaces it (MUS-D-0203). A start for a row that
+		// never stopped has no report to move and leaves Earlier as it was.
+		// How long it has run counts from the start that made it run again.
+		if r, seen := rows[e.ID]; seen {
+			if r.Said != "" {
+				r.Earlier, r.Said = r.Said, ""
+			}
+			r.Started, r.Ended, r.Doing, r.Heard = e.At, time.Time{}, "", e.At
 			return
 		}
-		r := &Subagent{ID: e.ID, Type: e.Type, Started: e.At}
+		r := &Subagent{ID: e.ID, Type: e.Type, Started: e.At, Heard: e.At}
 		// Pairing a task to an identifier.
 		//
 		// No documented field connects the parent's launching call to the
@@ -454,14 +485,20 @@ func (st *logFold) apply(e event) {
 		st.order = append(st.order, e.ID)
 	case "doing":
 		if r := rows[e.ID]; r != nil && r.Ended.IsZero() {
-			r.Doing = e.Tool
+			r.Doing, r.Heard = e.Tool, e.At
 		}
 	case "done":
 		// Only clears the tool it names. A sub-agent's calls arrive in
 		// order, but a stray PostToolUse for a tool the row is no longer in
 		// should not blank a call that has since started.
-		if r := rows[e.ID]; r != nil && r.Doing == e.Tool {
-			r.Doing = ""
+		// It is still the row being heard from, whichever tool it names: the
+		// end of a long call is exactly the event a row gone quiet during that
+		// call is waiting for.
+		if r := rows[e.ID]; r != nil {
+			r.Heard = e.At
+			if r.Doing == e.Tool {
+				r.Doing = ""
+			}
 		}
 	case "stop":
 		// Only a sub-agent that started gets a row. A run against the real
@@ -469,7 +506,7 @@ func (st *logFold) apply(e event) {
 		// start, carrying text that was never in the session; a fold that
 		// made a row from a stop would have shown those as sub-agents.
 		if r := rows[e.ID]; r != nil {
-			r.Ended, r.Said, r.Doing = e.At, e.Said, ""
+			r.Ended, r.Said, r.Earlier, r.Doing, r.Heard = e.At, e.Said, "", "", e.At
 		}
 	}
 }

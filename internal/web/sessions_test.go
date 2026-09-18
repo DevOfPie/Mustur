@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -555,12 +556,121 @@ func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 	}
 }
 
+// A running row unheard for longer than SubagentQuietAfter is quiet from the
+// first paint (MUS-D-0191), not only once the script's first frame lands: the
+// page used to count it running and turn the ring until then, which is the
+// wrong MUS-F-0157 names, shown for a moment on every load.
+func TestAQuietSubagentIsQuietOnTheFirstPaint(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	now := time.Date(2026, 9, 14, 4, 30, 0, 0, time.UTC)
+	s := &Sessions{
+		Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie",
+		HookDir: dir, Now: func() time.Time { return now },
+	}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	rec := func(payload string, at time.Time) {
+		session.RecordHookEvent(dir, "Mustur", []byte(payload), at)
+	}
+	rec(`{"hook_event_name":"SubagentStart","agent_id":"f1","agent_type":"Explore"}`, now.Add(-2*time.Hour))
+	rec(`{"hook_event_name":"SubagentStop","agent_id":"f1","last_assistant_message":"done"}`, now.Add(-time.Hour))
+	rec(`{"hook_event_name":"SubagentStart","agent_id":"q1","agent_type":"Explore"}`, now.Add(-time.Hour))
+	heard := now.Add(-16 * time.Minute)
+	rec(`{"hook_event_name":"PreToolUse","agent_id":"q1","tool_name":"Edit"}`, heard)
+
+	body := getFrom(t, srv, "/sessions/Mustur")
+	row := between(body, `data-id="q1"`, "</button>")
+	if !strings.Contains(row, `class="pill quiet" data-heard="`+strconv.FormatInt(heard.Unix(), 10)+`"`) ||
+		!strings.Contains(row, "no word since") {
+		t.Errorf("the row heard 16 minutes ago is not drawn quiet:\n%s", row)
+	}
+	if strings.Contains(row, `class="age"`) || strings.Contains(row, "Edit") {
+		t.Errorf("a quiet row still draws its tool or its age:\n%s", row)
+	}
+	for _, want := range []string{
+		`class="ring" id="ring"`, // not live
+		`id="badge">2</span>`,    // nothing running: the total
+		`title="2 · 1 quiet"`,
+		`id="dcount">2 · 1 quiet</small>`,
+		`<summary>1 finished</summary>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("with only a quiet and a finished row, no %q", want)
+		}
+	}
+
+	// Heard from inside the threshold, a row still runs and turns the ring.
+	rec(`{"hook_event_name":"SubagentStart","agent_id":"r1","agent_type":"Explore"}`, now.Add(-14*time.Minute))
+	body = getFrom(t, srv, "/sessions/Mustur")
+	for _, want := range []string{
+		`class="ring live" id="ring"`,
+		`id="badge">1</span>`,
+		`id="dcount">3 · 1 running · 1 quiet</small>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("with a row heard 14 minutes ago, no %q", want)
+		}
+	}
+}
+
 // Finished sub-agents fold under one line that counts them (MUS-D-0181).
 //
 // The owner chose this on MUS-Q-0126 over hiding, capping or ageing rows out:
 // nothing leaves the drawer, the running ones stay listed, and what finished
 // is one line away. Shut on arrival and with script blocked, which is what a
 // <details> is without anyone's help.
+// A resumed sub-agent running again carries its previous run's report as
+// earlier, never as said, so the reading pane can label it (MUS-F-0172,
+// MUS-D-0203). Once the resumed run stops, its own report is the row's.
+func TestAResumedSubagentCarriesItsPreviousReportAsEarlier(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	now := time.Date(2026, 9, 18, 12, 0, 0, 0, time.UTC)
+	s := &Sessions{
+		Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie",
+		HookDir: dir, Now: func() time.Time { return now.Add(10 * time.Minute) },
+	}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+	rec := func(payload map[string]any, at time.Time) {
+		b, err := json.Marshal(payload)
+		if err != nil {
+			t.Fatal(err)
+		}
+		session.RecordHookEvent(dir, "Mustur", b, at)
+	}
+	rec(map[string]any{"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose"}, now)
+	rec(map[string]any{"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "First verdict."}, now.Add(time.Minute))
+	rec(map[string]any{"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose"}, now.Add(2*time.Minute))
+
+	rows, running, _ := s.subagents("Mustur")
+	if len(rows) != 1 || running != 1 {
+		t.Fatalf("rows %+v, running %d; want the one row running again", rows, running)
+	}
+	if r := rows[0]; r.Said != "" || r.Earlier != "First verdict." {
+		t.Errorf("said %q, earlier %q; want the first run's report as earlier only", r.Said, r.Earlier)
+	}
+	body := getFrom(t, srv, "/sessions/Mustur")
+	if !strings.Contains(body, `<div class="say" data-for="a1" data-earlier>First verdict.</div>`) {
+		t.Error("the first paint does not mark the running row's report as the previous run's")
+	}
+
+	rec(map[string]any{"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "Second verdict."}, now.Add(5*time.Minute))
+	rows, _, _ = s.subagents("Mustur")
+	if r := rows[0]; r.Said != "Second verdict." || r.Earlier != "" {
+		t.Errorf("said %q, earlier %q; want the resumed run's own report and nothing earlier", r.Said, r.Earlier)
+	}
+	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "data-earlier") {
+		t.Error("a finished row is still marked as carrying a previous run's report")
+	}
+}
+
 func TestFinishedSubagentsFoldUnderACount(t *testing.T) {
 	dir := t.TempDir()
 	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
@@ -711,6 +821,7 @@ func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
 				Title   string `json:"title"`
 				State   string `json:"state"`
 				Started int64  `json:"started"`
+				Heard   int64  `json:"heard"`
 				For     string `json:"for"`
 			} `json:"agents"`
 			Running int `json:"running"`
@@ -729,6 +840,11 @@ func TestSubagentRowsArriveOverTheSocket(t *testing.T) {
 		}
 		if f.Agents[0].Started == 0 {
 			t.Error("no start stamp; the client counts the age from it")
+		}
+		// The last event recorded was the Grep, a second after the start. The
+		// client reads a running row as quiet from this stamp (MUS-D-0191).
+		if want := now.Add(-time.Second).Unix(); f.Agents[0].Heard != want {
+			t.Errorf("heard %d, want %d, the stamp of the row's last event", f.Agents[0].Heard, want)
 		}
 		if f.Agents[0].For != "" {
 			t.Error("a rendered age was sent as well as the stamp, so the two can disagree")
