@@ -222,6 +222,14 @@ func (in *Intake) now() time.Time {
 }
 
 func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
+	render(w, in.full(r))
+}
+
+// full is everything the page shows this viewer: destinations, recent jots,
+// scratch, a reader's held list and the badge. A refusal renders it too, with
+// its error and the words kept, so a reader told no is still looking at the
+// page they sent from rather than a box with nothing around it.
+func (in *Intake) full(r *http.Request) page {
 	p := page{
 		ShowSessions: in.ShowSessions && CanWrite(r),
 		ShowAccount:  in.ShowAccount,
@@ -275,7 +283,7 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		held, _ := approvable(r.Context(), r, in.Store, in.Roles, in.Project)
 		p.OpenQuestions += len(held)
 	}
-	render(w, p)
+	return p
 }
 
 // hold keeps a reader's jot for an owner instead of filing it (MUS-D-0189).
@@ -285,9 +293,12 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 // picture: the plan keeps unreviewed images out of the store in this cut, so a
 // picture is refused with the words kept rather than dropped silently.
 func (in *Intake) hold(w http.ResponseWriter, r *http.Request, text string) {
+	// The whole page, not a bare box: a refusal used to render with no
+	// destinations to choose again from, no held list and no badge.
 	refuse := func(why string) {
-		render(w, page{Error: why, Project: in.Project, Jot: text, Reader: true,
-			ShowSessions: in.ShowSessions && CanWrite(r), ShowAccount: in.ShowAccount})
+		p := in.full(r)
+		p.Error, p.Jot, p.Sent = why, text, false
+		render(w, p)
 	}
 	if images, err := readImages(r); err != nil || len(images) > 0 {
 		refuse("pictures are not taken from a reader's jot; send the words, and an owner can add one once it is filed")

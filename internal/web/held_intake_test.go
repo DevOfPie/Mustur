@@ -213,6 +213,61 @@ func TestAReaderCannotSendToScratch(t *testing.T) {
 	}
 }
 
+// A refused picture or a refused Scratch renders the whole page, not a bare box:
+// the destinations to choose again from, what the reader already has waiting,
+// and the badge. It rendered none of the three (PR 103's review, finding 8).
+func TestARefusedSendRendersTheWholePage(t *testing.T) {
+	h := heldServer(t)
+	if err := h.st.Append(context.Background(), openQuestion("MUS-Q-0001", "Open"), "create", "test"); err != nil {
+		t.Fatal(err)
+	}
+	reader, _ := h.as(t, "friend@example.com", map[string]account.Role{"MUS": account.Reader})
+	if res, _ := sendForm(t, reader, h.srv.URL+"/intake", url.Values{"jot": {"already waiting"}}); res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("the first send answered %d", res.StatusCode)
+	}
+
+	picture := func() string {
+		var body bytes.Buffer
+		mw := multipart.NewWriter(&body)
+		_ = mw.WriteField("jot", "look at this")
+		part, _ := mw.CreateFormFile("image", "shot.png")
+		_ = png.Encode(part, image.NewRGBA(image.Rect(0, 0, 4, 4)))
+		mw.Close()
+		req, _ := http.NewRequest(http.MethodPost, h.srv.URL+"/intake", &body)
+		req.Header.Set("Content-Type", mw.FormDataContentType())
+		res, err := reader.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		b, _ := io.ReadAll(res.Body)
+		return string(b)
+	}
+	scratch := func() string {
+		_, b := sendForm(t, reader, h.srv.URL+"/intake", url.Values{"jot": {"look at this"}, "to": {"scratch"}})
+		return b
+	}
+	for name, send := range map[string]func() string{"picture": picture, "scratch": scratch} {
+		page := send()
+		for _, want := range []string{
+			"Not sent:",
+			"look at this",                // the words kept
+			`<option value="MUS-P-0002">`, // the destinations
+			"Waiting for an owner",        // their held list
+			"already waiting",
+			`<em class="cnt">1</em>`, // the badge
+			"Send for approval",
+		} {
+			if !strings.Contains(page, want) {
+				t.Errorf("the refused %s's page is missing %q", name, want)
+			}
+		}
+		if strings.Contains(page, "Sent for approval.") {
+			t.Errorf("the refused %s's page says it was sent", name)
+		}
+	}
+}
+
 // An owner's box is unchanged: it files.
 func TestAnOwnersJotIsStillFiled(t *testing.T) {
 	h := heldServer(t)
