@@ -44,6 +44,7 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
+	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/question"
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/session"
@@ -151,10 +152,12 @@ type queued struct {
 }
 
 type queuePage struct {
-	Project  string
-	Open     []queued
-	OpenN    int
-	Answered string
+	Project string
+	Open    []queued
+	OpenN   int
+	// Attention is the Records badge (MUS-D-0193); bar.js keeps it true.
+	Attention int
+	Answered  string
 	// What became of the answer once it was written: the same sentence the
 	// record keeps, shown to the person who just answered (MUS-F-0070). An
 	// answer to a question that named no session is recorded and delivered
@@ -260,6 +263,7 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		Project:      q.Project,
 		Open:         openQs,
 		OpenN:        len(openQs),
+		Attention:    intake.AttentionCount(r.Context(), q.Store),
 		Answered:     r.URL.Query().Get("answered"),
 		Delivered:    r.URL.Query().Get("sent"),
 		Error:        r.URL.Query().Get("error"),
@@ -586,7 +590,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
   <a href="/questions" class="here" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenN}}<em class="cnt">{{.OpenN}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
-  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 <script src="/assets/bar.js"></script>
@@ -595,11 +599,13 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 ` + citesTmpl))
 
 // countCache holds the answer for a moment so a handful of open tabs polling
-// the badge cost one count between them rather than one each.
+// a badge cost one count between them rather than one each. There is one per
+// badge, and each is handed the count it holds.
 //
-// OpenCount lists every record in the store and filters, which is fine once and
-// wasteful per tab per tick. Two seconds is short enough that nobody sees a
-// stale number and long enough that a page full of tabs is one query.
+// OpenCount and intake.AttentionCount each list every record in the store and
+// filter, which is fine once and wasteful per tab per tick. Two seconds is
+// short enough that nobody sees a stale number and long enough that a page
+// full of tabs is one query.
 type countCache struct {
 	mu   sync.Mutex
 	at   time.Time
@@ -607,13 +613,13 @@ type countCache struct {
 	have bool
 }
 
-func (c *countCache) get(ctx context.Context, s *store.Store, now func() time.Time) int {
+func (c *countCache) get(ctx context.Context, s *store.Store, now func() time.Time, count func(context.Context, *store.Store) int) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.have && now().Sub(c.at) < 2*time.Second {
 		return c.n
 	}
-	c.n = OpenCount(ctx, s)
+	c.n = count(ctx, s)
 	c.at = now()
 	c.have = true
 	return c.n
@@ -625,8 +631,14 @@ func (c *countCache) get(ctx context.Context, s *store.Store, now func() time.Ti
 func (q *Questions) count(w http.ResponseWriter, r *http.Request) {
 	n := 0
 	if q.Store != nil {
-		n = q.counts.get(r.Context(), q.Store, q.now)
+		n = q.counts.get(r.Context(), q.Store, q.now, OpenCount)
 	}
+	writeCount(w, n)
+}
+
+// writeCount is a badge's answer, the same shape for every badge so bar.js
+// reads them all one way.
+func writeCount(w http.ResponseWriter, n int) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	_ = json.NewEncoder(w).Encode(struct {

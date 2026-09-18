@@ -52,6 +52,9 @@ const shellCSS = `
   /* Canvas follows color-scheme, so the bar is opaque in both themes without
      this file having to know either one's colour. */
   :root { --paper: Canvas;
+          /* Needs attention, on every surface: the Records badge, and the
+             section and banner on the records surface itself. */
+          --warn: #c2703a; --warn-soft: #c2703a22;
           /* The rail's whole width, border included, and the air between it
              and the text. Both are named because the content's left margin is
              computed from them — when they were separate numbers the rail was
@@ -121,6 +124,11 @@ const shellCSS = `
                border: 1px solid var(--accent, currentColor); border-radius: 999px;
                padding: 0 .3rem; margin-left: .3rem;
                background: var(--accent-soft, #8881); }
+  /* The Records badge counts records needing attention (MUS-D-0193), which is
+     a different thing from decisions waiting and wears a different tone, so
+     the two are never read as one number. The amber is the one routing
+     verification already uses for a stale row. */
+  nav a .cnt.att { border-color: var(--warn); background: var(--warn-soft); }
 
   /* The five icons.
 

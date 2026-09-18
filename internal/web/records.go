@@ -48,12 +48,15 @@ import (
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/ident"
+	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
 // Records serves the records document.
 type Records struct {
+	counts countCache
+
 	Store   *store.Store
 	Project string
 	// Home expands a leading ~ in a checkout path. Empty means the running
@@ -85,6 +88,19 @@ func (rr *Records) Routes(mux *http.ServeMux) {
 	// behind the same guard as the record the image belongs to, and it is the
 	// one place the picture is shown at all.
 	mux.HandleFunc("GET /records/image/{id}", rr.image)
+	// The Records badge's poll (MUS-D-0193), beside the Decisions one.
+	mux.HandleFunc("GET /records/attention/count", rr.count)
+}
+
+// count answers the Records badge's poll: how many records need attention,
+// cached exactly as the decisions count is. A number and never which records,
+// for the same reason that one is.
+func (rr *Records) count(w http.ResponseWriter, r *http.Request) {
+	n := 0
+	if rr.Store != nil {
+		n = rr.counts.get(r.Context(), rr.Store, rr.now, intake.AttentionCount)
+	}
+	writeCount(w, n)
 }
 
 // kinds is the order the document presents, which is the order the export
@@ -192,6 +208,10 @@ type recordsPage struct {
 	// OpenQuestions is the bar's count. Every surface carries it, and bar.js
 	// keeps it true after this render (MUS-F-0086).
 	OpenQuestions int
+	// Attention is the Records badge: how many records need attention
+	// (MUS-D-0193). bar.js keeps it true after this render, as it does the
+	// count above.
+	Attention int
 
 	Project      string
 	ShowSessions bool
@@ -623,6 +643,7 @@ func (rr *Records) render(w http.ResponseWriter, r *http.Request, p recordsPage)
 	p.ShowAccount = rr.ShowAccount
 	if rr.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), rr.Store)
+		p.Attention = intake.AttentionCount(r.Context(), rr.Store)
 	}
 	if err := recordsTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -785,7 +806,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
   <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
-  <a href="/records" class="here" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a href="/records" class="here" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 <script src="/assets/bar.js"></script>
