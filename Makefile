@@ -1,6 +1,7 @@
 # The gates run against this working tree, by hand, today — workflow.md's rule.
-# Not every target is offline: `questions` reads the store and says it did not
-# run where there is none or it holds no records (MUS-D-0183); `export-scope`
+# Not every target is offline: `questions` and `findings` read the store and say
+# they did not run where there is none or it holds no records (MUS-D-0183);
+# `export-scope`
 # fetches main from origin when the checkout has none, and says it did not run
 # when that fails (MUS-D-0182); `records-refresh` fetches, pushes and opens a
 # pull request; `install-service` and `deploy` act on this machine's systemd.
@@ -11,10 +12,10 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
-        questions surfaces export-scope-test export-scope build serve seed export records-refresh audit \
+        questions findings surfaces export-scope-test export-scope build serve seed export records-refresh audit \
         install install-service deploy deploy-from-main workflow-proposals help
 
-check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions surfaces export-scope-test export-scope ## Every commit gate this tree can enforce mechanically
+check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions findings surfaces export-scope-test export-scope ## Every commit gate this tree can enforce mechanically
 
 # The export is committed on main only (MUS-D-0182): a branch that commits it
 # carries the whole store at that minute, and two open at once conflict in files
@@ -98,6 +99,19 @@ questions: ## No open question in the store was left unsurfaced as a prompt
 	  fi; \
 	  go run ./cmd/mustur questions --gate --db "$$store" --project MUS \
 	    && echo "  ok    no open question of this project's in $$store was left unsurfaced"
+
+# Every finding carries a State and a Status word its project declares
+# (MUS-D-0196), in every project the store holds. Reads the store for the
+# reason above and skips out loud the same way; the binary itself skips out
+# loud a store in which no project declares a Status word, which is what a
+# fresh `make seed` makes.
+findings: ## Every finding in the store has a State and a Status word its project declares
+	@store=$$(scripts/store-path.sh); \
+	  if [ ! -f "$$store" ]; then \
+	    echo "  skip  finding state gate did not run: no store at $$store, and it reads only the store (MUS-D-0183)"; \
+	    exit 0; \
+	  fi; \
+	  go run ./cmd/mustur verify --findings --db "$$store"
 
 # go.mod said a directly imported package was `// indirect` for one commit, and
 # nothing noticed. An earlier version of this comment said "a whole milestone",

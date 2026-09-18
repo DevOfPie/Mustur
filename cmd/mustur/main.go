@@ -27,6 +27,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/seed"
 	"github.com/DevOfPie/Mustur/internal/session"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
 	"github.com/DevOfPie/Mustur/internal/web"
@@ -37,6 +38,7 @@ const usage = `mustur — records and routing for one project
   mustur seed     [--db PATH]                 put what already exists into an empty store
   mustur export   [--db PATH] [--out DIR]     render the store as markdown
   mustur verify   [--db PATH] [--records DIR] check the exported tree against itself, and against the store
+  mustur verify   --findings --db PATH        every finding has a State and a Status word its project declares
   mustur serve    [--db PATH] [--addr HOST]   serve the one tool call over MCP
   mustur list     [--db PATH] [--kind KIND]   every record, by identifier
   mustur get ID   [--db PATH]                 one record in full (either order)
@@ -569,8 +571,12 @@ func cmdVerify(args []string) error {
 	fs := flag.NewFlagSet("verify", flag.ContinueOnError)
 	db := fs.String("db", "", "compare the tree against this store as well (optional)")
 	dir := fs.String("records", "records", "the exported tree to check")
+	findings := fs.Bool("findings", false, "check only the store's findings, not the tree: a State, and a Status word their project declares (MUS-D-0196). Needs --db")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *findings {
+		return verifyFindings(*db)
 	}
 	problems, checked, err := verify.Tree(*dir)
 	if err != nil {
@@ -614,6 +620,47 @@ func newServer(addr string, handler http.Handler, log io.Writer) *http.Server {
 		Handler:           web.LogRequests(log, handler),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+}
+
+// verifyFindings is the gate over the store's findings (MUS-D-0196): every one
+// carries a State, and a Status word its project's list declares and maps to
+// that State. It reads the store and never the export, for the question gate's
+// reason (MUS-D-0183): on a branch the export is main's.
+func verifyFindings(db string) error {
+	if db == "" {
+		return fmt.Errorf("verify --findings reads a store: give --db")
+	}
+	s, ctx, err := openStore(db)
+	if err != nil {
+		return err
+	}
+	defer s.Close()
+	records, err := s.List(ctx, "")
+	if err != nil {
+		return err
+	}
+	if !status.Declared(records) {
+		// Said out loud rather than passed: a store that predates the lists
+		// has nothing to check against, and reporting every finding in it
+		// would fail a fresh seed for being fresh.
+		fmt.Printf("  skip  finding state gate did not run: no project in %s declares a Status word (MUS-D-0196)\n", db)
+		return nil
+	}
+	problems := status.Check(records)
+	for _, p := range problems {
+		fmt.Printf("  FAIL  %s\n", p)
+	}
+	if len(problems) > 0 {
+		return fmt.Errorf("%d finding state problem(s) in %s", len(problems), db)
+	}
+	n := 0
+	for _, r := range records {
+		if r.Kind == "finding" {
+			n++
+		}
+	}
+	fmt.Printf("  ok    %d finding(s) in %s carry a State and a Status word their project declares\n", n, db)
+	return nil
 }
 
 func cmdServe(args []string) error {

@@ -187,6 +187,21 @@ func put(r *record.Record, key, value string) {
 	r.Data = append(r.Data, record.Field{Key: key, Value: value})
 }
 
+// Declared reports whether any project among rs declares a Status word. A
+// store where none does predates MUS-D-0196 — a fresh `make seed` is one — and
+// Check over it would report every finding it holds.
+func Declared(rs []record.Record) bool {
+	for _, r := range rs {
+		if r.Kind != "project" {
+			continue
+		}
+		if _, ok := r.Get(WordField); ok {
+			return true
+		}
+	}
+	return false
+}
+
 // Check reports every finding among rs whose State or Status is not what its
 // project declares: no State, a State outside the three, no Status word, a word
 // its project's list does not declare, a word mapping to a State other than

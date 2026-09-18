@@ -108,6 +108,16 @@ func TestCheckReportsEveryWayAFindingCanBeWrong(t *testing.T) {
 	}
 }
 
+func TestDeclaredIsWhetherAnyProjectHasAList(t *testing.T) {
+	bare := project("MUS-P-0001", "MUS")
+	if Declared([]record.Record{bare, finding("MUS-F-0001")}) {
+		t.Error("a project with no Status word declared one")
+	}
+	if !Declared([]record.Record{bare, project("MUS-P-0002", "IDW", "noted = done :: x")}) {
+		t.Error("a project's list was not seen")
+	}
+}
+
 func TestSetReplacesInPlaceOrAppends(t *testing.T) {
 	r := finding("MUS-F-0001", "Evidence", "", StatusField, "unreviewed")
 	Set(&r, Dropped, Superseded)
