@@ -3095,3 +3095,66 @@ func TestThePlusIsNotDrawnDisabled(t *testing.T) {
 		t.Error("the plus is no longer a plain link to the start form")
 	}
 }
+
+// A main agent at its prompt with a sub-agent still at work is not a session
+// waiting on the owner (MUS-F-0171). The picker said "waiting" beside it, which
+// reads as something pending on the owner when there was nothing to do but
+// wait for the sub-agents.
+func TestSubagentsAtWorkMakeTheSessionWorkingInThePicker(t *testing.T) {
+	for _, c := range []struct {
+		pane    session.Agent
+		running int
+		want    string
+	}{
+		{session.AgentWaiting, 0, "waiting"},
+		{session.AgentWaiting, 1, "working"},
+		{session.AgentWaiting, 3, "working"},
+		{session.AgentWorking, 0, "working"},
+		{session.AgentStarting, 0, "starting"},
+		// An unread pane says nothing about the main agent, and still nothing
+		// once the last sub-agent stops.
+		{"", 0, ""},
+		{"", 2, "working"},
+	} {
+		if got := pickerDoing(c.pane, c.running); got != c.want {
+			t.Errorf("pane %q with %d sub-agents running: picker says %q, want %q",
+				c.pane, c.running, got, c.want)
+		}
+	}
+}
+
+// The pill is the other place that said so, as "idle". It reads the drawer's
+// own running count rather than counting again, so the pill and the drawer's
+// ring cannot disagree about whether a sub-agent is at work, and a quiet row
+// (MUS-D-0191) holds neither of them on.
+func TestSubagentsAtWorkMakeThePillSayRunning(t *testing.T) {
+	b, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	js := string(b)
+	for _, want := range []string{
+		// The drawer's count is the one the pill reads.
+		"agentsRunning = running;",
+		// A pane at its prompt with sub-agents running is running, ring on,
+		// with a title saying why.
+		`if (agentsRunning > 0) setState("running", true, subagentsWhy("at its prompt"));`,
+		// And idle again once the count is zero.
+		`else setState("idle", false);`,
+		// The silence fallback does the same.
+		`setState("running", true, subagentsWhy("quiet"));`,
+		`" running; the main agent is "`,
+		// A title that is not needed is removed, not left naming sub-agents
+		// after the last one stopped.
+		`state.removeAttribute("title")`,
+		// A frame that changes the rows decides the pill at once.
+		"drawAgents();\n        refreshState();",
+		// The tick draws the rows before deciding the pill, so a row turning
+		// quiet stops holding the pill on in the same second.
+		"if (!closed) drawAgents();\n    refreshState();",
+	} {
+		if !strings.Contains(js, want) {
+			t.Errorf("session.js lacks %q", want)
+		}
+	}
+}

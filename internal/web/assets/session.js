@@ -81,9 +81,13 @@
     if (window.musturBadge) window.musturBadge(n);
   }
 
-  function setState(label, on) {
+  function setState(label, on, why) {
     state.textContent = label;
     state.className = on ? "pill on" : "pill";
+    // Said only when the word needs a reason the pane does not give: running
+    // over a main agent that is not itself at work (MUS-F-0171).
+    if (why) state.title = why;
+    else state.removeAttribute("title");
     // The ring turns only while something is actually happening. Reconnecting,
     // ended and idle are all states where a moving light would be saying the
     // opposite of the word beside it.
@@ -112,14 +116,31 @@
       setState("running", true);
       return;
     }
+    // The main agent at its prompt is not the session waiting on you while a
+    // sub-agent it launched is still at work (MUS-F-0171): "idle" there read
+    // as something pending on the owner when there was nothing to do but
+    // wait. The count is the drawer's own, so the pill and the drawer's ring
+    // turn together and a quiet row (MUS-D-0191) turns neither. When the last
+    // one stops, what the pane says is the answer again.
     if (doing === "waiting") {
-      setState("idle", false);
+      if (agentsRunning > 0) setState("running", true, subagentsWhy("at its prompt"));
+      else setState("idle", false);
       return;
     }
     // Nothing here could read the pane, so fall back to counting silence.
     var quietFor = Math.floor((Date.now() - lastOutput) / 1000);
     var idle = quietFor >= IDLE_AFTER;
+    if (idle && agentsRunning > 0) {
+      setState("running", true, subagentsWhy("quiet"));
+      return;
+    }
     setState(idle ? "idle" : "running", !idle);
+  }
+
+  // The pill's title when sub-agents are why it says running.
+  function subagentsWhy(main) {
+    return agentsRunning + " sub-agent" + (agentsRunning === 1 ? "" : "s") +
+      " running; the main agent is " + main;
   }
 
   // Follow the tail unless the reader has scrolled up to look at something.
@@ -278,10 +299,11 @@
 
   setInterval(function () {
     if (foot && !closed) showFoot();
-    refreshState();
     // The ages move on their own, so the server does not send a frame to move
-    // them.
+    // them. Drawn before the pill is decided, because a row turning quiet this
+    // second is a sub-agent the pill stops counting this second.
     if (!closed) drawAgents();
+    refreshState();
   }, 1000);
 
   // Sub-agent rows.
@@ -292,6 +314,17 @@
   // them, and the only thing computed here is the age, from the stamps, so a
   // running sub-agent's clock moves without a frame per second to move it.
   var agents = null;
+  // How many of them are running, as drawAgents counts them for the drawer's
+  // badge and ring. The pill reads this rather than counting again, so there
+  // is one rule for "a sub-agent is at work" (MUS-F-0171). Until the first
+  // agents frame it is what the first paint said: the ring rendered live and
+  // the badge holding the running count.
+  var agentsRunning = (function () {
+    var r = document.getElementById("ring");
+    var b = document.getElementById("badge");
+    if (!r || !r.classList.contains("live")) return 0;
+    return Number(b && b.textContent) || 1;
+  })();
   // Whether the reader left the finished rows open. Shut until they open it.
   var finishedOpen = false;
 
@@ -366,6 +399,7 @@
       else running++;
     }
     badge(agents.length, running, silent);
+    agentsRunning = running;
 
     // Rebuilt rather than diffed. A handful of rows is not worth a reconciler,
     // and a rebuild cannot leave a stale row behind. The fold is the one thing
@@ -777,6 +811,7 @@
       } else if (f.t === "agents") {
         agents = f.agents || [];
         drawAgents();
+        refreshState();
       } else if (f.t === "ended") {
         closed = true;
         attached = false;

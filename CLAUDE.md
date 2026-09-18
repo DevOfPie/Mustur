@@ -57,7 +57,11 @@ is a guess standing in for that. It wears a turning accent ring while a turn is
 in flight. A pane with nothing on it at all reads **starting**, with no ring
 and a note in the empty terminal, because a CLI draws nothing until it has
 loaded — a restore of a 6.3MB transcript was blank for 1.15s
-([MUS-F-0115](records/findings.md#mus-f-0115)). A pane nothing here recognises
+([MUS-F-0115](records/findings.md#mus-f-0115)). A main agent at its prompt
+with a sub-agent still at work reads **running** too, ring and all, with a
+title saying it is the sub-agents — and **working** rather than waiting in the
+picker — because idle there looked like the session was waiting on the owner
+([MUS-F-0171](records/findings.md#mus-f-0171)). A pane nothing here recognises
 falls back to a three-minute silence threshold rather than claiming to know
 ([MUS-D-0130](records/decisions.md#mus-d-0130)). You can reply from that tab: the box is multi-line and spell-checked, it
 holds one draft that survives a reload and follows you between sessions, and it
