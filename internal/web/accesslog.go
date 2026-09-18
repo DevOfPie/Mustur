@@ -192,10 +192,32 @@ func redactInvite(p string) string {
 
 // quote keeps one request on one line whatever its path holds.
 func quote(p string) string {
-	if strings.ContainsAny(p, " \t\r\n\"") {
+	if needsQuote(p, ` "`) {
 		return fmt.Sprintf("%q", p)
 	}
 	return p
+}
+
+// quoteField keeps free text — a token label, an email — to one field of one
+// log line.
+func quoteField(s string) string {
+	if s == "" || needsQuote(s, ` "=`) {
+		return fmt.Sprintf("%q", s)
+	}
+	return s
+}
+
+// needsQuote is any control byte, or any of also. Every control byte rather
+// than the four that break a line: an escape sequence or a backspace written
+// raw can repaint what a terminal reading the journal shows, and %q escapes
+// all of them once the string is quoted.
+func needsQuote(s, also string) bool {
+	for i := 0; i < len(s); i++ {
+		if c := s[i]; c < 0x20 || c == 0x7f {
+			return true
+		}
+	}
+	return strings.ContainsAny(s, also)
 }
 
 // recorder counts what was written without hiding what the writer underneath

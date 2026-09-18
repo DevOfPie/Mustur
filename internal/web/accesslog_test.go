@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -331,5 +332,75 @@ func TestAccessLogSaysWhoTheGuardFound(t *testing.T) {
 	res.Body.Close()
 	if l := waitFor(t, log, "GET /records?p=x status=303"); !strings.Contains(l, "who=- role=-") {
 		t.Errorf("refused line: %s", l)
+	}
+}
+
+// Every control byte is escaped, not only the ones that break a line: an
+// escape sequence or a backspace written raw repaints a terminal reading the
+// journal (the review on PR 96).
+func TestAccessLogQuotesEveryControlByte(t *testing.T) {
+	for c := 0; c < 0x20; c++ {
+		p := "/a" + string(rune(c)) + "b"
+		if got := quote(p); got == p || strings.ContainsRune(got, rune(c)) {
+			t.Errorf("quote(%q) = %q: byte %#x written raw", p, got, c)
+		}
+	}
+	if got := quote("/a\x7fb"); strings.ContainsRune(got, 0x7f) {
+		t.Errorf("quote left DEL raw: %q", got)
+	}
+	if got := quote("/records/MUS-D-0001"); got != "/records/MUS-D-0001" {
+		t.Errorf("an ordinary path was quoted: %q", got)
+	}
+}
+
+// who= is free text from two places, an account's email and a token's label,
+// and both are quoted the same way, so neither can fake a field or a line.
+func TestAccessLogQuotesWho(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	accounts := account.New(st.DB())
+	mux := http.NewServeMux()
+	mux.HandleFunc("/records", func(w http.ResponseWriter, r *http.Request) {})
+	mux.HandleFunc("/mcp", func(w http.ResponseWriter, r *http.Request) {})
+	auth := &Auth{Accounts: accounts, Origin: "http://127.0.0.1"}
+	log := &syncBuf{}
+	srv := httptest.NewServer(LogRequests(log, (&Guard{Auth: auth, Project: "MUS"}).Wrap(mux)))
+	defer srv.Close()
+
+	// The invitation accepts this: it refuses whitespace and nothing else.
+	const email = "a\x1b[2j\"role=owner\"@example.test"
+	reader := signedInAs(t, srv, accounts, email, "MUS", account.Reader)
+	res, err := reader.Get(srv.URL + "/records")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	l := waitFor(t, log, "GET /records status=200")
+	if want := "who=" + fmt.Sprintf("%q", email) + " role=reader"; !strings.HasSuffix(l, want) {
+		t.Errorf("email line: %q\nwant suffix %q", l, want)
+	}
+
+	const label = "bot\x1b[31m\x7f"
+	secret, _, err := accounts.IssueToken(ctx, label, "MUS", account.Reader, "test", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, _ := http.NewRequest(http.MethodPost, srv.URL+"/mcp", nil)
+	req.Header.Set("Authorization", "Bearer "+secret)
+	res, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	l = waitFor(t, log, "POST /mcp status=200")
+	if want := "who=token:" + fmt.Sprintf("%q", label); !strings.Contains(l, want) {
+		t.Errorf("token line: %q\nwant %q", l, want)
+	}
+	if strings.ContainsAny(log.String(), "\x1b\x7f") {
+		t.Fatalf("a control byte reached the log raw: %q", log.String())
 	}
 }
