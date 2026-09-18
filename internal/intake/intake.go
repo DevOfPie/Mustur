@@ -35,6 +35,9 @@ type Destination struct {
 	// that says where a record belongs is the difference between a store you
 	// can scan and one you have to open (MUS-Q-0030).
 	Prefix string
+	// Names holds the identifiers of destinations the jot named and was not
+	// routed to because they opted out of name-matching. Empty for most jots.
+	Names []string
 }
 
 // PrefixField names the identifier prefix a routing record's jots are filed
@@ -51,6 +54,25 @@ const DefaultField = "Intake"
 // DefaultValue is the value that field carries on the fallback destination.
 const DefaultValue = "default"
 
+// OptOutField takes a destination out of name-matching. A jot that names it is
+// not routed to it; it falls through as if the name had not been there, and the
+// routing says which destination was named and passed over. Choosing it
+// explicitly still files there: the opt-out is against the guess, not against
+// the destination.
+//
+// It exists for a destination whose name turns up in jots that are not meant
+// for it — somewhere a jot should arrive only because somebody confirmed a move
+// there, never because its name happened to be written down.
+const OptOutField = "Route it for me"
+
+// OptOutValue is the value that field carries on a destination that has opted
+// out.
+const OptOutValue = "never"
+
+// NamesField is the data field on a filed jot that records a destination it
+// named and was not routed to because that destination opted out.
+const NamesField = "Names"
+
 // routingKinds are the record kinds a jot can be routed to.
 var routingKinds = map[string]bool{"repository": true, "machine": true, "project": true}
 
@@ -61,6 +83,7 @@ var routingKinds = map[string]bool{"repository": true, "machine": true, "project
 func Route(text string, routing []record.Record) Destination {
 	var fallback *record.Record
 	matches := map[string]record.Record{}
+	skipped := map[string]record.Record{}
 
 	for _, r := range routing {
 		if !routingKinds[r.Kind] {
@@ -72,11 +95,60 @@ func Route(text string, routing []record.Record) Destination {
 		}
 		for _, name := range namesOf(r) {
 			if mentions(text, name) {
-				matches[r.ID] = r
+				// An opted-out destination is taken out before narrowing, so
+				// what remains is decided exactly as if it had never matched.
+				if optedOut(r) {
+					skipped[r.ID] = r
+				} else {
+					matches[r.ID] = r
+				}
 			}
 		}
 	}
 
+	d := route(matches, fallback)
+	if len(skipped) == 0 {
+		return d
+	}
+	ids := make([]string, 0, len(skipped))
+	for id := range skipped {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	titles := make([]string, 0, len(ids))
+	for _, id := range ids {
+		titles = append(titles, skipped[id].Title)
+	}
+	d.Names = ids
+	passed := strings.Join(titles, ", ")
+	which := "which takes jots only when a move is confirmed"
+	if len(titles) > 1 {
+		which = "which take jots only when a move is confirmed"
+	}
+	if len(matches) == 0 {
+		// The opted-out destination was the only name in the jot, so the
+		// fallback's own reason ("no destination is obvious") would hide the
+		// one thing a reader of the routing needs to know.
+		d.Why = fmt.Sprintf("the jot names %s, %s", passed, which)
+		if d.ID == "" {
+			d.Why += ", and the routing registry declares no default"
+		}
+		return d
+	}
+	d.Why = fmt.Sprintf("%s; it also names %s, %s", d.Why, passed, which)
+	return d
+}
+
+// optedOut reports whether a routing record has taken itself out of
+// name-matching with OptOutField.
+func optedOut(r record.Record) bool {
+	v, ok := r.Get(OptOutField)
+	return ok && strings.EqualFold(strings.TrimSpace(v), OptOutValue)
+}
+
+// route decides between what the jot's names matched, falling back when none
+// or several of them are obvious.
+func route(matches map[string]record.Record, fallback *record.Record) Destination {
 	narrowed := narrow(matches)
 
 	switch len(narrowed) {
@@ -297,6 +369,11 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 			{Key: "Routing", Value: to.Why},
 			{Key: "Filed by", Value: actor},
 		},
+	}
+	if len(to.Names) > 0 {
+		// The destination the jot named and was kept from, so moving it there
+		// later is a confirmation of something the record already says.
+		r.Data = append(r.Data, record.Field{Key: NamesField, Value: strings.Join(to.Names, ", ")})
 	}
 	if to.ID != "" {
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}
