@@ -751,6 +751,34 @@ func TestAPendingInvitationShowsOnAnExistingPersonsCard(t *testing.T) {
 	}
 }
 
+// With script blocked every line has a Save button, and pressing it on a "no
+// access" line nobody changed is a no-op: back to the screen with nothing
+// said, not an error (the review on PR 102).
+func TestSavingAnUntouchedNoAccessLineDoesNothing(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, me := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
+	grant(t, accounts, me, "LNK", account.Owner)
+	_, friend := personWith(t, accounts, "friend@example.com", "MUS", account.Reader, "k2")
+
+	res := form(t, owner, srv, "/account/role", url.Values{"id": {friend.ID}, "project": {"LNK"}, "role": {"none"}})
+	res.Body.Close()
+	if res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("got %d, want 303", res.StatusCode)
+	}
+	loc := res.Header.Get("Location")
+	if strings.Contains(loc, "error=") || strings.Contains(loc, "said=") {
+		t.Errorf("an untouched line said something: %s", loc)
+	}
+	if _, ok := accounts.RoleFor(ctx, friend.ID, "LNK"); ok {
+		t.Error("saving no access granted a role")
+	}
+	var n int
+	if err := accounts.DB().QueryRowContext(ctx, `SELECT COUNT(*) FROM grant_removed`).Scan(&n); err != nil || n != 0 {
+		t.Errorf("a removal of nothing was recorded: %d, %v", n, err)
+	}
+}
+
 // Inviting a project's only owner to it as a reader is refused from the screen,
 // and says why, rather than issuing a link that would leave the project with no
 // owner once accepted (MUS-D-0188, the review on PR 102).

@@ -617,6 +617,14 @@ func (a *Accounts) role(w http.ResponseWriter, r *http.Request) {
 	var err error
 	said := "role changed"
 	if value == "none" {
+		if _, held := a.Store.RoleFor(ctx, target, project); !held {
+			// Save on a "no access" line nobody changed, with script blocked:
+			// there is nothing to remove, and nothing to say. Ungrant calls
+			// that an error so a typo on the command line says so, which is
+			// right there and wrong here (the review on PR 102).
+			a.back(w, r, "", "", "")
+			return
+		}
 		err = a.Store.Ungrant(ctx, target, project, acct.Email)
 		said = "access removed"
 	} else {
