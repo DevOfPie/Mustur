@@ -282,10 +282,13 @@ type rowView struct {
 	At      string
 	// Attention marks a row that also sits in the pinned section.
 	Attention bool
-	// Status is a finding's Status word, shown as a pill in the tone of its
-	// State (MUS-D-0196). Empty for any other kind.
-	Status string
-	State  string
+	// Finding marks a row that carries a Status pill. Status is its word, and
+	// State its State when that is one of the three — the pill's tone. A
+	// finding with no State, or one that is not a State, is drawn in its own
+	// dashed tone rather than the dropped one's (review of #109, m6).
+	Finding bool
+	Status  string
+	State   string
 }
 
 // A pick is one option in a picker, carrying how many records choosing it
@@ -307,7 +310,10 @@ type recordsIndex struct {
 	// States narrows findings by State (MUS-D-0196). Any other kind has none,
 	// so choosing one lists findings only.
 	States []pick
-	Q      string
+	// Stateless is a kind other than finding being chosen, which switches the
+	// State picker off.
+	Stateless bool
+	Q         string
 	// Chosen is whether anything narrows the list, which is when Clear is
 	// offered.
 	Chosen  bool
@@ -532,11 +538,15 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 		kind = ""
 	}
 	state := strings.TrimSpace(query.Get("state"))
-	if !status.ValidState(state) {
+	// Only a finding has a State, so with another kind chosen the State picker
+	// is switched off and a State in the address is ignored, rather than
+	// narrowing the list to nothing under a count that says otherwise.
+	stateless := kind != "" && kind != "finding"
+	if !status.ValidState(state) || stateless {
 		state = ""
 	}
 
-	idx := &recordsIndex{Q: q, Chosen: project != "" || kind != "" || state != "" || q != ""}
+	idx := &recordsIndex{Q: q, Chosen: project != "" || kind != "" || state != "" || q != "", Stateless: stateless}
 
 	// Before any filter is applied, so the section is the same on every page
 	// of every narrowing. Newest first, like the list below it.
@@ -589,12 +599,16 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	// The three States, each with how many findings within the chosen project
-	// carry it. All three are always offered: the list is fixed, and a nought
-	// says something true about the project.
+	// The three States, each with how many records choosing it would list:
+	// findings within the chosen project and matching the search. All three
+	// are always offered: the list is fixed, and a nought says something true.
+	// Counted after the kind and the search rather than before, because a
+	// count the list below then contradicts is worse than none (review of
+	// #109, m7).
 	perState := map[string]int{}
 	for _, rec := range all {
-		if rec.Kind == "finding" && (project == "" || prefixOf(rec.ID) == project) {
+		if rec.Kind == "finding" && (project == "" || prefixOf(rec.ID) == project) &&
+			(q == "" || searchMatches(rec, q)) {
 			perState[status.StateOf(rec)]++
 		}
 	}
@@ -644,6 +658,7 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 				Attention: intake.NeedsAttention(rec, box),
 			}
 			if rec.Kind == "finding" {
+				row.Finding = true
 				row.Status, row.State = status.WordOf(rec), status.StateOf(rec)
 				if !status.ValidState(row.State) {
 					// A tone only for a State that is one; the gate over the
@@ -1083,6 +1098,13 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
      "All projects" and the State's count short at 390px. */
   .narrow .pick { display: flex; flex-wrap: wrap; gap: .5rem; flex: 1 1 30rem; min-width: 0; }
   .narrow .pick select { flex: 1 1 9rem; }
+  .narrow select:disabled { opacity: .55; }
+  /* On a phone the project picker takes its own row: its label is a name and
+     a count, and sharing 358px cut "Mustur (MUS) · 597" to "· 59" (review of
+     #109, m6). Kind and State share the row below it. */
+  @media (max-width: 40rem) {
+    .narrow .pick select[name=project] { flex-basis: 100%; }
+  }
   .narrow .find { display: flex; gap: .5rem; flex: 1 1 16rem; min-width: 0; }
   .narrow select, .narrow input { flex: 1; min-width: 0; }
   .narrow select, .narrow input, .narrow button {
@@ -1120,6 +1142,8 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
              border: 1px solid var(--edge); border-radius: 999px; opacity: .6; }
   .row .st.open { border-color: var(--warn); background: var(--warn-soft); opacity: 1; }
   .row .st.done { border-color: var(--accent); background: var(--accent-soft); opacity: 1; }
+  /* No State, or one that is not a State: not dropped, and not drawn as it. */
+  .row .st.nostate { border-style: dashed; border-color: currentColor; opacity: .8; }
   /* On a phone a row takes two lines so the title is never cut short, as the
      plan draws it. */
   @media (max-width: 40rem) {
@@ -1251,10 +1275,12 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
       <option value="">All kinds</option>
       {{range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
     </select>
-    <select name="state" aria-label="State">
+    {{if .Stateless}}<select name="state" aria-label="State" disabled title="Only findings have a State">
+      <option value="" selected>Only findings have a State</option>
+    </select>{{else}}<select name="state" aria-label="State">
       <option value="">Any state</option>
       {{range .States}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
-    </select>
+    </select>{{end}}
   </div>
   <div class="find">
     <input type="search" name="q" value="{{.Q}}" placeholder="Identifier or words" aria-label="Identifier or words" autocapitalize="characters" autocomplete="off" spellcheck="false">
@@ -1263,7 +1289,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 </form>
 <p class="tally"><span>{{.Summary}}</span>{{if .Chosen}}<a href="/records">Clear</a>{{end}}</p>
 {{if .Rows}}<ol class="rows">
-{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span>{{if .Status}}<span class="st{{if .State}} {{.State}}{{end}}"{{if .State}} title="{{.State}}"{{end}}>{{.Status}}</span>{{end}}<span class="at">{{.At}}</span></a></li>
+{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span>{{if .Finding}}{{if .State}}<span class="st {{.State}}" title="{{.Status}} · {{.State}}">{{.Status}}</span>{{else}}<span class="st nostate" title="{{if .Status}}{{.Status}} · {{end}}no State">{{if .Status}}{{.Status}}{{else}}no State{{end}}</span>{{end}}{{end}}<span class="at">{{.At}}</span></a></li>
 {{end}}</ol>
 {{else if .Beyond}}<p class="none">Nothing on page {{.Page}}. The list ends at page {{.Pages}}.</p>
 {{else}}<p class="none">No records match.</p>

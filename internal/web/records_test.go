@@ -188,9 +188,9 @@ func TestStateNarrowsFindingsAndARowShowsItsStatus(t *testing.T) {
 		`<option value="open">open · 2</option>`,
 		`<option value="done">done · 1</option>`,
 		`<option value="dropped">dropped · 1</option>`,
-		`<span class="st open" title="open">unreviewed</span>`,
-		`<span class="st done" title="done">fixed</span>`,
-		`<span class="st dropped" title="dropped">merged</span>`,
+		`<span class="st open" title="unreviewed · open">unreviewed</span>`,
+		`<span class="st done" title="fixed · done">fixed</span>`,
+		`<span class="st dropped" title="merged · dropped">merged</span>`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("the index does not show %q", want)
@@ -236,6 +236,70 @@ func TestStateNarrowsFindingsAndARowShowsItsStatus(t *testing.T) {
 	body, _ = fetch(t, srv, "/records?state=closed")
 	if rows(body) != recordsPerPage || strings.Contains(body, "Clear") {
 		t.Errorf("state=closed was not ignored: %d rows", rows(body))
+	}
+}
+
+// Review of #109, m6 and m7: the State counts follow the search as the list
+// does; with another kind chosen the State picker is off and a State in the
+// address is ignored; a finding with no State, or one that is not a State,
+// wears its own dashed pill rather than the dropped one; and on a phone the
+// project picker has a row to itself.
+func TestTheStatePickerAgreesWithTheList(t *testing.T) {
+	f := func(id, title, word, state string) record.Record {
+		r := record.Record{ID: id, Kind: "finding", Title: title, At: "2026-09-18"}
+		if word != "" {
+			r.Data = append(r.Data, record.Field{Key: "Status", Value: word})
+		}
+		if state != "" {
+			r.Data = append(r.Data, record.Field{Key: "State", Value: state})
+		}
+		return r
+	}
+	srv := serveRecords(t, "",
+		f("MUS-F-0001", "drawer is wide", "fixed", "done"),
+		f("MUS-F-0002", "drawer is slow", "open", "open"),
+		f("MUS-F-0003", "tab bar hides", "fixed", "done"),
+		f("MUS-F-0004", "no state at all", "open", ""),
+		f("MUS-F-0005", "a state that is not", "open", "closed"),
+		decision("MUS-D-0001", "A decision", ""),
+	)
+
+	body, _ := fetch(t, srv, "/records?q=drawer")
+	for _, want := range []string{`<option value="done">done · 1</option>`, `<option value="open">open · 1</option>`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("q=drawer: the picker does not say %q", want)
+		}
+	}
+
+	body, _ = fetch(t, srv, "/records?kind=decision&state=done")
+	if rows(body) != 1 || !strings.Contains(body, "MUS-D-0001") {
+		t.Errorf("kind=decision&state=done: %d rows, want the decision; the State was not ignored", rows(body))
+	}
+	if !strings.Contains(body, `<select name="state" aria-label="State" disabled title="Only findings have a State">`) ||
+		!strings.Contains(body, "Only findings have a State</option>") {
+		t.Error("the State picker is not switched off for a kind with no State")
+	}
+	if strings.Contains(body, `value="done"`) {
+		t.Error("a switched-off State picker still offers States")
+	}
+
+	body, _ = fetch(t, srv, "/records?kind=finding")
+	for _, want := range []string{
+		`<span class="st nostate" title="open · no State">open</span>`,
+		`<span class="st done" title="fixed · done">fixed</span>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("kind=finding: missing %q", want)
+		}
+	}
+	if n := strings.Count(body, `class="st nostate"`); n != 2 {
+		t.Errorf("%d dashed pills, want one for no State and one for a State that is not one", n)
+	}
+	if !strings.Contains(body, ".row .st.nostate {") || !strings.Contains(body, "border-style: dashed") {
+		t.Error("the no-State pill has no style of its own")
+	}
+	if !strings.Contains(body, ".narrow .pick select[name=project] { flex-basis: 100%; }") {
+		t.Error("the project picker does not take its own row on a phone")
 	}
 }
 

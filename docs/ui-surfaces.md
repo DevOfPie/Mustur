@@ -252,12 +252,15 @@ decisions line.
 
 **Amended 2026-09-18: a finding's State** (MUS-D-0196). A third picker beside
 the kind picker takes `state` — "Any state", open, done or dropped — each with
-how many findings within the chosen project carry it. Only a finding has a
-State, so choosing one lists findings only; any other kind is listed while it
-says "Any state". A finding's row carries its Status word as a small pill after
-the title, in the warn tone for open, the accent for done and muted for dropped;
-the word is the text, so the tone is never the only signal. Same GET form, no
-script.
+how many findings within the chosen project and matching the search carry it.
+Only a finding has a State, so choosing one lists findings only; any other kind
+is listed while it says "Any state", and with another kind chosen the picker is
+switched off and reads "Only findings have a State". A finding's row carries
+its Status word as a small pill after the title, in the warn tone for open, the
+accent for done and muted for dropped, with the word and State in its title; a
+finding with no State, or one that is not a State, wears a dashed pill of its
+own. The word is the text, so the tone is never the only signal. On a phone the
+project picker takes a row to itself. Same GET form, no script.
 
 ### 4. Decision queue
 
