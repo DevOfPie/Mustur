@@ -46,6 +46,7 @@ const usage = `mustur — records and routing for one project
                   [--drop KEY]                remove a field by name, or a citation by name or ID
                   [--replace]                 state it afresh instead, dropping the rest
   mustur reroute ID --to DEST                re-file a mis-routed jot; the old one stays, superseded
+  mustur rename   OLD=NEW [...] [--keep IDS] [--apply]  MUS-D-0192's one rename in place; lists unless --apply
   mustur ask      --title T [--blocks W]      raise a question the owner has to answer
                   [--option "L :: line :: detail"]  an answer they can pick, repeatable
                   [--needed]                  the work cannot proceed without the answer
@@ -110,6 +111,8 @@ func run(argv []string) error {
 		return cmdWrite(args, "amend")
 	case "anchors":
 		return cmdAnchors(args)
+	case "rename":
+		return cmdRename(args)
 	case "reroute":
 		return cmdReroute(args)
 	case "ask":
