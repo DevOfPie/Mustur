@@ -239,10 +239,42 @@ func (ws Words) List() string {
 	return strings.Join(parts, ", ")
 }
 
+// keys reports a record's State and Status fields that are spelled other
+// than exactly, or given more than once. Either is a second field the check
+// and the filters would read past: `status: garbage` beside `Status:
+// unreviewed` passed the gate, and so did two Status fields.
+func keys(r record.Record) string {
+	seen := map[string]int{}
+	for _, f := range r.Data {
+		for _, want := range []string{StatusField, StateField} {
+			if strings.EqualFold(strings.TrimSpace(f.Key), want) {
+				if f.Key != want {
+					return fmt.Sprintf("a field is named %q, which is spelled %s", f.Key, want)
+				}
+				seen[want]++
+			}
+		}
+	}
+	for _, want := range []string{StatusField, StateField} {
+		if seen[want] > 1 {
+			return fmt.Sprintf("%s is given %d times", want, seen[want])
+		}
+	}
+	return ""
+}
+
 // Finding checks one finding about to be written under prefix, the way Check
-// checks the store: a Status word the project declares, a State that is one,
-// and the two agreeing. It returns nil for any other kind, and when no project
-// declares a list at all.
+// checks the store. It returns nil for any other kind, and when no project in
+// the store declares a list at all — a store that predates MUS-D-0196.
+//
+// Where the finding's own project declares no list, only what can be known
+// without one is checked: the fields are spelled once each, and a State, if
+// there is one, is one of the three. A project that has not declared its
+// words yet is not locked out of its own findings (review of #109, m5).
+// Unlisted says so when a Status is given anyway.
+//
+// Where it does, the Status is a word from the list, the State is present
+// and one of the three, and it is the State the word means.
 func Finding(prefix string, r record.Record, p Projects) *Refusal {
 	if r.Kind != "finding" || !p.Declared() {
 		return nil
@@ -251,14 +283,20 @@ func Finding(prefix string, r record.Record, p Projects) *Refusal {
 	if id == "" {
 		id = "a new " + prefix + " finding"
 	}
-	ws, ok := p[prefix]
+	ws := p[prefix]
 	refuse := func(problem string) *Refusal {
 		return &Refusal{ID: id, Prefix: prefix, Problem: problem, Words: ws}
 	}
-	if !ok || len(ws) == 0 {
-		return refuse("no project record declares a Status word for the prefix " + prefix)
+	if problem := keys(r); problem != "" {
+		return refuse(problem)
 	}
 	word, state := WordOf(r), StateOf(r)
+	if len(ws) == 0 {
+		if state != "" && !ValidState(state) {
+			return refuse(fmt.Sprintf("State %q is not open, done or dropped", clip(state)))
+		}
+		return nil
+	}
 	mapped, declared := ws.State(word)
 	switch {
 	case word == "":
@@ -275,6 +313,50 @@ func Finding(prefix string, r record.Record, p Projects) *Refusal {
 	return nil
 }
 
+// Unlisted is what to tell somebody writing a Status word into a finding whose
+// project declares no list: the word means nothing yet, and which record to
+// give the list to. Empty when there is nothing to say.
+func Unlisted(prefix string, r record.Record, rs []record.Record) string {
+	if r.Kind != "finding" || WordOf(r) == "" {
+		return ""
+	}
+	p, _ := Index(rs)
+	if !p.Declared() || len(p[prefix]) > 0 {
+		return ""
+	}
+	for _, pr := range rs {
+		if v, _ := pr.Get(PrefixField); pr.Kind == "project" && strings.TrimSpace(v) == prefix {
+			return fmt.Sprintf("%s declares no Status word, so %q is kept as written and means nothing yet; "+
+				"add %q fields (WORD = STATE :: what it means) to %s", pr.ID, WordOf(r), WordField, pr.ID)
+		}
+	}
+	return fmt.Sprintf("no project record has the prefix %s, so %q is kept as written and means nothing yet; "+
+		"give %s's project record a %s field and %q fields", prefix, WordOf(r), prefix, PrefixField, WordField)
+}
+
+// Fill gives a finding the State its Status word means, when the word is one
+// its project declares and no State was given with it. A word alone is enough
+// to say what State a finding is in; making somebody spell out both is asking
+// them to repeat the list back (review of #109, n6).
+func Fill(prefix string, r *record.Record, p Projects) {
+	if r.Kind != "finding" || StateOf(*r) != "" {
+		return
+	}
+	if mapped, ok := p[prefix].State(WordOf(*r)); ok {
+		put(r, StateField, mapped)
+	}
+}
+
+// Trim takes the space off a finding's State and Status values, so what is
+// stored is what is checked.
+func Trim(r *record.Record) {
+	for i := range r.Data {
+		if r.Data[i].Key == StatusField || r.Data[i].Key == StateField {
+			r.Data[i].Value = strings.TrimSpace(r.Data[i].Value)
+		}
+	}
+}
+
 // clip keeps a quoted value to one readable line: what gets refused is most
 // often a paragraph put where a word goes.
 func clip(s string) string {
@@ -284,12 +366,10 @@ func clip(s string) string {
 	return s
 }
 
-// Check reports every finding among rs whose State or Status is not what its
-// project declares: no State, a State outside the three, no Status word, a word
-// its project's list does not declare, a word mapping to a State other than
-// the one the finding carries, or a prefix no project declares. The lists
-// themselves are checked too, since a word that does not parse declares
-// nothing. One line a problem, sorted.
+// Check reports every finding among rs that Finding would refuse to write,
+// one line each, with the lists themselves: a word that does not parse
+// declares nothing. Sorted. It is Finding over the store, so what the gate
+// passes and what add and amend accept cannot drift apart.
 //
 // only, when not empty, is the one prefix whose findings and whose list are
 // checked. The store is shared between projects, and a project's gate failing
@@ -315,29 +395,12 @@ func Check(rs []record.Record, only string) []string {
 		if r.Kind != "finding" {
 			continue
 		}
-		if id, err := ident.Parse(r.ID); only != "" && (err != nil || id.Project != only) {
+		id, err := ident.Parse(r.ID)
+		if err != nil || (only != "" && id.Project != only) {
 			continue
 		}
-		state, word := StateOf(r), WordOf(r)
-		switch {
-		case state == "":
-			problems = append(problems, fmt.Sprintf("%s has no State", r.ID))
-		case !ValidState(state):
-			problems = append(problems, fmt.Sprintf("%s has State %q, which is not open, done or dropped", r.ID, state))
-		}
-		ws, ok := projects.For(r.ID)
-		switch {
-		case !ok:
-			problems = append(problems, fmt.Sprintf("%s: no project record declares its prefix, so its Status word means nothing", r.ID))
-		case word == "":
-			problems = append(problems, fmt.Sprintf("%s has no Status word", r.ID))
-		default:
-			mapped, declared := ws.State(word)
-			if !declared {
-				problems = append(problems, fmt.Sprintf("%s has Status %q, which its project does not declare", r.ID, word))
-			} else if ValidState(state) && mapped != state {
-				problems = append(problems, fmt.Sprintf("%s has Status %q, which means %s, and State %s", r.ID, word, mapped, state))
-			}
+		if no := Finding(id.Project, r, projects); no != nil {
+			problems = append(problems, no.ID+": "+no.Problem)
 		}
 	}
 	sort.Strings(problems)

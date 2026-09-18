@@ -68,7 +68,6 @@ func TestAddFindingRefusesWhatItsProjectDoesNotDeclare(t *testing.T) {
 		want string
 	}{
 		{[]string{"Status=fixed on PR 99, not merged"}, `Status "fixed on PR 99, not merged" is not a word MUS declares`},
-		{[]string{"Status=fixed"}, "it has no State; fixed means done"},
 		{[]string{"Status=fixed", "State=closed"}, `State "closed" is not open, done or dropped; fixed means done`},
 		{[]string{"Status=fixed", "State=open"}, "Status fixed means done, and State says open"},
 		{[]string{"State=open"}, "it has no Status word"},
@@ -83,7 +82,7 @@ func TestAddFindingRefusesWhatItsProjectDoesNotDeclare(t *testing.T) {
 			continue
 		}
 		msg := err.Error()
-		for _, want := range []string{"refused, nothing written", c.want, "--data Status=WORD --data State=STATE", "--data Note=", "Status is one of: unreviewed (open), open (open), fixed (done)"} {
+		for _, want := range []string{"refused, nothing written", c.want, "--data Status=WORD, which brings the State it means", "--data Note=", "Status is one of: unreviewed (open), open (open), fixed (done)"} {
 			if !strings.Contains(msg, want) {
 				t.Errorf("%v: message lacks %q:\n%s", c.data, want, msg)
 			}
@@ -117,10 +116,91 @@ func TestAmendRefusesProseInStatusAndWritesNothing(t *testing.T) {
 // An amend that does not mention Status is still refused if the record it
 // leaves behind is wrong: the check is on the result.
 func TestAmendChecksTheResultNotTheFlags(t *testing.T) {
-	path := findingsStore(t, listed(), aFinding("MUS-F-0001", "open", ""))
+	path := findingsStore(t, listed(), aFinding("MUS-F-0001", "fixed", status.Open))
 	if err := cmdWrite([]string{"MUS-F-0001", "--db", path, "--actor", "test", "--title", "better"}, "amend"); err == nil ||
-		!strings.Contains(err.Error(), "it has no State") {
+		!strings.Contains(err.Error(), "Status fixed means done, and State says open") {
 		t.Errorf("err = %v", err)
+	}
+}
+
+// A word alone brings the State it means, on add and on amend, replacing the
+// State the record had; a word and a State that disagree are still refused.
+func TestAWordAloneBringsItsState(t *testing.T) {
+	path := findingsStore(t, listed(), aFinding("MUS-F-0001", "open", status.Open))
+	if err := cmdWrite([]string{"MUS-F-0001", "--db", path, "--actor", "test", "--data", "Status=fixed"}, "amend"); err != nil {
+		t.Fatal(err)
+	}
+	if r := stored(t, path, "MUS-F-0001"); status.WordOf(r) != "fixed" || status.StateOf(r) != status.Done {
+		t.Errorf("amended %v", r.Data)
+	}
+	out, err := captured(func() error {
+		return cmdWrite([]string{"finding", "--db", path, "--title", "t", "--actor", "test", "--data", "Status= fixed "}, "create")
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := stored(t, path, strings.TrimSpace(out))
+	if v, _ := r.Get(status.StatusField); v != "fixed" || status.StateOf(r) != status.Done {
+		t.Errorf("added %q (trimmed?) %v", v, r.Data)
+	}
+}
+
+// A second Status, or one spelled in lower case, is refused rather than filed
+// beside the one the checks read.
+func TestAMisspeltOrRepeatedStatusIsRefused(t *testing.T) {
+	path := findingsStore(t, listed(), aFinding("MUS-F-0001", "open", status.Open))
+	for _, c := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"finding", "--title", "t", "--data", "status=garbage"}, `a field is named "status", which is spelled Status`},
+		{[]string{"finding", "--title", "t", "--data", "Status=open", "--data", "Status=fixed"}, "Status is given 2 times"},
+		{[]string{"MUS-F-0001", "--data", "Status=open", "--data", "Status=fixed", "--data", "Status=open"}, ""},
+	} {
+		op := "create"
+		if strings.HasPrefix(c.args[0], "MUS-") {
+			op = "amend"
+		}
+		err := cmdWrite(append(c.args, "--db", path, "--actor", "test"), op)
+		if c.want == "" {
+			// Three passed, one already held: merge replaces the one and adds
+			// two, so this is the repeat case on amend.
+			if err == nil || !strings.Contains(err.Error(), "Status is given") {
+				t.Errorf("amend with repeated Status: %v", err)
+			}
+			continue
+		}
+		if err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("%v: %v", c.args, err)
+		}
+	}
+	if n := events(t, path, "MUS-F-0002"); n != 0 {
+		t.Errorf("a refused add wrote %d event(s)", n)
+	}
+	if n := events(t, path, "MUS-F-0001"); n != 1 {
+		t.Errorf("a refused amend wrote: %d events", n)
+	}
+}
+
+// A project with no list is not locked out of its findings: the write goes
+// through with a note naming the record to give a list to, and only a State
+// that is not one is refused. _IB is such a prefix until its record has one.
+func TestAProjectWithNoListCanStillWrite(t *testing.T) {
+	inbox := record.Record{ID: "MUS-P-0002", Kind: "project", Title: "Intake box", At: "2026-09-18",
+		Data: []record.Field{{Key: status.PrefixField, Value: "_IB"}}}
+	path := findingsStore(t, listed(), inbox, aFinding("_IB-F-0001", "", ""))
+	if err := cmdWrite([]string{"_IB-F-0001", "--db", path, "--actor", "test", "--data", "Note=looked at"}, "amend"); err != nil {
+		t.Errorf("a note-only amend: %v", err)
+	}
+	if err := cmdWrite([]string{"_IB-F-0001", "--db", path, "--actor", "test", "--data", "Status=routed"}, "amend"); err != nil {
+		t.Errorf("a Status with no list to check it against: %v", err)
+	}
+	if err := cmdWrite([]string{"_IB-F-0001", "--db", path, "--actor", "test", "--data", "State=closed"}, "amend"); err == nil ||
+		!strings.Contains(err.Error(), `State "closed" is not open, done or dropped`) {
+		t.Errorf("an invalid State: %v", err)
+	}
+	if n := events(t, path, "_IB-F-0001"); n != 3 {
+		t.Errorf("%d events, want the create and two amends", n)
 	}
 }
 

@@ -94,7 +94,7 @@ func TestTheFindingGateFailsOnAFindingItCannotPlace(t *testing.T) {
 	if err == nil {
 		t.Fatalf("passed:\n%s", out)
 	}
-	for _, want := range []string{"MUS-F-0001 has no State", `MUS-F-0002 has Status "resolved"`, `MUS-F-0003 has State "closed"`} {
+	for _, want := range []string{"MUS-F-0001: it has no State", `MUS-F-0002: Status "resolved" is not a word`, `MUS-F-0003: State "closed" is not`} {
 		if !strings.Contains(out, "FAIL  "+want) {
 			t.Errorf("missing %q in:\n%s", want, out)
 		}
@@ -130,7 +130,7 @@ func TestTheFindingGateScopedToAProjectIgnoresTheOthers(t *testing.T) {
 		mus("open = open :: work remains"),
 		hrd,
 		aFinding("MUS-F-0001", "open", status.Open),
-		aFinding("HRD-F-0001", "prose, not a word", ""))
+		aFinding("HRD-F-0001", "prose, not a word", "closed"))
 	out, err := captured(func() error { return cmdVerify([]string{"--findings", "--db", path, "--project", "MUS"}) })
 	if err != nil || !strings.Contains(out, "ok    1 MUS finding(s)") {
 		t.Errorf("scoped: err %v, out %q", err, out)

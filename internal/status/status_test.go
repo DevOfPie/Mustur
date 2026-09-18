@@ -81,30 +81,80 @@ func TestCheckReportsEveryWayAFindingCanBeWrong(t *testing.T) {
 		finding("MUS-F-0005", StateField, Open, StatusField, "fixed"),
 		finding("MUS-F-0006", StateField, Open),
 		finding("IDW-F-0001", StateField, Dropped, StatusField, "superseded"),
+		// A prefix no list covers: only a State that is not one is reported.
 		finding("HRD-F-0001", StateField, Open, StatusField, "open"),
+		finding("HRD-F-0002", StateField, "closed"),
+		// A second Status, and one spelled in lower case, beside a good pair.
+		finding("MUS-F-0007", StateField, Open, StatusField, "open", StatusField, "fixed"),
+		finding("MUS-F-0008", StateField, Open, StatusField, "open", "status", "garbage"),
 		// Not a finding: nothing asked of it.
 		{ID: "MUS-D-0001", Kind: "decision", Title: "d", At: "2026-09-18"},
 	}
 	got := strings.Join(Check(rs, ""), "\n")
 	for _, want := range []string{
-		"MUS-F-0002 has no State",
-		`MUS-F-0003 has State "closed"`,
-		`MUS-F-0004 has Status "resolved", which its project does not declare`,
-		`MUS-F-0005 has Status "fixed", which means done, and State open`,
-		"MUS-F-0006 has no Status word",
-		"HRD-F-0001: no project record declares its prefix",
+		"MUS-F-0002: it has no State; open means open",
+		`MUS-F-0003: State "closed" is not open, done or dropped`,
+		`MUS-F-0004: Status "resolved" is not a word MUS declares`,
+		"MUS-F-0005: Status fixed means done, and State says open",
+		"MUS-F-0006: it has no Status word",
+		`HRD-F-0002: State "closed" is not open, done or dropped`,
+		"MUS-F-0007: Status is given 2 times",
+		`MUS-F-0008: a field is named "status", which is spelled Status`,
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("missing %q in:\n%s", want, got)
 		}
 	}
-	for _, clean := range []string{"MUS-F-0001", "IDW-F-0001", "MUS-D-0001"} {
+	for _, clean := range []string{"MUS-F-0001", "IDW-F-0001", "HRD-F-0001", "MUS-D-0001"} {
 		if strings.Contains(got, clean) {
 			t.Errorf("%s is right and was reported:\n%s", clean, got)
 		}
 	}
-	if n := len(Check(rs, "")); n != 6 {
-		t.Errorf("%d problems, want 6:\n%s", n, got)
+	if n := len(Check(rs, "")); n != 8 {
+		t.Errorf("%d problems, want 8:\n%s", n, got)
+	}
+	// Scoped, the other projects' findings are not read.
+	if got := strings.Join(Check(rs, "IDW"), "\n"); got != "" {
+		t.Errorf("IDW alone: %s", got)
+	}
+}
+
+// Fill supplies the State a declared word means and nothing else; Trim takes
+// the space off both values; Unlisted names the record to give a list to.
+func TestFillTrimAndUnlisted(t *testing.T) {
+	rs := []record.Record{
+		project("MUS-P-0001", "MUS", "fixed = done :: repaired"),
+		project("MUS-P-0003", "HRD"),
+	}
+	p, _ := Index(rs)
+	r := finding("", StatusField, "fixed")
+	Fill("MUS", &r, p)
+	if StateOf(r) != Done {
+		t.Errorf("a declared word alone: %v", r.Data)
+	}
+	r = finding("", StatusField, "fixed", StateField, Open)
+	Fill("MUS", &r, p)
+	if StateOf(r) != Open {
+		t.Error("Fill overwrote a State that was given; the mismatch is Finding's to refuse")
+	}
+	r = finding("", StatusField, "whatever")
+	Fill("MUS", &r, p)
+	if StateOf(r) != "" {
+		t.Error("Fill guessed a State for an undeclared word")
+	}
+	r = finding("", StatusField, " fixed ", StateField, " done\n")
+	Trim(&r)
+	if r.Data[0].Value != "fixed" || r.Data[1].Value != Done {
+		t.Errorf("Trim: %q", r.Data)
+	}
+	if msg := Unlisted("HRD", finding("", StatusField, "open"), rs); !strings.Contains(msg, `add "Status word" fields`) || !strings.Contains(msg, "MUS-P-0003") {
+		t.Errorf("Unlisted HRD: %q", msg)
+	}
+	if msg := Unlisted("LNK", finding("", StatusField, "open"), rs); !strings.Contains(msg, "no project record has the prefix LNK") {
+		t.Errorf("Unlisted LNK: %q", msg)
+	}
+	if msg := Unlisted("MUS", finding("", StatusField, "fixed"), rs); msg != "" {
+		t.Errorf("a listed project: %q", msg)
 	}
 }
 
@@ -137,8 +187,11 @@ func TestFindingRefusesOneFindingTheWayCheckReportsIt(t *testing.T) {
 		{"MUS", finding("MUS-F-0003", StatusField, "fixed"), "it has no State; fixed means done"},
 		{"MUS", finding("MUS-F-0004", StatusField, "fixed", StateField, "closed"), `State "closed" is not open, done or dropped`},
 		{"MUS", finding("MUS-F-0005", StatusField, "fixed", StateField, Open), "Status fixed means done, and State says open"},
-		{"HRD", finding("HRD-F-0001", StatusField, "open", StateField, Open), "no project record declares a Status word for the prefix HRD"},
-		{"LNK", finding("LNK-F-0001", StatusField, "open", StateField, Open), "no project record declares a Status word for the prefix LNK"},
+		{"HRD", finding("HRD-F-0001", StatusField, "open", StateField, Open), ""},
+		{"HRD", finding("HRD-F-0002", StatusField, "anything"), ""},
+		{"HRD", finding("HRD-F-0003", StateField, "Done"), `State "Done" is not open, done or dropped`},
+		{"MUS", finding("MUS-F-0009", StatusField, "open", StateField, Open, "STATE", Open), `a field is named "STATE", which is spelled State`},
+		{"LNK", finding("LNK-F-0001", StatusField, "open", StateField, Open), ""},
 	} {
 		no := Finding(c.prefix, c.r, p)
 		switch {

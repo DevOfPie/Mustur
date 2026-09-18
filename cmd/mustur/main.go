@@ -370,17 +370,13 @@ func cmdWrite(args []string, op string) error {
 			return fmt.Errorf("%q is not a record kind: %s", positional, strings.Join(kindNames(), ", "))
 		}
 		r.Kind = positional
-		if r.Kind == "finding" {
+		if r.Kind == "finding" && !given(data, status.StatusField) && !given(data, status.StateField) {
 			// A finding nobody has triaged, as intake files one (MUS-D-0196).
-			_, hasWord := r.Get(status.StatusField)
-			_, hasState := r.Get(status.StateField)
-			if !hasWord && !hasState {
-				r.Data = append(r.Data,
-					record.Field{Key: status.StatusField, Value: status.Unreviewed},
-					record.Field{Key: status.StateField, Value: status.Open})
-			}
+			r.Data = append(r.Data,
+				record.Field{Key: status.StatusField, Value: status.Unreviewed},
+				record.Field{Key: status.StateField, Value: status.Open})
 		}
-		if err := refuseFinding(ctx, s, *project, r); err != nil {
+		if err := refuseFinding(ctx, s, *project, &r, data); err != nil {
 			return err
 		}
 		// Allocation and insertion in one act. Two calls let two writers claim
@@ -406,7 +402,7 @@ func cmdWrite(args []string, op string) error {
 		// The record as it will stand, not the flags: an amend that leaves a
 		// bad Status alone is refused as surely as one that writes it.
 		if id, err := ident.Parse(r.ID); err == nil {
-			if err := refuseFinding(ctx, s, id.Project, r); err != nil {
+			if err := refuseFinding(ctx, s, id.Project, &r, data); err != nil {
 				return err
 			}
 		}
@@ -650,7 +646,15 @@ func newServer(addr string, handler http.Handler, log io.Writer) *http.Server {
 // over the store only noticed afterwards. Nothing is written when it refuses,
 // and it says what to pass instead. A store where no project declares a list
 // is not checked.
-func refuseFinding(ctx context.Context, s *store.Store, prefix string, r record.Record) error {
+//
+// Before checking it tidies what was passed: both values are trimmed, and a
+// Status word passed without a State brings the State it means, replacing
+// whatever the record had — so `--data Status=fixed` alone is a complete
+// triage, and only a word and a State that disagree are refused.
+//
+// Where the finding's project declares no list, a Status is kept as written
+// and a note on stderr names the record to give the list to.
+func refuseFinding(ctx context.Context, s *store.Store, prefix string, r *record.Record, passed fields) error {
 	if r.Kind != "finding" {
 		return nil
 	}
@@ -659,13 +663,34 @@ func refuseFinding(ctx context.Context, s *store.Store, prefix string, r record.
 		return err
 	}
 	index, _ := status.Index(projects)
-	if no := status.Finding(prefix, r, index); no != nil {
+	status.Trim(r)
+	if given(passed, status.StatusField) && !given(passed, status.StateField) {
+		if mapped, ok := index[prefix].State(status.WordOf(*r)); ok {
+			status.Set(r, mapped, status.WordOf(*r))
+		}
+	}
+	status.Fill(prefix, r, index)
+	if no := status.Finding(prefix, *r, index); no != nil {
 		return fmt.Errorf("refused, nothing written. %s: %s.\n"+
-			"  Pass --data Status=WORD --data State=STATE, where STATE is the one the word means; "+
+			"  Pass --data Status=WORD, which brings the State it means, or both --data Status=WORD --data State=STATE; "+
 			"put any prose about it in --data Note=….\n"+
 			"  Status is one of: %s", no.ID, no.Problem, no.Words.List())
 	}
+	if note := status.Unlisted(prefix, *r, projects); note != "" {
+		fmt.Fprintf(os.Stderr, "mustur: note: %s\n", note)
+	}
 	return nil
+}
+
+// given reports whether a key was passed, in any case: a lower-case one is
+// still somebody saying Status, and Finding is what refuses its spelling.
+func given(passed fields, key string) bool {
+	for _, f := range passed {
+		if strings.EqualFold(strings.TrimSpace(f.Key), key) {
+			return true
+		}
+	}
+	return false
 }
 
 // verifyFindings is the gate over the store's findings (MUS-D-0196): every one
