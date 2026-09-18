@@ -1000,8 +1000,12 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .attn .row:last-child { border-bottom: 0; }
   .pill { flex: none; font-size: .75em; border: 1px solid var(--warn);
           border-radius: 999px; padding: 0 .45rem; white-space: nowrap; }
-  .row .dot { flex: none; width: .5rem; height: .5rem; border-radius: 50%;
-              background: var(--warn); align-self: center; }
+  /* In the row's own left padding, so a marked row's identifier stays in the
+     column every other row's is in. */
+  .rows .row { position: relative; }
+  .row .dot { position: absolute; left: .3rem; top: calc(.45rem + .45em);
+              width: .45rem; height: .45rem; border-radius: 50%;
+              background: var(--warn); }
   .banner { border: 1.4px solid var(--warn); background: var(--warn-soft);
             border-radius: .5rem; padding: .6rem .8rem; margin: 0 0 .6rem; }
   .banner p { margin: 0; }
