@@ -65,6 +65,13 @@ func TestIndexIsScopedToTheRepositorysProject(t *testing.T) {
 		{"devofpie/linkctrl", "LNK-D-0001", []string{"MUS-D-0001", "IDW-F-0001"}},
 		{"LinkCtrl", "LNK-D-0001", []string{"MUS-D-0001"}},
 		{"https://github.com/DevOfPie/LinkCtrl.git", "LNK-D-0001", []string{"MUS-D-0001"}},
+		{"git@github.com:DevOfPie/LinkCtrl.git", "LNK-D-0001", []string{"MUS-D-0001"}},
+		{"git@github.com:DevOfPie/Mustur", "MUS-D-0001", []string{"LNK-D-0001"}},
+		{"/home/whippy/repos/DevOfPie/Mustur/.claude/worktrees/agent-x", "MUS-D-0001", []string{"LNK-D-0001", "IDW-F-0001"}},
+		{"/home/whippy/repos/DevOfPie/Mustur/.claude/worktrees/x/sub", "MUS-D-0001", []string{"LNK-D-0001"}},
+		// Nothing about the name ".claude" is known: any directory below the checkout reaches it.
+		{`C:\src\DevOfPie\LinkCtrl\wt\feature`, "LNK-D-0001", []string{"MUS-D-0001"}},
+		{"/home/whippy/repos/Mustur", "MUS-D-0001", []string{"LNK-D-0001"}},
 		{"Hoard", "This project holds no records yet", []string{"MUS-D-0001", "LNK-D-0001"}},
 	}
 	for _, c := range cases {
@@ -103,22 +110,68 @@ func TestUnknownRepositoryListsNoIndex(t *testing.T) {
 	}
 }
 
+// A path below a checkout that no registered repository answers to is as
+// unknown as a mistyped name, however many segments it walks.
+func TestUnknownPathListsNoIndex(t *testing.T) {
+	s, ctx := serverWith(t, fixtures()...)
+	for _, name := range []string{
+		"/home/whippy/repos/DevOfPie/TradeShop/.claude/worktrees/agent-x",
+		"git@github.com:DevOfPie/TradeShop.git",
+	} {
+		got, err := s.answer(ctx, Args{Repository: name})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(got, "no repository named") || !strings.Contains(got, "DevOfPie/Mustur, DevOfPie/hoard, DevOfPie/LinkCtrl") {
+			t.Errorf("%s: not answered as unknown:\n%s", name, got)
+		}
+		if strings.Contains(got, "- MUS-D-0001") || strings.Contains(got, "- LNK-D-0001") {
+			t.Errorf("%s: an unknown path got an index:\n%s", name, got)
+		}
+	}
+}
+
+// A bare name matching two repositories is answered as an unknown one is:
+// routing, every registered repository, and no index (MUS-D-0187, on the
+// owner's answer to MUS-Q-0147). Naming the pair that matched is extra.
 func TestAmbiguousBareNameIsNotGuessed(t *testing.T) {
 	recs := append(fixtures(), record.Record{ID: "MUS-R-0004", Kind: "repository", Title: "rleeon/hoard", At: "2026-09-13"})
 	s, ctx := serverWith(t, recs...)
-	got, err := s.answer(ctx, Args{Repository: "hoard"})
+	for _, name := range []string{"hoard", "/home/whippy/src/hoard/.claude/worktrees/agent-x"} {
+		got, err := s.answer(ctx, Args{Repository: name})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range []string{"## Routing", "more than one repository",
+			"The registered repositories are: DevOfPie/Mustur, DevOfPie/hoard, DevOfPie/LinkCtrl, rleeon/hoard.", "owner/name"} {
+			if !strings.Contains(got, want) {
+				t.Errorf("%s: missing %q:\n%s", name, want, got)
+			}
+		}
+		if strings.Contains(got, "## Records of") {
+			t.Errorf("%s: an ambiguous name got an index:\n%s", name, got)
+		}
+	}
+	for _, name := range []string{"DevOfPie/hoard", "/home/whippy/repos/DevOfPie/hoard/.claude/worktrees/agent-x", "git@github.com:DevOfPie/hoard.git"} {
+		got, err := s.answer(ctx, Args{Repository: name})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(got, "Records of Hoard (HRD)") {
+			t.Errorf("%s: owner/name did not resolve:\n%s", name, got)
+		}
+	}
+}
+
+// An empty project has no identifier above to call again with.
+func TestEmptyProjectOffersNoIdentifierAbove(t *testing.T) {
+	s, ctx := serverWith(t, fixtures()...)
+	got, err := s.answer(ctx, Args{Repository: "Hoard"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(got, "more than one repository") {
-		t.Errorf("ambiguous name gave:\n%s", got)
-	}
-	got, err = s.answer(ctx, Args{Repository: "DevOfPie/hoard"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(got, "Records of Hoard (HRD)") {
-		t.Errorf("owner/name did not resolve:\n%s", got)
+	if !strings.Contains(got, "This project holds no records yet.") || strings.Contains(got, "any identifier above") {
+		t.Errorf("empty project reply:\n%s", got)
 	}
 }
 

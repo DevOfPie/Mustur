@@ -130,9 +130,11 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 		b.WriteString("## Records\n\n")
 	} else {
 		// No kind: the index is the named repository's project, and nothing
-		// else (MUS-F-0149). A name that resolves to no project returns no
-		// index at all rather than falling back to the whole store, which is
-		// the flood this exists to stop.
+		// else (MUS-F-0149, MUS-D-0187). A name that resolves to no project,
+		// or a bare name matching two repositories, returns the routing and
+		// the registered repositories and no index, on the owner's answer to
+		// MUS-Q-0147 — never the whole store, which is the flood this exists
+		// to stop.
 		project, why := projectFor(all, args.Repository)
 		if project.ID == "" {
 			b.WriteString("## Records\n\n")
@@ -162,12 +164,15 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 		}
 		b.WriteString("\n")
 	}
-	if total == 0 && args.Kind != "" {
-		b.WriteString("Mustur holds no records of that kind.\n\n")
-	} else if total == 0 {
-		b.WriteString("This project holds no records yet.\n\n")
+	// With nothing listed there is no identifier above to call again with.
+	switch {
+	case total > 0:
+		b.WriteString("Call mustur_route again with `id` set to any identifier above for that record in full.\n")
+	case args.Kind != "":
+		b.WriteString("Mustur holds no records of that kind.\n")
+	default:
+		b.WriteString("This project holds no records yet.\n")
 	}
-	b.WriteString("Call mustur_route again with `id` set to any identifier above for that record in full.\n")
 	return b.String(), nil
 }
 
@@ -175,22 +180,23 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 // why there is none.
 //
 // Sessions pass what they understood from the checkout, which has been seen as
-// "Mustur", "DevOfPie/Mustur" and "Hoard" for a record titled "DevOfPie/hoard".
-// So the match ignores case, a trailing ".git" or slash, and anything before
-// the owner: a name with a slash is compared as owner/name, and one without is
-// compared to the name alone. Two repositories answering to the same bare name
-// is not guessed between.
+// "Mustur", "DevOfPie/Mustur", "Hoard" for a record titled "DevOfPie/hoard",
+// a checkout path, an agent worktree inside one, and a remote URL in either
+// the https or the scp form. So the match ignores case and a trailing ".git"
+// or slash, splits on "/", "\" and ":", and walks the segments from the end:
+// at each one it tries the owner/name pair ending there, then the segment as
+// a bare name, and stops at the first that answers to a registered
+// repository. That reaches the checkout from anywhere below it without
+// knowing what the directory holding worktrees is called.
+//
+// A bare name answering to two repositories is not guessed between, and is
+// answered the way a name answering to none is: the registered repositories
+// and no index (MUS-D-0187, on the owner's answer to MUS-Q-0147).
 func projectFor(all []record.Record, named string) (record.Record, string) {
-	want := normaliseRepo(named)
-	var repos, matched []record.Record
+	var repos []record.Record
 	for _, r := range all {
-		if r.Kind != "repository" {
-			continue
-		}
-		repos = append(repos, r)
-		title := normaliseRepo(r.Title)
-		if title == want || (!strings.Contains(want, "/") && lastSegment(title) == want) {
-			matched = append(matched, r)
+		if r.Kind == "repository" {
+			repos = append(repos, r)
 		}
 	}
 	sort.SliceStable(repos, func(i, j int) bool { return repos[i].ID < repos[j].ID })
@@ -202,6 +208,8 @@ func projectFor(all []record.Record, named string) (record.Record, string) {
 	if len(names) > 0 {
 		registered = strings.Join(names, ", ")
 	}
+
+	matched := matchRepo(repos, named)
 	switch len(matched) {
 	case 0:
 		return record.Record{}, fmt.Sprintf("Mustur holds no repository named %q, so no project's index is listed. "+
@@ -212,8 +220,9 @@ func projectFor(all []record.Record, named string) (record.Record, string) {
 		for _, r := range matched {
 			ids = append(ids, fmt.Sprintf("%s (%s)", strings.TrimSpace(r.Title), r.ID))
 		}
-		return record.Record{}, fmt.Sprintf("%q names more than one repository: %s. Call again with the owner/name.",
-			named, strings.Join(ids, ", "))
+		return record.Record{}, fmt.Sprintf("%q names more than one repository (%s), so no project's index is listed. "+
+			"The registered repositories are: %s. Call again with the owner/name.",
+			named, strings.Join(ids, ", "), registered)
 	}
 	repo := matched[0]
 	for _, r := range all {
@@ -235,19 +244,52 @@ func projectFor(all []record.Record, named string) (record.Record, string) {
 		"so no project's index is listed.", strings.TrimSpace(repo.Title), repo.ID)
 }
 
-func normaliseRepo(s string) string {
-	s = strings.ToLower(strings.TrimSpace(strings.ReplaceAll(s, `\`, "/")))
-	s = strings.TrimRight(s, "/")
-	s = strings.TrimSuffix(s, ".git")
-	// Keep owner/name at most: a checkout path or a remote URL ends in it.
-	if parts := strings.Split(s, "/"); len(parts) > 2 {
-		s = strings.Join(parts[len(parts)-2:], "/")
+// matchRepo returns the repositories the name answers to: one, none, or more
+// than one when the first thing that matched was a bare name several share.
+func matchRepo(repos []record.Record, named string) []record.Record {
+	segs := repoSegments(named)
+	for i := len(segs) - 1; i >= 0; i-- {
+		if i > 0 {
+			pair := segs[i-1] + "/" + segs[i]
+			for _, r := range repos {
+				if strings.Join(lastTwo(repoSegments(r.Title)), "/") == pair {
+					return []record.Record{r}
+				}
+			}
+		}
+		var bare []record.Record
+		for _, r := range repos {
+			if t := repoSegments(r.Title); len(t) > 0 && t[len(t)-1] == segs[i] {
+				bare = append(bare, r)
+			}
+		}
+		if len(bare) > 0 {
+			return bare
+		}
 	}
-	return s
+	return nil
 }
 
-func lastSegment(s string) string {
-	return s[strings.LastIndex(s, "/")+1:]
+// repoSegments lowers the name and splits it into its non-empty segments,
+// with a trailing ".git" off the last. ":" separates as "/" does, which is
+// what makes git@github.com:owner/name.git read as a path.
+func repoSegments(s string) []string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	f := strings.FieldsFunc(s, func(c rune) bool { return c == '/' || c == '\\' || c == ':' })
+	if n := len(f); n > 0 {
+		f[n-1] = strings.TrimSuffix(f[n-1], ".git")
+		if f[n-1] == "" {
+			f = f[:n-1]
+		}
+	}
+	return f
+}
+
+func lastTwo(s []string) []string {
+	if len(s) > 2 {
+		return s[len(s)-2:]
+	}
+	return s
 }
 
 func ofPrefix(rs []record.Record, prefix string) []record.Record {
