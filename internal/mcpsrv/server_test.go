@@ -286,7 +286,7 @@ func TestIndexCarriesEveryKindIncludingQuestions(t *testing.T) {
 	}
 }
 
-// A finding's line ends with its Status word (MUS-D-0196); no other kind's
+// A finding's line ends with its State and Status word (MUS-D-0196); no other kind's
 // does, a question's Status included.
 func TestAFindingLineCarriesItsStatusWord(t *testing.T) {
 	recs := append(fixtures(),
@@ -302,7 +302,7 @@ func TestAFindingLineCarriesItsStatusWord(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, want := range []string{
-		"- MUS-F-0001 — The drawer is too wide · in-review\n",
+		"- MUS-F-0001 — The drawer is too wide · open/in-review\n",
 		"- MUS-F-0002 — No status yet\n",
 		"- MUS-Q-0001 — Own the session?\n",
 	} {

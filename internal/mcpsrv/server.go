@@ -163,10 +163,12 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 		for _, r := range rs {
 			fmt.Fprintf(&b, "- %s — %s", r.ID, strings.TrimSpace(r.Title))
 			// A finding says whether work remains without a second call
-			// (MUS-D-0196): its Status word, which its project's list maps to
-			// a State.
-			if w := status.WordOf(r); r.Kind == "finding" && w != "" {
-				fmt.Fprintf(&b, " · %s", w)
+			// (MUS-D-0196): its State and its Status word, as state/word.
+			// The word alone left unverified or merged to be looked up.
+			if r.Kind == "finding" {
+				if w, st := status.WordOf(r), status.StateOf(r); w != "" || st != "" {
+					fmt.Fprintf(&b, " · %s/%s", st, w)
+				}
 			}
 			b.WriteString("\n")
 		}
