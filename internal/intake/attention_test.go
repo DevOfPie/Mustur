@@ -56,7 +56,8 @@ func TestKeepingAJotEndsItsAttention(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v, _ := kept.Get(KeptField); v != "owner@example.com 2026-09-18 10:00 UTC" {
+	// 10:00 UTC in September is 03:00 in Los Angeles, on daylight time.
+	if v, _ := kept.Get(KeptField); v != "owner@example.com 2026-09-18 03:00 PDT" {
 		t.Errorf("Kept = %q", v)
 	}
 	if n := AttentionCount(ctx, s); n != 0 {
@@ -150,5 +151,21 @@ func TestRerouteElsewhereDropsTheProposal(t *testing.T) {
 	}
 	if n := AttentionCount(ctx, s); n != 0 {
 		t.Errorf("AttentionCount = %d with the only Names outside the intake box", n)
+	}
+}
+
+// Winter is PST, not a fixed offset written as PDT.
+func TestKeptIsPacificInWinterToo(t *testing.T) {
+	s, ctx := openWith(t, withOptOut())
+	r, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the winter notes", Actor: "pie", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	kept, err := Keep(ctx, s, r.ID, "owner", time.Date(2026, 12, 1, 20, 30, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := kept.Get(KeptField); v != "owner 2026-12-01 12:30 PST" {
+		t.Errorf("Kept = %q", v)
 	}
 }

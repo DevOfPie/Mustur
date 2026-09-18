@@ -18,6 +18,9 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	// The zone database compiled in, so Pacific reads right on a machine with
+	// no /usr/share/zoneinfo rather than failing to load.
+	_ "time/tzdata"
 
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/store"
@@ -26,6 +29,17 @@ import (
 // KeptField is the field a jot carries once somebody declined the move its
 // Names field proposes. Who and when, so the record says it was a decision.
 const KeptField = "Kept"
+
+// pacific is the zone a time shown to the owner is written in, tagged PDT or
+// PST by the format — the owner's standing rule, which a server clock in UTC
+// broke on the first Kept stamped (review of PR 108).
+var pacific = func() *time.Location {
+	loc, err := time.LoadLocation("America/Los_Angeles")
+	if err != nil {
+		panic(err) // Unreachable with time/tzdata embedded.
+	}
+	return loc
+}()
 
 // NeedsAttention reports whether a record is waiting on somebody.
 //
@@ -134,7 +148,7 @@ func keep(ctx context.Context, s *store.Store, id, actor string, now time.Time) 
 	if !NeedsAttention(r, DefaultIn(routing)) {
 		return record.Record{}, fmt.Errorf("%s proposes no move, so there is nothing to keep it from", r.ID)
 	}
-	r.Data = append(r.Data, record.Field{Key: KeptField, Value: actor + " " + now.Format("2006-01-02 15:04 MST")})
+	r.Data = append(r.Data, record.Field{Key: KeptField, Value: actor + " " + now.In(pacific).Format("2006-01-02 15:04 MST")})
 	if err := s.AmendIf(ctx, r, version, actor); err != nil {
 		return record.Record{}, err
 	}
