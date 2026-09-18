@@ -325,6 +325,13 @@ func (in *Intake) hold(w http.ResponseWriter, r *http.Request, text string) {
 }
 
 func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
+	// Before the body is read at all: a page on another site posting this form
+	// with the reader's cookie attached is refused, and curl, which sends no
+	// Origin, still files (MUS-F-0096, MUS-Q-0173).
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	// A capture box on the public side of an ingress is the obvious place to
 	// post a gigabyte at. The limit is generous for a jot and finite, which is
 	// the whole requirement.
@@ -584,7 +591,9 @@ func render(w http.ResponseWriter, p page) {
 // (MUS-Q-0078) and intake.js for the draft (MUS-Q-0120), and the form files
 // with both blocked.
 var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
-	"trim": strings.TrimSpace,
+	"trim":      strings.TrimSpace,
+	"title":     title,
+	"titleText": titleText,
 }).Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
@@ -685,7 +694,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   h2.held { font-size: .9rem; font-weight: 600; opacity: .7; margin: 1.5rem 0 0; }
   ul.held { margin-top: .4rem; }
   ul.held .txt { white-space: pre-line; overflow-wrap: anywhere; }
-` + shellCSS + `
+` + titleCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -694,8 +703,8 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{if .Attention}}<p class="waiting att"><a href="/records">{{.Attention}} record{{if ne .Attention 1}}s need{{else}} needs{{end}} attention</a></p>{{end}}
 {{if .Error}}<p class="said">Not {{if .Reader}}sent{{else}}filed{{end}}: {{.Error}}</p>{{end}}
 {{if .Sent}}<p class="said">Sent for approval. An owner files it or discards it.</p>{{end}}
-{{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
-<span class="why">{{.Why}}</span></p>{{end}}
+{{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{title .Routed}}{{end}}<br>
+<span class="why">{{title .Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
 <form method="post" action="/intake" enctype="multipart/form-data">
   <textarea id="jot" name="jot"{{if .Done}} data-filed{{end}} autofocus spellcheck="true" autocapitalize="sentences" autocorrect="on"
@@ -710,7 +719,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
     <select name="to">
       <option value="" selected>Route it for me</option>
       {{range .Groups}}<optgroup label="{{.Label}}">
-        {{range .Items}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+        {{range .Items}}<option value="{{.ID}}">{{titleText .Name}}</option>{{end}}
       </optgroup>{{end}}
       {{if not .Reader}}<option value="scratch">Scratch &mdash; not kept, not counted</option>{{end}}
     </select>
@@ -725,7 +734,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{range .Scratch}}<li><span class="tmp">scratch</span> {{.Text}}<span class="to">goes on restart</span></li>{{end}}
 </ul>{{end}}
 {{if .Recent}}<ul>
-{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{.Title}}<span class="to">{{.Routed}}</span></li>{{end}}
+{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{title .Title}}<span class="to">{{title .Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}

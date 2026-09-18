@@ -10,6 +10,7 @@ package web
 
 import (
 	"bytes"
+	"html"
 	"html/template"
 	"regexp"
 	"strings"
@@ -225,4 +226,120 @@ const markdownCSS = `
   .md table { border-collapse: collapse; font-size: .92em; }
   .md th, .md td { border: 1px solid var(--edge); padding: .25rem .5rem;
                    text-align: left; vertical-align: top; }
+`
+
+// Record titles are markdown too: the export writes one into a heading of a .md
+// file, and a title written with inline code -- LNK-D-0010's -- showed its
+// backticks on every surface that printed it as plain text (MUS-F-0174).
+//
+// A title is a line, not a document, so it is read with a parser that knows no
+// block but the paragraph: "# x" or "- x" in a title is that text, never a
+// heading or a list, and the paragraph is rendered without its <p>, so what
+// comes back sits inside whatever element the page already put the title in.
+// Inline code, emphasis and strong emphasis are read as markdown.
+//
+// Links are not kept as links. A title sits inside an <a> on the records index
+// and inside a button when a jot is moved, and an anchor inside an anchor is
+// not HTML; a link in a title is its text on every surface rather than a link
+// on some and not others. Raw HTML is not parsed at all, so "<script>" is text
+// and is escaped like text -- stricter than a body, where it is dropped: a
+// title that says "<b>" means the characters. Autolinks go with it and read as
+// written. Link reference definitions are not read either, so a title that
+// looks like one is shown rather than swallowed.
+//
+// The reserved-identifier parser is the body's, for the body's reason: an
+// underscore around an identifier is not emphasis.
+var titleMD = goldmark.New(
+	goldmark.WithParser(parser.NewParser(
+		parser.WithBlockParsers(util.Prioritized(parser.NewParagraphParser(), 1000)),
+		parser.WithInlineParsers(
+			util.Prioritized(parser.NewCodeSpanParser(), 100),
+			util.Prioritized(parser.NewLinkParser(), 200),
+			util.Prioritized(reservedID{}, 450),
+			util.Prioritized(parser.NewEmphasisParser(), 500),
+		),
+		parser.WithASTTransformers(util.Prioritized(titleInline{}, 100)),
+	)),
+)
+
+// titleInline makes a parsed title inline: every paragraph becomes a text
+// block, which renders its content with no element of its own, and every link
+// or image is replaced by its text. A code span is given the class the pages
+// style it by, since a title is not inside a .md block.
+type titleInline struct{}
+
+func (titleInline) Transform(doc *ast.Document, _ text.Reader, _ parser.Context) {
+	var paras, links []ast.Node
+	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+		switch n.Kind() {
+		case ast.KindParagraph:
+			paras = append(paras, n)
+		case ast.KindLink, ast.KindImage:
+			links = append(links, n)
+		case ast.KindCodeSpan:
+			n.SetAttributeString("class", []byte("t-code"))
+		}
+		return ast.WalkContinue, nil
+	})
+	// After the walk, for the reason recordLinks gives. Innermost first -- the
+	// reverse of the walk's order -- so a link inside an image's text is moved
+	// out before the image itself is.
+	for i := len(links) - 1; i >= 0; i-- {
+		l := links[i]
+		parent := l.Parent()
+		for c := l.FirstChild(); c != nil; {
+			next := c.NextSibling()
+			parent.InsertBefore(parent, l, c)
+			c = next
+		}
+		parent.RemoveChild(parent, l)
+	}
+	for _, p := range paras {
+		tb := ast.NewTextBlock()
+		for c := p.FirstChild(); c != nil; {
+			next := c.NextSibling()
+			tb.AppendChild(tb, c)
+			c = next
+		}
+		p.Parent().ReplaceChild(p.Parent(), p, tb)
+	}
+}
+
+// title renders a record title's inline markdown for a page. Every surface
+// that shows a record title as text a person reads goes through it; where
+// markup cannot go, titleText.
+func title(src string) template.HTML {
+	var b bytes.Buffer
+	if err := titleMD.Convert([]byte(src), &b); err != nil {
+		// As markdownPlain: a bytes.Buffer has no writer error.
+		return template.HTML(template.HTMLEscapeString(src))
+	}
+	return template.HTML(strings.TrimSpace(b.String()))
+}
+
+// titleTag matches an element title wrote. Sound for title's output alone:
+// raw HTML is never parsed there, so a < in a title arrives as &lt; and only
+// the renderer's own tags are left to match.
+var titleTag = regexp.MustCompile(`<[^>]*>`)
+
+// titleText is a record title as plain text with its markdown markers gone:
+// for an <option>, an attribute, a <title>, or a label a script prints, where
+// markup cannot go. It is title with the tags taken off and the entities
+// resolved, so the two cannot disagree about what a title says.
+func titleText(src string) string {
+	return html.UnescapeString(titleTag.ReplaceAllString(string(title(src)), ""))
+}
+
+// titleFuncs gives a template both renderings of a title.
+var titleFuncs = template.FuncMap{"title": title, "titleText": titleText}
+
+// titleCSS styles inline code in a title on every page that shows one. It is
+// markdownCSS's code, which does not reach a title because a title is not
+// inside a .md block.
+const titleCSS = `
+  code.t-code { font-size: .9em; background: var(--edge); border-radius: .2rem;
+                padding: 0 .2rem; overflow-wrap: anywhere; }
 `

@@ -148,16 +148,58 @@ func (s *Sessions) actor(r *http.Request) string {
 // sameOrigin reports whether the request came from this site.
 //
 // An absent Origin is refused rather than allowed. Browsers always send it on a
-// WebSocket handshake, so its absence means something that is not a browser —
-// and a non-browser client has no business on the one path that types into an
-// agent. That is the strict reading, and this is the place to take it.
+// WebSocket handshake, so its absence means something that is not a browser.
+// That is the strict reading, taken wherever a non-browser caller has no
+// business: the session socket, the posts that start, stop or restore a
+// session, the composer, the passkey ceremony, the account and people screens,
+// and moving or keeping a record. notCrossSite says which posts take the
+// looser one.
 func sameOrigin(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
 		return false
 	}
+	return originIsThisSite(origin, r)
+}
+
+// notCrossSite reports whether a form post may be taken: an Origin naming this
+// site, or none at all (MUS-F-0096, answered on MUS-Q-0173).
+//
+// A browser always sends Origin on a cross-site POST, so a present and foreign
+// one is the attack — a page elsewhere submitting a form with the reader's
+// cookie attached — and it is refused. An absent one is curl, a script on this
+// machine or a proxy that strips the header, and refusing it would stop the
+// command line filing a jot while stopping no browser. `Origin: null`, which a
+// sandboxed frame or a redirect across sites sends, names no site and is
+// refused as foreign.
+//
+// This is the looser of the two readings, and only four posts take it: filing a
+// jot, answering or withdrawing a question, and approving or discarding a held
+// jot. Everything else keeps sameOrigin, which refuses the absent header too:
+// the session socket and the composer, because they type into an agent; start,
+// stop and restore, because they start or end a process; the passkey ceremony
+// and the account and people screens, because they change who may do any of
+// this; and moving or keeping a record.
+//
+// An answer is the exception worth naming. When the question named a session
+// it is typed back into that session, which by the rule above would keep
+// sameOrigin. It takes this check anyway, deliberately: MUS-Q-0173 names the
+// answer among the form posts, so a POST to /questions with no Origin — curl,
+// or a proxy that strips the header — is taken and delivered.
+func notCrossSite(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+	return originIsThisSite(origin, r)
+}
+
+// originIsThisSite is the one comparison both checks make: the Origin's host
+// against the Host the request arrived for. An Origin that parses to no host —
+// "null", or anything that is not a URL — matches nothing.
+func originIsThisSite(origin string, r *http.Request) bool {
 	u, err := url.Parse(origin)
-	if err != nil {
+	if err != nil || u.Host == "" {
 		return false
 	}
 	return strings.EqualFold(u.Host, r.Host)
@@ -169,9 +211,11 @@ type sessionRow struct {
 	State   string
 	// Where is the tree it is running in, named for the picker (MUS-F-0108).
 	Where string
-	// Doing is working or waiting, read from the hub's own poller rather than
-	// captured here (MUS-Q-0105). Empty when nothing has polled it yet, which
-	// is not the same as idle and is drawn as nothing rather than as a guess.
+	// Doing is working, waiting or starting, read from the hub's own poller
+	// rather than captured here (MUS-Q-0105), and working while a sub-agent is
+	// (MUS-F-0171; pickerDoing). Starting is a pane with nothing on it yet
+	// (MUS-F-0115). Empty when nothing has polled it yet, which is not the same
+	// as idle and is drawn as nothing rather than as a guess.
 	Doing string
 }
 
@@ -410,16 +454,64 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 		// every owned session, so this is a map lookup rather than the
 		// capture-pane per session per render that MUS-Q-0102 was about.
 		if s.Hub != nil {
-			switch s.Hub.Doing(sn.Project) {
-			case session.AgentWorking, session.AgentStarting:
-				row.Doing = "working"
-			case session.AgentWaiting:
-				row.Doing = "waiting"
+			pane := s.Hub.Doing(sn.Project)
+			prompting := s.Hub.Prompting(sn.Project)
+			running := 0
+			// Read only where it can change the word: a working pane says
+			// working whatever the hook log holds, and a pane with a dialog on
+			// it says waiting whatever it holds. Everywhere else this is one
+			// hook log per session per render. That is a local file, not the
+			// tmux call MUS-Q-0102 took out of this loop, and the read is
+			// incremental: session.Subagents keeps each log's fold between
+			// calls and reads only the bytes appended since the last one, so a
+			// log that has not moved costs an open, a stat and a re-read of its
+			// first line (the check that it is still the same file). Nothing
+			// bounds the log's size, so the first read after Mustur restarts
+			// folds the whole file once.
+			if !prompting && pane != session.AgentWorking && pane != session.AgentStarting {
+				_, running, _ = s.subagents(sn.Project)
 			}
+			row.Doing = pickerDoing(pane, prompting, running)
 		}
 		rows = append(rows, row)
 	}
 	return rows, s.lost(ctx, running, here), found, nil
+}
+
+// pickerDoing is the word the picker puts beside a running session: what its
+// pane says, except that a main agent at its prompt with a sub-agent still at
+// work is working, not waiting (MUS-F-0171). "Waiting" beside a session reads
+// as waiting on the owner, and the owner had nothing to do but wait for the
+// sub-agents. subagentsRunning is the drawer's running count, so a quiet row
+// (MUS-D-0191) does not hold the word at working. Empty is a pane nothing has
+// read, which says nothing rather than guessing.
+//
+// prompting is a dialog on the pane, and it outranks the sub-agents: a
+// permission or selection prompt is the session waiting on the owner, which
+// is the one thing "working" must never hide. A background sub-agent can be
+// at work while its parent asks, and the first version of this said working
+// over exactly that (review on PR 116).
+func pickerDoing(pane session.Agent, prompting bool, subagentsRunning int) string {
+	lift := subagentsRunning > 0 && !prompting
+	switch pane {
+	case session.AgentWorking:
+		return "working"
+	// Not "working": a blank pane has no turn in it, and the session view's
+	// pill says starting about the same frame (MUS-F-0115).
+	case session.AgentStarting:
+		return "starting"
+	case session.AgentWaiting:
+		if lift {
+			return "working"
+		}
+		return "waiting"
+	}
+	// An unread pane still says nothing about the main agent, but a sub-agent
+	// the hook says is at work is a fact rather than a guess.
+	if lift {
+		return "working"
+	}
+	return ""
 }
 
 func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
@@ -554,8 +646,9 @@ type frame struct {
 	Key   string `json:"key,omitempty"`
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
-	// Agent is what the CLI's own pane says it is doing: working, waiting, or
-	// empty for a pane nothing here can read. Empty is not idle — the surface
+	// Agent is what the CLI's own pane says it is doing: working, waiting,
+	// starting for a pane with nothing on it yet (MUS-F-0115), or empty for a
+	// pane nothing here can read. Empty is not idle — the surface
 	// falls back to counting silence, which is what it did before.
 	Agent string `json:"agent,omitempty"`
 	// Status is what the CLI's furniture said, taken off the bottom of the
@@ -1083,14 +1176,9 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
   /* Ending one. Beside the control that starts one, because that is where a
      reader looks for what can be done to a session, and behind the confirmation
      that names it (MUS-D-0147, as MUS-F-0103 amended it -- the tick is gone).
-
-     border-top undoes the bare form rule below, which was written for the
-     composer and lands on every form on the page. It is what drew a line across
-     the rail above Stop, where the tick used to sit, and went on drawing it
-     after the tick was removed (MUS-F-0107). The same rule also reaches .pick
-     and .new form, which is a leak rather than an intent, but neither is what
-     the owner reported and both would change a layout nobody has looked at. */
-  .endform { display: inline-flex; flex: 0 0 auto; border-top: 0; }
+     No border: the line that sat above Stop came from the composer's rule when
+     it was a bare form selector (MUS-F-0107, MUS-F-0136). */
+  .endform { display: inline-flex; flex: 0 0 auto; }
   .endform button { font: inherit; font-size: .82em; padding: .2rem .55rem;
                     border: 1px solid var(--edge); border-radius: .45rem;
                     background: transparent; color: inherit; cursor: pointer; }
@@ -1180,9 +1268,13 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
   #foot { display: flex; align-items: center; gap: .45rem;
          padding: .4rem 1rem; background: #8881;
           font-size: .82em; opacity: .75; }
-  form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
+  /* The composer, by its id. This was a bare form selector once, and a bare
+     element selector reaches every form on the page: it drew a line above Stop
+     (MUS-F-0107), stacked the picker, and ruled and inset the start form, none
+     of which asked for it (MUS-F-0136). Every other form states its own shape. */
+  #say { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
          border-top: 1.4px solid var(--edge); }
-  form .row { display: flex; gap: .5rem; align-items: flex-end; }
+  #say .row { display: flex; gap: .5rem; align-items: flex-end; }
   /* Destination above the box, not inside it. Thought first, destination
      second: the line says where this is going and is changeable without the
      draft being at risk. */
@@ -1330,14 +1422,12 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
      control it needs and nothing else. */
   .rail { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem;
           border-bottom: 1.4px solid var(--edge); min-width: 0; }
-  /* flex-direction and padding are set here because they have to be undone,
-     not because a row needs declaring. The bare form rule above was written
-     for the composer (column, gap, its own padding) and a bare element
-     selector reshapes every form added afterwards. This one came out stacked
-     and centred inside 69px of nothing, which is exactly the giant button
-     under the dropdown the owner reported. */
-  .pick { display: flex; flex-direction: row; align-items: center; gap: .3rem;
-          padding: 0; flex: 1; min-width: 0; }
+  /* A row. It once had to undo the composer's column and padding, which a bare
+     form selector handed to every form: this one came out stacked and centred
+     inside 69px of nothing, the giant button under the dropdown the owner
+     reported. The composer's rule is scoped to it now (MUS-F-0136). */
+  .pick { display: flex; align-items: center; gap: .3rem;
+          flex: 1; min-width: 0; }
   .pick select { flex: 1; min-width: 0; font: inherit; font-size: .85em; }
   /* Nothing sets display on the noscript, and that is deliberate.
 
@@ -1418,9 +1508,19 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
      On a phone it opens over the terminal: at 390px a 17rem drawer would leave
      about 110px of it. On a wide screen it pushes instead, which is the whole
      reason for a drawer rather than a sheet — the terminal and the list at
-     once. */
+     once.
+
+     On a phone it stops above the tab bar, which is always visible with
+     content scrolling behind it (MUS-Q-0142). inset: 0 laid the drawer over
+     the bar from x=55 across, so the bar could be neither seen nor tapped
+     while it was open (MUS-F-0179). --shell-dock-offset is the room the bar
+     takes, the same metric the dock sits on, and the bar is set to that
+     height, so the veil and the panel end where the bar begins. A wide screen
+     has no bar: its drawer is the full-height column the 60rem rule below
+     gives it, whatever this offset says. */
   .drawer[hidden] { display: none; }
-  .drawer { position: fixed; inset: 0; z-index: 20; }
+  .drawer { position: fixed; inset: 0 0 var(--shell-dock-offset, 0px) 0;
+            z-index: 20; }
   .veil { position: absolute; inset: 0; background: #0007; }
   .panel { position: absolute; top: 0; right: 0; bottom: 0;
            width: 86%; max-width: 22rem; box-sizing: border-box;

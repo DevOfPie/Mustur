@@ -93,6 +93,7 @@ func cmdAsk(args []string) error {
 		r.Data = append(r.Data, record.Field{Key: question.FieldNeeded, Value: question.Yes})
 	}
 	for _, o := range options {
+		o = question.NormaliseOption(o)
 		if err := question.CheckOption(o); err != nil {
 			return err
 		}

@@ -155,6 +155,44 @@ func TestEveryBarSurfaceUsesTheSharedShell(t *testing.T) {
 	}
 }
 
+// The bar is as tall as the room kept for it.
+//
+// The spacer, a docked section and the session drawer all stop at
+// --shell-bar. While the bar was sized by its content it measured 45.4px at
+// 390px against a 48px reservation, so each of them stopped short of it.
+// Setting the bar's height to the same value is what closes that; this holds
+// the two declarations, and the offset they give a docked section, in place.
+// The rail undoes the height, or bottom: 0 loses to it and the rail is three
+// rems tall.
+func TestTheBarIsAsTallAsTheRoomKeptForIt(t *testing.T) {
+	rule := func(sel string, from int) string {
+		at := strings.Index(shellCSS[from:], sel+" {")
+		if at < 0 {
+			t.Fatalf("no %s rule in the shell", sel)
+		}
+		at += from
+		return shellCSS[at : at+strings.Index(shellCSS[at:], "}")]
+	}
+	if !strings.Contains(rule("nav", 0), "height: var(--shell-bar)") {
+		t.Error("the bar is not set to --shell-bar; it is sized by its content")
+	}
+	if !strings.Contains(rule("body::after", 0), "height: var(--shell-bar)") {
+		t.Error("the spacer does not reserve --shell-bar")
+	}
+	wide := strings.Index(shellCSS, "@media (min-width: 60rem)")
+	if wide < 0 {
+		t.Fatal("no wide-screen block in the shell")
+	}
+	if !strings.Contains(rule("nav ", wide), "height: auto") {
+		t.Error("the rail keeps the bar's height and stops three rems down")
+	}
+	for _, want := range []string{"--shell-dock-offset: var(--shell-bar);", "body { --shell-dock-offset: 0px; }"} {
+		if !strings.Contains(shellCSS, want) {
+			t.Errorf("a docked section no longer sits on the bar's room: %q missing", want)
+		}
+	}
+}
+
 // No surface may grow its own copy of the bar again.
 //
 // This is the test that would have caught the original drift, and it reads the

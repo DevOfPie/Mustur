@@ -70,6 +70,12 @@
 # adapter therefore starts the server inside `mustur-tmux.scope` when it has to
 # start one at all (MUS-D-0151). `systemctl --user status mustur-tmux.scope`
 # says whether the sessions on this machine are outside this service or in it.
+# That name belongs to the default tmux socket, which is the one this unit uses
+# because it sets no TMUX_TMPDIR. The name follows the socket tmux resolves, not
+# the variable: a TMUX_TMPDIR tmux cannot use — missing, or holding a colon —
+# puts tmux on the default socket and the name with it. A Mustur on any other
+# socket asks for `mustur-tmux-<hash of the socket path>` instead, so it can
+# neither take this service's scope nor be refused its own (MUS-F-0176).
 
 [Unit]
 Description=Mustur — records, routing and intake

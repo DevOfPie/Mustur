@@ -45,9 +45,12 @@ package session
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -472,14 +475,122 @@ func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
 }
 
 // TmuxScope is the transient unit the tmux server is put in when Mustur has to
-// spawn one.
+// spawn one on this machine's default tmux socket — the one mustur.service
+// talks to, since its unit sets no TMUX_TMPDIR.
 //
 // Named rather than random so a person can find it: `systemctl --user status
 // mustur-tmux.scope` says whether the sessions are outside the service or in
 // it. tmux uses a uuid for the scopes it makes per pane child, which is right
 // for something there are many of and wrong for the one there is only ever one
-// of.
+// of — per socket. A Mustur on any other socket is named by TmuxScopeFor.
 const TmuxScope = "mustur-tmux"
+
+// TmuxScopeFor names the scope for the tmux server on socket.
+//
+// One unit name serves one tmux server, so the name follows the server and not
+// the program (MUS-F-0176). With one fixed name, a second Mustur on this
+// machine — a development server, a throwaway built to check a pull request —
+// was refused the name while the live service held it and ran its server
+// unscoped; with the live service down, the second instance would take the name
+// and the live service would be the one left unscoped on its next Start.
+//
+// The default socket keeps the plain name, so the live deployment's scope is
+// the one it always had and a deploy needs no step to move it. Any other socket
+// gets that name plus a short hash of its path: two sockets never share a unit,
+// and the same socket always gets the same one, which is what lets a person
+// find it again. The hash is hex, so the name is a valid unit name whatever
+// characters the path holds.
+func TmuxScopeFor(socket string) string {
+	if socket == "" || socket == defaultTmuxSocket() {
+		return TmuxScope
+	}
+	sum := sha256.Sum256([]byte(socket))
+	return TmuxScope + "-" + hex.EncodeToString(sum[:])[:12]
+}
+
+// tmuxSocket is the socket a plain `tmux` from this process talks to. The
+// Adapter never passes -L or -S, so this is the server Start spawns.
+func tmuxSocket() string {
+	return resolveTmuxSocket(os.Getenv("TMUX"), os.Getenv("TMUX_TMPDIR"), os.Getuid())
+}
+
+func defaultTmuxSocket() string {
+	return resolveTmuxSocket("", "", os.Getuid())
+}
+
+// resolveTmuxSocket resolves the socket a tmux client picks with no -L or -S,
+// mirrored from tmux 3.6 (github.com/tmux/tmux, tag 3.6):
+//
+//	tmux.h:87   #define TMUX_SOCK "$TMUX_TMPDIR:" _PATH_TMP
+//	tmux.c:519  s = getenv("TMUX");
+//	tmux.c:520  if (s != NULL && *s != '\0' && *s != ',') {
+//	tmux.c:522      path[strcspn(path, ",")] = '\0';
+//	tmux.c:199  expand_paths(TMUX_SOCK, &paths, &n, 0);
+//	tmux.c:153  while ((next = strsep(&tmp, ":")) != NULL) {
+//	tmux.c:154      expanded = expand_path(next, home);
+//	tmux.c:155      if (expanded == NULL) {   /* TMUX_TMPDIR unset */
+//	tmux.c:134  xasprintf(&expanded, "%s%s", value->value, end);
+//	tmux.c:162      if (realpath(expanded, resolved) == NULL) {
+//	tmux.c:166          continue;
+//	tmux.c:204  path = paths[0]; /* can only have one socket! */
+//	tmux.c:209  xasprintf(&base, "%s/tmux-%ld", path, (long)uid);
+//	tmux.c:229  xasprintf(&path, "%s/%s", base, label);
+//
+// So: the path at the front of $TMUX when a client runs inside a pane. Else
+// the realpath of $TMUX_TMPDIR if it has one, else the realpath of /tmp, then
+// tmux-<uid>/default. The colon split is of the template, not of the value:
+// expand_path substitutes $TMUX_TMPDIR after strsep has run, so a value
+// holding a colon is one path, which realpath refuses unless a directory by
+// that exact name exists, and tmux falls through to /tmp. Measured with strace
+// on 3.6: /nonexistent/x, /nonexistent/x:<dir> and <dir>:<dir2> all connect to
+// /tmp/tmux-<uid>/default. realpath is also what makes a relative TMUX_TMPDIR
+// absolute against the working directory and a symlink the directory it names.
+//
+// One case is not mirrored, because there is nothing to name. When
+// <dir>/tmux-<uid> cannot be created, is not a directory, is not owned by this
+// uid or is open to others (tmux.c:211-228), tmux does not fall back: it
+// prints the cause and exits 1, and no server starts. Nor when neither
+// candidate survives realpath (tmux.c:201, "no suitable socket path"). This
+// returns the path tmux would have used or /tmp's, and whatever scope it names
+// is collected empty.
+func resolveTmuxSocket(tmux, tmpdir string, uid int) string {
+	if tmux != "" && tmux[0] != ',' {
+		if i := strings.IndexByte(tmux, ','); i >= 0 {
+			tmux = tmux[:i]
+		}
+		return tmux
+	}
+	dir := "/tmp"
+	for _, c := range []string{tmpdir, "/tmp"} {
+		if r, ok := realpath(c); ok {
+			dir = r
+			break
+		}
+	}
+	return filepath.Join(dir, fmt.Sprintf("tmux-%d", uid), "default")
+}
+
+// realpath is realpath(3): absolute, every symlink resolved, and false when
+// any component does not exist. The empty path fails, as realpath("") does
+// with ENOENT, which is how an empty TMUX_TMPDIR falls through to /tmp. The
+// second EvalSymlinks is for the working directory, which Getwd may report
+// through a symlink from $PWD.
+func realpath(p string) (string, bool) {
+	if p == "" {
+		return "", false
+	}
+	r, err := filepath.EvalSymlinks(p)
+	if err != nil {
+		return "", false
+	}
+	if r, err = filepath.Abs(r); err != nil {
+		return "", false
+	}
+	if r, err = filepath.EvalSymlinks(r); err != nil {
+		return "", false
+	}
+	return r, true
+}
 
 // serverUp reports whether a tmux server is running at all — not whether it
 // holds any session of ours.
@@ -518,6 +629,10 @@ func (a *Adapter) serverUp(ctx context.Context) bool {
 // server back inside the unit. Turning exit-empty off would have worked and
 // changes a server-wide option on a socket that may not only be ours.
 //
+// The unit is named for the socket and not for Mustur (MUS-F-0176): an
+// instance on another socket asks for a name of its own rather than the live
+// service's.
+//
 // **Only the server escapes.** Everything else Mustur spawns is still in the
 // unit's cgroup and still dies with it, which is what the stop path relies on.
 func (a *Adapter) scopePrefix(ctx context.Context) []string {
@@ -525,7 +640,7 @@ func (a *Adapter) scopePrefix(ctx context.Context) []string {
 		return nil
 	}
 	return []string{"systemd-run", "--user", "--scope", "--quiet", "--collect",
-		"--unit", TmuxScope}
+		"--unit", TmuxScopeFor(tmuxSocket())}
 }
 
 // List returns every session Mustur started on this machine, and nothing else.

@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/DevOfPie/Mustur/internal/record"
 )
@@ -152,7 +153,7 @@ func (o Option) Says() string {
 	// sentence. The middot is the one the first version missed, and it is the
 	// one the existing questions are written with -- so the strip left a stray
 	// "·" at the head of the line and a test written months earlier caught it.
-	rest = strings.TrimLeft(rest, ".,:;-—–·| ")
+	rest = strings.TrimLeft(rest, markerSeps)
 	if rest == "" {
 		return line
 	}
@@ -410,6 +411,104 @@ func sortByID(rs []record.Record) {
 	sort.Slice(rs, func(i, j int) bool { return rs[i].ID < rs[j].ID })
 }
 
+// markerPunct is every punctuation mark this store uses between the
+// Recommended marker and what follows it. markerSeps adds the space, and is the
+// set Says strips off the line and CheckOption strips off a paragraph.
+const (
+	markerPunct = ".,:;-—–·|"
+	markerSeps  = markerPunct + " "
+)
+
+// labelMarker reads a Recommended marker at the head of a label.
+//
+// It reports the label with the marker taken off, and whether the marker is
+// unambiguous. It is unambiguous only when the word is spelt exactly as the
+// star reads it and a punctuation separator follows, possibly after spaces:
+// "Recommended: A", "Recommended · A", "Recommended - A". A hyphen counts only
+// when a space or the end follows it, because "Recommended-grade" is a word.
+//
+// It is ambiguous when only a space follows, or when the word is spelt in
+// another case. "Recommended settings" may be the marker on an answer called
+// "settings", or an answer called "Recommended settings" that the asker does
+// not favour; moving it would cut the label and draw a star nobody meant. A
+// lowercase "recommended:" is plainly meant as the marker but is not the one
+// IsRecommended reads, and quietly respelling it would teach a spelling the
+// star does not honour.
+//
+// found is false for a label that does not open with the word followed by a
+// space or a separator -- "Recommendedly", "Recommended-grade" -- and for a
+// label that is nothing but the word, as Says leaves a line that is nothing but
+// the word: taking it would leave an option with no name.
+func labelMarker(label string) (rest string, found, unambiguous bool) {
+	n := len(Recommended)
+	if len(label) <= n || !strings.EqualFold(label[:n], Recommended) {
+		return label, false, false
+	}
+	after := label[n:]
+	spaced := strings.TrimLeft(after, " ")
+	sep := false
+	if spaced != "" {
+		r, size := utf8.DecodeRuneInString(spaced)
+		switch {
+		case r == '-':
+			sep = size == len(spaced) || spaced[size] == ' '
+		default:
+			sep = strings.ContainsRune(markerPunct, r)
+		}
+	}
+	if !sep && spaced == after {
+		return label, false, false // A letter follows: another word.
+	}
+	rest = strings.TrimSpace(strings.TrimLeft(after, markerSeps))
+	if rest == "" {
+		return label, false, false
+	}
+	return rest, true, sep && label[:n] == Recommended
+}
+
+// markLine is an option with the given label and the Recommended marker at the
+// head of its one-line part, the rest as it was. A line already carrying the
+// marker is kept as written.
+func markLine(label string, parts []string) string {
+	line := strings.TrimSpace(parts[1])
+	if !strings.HasPrefix(line, Recommended) {
+		line = Recommended + ". " + line
+	}
+	out := label + OptionSep + line
+	if len(parts) > 2 {
+		out += OptionSep + strings.TrimSpace(parts[2])
+	}
+	return out
+}
+
+// NormaliseOption moves a Recommended marker written at the head of the label
+// to the head of the one-line part, where IsRecommended reads it.
+//
+// The label is the bold half of the row, so a marker there is not lost the way
+// one in the paragraph is: the owner sees the word. What they do not see is the
+// star, because the star is drawn from the line, and the word sitting inside
+// the label reads as part of the answer's name. MUS-Q-0173 was raised that way
+// and showed "Recommended" in bold with no star beside it.
+//
+// Only the unambiguous form is moved: the word exactly as the star reads it,
+// then punctuation (labelMarker). The ambiguous forms -- a bare space after
+// the word, or another case -- are left for CheckOption to refuse, because a
+// label may genuinely begin with the word.
+//
+// An option with no one-line part is returned as given. `mustur ask` refuses
+// one before this runs, so there is no line to move the marker onto.
+func NormaliseOption(value string) string {
+	parts := strings.SplitN(value, OptionSep, 3)
+	if len(parts) < 2 {
+		return value
+	}
+	rest, found, unambiguous := labelMarker(strings.TrimSpace(parts[0]))
+	if !found || !unambiguous {
+		return value
+	}
+	return markLine(rest, parts)
+}
+
 // CheckOption refuses an option whose recommendation is in the wrong place.
 //
 // The marker is a prefix on the one-line part, which is the half a surface
@@ -422,6 +521,18 @@ func sortByID(rs []record.Record) {
 // cheap to be told at the moment of asking and expensive to find afterwards.
 func CheckOption(value string) error {
 	parts := strings.SplitN(value, OptionSep, 3)
+	if len(parts) >= 2 {
+		label := strings.TrimSpace(parts[0])
+		if rest, found, _ := labelMarker(label); found {
+			return fmt.Errorf(
+				"%q starts its label with %q, where the star does not read it.\n"+
+					"The star is read from the one-line part, between the first and second %q.\n"+
+					"If the word was meant as the marker:\n"+
+					"  --option %q\n"+
+					"If the label genuinely begins with the word, reword it (\"The recommended settings\").",
+				label, label[:len(Recommended)], OptionSep, markLine(rest, parts))
+		}
+	}
 	if len(parts) < 3 {
 		return nil // No paragraph, nowhere to put it wrongly.
 	}
@@ -433,7 +544,7 @@ func CheckOption(value string) error {
 				"  --option %q",
 			strings.TrimSpace(parts[0]), Recommended, OptionSep,
 			strings.TrimSpace(parts[0])+OptionSep+Recommended+". "+line+OptionSep+
-				strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(detail, Recommended), ".,:;-—– ")))
+				strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(detail, Recommended), markerSeps)))
 	}
 	return nil
 }

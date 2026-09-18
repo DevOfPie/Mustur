@@ -172,7 +172,7 @@ func (c *Compose) targets(ctx context.Context, chosen string) []composeTarget {
 				}
 				out = append(out, composeTarget{
 					ID:     r.ID,
-					Label:  r.Title,
+					Label:  titleText(r.Title),
 					Detail: "files a record; no session is typed into",
 					Jot:    true,
 				})
@@ -324,7 +324,7 @@ func (c *Compose) deliver(ctx context.Context, to, text, actor string) (string, 
 				_ = export.Write(c.ExportTo, all)
 			}
 		}
-		return fmt.Sprintf("filed %s to %s", r.ID, dest.Name), nil
+		return fmt.Sprintf("filed %s to %s", r.ID, titleText(dest.Name)), nil
 	}
 	if c.Adapter == nil {
 		return "", errors.New("no adapter, so no session can be typed into")

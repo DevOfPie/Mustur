@@ -81,9 +81,13 @@
     if (window.musturBadge) window.musturBadge(n);
   }
 
-  function setState(label, on) {
+  function setState(label, on, why) {
     state.textContent = label;
     state.className = on ? "pill on" : "pill";
+    // Said only when the word needs a reason the pane does not give: running
+    // over a main agent that is not itself at work (MUS-F-0171).
+    if (why) state.title = why;
+    else state.removeAttribute("title");
     // The ring turns only while something is actually happening. Reconnecting,
     // ended and idle are all states where a moving light would be saying the
     // opposite of the word beside it.
@@ -100,9 +104,12 @@
     // and the silence timer below reads that blank screen as a session that
     // has been quiet since it started — so the surface said "idle" over an
     // empty terminal with nothing to say anything was coming (MUS-F-0115).
-    // The ring turns, because something is in fact happening.
+    // No ring: the ring means something is at work -- a turn in flight
+    // (MUS-D-0130), or a sub-agent the hook says is running (MUS-F-0171) --
+    // and neither can be true of a CLI that has not drawn its prompt yet. The
+    // plain pill is the one "connecting" wears, which is the same kind of wait.
     if (doing === "starting") {
-      setState("starting", true);
+      setState("starting", false);
       startingNote();
       return;
     }
@@ -110,14 +117,38 @@
       setState("running", true);
       return;
     }
+    // The main agent at its prompt is not the session waiting on you while a
+    // sub-agent it launched is still at work (MUS-F-0171): "idle" there read
+    // as something pending on the owner when there was nothing to do but
+    // wait. The count is the drawer's own, so the pill and the drawer's ring
+    // turn together and a quiet row (MUS-D-0191) turns neither. When the last
+    // one stops, what the pane says is the answer again.
+    //
+    // Except under a dialog. A permission or selection prompt on the pane, or
+    // a tool call the hook is holding, is the session waiting on the owner,
+    // and that outranks any sub-agent: a background one can be at work while
+    // its parent asks, and the first version of this said running over
+    // exactly that (review on PR 116).
+    var lift = agentsRunning > 0 && !panePrompt && !held;
     if (doing === "waiting") {
-      setState("idle", false);
+      if (lift) setState("running", true, subagentsWhy("at its prompt"));
+      else setState("idle", false);
       return;
     }
     // Nothing here could read the pane, so fall back to counting silence.
     var quietFor = Math.floor((Date.now() - lastOutput) / 1000);
     var idle = quietFor >= IDLE_AFTER;
+    if (idle && lift) {
+      setState("running", true, subagentsWhy("quiet"));
+      return;
+    }
     setState(idle ? "idle" : "running", !idle);
+  }
+
+  // The pill's title when sub-agents are why it says running.
+  function subagentsWhy(main) {
+    return agentsRunning + " sub-agent" + (agentsRunning === 1 ? "" : "s") +
+      " running; the main agent is " + main;
   }
 
   // Follow the tail unless the reader has scrolled up to look at something.
@@ -251,7 +282,7 @@
     if (!out || out.firstChild) return;
     var p = document.createElement("p");
     p.className = "note starting";
-    p.textContent = "Starting\u2026 a restored session reads its conversation back before it draws anything.";
+    p.textContent = "Starting\u2026 the CLI is loading and has drawn nothing yet.";
     out.appendChild(p);
   }
 
@@ -276,10 +307,11 @@
 
   setInterval(function () {
     if (foot && !closed) showFoot();
-    refreshState();
     // The ages move on their own, so the server does not send a frame to move
-    // them.
+    // them. Drawn before the pill is decided, because a row turning quiet this
+    // second is a sub-agent the pill stops counting this second.
     if (!closed) drawAgents();
+    refreshState();
   }, 1000);
 
   // Sub-agent rows.
@@ -290,6 +322,17 @@
   // them, and the only thing computed here is the age, from the stamps, so a
   // running sub-agent's clock moves without a frame per second to move it.
   var agents = null;
+  // How many of them are running, as drawAgents counts them for the drawer's
+  // badge and ring. The pill reads this rather than counting again, so there
+  // is one rule for "a sub-agent is at work" (MUS-F-0171). Until the first
+  // agents frame it is what the first paint said: the ring rendered live and
+  // the badge holding the running count.
+  var agentsRunning = (function () {
+    var r = document.getElementById("ring");
+    var b = document.getElementById("badge");
+    if (!r || !r.classList.contains("live")) return 0;
+    return Number(b && b.textContent) || 1;
+  })();
   // Whether the reader left the finished rows open. Shut until they open it.
   var finishedOpen = false;
 
@@ -364,6 +407,7 @@
       else running++;
     }
     badge(agents.length, running, silent);
+    agentsRunning = running;
 
     // Rebuilt rather than diffed. A handful of rows is not worth a reconciler,
     // and a rebuild cannot leave a stale row behind. The fold is the one thing
@@ -734,13 +778,17 @@
         // The server says how long the screen has already been unchanged, so
         // the counter continues rather than restarting on every page load.
         if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
-        if (typeof f.agent === "string") doing = f.agent;
+        // Every hello and every screen frame carries the pane's reading, and
+        // unknown is the empty string the server omits — so an absent field is
+        // unknown, not "as before". Keeping the old value is how a pane that
+        // went from blank to something unrecognised said starting for ever.
+        doing = f.agent || "";
         drawChips(f.status);
         // Now that the real silence is known, the pill can be honest about it.
         refreshState();
       } else if (f.t === "screen") {
         var moved = paint(f.screen || "");
-        if (typeof f.agent === "string") doing = f.agent;
+        doing = f.agent || "";
         drawChips(f.status);
         // The arrival of a frame is not the activity, which is what this used
         // to say. The server hashes the pane before it strips the CLI's own
@@ -768,9 +816,13 @@
         // the tool and its input, and told the server.
         held = f.ask || null;
         refreshDialog();
+        // A call arriving or clearing decides whether the sub-agents may lift
+        // the pill, so the pill is decided again rather than at the next tick.
+        refreshState();
       } else if (f.t === "agents") {
         agents = f.agents || [];
         drawAgents();
+        refreshState();
       } else if (f.t === "ended") {
         closed = true;
         attached = false;

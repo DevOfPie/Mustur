@@ -102,7 +102,7 @@ func (projects projectNames) title(prefix string) string {
 	// stated rather than inferred.
 	for _, p := range projects {
 		if v, ok := p.Get(intake.PrefixField); ok && strings.EqualFold(strings.TrimSpace(v), prefix) {
-			return p.Title
+			return titleText(p.Title)
 		}
 	}
 	// Otherwise the project written under this prefix and claiming no other.
@@ -111,7 +111,7 @@ func (projects projectNames) title(prefix string) string {
 			continue
 		}
 		if id, err := ident.Parse(p.ID); err == nil && id.Project == prefix {
-			return p.Title
+			return titleText(p.Title)
 		}
 	}
 	return prefix

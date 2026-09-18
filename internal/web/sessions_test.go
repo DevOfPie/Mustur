@@ -1132,22 +1132,25 @@ func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
 		}
 	}
 
-	// The picker form has to undo the bare form rule written for the composer.
+	// The picker form is a row.
 	//
-	// That rule is a bare element selector — form { display: flex;
-	// flex-direction: column } with its own padding — so it reshapes every form
-	// added after it. This one inherited column and came out stacked and
-	// centred inside 69px of nothing, which is precisely the giant button under
-	// the dropdown that was reported. Overriding display alone is not enough,
-	// because .pick never mentioned direction or padding at all.
-	at := strings.Index(body, ".pick { display: flex;")
-	if at < 0 {
-		t.Fatal("no .pick rule")
+	// The composer's rule was once a bare element selector — form { display:
+	// flex; flex-direction: column } with its own padding — and this form
+	// inherited column and came out stacked and centred inside 69px of
+	// nothing, which is precisely the giant button under the dropdown that was
+	// reported. It was patched here by undoing direction and padding; the rule
+	// is scoped to the composer now (MUS-F-0136), and what this holds is that
+	// no rule that can land on the picker form stacks it — form, .rail form,
+	// main form and :is(form) as much as .pick itself. Reading .pick alone is
+	// how an earlier version passed with form { flex-direction: column }
+	// restored beside it.
+	if !strings.Contains(body, ".pick { display: flex;") {
+		t.Fatal("no .pick rule making the row a flex row")
 	}
-	rule := body[at : at+strings.Index(body[at:], "}")]
-	for _, want := range []string{"flex-direction: row", "padding: 0"} {
-		if !strings.Contains(rule, want) {
-			t.Errorf("the picker row does not reset %q, so the composer's form rule reshapes it:\n%s", want, rule)
+	column := regexp.MustCompile(`flex-direction:\s*column`)
+	for _, r := range railFormRules(t, body, ".pick") {
+		if column.MatchString(r.decls) {
+			t.Errorf("%q reaches the picker form and stacks it: %s", r.sel, r.decls)
 		}
 	}
 	// What actually puts the button beside the select is the row being a flex
@@ -1303,6 +1306,36 @@ func TestTheDrawerHasAResizeHandleThatIsNotPointerOnly(t *testing.T) {
 	}
 	if !strings.Contains(body[wide:], "cursor: col-resize") {
 		t.Error("the handle does not read as draggable on a wide screen")
+	}
+}
+
+// The drawer stops above the tab bar (MUS-F-0179).
+//
+// The owner's rule on MUS-Q-0142 is that the bar is always visible with content
+// scrolling behind it. On a phone the drawer was inset: 0, which laid its veil
+// and panel over the bar, so the bar could be neither seen nor tapped while the
+// drawer was open. Whether they overlap is measured in a browser; what this
+// holds is the rule that decides it: the phone drawer's bottom edge is the
+// room the bar takes, and the wide screen's own rule still makes it a
+// full-height column. That the bar is exactly that room is
+// TestTheBarIsAsTallAsTheRoomKeptForIt's to hold.
+func TestTheDrawerStopsAboveTheTabBar(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	base := strings.Index(body, ".drawer { position: fixed; inset: 0 0 var(--shell-dock-offset, 0px) 0;")
+	if base < 0 {
+		t.Fatal("the phone drawer's bottom edge is not the room the tab bar takes; it covers the bar")
+	}
+	wide := strings.Index(body, "@media (min-width: 60rem)")
+	if wide < 0 || wide < base {
+		t.Fatal("no wide-screen block after the drawer's base rule")
+	}
+	if !strings.Contains(body[wide:], ".drawer { inset: 0 0 0 auto;") {
+		t.Error("the wide screen's drawer is no longer a full-height column")
+	}
+	if !strings.Contains(body, "--shell-dock-offset: var(--shell-bar);") {
+		t.Error("the shell no longer sets the offset the drawer stops at to the bar's room")
 	}
 }
 
@@ -2309,6 +2342,79 @@ func TestASessionThatHasPrintedNothingReadsAsStarting(t *testing.T) {
 	if strings.TrimSpace(f.Screen) != "" {
 		t.Errorf("the pane was not blank, so this measured nothing: %q", f.Screen)
 	}
+
+	// The picker reads the same frame, so it says the same word rather than
+	// calling a pane with no turn in it working.
+	res, err := http.Get(srv.URL + "/sessions/" + project)
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	if !strings.Contains(string(page), project+" &middot; starting</option>") {
+		t.Error("the session picker does not say a blank session is starting")
+	}
+}
+
+// The pill says starting without the ring. The ring means a turn is in flight
+// (MUS-D-0130), and a CLI that has not drawn its prompt has no turn in it; the
+// first version turned it anyway, so the pill over a blank terminal looked
+// exactly like one mid-turn (MUS-F-0115).
+func TestStartingIsAPlainPill(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, `setState("starting", false)`) {
+		t.Error("the starting pill wears the ring that means a turn is in flight")
+	}
+	if strings.Contains(src, `setState("starting", true)`) {
+		t.Error("somewhere the starting pill still turns the ring on")
+	}
+	// The server omits an unknown reading, so an absent field has to clear the
+	// last one. Keeping it is how a pane that went from blank to something
+	// unrecognised said starting for ever, measured in a browser.
+	if strings.Count(src, `doing = f.agent || "";`) != 2 {
+		t.Error("a frame with no reading keeps the last one, so starting outlives the blank pane")
+	}
+	// Clearing it only counts if it happens before the pill is redrawn. Each
+	// frame handler is sliced out on its own markers, and inside each the
+	// reading is assigned before refreshState is called. Whitespace is dropped
+	// first so a reflowed line does not break the comparison.
+	flat := strings.Join(strings.Fields(src), "")
+	for _, h := range []struct{ name, from, to string }{
+		{"hello", `if(f.t==="hello"){`, `}elseif(f.t==="screen"){`},
+		{"screen", `}elseif(f.t==="screen"){`, `}elseif(f.t==="error"){`},
+	} {
+		start := strings.Index(flat, h.from)
+		if start < 0 {
+			t.Errorf("the %s frame handler's opening marker is gone", h.name)
+			continue
+		}
+		body := flat[start+len(h.from):]
+		end := strings.Index(body, h.to)
+		if end < 0 {
+			t.Errorf("the %s frame handler's closing marker is gone", h.name)
+			continue
+		}
+		body = body[:end]
+		set := strings.Index(body, `doing=f.agent||"";`)
+		draw := strings.Index(body, `refreshState();`)
+		if set < 0 || draw < 0 || set > draw {
+			t.Errorf("the %s frame redraws the pill before it clears the last reading", h.name)
+		}
+	}
+	if strings.Contains(src, `if (typeof f.agent === "string") doing = f.agent;`) {
+		t.Error("somewhere a frame with no reading still keeps the last one")
+	}
+	// The note goes into the empty terminal and only there; the first frame
+	// that carries anything replaces it. startingNote came with 2f5569f and
+	// this guard is unchanged since, but CLAUDE.md now says the note sits "in
+	// the empty terminal", and this is the line that makes that true.
+	if !strings.Contains(src, "if (!out || out.firstChild) return;") {
+		t.Error("the starting note is written over a screen that already has something on it")
+	}
 }
 
 // Milestone 8, end to end through the surface: a tool call the CLI is holding
@@ -2711,19 +2817,251 @@ func TestTheSessionScriptDeclaresNoNameTwice(t *testing.T) {
 //
 // The tick that used to sit there was removed (MUS-F-0103) and the rule that
 // drew the line under it was not: a bare form selector written for the composer
-// reaches every form on the page, and .endform declares no border of its own to
-// beat it. The owner reported the leftover line (MUS-F-0107).
+// reached every form on the page. The owner reported the leftover line
+// (MUS-F-0107); it was undone here with border-top: 0 until the selector was
+// scoped to the composer (MUS-F-0136), which leaves Stop's form no border to
+// declare or to undo.
+//
+// So this asks of every rule that can land on that form — form, .rail form,
+// main form, :is(form), .endform, #endform — rather than of the one rule
+// named .endform. Reading only .endform is how an earlier version passed with
+// form { border-top: … } restored beside it.
 func TestNothingDrawsALineAboveStop(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	body := getFrom(t, srv, "/sessions/Mustur")
-	i := strings.Index(body, ".endform {")
+	rules := railFormRules(t, body, ".endform", "#endform")
+	named := false
+	for _, r := range rules {
+		named = named || r.sel == ".endform"
+		if cssBorder.MatchString(r.decls) {
+			t.Errorf("%q reaches Stop's form and declares a border: %s", r.sel, r.decls)
+		}
+	}
+	if !named {
+		t.Fatal("no .endform rule on the session page, so this has read nothing")
+	}
+}
+
+var cssBorder = regexp.MustCompile(`border(?:-top)?(?:-width|-style|-color)?\s*:`)
+
+// No rule in the session stylesheet reaches every form on the page.
+//
+// The composer's rule was a bare form selector, and it drew a line above Stop
+// (MUS-F-0107), stacked the picker, and ruled and inset the start form
+// (MUS-F-0136). Each of those was patched by undoing the rule on the form it
+// landed on, which fixes the one that was reported and none that are added
+// later. The cause is the selector, so the selector is what this refuses.
+//
+// A selector reaches every form when any of its compounds is the form element
+// with no class or id of its own and nothing before it names a class or id —
+// form, form .row, main form, body form, :is(form), :where(form) .row.
+// .pushed does not count as naming one: the script puts it on body, which
+// holds every form. A class or id before the form scopes it to a container,
+// and the page has two on purpose, each setting its own display, direction and
+// gap: .new form and .lost form.
+//
+// That leaves a scoped selector whose container happens to hold a form it was
+// not written for — .rail form, where Stop and the picker live. This test
+// cannot tell that from .lost form, which is legitimate and declares a border
+// of its own. TestNothingDrawsALineAboveStop and the picker check in
+// TestThePickerButtonIsOnlyThereWithoutScript ask the other way round, from the
+// form, which is the question that can be answered: every rule that can land
+// on .endform or .pick, scoped or not, is read for the defect it would carry.
+func TestNoRuleInTheSessionStylesheetReachesEveryForm(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+	everywhere := []string{".pushed"}
+	for _, r := range styleRules(t, body) {
+		for _, sel := range cssExpand(r.sel) {
+			cs := cssCompounds(sel)
+			for i, c := range cs {
+				if c.tag != "form" || !c.canBe("form", nil) {
+					continue
+				}
+				scoped := false
+				for _, a := range cs[:i] {
+					scoped = scoped || !a.canBe("", everywhere)
+				}
+				if !scoped {
+					t.Errorf("%q reaches every form on the page (as %q)", r.sel, sel)
+				}
+			}
+		}
+	}
+	var say string
+	for _, r := range styleRules(t, body) {
+		if r.sel == "#say" {
+			say = r.decls
+		}
+	}
+	if say == "" {
+		t.Fatal("the composer has no rule of its own")
+	}
+	for _, decl := range []string{"padding: .7rem 1rem", "border-top: 1.4px solid var(--edge)"} {
+		if !strings.Contains(say, decl) {
+			t.Errorf("the composer no longer declares %q: %s", decl, say)
+		}
+	}
+}
+
+// cssRule is one rule of a page's stylesheets: its selector list as written
+// and its declarations. Rules inside @media come out as rules; the at-rule
+// wrapping them does not.
+type cssRule struct{ sel, decls string }
+
+func styleRules(t *testing.T, body string) []cssRule {
+	t.Helper()
+	var out []cssRule
+	blocks := regexp.MustCompile(`(?s)<style>(.*?)</style>`).FindAllStringSubmatch(body, -1)
+	if len(blocks) == 0 {
+		t.Fatal("no stylesheet on the page")
+	}
+	comment := regexp.MustCompile(`(?s)/\*.*?\*/`)
+	rule := regexp.MustCompile(`([^{}]+)\{([^{}]*)\}`)
+	for _, b := range blocks {
+		for _, m := range rule.FindAllStringSubmatch(comment.ReplaceAllString(b[1], ""), -1) {
+			for _, sel := range cssSplitTop(m[1], ',') {
+				if sel = strings.TrimSpace(sel); sel != "" {
+					out = append(out, cssRule{sel, m[2]})
+				}
+			}
+		}
+	}
+	return out
+}
+
+// railFormRules returns every rule that can land on a form in the session
+// rail carrying the given class or id: its subject names the form element or
+// one of those, asks for no class or id the form lacks, and every compound
+// before it asks only for what the rail and body carry. Tags before the
+// subject are not checked, so main .rail form counts; that errs toward reading
+// a rule that cannot land rather than skipping one that can.
+func railFormRules(t *testing.T, body string, own ...string) []cssRule {
+	t.Helper()
+	rail := strings.Index(body, `<div class="rail" id="rail">`)
+	if rail < 0 {
+		t.Fatal("no rail on the session page")
+	}
+	inside := body[rail : rail+strings.Index(body[rail:], "\n</div>")]
+	for _, o := range own {
+		if o[0] == '.' && !strings.Contains(inside, `<form class="`+o[1:]+`"`) {
+			t.Fatalf("the rail holds no form %s, so the ancestry this reads by is wrong", o)
+		}
+	}
+	ancestors := []string{".rail", "#rail", ".pushed"}
+	var out []cssRule
+	for _, r := range styleRules(t, body) {
+		for _, sel := range cssExpand(r.sel) {
+			cs := cssCompounds(sel)
+			last := cs[len(cs)-1]
+			if last.tag != "form" && len(last.toks) == 0 || !last.canBe("form", own) {
+				continue
+			}
+			lands := true
+			for _, a := range cs[:len(cs)-1] {
+				lands = lands && a.canBe("", ancestors)
+			}
+			if lands {
+				out = append(out, r)
+				break
+			}
+		}
+	}
+	return out
+}
+
+// cssCompound is one compound selector reduced to what decides which element
+// it can match here: a tag and its classes and ids. Pseudo-classes and
+// attribute selectors are dropped, so a compound matches at least what it
+// really does.
+type cssCompound struct {
+	tag  string
+	toks []string
+}
+
+// canBe says whether c can match an element with this tag ("" for any) that
+// carries exactly the classes and ids in has.
+func (c cssCompound) canBe(tag string, has []string) bool {
+	if c.tag != "" && c.tag != "*" && tag != "" && c.tag != tag {
+		return false
+	}
+	for _, k := range c.toks {
+		found := false
+		for _, h := range has {
+			found = found || h == k
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+var (
+	cssPseudo = regexp.MustCompile(`::?[\w-]+(?:\([^()]*\))?|\[[^\]]*\]`)
+	cssTag    = regexp.MustCompile(`^[A-Za-z*][\w-]*`)
+	cssTok    = regexp.MustCompile(`[.#][\w-]+`)
+)
+
+func cssCompounds(sel string) []cssCompound {
+	var out []cssCompound
+	for _, part := range strings.FieldsFunc(sel, func(r rune) bool {
+		return r == ' ' || r == '\n' || r == '\t' || r == '>' || r == '+' || r == '~'
+	}) {
+		part = cssPseudo.ReplaceAllString(part, "")
+		out = append(out, cssCompound{cssTag.FindString(part), cssTok.FindAllString(part, -1)})
+	}
+	if len(out) == 0 {
+		out = append(out, cssCompound{})
+	}
+	return out
+}
+
+// cssExpand writes :is() and :where() out as the selectors they stand for, so
+// :is(form) .row is read as form .row.
+func cssExpand(sel string) []string {
+	i := strings.Index(sel, ":is(")
+	n := len(":is(")
+	if j := strings.Index(sel, ":where("); j >= 0 && (i < 0 || j < i) {
+		i, n = j, len(":where(")
+	}
 	if i < 0 {
-		t.Fatal("no .endform rule on the session page")
+		return []string{sel}
 	}
-	block := body[i : i+strings.Index(body[i:], "}")]
-	if !strings.Contains(block, "border-top: 0") {
-		t.Errorf(".endform does not undo the bare form rule's border: %s", block)
+	depth, end := 1, i+n
+	for ; end < len(sel) && depth > 0; end++ {
+		switch sel[end] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		}
 	}
+	var out []string
+	for _, arg := range cssSplitTop(sel[i+n:end-1], ',') {
+		out = append(out, cssExpand(sel[:i]+strings.TrimSpace(arg)+sel[end:])...)
+	}
+	return out
+}
+
+// cssSplitTop splits s on sep where it is not inside parentheses.
+func cssSplitTop(s string, sep byte) []string {
+	var out []string
+	depth, from := 0, 0
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case sep:
+			if depth == 0 {
+				out = append(out, s[from:i])
+				from = i + 1
+			}
+		}
+	}
+	return append(out, s[from:])
 }
 
 // The plus that starts a session is drawn like Stop beside it, not faded.
@@ -2755,5 +3093,182 @@ func TestThePlusIsNotDrawnDisabled(t *testing.T) {
 	}
 	if !strings.Contains(body, `<a class="newlink" href="/sessions?new=1"`) {
 		t.Error("the plus is no longer a plain link to the start form")
+	}
+}
+
+// A main agent at its prompt with a sub-agent still at work is not a session
+// waiting on the owner (MUS-F-0171). The picker said "waiting" beside it, which
+// reads as something pending on the owner when there was nothing to do but
+// wait for the sub-agents.
+func TestSubagentsAtWorkMakeTheSessionWorkingInThePicker(t *testing.T) {
+	for _, c := range []struct {
+		pane      session.Agent
+		prompting bool
+		running   int
+		want      string
+	}{
+		{session.AgentWaiting, false, 0, "waiting"},
+		{session.AgentWaiting, false, 1, "working"},
+		{session.AgentWaiting, false, 3, "working"},
+		{session.AgentWorking, false, 0, "working"},
+		{session.AgentStarting, false, 0, "starting"},
+		// An unread pane says nothing about the main agent, and still nothing
+		// once the last sub-agent stops.
+		{"", false, 0, ""},
+		{"", false, 2, "working"},
+		// A dialog on the pane is the session waiting on the owner, and no
+		// number of sub-agents at work turns that into working (review on PR
+		// 116).
+		{session.AgentWaiting, true, 0, "waiting"},
+		{session.AgentWaiting, true, 2, "waiting"},
+		{"", true, 2, ""},
+		// A pane that says working still says so under a dialog, as before.
+		{session.AgentWorking, true, 2, "working"},
+	} {
+		if got := pickerDoing(c.pane, c.prompting, c.running); got != c.want {
+			t.Errorf("pane %q, dialog %v, %d sub-agents running: picker says %q, want %q",
+				c.pane, c.prompting, c.running, got, c.want)
+		}
+	}
+}
+
+// The case the review on PR 116 found, on the screen it was found on: a
+// permission dialog reads as waiting to DoingIn, because the caret is on the
+// screen and "esc to interrupt" is not, while the status line counts a
+// sub-agent. The dialog wins.
+func TestADialogIsWaitingWhateverTheSubagentsAreDoing(t *testing.T) {
+	b, err := os.ReadFile("../session/testdata/prompt-below-numbered-prose.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	screen := string(b)
+	pane := session.DoingIn(screen)
+	if pane != session.AgentWaiting {
+		t.Fatalf("the fixture reads %q, not waiting, so this measures nothing", pane)
+	}
+	if session.ReadPrompt(screen) == nil {
+		t.Fatal("no dialog read off the fixture, so this measures nothing")
+	}
+	if got := pickerDoing(pane, true, 1); got != "waiting" {
+		t.Errorf("a dialog with a sub-agent running says %q in the picker, want waiting", got)
+	}
+}
+
+// screenRunner is fakeRunner with a pane: capture-pane answers with a fixture,
+// so the hub's poller reads a real CLI screen without tmux.
+type screenRunner struct{ listing, screen string }
+
+func (f screenRunner) Run(_ context.Context, _ string, args ...string) (string, error) {
+	if len(args) > 0 {
+		switch args[0] {
+		case "list-sessions":
+			return f.listing, nil
+		case "capture-pane":
+			return f.screen, nil
+		}
+	}
+	return "", nil
+}
+
+// The wiring, not only the word: rows() has to ask the hub about the dialog
+// and the hook log about the sub-agents, and hand both to pickerDoing. This
+// renders the picker from a polled fixture and a hook log with a running row,
+// so reverting rows() to read the pane alone fails here.
+func TestThePickerReadsSubagentsAndTheDialogFromTheirSources(t *testing.T) {
+	for _, c := range []struct {
+		fixture, want string
+	}{
+		// At its prompt with nothing on it but a suggestion: the sub-agent lifts.
+		{"prompt-ghost-suggestion.txt", "working"},
+		// A dialog on the pane: the sub-agent does not.
+		{"prompt-below-numbered-prose.txt", "waiting"},
+	} {
+		t.Run(c.fixture, func(t *testing.T) {
+			b, err := os.ReadFile(filepath.Join("..", "session", "testdata", c.fixture))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := session.DoingIn(string(b)); got != session.AgentWaiting {
+				t.Fatalf("%s reads %q, not waiting, so this measures nothing", c.fixture, got)
+			}
+			dir := t.TempDir()
+			a := &session.Adapter{Run: screenRunner{listing: owned("mustur/Mustur"), screen: string(b)}}
+			hub := &session.Hub{Adapter: a}
+			t.Cleanup(hub.Shutdown)
+			now := time.Date(2026, 9, 18, 12, 0, 0, 0, time.UTC)
+			s := &Sessions{
+				Hub: hub, Adapter: a, Actor: "pie", HookDir: dir,
+				Now: func() time.Time { return now.Add(time.Minute) },
+			}
+			mux := http.NewServeMux()
+			s.Routes(mux)
+			srv := httptest.NewServer(mux)
+			t.Cleanup(srv.Close)
+
+			// The poller's first frame is what the picker reads.
+			sub, _, err := hub.Watch(context.Background(), "Mustur")
+			if err != nil {
+				t.Fatal(err)
+			}
+			sub.Close()
+
+			// Waiting with no sub-agent first, so the lift below is the hook
+			// log's doing and not the fixture's.
+			if page := getFrom(t, srv, "/sessions/Mustur"); !strings.Contains(page, "Mustur &middot; waiting</option>") {
+				t.Fatalf("%s with no sub-agents is not waiting in the picker", c.fixture)
+			}
+
+			ev, _ := json.Marshal(map[string]any{
+				"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+			})
+			session.RecordHookEvent(dir, "Mustur", ev, now)
+
+			page := getFrom(t, srv, "/sessions/Mustur")
+			if want := "Mustur &middot; " + c.want + "</option>"; !strings.Contains(page, want) {
+				t.Errorf("%s with a sub-agent running: the picker lacks %q", c.fixture, want)
+			}
+		})
+	}
+}
+
+// The pill is the other place that said so, as "idle". It reads the drawer's
+// own running count rather than counting again, so the pill and the drawer's
+// ring cannot disagree about whether a sub-agent is at work, and a quiet row
+// (MUS-D-0191) holds neither of them on.
+func TestSubagentsAtWorkMakeThePillSayRunning(t *testing.T) {
+	b, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	js := string(b)
+	for _, want := range []string{
+		// The drawer's count is the one the pill reads.
+		"agentsRunning = running;",
+		// Sub-agents lift the pill only with no dialog up: a pane prompt or a
+		// held tool call is the owner's, and outranks them (review on PR 116).
+		`var lift = agentsRunning > 0 && !panePrompt && !held;`,
+		// A pane at its prompt with sub-agents running is running, ring on,
+		// with a title saying why.
+		`if (lift) setState("running", true, subagentsWhy("at its prompt"));`,
+		`if (idle && lift) {`,
+		// A held call arriving or clearing decides the pill again.
+		"refreshDialog();\n        // A call arriving or clearing decides whether the sub-agents may lift\n        // the pill, so the pill is decided again rather than at the next tick.\n        refreshState();",
+		// And idle again once the count is zero.
+		`else setState("idle", false);`,
+		// The silence fallback does the same.
+		`setState("running", true, subagentsWhy("quiet"));`,
+		`" running; the main agent is "`,
+		// A title that is not needed is removed, not left naming sub-agents
+		// after the last one stopped.
+		`state.removeAttribute("title")`,
+		// A frame that changes the rows decides the pill at once.
+		"drawAgents();\n        refreshState();",
+		// The tick draws the rows before deciding the pill, so a row turning
+		// quiet stops holding the pill on in the same second.
+		"if (!closed) drawAgents();\n    refreshState();",
+	} {
+		if !strings.Contains(js, want) {
+			t.Errorf("session.js lacks %q", want)
+		}
 	}
 }

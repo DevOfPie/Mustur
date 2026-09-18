@@ -60,8 +60,11 @@ const shellCSS = `
           /* Everything the rail and its gutters leave. One gutter each side of
              the content, and the rail itself. */
           --shell-full: calc(100vw - var(--shell-rail) - var(--shell-gutter) * 2);
-          /* Tall enough for the bar; asserted against the rendered height in
-             TestTheBarIsNotCoveringTheContent rather than eyeballed. */
+          /* The bar's height, and the room given back for it. The bar is set
+             to this rather than sized by its content, so the spacer, a docked
+             section and the session drawer all stop where it begins;
+             TestTheBarIsAsTallAsTheRoomKeptForIt holds the two together. A
+             content-sized bar measured 45.4px against this 48px. */
           --shell-bar: 3rem;
           /* Where a docked bottom section sits. Below the breakpoint it spans
              the screen above the bar; beside a rail it lines up with the
@@ -90,6 +93,7 @@ const shellCSS = `
      left the bar inset by a centimetre on intake. */
   nav { display: flex; white-space: nowrap;
         position: fixed; left: 0; right: 0; bottom: 0; z-index: 2;
+        height: var(--shell-bar); box-sizing: border-box;
         background: var(--paper);
         border-top: 1.4px solid var(--edge); }
 
@@ -234,8 +238,9 @@ const shellCSS = `
            --shell-dock-left: calc(var(--shell-rail) + var(--shell-gutter));
            --shell-dock-width: var(--shell-content, var(--shell-full)); }
     /* border-box, or the padding and the border are added to the width and the
-       rail sits on top of the first inch of every page. */
-    nav  { position: fixed; left: 0; top: 0; bottom: 0;
+       rail sits on top of the first inch of every page. height: auto, or the
+       bar's 3rem outranks bottom: 0 and the rail is three rems tall. */
+    nav  { position: fixed; left: 0; top: 0; bottom: 0; height: auto;
            width: var(--shell-rail); box-sizing: border-box;
            flex-direction: column; align-items: stretch;
            margin: 0; padding: .75rem .5rem; gap: .15rem;

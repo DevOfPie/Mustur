@@ -172,6 +172,12 @@ func (q *Questions) held(r *http.Request) ([]heldCard, []destGroup) {
 // changed the select — resolved the way File will resolve it, so the check and
 // the filing cannot disagree about where the jot is going.
 func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
+	// A foreign Origin is refused before the form or the store is read; an
+	// absent one is let through, as on every plain form post (MUS-Q-0173).
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	if err := r.ParseForm(); err != nil {
 		q.redirect(w, r, "", "that did not arrive as a form")
 		return
@@ -241,6 +247,11 @@ func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
 // it: the person who may let a jot into a project is the person who may keep
 // it out.
 func (q *Questions) discardHeld(w http.ResponseWriter, r *http.Request) {
+	// As approveHeld: foreign refused, absent allowed (MUS-Q-0173).
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	ctx := context.WithoutCancel(r.Context())
 	id := r.PathValue("id")
 	h, err := q.Store.HeldJot(ctx, id)
@@ -453,6 +464,14 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 // answer records what the owner said and redirects — post/redirect/get, so a
 // phone reloading after a dropped connection does not answer twice.
 func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
+	// An answer is typed back into a running session when the question named
+	// one, so a page elsewhere posting this form is refused before anything is
+	// read (MUS-F-0096). An absent Origin is allowed, on the owner's answer to
+	// MUS-Q-0173: a browser always sends one on a cross-site post.
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	if err := r.ParseForm(); err != nil {
 		q.redirect(w, r, "", "that did not arrive as a form")
 		return
@@ -605,7 +624,7 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
 // note, and it applies to the two-tab version exactly as much.
-var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(`<!doctype html>
+var queueTmpl = template.Must(template.New("questions").Funcs(titleFuncs).Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -731,7 +750,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(
   .held .acts { display: flex; gap: .6rem; flex-wrap: wrap; }
   .held .acts button { flex: 1 1 auto; }
   .held .acts button.primary { width: auto; margin-top: 0; }
-` + markdownCSS + citesCSS + shellCSS + `
+` + markdownCSS + titleCSS + citesCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -739,18 +758,18 @@ var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
 {{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
-{{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .FiledTo}} → {{.FiledTo}}{{end}}.</p>{{end}}
+{{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .FiledTo}} → {{title .FiledTo}}{{end}}.</p>{{end}}
 {{if .Discarded}}<p class="said">Discarded. Nothing was kept.</p>{{end}}
 {{if .Held}}<section aria-labelledby="held-h">
 <h2 class="sect" id="held-h">Jots waiting for approval</h2>
 {{range .Held}}<form class="held" method="post" action="/intake/held/{{.ID}}/approve">
-  <span class="meta">{{.By}} · {{.When}} · {{.ToName}}</span>
+  <span class="meta">{{.By}} · {{.When}} · {{title .ToName}}</span>
   <span class="txt">{{.Text}}</span>
   <label>File to
     <select name="to">
-      <option value=""{{if not .To}} selected{{end}}>Route it for me{{if .Guess}} ({{.Guess}}){{end}}</option>
+      <option value=""{{if not .To}} selected{{end}}>Route it for me{{if .Guess}} ({{titleText .Guess}}){{end}}</option>
       {{$to := .To}}{{range $.HeldGroups}}<optgroup label="{{.Label}}">
-        {{range .Items}}<option value="{{.ID}}"{{if eq .ID $to}} selected{{end}}>{{.Name}}</option>{{end}}
+        {{range .Items}}<option value="{{.ID}}"{{if eq .ID $to}} selected{{end}}>{{titleText .Name}}</option>{{end}}
       </optgroup>{{end}}
     </select>
   </label>
@@ -773,7 +792,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(
     {{if $q.Needed}}<span class="pill">answer needed to proceed</span>{{end}}
     {{if not $q.Surfaced}}<span class="pill">never surfaced</span>{{end}}
   </div>
-  <h2>{{$q.Title}}</h2>
+  <h2>{{title $q.Title}}</h2>
   <small class="asked">Asked {{$q.Asked}}</small>
   {{if $q.Body}}<div class="ctx md">{{$q.Body}}</div>{{end}}
   {{template "cites" $q.Cites}}

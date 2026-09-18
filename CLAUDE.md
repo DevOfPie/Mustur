@@ -51,11 +51,24 @@ rendered, and what that furniture said is shown as a row of chips instead
 measure asks for it by setting `--shell-content`. On a wide screen the account
 link sits as an icon at the foot of the rail rather than as a word in the
 header ([MUS-D-0127](records/decisions.md#mus-d-0127)). The session's status
-pill reads **running** or **idle** from the CLI's own pane rather than from a
-clock — Claude Code says which in its status line, and a timer counting silence
-is a guess standing in for that. It wears a turning accent ring while a turn is
-in flight. A pane nothing here recognises falls back to a three-minute silence
-threshold rather than claiming to know
+pill reads **running** or **idle** about the main agent from the CLI's own pane
+rather than from a clock — Claude Code says which in its status line, and a
+timer counting silence is a guess standing in for that. It wears a turning
+accent ring while a turn is in flight, or while a sub-agent is running, which is
+the one thing the pill takes from somewhere other than the pane. A pane with
+nothing on it at all reads **starting**, with no ring and a note in the empty
+terminal, because a CLI draws nothing until it has loaded — a restore of a
+6.3MB transcript was blank for 1.15s
+([MUS-F-0115](records/findings.md#mus-f-0115)). A main agent at its prompt
+with a sub-agent still at work reads **running** too, ring and all, with a
+title saying it is the sub-agents — and **working** rather than waiting in the
+picker — because idle there looked like the session was waiting on the owner
+([MUS-F-0171](records/findings.md#mus-f-0171)). That count comes from the
+sub-agent hook log, not the pane. It never lifts a session with a dialog on its
+pane, which is the session waiting on the owner: that reads **idle** and
+**waiting** whatever the sub-agents are doing. A tool call held for the owner stops
+the lift on the pill too; the picker cannot see one of those. A pane nothing here recognises
+falls back to a three-minute silence threshold rather than claiming to know
 ([MUS-D-0130](records/decisions.md#mus-d-0130)). You can reply from that tab: the box is multi-line and spell-checked, it
 holds one draft that survives a reload and follows you between sessions, and it
 sends what you wrote as a single message rather than a prompt per line —
