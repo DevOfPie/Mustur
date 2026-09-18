@@ -437,3 +437,247 @@ func TestAnInvitationNeedsAnAddressSomebodyCouldBeReachedAt(t *testing.T) {
 		t.Errorf("a real address surrounded by spaces was refused: %v", err)
 	}
 }
+
+// A role can be taken away, and who took it is written down (MUS-F-0166,
+// MUS-D-0188). Before Ungrant nothing removed a role once granted.
+func TestUngrantRemovesARoleAndSaysWhoDidIt(t *testing.T) {
+	s, ctx := open(t)
+	redeemed(t, s, ctx, "owner@example.com", "LNK", Owner)
+	reader := redeemed(t, s, ctx, "reader@example.com", "LNK", Reader)
+
+	if err := s.Ungrant(ctx, reader.ID, "LNK", "owner@example.com"); err != nil {
+		t.Fatal(err)
+	}
+	if role, ok := s.RoleFor(ctx, reader.ID, "LNK"); ok {
+		t.Errorf("the role is still there: %q", role)
+	}
+	var by, role string
+	if err := s.DB().QueryRowContext(ctx,
+		`SELECT removed_by, role FROM grant_removed WHERE account_id = ? AND project = 'LNK'`,
+		reader.ID).Scan(&by, &role); err != nil {
+		t.Fatalf("the removal was not recorded: %v", err)
+	}
+	if by != "owner@example.com" || role != "reader" {
+		t.Errorf("recorded %q removing %q", by, role)
+	}
+	// A role not held is an error, so a mistyped prefix does not pass as done.
+	if err := s.Ungrant(ctx, reader.ID, "LNK", "owner@example.com"); err == nil {
+		t.Error("removing a role nobody holds reported success")
+	}
+}
+
+// The only owner of a project cannot be removed or demoted — in every project,
+// not only the install's, which is the only one the surface used to check.
+func TestTheLastOwnerOfEachProjectStays(t *testing.T) {
+	s, ctx := open(t)
+	a := redeemed(t, s, ctx, "a@example.com", "MUS", Owner)
+	b := redeemed(t, s, ctx, "b@example.com", "LNK", Owner)
+	// a owns HRD alone; b is MUS's second owner.
+	if err := s.Grant(ctx, a.ID, "HRD", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Grant(ctx, b.ID, "MUS", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, c := range []struct {
+		who     Account
+		project string
+	}{{b, "LNK"}, {a, "HRD"}} {
+		if err := s.Ungrant(ctx, c.who.ID, c.project, "test"); !errors.Is(err, ErrLastOwner) {
+			t.Errorf("removing the only owner of %s: err = %v, want ErrLastOwner", c.project, err)
+		}
+		if err := s.Grant(ctx, c.who.ID, c.project, Reader, "test"); !errors.Is(err, ErrLastOwner) {
+			t.Errorf("demoting the only owner of %s: err = %v, want ErrLastOwner", c.project, err)
+		}
+		if role, _ := s.RoleFor(ctx, c.who.ID, c.project); role != Owner {
+			t.Errorf("the only owner of %s is now %q", c.project, role)
+		}
+	}
+
+	// MUS has two owners, so one may stand down.
+	if err := s.Grant(ctx, a.ID, "MUS", Reader, "test"); err != nil {
+		t.Errorf("with a second owner, demotion was refused: %v", err)
+	}
+	// And now b is the only one, so b may not go.
+	if err := s.Ungrant(ctx, b.ID, "MUS", "test"); !errors.Is(err, ErrLastOwner) {
+		t.Errorf("removing the remaining owner of MUS: err = %v", err)
+	}
+
+	// A disabled owner is not the other owner: it cannot sign in to administer.
+	c := redeemed(t, s, ctx, "c@example.com", "LNK", Owner)
+	if err := s.Disable(ctx, c.ID, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Ungrant(ctx, b.ID, "LNK", "test"); !errors.Is(err, ErrLastOwner) {
+		t.Errorf("a disabled owner counted as the other owner of LNK: err = %v", err)
+	}
+}
+
+func redeemed(t *testing.T, s *Store, ctx context.Context, email, project string, role Role) Account {
+	t.Helper()
+	secret, err := s.Invite(ctx, email, project, role, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	acct, _, err := s.Redeem(ctx, secret, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return acct
+}
+
+// A store written before grant_removed existed gains it on opening, so the
+// first removal on the live store is recorded rather than failing (MUS-D-0188,
+// the review on PR 102). Modelled on PR 103's test for held_jot.
+func TestAnOlderStoreGainsTheRemovalTable(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "old.db")
+	st, err := store.Open(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.DB().ExecContext(ctx, `DROP TABLE grant_removed`); err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	_ = st.DB().QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM sqlite_master WHERE name = 'grant_removed'`).Scan(&n)
+	st.Close()
+	if n != 0 {
+		t.Fatal("the table was not dropped, so this tests nothing")
+	}
+
+	st, err = store.Open(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	s := New(st.DB())
+	redeemed(t, s, ctx, "owner@example.com", "MUS", Owner)
+	reader := redeemed(t, s, ctx, "reader@example.com", "MUS", Reader)
+	if err := s.Ungrant(ctx, reader.ID, "MUS", "owner@example.com"); err != nil {
+		t.Fatalf("an older store could not record a removal after opening: %v", err)
+	}
+	if err := s.DB().QueryRowContext(ctx, `SELECT COUNT(*) FROM grant_removed`).Scan(&n); err != nil || n != 1 {
+		t.Errorf("grant_removed holds %d rows after one removal: %v", n, err)
+	}
+}
+
+// An invitation never leaves a project with no owner (MUS-D-0188, the review on
+// PR 102): one that would demote the only owner is refused when it is issued,
+// and again when it is accepted, for an owner who became the only one after it
+// was issued. The refusal leaves the invitation unspent, as ErrDisabled does.
+func TestAnInvitationCannotDemoteTheOnlyOwner(t *testing.T) {
+	s, ctx := open(t)
+	solo := redeemed(t, s, ctx, "solo@example.com", "LNK", Owner)
+	other := redeemed(t, s, ctx, "other@example.com", "LNK", Owner)
+
+	// Issued while there are two owners, so Invite lets it through.
+	secret, err := s.Invite(ctx, "solo@example.com", "LNK", Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Ungrant(ctx, other.ID, "LNK", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = s.Redeem(ctx, secret, "")
+	var last *LastOwnerError
+	if !errors.As(err, &last) || last.Project != "LNK" {
+		t.Errorf("accepting a reader invitation as the only owner: err = %v, want a LastOwnerError naming LNK", err)
+	}
+	if role, _ := s.RoleFor(ctx, solo.ID, "LNK"); role != Owner {
+		t.Errorf("the only owner of LNK is now %q", role)
+	}
+	if _, err := s.Invitation(ctx, secret); err != nil {
+		t.Errorf("the refused invitation was spent: %v", err)
+	}
+
+	// Issuing one now is refused at once.
+	if _, err := s.Invite(ctx, "solo@example.com", "LNK", Reader, "test"); !errors.As(err, &last) || last.Project != "LNK" {
+		t.Errorf("inviting the only owner of LNK as a reader: err = %v", err)
+	}
+	// An owner invitation is still how a lost passkey is recovered.
+	if _, _, err := s.Redeem(ctx, mustInvite(t, s, ctx, "solo@example.com", "LNK", Owner), ""); err != nil {
+		t.Errorf("an owner invitation to the only owner was refused: %v", err)
+	}
+	// With a second owner, accepting a reader invitation demotes, as before.
+	if err := s.Grant(ctx, other.ID, "LNK", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.Redeem(ctx, secret, ""); err != nil {
+		t.Fatalf("with a second owner, the reader invitation was refused: %v", err)
+	}
+	if role, _ := s.RoleFor(ctx, solo.ID, "LNK"); role != Reader {
+		t.Errorf("the accepted reader invitation left the role at %q", role)
+	}
+}
+
+func mustInvite(t *testing.T, s *Store, ctx context.Context, email, project string, role Role) string {
+	t.Helper()
+	secret, err := s.Invite(ctx, email, project, role, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return secret
+}
+
+// Disabling the only enabled owner of any project is refused, and names the
+// project: a disabled owner cannot sign in, so it is the same lockout as
+// removing their role (MUS-D-0188, the review on PR 102).
+func TestDisablingTheOnlyOwnerOfAnyProjectIsRefused(t *testing.T) {
+	s, ctx := open(t)
+	mus := redeemed(t, s, ctx, "mus@example.com", "MUS", Owner)
+	lnk := redeemed(t, s, ctx, "lnk@example.com", "LNK", Owner)
+	disabled := func(a Account) bool {
+		var off string
+		_ = s.DB().QueryRowContext(ctx,
+			`SELECT COALESCE(disabled, '') FROM account WHERE id = ?`, a.ID).Scan(&off)
+		return off != ""
+	}
+
+	// Somebody else's only project: an owner of MUS disabling LNK's only owner.
+	err := s.Disable(ctx, lnk.ID, false)
+	var last *LastOwnerError
+	if !errors.As(err, &last) || last.Project != "LNK" || !errors.Is(err, ErrLastOwner) {
+		t.Errorf("disabling LNK's only owner: err = %v, want a LastOwnerError naming LNK", err)
+	}
+	if disabled(lnk) {
+		t.Error("LNK's only owner was disabled")
+	}
+
+	// Yourself, as the only owner of a project that is not the first you own.
+	if err := s.Grant(ctx, lnk.ID, "MUS", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Grant(ctx, mus.ID, "HRD", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	err = s.Disable(ctx, mus.ID, false)
+	if !errors.As(err, &last) || last.Project != "HRD" {
+		t.Errorf("disabling HRD's only owner: err = %v, want a LastOwnerError naming HRD", err)
+	}
+	if disabled(mus) {
+		t.Error("HRD's only owner was disabled")
+	}
+
+	// With another enabled owner of every project it owns, it goes.
+	if err := s.Grant(ctx, lnk.ID, "HRD", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Disable(ctx, mus.ID, false); err != nil {
+		t.Errorf("with a second owner of MUS and HRD, disabling was refused: %v", err)
+	}
+	if !disabled(mus) {
+		t.Error("the disable reported success and did nothing")
+	}
+	// And lnk is now every project's only enabled owner, so it stays.
+	if err := s.Disable(ctx, lnk.ID, false); !errors.Is(err, ErrLastOwner) {
+		t.Errorf("the one owner left of everything was disabled: err = %v", err)
+	}
+	// Enabling is never refused.
+	if err := s.Disable(ctx, mus.ID, true); err != nil || disabled(mus) {
+		t.Errorf("enabling again: err = %v", err)
+	}
+}

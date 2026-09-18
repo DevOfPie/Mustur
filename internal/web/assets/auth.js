@@ -106,16 +106,30 @@
         return post(base + "/finish", body);
       })
       .then(function (res) {
+        // 409 is the one refusal the server words for the person: accepting
+        // would leave a project with no owner, and trying again cannot help.
+        if (res.status === 409) {
+          return res.text().then(function (t) {
+            var e = new Error("finish");
+            e.said = t.trim();
+            throw e;
+          });
+        }
         if (!res.ok) throw new Error("finish");
         return res.json();
       })
       .then(function (out) {
         location.href = out.to || "/records";
       })
-      .catch(function () {
+      .catch(function (e) {
         // Deliberately one message for every failure. The server already
         // refuses to say which check failed; saying it here would undo that.
+        // The exception is the 409 above, which the server chose to word.
         go.disabled = false;
+        if (e && e.said) {
+          say(e.said);
+          return;
+        }
         say(creating
           ? "That did not complete. Try again, or ask for another invitation."
           : "That passkey was not recognised on this site.");

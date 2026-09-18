@@ -425,6 +425,17 @@ func (a *Auth) registerFinish(w http.ResponseWriter, r *http.Request) {
 	// Only now is the invitation spent: an authenticator that refused, or a
 	// person who changed their mind, leaves the invitation usable.
 	acct, _, err := a.Accounts.Redeem(r.Context(), c.Secret, string(c.Handle))
+	var last *account.LastOwnerError
+	if errors.As(err, &last) {
+		// Said in full, with its own status so the page can tell it from the
+		// failures it deliberately does not distinguish: this is told only to
+		// somebody holding a live invitation who has just proved a passkey,
+		// and without it they would be told to try again, which cannot work.
+		http.Error(w, "you are the only owner of "+last.Project+
+			", and this invitation would make you a "+string(inv.Role)+
+			"; ask for an owner invitation, or make somebody else an owner first", http.StatusConflict)
+		return
+	}
 	if err != nil {
 		http.Error(w, "that invitation cannot be used", http.StatusForbidden)
 		return

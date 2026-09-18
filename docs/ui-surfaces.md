@@ -528,6 +528,50 @@ Must also answer: a control that appears to do something must do it. Changing a
 role saves it; there is no separate button to press afterwards, which the review
 named as the failure it is.
 
+**Access across projects** is drawn in
+[plan-90422fb59d474a70](https://plan.agent-native.com/plans/plan-90422fb59d474a70),
+after MUS-F-0166 found an owner could invite people only to Mustur and could not
+give somebody who already had an account a role anywhere else. The owner chose
+Shape A on MUS-Q-0142 (MUS-D-0188):
+
+- Each person is listed once, with a line for every project **the viewer owns**:
+  the project's name and a select of reader, owner or no access. Changing a line
+  saves it; *no access* removes the role. Projects the viewer does not own are
+  not on anybody else's card.
+- The viewer's own card is a sentence — *owner in Mustur (MUS), LinkCtrl
+  (LNK)* — rather than controls. As drawn, it has no Disable button, and no
+  card shows a passkey count any more; both were on the screen before. Your
+  own passkeys are on `/account`, and `mustur account list` still counts
+  everybody's.
+- An open invitation is a line on the invited person's card, one per project
+  the viewer owns, with its expiry — whether or not the person already has an
+  account.
+- The invitation's project picker lists the projects the viewer owns.
+- **An owner grants only where they own.** Every grant, change, removal and
+  invitation is checked against the actor owning *that* project, so owning
+  Mustur does not confer ownership of LinkCtrl. A crafted post is refused the
+  same as the form.
+- **No project is left without an owner**, in every project and not only this
+  install's. The only enabled owner of a project cannot be demoted, removed or
+  disabled — a disabled owner cannot sign in, so it counts as no owner — and
+  that includes disabling yourself by a crafted post. An invitation that would
+  make a project's only owner a reader is refused when it is issued and again
+  when it is accepted, and a refused acceptance leaves the invitation unspent;
+  an owner invitation, which is how a lost passkey is recovered, is not
+  affected. Each refusal names the project. The store refuses all of it, so the
+  command line (`mustur account grant`, `mustur account ungrant`,
+  `mustur account invite`) meets the same rule.
+- Pressing Save, with script blocked, on a *no access* line nobody changed
+  does nothing and says nothing.
+- The tab bar stays visible with the content scrolling behind it, pinned at the
+  bottom on a phone and a rail on a wide screen — the shared chrome of
+  `internal/web/shell.go`, which this screen already used.
+
+Still reaching the screen at all takes an owner of this install's project, which
+is the owner's answer on MUS-Q-0150: an owner of LinkCtrl alone who reads
+Mustur can make the writes and has no screen to make them from, and manages
+LinkCtrl's people from the command line.
+
 ## Not surfaces
 
 | Not building | Because |

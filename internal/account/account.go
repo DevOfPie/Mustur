@@ -190,14 +190,23 @@ func (s *Store) Invite(ctx context.Context, email, project string, role Role, by
 	// which is what it did before a review followed it through. Enabling is a
 	// deliberate act with its own control, and this says so rather than
 	// performing it as a side effect of an invitation.
-	var off string
+	var id, off string
 	err := s.db.QueryRowContext(ctx,
-		`SELECT COALESCE(disabled, '') FROM account WHERE email = ?`, email).Scan(&off)
+		`SELECT id, COALESCE(disabled, '') FROM account WHERE email = ?`, email).Scan(&id, &off)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return "", err
 	}
 	if off != "" {
 		return "", ErrDisabled
+	}
+	// An invitation that would demote the project's only owner is refused when
+	// it is issued, so whoever issues it hears so now rather than the person
+	// hearing it after their passkey ceremony. Redeem checks again, because
+	// ownership can change inside the day an invitation lives.
+	if id != "" && role != Owner {
+		if err := s.wouldOrphan(ctx, id, project); err != nil {
+			return "", err
+		}
 	}
 	secret, hash, err := token()
 	if err != nil {
@@ -317,6 +326,22 @@ func (s *Store) Redeem(ctx context.Context, secret, newID string) (Account, Invi
 		}
 	} else if err != nil {
 		return Account{}, Invitation{}, err
+	} else if inv.Role != Owner {
+		// Accepting a reader invitation must not leave the project with no
+		// owner (MUS-D-0188; the review on PR 102 found it did). Refused
+		// rather than quietly keeping the owner role: nothing recorded says
+		// which the owner wants, the line below says an accepted role replaces
+		// the one held, and a refusal that says why is the least surprising
+		// of the two. Like ErrDisabled, the rollback leaves the invitation
+		// unspent. Invite already refuses to issue one; this catches an owner
+		// who became the only one after it was issued.
+		sole, err := soleOwner(ctx, tx, id, inv.Project)
+		if err != nil {
+			return Account{}, Invitation{}, err
+		}
+		if sole {
+			return Account{}, Invitation{}, &LastOwnerError{Project: inv.Project}
+		}
 	}
 
 	// The invitation carries the role, so accepting it is not a second
@@ -481,12 +506,42 @@ func (s *Store) RemoveCredential(ctx context.Context, accountID string, credID [
 // Not a delete. What the account did stays attributed to it, and a person who
 // left and came back is the same person rather than a second one — which is the
 // same reason a reissued invitation reuses an account.
+//
+// Turning off the only enabled owner of any project is refused with a
+// *LastOwnerError naming it. A disabled owner cannot sign in, so disabling one
+// leaves the project as ownerless as removing their role would, and Ungrant
+// already refuses that (MUS-D-0188). The screen used to check only the
+// install's project, and only when you disabled yourself: an owner of Mustur
+// could disable LinkCtrl's only owner, and a crafted post could disable
+// yourself as the only owner of anything else (MUS-F-0166, the review on PR
+// 102). Checked here, so the screen, a crafted post and anything later meet it.
 func (s *Store) Disable(ctx context.Context, accountID string, undo bool) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 	var when any
 	if !undo {
 		when = s.now().UTC().Format(stamp)
+		var off string
+		err := tx.QueryRowContext(ctx,
+			`SELECT COALESCE(disabled, '') FROM account WHERE id = ?`, accountID).Scan(&off)
+		if errors.Is(err, sql.ErrNoRows) {
+			return errors.New("no such account")
+		}
+		if err != nil {
+			return err
+		}
+		// Already off, it is nobody's enabled owner, so disabling it again
+		// takes nothing away from any project.
+		if off == "" {
+			if err := refuseLastOwner(ctx, tx, accountID); err != nil {
+				return err
+			}
+		}
 	}
-	res, err := s.db.ExecContext(ctx, `UPDATE account SET disabled = ? WHERE id = ?`, when, accountID)
+	res, err := tx.ExecContext(ctx, `UPDATE account SET disabled = ? WHERE id = ?`, when, accountID)
 	if err != nil {
 		return err
 	}
@@ -496,7 +551,43 @@ func (s *Store) Disable(ctx context.Context, accountID string, undo bool) error 
 	if !undo {
 		// Sessions end with the account rather than lingering until they
 		// expire: disabling somebody who is signed in should sign them out.
-		_, _ = s.db.ExecContext(ctx, `DELETE FROM auth_session WHERE account_id = ?`, accountID)
+		if _, err := tx.ExecContext(ctx, `DELETE FROM auth_session WHERE account_id = ?`, accountID); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// refuseLastOwner returns a *LastOwnerError for the first project, by prefix,
+// of which accountID is the only enabled owner, and nil when there is none.
+func refuseLastOwner(ctx context.Context, tx *sql.Tx, accountID string) error {
+	rows, err := tx.QueryContext(ctx,
+		`SELECT project FROM grant_role WHERE account_id = ? AND role = 'owner' ORDER BY project`,
+		accountID)
+	if err != nil {
+		return err
+	}
+	var projects []string
+	for rows.Next() {
+		var p string
+		if err := rows.Scan(&p); err != nil {
+			rows.Close()
+			return err
+		}
+		projects = append(projects, p)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for _, p := range projects {
+		sole, err := soleOwner(ctx, tx, accountID, p)
+		if err != nil {
+			return err
+		}
+		if sole {
+			return &LastOwnerError{Project: p}
+		}
 	}
 	return nil
 }
@@ -542,19 +633,150 @@ func (s *Store) RoleFor(ctx context.Context, accountID, project string) (Role, b
 	return r, true
 }
 
+// ErrLastOwner refuses a change that would leave a project with nobody able to
+// administer it: the only owner demoted or removed.
+//
+// It is checked here, per project, rather than by the surface against the
+// install's project alone. The screen used to guard the one project it knew,
+// and once it can change a role in LinkCtrl or Hoard, a check that only knows
+// Mustur is a check the other projects do not have (MUS-D-0188).
+var ErrLastOwner = errors.New("that is the only owner this project has left")
+
+// LastOwnerError is ErrLastOwner with the project named, for a refusal that
+// could be about any of several projects — disabling an account, or issuing or
+// accepting an invitation — where "this
+// project" does not say which. errors.Is still matches ErrLastOwner.
+type LastOwnerError struct{ Project string }
+
+func (e *LastOwnerError) Error() string { return ErrLastOwner.Error() + ": " + e.Project }
+
+func (e *LastOwnerError) Unwrap() error { return ErrLastOwner }
+
+// soleOwner reports whether accountID is an owner of project and no other
+// enabled account is. A disabled owner cannot sign in to administer anything,
+// so it does not count as the other owner — the same rule the surface used.
+func soleOwner(ctx context.Context, tx *sql.Tx, accountID, project string) (bool, error) {
+	var role string
+	err := tx.QueryRowContext(ctx,
+		`SELECT role FROM grant_role WHERE account_id = ? AND project = ?`,
+		accountID, project).Scan(&role)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if Role(role) != Owner {
+		return false, nil
+	}
+	var others int
+	if err := tx.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM grant_role g JOIN account a ON a.id = g.account_id
+		 WHERE g.project = ? AND g.role = 'owner' AND g.account_id <> ?
+		   AND COALESCE(a.disabled, '') = ''`,
+		project, accountID).Scan(&others); err != nil {
+		return false, err
+	}
+	return others == 0, nil
+}
+
+// wouldOrphan returns a *LastOwnerError when accountID is the only enabled
+// owner of project, for a caller holding no transaction of its own.
+func (s *Store) wouldOrphan(ctx context.Context, accountID, project string) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	sole, err := soleOwner(ctx, tx, accountID, project)
+	if err != nil {
+		return err
+	}
+	if sole {
+		return &LastOwnerError{Project: project}
+	}
+	return nil
+}
+
 // Grant sets a role directly, which is what the command line does when there is
-// nobody yet to send an invitation to.
+// nobody yet to send an invitation to, and what People does when an owner
+// changes somebody's role in a project they own.
+//
+// Demoting a project's only owner is refused with ErrLastOwner, in whichever
+// project that is.
 func (s *Store) Grant(ctx context.Context, accountID, project string, role Role, by string) error {
 	if !role.Valid() {
 		return fmt.Errorf("%q is not a role", role)
 	}
-	_, err := s.db.ExecContext(ctx,
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if role != Owner {
+		sole, err := soleOwner(ctx, tx, accountID, project)
+		if err != nil {
+			return err
+		}
+		if sole {
+			return ErrLastOwner
+		}
+	}
+	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO grant_role (account_id, project, role, granted, granted_by)
 		 VALUES (?, ?, ?, ?, ?)
 		 ON CONFLICT (account_id, project) DO UPDATE SET
 		   role = excluded.role, granted = excluded.granted, granted_by = excluded.granted_by`,
-		accountID, project, string(role), s.now().UTC().Format(stamp), by)
-	return err
+		accountID, project, string(role), s.now().UTC().Format(stamp), by); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// Ungrant takes an account's role in one project away.
+//
+// Until this existed nothing removed a role once granted — not the screen and
+// not the command line (MUS-F-0166). The removal is written to grant_removed
+// with who did it, because deleting the grant_role row deletes the only place
+// that said who acted, and a removal is the act most worth attributing.
+//
+// Removing a project's only owner is refused with ErrLastOwner. Removing a role
+// the account does not hold is an error rather than a silent success, so a
+// typo in a project prefix on the command line says so.
+func (s *Store) Ungrant(ctx context.Context, accountID, project, by string) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var role string
+	err = tx.QueryRowContext(ctx,
+		`SELECT role FROM grant_role WHERE account_id = ? AND project = ?`,
+		accountID, project).Scan(&role)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("that account has no role on %s", project)
+	}
+	if err != nil {
+		return err
+	}
+	sole, err := soleOwner(ctx, tx, accountID, project)
+	if err != nil {
+		return err
+	}
+	if sole {
+		return ErrLastOwner
+	}
+	if _, err := tx.ExecContext(ctx,
+		`DELETE FROM grant_role WHERE account_id = ? AND project = ?`, accountID, project); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx,
+		`INSERT INTO grant_removed (account_id, project, role, removed, removed_by)
+		 VALUES (?, ?, ?, ?, ?)`,
+		accountID, project, role, s.now().UTC().Format(stamp), by); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // Accounts lists everybody Mustur knows.
