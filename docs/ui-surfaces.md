@@ -255,7 +255,8 @@ the kind picker takes `state` — "Any state", open, done or dropped — each wi
 how many findings within the chosen project and matching the search carry it.
 Only a finding has a State, so choosing one lists findings only; any other kind
 is listed while it says "Any state", and with another kind chosen the picker is
-switched off and reads "Only findings have a State". A finding's row carries
+switched off, reading "Findings only" with "Only findings have a State" as its
+title. A finding's row carries
 its Status word as a small pill after the title, in the warn tone for open, the
 accent for done and muted for dropped, with the word and State in its title; a
 finding with no State, or one that is not a State, wears a dashed pill of its

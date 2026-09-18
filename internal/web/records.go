@@ -1276,7 +1276,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
       {{range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
     </select>
     {{if .Stateless}}<select name="state" aria-label="State" disabled title="Only findings have a State">
-      <option value="" selected>Only findings have a State</option>
+      <option value="" selected>Findings only</option>
     </select>{{else}}<select name="state" aria-label="State">
       <option value="">Any state</option>
       {{range .States}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}

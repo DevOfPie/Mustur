@@ -276,7 +276,7 @@ func TestTheStatePickerAgreesWithTheList(t *testing.T) {
 		t.Errorf("kind=decision&state=done: %d rows, want the decision; the State was not ignored", rows(body))
 	}
 	if !strings.Contains(body, `<select name="state" aria-label="State" disabled title="Only findings have a State">`) ||
-		!strings.Contains(body, "Only findings have a State</option>") {
+		!strings.Contains(body, ">Findings only</option>") {
 		t.Error("the State picker is not switched off for a kind with no State")
 	}
 	if strings.Contains(body, `value="done"`) {
