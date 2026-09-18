@@ -1415,9 +1415,18 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
      On a phone it opens over the terminal: at 390px a 17rem drawer would leave
      about 110px of it. On a wide screen it pushes instead, which is the whole
      reason for a drawer rather than a sheet — the terminal and the list at
-     once. */
+     once.
+
+     Either way it stops above the tab bar, which is always visible with
+     content scrolling behind it (MUS-Q-0142). inset: 0 laid the phone's
+     drawer over the bar from x=55 across, so the bar could be neither seen
+     nor tapped while it was open (MUS-F-0179). --shell-dock-offset is the
+     room the bar takes below the breakpoint and 0 beside the rail, the same
+     metric the dock sits on, so the veil and the panel end where the bar
+     begins and the wide screen is untouched. */
   .drawer[hidden] { display: none; }
-  .drawer { position: fixed; inset: 0; z-index: 20; }
+  .drawer { position: fixed; inset: 0 0 var(--shell-dock-offset, 0px) 0;
+            z-index: 20; }
   .veil { position: absolute; inset: 0; background: #0007; }
   .panel { position: absolute; top: 0; right: 0; bottom: 0;
            width: 86%; max-width: 22rem; box-sizing: border-box;

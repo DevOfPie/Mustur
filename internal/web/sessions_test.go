@@ -1309,6 +1309,39 @@ func TestTheDrawerHasAResizeHandleThatIsNotPointerOnly(t *testing.T) {
 	}
 }
 
+// The drawer stops above the tab bar (MUS-F-0179).
+//
+// The owner's rule on MUS-Q-0142 is that the bar is always visible with content
+// scrolling behind it. On a phone the drawer was inset: 0, which laid its veil
+// and panel over the bar, so the bar could be neither seen nor tapped while the
+// drawer was open. Whether they overlap is measured in a browser; what this
+// holds is the rule that decides it: the phone drawer's bottom edge is the
+// room the bar takes, and that room is nothing beside the rail, so the wide
+// screen's column is still full height.
+func TestTheDrawerStopsAboveTheTabBar(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+
+	base := strings.Index(body, ".drawer { position: fixed; inset: 0 0 var(--shell-dock-offset, 0px) 0;")
+	if base < 0 {
+		t.Fatal("the phone drawer's bottom edge is not the room the tab bar takes; it covers the bar")
+	}
+	wide := strings.Index(body, "@media (min-width: 60rem)")
+	if wide < 0 || wide < base {
+		t.Fatal("no wide-screen block after the drawer's base rule")
+	}
+	if !strings.Contains(body[wide:], ".drawer { inset: 0 0 0 auto;") {
+		t.Error("the wide screen's drawer is no longer a full-height column")
+	}
+	// The offset is the bar's height below the breakpoint and nothing beside
+	// the rail, which is what makes one rule right on both.
+	for _, want := range []string{"--shell-dock-offset: var(--shell-bar);", "body { --shell-dock-offset: 0px; }"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the shell no longer sets the offset the drawer stops at: %q missing", want)
+		}
+	}
+}
+
 // The first frame carries the screen, rendered, and no escape reaches the page.
 //
 // This is what replaced the backlog. There is no offset to resume from and no
