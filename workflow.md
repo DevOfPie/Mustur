@@ -227,17 +227,25 @@ The export is committed on main only
 ```
 always   → Status is one word from its project's "Status word" list;
            State is the state that word means: open, done or dropped
+a word   → brings its State; pass State too only to be refused on a mismatch
 prose    → --data Note=…, never in Status
-refused  → mustur add finding / amend write nothing and print the list
+no list  → the project's record has no "Status word": Status is kept as
+           written, and a note names the record to give a list to
 ```
 
 ```
-mustur amend MUS-F-0172 --data Status=in-review --data State=open \
+mustur amend <PREFIX>-F-NNNN --data Status=in-review \
   --data "Note=fixed on PR 99, not merged"
 ```
 
-A new finding with neither is filed unreviewed and open. `make check` fails on
-any finding in the store that breaks this (MUS-D-0196).
+A new finding with neither is filed unreviewed and open.
+
+The refusal lives in the binary. `mustur add finding` and `mustur amend` built
+from this tree write nothing that breaks the rule and print the project's list
+instead; the one installed on a machine does that from the deploy that carries
+it, and not before. What catches a finding written by an older binary — or
+by anything else — is `make check`, which fails on any MUS finding in the store
+that breaks the rule (MUS-D-0196). `make findings-all` checks every project.
 
 ### A claim is about to be written
 

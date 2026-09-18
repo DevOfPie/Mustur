@@ -285,8 +285,9 @@ Three rules bind every session in this repository:
   time that is wanted ([MUS-D-0134](records/decisions.md#mus-d-0134)).
 
   A finding's Status is a word from its project's list and its State the one
-  that word means; prose goes in `Note`, and `add` and `amend` refuse anything
-  else — [workflow.md](workflow.md#a-finding-changes-state) says how.
+  that word means; prose goes in `Note`. A binary built from this tree refuses
+  anything else on `add` and `amend`, and `make check` catches what an older
+  one wrote — [workflow.md](workflow.md#a-finding-changes-state) says how.
 
   A jot that `Route it for me` put in the wrong place is corrected with
   `mustur reroute <ID> --to <DEST>`: it files a new record at the right
