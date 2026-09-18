@@ -605,7 +605,7 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
 // note, and it applies to the two-tab version exactly as much.
-var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
+var queueTmpl = template.Must(template.New("questions").Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -809,7 +809,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
-<script src="/assets/bar.js"></script>
+<script src="{{asset "bar.js"}}"></script>
 </body>
 </html>
 ` + citesTmpl))

@@ -152,11 +152,7 @@ func (a *Accounts) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /account/invite", a.invite)
 	mux.HandleFunc("POST /account/role", a.role)
 	mux.HandleFunc("POST /account/disable", a.disable)
-	mux.HandleFunc("GET /assets/account.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		_, _ = w.Write([]byte(accountJS))
-	})
+	mux.HandleFunc("GET /assets/account.js", serveAsset("account.js"))
 }
 
 type passkeyRow struct {
@@ -724,7 +720,7 @@ func (a *Accounts) removePasskey(w http.ResponseWriter, r *http.Request) {
 	a.back(w, r, "passkey removed", "", "")
 }
 
-var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
+var accountTmpl = template.Must(template.New("account").Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -893,9 +889,9 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   <a class="me here" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>
 </nav>
-<script src="/assets/auth.js"></script>
-<script src="/assets/account.js"></script>
-<script src="/assets/bar.js"></script>
+<script src="{{asset "auth.js"}}"></script>
+<script src="{{asset "account.js"}}"></script>
+<script src="{{asset "bar.js"}}"></script>
 </body>
 </html>
 `))
