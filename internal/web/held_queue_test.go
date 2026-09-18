@@ -250,10 +250,22 @@ func TestAnOwnerWhoDoesNotOwnTheDestinationIsRefused(t *testing.T) {
 	if n := waitingFor(t, owner, h); n != 0 {
 		t.Errorf("an owner's badge counts %d jot(s) they may not approve", n)
 	}
-	// An owner of MUS who is not an owner of IDW cannot route around it either:
-	// pointing an IDW jot at MUS is theirs to approve.
-	if res := approveAs(t, h, owner, held.ID, "MUS-P-0001"); res.StatusCode != http.StatusSeeOther {
-		t.Errorf("re-pointing to a project they own got %d", res.StatusCode)
+	// Nor can they route around it by naming a project they do own: the jot
+	// points at IDW, which is Discard's check and now Approve's too (PR 103's
+	// review, finding 5; MUS-Q-0151).
+	if res := approveAs(t, h, owner, held.ID, "MUS-P-0001"); res.StatusCode != http.StatusForbidden {
+		t.Errorf("an owner of MUS alone re-pointing an IDW jot at MUS got %d", res.StatusCode)
+	}
+	if got := findings(t, h.st); len(got) != 0 {
+		t.Errorf("re-pointing filed %s", got[0].ID)
+	}
+	if left, _ := h.st.HeldJots(context.Background(), ""); len(left) != 1 {
+		t.Errorf("re-pointing did not leave the jot waiting: %+v", left)
+	}
+	// An owner of both may re-point it.
+	both, _ := h.as(t, "both@example.com", map[string]account.Role{"MUS": account.Owner, "IDW": account.Owner})
+	if res := approveAs(t, h, both, held.ID, "MUS-P-0001"); res.StatusCode != http.StatusSeeOther {
+		t.Errorf("an owner of both re-pointing got %d", res.StatusCode)
 	}
 }
 

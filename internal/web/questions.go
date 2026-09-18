@@ -166,10 +166,11 @@ func (q *Questions) held(r *http.Request) ([]heldCard, []destGroup) {
 // approveHeld files a held jot through the one filing path, with the reader as
 // filer and the owner who pressed Approve recorded beside them (MUS-D-0189).
 //
-// Only an owner of the project it is filed under may do it. That is checked
-// against the destination this press names — the owner may have changed the
-// select — resolved the way File will resolve it, so the check and the filing
-// cannot disagree about where the jot is going.
+// Only an owner of both ends may do it: the project the jot points at now,
+// which is Discard's rule, and the project it is filed under. The second is
+// checked against the destination this press names — the owner may have
+// changed the select — resolved the way File will resolve it, so the check and
+// the filing cannot disagree about where the jot is going.
 func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		q.redirect(w, r, "", "that did not arrive as a form")
@@ -187,6 +188,14 @@ func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
 	}
 	if to == scratchTo {
 		q.redirect(w, r, "", "scratch files nothing; Discard is how a held jot is let go")
+		return
+	}
+	// Where the jot points now is checked first, as Discard checks it: a jot
+	// is only on this viewer's card if they own that, so without it an owner
+	// of X could take a jot the reader sent to Y by posting to=X, which the
+	// page would never have offered them (MUS-Q-0151).
+	if _, project := heldProject(ctx, q.Store, h.Text, h.To, q.Project); !mayApprove(ctx, r, q.Roles, project, q.Project) {
+		http.Error(w, "only an owner of "+project+" may approve a jot sent there", http.StatusForbidden)
 		return
 	}
 	if _, project := heldProject(ctx, q.Store, h.Text, to, q.Project); !mayApprove(ctx, r, q.Roles, project, q.Project) {
