@@ -1070,7 +1070,7 @@ func (rr *Records) render(w http.ResponseWriter, r *http.Request, p recordsPage)
 	}
 }
 
-var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
+var recordsTmpl = template.Must(template.New("records").Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -1311,7 +1311,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   <a href="/records" class="here" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
-<script src="/assets/bar.js"></script>
+<script src="{{asset "bar.js"}}"></script>
 </body>
 </html>
 

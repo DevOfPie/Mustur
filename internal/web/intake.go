@@ -76,11 +76,7 @@ func (in *Intake) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /intake", in.show)
 	mux.HandleFunc("POST /intake", in.file)
-	mux.HandleFunc("GET /assets/intake.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		_, _ = w.Write([]byte(intakeJS))
-	})
+	mux.HandleFunc("GET /assets/intake.js", serveAsset("intake.js"))
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -589,7 +585,7 @@ func render(w http.ResponseWriter, p page) {
 // with both blocked.
 var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 	"trim": strings.TrimSpace,
-}).Parse(`<!doctype html>
+}).Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -738,8 +734,8 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
-<script src="/assets/intake.js"></script>
-<script src="/assets/bar.js"></script>
+<script src="{{asset "intake.js"}}"></script>
+<script src="{{asset "bar.js"}}"></script>
 </body>
 </html>
 `))

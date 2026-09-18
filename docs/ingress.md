@@ -122,6 +122,19 @@ If Access is ever removed from the hostname, stop this first:
 systemctl --user disable --now mustur
 ```
 
+## A cache in front cannot pin an old script
+
+Every script URL a page emits carries a hash of the file's bytes —
+`/assets/bar.js?v=<12 hex of its SHA-256>` — computed at startup, so a deploy
+that changes a script changes its URL. After the 2026-09-18 deploy, browsers
+ran a `bar.js` from before it for an hour although it was served `no-cache`,
+and no `/assets/` request reached the origin: something in front answered.
+Cloudflare's edge, which caches `.js` by extension, is the likeliest and was
+not confirmed (MUS-F-0180). A request naming the current hash is answered
+`public, max-age=31536000, immutable`; one with no hash or an old one gets the
+current bytes with `no-cache`, never a 404, since a tab rendered before a
+deploy still asks for the old URL.
+
 ## The last sentence, demonstrated
 
 *A jot from a phone lands in Mustur's findings-queue in seconds, carries a

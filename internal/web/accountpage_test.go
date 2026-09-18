@@ -337,7 +337,7 @@ func TestAddingAPasskeyHappensOnTheAccountPage(t *testing.T) {
 	owner, _ := personWith(t, accounts, "quiet@example.com", "MUS", account.Owner, "k")
 
 	page := body(t, owner, srv.URL+"/account")
-	if !strings.Contains(page, "/assets/auth.js") {
+	if !loads(page, "/assets/auth.js") {
 		t.Error("the account page does not load the ceremony, so no passkey can be added from it")
 	}
 	if !strings.Contains(page, `id="addkey"`) {

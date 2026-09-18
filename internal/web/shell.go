@@ -41,11 +41,7 @@ var barJS string
 // is shared and a second copy of its script is how MUS-F-0086 happened: the
 // session view had its own badge code, so fixing the badge fixed one surface.
 func BarRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /assets/bar.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		_, _ = w.Write([]byte(barJS))
-	})
+	mux.HandleFunc("GET /assets/bar.js", serveAsset("bar.js"))
 }
 
 const shellCSS = `

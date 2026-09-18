@@ -128,11 +128,7 @@ func (s *Sessions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /sessions/{project}/restore", s.restore)
 	mux.HandleFunc("GET /sessions/{project}", s.show)
 	mux.HandleFunc("GET /sessions/{project}/ws", s.socket)
-	mux.HandleFunc("GET /assets/session.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		_, _ = w.Write([]byte(sessionJS))
-	})
+	mux.HandleFunc("GET /assets/session.js", serveAsset("session.js"))
 }
 
 func (s *Sessions) now() time.Time {
@@ -987,7 +983,7 @@ func (s *Sessions) readInput(ctx context.Context, cancel func(), c *websocket.Co
 	}
 }
 
-var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
+var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -1740,7 +1736,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
-<script src="/assets/bar.js"></script>
+<script src="{{asset "bar.js"}}"></script>
 {{/* The session client goes wherever there is a picker, not only where there
 is a terminal. The picker's change handler is bound above the script's terminal
 guard so that it works on pages with no screen (MUS-D-0150, MUS-F-0110), but
@@ -1751,7 +1747,7 @@ that did nothing with script on (MUS-F-0159). Without script the noscript Go
 button is the picker on those pages, as it is everywhere. A page with nothing
 to pick and nothing to paint still loads only the bar's, and so does a page
 that could not ask tmux at all (MUS-F-0160): it draws no picker and no terminal. */}}
-{{if and (not .Unreachable) (or .Rows .Lost (not .Missing))}}<script src="/assets/session.js"></script>{{end}}
+{{if and (not .Unreachable) (or .Rows .Lost (not .Missing))}}<script src="{{asset "session.js"}}"></script>{{end}}
 </body>
 </html>
 {{/* One sub-agent row, drawn above the fold while it runs and inside it once

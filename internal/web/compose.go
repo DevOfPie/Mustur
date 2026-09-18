@@ -94,11 +94,7 @@ func (c *Compose) actor(r *http.Request) string {
 func (c *Compose) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /compose", c.show)
 	mux.HandleFunc("POST /compose", c.send)
-	mux.HandleFunc("GET /assets/compose.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		_, _ = w.Write([]byte(composeJS))
-	})
+	mux.HandleFunc("GET /assets/compose.js", serveAsset("compose.js"))
 }
 
 // A composeTarget is one row in the destination list.
@@ -367,7 +363,7 @@ func (c *Compose) render(w http.ResponseWriter, r *http.Request, p composePage) 
 	}
 }
 
-var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
+var composeTmpl = template.Must(template.New("compose").Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -458,8 +454,8 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
-{{if not .None}}<script src="/assets/compose.js"></script>{{end}}
-<script src="/assets/bar.js"></script>
+{{if not .None}}<script src="{{asset "compose.js"}}"></script>{{end}}
+<script src="{{asset "bar.js"}}"></script>
 </body>
 </html>
 `))

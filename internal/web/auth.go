@@ -168,11 +168,7 @@ func (a *Auth) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /invite/{token}", a.invitePage)
 	mux.HandleFunc("POST /invite/{token}/begin", a.registerBegin)
 	mux.HandleFunc("POST /invite/{token}/finish", a.registerFinish)
-	mux.HandleFunc("GET /assets/auth.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-cache")
-		_, _ = w.Write([]byte(authJS))
-	})
+	mux.HandleFunc("GET /assets/auth.js", serveAsset("auth.js"))
 }
 
 type authPage struct {
@@ -676,7 +672,7 @@ func (a *Auth) render(w http.ResponseWriter, p authPage) {
 	}
 }
 
-var authTmpl = template.Must(template.New("auth").Parse(`<!doctype html>
+var authTmpl = template.Must(template.New("auth").Funcs(assetFuncs).Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -723,7 +719,7 @@ has one.</p>
 {{end}}
 {{end}}
 <p class="said" id="said" hidden></p>
-{{if .Ceremony}}<script src="/assets/auth.js"></script>{{end}}
+{{if .Ceremony}}<script src="{{asset "auth.js"}}"></script>{{end}}
 </body>
 </html>
 `))

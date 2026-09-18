@@ -404,7 +404,7 @@ func TestTheCeremonyScriptLoadsOnlyWhereThereIsOne(t *testing.T) {
 	// command. Only somebody actually registering changes it.
 	register(t, browser(t), srv, newAuthenticator(t), secret)
 	// Now there is somebody to sign in as, so there is a button.
-	if got := pageOf(t, c, srv.URL+"/signin"); !strings.Contains(got, "auth.js") {
+	if got := pageOf(t, c, srv.URL+"/signin"); !loads(got, "/assets/auth.js") {
 		t.Error("sign-in cannot run its ceremony")
 	}
 	// A bad invitation renders a message and nothing to press.

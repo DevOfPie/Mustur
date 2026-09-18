@@ -197,10 +197,22 @@ func TestThePageSaysWhenMusturDidNotStartTheSession(t *testing.T) {
 // carries bar.js now. What is still worth asserting is that a page loads the
 // scripts it was given and no others, which is the property the old test was
 // really protecting.
+// scriptsIn names each script a page loads by its path, and only when the URL
+// carries the version its bytes hash to now (MUS-F-0180). A script named
+// without a version, or with any other one, comes back marked unversioned, so
+// every test comparing against "/assets/bar.js" also fails on a page that
+// would let a cache in front pin an old copy.
 func scriptsIn(body string) []string {
 	var out []string
 	for _, m := range regexp.MustCompile(`<script src="([^"]+)"`).FindAllStringSubmatch(body, -1) {
-		out = append(out, m[1])
+		src := m[1]
+		path, v, _ := strings.Cut(src, "?v=")
+		if a, known := assets[strings.TrimPrefix(path, "/assets/")]; known && a.version == v {
+			src = path
+		} else {
+			src = "unversioned " + src
+		}
+		out = append(out, src)
 	}
 	return out
 }
@@ -224,7 +236,7 @@ func loads(body, src string) bool {
 // script arriving on a page that was only meant to have the bar's.
 func TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
-	if !strings.Contains(getFrom(t, srv, "/sessions/Mustur"), "/assets/session.js") {
+	if !loads(getFrom(t, srv, "/sessions/Mustur"), "/assets/session.js") {
 		t.Error("the session page does not load the client")
 	}
 
