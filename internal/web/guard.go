@@ -8,8 +8,9 @@ package web
 // three templates at once.
 //
 // **Two questions, in order.** Is anybody signed in, and may they write? A
-// reader gets every reading surface and nothing else; a request with no account
-// gets the sign-in page. Nobody has a role on a project they were never granted
+// reader gets every reading surface and one write, POST /intake, which holds
+// their jot for an owner rather than filing it (MUS-D-0189, see holds); a
+// request with no account gets the sign-in page. Nobody has a role on a project they were never granted
 // one on, which is not the same as being a reader there.
 //
 // **Off by default.** Enforcement is a flag, for the same reason `--sessions`
