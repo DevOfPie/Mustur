@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"net/http/httptest"
 
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/question"
 	"github.com/DevOfPie/Mustur/internal/record"
@@ -921,5 +923,108 @@ func TestTheAccountPagesNameProjectsAsBefore(t *testing.T) {
 	}
 	if got := projectName(ctx, nil, "MUS"); got != "MUS" {
 		t.Errorf("with no store, projectName = %q, want the bare prefix", got)
+	}
+}
+
+// MUS-F-0168, answered by MUS-D-0198 on MUS-Q-0160: a record a question names
+// expands in place under the question, exactly as a citation does on Records,
+// wherever on the card the identifier is written. No link opens a new tab.
+func TestTheQueueExpandsWhatAQuestionCitesInPlace(t *testing.T) {
+	q := withOptions("MUS-Q-0001", "Does MUS-D-0040 still hold?",
+		"Keep MUS-D-0001 :: costs MUS-F-0027 a rerun :: As MUS-F-0033 found, not MUS-F-9001.")
+	q.Body = "Raised by MUS-F-0164, beside MUS-D-9002.\n\n" +
+		"| Record | Why |\n| --- | --- |\n| LNK-S-0001 | **HRD-W-0001** |\n\n" +
+		"Itself: MUS-Q-0001."
+	q.Data[1] = record.Field{Key: question.FieldBlocks, Value: "MUS-F-0164"}
+	recs := []record.Record{q}
+	held := []string{"MUS-D-0040", "MUS-F-0164", "LNK-S-0001", "HRD-W-0001",
+		"MUS-D-0001", "MUS-F-0027", "MUS-F-0033"}
+	for _, id := range held {
+		p, err := ident.Parse(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		recs = append(recs, record.Record{ID: id, Kind: p.Role.Name(), Title: "Title of " + id, At: "2026-08-20"})
+	}
+	srv, _ := serveQuestions(t, recs...)
+	body := getFrom(t, srv, "/questions")
+
+	// Title, what it blocks, body, a table, and the option's label, line and
+	// detail: every held record is in the row, once, in the order it is named,
+	// carrying what Records carries so opening it needs no round trip.
+	row := regexp.MustCompile(`(?s)<div class="cites">.*?</details>\s*</div>`).FindString(body)
+	if row == "" {
+		t.Fatalf("no citation row on the card:\n%s", body)
+	}
+	last := -1
+	for _, id := range held {
+		p, _ := ident.Parse(id)
+		want := `<summary class="badge">` + id + `</summary>` +
+			"\n      " + `<div class="inner"><strong>Title of ` + id + `</strong><br><small>` +
+			p.Role.Name() + ` · 2026-08-20 · <a href="/records/` + id + `">open on its own</a></small></div>`
+		at := strings.Index(row, want)
+		if at < 0 {
+			t.Errorf("%s does not expand in place to its record", id)
+			continue
+		}
+		if at < last {
+			t.Errorf("%s is out of the order the question names it", id)
+		}
+		last = at
+		if n := strings.Count(row, `<summary class="badge">`+id+`<`); n != 1 {
+			t.Errorf("%s is in the row %d times", id, n)
+		}
+	}
+	if strings.Count(row, "<details>") != len(held) {
+		t.Errorf("%d expandables in the row, want %d", strings.Count(row, "<details>"), len(held))
+	}
+	// The question itself is not a citation of itself, and what the store does
+	// not hold stays text with no entry and no link.
+	for _, id := range []string{"MUS-Q-0001", "MUS-D-9002", "MUS-F-9001"} {
+		if strings.Contains(row, ">"+id+"<") {
+			t.Errorf("%s is in the citation row", id)
+		}
+		if strings.Contains(body, "/records/"+id) {
+			t.Errorf("%s was linked", id)
+		}
+	}
+	if !strings.Contains(body, "not MUS-F-9001.") {
+		t.Error("an identifier the store does not hold did not stay as written")
+	}
+	// The text stays text: a <details> cannot sit in a paragraph, and nothing
+	// on this page opens a tab.
+	if strings.Contains(body, `target="_blank"`) {
+		t.Error("a link on the queue opens a new tab")
+	}
+	if !strings.Contains(body, "<p>Raised by MUS-F-0164, beside MUS-D-9002.</p>") {
+		t.Error("the body's prose was broken up")
+	}
+	// The option's label is the control: nothing inside it expands or links.
+	pick := regexp.MustCompile(`(?s)<label class="pick">.*?</label>`).FindAllString(body, -1)
+	if len(pick) != 1 {
+		t.Fatalf("expected one option label, found %d", len(pick))
+	}
+	if strings.Contains(pick[0], "<a ") || strings.Contains(pick[0], "<details") {
+		t.Errorf("something inside the option's label takes the tap that chooses it:\n%s", pick[0])
+	}
+	if !strings.Contains(pick[0], "<strong>Keep MUS-D-0001</strong>") ||
+		!strings.Contains(pick[0], `<span class="line">costs MUS-F-0027 a rerun</span>`) {
+		t.Errorf("the option's label and line are not plain text:\n%s", pick[0])
+	}
+	// The row is outside every option, and above them.
+	if strings.Index(body, `<div class="cites">`) > strings.Index(body, `<div class="opt">`) {
+		t.Error("the citation row is not above the options")
+	}
+}
+
+// A question citing nothing the store holds draws no empty row.
+func TestAQuestionCitingNothingHeldDrawsNoRow(t *testing.T) {
+	srv, _ := serveQuestions(t, openQuestion("MUS-Q-0001", "Is MUS-D-9002 right?"))
+	body := getFrom(t, srv, "/questions")
+	if strings.Contains(body, `<div class="cites">`) {
+		t.Error("an empty citation row was drawn")
+	}
+	if !strings.Contains(body, "<h2>Is MUS-D-9002 right?</h2>") {
+		t.Error("the title did not stay as written")
 	}
 }

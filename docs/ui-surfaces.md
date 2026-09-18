@@ -215,6 +215,13 @@ expands in place, one line up front and the paragraph behind it only when asked;
 and answering is one tap above the bar. The expansion is a `<details>` element,
 so none of it costs script.
 
+A record a question names, anywhere on its card, expands in place in a row
+under the question, with the same markup Records uses for a citation and no new
+tab (MUS-F-0168; MUS-D-0198, extending MUS-D-0040 on the owner's answer to
+MUS-Q-0160). The text itself stays text, because a `<details>` cannot sit
+inside a paragraph and nothing inside an option's label may take the tap that
+chooses it; an identifier the store does not hold stays text and gets no entry.
+
 **Six things differed from the drawing, and five still do** — the project pill
 has been rendered since MUS-F-0150. An earlier version of this paragraph
 said two, and a review counted the rest — so they are listed rather than

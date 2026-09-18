@@ -45,6 +45,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/question"
+	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
@@ -141,6 +142,12 @@ type queued struct {
 	Needed   bool
 	Surfaced bool
 	Options  []queuedOption
+	// Cites are the records the question's text names, each expanding in
+	// place the way a citation does on Records (MUS-D-0198, which extends
+	// MUS-D-0040 to this surface on the owner's answer to MUS-Q-0160). The
+	// owner met MUS-F-0164 and MUS-F-0027 in a question and its options and
+	// had no way to them but typing the address (MUS-F-0168).
+	Cites []citation
 }
 
 type queuePage struct {
@@ -169,6 +176,11 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 	// The project records are already in this listing, so naming every card's
 	// project costs no query beyond the one above, rather than one per question.
 	names := projectNamesIn(records)
+	// Which identifiers resolve is read from the same listing.
+	by := make(map[string]record.Record, len(records))
+	for _, r := range records {
+		by[r.ID] = r
+	}
 	var out []queued
 	for _, r := range question.Open(records) {
 		item := queued{
@@ -194,9 +206,43 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 				Recommended: o.IsRecommended(),
 			})
 		}
+		item.Cites = queueCites(r, item.Blocks, by)
 		out = append(out, item)
 	}
 	return out, nil
+}
+
+// queueCites gathers the records a question names, in the order it names them:
+// title, what it blocks, the body, then every option's label, line and detail.
+// Deduplicated and never the question itself, as on Records.
+//
+// Every identifier on the card is gathered, the option's label and line
+// included, but the row sits outside every option: a <details> inside an
+// option's <label> would take the tap meant to choose it, and the whole row is
+// the control (docs/ui-surfaces.md, surface 4). The text itself stays text
+// everywhere, because a <details> is not allowed inside a paragraph and the
+// browser ends the paragraph where one starts.
+//
+// Only what the store holds is listed. An identifier it does not hold stays
+// text in the question and gets no entry, rather than an entry saying there is
+// nothing behind it.
+func queueCites(r record.Record, blocks string, by map[string]record.Record) []citation {
+	text := r.Title + " " + blocks + " " + r.Body
+	for _, o := range question.Options(r) {
+		text += " " + o.Label + " " + o.Says() + " " + o.Detail
+	}
+	seen := map[string]bool{r.ID: true}
+	var out []citation
+	for _, id := range idInProse.FindAllString(text, -1) {
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		if _, ok := by[id]; ok {
+			out = append(out, resolve("", id, by))
+		}
+	}
+	return out
 }
 
 func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
@@ -484,7 +530,8 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
           font-size: .8em; opacity: .75; }
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
-` + markdownCSS + shellCSS + `
+  form > .cites { margin: 0 0 1rem; }
+` + markdownCSS + citesCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -506,6 +553,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   <h2>{{$q.Title}}</h2>
   <small class="asked">Asked {{$q.Asked}}</small>
   {{if $q.Body}}<div class="ctx md">{{$q.Body}}</div>{{end}}
+  {{template "cites" $q.Cites}}
   {{range $q.Options}}
   <div class="opt">
     <label class="pick">
@@ -541,7 +589,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <script src="/assets/bar.js"></script>
 </body>
 </html>
-`))
+` + citesTmpl))
 
 // countCache holds the answer for a moment so a handful of open tabs polling
 // the badge cost one count between them rather than one each.
