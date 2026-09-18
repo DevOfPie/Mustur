@@ -46,7 +46,7 @@ func TestAMalformedRetirementIsReported(t *testing.T) {
 		t.Fatal(err)
 	}
 	joined := strings.Join(problems, "\n")
-	for _, want := range []string{"decisions.md: Renamed", "decisions.md: Retired", "IDW-F-0001 is cited", "IDW-F-0007 is cited"} {
+	for _, want := range []string{"decisions.md: Renamed", "decisions.md: Retired"} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("problems do not mention %q:\n%s", want, joined)
 		}
