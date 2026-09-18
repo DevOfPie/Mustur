@@ -193,10 +193,15 @@ func reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 			kept = append(kept, f)
 		}
 	}
-	// Arriving where it named is the move that field was proposing, so the
-	// proposal does not travel with it: a record carried into the place it
-	// named and still saying it names it would ask for the same move again.
-	fresh.Data = confirmed(kept, dest.ID)
+	// A proposal to move out of the intake box, and a decision to keep it
+	// there, are about the intake box. Carried anywhere else — to the place it
+	// named, which is the move confirmed, or somewhere it did not name, which
+	// is a correction — they would ask for a move nobody can make from there.
+	routing, err := routingRecords(ctx, s)
+	if err != nil {
+		return Rerouted{}, err
+	}
+	fresh.Data = leavingBox(kept, dest.ID, DefaultIn(routing))
 	for _, f := range old.Refs {
 		if !routingField(f.Key) {
 			fresh.Refs = append(fresh.Refs, f)
@@ -225,9 +230,25 @@ func reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 	return Rerouted{Fresh: filed, Old: retire(filed.ID), Dest: dest, Moved: moved}, nil
 }
 
-// confirmed takes a destination out of a record's Names, because the record
-// has just been moved there. Kept goes with the last of them: it declined a
-// move nobody is proposing any more.
+// leavingBox drops Names and Kept from a record moving to dest, unless dest is
+// the intake box itself — a jot rerouted back into the box still names what it
+// named. There, a destination moved to is taken out of Names, and Kept goes
+// with the last of them.
+func leavingBox(data []record.Field, dest, box string) []record.Field {
+	if dest != box {
+		out := data[:0:0]
+		for _, f := range data {
+			if !strings.EqualFold(f.Key, NamesField) && !strings.EqualFold(f.Key, KeptField) {
+				out = append(out, f)
+			}
+		}
+		return out
+	}
+	return confirmed(data, dest)
+}
+
+// confirmed takes a destination out of a record's Names. Kept goes with the
+// last of them: it declined a move nobody is proposing any more.
 func confirmed(data []record.Field, dest string) []record.Field {
 	var names []string
 	found := false

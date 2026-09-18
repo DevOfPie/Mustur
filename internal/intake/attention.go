@@ -29,9 +29,18 @@ const KeptField = "Kept"
 
 // NeedsAttention reports whether a record is waiting on somebody.
 //
-// True while it names a destination it was kept from, has not been moved
-// (a moved record is superseded), and nobody has chosen to keep it where it is.
-func NeedsAttention(r record.Record) bool {
+// True while it sits in the intake box — box, the routing record DefaultIn
+// finds — names a destination it was kept from, has not been moved (a moved
+// record is superseded), and nobody has chosen to keep it where it is.
+//
+// Where it sits is part of the definition because MUS-D-0193 is about "a jot
+// in _IB". A jot naming Archive that was rerouted to Mustur instead is not
+// waiting on a move to Archive, and counting it offered "Keep in intake box" on
+// a record that was not in it (review of PR 108).
+func NeedsAttention(r record.Record, box string) bool {
+	if box == "" || filedTo(r) != box {
+		return false
+	}
 	if len(Named(r)) == 0 {
 		return false
 	}
@@ -42,6 +51,16 @@ func NeedsAttention(r record.Record) bool {
 		return false
 	}
 	return true
+}
+
+// filedTo is the routing record a jot was filed to, from its citation.
+func filedTo(r record.Record) string {
+	for _, ref := range r.Refs {
+		if ref.Key == "Routed to" {
+			return strings.TrimSpace(ref.Value)
+		}
+	}
+	return ""
 }
 
 // Named returns the destinations a record's Names field proposes, in order.
@@ -69,9 +88,10 @@ func AttentionCount(ctx context.Context, s *store.Store) int {
 	if err != nil {
 		return 0
 	}
+	box := DefaultIn(records)
 	n := 0
 	for _, r := range records {
-		if NeedsAttention(r) {
+		if NeedsAttention(r, box) {
 			n++
 		}
 	}
@@ -107,7 +127,11 @@ func keep(ctx context.Context, s *store.Store, id, actor string, now time.Time) 
 	if _, kept := r.Get(KeptField); kept {
 		return r, fmt.Errorf("%s: %w", r.ID, ErrAlreadyKept)
 	}
-	if !NeedsAttention(r) {
+	routing, err := routingRecords(ctx, s)
+	if err != nil {
+		return record.Record{}, err
+	}
+	if !NeedsAttention(r, DefaultIn(routing)) {
 		return record.Record{}, fmt.Errorf("%s proposes no move, so there is nothing to keep it from", r.ID)
 	}
 	r.Data = append(r.Data, record.Field{Key: KeptField, Value: actor + " " + now.Format("2006-01-02 15:04 MST")})

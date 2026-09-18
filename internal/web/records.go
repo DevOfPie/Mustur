@@ -204,6 +204,16 @@ type attentionRow struct {
 	Names []namedView
 }
 
+// boxIn is the intake box among the records a page already holds.
+func boxIn(by map[string]record.Record) string {
+	all := make([]record.Record, 0, len(by))
+	for _, r := range by {
+		all = append(all, r)
+	}
+	record.Sort(all)
+	return intake.DefaultIn(all)
+}
+
 // named resolves a record's Names to titles. An identifier the store does not
 // hold is shown as itself rather than dropped.
 func named(r record.Record, by map[string]record.Record) []namedView {
@@ -483,8 +493,9 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 	for _, rec := range all {
 		by[rec.ID] = rec
 	}
+	box := intake.DefaultIn(all)
 	for _, rec := range all {
-		if intake.NeedsAttention(rec) {
+		if intake.NeedsAttention(rec, box) {
 			idx.Attention = append(idx.Attention, attentionRow{ID: rec.ID, Title: rec.Title, Names: named(rec, by)})
 		}
 	}
@@ -560,7 +571,7 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 			idx.Rows = append(idx.Rows, rowView{
 				ID: rec.ID, Kind: kindLabel(rec.Kind), Title: rec.Title, At: rec.At,
 				Project:   names.title(prefixOf(rec.ID)),
-				Attention: intake.NeedsAttention(rec),
+				Attention: intake.NeedsAttention(rec, box),
 			})
 		}
 	} else {
@@ -672,7 +683,7 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 	}
 	v := rr.view(rec, by)
 	v.State, v.Stale = rr.verify(rec)
-	if intake.NeedsAttention(rec) {
+	if intake.NeedsAttention(rec, boxIn(by)) {
 		v.Attention = named(rec, by)
 		v.CanMove = CanWrite(r)
 	}
@@ -758,8 +769,13 @@ func (rr *Records) attending(w http.ResponseWriter, r *http.Request) (record.Rec
 // refuseUnlessAttending is the 409 for a record that proposes nothing. Called
 // after the second-press checks, so a press that already happened is sent to
 // its result rather than told there is nothing to do.
-func refuseUnlessAttending(w http.ResponseWriter, rec record.Record) bool {
-	if !intake.NeedsAttention(rec) {
+func (rr *Records) refuseUnlessAttending(w http.ResponseWriter, r *http.Request, rec record.Record) bool {
+	routing, err := intake.Destinations(r.Context(), rr.Store)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return true
+	}
+	if !intake.NeedsAttention(rec, intake.DefaultIn(routing)) {
 		http.Error(w, rec.ID+" proposes no move, so there is nothing to move or keep", http.StatusConflict)
 		return true
 	}
@@ -784,7 +800,7 @@ func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
 		moved(w, r, rec.ID, by)
 		return
 	}
-	if refuseUnlessAttending(w, rec) {
+	if rr.refuseUnlessAttending(w, r, rec) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
@@ -843,7 +859,7 @@ func (rr *Records) keep(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, back, http.StatusSeeOther)
 		return
 	}
-	if refuseUnlessAttending(w, rec) {
+	if rr.refuseUnlessAttending(w, r, rec) {
 		return
 	}
 	_, err := intake.Keep(r.Context(), rr.Store, rec.ID, rr.actor(r), rr.now())

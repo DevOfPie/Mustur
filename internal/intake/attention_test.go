@@ -12,8 +12,11 @@ import (
 func TestNeedsAttention(t *testing.T) {
 	jot := func(fields ...record.Field) record.Record {
 		return record.Record{ID: "IDW-F-0001", Kind: "finding", Title: "t", At: "2026-09-18",
-			Data: append([]record.Field{{Key: "Status", Value: "unreviewed"}}, fields...)}
+			Data: append([]record.Field{{Key: "Status", Value: "unreviewed"}}, fields...),
+			Refs: []record.Field{{Key: "Routed to", Value: "MUS-P-0002"}}}
 	}
+	elsewhere := jot(record.Field{Key: NamesField, Value: "MUS-P-0003"})
+	elsewhere.Refs = []record.Field{{Key: "Routed to", Value: "MUS-P-0001"}}
 	cases := []struct {
 		name string
 		r    record.Record
@@ -29,9 +32,10 @@ func TestNeedsAttention(t *testing.T) {
 			r.Data[0].Value = "Superseded"
 			return r
 		}(), false},
+		{"routed somewhere other than the intake box", elsewhere, false},
 	}
 	for _, c := range cases {
-		if got := NeedsAttention(c.r); got != c.want {
+		if got := NeedsAttention(c.r, "MUS-P-0002"); got != c.want {
 			t.Errorf("%s: NeedsAttention = %v, want %v", c.name, got, c.want)
 		}
 	}
@@ -90,7 +94,7 @@ func TestMovingAJotWhereItNamedConfirmsIt(t *testing.T) {
 	if v, ok := done.Fresh.Get(NamesField); ok {
 		t.Errorf("the moved record still proposes the move: %s = %q", NamesField, v)
 	}
-	if NeedsAttention(done.Fresh) || NeedsAttention(done.Old) {
+	if NeedsAttention(done.Fresh, "MUS-P-0002") || NeedsAttention(done.Old, "MUS-P-0002") {
 		t.Error("a moved jot still needs attention")
 	}
 	if n := AttentionCount(ctx, s); n != 0 {
@@ -111,5 +115,40 @@ func TestConfirmingOneNameLeavesTheOther(t *testing.T) {
 	got = confirmed([]record.Field{{Key: NamesField, Value: "MUS-P-0003"}, {Key: KeptField, Value: "x"}}, "MUS-P-0003")
 	if len(got) != 0 {
 		t.Errorf("confirming the last name left %v", got)
+	}
+}
+
+// The reviewer's scenario on PR 108: a jot naming Archive is rerouted to
+// Mustur rather than moved to Archive. The Mustur record must not carry the
+// proposal, offer Move to Archive and Keep in intake box, or count on the
+// badge.
+func TestRerouteElsewhereDropsTheProposal(t *testing.T) {
+	s, ctx := openWith(t, withOptOut())
+	r, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the old intake notes", Actor: "pie", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Keep(ctx, s, r.ID, "owner", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	done, err := Reroute(ctx, s, RerouteRequest{Project: "MUS", ID: r.ID, To: "MUS-P-0001", Actor: "owner", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, k := range []string{NamesField, KeptField} {
+		if v, ok := done.Fresh.Get(k); ok {
+			t.Errorf("the record rerouted to Mustur carries %s = %q", k, v)
+		}
+	}
+
+	// And a record outside the box that carries Names anyway — written by
+	// hand, or by an older build — is not counted.
+	stray := done.Fresh
+	stray.Data = append(stray.Data, record.Field{Key: NamesField, Value: "MUS-P-0003"})
+	if err := s.Append(ctx, stray, "amend", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if n := AttentionCount(ctx, s); n != 0 {
+		t.Errorf("AttentionCount = %d with the only Names outside the intake box", n)
 	}
 }

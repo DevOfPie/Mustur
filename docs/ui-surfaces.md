@@ -233,7 +233,7 @@ reading, the in-place expansion and the routing verification now live.
 
 **Amended 2026-09-18: records that need attention** (MUS-D-0193, answering
 MUS-Q-0154, built with its recommended answers). A jot that names a destination
-taking jots only on a confirmed move waits where it fell, and needs attention
+taking jots only on a confirmed move waits in the intake box, and needs attention
 until somebody moves it there or keeps it where it is; `intake.NeedsAttention`
 is the one definition. The index pins a warn-bordered "Needs attention · N"
 section above the filters, whatever they say, each row naming where it would go,

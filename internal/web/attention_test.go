@@ -46,7 +46,7 @@ func attending(t *testing.T) (*store.Store, string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !intake.NeedsAttention(jot) {
+	if !intake.NeedsAttention(jot, "MUS-P-0002") {
 		t.Fatalf("the fixture jot %s does not need attention", jot.ID)
 	}
 	return st, jot.ID

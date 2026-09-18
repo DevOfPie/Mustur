@@ -240,7 +240,7 @@ func TestMoveAndKeepRefuse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !intake.NeedsAttention(rec) {
+	if !intake.NeedsAttention(rec, "MUS-P-0002") {
 		t.Error("a refused press changed the record")
 	}
 }
