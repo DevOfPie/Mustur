@@ -172,6 +172,12 @@ func (q *Questions) held(r *http.Request) ([]heldCard, []destGroup) {
 // changed the select — resolved the way File will resolve it, so the check and
 // the filing cannot disagree about where the jot is going.
 func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
+	// A foreign Origin is refused before the form or the store is read; an
+	// absent one is let through, as on every plain form post (MUS-Q-0173).
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	if err := r.ParseForm(); err != nil {
 		q.redirect(w, r, "", "that did not arrive as a form")
 		return
@@ -241,6 +247,11 @@ func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
 // it: the person who may let a jot into a project is the person who may keep
 // it out.
 func (q *Questions) discardHeld(w http.ResponseWriter, r *http.Request) {
+	// As approveHeld: foreign refused, absent allowed (MUS-Q-0173).
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	ctx := context.WithoutCancel(r.Context())
 	id := r.PathValue("id")
 	h, err := q.Store.HeldJot(ctx, id)
@@ -453,6 +464,14 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 // answer records what the owner said and redirects — post/redirect/get, so a
 // phone reloading after a dropped connection does not answer twice.
 func (q *Questions) answer(w http.ResponseWriter, r *http.Request) {
+	// An answer is typed back into a running session when the question named
+	// one, so a page elsewhere posting this form is refused before anything is
+	// read (MUS-F-0096). An absent Origin is allowed, on the owner's answer to
+	// MUS-Q-0173: a browser always sends one on a cross-site post.
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	if err := r.ParseForm(); err != nil {
 		q.redirect(w, r, "", "that did not arrive as a form")
 		return

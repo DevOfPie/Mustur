@@ -325,6 +325,13 @@ func (in *Intake) hold(w http.ResponseWriter, r *http.Request, text string) {
 }
 
 func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
+	// Before the body is read at all: a page on another site posting this form
+	// with the reader's cookie attached is refused, and curl, which sends no
+	// Origin, still files (MUS-F-0096, MUS-Q-0173).
+	if !notCrossSite(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return
+	}
 	// A capture box on the public side of an ingress is the obvious place to
 	// post a gigabyte at. The limit is generous for a jot and finite, which is
 	// the whole requirement.

@@ -156,8 +156,38 @@ func sameOrigin(r *http.Request) bool {
 	if origin == "" {
 		return false
 	}
+	return originIsThisSite(origin, r)
+}
+
+// notCrossSite reports whether a form post may be taken: an Origin naming this
+// site, or none at all (MUS-F-0096, answered on MUS-Q-0173).
+//
+// A browser always sends Origin on a cross-site POST, so a present and foreign
+// one is the attack — a page elsewhere submitting a form with the reader's
+// cookie attached — and it is refused. An absent one is curl, a script on this
+// machine or a proxy that strips the header, and refusing it would stop the
+// command line filing a jot while stopping no browser. `Origin: null`, which a
+// sandboxed frame or a redirect across sites sends, names no site and is
+// refused as foreign.
+//
+// This is the looser of the two readings and only for the plain form posts.
+// Anything that types into an agent, starts a process, runs the passkey
+// ceremony or changes an account keeps sameOrigin, which refuses the absent
+// header too.
+func notCrossSite(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+	return originIsThisSite(origin, r)
+}
+
+// originIsThisSite is the one comparison both checks make: the Origin's host
+// against the Host the request arrived for. An Origin that parses to no host —
+// "null", or anything that is not a URL — matches nothing.
+func originIsThisSite(origin string, r *http.Request) bool {
 	u, err := url.Parse(origin)
-	if err != nil {
+	if err != nil || u.Host == "" {
 		return false
 	}
 	return strings.EqualFold(u.Host, r.Host)
