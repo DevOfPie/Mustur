@@ -95,19 +95,39 @@ func markdown(src string) template.HTML {
 //
 // Headings are sized here rather than left to the browser. Its defaults put an
 // h5 at .83em and an h6 at .67em -- smaller than the paragraphs beneath them --
-// and the pages' own h2 and h3 rules are for the page's chrome, so a body's
-// "## " came out as a faded uppercase section label. LinkCtrl's phase records
-// nest to ###### and read as a wall of text with footnotes where the headings
-// should be (MUS-F-0163). No level is smaller than the text it heads; weight
-// and space carry the order below h3.
+// and a page's own heading rules style that page's chrome, not text somebody
+// wrote, so a body's heading must not inherit them: a body's "## " once came out
+// as a faded uppercase section label. LinkCtrl's phase records nest to ######
+// and read as a wall of text with footnotes where the headings should be
+// (MUS-F-0163).
+//
+// Every level sits between the text it heads and the title of the record it is
+// in. The floor is 1em of the .md block, which is the size a paragraph in it
+// inherits on the queue and a little above it on the records page (15.81px
+// there, beside a 17px block). The ceiling is the record's own title: the
+// records page's article h3 at 1.1rem, 17.6px -- raised from .98rem, which was
+// smaller than the body text and left no room at all (MUS-D-0204, on
+// MUS-Q-0166) -- and the queue card's h2 at 1.15rem. On the records page that
+// ceiling is 1.035em, so size can take only a small first step:
+//
+//	h1  1.03em  weight 700
+//	h2  1.015em weight 700
+//	h3  1em     weight 700
+//	h4  1em     weight 600
+//	h5  1em     weight 600, opacity .75 -- the pages' muted text is opacity
+//	h6  1em     weight 500, italic
+//
+// Below h2 the order is carried by weight, then by muting, then by style.
 const markdownCSS = `
   .md h1, .md h2, .md h3, .md h4, .md h5, .md h6 {
     font-size: 1em; font-weight: 600; line-height: 1.3; margin: 1rem 0 .3rem;
     text-transform: none; letter-spacing: normal; opacity: 1;
-    overflow-wrap: anywhere; }
-  .md h1 { font-size: 1.2em; }
-  .md h2 { font-size: 1.12em; }
-  .md h3 { font-size: 1.05em; }
+    font-style: normal; overflow-wrap: anywhere; }
+  .md h1 { font-size: 1.03em; font-weight: 700; }
+  .md h2 { font-size: 1.015em; font-weight: 700; }
+  .md h3 { font-weight: 700; }
+  .md h5 { opacity: .75; }
+  .md h6 { font-weight: 500; font-style: italic; }
   .md > :first-child { margin-top: 0; }
   .md > :last-child { margin-bottom: 0; }
   .md ul, .md ol { margin: .3rem 0; padding-left: 1.3rem; }

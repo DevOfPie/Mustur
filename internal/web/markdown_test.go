@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -169,5 +170,76 @@ func TestABodysHeadingsAreNeverSmallerThanItsText(t *testing.T) {
 				t.Errorf("%s: the heading rule lacks %q: %s", where, want, rule)
 			}
 		}
+	}
+}
+
+// headingStyle is what a body heading of one level declares: the rule every
+// level shares, overridden by that level's own rule.
+func headingStyle(t *testing.T, css, level string) map[string]string {
+	t.Helper()
+	decls := func(sel string) map[string]string {
+		i := strings.Index(css, "\n  "+sel+" {")
+		if i < 0 {
+			return nil
+		}
+		body := css[i+len(sel)+5:]
+		body = body[:strings.Index(body, "}")]
+		out := map[string]string{}
+		for _, d := range strings.Split(body, ";") {
+			if k, v, ok := strings.Cut(d, ":"); ok {
+				out[strings.TrimSpace(k)] = strings.TrimSpace(v)
+			}
+		}
+		return out
+	}
+	style := decls(".md h1, .md h2, .md h3, .md h4, .md h5, .md h6")
+	if style == nil {
+		t.Fatal("no rule is shared by every body heading")
+	}
+	for k, v := range decls(".md " + level) {
+		style[k] = v
+	}
+	return style
+}
+
+// The review of MUS-F-0163's fix found h4, h5 and h6 sharing one rule, so a
+// body nested to ###### still read flat, and the test above passed anyway
+// because it read only the shared rule. Each level is its own set of
+// declarations now, none smaller than the text it heads and none larger than
+// the record title over it (MUS-D-0204, on MUS-Q-0166).
+func TestABodysHeadingLevelsAreDistinctAndBetweenTextAndTitle(t *testing.T) {
+	// 1em is the text. The title is 1.1rem over a 17px block: 1.035em.
+	ceiling := 1.1 * 16 / 17
+	seen := map[string]string{}
+	for _, level := range []string{"h1", "h2", "h3", "h4", "h5", "h6"} {
+		s := headingStyle(t, markdownCSS, level)
+		var em float64
+		if _, err := fmt.Sscanf(strings.TrimSuffix(s["font-size"], "em"), "%g", &em); err != nil {
+			t.Fatalf("%s: font-size %q is not in em", level, s["font-size"])
+		}
+		if em < 1 || em > ceiling {
+			t.Errorf("%s: font-size %gem is outside [1em, %.3fem]", level, em, ceiling)
+		}
+		key := fmt.Sprintf("size %s, weight %s, opacity %s, style %s",
+			s["font-size"], s["font-weight"], s["opacity"], s["font-style"])
+		if other, dup := seen[key]; dup {
+			t.Errorf("%s declares the same as %s: %s", level, other, key)
+		}
+		seen[key] = level
+	}
+	for level, want := range map[string][4]string{
+		"h4": {"1em", "600", "1", "normal"},
+		"h5": {"1em", "600", ".75", "normal"},
+		"h6": {"1em", "500", "1", "italic"},
+	} {
+		s := headingStyle(t, markdownCSS, level)
+		if got := [4]string{s["font-size"], s["font-weight"], s["opacity"], s["font-style"]}; got != want {
+			t.Errorf("%s declares %v, want %v", level, got, want)
+		}
+	}
+
+	page, _ := fetch(t, serveRecords(t, "", decision("MUS-D-0001", "Titled", "text")), "/records/MUS-D-0001")
+	if !strings.Contains(page, "article h3 { font-size: 1.1rem;") {
+		t.Error("the record title is not 1.1rem, so the ceiling above is not the page's")
 	}
 }
