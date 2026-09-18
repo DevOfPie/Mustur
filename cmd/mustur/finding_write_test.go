@@ -182,6 +182,26 @@ func TestAMisspeltOrRepeatedStatusIsRefused(t *testing.T) {
 	}
 }
 
+// The reserved _IB prefix resolves through the routing record whose Prefix is
+// _IB, like any other: its list is checked at write time.
+func TestAnIntakeBoxFindingIsCheckedAgainstItsList(t *testing.T) {
+	inbox := record.Record{ID: "MUS-P-0002", Kind: "project", Title: "Intake box", At: "2026-09-18",
+		Data: []record.Field{{Key: status.PrefixField, Value: "_IB"},
+			{Key: status.WordField, Value: "unreviewed = open :: a jot"},
+			{Key: status.WordField, Value: "routed = done :: filed onward"}}}
+	path := findingsStore(t, listed(), inbox, aFinding("_IB-F-0001", "unreviewed", status.Open))
+	if err := cmdWrite([]string{"_IB-F-0001", "--db", path, "--actor", "test", "--data", "Status=fixed"}, "amend"); err == nil ||
+		!strings.Contains(err.Error(), `Status "fixed" is not a word _IB declares`) {
+		t.Errorf("a MUS word on an _IB jot: %v", err)
+	}
+	if err := cmdWrite([]string{"_IB-F-0001", "--db", path, "--actor", "test", "--data", "Status=routed"}, "amend"); err != nil {
+		t.Fatal(err)
+	}
+	if r := stored(t, path, "_IB-F-0001"); status.StateOf(r) != status.Done {
+		t.Errorf("routed brings done: %v", r.Data)
+	}
+}
+
 // A project with no list is not locked out of its findings: the write goes
 // through with a note naming the record to give a list to, and only a State
 // that is not one is refused. _IB is such a prefix until its record has one.
