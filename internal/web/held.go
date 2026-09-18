@@ -67,6 +67,15 @@ func mayApprove(ctx context.Context, r *http.Request, roles Roles, project, home
 	return granted && role == account.Owner
 }
 
+// badgeCount is the number every server-rendered badge shows this request's
+// viewer: open questions and the held jots they may approve. It is what
+// /questions/count answers the same viewer, so a page rendered with script
+// blocked still says a jot is waiting, and a page with script is not
+// corrected by the first poll (MUS-D-0189).
+func badgeCount(ctx context.Context, r *http.Request, st *store.Store, roles Roles, home string) int {
+	return OpenCount(ctx, st) + len(heldWaiting(ctx, r, st, roles, home))
+}
+
 // heldWaiting is approvable without the destinations, for a count.
 func heldWaiting(ctx context.Context, r *http.Request, st *store.Store, roles Roles, home string) []store.Held {
 	held, _ := approvable(ctx, r, st, roles, home)

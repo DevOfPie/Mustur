@@ -920,6 +920,8 @@ func cmdServe(args []string) error {
 	// destination project, which is not always this install's (MUS-D-0189).
 	intake.Roles = accounts
 	questions.Roles = accounts
+	compose.Roles = accounts
+	records.Roles = accounts
 	var handler http.Handler = mux
 	if *origin != "" {
 		auth := &web.Auth{

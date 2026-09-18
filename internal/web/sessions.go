@@ -500,7 +500,7 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 		p.Commands = s.commands()
 	}
 	if s.Store != nil {
-		p.OpenQuestions = OpenCount(r.Context(), s.Store)
+		p.OpenQuestions = badgeCount(r.Context(), r, s.Store, s.Roles, s.Project)
 		p.Attention = intake.AttentionCount(r.Context(), s.Store)
 	}
 	// Set here rather than at the call sites: a page built without it renders
@@ -648,7 +648,7 @@ func statusChips(st session.Status) *statusRow {
 // The viewer is the upgraded request's, which the guard stamped before the
 // upgrade; the store is queried under the connection's own context.
 func (s *Sessions) waiting(ctx context.Context, r *http.Request) int {
-	return OpenCount(ctx, s.Store) + len(heldWaiting(ctx, r, s.Store, s.Roles, s.Project))
+	return badgeCount(ctx, r, s.Store, s.Roles, s.Project)
 }
 
 func (s *Sessions) socket(w http.ResponseWriter, r *http.Request) {

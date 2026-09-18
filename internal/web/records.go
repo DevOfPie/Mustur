@@ -63,6 +63,9 @@ type Records struct {
 
 	Store   *store.Store
 	Project string
+	// Roles decides which held jots the badge counts (MUS-D-0189). Nil
+	// without accounts, where nothing is held.
+	Roles Roles
 	// Home expands a leading ~ in a checkout path. Empty means the running
 	// user's home, and it is injectable so the verification can be tested
 	// without depending on whose machine the test runs on.
@@ -1059,7 +1062,7 @@ func (rr *Records) render(w http.ResponseWriter, r *http.Request, p recordsPage)
 	p.ShowSessions = rr.ShowSessions && CanWrite(r)
 	p.ShowAccount = rr.ShowAccount
 	if rr.Store != nil {
-		p.OpenQuestions = OpenCount(r.Context(), rr.Store)
+		p.OpenQuestions = badgeCount(r.Context(), r, rr.Store, rr.Roles, rr.Project)
 		p.Attention = intake.AttentionCount(r.Context(), rr.Store)
 	}
 	if err := recordsTmpl.Execute(w, p); err != nil {
