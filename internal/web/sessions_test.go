@@ -2378,11 +2378,40 @@ func TestStartingIsAPlainPill(t *testing.T) {
 	if strings.Count(src, `doing = f.agent || "";`) != 2 {
 		t.Error("a frame with no reading keeps the last one, so starting outlives the blank pane")
 	}
+	// Clearing it only counts if it happens before the pill is redrawn. Each
+	// frame handler is sliced out on its own markers, and inside each the
+	// reading is assigned before refreshState is called. Whitespace is dropped
+	// first so a reflowed line does not break the comparison.
+	flat := strings.Join(strings.Fields(src), "")
+	for _, h := range []struct{ name, from, to string }{
+		{"hello", `if(f.t==="hello"){`, `}elseif(f.t==="screen"){`},
+		{"screen", `}elseif(f.t==="screen"){`, `}elseif(f.t==="error"){`},
+	} {
+		start := strings.Index(flat, h.from)
+		if start < 0 {
+			t.Errorf("the %s frame handler's opening marker is gone", h.name)
+			continue
+		}
+		body := flat[start+len(h.from):]
+		end := strings.Index(body, h.to)
+		if end < 0 {
+			t.Errorf("the %s frame handler's closing marker is gone", h.name)
+			continue
+		}
+		body = body[:end]
+		set := strings.Index(body, `doing=f.agent||"";`)
+		draw := strings.Index(body, `refreshState();`)
+		if set < 0 || draw < 0 || set > draw {
+			t.Errorf("the %s frame redraws the pill before it clears the last reading", h.name)
+		}
+	}
 	if strings.Contains(src, `if (typeof f.agent === "string") doing = f.agent;`) {
 		t.Error("somewhere a frame with no reading still keeps the last one")
 	}
 	// The note goes into the empty terminal and only there; the first frame
-	// that carries anything replaces it.
+	// that carries anything replaces it. startingNote came with 2f5569f and
+	// this guard is unchanged since, but CLAUDE.md now says the note sits "in
+	// the empty terminal", and this is the line that makes that true.
 	if !strings.Contains(src, "if (!out || out.firstChild) return;") {
 		t.Error("the starting note is written over a screen that already has something on it")
 	}

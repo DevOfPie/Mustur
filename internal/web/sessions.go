@@ -169,8 +169,9 @@ type sessionRow struct {
 	State   string
 	// Where is the tree it is running in, named for the picker (MUS-F-0108).
 	Where string
-	// Doing is working or waiting, read from the hub's own poller rather than
-	// captured here (MUS-Q-0105). Empty when nothing has polled it yet, which
+	// Doing is working, waiting or starting, read from the hub's own poller
+	// rather than captured here (MUS-Q-0105). Starting is a pane with nothing
+	// on it yet (MUS-F-0115). Empty when nothing has polled it yet, which
 	// is not the same as idle and is drawn as nothing rather than as a guess.
 	Doing string
 }
@@ -558,8 +559,9 @@ type frame struct {
 	Key   string `json:"key,omitempty"`
 	Alive bool   `json:"alive,omitempty"`
 	Quiet int    `json:"quiet,omitempty"`
-	// Agent is what the CLI's own pane says it is doing: working, waiting, or
-	// empty for a pane nothing here can read. Empty is not idle — the surface
+	// Agent is what the CLI's own pane says it is doing: working, waiting,
+	// starting for a pane with nothing on it yet (MUS-F-0115), or empty for a
+	// pane nothing here can read. Empty is not idle — the surface
 	// falls back to counting silence, which is what it did before.
 	Agent string `json:"agent,omitempty"`
 	// Status is what the CLI's furniture said, taken off the bottom of the

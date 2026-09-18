@@ -253,7 +253,7 @@
     if (!out || out.firstChild) return;
     var p = document.createElement("p");
     p.className = "note starting";
-    p.textContent = "Starting\u2026 a restored session reads its conversation back before it draws anything.";
+    p.textContent = "Starting\u2026 the CLI is loading and has drawn nothing yet.";
     out.appendChild(p);
   }
 

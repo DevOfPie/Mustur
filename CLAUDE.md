@@ -55,8 +55,8 @@ pill reads **running** or **idle** from the CLI's own pane rather than from a
 clock — Claude Code says which in its status line, and a timer counting silence
 is a guess standing in for that. It wears a turning accent ring while a turn is
 in flight. A pane with nothing on it at all reads **starting**, with no ring
-and a note in the empty terminal, because a CLI launched or restored draws
-nothing for a second or more first
+and a note in the empty terminal, because a CLI draws nothing until it has
+loaded — a restore of a 6.3MB transcript was blank for 1.15s
 ([MUS-F-0115](records/findings.md#mus-f-0115)). A pane nothing here recognises
 falls back to a three-minute silence threshold rather than claiming to know
 ([MUS-D-0130](records/decisions.md#mus-d-0130)). You can reply from that tab: the box is multi-line and spell-checked, it

@@ -102,7 +102,9 @@ func TestDoingReadsThePane(t *testing.T) {
 		{"an empty pane", "", AgentStarting},
 		{"a pane of only blanks", "   \n\n  \n", AgentStarting},
 		// One printed character is a CLI that has started drawing, so from here
-		// on the marks decide, and this pane carries none of them.
+		// on the marks decide, and this pane carries none of them. This pins
+		// the boundary the starting state depends on; nothing in DoingIn
+		// changed to make it pass.
 		{"a blank pane with one character on it", "   \n\n  x\n", AgentUnknown},
 	} {
 		t.Run(c.name, func(t *testing.T) {
