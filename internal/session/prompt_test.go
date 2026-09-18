@@ -321,7 +321,7 @@ func TestALegendOnABareLineIsNotADialogOnItsOwn(t *testing.T) {
 
 // A dialog the conversation has moved past is not a dialog.
 //
-// MUS-F-0092. The pane is 300 rows tall so a transcript has somewhere to live
+// MUS-F-0091. The pane is 300 rows tall so a transcript has somewhere to live
 // (MUS-F-0052), and nothing in it scrolls: what the CLI painted an hour ago is
 // still on the screen, pixel for pixel. The feedback-draft box was answered and
 // left behind, and the surface went on offering "1 · review · 2 · send · 0 ·

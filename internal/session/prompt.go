@@ -191,7 +191,7 @@ func readDialog(screen string) *Prompt {
 	// painted an hour ago is still there. So a dialog that was answered, or
 	// simply moved past, stays on the screen exactly as it looked -- and the
 	// surface offered its buttons for an hour after the CLI stopped listening
-	// (MUS-F-0092).
+	// (MUS-F-0091).
 	//
 	// What separates the two is what is under it. A live dialog is the last
 	// thing on the transcript; a dead one has the conversation that came after
@@ -458,7 +458,7 @@ const surveyHeading = 12
 //
 // The tail only. That is what makes it live: the survey is drawn in the band
 // above the input box, under everything the conversation has said, so anything
-// printed below its row means the conversation has moved past it (MUS-F-0092).
+// printed below its row means the conversation has moved past it (MUS-F-0091).
 func surveyAt(lines []string) (int, int) {
 	row := len(lines) - 1
 	for row >= 0 && strings.TrimSpace(lines[row]) == "" {

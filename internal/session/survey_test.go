@@ -66,7 +66,7 @@ func TestTheSessionSurveyIsOffered(t *testing.T) {
 
 // A survey the conversation has printed past is not offered.
 //
-// The same rule as MUS-F-0092: what separates a live prompt from a dead one on
+// The same rule as MUS-F-0091: what separates a live prompt from a dead one on
 // a pane that never scrolls is whether anything is painted below it.
 func TestASurveyWithTheConversationBelowItIsNotOffered(t *testing.T) {
 	lines := strings.Split(fixture(t, "screen-survey.txt"), "\n")
