@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 )
 
 // Each cause and each way out, on one record shape.
@@ -167,5 +168,22 @@ func TestKeptIsPacificInWinterToo(t *testing.T) {
 	}
 	if v, _ := kept.Get(KeptField); v != "owner 2026-12-01 12:30 PST" {
 		t.Errorf("Kept = %q", v)
+	}
+}
+
+// Keeping a jot declines a move and triages nothing, so the jot stays open and
+// unreviewed (MUS-D-0196). Keep appends who kept it and touches no other field.
+func TestKeepingAJotLeavesItsStateAlone(t *testing.T) {
+	s, ctx := openWith(t, withOptOut())
+	r, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the old intake notes", Actor: "pie", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	kept, err := Keep(ctx, s, r.ID, "owner@example.com", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w, st := status.WordOf(kept), status.StateOf(kept); w != status.Unreviewed || st != status.Open {
+		t.Errorf("kept: Status %q, State %q; want unreviewed and open", w, st)
 	}
 }
