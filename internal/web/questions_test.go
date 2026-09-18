@@ -781,7 +781,8 @@ func TestWithdrawNeedsTheTickBesideIt(t *testing.T) {
 // Answer reads as unavailable until there is something to answer with.
 //
 // MUS-Q-0071. Done in CSS rather than with script or a required attribute:
-// the first would make this the seventh scripted surface and the second would
+// the first would make this one more scripted surface -- eight already, on
+// MUS-D-0199 -- and the second would
 // retire MUS-D-0055's clause that text alone can answer a question that offers
 // options.
 func TestAnswerIsDimmedUntilThereIsSomethingToAnswerWith(t *testing.T) {

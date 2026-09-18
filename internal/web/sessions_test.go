@@ -286,16 +286,74 @@ func TestEverySurfaceCarriesTheBarAndNothingItWasNotGiven(t *testing.T) {
 	}
 }
 
-// A page with no socket has nothing for the session client to do. It still
-// carries the bar, because it still shows the bar.
-func TestAPageWithNoSessionLoadsNoSessionClient(t *testing.T) {
+// A page with nothing to pick and nothing to paint has nothing for the session
+// client to do. It still carries the bar, because it still shows the bar.
+func TestAPageWithNothingToPickLoadsNoSessionClient(t *testing.T) {
 	srv := serveSessions(t, "")
 	body := getFrom(t, srv, "/sessions/nosuchproject")
+	if strings.Contains(body, `id="pick"`) {
+		t.Fatal("a page with nothing running and nothing lost draws a picker, so this test no longer asks what its name says")
+	}
 	if loads(body, "/assets/session.js") {
 		t.Error("the no-session page loads the session client")
 	}
 	if !loads(body, "/assets/bar.js") {
 		t.Error("the no-session page renders a bar whose count cannot move")
+	}
+}
+
+// A page with a picker loads the script that binds it, whether or not there is
+// a session behind the page.
+//
+// The binding was moved above the terminal guard for exactly these pages
+// (MUS-D-0150), and TestThePickerIsBoundBeforeTheTerminalGuard held that order
+// in place — while the template went on leaving the script off every page that
+// rendered Missing. So a tab on a session that had gone showed every running
+// session in the dropdown and did nothing when one was chosen, and the only
+// working control was a button that exists only without script (MUS-F-0159).
+// The order in the file was never the property; the picker working is.
+func TestAPageWithAPickerLoadsTheScriptThatBindsIt(t *testing.T) {
+	pages := map[string]string{}
+
+	running := serveSessions(t, owned("mustur/Mustur"))
+	// A session that is not running and nobody remembers: the owner's page.
+	pages["/sessions/gone"] = getFrom(t, running, "/sessions/gone")
+
+	lost, st, ctx := restoreServer(t, fakeRunner{})
+	if err := st.RememberSession(ctx, "lost", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	// A lost session's own page, which is where MUS-D-0150's picker lands.
+	pages["/sessions/lost"] = getFrom(t, lost, "/sessions/lost")
+	// The start page with everything lost, which renders Missing too.
+	pages["/sessions"] = getFrom(t, lost, "/sessions")
+
+	for path, body := range pages {
+		if !strings.Contains(body, `<select name="p" id="pick"`) {
+			t.Errorf("%s: no picker, so this asks nothing", path)
+			continue
+		}
+		if !loads(body, "/assets/session.js") {
+			t.Errorf("%s draws a picker and does not load the script that binds it: %v", path, scriptsIn(body))
+		}
+		// Without script the picker is this button and the form it submits.
+		if !strings.Contains(body, `</select><noscript><button type="submit" class="go">Go</button></noscript>`) {
+			t.Errorf("%s: the picker has no button for a browser without script", path)
+		}
+		if strings.Contains(body, `id="out"`) {
+			t.Errorf("%s renders a terminal, so the script would open a socket to nothing", path)
+		}
+	}
+
+	// And the scriptless submit from the gone page lands on the session it
+	// names, not back on the page it came from.
+	res, err := running.Client().Get(running.URL + "/sessions?p=Mustur")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.Request.URL.Path != "/sessions/Mustur" {
+		t.Errorf("?p= from a gone page landed on %q", res.Request.URL.Path)
 	}
 }
 

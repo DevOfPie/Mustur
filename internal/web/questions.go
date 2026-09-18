@@ -456,8 +456,8 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   /* The owner asked for Answer to be unavailable until there is something to
      answer with -- a chosen option, or text in the box (MUS-Q-0071). The three
      options put to them all cost something: making the radios required retires
-     MUS-D-0055's clause that text alone can answer, and a script makes this the
-     seventh scripted surface. Neither is needed. :has() asks the form whether
+     MUS-D-0055's clause that text alone can answer, and a script makes this one
+     more scripted surface, of which there are eight (MUS-D-0199). Neither is needed. :has() asks the form whether
      anything is checked and :placeholder-shown asks whether the box is empty,
      both live, both CSS.
 

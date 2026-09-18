@@ -1660,7 +1660,17 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 <script src="/assets/bar.js"></script>
-{{if not (or .Missing .Unreachable)}}<script src="/assets/session.js"></script>{{end}}
+{{/* The session client goes wherever there is a picker, not only where there
+is a terminal. The picker's change handler is bound above the script's terminal
+guard so that it works on pages with no screen (MUS-D-0150, MUS-F-0110), but
+this include was still gated on the session being found, so every page that
+guard was moved for never loaded the script: a session that was gone, a lost
+one's own page, and the start page with everything lost all drew a dropdown
+that did nothing with script on (MUS-F-0159). Without script the noscript Go
+button is the picker on those pages, as it is everywhere. A page with nothing
+to pick and nothing to paint still loads only the bar's, and so does a page
+that could not ask tmux at all (MUS-F-0160): it draws no picker and no terminal. */}}
+{{if and (not .Unreachable) (or .Rows .Lost (not .Missing))}}<script src="/assets/session.js"></script>{{end}}
 </body>
 </html>
 {{/* One sub-agent row, drawn above the fold while it runs and inside it once
