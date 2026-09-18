@@ -152,7 +152,7 @@ func (o Option) Says() string {
 	// sentence. The middot is the one the first version missed, and it is the
 	// one the existing questions are written with -- so the strip left a stray
 	// "·" at the head of the line and a test written months earlier caught it.
-	rest = strings.TrimLeft(rest, ".,:;-—–·| ")
+	rest = strings.TrimLeft(rest, markerSeps)
 	if rest == "" {
 		return line
 	}
@@ -408,6 +408,56 @@ func Set(r *record.Record, key, value string) {
 
 func sortByID(rs []record.Record) {
 	sort.Slice(rs, func(i, j int) bool { return rs[i].ID < rs[j].ID })
+}
+
+// markerSeps is every separator this store uses between the Recommended marker
+// and what follows it. Says strips the same set off the line.
+const markerSeps = ".,:;-—–·| "
+
+// NormaliseOption moves a Recommended marker written at the head of the label
+// to the head of the one-line part, where IsRecommended reads it.
+//
+// The label is the bold half of the row, so a marker there is not lost the way
+// one in the paragraph is: the owner sees the word. What they do not see is the
+// star, because the star is drawn from the line, and the word sitting inside
+// the label reads as part of the answer's name. MUS-Q-0173 was raised that way
+// and showed "Recommended" in bold with no star beside it.
+//
+// Unlike a marker in the paragraph, this one is not ambiguous: a label is a few
+// words naming the answer, and one that opens with the marker and a separator
+// is not naming an answer called "Recommended". So it is moved rather than
+// refused. The word only counts as the marker when a separator follows it --
+// "Recommendedly" is not the marker -- and a label that is nothing but the word
+// is left alone, as Says leaves a line that is nothing but the word: taking it
+// would leave an option with no name.
+func NormaliseOption(value string) string {
+	parts := strings.SplitN(value, OptionSep, 3)
+	label := strings.TrimSpace(parts[0])
+	after, ok := strings.CutPrefix(label, Recommended)
+	if !ok || after == "" || !strings.ContainsRune(markerSeps, []rune(after)[0]) {
+		return value
+	}
+	rest := strings.TrimSpace(strings.TrimLeft(after, markerSeps))
+	if rest == "" {
+		return value
+	}
+	line := ""
+	if len(parts) > 1 {
+		line = strings.TrimSpace(parts[1])
+	}
+	switch {
+	case strings.HasPrefix(line, Recommended):
+		// Already marked where it belongs; the label's copy is only noise.
+	case line == "":
+		line = Recommended
+	default:
+		line = Recommended + ". " + line
+	}
+	out := rest + OptionSep + line
+	if len(parts) > 2 {
+		out += OptionSep + strings.TrimSpace(parts[2])
+	}
+	return out
 }
 
 // CheckOption refuses an option whose recommendation is in the wrong place.

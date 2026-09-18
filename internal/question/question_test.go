@@ -250,6 +250,50 @@ func TestCheckOptionRefusesAMisplacedRecommendation(t *testing.T) {
 	}
 }
 
+// A marker at the head of the label moves to the line, where the star reads it.
+//
+// MUS-Q-0173 was raised with "Recommended Refuse a foreign Origin" as its
+// label: the word showed in bold inside the answer's name and no star drew,
+// because IsRecommended reads only the line.
+func TestNormaliseOptionMovesAMarkerOffTheLabel(t *testing.T) {
+	for _, c := range []struct{ in, want string }{
+		// Moved to the head of the line, the paragraph untouched.
+		{"Recommended Refuse a foreign Origin :: closes it :: the detail",
+			"Refuse a foreign Origin :: Recommended. closes it :: the detail"},
+		{"Recommended: A :: one line", "A :: Recommended. one line"},
+		{"Recommended · A :: one line :: p", "A :: Recommended. one line :: p"},
+		// No line to move it onto: the marker becomes the line.
+		{"Recommended. A", "A :: Recommended"},
+		// Both carry it: the label's copy goes, the line stays as written.
+		{"Recommended A :: Recommended. one line :: p", "A :: Recommended. one line :: p"},
+		// A bare-word label would leave the option nameless, so it stays.
+		{"Recommended :: one line :: p", "Recommended :: one line :: p"},
+		{"Recommended", "Recommended"},
+		// Not followed by a separator: not the marker.
+		{"Recommendedly cheaper :: one line", "Recommendedly cheaper :: one line"},
+		// No marker at all: returned exactly as given.
+		{"A :: one line :: p", "A :: one line :: p"},
+	} {
+		got := NormaliseOption(c.in)
+		if got != c.want {
+			t.Errorf("NormaliseOption(%q) = %q, want %q", c.in, got, c.want)
+		}
+		if err := CheckOption(got); err != nil {
+			t.Errorf("NormaliseOption(%q) produced an option CheckOption refuses: %v", c.in, err)
+		}
+	}
+
+	// The point of it: the star draws and the label reads as the answer.
+	os := Options(q("MUS-Q-0001", FieldOption,
+		NormaliseOption("Recommended Refuse a foreign Origin :: closes it :: the detail")))
+	if len(os) != 1 {
+		t.Fatalf("Options = %+v, want one", os)
+	}
+	if o := os[0]; !o.IsRecommended() || o.Label != "Refuse a foreign Origin" || o.Says() != "closes it" {
+		t.Errorf("normalised option = %+v, recommended %v, says %q", o, o.IsRecommended(), o.Says())
+	}
+}
+
 // A commit gate is about the work being committed.
 //
 // While the store held one project this was the whole store and the question
