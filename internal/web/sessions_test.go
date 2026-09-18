@@ -649,7 +649,7 @@ func TestAResumedSubagentCarriesItsPreviousReportAsEarlier(t *testing.T) {
 	rec(map[string]any{"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "First verdict."}, now.Add(time.Minute))
 	rec(map[string]any{"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose"}, now.Add(2*time.Minute))
 
-	rows, running := s.subagents("Mustur")
+	rows, running, _ := s.subagents("Mustur")
 	if len(rows) != 1 || running != 1 {
 		t.Fatalf("rows %+v, running %d; want the one row running again", rows, running)
 	}
@@ -662,7 +662,7 @@ func TestAResumedSubagentCarriesItsPreviousReportAsEarlier(t *testing.T) {
 	}
 
 	rec(map[string]any{"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "Second verdict."}, now.Add(5*time.Minute))
-	rows, _ = s.subagents("Mustur")
+	rows, _, _ = s.subagents("Mustur")
 	if r := rows[0]; r.Said != "Second verdict." || r.Earlier != "" {
 		t.Errorf("said %q, earlier %q; want the resumed run's own report and nothing earlier", r.Said, r.Earlier)
 	}
