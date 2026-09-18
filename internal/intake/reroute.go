@@ -38,12 +38,19 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
-// SupersededBy is the field a retired record carries. Its presence is what
-// makes a record a stub rather than a claim.
+// SupersededBy is the data field a retired record carries: the replacement and
+// why. Its presence is what makes a record a stub rather than a claim.
 const SupersededBy = "Superseded by"
+
+// SupersededByRef is the citation a retired record carries to its replacement.
+// Lowercase, because it is one of MUS-D-0200's citation fields and those are
+// written the way every other ref is; two stubs written before that carry it
+// as SupersededBy, and CorrectedBy reads either.
+const SupersededByRef = "superseded by"
 
 // RerouteRequest is one correction.
 type RerouteRequest struct {
@@ -92,7 +99,7 @@ func (e *AlreadyCorrected) Error() string {
 // CorrectedBy is the record a superseded jot points at, or "".
 func CorrectedBy(r record.Record) string {
 	for _, ref := range r.Refs {
-		if ref.Key == SupersededBy && strings.TrimSpace(ref.Value) != "" {
+		if strings.EqualFold(ref.Key, SupersededByRef) && strings.TrimSpace(ref.Value) != "" {
 			return strings.TrimSpace(ref.Value)
 		}
 	}
@@ -218,18 +225,22 @@ func reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 	}
 	fresh.Data = append(fresh.Data, record.Field{Key: "Corrects", Value: old.ID + " — " + note})
 	fresh.Refs = append(fresh.Refs, record.Field{Key: "Corrects", Value: old.ID})
+	if err := carryState(ctx, s, under, &fresh); err != nil {
+		return Rerouted{}, err
+	}
 
-	// The old one stays, still resolving, and stops making a claim. The
-	// pictures go with the record, not with the stub: a jot filed from a phone
-	// carries its evidence in the attachment, and leaving it behind means the
-	// record anybody reads has none.
+	// The old one stays, still resolving, and stops making a claim: dropped,
+	// under the word every list declares for a record something else replaced
+	// (MUS-D-0196). The pictures go with the record, not with the stub: a jot
+	// filed from a phone carries its evidence in the attachment, and leaving it
+	// behind means the record anybody reads has none.
 	retire := func(freshID string) record.Record {
 		stub := old
 		stub.Data = append([]record.Field(nil), old.Data...)
 		stub.Refs = append([]record.Field(nil), old.Refs...)
-		setStatus(&stub, "superseded")
+		status.Set(&stub, status.Dropped, status.Superseded)
 		stub.Data = append(stub.Data, record.Field{Key: SupersededBy, Value: freshID + " — " + note})
-		stub.Refs = append(stub.Refs, record.Field{Key: SupersededBy, Value: freshID})
+		stub.Refs = append(stub.Refs, record.Field{Key: SupersededByRef, Value: freshID})
 		return stub
 	}
 	filed, moved, err := s.Supersede(ctx, fresh, under, ident.Finding, old.ID, version, retire, req.Actor)
@@ -289,13 +300,34 @@ func confirmed(data []record.Field, dest string) []record.Field {
 	return out
 }
 
-// setStatus replaces the Status field in place, or appends it.
-func setStatus(r *record.Record, status string) {
-	for i := range r.Data {
-		if strings.EqualFold(r.Data[i].Key, "Status") {
-			r.Data[i].Value = status
-			return
+// carryState gives a re-filed record the State and Status it had, and fills in
+// what it lacked. The record's claims are carried across unchanged above, and a
+// Status is one of them: a jot already triaged stays triaged. One carried with
+// no word is unreviewed, as File would have filed it. One with no State takes
+// the State its word means in the project it now belongs to, or open where
+// that project does not declare the word — the gate over the store names that
+// case rather than this guessing at it.
+//
+// The record is a draft with no identifier yet, so its project is the prefix
+// it is about to be filed under.
+func carryState(ctx context.Context, s *store.Store, under string, r *record.Record) error {
+	word, state := status.WordOf(*r), status.StateOf(*r)
+	if word == "" {
+		word = status.Unreviewed
+	}
+	if state == "" {
+		state = status.Open
+		projects, err := s.List(ctx, "project")
+		if err != nil {
+			return err
+		}
+		index, _ := status.Index(projects)
+		if ws, ok := index[under]; ok {
+			if mapped, ok := ws.State(word); ok {
+				state = mapped
+			}
 		}
 	}
-	r.Data = append(r.Data, record.Field{Key: "Status", Value: status})
+	status.Set(r, state, word)
+	return nil
 }
