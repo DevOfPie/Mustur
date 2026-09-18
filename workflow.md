@@ -20,9 +20,10 @@ kept — every gate runs offline against the working tree, except three. The
 question gate reads Mustur's own store and never the committed export, and says
 out loud that it did not run where there is no store or the store holds no
 records ([MUS-D-0183](records/decisions.md#mus-d-0183)). The finding state
-gate reads the same store the same way, and fails on a finding without a State
-or with a Status word its project does not declare; it says it did not run
-where no project declares one (MUS-D-0196). The export-scope gate
+gate reads the same store the same way, scoped to MUS findings as that one is,
+and fails on one whose State or Status word its project does not declare; it
+says it did not run where no project declares a word (MUS-D-0196).
+`make findings-all` is the same over every project, and is not a gate. The export-scope gate
 needs origin: it fetches `main` when the checkout has none to compare with, and
 says out loud that it did not run when the fetch fails
 ([MUS-D-0182](records/decisions.md#mus-d-0182)).

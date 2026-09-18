@@ -1,10 +1,11 @@
 # The gates run against this working tree, by hand, today — workflow.md's rule.
-# Not every target is offline: `questions` and `findings` read the store and say
-# they did not run where there is none or it holds no records (MUS-D-0183);
-# `export-scope`
-# fetches main from origin when the checkout has none, and says it did not run
-# when that fails (MUS-D-0182); `records-refresh` fetches, pushes and opens a
-# pull request; `install-service` and `deploy` act on this machine's systemd.
+# Not every target is offline: `questions` reads the store and says it did not
+# run where there is none or it holds no records (MUS-D-0183); `findings` reads
+# it too and says it did not run where there is none or no project declares a
+# Status word (MUS-D-0196); `export-scope` fetches main from origin when the
+# checkout has none, and says it did not run when that fails (MUS-D-0182);
+# `records-refresh` fetches, pushes and opens a pull request; `install-service`
+# and `deploy` act on this machine's systemd.
 # CI (.github/workflows/ci.yml) calls these same targets and adds nothing of its
 # own: what a check *does* lives here, what a check *is* lives in the workflow
 # file. ci/proposed/README.md argues that split.
@@ -12,7 +13,7 @@
 SHELL := bash
 
 .PHONY: check check-links check-adoption shellcheck go-check tidy-check verify-records conformance \
-        questions findings surfaces export-scope-test export-scope build serve seed export records-refresh audit \
+        questions findings findings-all surfaces export-scope-test export-scope build serve seed export records-refresh audit \
         install install-service deploy deploy-from-main workflow-proposals help
 
 check: check-links check-adoption shellcheck go-check tidy-check verify-records conformance questions findings surfaces export-scope-test export-scope ## Every commit gate this tree can enforce mechanically
@@ -100,15 +101,27 @@ questions: ## No open question in the store was left unsurfaced as a prompt
 	  go run ./cmd/mustur questions --gate --db "$$store" --project MUS \
 	    && echo "  ok    no open question of this project's in $$store was left unsurfaced"
 
-# Every finding carries a State and a Status word its project declares
-# (MUS-D-0196), in every project the store holds. Reads the store for the
-# reason above and skips out loud the same way; the binary itself skips out
-# loud a store in which no project declares a Status word, which is what a
-# fresh `make seed` makes.
-findings: ## Every finding in the store has a State and a Status word its project declares
+# Every finding of this project's carries a State and a Status word its
+# project declares (MUS-D-0196). Scoped to MUS like `questions`: the store is
+# shared, and a Hoard or LinkCtrl finding is not this tree's to fail on. Reads
+# the store for the reason above and skips out loud the same way; the binary
+# itself skips out loud a store in which no project declares a Status word,
+# which is what a fresh `make seed` makes. This is also what catches a finding
+# written by a binary older than the refusal in add and amend.
+findings: ## No finding of this project's in the store has a State or Status its project does not declare
 	@store=$$(scripts/store-path.sh); \
 	  if [ ! -f "$$store" ]; then \
 	    echo "  skip  finding state gate did not run: no store at $$store, and it reads only the store (MUS-D-0183)"; \
+	    exit 0; \
+	  fi; \
+	  go run ./cmd/mustur verify --findings --db "$$store" --project MUS
+
+# The same over every project in the store. Not part of `check`, for the reason
+# `findings` is scoped: run it when looking after the store rather than a branch.
+findings-all: ## Every finding in the store, in every project, against its project's list
+	@store=$$(scripts/store-path.sh); \
+	  if [ ! -f "$$store" ]; then \
+	    echo "  skip  finding state check did not run: no store at $$store"; \
 	    exit 0; \
 	  fi; \
 	  go run ./cmd/mustur verify --findings --db "$$store"

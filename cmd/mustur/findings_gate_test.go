@@ -120,6 +120,38 @@ func TestTheFindingGateSaysItDidNotRunOnAStoreWithNoLists(t *testing.T) {
 	}
 }
 
+// Scoped to a project, the gate reads that project's findings and list only:
+// the store is shared, and another project's finding is not this branch's to
+// fail on.
+func TestTheFindingGateScopedToAProjectIgnoresTheOthers(t *testing.T) {
+	hrd := record.Record{ID: "MUS-P-0003", Kind: "project", Title: "Hoard", At: "2026-09-18",
+		Data: []record.Field{{Key: status.PrefixField, Value: "HRD"}, {Key: status.WordField, Value: "not a word"}}}
+	path := findingsStore(t,
+		mus("open = open :: work remains"),
+		hrd,
+		aFinding("MUS-F-0001", "open", status.Open),
+		aFinding("HRD-F-0001", "prose, not a word", ""))
+	out, err := captured(func() error { return cmdVerify([]string{"--findings", "--db", path, "--project", "MUS"}) })
+	if err != nil || !strings.Contains(out, "ok    1 MUS finding(s)") {
+		t.Errorf("scoped: err %v, out %q", err, out)
+	}
+	out, err = captured(func() error { return cmdVerify([]string{"--findings", "--db", path}) })
+	if err == nil || !strings.Contains(out, "HRD-F-0001") || !strings.Contains(out, "MUS-P-0003") {
+		t.Errorf("store-wide: err %v, out %q", err, out)
+	}
+}
+
+// A missing store is reported, and not created by being looked for.
+func TestTheFindingGateLeavesNoStoreBehind(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "absent.db")
+	if err := cmdVerify([]string{"--findings", "--db", path}); err == nil || !strings.Contains(err.Error(), "no store at") {
+		t.Errorf("err = %v", err)
+	}
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Errorf("looking for a store made one: %v", err)
+	}
+}
+
 func TestTheFindingGateNeedsAStore(t *testing.T) {
 	if err := cmdVerify([]string{"--findings"}); err == nil || !strings.Contains(err.Error(), "--db") {
 		t.Errorf("err = %v", err)

@@ -290,14 +290,32 @@ func clip(s string) string {
 // the one the finding carries, or a prefix no project declares. The lists
 // themselves are checked too, since a word that does not parse declares
 // nothing. One line a problem, sorted.
-func Check(rs []record.Record) []string {
+//
+// only, when not empty, is the one prefix whose findings and whose list are
+// checked. The store is shared between projects, and a project's gate failing
+// on another project's finding is failing on data its branch never touched.
+func Check(rs []record.Record, only string) []string {
 	projects, errs := Index(rs)
 	var problems []string
-	for _, err := range errs {
-		problems = append(problems, err.Error())
+	if only == "" {
+		for _, err := range errs {
+			problems = append(problems, err.Error())
+		}
+	} else {
+		for _, r := range rs {
+			if p, _ := r.Get(PrefixField); r.Kind == "project" && strings.TrimSpace(p) == only {
+				_, own := Of(r)
+				for _, err := range own {
+					problems = append(problems, err.Error())
+				}
+			}
+		}
 	}
 	for _, r := range rs {
 		if r.Kind != "finding" {
+			continue
+		}
+		if id, err := ident.Parse(r.ID); only != "" && (err != nil || id.Project != only) {
 			continue
 		}
 		state, word := StateOf(r), WordOf(r)

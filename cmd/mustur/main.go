@@ -38,7 +38,7 @@ const usage = `mustur — records and routing for one project
   mustur seed     [--db PATH]                 put what already exists into an empty store
   mustur export   [--db PATH] [--out DIR]     render the store as markdown
   mustur verify   [--db PATH] [--records DIR] check the exported tree against itself, and against the store
-  mustur verify   --findings --db PATH        every finding has a State and a Status word its project declares
+  mustur verify   --findings --db PATH [--project P]  every finding (of P) has a State and a Status word its project declares
   mustur serve    [--db PATH] [--addr HOST]   serve the one tool call over MCP
   mustur list     [--db PATH] [--kind KIND]   every record, by identifier
   mustur get ID   [--db PATH]                 one record in full (either order)
@@ -592,11 +592,12 @@ func cmdVerify(args []string) error {
 	db := fs.String("db", "", "compare the tree against this store as well (optional)")
 	dir := fs.String("records", "records", "the exported tree to check")
 	findings := fs.Bool("findings", false, "check only the store's findings, not the tree: a State, and a Status word their project declares (MUS-D-0196). Needs --db")
+	only := fs.String("project", "", "with --findings: only this identifier prefix's findings and list; empty checks every project")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *findings {
-		return verifyFindings(*db)
+		return verifyFindings(*db, strings.ToUpper(strings.TrimSpace(*only)))
 	}
 	problems, checked, err := verify.Tree(*dir)
 	if err != nil {
@@ -671,9 +672,15 @@ func refuseFinding(ctx context.Context, s *store.Store, prefix string, r record.
 // carries a State, and a Status word its project's list declares and maps to
 // that State. It reads the store and never the export, for the question gate's
 // reason (MUS-D-0183): on a branch the export is main's.
-func verifyFindings(db string) error {
+func verifyFindings(db, only string) error {
 	if db == "" {
 		return fmt.Errorf("verify --findings reads a store: give --db")
+	}
+	// Looked at before it is opened: opening a missing store creates an empty
+	// one, and a check that leaves a file behind where there was none has
+	// changed what it was asked to look at.
+	if _, err := os.Stat(db); err != nil {
+		return fmt.Errorf("verify --findings: no store at %s", db)
 	}
 	s, ctx, err := openStore(db)
 	if err != nil {
@@ -691,7 +698,7 @@ func verifyFindings(db string) error {
 		fmt.Printf("  skip  finding state gate did not run: no project in %s declares a Status word (MUS-D-0196)\n", db)
 		return nil
 	}
-	problems := status.Check(records)
+	problems := status.Check(records, only)
 	for _, p := range problems {
 		fmt.Printf("  FAIL  %s\n", p)
 	}
@@ -700,11 +707,15 @@ func verifyFindings(db string) error {
 	}
 	n := 0
 	for _, r := range records {
-		if r.Kind == "finding" {
+		if id, err := ident.Parse(r.ID); r.Kind == "finding" && (only == "" || (err == nil && id.Project == only)) {
 			n++
 		}
 	}
-	fmt.Printf("  ok    %d finding(s) in %s carry a State and a Status word their project declares\n", n, db)
+	scope := "finding(s)"
+	if only != "" {
+		scope = only + " finding(s)"
+	}
+	fmt.Printf("  ok    %d %s in %s carry a State and a Status word their project declares\n", n, scope, db)
 	return nil
 }
 

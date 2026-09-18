@@ -85,7 +85,7 @@ func TestCheckReportsEveryWayAFindingCanBeWrong(t *testing.T) {
 		// Not a finding: nothing asked of it.
 		{ID: "MUS-D-0001", Kind: "decision", Title: "d", At: "2026-09-18"},
 	}
-	got := strings.Join(Check(rs), "\n")
+	got := strings.Join(Check(rs, ""), "\n")
 	for _, want := range []string{
 		"MUS-F-0002 has no State",
 		`MUS-F-0003 has State "closed"`,
@@ -103,7 +103,7 @@ func TestCheckReportsEveryWayAFindingCanBeWrong(t *testing.T) {
 			t.Errorf("%s is right and was reported:\n%s", clean, got)
 		}
 	}
-	if n := len(Check(rs)); n != 6 {
+	if n := len(Check(rs, "")); n != 6 {
 		t.Errorf("%d problems, want 6:\n%s", n, got)
 	}
 }
