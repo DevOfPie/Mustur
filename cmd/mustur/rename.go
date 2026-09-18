@@ -26,6 +26,7 @@ func cmdRename(args []string) error {
 	db := dbFlag(fs)
 	keep := fs.String("keep", "", "records whose text is left as written, comma-separated: the ones recording the rename")
 	apply := fs.Bool("apply", false, "write the rename; without it, only list what would change")
+	acceptUnmatched := fs.Bool("accept-unmatched", false, "apply although rows spell an old identifier inside something longer; read the dry run first")
 	var pairs []string
 	rest := args
 	for len(rest) > 0 {
@@ -56,7 +57,12 @@ func cmdRename(args []string) error {
 	}
 	defer s.Close()
 
-	report, err := s.Rename(ctx, renames, strings.Split(*keep, ","), *apply)
+	report, err := s.Rename(ctx, renames, store.RenameOptions{
+		Keep: strings.Split(*keep, ","), Apply: *apply, AcceptUnmatched: *acceptUnmatched,
+	})
+	if err != nil && len(report.Unmatched) > 0 {
+		printUnmatched(report)
+	}
 	if err != nil {
 		return err
 	}
@@ -85,6 +91,7 @@ func cmdRename(args []string) error {
 			printChange(c)
 		}
 	}
+	printUnmatched(report)
 	fmt.Printf("kept as written: %d event(s)\n", len(report.Kept))
 	for _, c := range report.Kept {
 		printChange(c)
@@ -97,6 +104,17 @@ func cmdRename(args []string) error {
 	fmt.Printf("record_latest: re-derived from the log, %d record(s)\n", report.Latest)
 	fmt.Println("applied.")
 	return nil
+}
+
+func printUnmatched(report store.RenameReport) {
+	fmt.Printf("unmatched, left as written: %d row(s)\n", len(report.Unmatched))
+	for _, c := range report.Unmatched {
+		if c.Table == "record_event" {
+			printChange(c)
+		} else {
+			printChange(store.RenameChange{Row: c.Row, Record: c.Table, Where: c.Where})
+		}
+	}
 }
 
 func printChange(c store.RenameChange) {

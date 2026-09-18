@@ -32,6 +32,12 @@ package store
 // Records named in keep are left exactly as written: they record the rename
 // itself, and a decision that says "IDW-F-0001 became _IB-F-0001" is false the
 // moment its own text is rewritten to say "_IB-F-0001 became _IB-F-0001".
+//
+// An old identifier is rewritten exactly where ident.Cited would read it as a
+// citation, so what the rename leaves behind is what verify would count. Where
+// it is spelled and not read — inside `XIDW-F-0001` or `IDW-F-00010` — it is
+// left alone and reported as unmatched, and --apply refuses while any are
+// reported unless told they are not citations (review of #107, finding 2).
 
 import (
 	"context"
@@ -57,12 +63,26 @@ type RenameChange struct {
 	Where  []string // What in the row changes: "id", "body", "data: Routed to", ...
 }
 
+// RenameOptions are everything a rename takes besides the map.
+type RenameOptions struct {
+	// Keep lists records whose text is left as written.
+	Keep []string
+	// AcceptUnmatched lets --apply proceed while events spell an old
+	// identifier the rename does not read as one.
+	AcceptUnmatched bool
+	// Apply writes; without it the rename only reports.
+	Apply bool
+}
+
 // RenameReport is what a rename changed, or would change on --apply.
 type RenameReport struct {
 	Changes []RenameChange
 	// Kept lists events of kept records that cite an old identifier and were
 	// deliberately left as written.
 	Kept []RenameChange
+	// Unmatched lists rows outside the kept records that still spell an old
+	// identifier after the rewrite, because it stands inside something longer.
+	Unmatched []RenameChange
 	// Absent names the optional tables this store does not carry, so a
 	// report of none rewritten is not mistaken for none found.
 	Absent  []string
@@ -81,11 +101,13 @@ func (r RenameReport) Records() int {
 	return len(seen)
 }
 
-// Rename rewrites identifiers in place under MUS-D-0192. Without apply it runs
-// the same transaction and rolls it back, so the dry run reports exactly what
-// --apply would write.
-func (s *Store) Rename(ctx context.Context, renames []Renaming, keep []string, apply bool) (RenameReport, error) {
+// Rename rewrites identifiers in place under MUS-D-0192. Without Apply it
+// reads and works out every change inside the transaction, then returns
+// before the guard is lifted or anything is written, so the dry run reports
+// what --apply would write.
+func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptions) (RenameReport, error) {
 	var report RenameReport
+	keep, apply := opts.Keep, opts.Apply
 	olds, err := checkRenames(renames)
 	if err != nil {
 		return report, err
@@ -220,13 +242,19 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, keep []string, a
 			return report, fmt.Errorf("event %d (%s): %w", e.seq, e.id, err)
 		}
 		where := differences(before, renames)
-		if len(where) == 0 && newID == e.id {
-			continue // The spelling was only ever part of something longer.
-		}
 		if kept[e.id] {
-			report.Kept = append(report.Kept, RenameChange{
-				Table: "record_event", Row: fmt.Sprint(e.seq), Record: e.id, Where: where})
+			if len(where) > 0 {
+				report.Kept = append(report.Kept, RenameChange{
+					Table: "record_event", Row: fmt.Sprint(e.seq), Record: e.id, Where: where})
+			}
 			continue
+		}
+		if left := leftovers(rewriteRecord(before, renames), renames); len(left) > 0 {
+			report.Unmatched = append(report.Unmatched, RenameChange{
+				Table: "record_event", Row: fmt.Sprint(e.seq), Record: e.id, Where: left})
+		}
+		if len(where) == 0 && newID == e.id {
+			continue // Spelled only inside something longer, and reported above.
 		}
 		// The payload is rewritten field by field and marshalled again, which
 		// changes no byte the rename does not name only because every payload
@@ -315,12 +343,20 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, keep []string, a
 				return report, err
 			}
 			row := optionalRow{table: o.table, key: vals[0], values: map[string]string{}}
-			var where []string
+			var where, left []string
 			for i, col := range o.cols {
-				if v := rewriteIDs(vals[i+1], renames); v != vals[i+1] {
+				v := rewriteIDs(vals[i+1], renames)
+				if v != vals[i+1] {
 					row.values[col] = v
 					where = append(where, col)
 				}
+				if spellsText(v, renames) {
+					left = append(left, col)
+				}
+			}
+			if len(left) > 0 {
+				report.Unmatched = append(report.Unmatched, RenameChange{
+					Table: o.table, Row: vals[0], Where: left})
 			}
 			if len(where) > 0 {
 				others = append(others, row)
@@ -338,6 +374,10 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, keep []string, a
 		n, err := count(`SELECT count(DISTINCT record_id) FROM record_event`)
 		report.Latest = n
 		return report, err
+	}
+	if len(report.Unmatched) > 0 && !opts.AcceptUnmatched {
+		return report, fmt.Errorf("%d row(s) spell an old identifier inside something longer, which the rename leaves as written; "+
+			"read them in the dry run, and pass --accept-unmatched if none is a citation", len(report.Unmatched))
 	}
 
 	// The insert-only trigger is lifted for this transaction and put back
@@ -474,40 +514,89 @@ func spells(payload string, renames []Renaming) bool {
 	return false
 }
 
-// replaceWhole replaces old where nothing identifier-like touches it on either
-// side, so IDW-F-0001 inside XIDW-F-00012 is left alone.
+// spellsText reports whether decoded text still spells an old identifier, in
+// either case, anywhere at all.
+func spellsText(text string, renames []Renaming) bool {
+	for _, r := range renames {
+		if strings.Contains(text, r.Old) || strings.Contains(text, strings.ToLower(r.Old)) {
+			return true
+		}
+	}
+	return false
+}
+
+// replaceWhole replaces old where ident.Spans reads it as an identifier, so
+// the rename rewrites exactly the citations verify counts: `_IDW-F-0001_` in
+// italics is rewritten, and IDW-F-0001 inside XIDW-F-00012 is left alone.
+//
+// The lower-case spelling is an export anchor (`findings.md#idw-f-0004`),
+// which Spans does not read, so it takes the same rule with letters of either
+// case as the neighbours that make it part of something longer.
 func replaceWhole(text, old, new string) string {
 	if old == "" || !strings.Contains(text, old) {
 		return text
 	}
-	var b strings.Builder
-	i := 0
-	for {
-		j := strings.Index(text[i:], old)
-		if j < 0 {
-			b.WriteString(text[i:])
-			return b.String()
+	var spans [][2]int
+	if old == strings.ToUpper(old) {
+		for _, sp := range ident.Spans(text) {
+			if text[sp[0]:sp[1]] == old {
+				spans = append(spans, sp)
+			}
 		}
-		start, end := i+j, i+j+len(old)
-		whole := (start == 0 || !idChar(text[start-1], true)) && (end == len(text) || !idChar(text[end], false))
-		b.WriteString(text[i:start])
-		if whole {
-			b.WriteString(new)
-		} else {
-			b.WriteString(old)
+	} else {
+		for i := 0; ; {
+			j := strings.Index(text[i:], old)
+			if j < 0 {
+				break
+			}
+			start, end := i+j, i+j+len(old)
+			if (start == 0 || !anchorChar(text[start-1])) && (end == len(text) || !anchorChar(text[end])) {
+				spans = append(spans, [2]int{start, end})
+			}
+			i = end
 		}
-		i = end
 	}
+	if len(spans) == 0 {
+		return text
+	}
+	var b strings.Builder
+	last := 0
+	for _, sp := range spans {
+		b.WriteString(text[last:sp[0]])
+		b.WriteString(new)
+		last = sp[1]
+	}
+	b.WriteString(text[last:])
+	return b.String()
 }
 
-func idChar(c byte, before bool) bool {
-	switch {
-	case c >= 'A' && c <= 'Z', c >= 'a' && c <= 'z', c >= '0' && c <= '9':
-		return true
-	case c == '_':
-		return before // A reserved prefix starts with one; nothing follows a serial with one.
+func anchorChar(c byte) bool {
+	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-'
+}
+
+// leftovers names the fields of a rewritten record that still spell an old
+// identifier: the ones the rename could not read as a citation.
+func leftovers(r record.Record, renames []Renaming) []string {
+	var where []string
+	add := func(name, text string) {
+		if spellsText(text, renames) {
+			for _, w := range where {
+				if w == name {
+					return
+				}
+			}
+			where = append(where, name)
+		}
 	}
-	return false
+	add("title", r.Title)
+	add("body", r.Body)
+	for _, f := range r.Refs {
+		add("ref: "+f.Key, f.Key+" "+f.Value)
+	}
+	for _, f := range r.Data {
+		add("data: "+f.Key, f.Key+" "+f.Value)
+	}
+	return where
 }
 
 // rewriteRecord renames every identifier a record's text carries.

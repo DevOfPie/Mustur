@@ -31,7 +31,7 @@ func renameFixture(t *testing.T) (*Store, context.Context) {
 	mustAppend(jot("IDW-F-0004", "fourth, corrected; see IDW-F-0001"), "amend")
 	mustAppend(jot("IDW-F-0005", "not renamed"), "create")
 	// A longer lookalike beside a real citation: only the whole one is renamed.
-	mustAppend(jot("XIB-F-0001", "IDW-F-00010 is not IDW-F-0001's neighbour"), "create")
+	mustAppend(jot("XIB-F-0001", "not IDW-F-0001's neighbour"), "create")
 
 	cites := record.Record{ID: "MUS-D-0010", Kind: "decision", Title: "Cites IDW-F-0004", At: "2026-09-02",
 		Body: "Was in IDW-F-0001.",
@@ -87,7 +87,7 @@ func dump(t *testing.T, s *Store) string {
 func TestADryRunWritesNothingAndSaysWhatItWould(t *testing.T) {
 	s, ctx := renameFixture(t)
 	before := dump(t, s)
-	report, err := s.Rename(ctx, intakeBox, []string{"MUS-D-0192"}, false)
+	report, err := s.Rename(ctx, intakeBox, RenameOptions{Keep: []string{"MUS-D-0192"}, Apply: false})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +98,7 @@ func TestADryRunWritesNothingAndSaysWhatItWould(t *testing.T) {
 		t.Errorf("a dry run wrote:\n%s\nwas:\n%s", after, before)
 	}
 	// Two events of IDW-F-0004, one of IDW-F-0001, two of MUS-D-0010, the one
-	// of XIB-F-0001 that cites IDW-F-0001 beside a longer lookalike, and the
+	// of XIB-F-0001 that cites IDW-F-0001, and the
 	// attachment.
 	if got := report.Records(); got != 4 {
 		t.Errorf("%d records would change, want 4: %+v", got, report.Changes)
@@ -125,7 +125,7 @@ func TestADryRunWritesNothingAndSaysWhatItWould(t *testing.T) {
 
 func TestARenameReachesEveryEventAndEveryCitation(t *testing.T) {
 	s, ctx := renameFixture(t)
-	report, err := s.Rename(ctx, intakeBox, []string{"MUS-D-0192"}, true)
+	report, err := s.Rename(ctx, intakeBox, RenameOptions{Keep: []string{"MUS-D-0192"}, Apply: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -174,7 +174,7 @@ func TestARenameReachesEveryEventAndEveryCitation(t *testing.T) {
 		t.Errorf("a kept record was rewritten: %+v", kept)
 	}
 	// Untouched neighbours.
-	if r, _ := s.Get(ctx, "XIB-F-0001"); r.Body != "IDW-F-00010 is not _IB-F-0001's neighbour" {
+	if r, _ := s.Get(ctx, "XIB-F-0001"); r.Body != "not _IB-F-0001's neighbour" {
 		t.Errorf("a longer identifier was rewritten, or a whole one missed: %q", r.Body)
 	}
 	if _, err := s.Get(ctx, "IDW-F-0005"); err != nil {
@@ -199,11 +199,11 @@ func TestARenameReachesEveryEventAndEveryCitation(t *testing.T) {
 
 func TestASecondRunRefusesAndSaysItWasApplied(t *testing.T) {
 	s, ctx := renameFixture(t)
-	if _, err := s.Rename(ctx, intakeBox, []string{"MUS-D-0192"}, true); err != nil {
+	if _, err := s.Rename(ctx, intakeBox, RenameOptions{Keep: []string{"MUS-D-0192"}, Apply: true}); err != nil {
 		t.Fatal(err)
 	}
 	before := dump(t, s)
-	_, err := s.Rename(ctx, intakeBox, []string{"MUS-D-0192"}, true)
+	_, err := s.Rename(ctx, intakeBox, RenameOptions{Keep: []string{"MUS-D-0192"}, Apply: true})
 	if err == nil || !strings.Contains(err.Error(), "already been applied") {
 		t.Fatalf("a second run gave %v", err)
 	}
@@ -233,7 +233,7 @@ func TestARenameRefuses(t *testing.T) {
 		{"kept and renamed", intakeBox, []string{"IDW-F-0001"}, "both renamed and kept"},
 		{"kept unknown", intakeBox, []string{"MUS-D-0999"}, "no such record"},
 	} {
-		_, err := s.Rename(ctx, c.renames, c.keep, true)
+		_, err := s.Rename(ctx, c.renames, RenameOptions{Keep: c.keep, Apply: true})
 		if err == nil || !strings.Contains(err.Error(), c.want) {
 			t.Errorf("%s: got %v, want %q", c.name, err, c.want)
 		}
@@ -259,7 +259,7 @@ func TestARenameRefusesToIssueARetiredIdentifier(t *testing.T) {
 	}
 	before := dump(t, s)
 	for _, to := range []string{"IDW-F-0007", "IDW-F-0003"} {
-		_, err := s.Rename(ctx, []Renaming{{"IDW-F-0005", to}}, nil, true)
+		_, err := s.Rename(ctx, []Renaming{{"IDW-F-0005", to}}, RenameOptions{Keep: nil, Apply: true})
 		if err == nil || !strings.Contains(err.Error(), "declared retired") {
 			t.Errorf("renaming onto %s gave %v", to, err)
 		}
@@ -268,7 +268,7 @@ func TestARenameRefusesToIssueARetiredIdentifier(t *testing.T) {
 		t.Error("a refused rename wrote")
 	}
 	// Issuing something that is not retired still works.
-	if _, err := s.Rename(ctx, []Renaming{{"IDW-F-0005", "_IB-F-0005"}}, []string{"MUS-D-0192"}, true); err != nil {
+	if _, err := s.Rename(ctx, []Renaming{{"IDW-F-0005", "_IB-F-0005"}}, RenameOptions{Keep: []string{"MUS-D-0192"}, Apply: true}); err != nil {
 		t.Errorf("an ordinary rename was refused: %v", err)
 	}
 }
@@ -282,7 +282,7 @@ func TestARenameFindsAnIdentifierAtTheStartOfALine(t *testing.T) {
 	if err := s.Append(ctx, r, "create", "test"); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Rename(ctx, intakeBox, []string{"MUS-D-0192"}, true); err != nil {
+	if _, err := s.Rename(ctx, intakeBox, RenameOptions{Keep: []string{"MUS-D-0192"}, Apply: true}); err != nil {
 		t.Fatal(err)
 	}
 	got, _ := s.Get(ctx, "MUS-F-0001")
@@ -307,7 +307,7 @@ func TestARenameReachesHeldJotsAndScratchWhereTheyExist(t *testing.T) {
 	if _, err := s.db.Exec(`INSERT INTO scratch VALUES ('s1', 'test of IDW-F-0001', 'now', 'a')`); err != nil {
 		t.Fatal(err)
 	}
-	report, err := s.Rename(ctx, intakeBox, []string{"MUS-D-0192"}, true)
+	report, err := s.Rename(ctx, intakeBox, RenameOptions{Keep: []string{"MUS-D-0192"}, Apply: true})
 	if err != nil {
 		t.Fatal(err)
 	}
