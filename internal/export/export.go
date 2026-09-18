@@ -267,7 +267,7 @@ func relative(from, target string) string {
 }
 
 func cell(s string) string {
-	s = strings.ReplaceAll(s, "|", `\|`)
+	s = escapeReserved(strings.ReplaceAll(s, "|", `\|`))
 	return strings.Join(strings.Fields(s), " ")
 }
 
@@ -298,12 +298,12 @@ func renderFlat(title, of, self string, rs []record.Record, index map[string]str
 // (MUS-D-0197): never linked, even once an identifier of that spelling is
 // issued again.
 func writeRecord(b *bytes.Buffer, r record.Record, self string, index map[string]string, plain map[string]bool) {
-	fmt.Fprintf(b, "**%s**\n\n", strings.TrimSpace(r.Title))
+	fmt.Fprintf(b, "**%s**\n\n", escapeReserved(strings.TrimSpace(r.Title)))
 	fmt.Fprintf(b, "%s · %s\n", r.Kind, r.At)
 	for _, ref := range r.Refs {
 		fmt.Fprintf(b, "\n%s: %s\n", ref.Key, linkList(ref.Value, self, index, plain))
 	}
-	if body := strings.TrimSpace(unlinkRetired(r.Body, plain)); body != "" {
+	if body := strings.TrimSpace(escapeReserved(unlinkRetired(r.Body, plain))); body != "" {
 		fmt.Fprintf(b, "\n%s\n", body)
 	}
 	if len(r.Data) > 0 {
@@ -339,8 +339,11 @@ func linkList(value, self string, index map[string]string, plain map[string]bool
 		t := strings.TrimSpace(p)
 		if ident.Valid(t) && !plain[t] {
 			parts[i] = link(t, self, index)
+			if !strings.HasPrefix(parts[i], "[") {
+				parts[i] = escapeReserved(parts[i])
+			}
 		} else {
-			parts[i] = t
+			parts[i] = escapeReserved(t)
 		}
 	}
 	return strings.Join(parts, ", ")
@@ -356,13 +359,13 @@ func renderUnit(r record.Record, index map[string]string, retired record.Retirem
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "# %s\n\n%s\n\n", r.ID, generatedNotice)
 	writeRecord(&b, record.Record{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Refs: r.Refs}, self, index, plain)
-	if body := strings.TrimSpace(unlinkRetired(r.Body, plain)); body != "" {
+	if body := strings.TrimSpace(escapeReserved(unlinkRetired(r.Body, plain))); body != "" {
 		// Under a heading, not loose: the investigations module asks every
 		// record for a context or question section, and the prose is it.
 		fmt.Fprintf(&b, "\n## Context\n\n%s\n", body)
 	}
 	for _, f := range r.Data {
-		fmt.Fprintf(&b, "\n## %s\n\n%s\n", f.Key, strings.TrimSpace(f.Value))
+		fmt.Fprintf(&b, "\n## %s\n\n%s\n", f.Key, escapeReserved(strings.TrimSpace(f.Value)))
 	}
 	return b.Bytes()
 }
@@ -448,8 +451,11 @@ func renderIndex(rs []record.Record, index map[string]string) []byte {
 	return b.Bytes()
 }
 
-// bodyLink is a markdown inline link, the only kind a body carries.
-var bodyLink = regexp.MustCompile(`\[([^\]]*)\]\(([^)\s]+)\)`)
+// bodyLink is a markdown inline link, the only kind a body carries: text that
+// may hold one level of nested brackets, then a destination, optionally in
+// angle brackets and optionally followed by a title in any of the three
+// quotings (review of #107, nit 9).
+var bodyLink = regexp.MustCompile(`\[((?:[^\[\]]|\[[^\[\]]*\])*)\]\(\s*<?([^)\s>]+)>?(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*\)`)
 
 // unlinkRetired leaves a link in a body as its text alone when it points at a
 // retired identifier this record shows as plain text — by its anchor
@@ -474,4 +480,89 @@ func unlinkRetired(body string, plain map[string]bool) string {
 		}
 		return m
 	})
+}
+
+// escapeReserved puts a backslash before the underscore that opens a reserved
+// identifier, so a markdown renderer cannot take it as emphasis: GitHub, like
+// goldmark, renders "a _IB-F-0001_ b" as "a <em>IB-F-0001</em> b" (review of
+// #107, nit 8). Code is left alone — fenced blocks and inline spans — because
+// a backslash there is shown rather than read. The export's headings and link
+// texts are written without it: an identifier alone in either has nothing to
+// pair its underscore with.
+func escapeReserved(md string) string {
+	if !strings.Contains(md, "_") {
+		return md
+	}
+	lines := strings.Split(md, "\n")
+	fenced := false
+	for n, line := range lines {
+		t := strings.TrimLeft(line, " ")
+		if strings.HasPrefix(t, "```") || strings.HasPrefix(t, "~~~") {
+			fenced = !fenced
+			continue
+		}
+		if fenced {
+			continue
+		}
+		var b strings.Builder
+		for i := 0; i < len(line); {
+			if line[i] == '`' {
+				run := 1
+				for i+run < len(line) && line[i+run] == '`' {
+					run++
+				}
+				if end := closingTicks(line, i+run, run); end >= 0 {
+					b.WriteString(line[i:end])
+					i = end
+					continue
+				}
+				b.WriteString(line[i : i+run])
+				i += run
+				continue
+			}
+			j := i
+			for j < len(line) && line[j] != '`' {
+				j++
+			}
+			b.WriteString(escapeSpans(line[i:j]))
+			i = j
+		}
+		lines[n] = b.String()
+	}
+	return strings.Join(lines, "\n")
+}
+
+// closingTicks finds the end of the backtick run of exactly this length that
+// closes an inline code span opened before from, or -1.
+func closingTicks(line string, from, run int) int {
+	for i := from; i < len(line); {
+		if line[i] != '`' {
+			i++
+			continue
+		}
+		n := 0
+		for i+n < len(line) && line[i+n] == '`' {
+			n++
+		}
+		if n == run {
+			return i + n
+		}
+		i += n
+	}
+	return -1
+}
+
+func escapeSpans(text string) string {
+	var b strings.Builder
+	last := 0
+	for _, sp := range ident.Spans(text) {
+		if text[sp[0]] != '_' || (sp[0] > 0 && text[sp[0]-1] == '\\') {
+			continue
+		}
+		b.WriteString(text[last:sp[0]])
+		b.WriteString(`\`)
+		last = sp[0]
+	}
+	b.WriteString(text[last:])
+	return b.String()
 }

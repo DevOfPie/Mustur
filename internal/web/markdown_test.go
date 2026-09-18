@@ -244,6 +244,24 @@ func TestABodysHeadingLevelsAreDistinctAndBetweenTextAndTitle(t *testing.T) {
 	}
 }
 
+// A reserved identifier's underscore is not an emphasis delimiter; an
+// underscore elsewhere still is (review of #107, nit 8). One run into it is
+// given up as text rather than split the identifier.
+func TestAReservedIdentifierIsNotTakenForEmphasis(t *testing.T) {
+	for in, want := range map[string]string{
+		"a _IB-F-0001_ b":           "<p>a _IB-F-0001_ b</p>",
+		"_IB-F-0001 and _IB-F-0002": "<p>_IB-F-0001 and _IB-F-0002</p>",
+		"__IB-F-0001_":              "<p>__IB-F-0001_</p>",
+		"`_IB-F-0001`":              "<p><code>_IB-F-0001</code></p>",
+		"_plain emphasis_":          "<p><em>plain emphasis</em></p>",
+		"X_IB-F-0001_":              "<p>X_IB-F-0001_</p>",
+	} {
+		if got := strings.TrimSpace(string(markdown(in))); got != want {
+			t.Errorf("markdown(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 // A citation in italics is still a citation: the page reads identifiers the
 // way the export check does, and a \b pattern read `_MUS-D-0001_` as nothing.
 func TestACitationInItalicsIsStillACitation(t *testing.T) {

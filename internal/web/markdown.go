@@ -33,10 +33,53 @@ import (
 // this project wrote.
 var md = goldmark.New(
 	goldmark.WithExtensions(extension.Table),
-	goldmark.WithParserOptions(parser.WithASTTransformers(
-		util.Prioritized(recordLinks{}, 100),
-	)),
+	goldmark.WithParserOptions(
+		parser.WithASTTransformers(util.Prioritized(recordLinks{}, 100)),
+		// Ahead of emphasis, which goldmark registers at 500.
+		parser.WithInlineParsers(util.Prioritized(reservedID{}, 450)),
+	),
 )
+
+// reservedID reads a reserved identifier as text before emphasis can take its
+// underscore as a delimiter: left to goldmark, "a _IB-F-0001_ b" renders as
+// "a <em>IB-F-0001</em> b" (review of #107, nit 8). It fires only where
+// ident.Spans would read an identifier, so an underscore anywhere else is
+// still emphasis, and "__IB-F-0001_" is still _IB-F-0001 in italics.
+type reservedID struct{}
+
+func (reservedID) Trigger() []byte { return []byte{'_'} }
+
+func (reservedID) Parse(_ ast.Node, block text.Reader, _ parser.Context) ast.Node {
+	line, seg := block.PeekLine()
+	const width = 10
+	// A run of underscores before one: goldmark would take the whole run as
+	// one delimiter, and "__IB-F-0001_" came out as "_<em>IB-F-0001</em>". The
+	// underscores before the identifier's own are given up as text instead, so
+	// the identifier is never split; the italics are lost with them.
+	run := 0
+	for run < len(line) && line[run] == '_' {
+		run++
+	}
+	if run > 1 && len(line) >= run-1+width && ident.Valid(string(line[run-1:run-1+width])) {
+		block.Advance(run - 1)
+		return ast.NewTextSegment(text.NewSegment(seg.Start, seg.Start+run-1))
+	}
+	if len(line) < width || !ident.Valid(string(line[:width])) {
+		return nil
+	}
+	if len(line) > width && inIdentifier(line[width]) {
+		return nil
+	}
+	if prev := block.PrecendingCharacter(); prev < 128 && prev != '\n' && inIdentifier(byte(prev)) {
+		return nil
+	}
+	block.Advance(width)
+	return ast.NewTextSegment(text.NewSegment(seg.Start, seg.Start+width))
+}
+
+func inIdentifier(c byte) bool {
+	return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-'
+}
 
 // A body's citations are written as links into the exported tree --
 // "questions.md#mus-q-0034", "work-units/HRD-W-0001.md" -- which is where they
