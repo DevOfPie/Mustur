@@ -33,12 +33,12 @@ const Actor = "import-linkctrl"
 // a store where no project declares a list, which is every store the import
 // ran against before the lists existed.
 //
-// The reader sets Status to the section a row sat under. A section that is a
-// word LNK declares becomes that word and the State it means. One that is not
-// — deferred-findings.md's sections are Open and Closed, and LNK's list has
-// neither — arrives unreviewed and open, with the section kept in the Note:
-// the owner's rule for anything on the fence (MUS-D-0201), and the sweep's
-// reading of a row is not something an import can redo.
+// The reader sets Status to the section a row sat under. The file's two
+// sections are read as the sweep read them (sectionWords): Closed is fixed and
+// Open is unreviewed. Any other section that is a word LNK declares becomes
+// that word and the State it means; one that is not arrives unreviewed and
+// open with the section kept in the Note, the owner's rule for anything on the
+// fence (MUS-D-0201).
 func place(rs []record.Record, existing []record.Record) error {
 	index, _ := status.Index(existing)
 	if !index.Declared() {
@@ -51,8 +51,12 @@ func place(rs []record.Record, existing []record.Record) error {
 			continue
 		}
 		section := status.WordOf(*r)
-		if mapped, ok := ws.State(section); ok {
-			status.Set(r, mapped, section)
+		word := section
+		if w, ok := sectionWords[section]; ok {
+			word = w
+		}
+		if mapped, ok := ws.State(word); ok {
+			status.Set(r, mapped, word)
 		} else if len(ws) > 0 {
 			word := status.Unreviewed
 			state, ok := ws.State(word)
@@ -80,6 +84,16 @@ func copied(rs []record.Record) []record.Record {
 		out[i].Data = append([]record.Field(nil), out[i].Data...)
 	}
 	return out
+}
+
+// sectionWords is deferred-findings.md's two sections in LNK's words, as the
+// owner-reviewed sweep read them (MUS-D-0201): a row under Closed was closed by
+// work, which LNK calls fixed and maps to done; a row under Open has not been
+// triaged into Mustur, which is unreviewed. Only a section outside these two
+// keeps its name in the Note.
+var sectionWords = map[string]string{
+	"closed": "fixed",
+	"open":   status.Unreviewed,
 }
 
 // Source is what one file or directory yielded.

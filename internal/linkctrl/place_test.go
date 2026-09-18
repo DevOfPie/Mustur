@@ -17,13 +17,14 @@ func lnkProject(words ...string) record.Record {
 	return r
 }
 
-// Imported findings take LNK's own words (MUS-D-0196): a section LNK declares
-// is that word and its State, and one it does not — Open, here — arrives
-// unreviewed and open with the section in its Note. What is written passes
-// the findings gate, and a repair straight after changes nothing.
+// Imported findings take LNK's own words (MUS-D-0196), as the owner-reviewed
+// sweep read the file's two sections (MUS-D-0201): a row under Closed is fixed
+// and done, one under Open is unreviewed and open, and neither carries its
+// section in a Note. What is written passes the findings gate, and a repair
+// straight after changes nothing.
 func TestTheImportPlacesFindingsInLNKsList(t *testing.T) {
 	s, ctx := openStore(t)
-	if err := s.Append(ctx, lnkProject("unreviewed = open :: not triaged", "closed = done :: closed in LinkCtrl"), "create", "test"); err != nil {
+	if err := s.Append(ctx, lnkProject("unreviewed = open :: not triaged", "fixed = done :: closed by work"), "create", "test"); err != nil {
 		t.Fatal(err)
 	}
 	findings, err := Findings(strings.NewReader(findingsFixture), "2026-09-13")
@@ -45,7 +46,10 @@ func TestTheImportPlacesFindingsInLNKsList(t *testing.T) {
 		note, _ := r.Get("Note")
 		seen[status.WordOf(r)+"/"+status.StateOf(r)+"/"+note] = true
 	}
-	for _, want := range []string{"unreviewed/open/LinkCtrl section: open", "closed/done/"} {
+	if len(seen) != 2 {
+		t.Errorf("want exactly the two placements, got %v", seen)
+	}
+	for _, want := range []string{"unreviewed/open/", "fixed/done/"} {
 		if !seen[want] {
 			t.Errorf("no finding placed as %q; got %v", want, seen)
 		}
@@ -55,6 +59,30 @@ func TestTheImportPlacesFindingsInLNKsList(t *testing.T) {
 	}
 	if amended, _, created, err := Repair(ctx, s, []Source{{Records: findings}}); err != nil || len(amended)+len(created) != 0 {
 		t.Errorf("a repair after the import: amended %v, created %v, %v", amended, created, err)
+	}
+}
+
+// A section outside Open and Closed is placed by LNK's own list when it names a
+// word there, and otherwise arrives unreviewed and open with the section kept
+// in its Note.
+func TestAnotherSectionIsPlacedOrKeptInTheNote(t *testing.T) {
+	existing := []record.Record{lnkProject("unreviewed = open :: not triaged", "parked = open :: carried")}
+	rs := []record.Record{
+		{ID: "LNK-F-0001", Kind: "finding", Title: "t", At: "2026-09-13", Data: []record.Field{{Key: "Status", Value: "parked"}}},
+		{ID: "LNK-F-0002", Kind: "finding", Title: "t", At: "2026-09-13", Data: []record.Field{{Key: "Status", Value: "deferred"}}},
+	}
+	if err := place(rs, existing); err != nil {
+		t.Fatal(err)
+	}
+	if w, st := status.WordOf(rs[0]), status.StateOf(rs[0]); w != "parked" || st != status.Open {
+		t.Errorf("parked: %v", rs[0].Data)
+	}
+	if note, _ := rs[0].Get("Note"); note != "" {
+		t.Errorf("a declared section wrote a Note: %q", note)
+	}
+	note, _ := rs[1].Get("Note")
+	if w, st := status.WordOf(rs[1]), status.StateOf(rs[1]); w != status.Unreviewed || st != status.Open || note != "LinkCtrl section: deferred" {
+		t.Errorf("deferred: %v", rs[1].Data)
 	}
 }
 
