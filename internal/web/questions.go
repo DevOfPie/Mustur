@@ -613,6 +613,17 @@ type countCache struct {
 	have bool
 }
 
+// forget drops the held answer, for a handler that has just changed what it
+// counts. Without it the page such a handler redirects to renders the new
+// count, and bar.js's first poll on load overwrites it with the one held from
+// before the change: seen in a browser after Move, where the badge went back
+// from 1 to 2.
+func (c *countCache) forget() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.have = false
+}
+
 func (c *countCache) get(ctx context.Context, s *store.Store, now func() time.Time, count func(context.Context, *store.Store) int) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()

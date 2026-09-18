@@ -797,6 +797,7 @@ func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
+	rr.counts.forget()
 	rr.export(r.Context())
 	http.Redirect(w, r, "/records/"+done.Fresh.ID+"?moved="+url.QueryEscape(rec.ID), http.StatusSeeOther)
 }
@@ -812,6 +813,7 @@ func (rr *Records) keep(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
+	rr.counts.forget()
 	rr.export(r.Context())
 	http.Redirect(w, r, "/records/"+rec.ID+"?kept=1", http.StatusSeeOther)
 }

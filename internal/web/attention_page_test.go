@@ -262,3 +262,25 @@ func TestTheIntakeBoxSaysWhatNeedsAttention(t *testing.T) {
 		t.Error("the intake box speaks with nothing needing attention")
 	}
 }
+
+// A press forgets the held count, so the page it lands on and bar.js's first
+// poll there agree. Found in a browser: after Move the page rendered 1 and the
+// poll put 2 back from the cache.
+func TestAPressIsSeenByTheNextPoll(t *testing.T) {
+	st, id := attending(t)
+	srv, _ := attendingServer(t, st, false)
+	poll := func() string {
+		t.Helper()
+		return strings.TrimSpace(bodyOf(t, srv.Client(), srv.URL+"/records/attention/count"))
+	}
+	if got := poll(); got != `{"waiting":1}` {
+		t.Fatalf("before: %s", got)
+	}
+	nf := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	if res := press(t, nf, srv, "/records/"+id+"/keep", srv.URL, nil); res.StatusCode != http.StatusSeeOther {
+		t.Fatalf("keep answered %d", res.StatusCode)
+	}
+	if got := poll(); got != `{"waiting":0}` {
+		t.Errorf("the poll straight after a keep said %s", got)
+	}
+}
