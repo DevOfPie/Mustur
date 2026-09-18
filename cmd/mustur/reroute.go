@@ -7,10 +7,12 @@ package main
 // flag on amend — is not available, and the reason is worth stating because it
 // is the whole design of this command.
 //
-// **The identifier is the routing.** _IB-F-0004 is called _IB because it went
-// to the intake box (filed as IDW-F-0004 at the time, renamed under
-// MUS-D-0192); the prefix is derived from the destination at the moment it is
-// filed. So moving a record and renaming it are the same act, and
+// **The identifier is the routing.** The jot MUS-F-0044 is about was filed as
+// IDW-F-0004, called IDW because the idea inbox's prefix was IDW when it went
+// there; the prefix is derived from the destination at the moment it is filed.
+// (It is _IB-F-0004 now: MUS-D-0192 renamed the intake box's six jots in place
+// after IDW went to Idea Warehouse, the one time a prefix changed after
+// filing.) So moving a record and renaming it are the same act, and
 // identifiers are permanent. On MUS-Q-0058 the owner chose which of those two
 // gives way: neither. A correction files a *new* record at the right
 // destination and retires the old one in place, still resolving, pointing at
