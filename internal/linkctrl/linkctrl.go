@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -25,6 +26,61 @@ const Prefix = "LNK"
 // Actor is recorded against every imported event, so the log tells the import
 // apart from what is written afterwards.
 const Actor = "import-linkctrl"
+
+// place gives every finding among rs the Status word and State LNK's own list
+// declares for it (MUS-D-0196), then checks each the way add and amend do, so
+// the import writes nothing the findings gate would reject. It is a no-op on
+// a store where no project declares a list, which is every store the import
+// ran against before the lists existed.
+//
+// The reader sets Status to the section a row sat under. A section that is a
+// word LNK declares becomes that word and the State it means. One that is not
+// — deferred-findings.md's sections are Open and Closed, and LNK's list has
+// neither — arrives unreviewed and open, with the section kept in the Note:
+// the owner's rule for anything on the fence (MUS-D-0201), and the sweep's
+// reading of a row is not something an import can redo.
+func place(rs []record.Record, existing []record.Record) error {
+	index, _ := status.Index(existing)
+	if !index.Declared() {
+		return nil
+	}
+	ws := index[Prefix]
+	for i := range rs {
+		r := &rs[i]
+		if r.Kind != "finding" {
+			continue
+		}
+		section := status.WordOf(*r)
+		if mapped, ok := ws.State(section); ok {
+			status.Set(r, mapped, section)
+		} else if len(ws) > 0 {
+			word := status.Unreviewed
+			state, ok := ws.State(word)
+			if !ok {
+				state = status.Open
+			}
+			status.Set(r, state, word)
+			if section != "" {
+				r.Data = append(r.Data, record.Field{Key: "Note", Value: "LinkCtrl section: " + section})
+			}
+		}
+		if no := status.Finding(Prefix, *r, index); no != nil {
+			return fmt.Errorf("%s would be written with a State or Status LNK does not declare, so nothing was: %s", r.ID, no.Problem)
+		}
+	}
+	return nil
+}
+
+// copied returns rs with fields of their own, so placing them leaves the
+// caller's records as the reader made them: a repair run with the same sources
+// after an import must read the same sections the import read.
+func copied(rs []record.Record) []record.Record {
+	out := append([]record.Record(nil), rs...)
+	for i := range out {
+		out[i].Data = append([]record.Field(nil), out[i].Data...)
+	}
+	return out
+}
 
 // Source is what one file or directory yielded.
 type Source struct {
@@ -47,6 +103,10 @@ func Apply(ctx context.Context, s *store.Store, sources []Source) (int, error) {
 	var all []record.Record
 	for _, src := range sources {
 		all = append(all, src.Records...)
+	}
+	all = copied(all)
+	if err := place(all, existing); err != nil {
+		return 0, err
 	}
 	if err := s.AppendAll(ctx, all, Actor); err != nil {
 		return 0, err
@@ -83,7 +143,14 @@ func Repair(ctx context.Context, s *store.Store, sources []Source) (amended, ski
 	}
 	var toCreate []record.Record
 	for _, src := range sources {
-		for _, r := range src.Records {
+		// Placed before it is compared, so a repair states a finding the way
+		// the import would write it today and never writes one the gate
+		// rejects.
+		placed := copied(src.Records)
+		if err := place(placed, existing); err != nil {
+			return amended, skipped, created, err
+		}
+		for _, r := range placed {
 			events, err := s.History(ctx, r.ID)
 			if err != nil {
 				return amended, skipped, created, err
