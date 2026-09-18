@@ -216,6 +216,14 @@ view (MUS-F-0155). To see a change running before it merges, use a test
 instance — its own binary, store, port and tmux socket, never the live service
 or its sessions.
 
+**Nobody is asked whether to deploy** (MUS-D-0211, on the owner's answer to
+MUS-Q-0176). Once `main` is good (CI green on the merge and `make check`
+passing at `origin/main`), no pull request is open on the repository, and no
+work of your own is heading for one, the session that did the work runs
+`make deploy` from a checkout of `origin/main`. It then confirms the service
+came back and that `mustur-tmux.scope` still holds the sessions. If a condition
+fails, the deploy waits for that condition, not for the owner.
+
 Three rules bind every session in this repository:
 
 - **Milestone 1 has run and passed**, 20 of 20 against a rule of 18 of 20 fixed
