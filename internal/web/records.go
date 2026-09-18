@@ -9,8 +9,11 @@ package web
 //
 // **A record is a document; the index is a list** (MUS-D-0186, amending
 // MUS-D-0040). The index used to be the document too — every record in the
-// store rendered in full with every citation resolved, 11.4 MB for 2,133
-// records, and the kind counts were the only navigation (MUS-F-0164). It is now
+// store rendered in full with every citation resolved, and the kind counts
+// were the only navigation (MUS-F-0164). Measured for PR 101 on a copy of the
+// live store on 2026-09-15, that was 11,413,213 bytes for 2,144 records; the
+// 11,379,228 bytes in MUS-F-0164's evidence is the earlier measurement, taken
+// against the live store by the MUS-F-0163 check. It is now
 // one line a record, narrowed by project, kind and a search box and paged fifty
 // at a time, and it never renders a body or resolves a citation. What reads as
 // a document is `/records/{id}`, which is unchanged.
@@ -23,10 +26,13 @@ package web
 // record kinds like any other and a separate page would be a second surface to
 // keep true. What makes routing different is that its rows are claims about
 // this machine — so the surface **verifies rather than repeats**: a checkout
-// that moved, or a contract file that is gone, reads as stale on the row
-// itself. That is the whole reason it is a surface and not a printed table, and
-// it is the same posture the dispatcher contract takes, which verifies before
-// entering rather than trusting a row.
+// that moved, or a contract file that is gone, reads as stale on the
+// repository's own page, `/records/{ID}`. Index rows do not carry the badge:
+// the approved row is five fields with no place for it, and the owner kept it
+// to the record's page on MUS-Q-0149. That verification is the whole reason it
+// is a surface and not a printed table, and it is the same posture the
+// dispatcher contract takes, which verifies before entering rather than
+// trusting a row.
 
 import (
 	"context"
@@ -142,8 +148,8 @@ type recordView struct {
 	Stale bool
 }
 
-// recordsPerPage is the owner's answer on MUS-Q-0140: fifty, which was 43
-// pages of the store when it was asked.
+// recordsPerPage is the owner's answer on MUS-Q-0140: fifty. At that size the
+// 2,144 records of the 2026-09-15 measurement above are 43 pages.
 const recordsPerPage = 50
 
 // A rowView is one line of the index. Nothing in it needs the body or another
@@ -468,7 +474,11 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 		summary = "1 record"
 	}
 	if q != "" {
-		summary += " match " + q
+		if len(matched) == 1 {
+			summary += " matches " + q
+		} else {
+			summary += " match " + q
+		}
 	}
 	if project != "" {
 		summary += " · " + names.title(project)

@@ -205,15 +205,17 @@ and cross-referential, so the graph reading was real; what it cost is in
 **Amended 2026-09-15: a record is a document, the index is a list**
 (MUS-D-0186, amending MUS-D-0040). The index had been the document too — every
 record rendered in full with every citation resolved, and the kind counts the
-only navigation. Against the store on 2026-09-15 that was 11.4 MB and about half
-a second per load, and there was no way to pick a project or a kind or to search
+only navigation. Against a copy of the live store on 2026-09-15 that was
+11,413,213 bytes for 2,144 records and about half a second per load — the
+measurement taken for PR 101; the 11,379,228 bytes in MUS-F-0164's evidence is
+the earlier one, taken by the MUS-F-0163 check — and there was no way to pick a project or a kind or to search
 by number (MUS-F-0164). What replaced it is drawn in
 [plan-014052cd97a048c4](https://plan.agent-native.com/plans/plan-014052cd97a048c4)
 and was approved with its recommended answers on MUS-Q-0140:
 
 | Question | Settled |
 | --- | --- |
-| What a row shows | One line: identifier, kind, project, title, date. Two lines on a phone, so the title is never cut |
+| What a row shows | One line: identifier, kind, project, title, date. Two lines on a phone, so the title is never cut, and the phone row drops the date, as the approved plan's phone artboard draws it; the date shows on wide screens |
 | `/records` with nothing chosen | Every project, newest first by date, then identifier descending |
 | What the search box matches | A whole identifier the store holds answers 303 to its page; a bare number matches identifier endings in every project and kind; anything else is a case-insensitive substring of the title. Never bodies |
 | Rows per page | 50, with Newer and Older links; a page past the end is shown empty with a Newer link |
@@ -305,7 +307,9 @@ hand, mostly read by agents.
 
 Must answer: is this checkout actually where the registry says it is? The
 dispatcher contract this implements verifies before entering rather than trusting
-a row, so the surface has to show a stale row as stale.
+a row, so the surface has to show a stale checkout as stale. It does so on the
+repository's own page, `/records/{ID}`, and not on index rows, which carry the
+five approved fields and no badge (MUS-Q-0149).
 
 ### 7. Audit
 

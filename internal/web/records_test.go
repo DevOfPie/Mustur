@@ -59,7 +59,8 @@ func rows(body string) int { return strings.Count(body, `class="row"`) }
 
 // The index is a list, and a record is still a page (MUS-D-0186, amending
 // MUS-D-0040). Before it, /records rendered every record in full with every
-// citation resolved — 11.4 MB for the live store (MUS-F-0164).
+// citation resolved — 11,413,213 bytes for 2,144 records on a copy of the live
+// store on 2026-09-15 (MUS-F-0164).
 func TestTheIndexIsOneLinePerRecordAndRendersNoBodies(t *testing.T) {
 	srv := serveRecords(t, "",
 		decision("MUS-D-0001", "The first decision", "Something was decided, as MUS-D-0002 says."),
@@ -205,6 +206,9 @@ func TestTheSearchBoxMatchesIdentifierEndingsAndTitles(t *testing.T) {
 	body, _ = fetch(t, srv, "/records?q=TABS")
 	if got := rows(body); got != 1 || !strings.Contains(body, "MUS-D-0131") {
 		t.Errorf("q=TABS: %d rows, want the one title holding it and not the body", got)
+	}
+	if !strings.Contains(body, "1 record matches TABS") {
+		t.Error("one result is not said in the singular: want \"1 record matches TABS\"")
 	}
 	body, _ = fetch(t, srv, "/records?q=ellipses")
 	if got := rows(body); got != 0 || !strings.Contains(body, "No records match.") {
