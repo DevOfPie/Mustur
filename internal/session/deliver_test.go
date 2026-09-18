@@ -3,8 +3,11 @@ package session
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 type sender struct {
@@ -18,9 +21,20 @@ type sender struct {
 	// Enter operate the dialog instead of reaching the agent.
 	dialog    string
 	dialogErr error
+	pressed   []string
 }
 
-func (s *sender) Dialog(context.Context, string) (string, error) { return s.dialog, s.dialogErr }
+func (s *sender) Dialog(context.Context, string) (*Prompt, error) {
+	if s.dialog == "" {
+		return nil, s.dialogErr
+	}
+	return &Prompt{Title: s.dialog}, s.dialogErr
+}
+
+func (s *sender) SendChoice(_ context.Context, _, key string) error {
+	s.pressed = append(s.pressed, key)
+	return nil
+}
 
 func (s *sender) Alive(context.Context, string) (bool, error) { return s.live, s.liveErr }
 
@@ -117,8 +131,8 @@ func TestNothingIsDeliveredIntoADialog(t *testing.T) {
 	s := &sender{live: true, dialog: "Select model"}
 	got := Deliver(context.Background(), s, "Mustur", "MUS-Q-0001", "Split it.")
 
-	if s.sent != "" {
-		t.Fatalf("typed %q into a pane showing a dialog", s.sent)
+	if s.sent != "" || len(s.pressed) != 0 {
+		t.Fatalf("typed %q and pressed %q into a pane showing a dialog", s.sent, s.pressed)
 	}
 	for _, want := range []string{"not delivered", "Select model", "in the queue"} {
 		if !strings.Contains(got, want) {
@@ -175,5 +189,123 @@ func TestANameThatIsActuallyWrongIsStillRefused(t *testing.T) {
 	}
 	if s.sent != "" {
 		t.Error("something was typed into a session that cannot be named")
+	}
+}
+
+// paneTmux is a tmux with one session whose screen changes when a key is
+// pressed on it, which is the whole of what MUS-D-0202 turns on: the survey's
+// Dismiss is pressed, and the screen after it decides whether the answer goes
+// in.
+type paneTmux struct {
+	mu      sync.Mutex
+	screen  string
+	pressed map[string]string // a key sent with "-l --", and the screen after it
+	calls   [][]string
+}
+
+func (r *paneTmux) Run(_ context.Context, _ string, args ...string) (string, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.calls = append(r.calls, args)
+	switch args[0] {
+	case "list-sessions":
+		return owned("mustur/Mustur", 1, false), nil
+	case "capture-pane":
+		return r.screen, nil
+	case "send-keys":
+		if n := len(args); n >= 2 && args[n-2] == "--" {
+			if after, ok := r.pressed[args[n-1]]; ok {
+				r.screen = after
+			}
+		}
+	}
+	return "", nil
+}
+
+// sent is what every send-keys call sent, in order.
+func (r *paneTmux) sent() []string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var out []string
+	for _, c := range r.calls {
+		if c[0] == "send-keys" {
+			out = append(out, c[len(c)-1])
+		}
+	}
+	return out
+}
+
+func quickSurveyWait(t *testing.T) {
+	t.Helper()
+	w, p := surveyGoneWait, surveyGonePoll
+	surveyGoneWait, surveyGonePoll = 200*time.Millisecond, 10*time.Millisecond
+	t.Cleanup(func() { surveyGoneWait, surveyGonePoll = w, p })
+}
+
+// MUS-D-0202: with the survey up, delivery presses the survey's own Dismiss --
+// alone, no Enter -- sees it gone, and then types the answer.
+func TestAnAnswerDismissesTheSurveyAndIsThenTyped(t *testing.T) {
+	quickSurveyWait(t)
+	r := &paneTmux{
+		screen:  fixture(t, "screen-survey.txt"),
+		pressed: map[string]string{"0": fixture(t, "screen-working.txt")},
+	}
+	got := Deliver(context.Background(), &Adapter{Run: r}, "Mustur", "MUS-Q-0001", "Split it.")
+
+	if !strings.Contains(got, "typed into mustur/Mustur") {
+		t.Fatalf("recorded %q", got)
+	}
+	want := []string{"0", Text("MUS-Q-0001", "Split it."), "Enter"}
+	if s := r.sent(); !slices.Equal(s, want) {
+		t.Errorf("sent %q, want %q", s, want)
+	}
+}
+
+// A survey still on the screen after its Dismiss is a dialog, and a dialog is
+// not typed into.
+func TestASurveyThatWillNotDismissIsNotTypedInto(t *testing.T) {
+	quickSurveyWait(t)
+	r := &paneTmux{screen: fixture(t, "screen-survey.txt")}
+	got := Deliver(context.Background(), &Adapter{Run: r}, "Mustur", "MUS-Q-0001", "Split it.")
+
+	for _, want := range []string{"not delivered", "would not dismiss", "in the queue"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("record says %q, want it to mention %q", got, want)
+		}
+	}
+	if s := r.sent(); !slices.Equal(s, []string{"0"}) {
+		t.Errorf("sent %q, want only the Dismiss", s)
+	}
+}
+
+// Any other dialog is refused as before, and nothing at all is pressed on it.
+func TestAnotherDialogIsStillRefusedWithNothingPressed(t *testing.T) {
+	quickSurveyWait(t)
+	r := &paneTmux{
+		screen:  fixture(t, "prompt-model-picker.txt"),
+		pressed: map[string]string{"0": fixture(t, "screen-working.txt")},
+	}
+	got := Deliver(context.Background(), &Adapter{Run: r}, "Mustur", "MUS-Q-0001", "Split it.")
+
+	if !strings.HasPrefix(got, "not delivered") || !strings.Contains(got, "in the queue") {
+		t.Errorf("recorded %q", got)
+	}
+	if s := r.sent(); len(s) != 0 {
+		t.Errorf("sent %q into a pane showing a dialog", s)
+	}
+}
+
+// With nothing up, delivery is what it always was: the answer and its Enter.
+func TestWithNothingUpTheAnswerIsTypedAsBefore(t *testing.T) {
+	quickSurveyWait(t)
+	r := &paneTmux{screen: fixture(t, "screen-working.txt")}
+	got := Deliver(context.Background(), &Adapter{Run: r}, "Mustur", "MUS-Q-0001", "Split it.")
+
+	if !strings.Contains(got, "typed into mustur/Mustur") {
+		t.Fatalf("recorded %q", got)
+	}
+	want := []string{Text("MUS-Q-0001", "Split it."), "Enter"}
+	if s := r.sent(); !slices.Equal(s, want) {
+		t.Errorf("sent %q, want %q", s, want)
 	}
 }

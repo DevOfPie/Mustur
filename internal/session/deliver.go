@@ -12,6 +12,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Sender is the part of the adapter delivery needs. Narrow so the answer path
@@ -19,10 +20,20 @@ import (
 type Sender interface {
 	Alive(ctx context.Context, project string) (bool, error)
 	Send(ctx context.Context, project, text string) error
-	// Dialog is what the pane is waiting on, if anything. Delivery refuses
-	// while one is up: see below.
-	Dialog(ctx context.Context, project string) (string, error)
+	// Dialog is what the pane is waiting on, or nil. Delivery refuses while
+	// one is up, except the session survey, which it dismisses: see below.
+	Dialog(ctx context.Context, project string) (*Prompt, error)
+	// SendChoice presses one key a prompt offered. Delivery uses it for the
+	// survey's Dismiss and nothing else.
+	SendChoice(ctx context.Context, project, key string) error
 }
+
+// How long delivery waits for a dismissed survey to leave the pane, and how
+// often it looks. Variables so a test need not wait out the real bound.
+var (
+	surveyGoneWait = 3 * time.Second
+	surveyGonePoll = 100 * time.Millisecond
+)
 
 // Deliver types an answer into the session that raised the question and
 // returns what to record about it — reaching the session, or why it did not.
@@ -73,8 +84,24 @@ func DeliverRelayed(ctx context.Context, s Sender, project, id, answer, relayed 
 	// A pane this cannot read is delivered into. Refusing on a failed read
 	// would make an unreadable screen indistinguishable from a dialog, and the
 	// common case by far is that there is no dialog at all.
-	if dialog, err := s.Dialog(ctx, project); err == nil && dialog != "" {
-		return fmt.Sprintf("not delivered: %s%s is showing %q, and a paste into a dialog presses it; the answer is in the queue", Prefix, project, dialog)
+	//
+	// **The session survey is the one exception** (MUS-D-0202, the owner's
+	// answer to MUS-Q-0164). It appears at the end of a turn, which is when
+	// answers tend to arrive, so refusing on it would leave most answers queued
+	// with no retry. Its own row names a key that dismisses it, the owner's
+	// press is what started this delivery, and nothing else is sent to it: the
+	// Dismiss key, then a fresh read that has to find the survey gone before a
+	// character of the answer is typed. A survey that stays is refused like any
+	// other dialog.
+	p, err := s.Dialog(ctx, project)
+	if err == nil && p != nil && p.Kind == PromptSurvey {
+		if refused := dismissSurvey(ctx, s, project, p); refused != "" {
+			return refused
+		}
+		p = nil
+	}
+	if err == nil && p != nil {
+		return fmt.Sprintf("not delivered: %s%s is showing %q, and a paste into a dialog presses it; the answer is in the queue", Prefix, project, promptName(p))
 	}
 	if err := s.Send(ctx, project, TextRelayed(id, answer, relayed)); err != nil {
 		return fmt.Sprintf("not delivered: %v", err)
@@ -103,23 +130,68 @@ func TextRelayed(id, answer, relayed string) string {
 	return fmt.Sprintf("The owner answered %s: %s", id, answer)
 }
 
-// Dialog is what the pane is waiting on, in the CLI's own words, or empty.
+// dismissSurvey presses the survey's own Dismiss and waits, bounded, for a read
+// of the pane that no longer shows it. It returns "" when the pane is clear,
+// and otherwise the sentence to record for an answer left in the queue.
+//
+// The key is the one the row names beside "Dismiss", not a remembered "0": the
+// row is the legend (MUS-D-0190), and a survey whose row names no Dismiss gets
+// nothing pressed.
+func dismissSurvey(ctx context.Context, s Sender, project string, p *Prompt) string {
+	key := ""
+	for _, c := range p.Options {
+		if strings.EqualFold(strings.TrimSpace(c.Label), "Dismiss") {
+			key = c.Key
+			break
+		}
+	}
+	if key == "" {
+		return fmt.Sprintf("not delivered: %s%s is showing %q with no Dismiss on its row, and a paste into it presses it; the answer is in the queue", Prefix, project, promptName(p))
+	}
+	if err := s.SendChoice(ctx, project, key); err != nil {
+		return fmt.Sprintf("not delivered: dismissing the survey on %s%s failed: %v; the answer is in the queue", Prefix, project, err)
+	}
+	// Only a read that succeeds and finds nothing is clear. An unreadable pane
+	// is delivered into when nothing was pressed, but here something was, and
+	// "gone" has to be seen rather than assumed.
+	deadline := time.Now().Add(surveyGoneWait)
+	for {
+		now, err := s.Dialog(ctx, project)
+		if err == nil && now == nil {
+			return ""
+		}
+		if err == nil && now.Kind != PromptSurvey {
+			return fmt.Sprintf("not delivered: %s%s is showing %q after its survey was dismissed, and a paste into a dialog presses it; the answer is in the queue", Prefix, project, promptName(now))
+		}
+		if !time.Now().Before(deadline) {
+			return fmt.Sprintf("not delivered: the survey on %s%s would not dismiss; %q was pressed and it was still there after %s; the answer is in the queue", Prefix, project, key, surveyGoneWait)
+		}
+		select {
+		case <-ctx.Done():
+			return fmt.Sprintf("not delivered: waiting for the survey on %s%s to dismiss: %v; the answer is in the queue", Prefix, project, ctx.Err())
+		case <-time.After(surveyGonePoll):
+		}
+	}
+}
+
+// promptName is what a refusal calls a prompt: its heading, when it has one.
+func promptName(p *Prompt) string {
+	if p.Title != "" {
+		return p.Title
+	}
+	return "a dialog"
+}
+
+// Dialog is what the pane is waiting on, or nil.
 //
 // The same read the session view makes to draw its pop-up, used here to decide
 // whether typing into the pane is safe rather than what to draw. A pane that
 // cannot be read is not a dialog: the error travels so the caller can tell the
 // two apart, and delivery treats an unreadable screen as clear.
-func (a *Adapter) Dialog(ctx context.Context, project string) (string, error) {
+func (a *Adapter) Dialog(ctx context.Context, project string) (*Prompt, error) {
 	screen, err := a.Capture(ctx, project, paneLines)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	p := ReadPrompt(screen)
-	if p == nil {
-		return "", nil
-	}
-	if p.Title != "" {
-		return p.Title, nil
-	}
-	return "a dialog", nil
+	return ReadPrompt(screen), nil
 }
