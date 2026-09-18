@@ -87,8 +87,9 @@ func TestARerouteCarriesATriagedStatus(t *testing.T) {
 	}
 }
 
-// A jot filed before State existed takes the State its word means where it
-// lands, and open where that project does not declare the word.
+// A jot takes the State its word means where it lands. A word the destination
+// does not declare means nothing there, so the jot arrives unreviewed and open
+// and the word goes into its Note (review of #109, m2).
 func TestARerouteGivesAStatelessJotTheStateItsWordMeans(t *testing.T) {
 	rs := withOptOut()
 	for i := range rs {
@@ -99,7 +100,7 @@ func TestARerouteGivesAStatelessJotTheStateItsWordMeans(t *testing.T) {
 	for _, c := range []struct{ word, wantWord, wantState string }{
 		{"noted", "noted", status.Done},
 		{"", status.Unreviewed, status.Open},
-		{"undeclared", "undeclared", status.Open},
+		{"undeclared", status.Unreviewed, status.Open},
 	} {
 		s, ctx := openWith(t, rs)
 		r, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the old intake notes", Actor: "pie", Now: time.Now()})
@@ -126,6 +127,40 @@ func TestARerouteGivesAStatelessJotTheStateItsWordMeans(t *testing.T) {
 		if w, st := status.WordOf(done.Fresh), status.StateOf(done.Fresh); w != c.wantWord || st != c.wantState {
 			t.Errorf("word %q: Status %q, State %q; want %q and %q", c.word, w, st, c.wantWord, c.wantState)
 		}
+		note, _ := done.Fresh.Get("Note")
+		if c.word == "undeclared" && !strings.Contains(note, "Status was undeclared before it was moved to ARC") {
+			t.Errorf("the word it carried is lost: Note %q", note)
+		}
+		if c.word != "undeclared" && note != "" {
+			t.Errorf("word %q: a Note was written: %q", c.word, note)
+		}
+	}
+}
+
+// A stub is written superseded and dropped even where its own project's list
+// does not declare superseded, and the reroute is not failed over it: the
+// correction matters more than the stub's word, which the gate will name.
+func TestAStubIsSupersededWhateverItsListSays(t *testing.T) {
+	rs := withOptOut()
+	for i := range rs {
+		if rs[i].ID == "MUS-P-0002" {
+			rs[i].Data = append(rs[i].Data, record.Field{Key: status.WordField, Value: "unreviewed = open :: a jot"})
+		}
+	}
+	s, ctx := openWith(t, rs)
+	r, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the old intake notes", Actor: "pie", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Reroute(ctx, s, RerouteRequest{Project: "MUS", ID: r.ID, To: "MUS-P-0003", Actor: "owner", Now: time.Now()}); err != nil {
+		t.Fatal(err)
+	}
+	old, err := s.Get(ctx, r.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.WordOf(old) != status.Superseded || status.StateOf(old) != status.Dropped {
+		t.Errorf("stub: %v", old.Data)
 	}
 }
 

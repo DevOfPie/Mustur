@@ -300,34 +300,70 @@ func confirmed(data []record.Field, dest string) []record.Field {
 	return out
 }
 
-// carryState gives a re-filed record the State and Status it had, and fills in
-// what it lacked. The record's claims are carried across unchanged above, and a
-// Status is one of them: a jot already triaged stays triaged. One carried with
-// no word is unreviewed, as File would have filed it. One with no State takes
-// the State its word means in the project it now belongs to, or open where
-// that project does not declare the word — the gate over the store names that
-// case rather than this guessing at it.
+// carryState gives a re-filed record the State and Status it had, where the
+// project it now belongs to declares that word, and fills in what it lacked.
+// The record's claims are carried across unchanged above, and a Status is one
+// of them: a jot already triaged stays triaged, in the State its word means
+// there.
+//
+// A word the destination does not declare means nothing there — an idea
+// inbox jot marked routed, moved to Hoard, would have turned the gate red
+// (review of #109, m2). Such a record arrives unreviewed and open, which is
+// the truth about it in a project that has not triaged it, and the word it
+// carried goes into its Note so nothing it said is lost. One carried with no
+// word is unreviewed, as File would have filed it.
+//
+// Where the destination declares no list at all there is nothing to check a
+// word against, so it is kept and only what is missing is filled in.
 //
 // The record is a draft with no identifier yet, so its project is the prefix
 // it is about to be filed under.
 func carryState(ctx context.Context, s *store.Store, under string, r *record.Record) error {
-	word, state := status.WordOf(*r), status.StateOf(*r)
+	projects, err := s.List(ctx, "project")
+	if err != nil {
+		return err
+	}
+	index, _ := status.Index(projects)
+	ws := index[under]
+	carried, state := status.WordOf(*r), status.StateOf(*r)
+	word := carried
 	if word == "" {
 		word = status.Unreviewed
 	}
-	if state == "" {
-		state = status.Open
-		projects, err := s.List(ctx, "project")
-		if err != nil {
-			return err
+	if len(ws) == 0 {
+		if state == "" {
+			state = status.Open
 		}
-		index, _ := status.Index(projects)
-		if ws, ok := index[under]; ok {
-			if mapped, ok := ws.State(word); ok {
-				state = mapped
-			}
+		status.Set(r, state, word)
+		return nil
+	}
+	mapped, declared := ws.State(word)
+	if !declared && carried != "" && carried != status.Unreviewed {
+		was := "Status was " + word + " before it was moved to " + under + ", which does not declare that word"
+		if note, ok := r.Get(noteField); ok && strings.TrimSpace(note) != "" {
+			was = strings.TrimSpace(note) + "; " + was
+		}
+		setField(r, noteField, was)
+	}
+	if !declared {
+		word = status.Unreviewed
+		if mapped, declared = ws.State(word); !declared {
+			mapped = status.Open
 		}
 	}
-	status.Set(r, state, word)
+	status.Set(r, mapped, word)
 	return nil
+}
+
+// noteField is where a finding's status prose lives (MUS-D-0196).
+const noteField = "Note"
+
+func setField(r *record.Record, key, value string) {
+	for i := range r.Data {
+		if r.Data[i].Key == key {
+			r.Data[i].Value = value
+			return
+		}
+	}
+	r.Data = append(r.Data, record.Field{Key: key, Value: value})
 }
