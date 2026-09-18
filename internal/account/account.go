@@ -190,14 +190,23 @@ func (s *Store) Invite(ctx context.Context, email, project string, role Role, by
 	// which is what it did before a review followed it through. Enabling is a
 	// deliberate act with its own control, and this says so rather than
 	// performing it as a side effect of an invitation.
-	var off string
+	var id, off string
 	err := s.db.QueryRowContext(ctx,
-		`SELECT COALESCE(disabled, '') FROM account WHERE email = ?`, email).Scan(&off)
+		`SELECT id, COALESCE(disabled, '') FROM account WHERE email = ?`, email).Scan(&id, &off)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return "", err
 	}
 	if off != "" {
 		return "", ErrDisabled
+	}
+	// An invitation that would demote the project's only owner is refused when
+	// it is issued, so whoever issues it hears so now rather than the person
+	// hearing it after their passkey ceremony. Redeem checks again, because
+	// ownership can change inside the day an invitation lives.
+	if id != "" && role != Owner {
+		if err := s.wouldOrphan(ctx, id, project); err != nil {
+			return "", err
+		}
 	}
 	secret, hash, err := token()
 	if err != nil {
@@ -317,6 +326,22 @@ func (s *Store) Redeem(ctx context.Context, secret, newID string) (Account, Invi
 		}
 	} else if err != nil {
 		return Account{}, Invitation{}, err
+	} else if inv.Role != Owner {
+		// Accepting a reader invitation must not leave the project with no
+		// owner (MUS-D-0188; the review on PR 102 found it did). Refused
+		// rather than quietly keeping the owner role: nothing recorded says
+		// which the owner wants, the line below says an accepted role replaces
+		// the one held, and a refusal that says why is the least surprising
+		// of the two. Like ErrDisabled, the rollback leaves the invitation
+		// unspent. Invite already refuses to issue one; this catches an owner
+		// who became the only one after it was issued.
+		sole, err := soleOwner(ctx, tx, id, inv.Project)
+		if err != nil {
+			return Account{}, Invitation{}, err
+		}
+		if sole {
+			return Account{}, Invitation{}, &LastOwnerError{Project: inv.Project}
+		}
 	}
 
 	// The invitation carries the role, so accepting it is not a second
@@ -618,7 +643,8 @@ func (s *Store) RoleFor(ctx context.Context, accountID, project string) (Role, b
 var ErrLastOwner = errors.New("that is the only owner this project has left")
 
 // LastOwnerError is ErrLastOwner with the project named, for a refusal that
-// could be about any of several projects — disabling an account — where "this
+// could be about any of several projects — disabling an account, or issuing or
+// accepting an invitation — where "this
 // project" does not say which. errors.Is still matches ErrLastOwner.
 type LastOwnerError struct{ Project string }
 
@@ -652,6 +678,24 @@ func soleOwner(ctx context.Context, tx *sql.Tx, accountID, project string) (bool
 		return false, err
 	}
 	return others == 0, nil
+}
+
+// wouldOrphan returns a *LastOwnerError when accountID is the only enabled
+// owner of project, for a caller holding no transaction of its own.
+func (s *Store) wouldOrphan(ctx context.Context, accountID, project string) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	sole, err := soleOwner(ctx, tx, accountID, project)
+	if err != nil {
+		return err
+	}
+	if sole {
+		return &LastOwnerError{Project: project}
+	}
+	return nil
 }
 
 // Grant sets a role directly, which is what the command line does when there is

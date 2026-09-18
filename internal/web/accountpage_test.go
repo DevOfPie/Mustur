@@ -713,6 +713,22 @@ func TestThePeopleScreenCarriesTheBar(t *testing.T) {
 	}
 }
 
+// Inviting a project's only owner to it as a reader is refused from the screen,
+// and says why, rather than issuing a link that would leave the project with no
+// owner once accepted (MUS-D-0188, the review on PR 102).
+func TestInvitingTheOnlyOwnerAsAReaderIsRefused(t *testing.T) {
+	srv, accounts := managed(t)
+	owner, _ := personWith(t, accounts, "mus@example.com", "MUS", account.Owner, "k")
+	res := form(t, owner, srv, "/account/invite", url.Values{"email": {"mus@example.com"}, "project": {"MUS"}, "role": {"reader"}})
+	res.Body.Close()
+	if strings.Contains(res.Header.Get("Location"), "invited=") {
+		t.Fatal("an invitation was issued that would demote the only owner")
+	}
+	if said := body(t, owner, srv.URL+res.Header.Get("Location")); !strings.Contains(said, "mus@example.com is the only owner left of MUS") {
+		t.Error("the refusal does not say why, or which project")
+	}
+}
+
 // Disabling the only owner of any project is refused through the screen and
 // by a crafted post, yourself included, and the refusal names the project.
 // The screen used to guard the install's project for yourself only, so an

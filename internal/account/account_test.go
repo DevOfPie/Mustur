@@ -527,6 +527,65 @@ func redeemed(t *testing.T, s *Store, ctx context.Context, email, project string
 	return acct
 }
 
+// An invitation never leaves a project with no owner (MUS-D-0188, the review on
+// PR 102): one that would demote the only owner is refused when it is issued,
+// and again when it is accepted, for an owner who became the only one after it
+// was issued. The refusal leaves the invitation unspent, as ErrDisabled does.
+func TestAnInvitationCannotDemoteTheOnlyOwner(t *testing.T) {
+	s, ctx := open(t)
+	solo := redeemed(t, s, ctx, "solo@example.com", "LNK", Owner)
+	other := redeemed(t, s, ctx, "other@example.com", "LNK", Owner)
+
+	// Issued while there are two owners, so Invite lets it through.
+	secret, err := s.Invite(ctx, "solo@example.com", "LNK", Reader, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Ungrant(ctx, other.ID, "LNK", "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = s.Redeem(ctx, secret, "")
+	var last *LastOwnerError
+	if !errors.As(err, &last) || last.Project != "LNK" {
+		t.Errorf("accepting a reader invitation as the only owner: err = %v, want a LastOwnerError naming LNK", err)
+	}
+	if role, _ := s.RoleFor(ctx, solo.ID, "LNK"); role != Owner {
+		t.Errorf("the only owner of LNK is now %q", role)
+	}
+	if _, err := s.Invitation(ctx, secret); err != nil {
+		t.Errorf("the refused invitation was spent: %v", err)
+	}
+
+	// Issuing one now is refused at once.
+	if _, err := s.Invite(ctx, "solo@example.com", "LNK", Reader, "test"); !errors.As(err, &last) || last.Project != "LNK" {
+		t.Errorf("inviting the only owner of LNK as a reader: err = %v", err)
+	}
+	// An owner invitation is still how a lost passkey is recovered.
+	if _, _, err := s.Redeem(ctx, mustInvite(t, s, ctx, "solo@example.com", "LNK", Owner), ""); err != nil {
+		t.Errorf("an owner invitation to the only owner was refused: %v", err)
+	}
+	// With a second owner, accepting a reader invitation demotes, as before.
+	if err := s.Grant(ctx, other.ID, "LNK", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.Redeem(ctx, secret, ""); err != nil {
+		t.Fatalf("with a second owner, the reader invitation was refused: %v", err)
+	}
+	if role, _ := s.RoleFor(ctx, solo.ID, "LNK"); role != Reader {
+		t.Errorf("the accepted reader invitation left the role at %q", role)
+	}
+}
+
+func mustInvite(t *testing.T, s *Store, ctx context.Context, email, project string, role Role) string {
+	t.Helper()
+	secret, err := s.Invite(ctx, email, project, role, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return secret
+}
+
 // Disabling the only enabled owner of any project is refused, and names the
 // project: a disabled owner cannot sign in, so it is the same lockout as
 // removing their role (MUS-D-0188, the review on PR 102).

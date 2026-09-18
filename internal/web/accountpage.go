@@ -564,6 +564,13 @@ func (a *Accounts) invite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	secret, err := a.Store.Invite(r.Context(), email, project, role, acct.Email)
+	var last *account.LastOwnerError
+	if errors.As(err, &last) {
+		a.back(w, r, "", strings.ToLower(email)+" is the only owner left of "+
+			projectName(r.Context(), a.Records, last.Project)+
+			"; an invitation as "+string(role)+" would leave it with none", "")
+		return
+	}
 	if err != nil {
 		a.back(w, r, "", err.Error(), "")
 		return
