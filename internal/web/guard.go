@@ -196,6 +196,9 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 		// turned on.
 		if toolCall(r.URL.Path) {
 			if t, ok := g.agent(r); ok {
+				// The label, never the secret: the label is what `mustur
+				// account tokens` lists, so a line can be matched to a token.
+				noteWho(r, "token:"+quoteField(t.Label), t.Role)
 				if t.Project != g.Project {
 					http.Error(w, "no access to this project", http.StatusForbidden)
 					return
@@ -228,6 +231,9 @@ func (g *Guard) Wrap(next http.Handler) http.Handler {
 			return
 		}
 		role, granted := g.Auth.Accounts.RoleFor(r.Context(), acct.ID, g.Project)
+		// Quoted like a label: an email is whatever was typed into an
+		// invitation, and must stay one field of one line.
+		noteWho(r, quoteField(acct.Email), role)
 		if !granted {
 			// No role is not a lesser role. An account with nothing on this
 			// project cannot read it either.

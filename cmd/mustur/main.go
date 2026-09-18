@@ -12,6 +12,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -594,6 +595,20 @@ func cmdVerify(args []string) error {
 	return nil
 }
 
+// newServer is the server serve runs, with the access log outermost so a
+// request the guard refuses is logged too. serve passes stderr, because that is
+// what systemd puts in the journal. Until this the journal held the banner and
+// nothing after it, and a surface the owner saw misrender could not be traced
+// (MUS-F-0162). It is a function so a test can hold the wiring itself rather
+// than a copy of it.
+func newServer(addr string, handler http.Handler, log io.Writer) *http.Server {
+	return &http.Server{
+		Addr:              addr,
+		Handler:           web.LogRequests(log, handler),
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+}
+
 func cmdServe(args []string) error {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	db := dbFlag(fs)
@@ -784,11 +799,7 @@ func cmdServe(args []string) error {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %d record(s)\n", n)
 	})
-	srv := &http.Server{
-		Addr:              *addr,
-		Handler:           handler,
-		ReadHeaderTimeout: 10 * time.Second,
-	}
+	srv := newServer(*addr, handler, os.Stderr)
 	fmt.Printf("mustur %s serving %d record(s) from %s\n", version, n, *db)
 	// The tool call, said truthfully. With the guard on it answers 403 to a
 	// caller with no credential, and a banner that printed the URL as though it
