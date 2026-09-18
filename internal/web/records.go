@@ -1072,8 +1072,19 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .banner button { font: inherit; font-size: .92em; padding: .4rem .8rem;
                    color: inherit; background: Canvas; cursor: pointer;
                    border: 1px solid var(--edge); border-radius: .4rem; }
-  .banner button.primary { border-color: var(--accent); background: var(--accent-soft);
-                           font-weight: 600; }
+  /* Solid, as the plan draws it. The soft fill was 12% alpha over the
+     banner's own warn tint and read as a grey button with a blue edge. The
+     text takes the page ground, so it inverts with the theme. */
+  .banner button.primary { border-color: var(--accent); background: var(--accent);
+                           color: var(--paper); font-weight: 600; }
+  .banner button.primary:hover { filter: brightness(1.08); }
+  /* White on the accent measured 3.2:1 in a browser, short of 4.5 for text
+     this size; the accent darkened a fifth, only in the light theme, is the
+     same hue at 4.8:1. Dark text on the accent in the dark theme is 5.8:1. */
+  @media (prefers-color-scheme: light) {
+    .banner button.primary { background: color-mix(in srgb, var(--accent) 80%, #000);
+                             border-color: color-mix(in srgb, var(--accent) 80%, #000); }
+  }
   /* On a phone the two buttons stack full width, so neither is a small
      target beside the other. */
   @media (max-width: 40rem) {
