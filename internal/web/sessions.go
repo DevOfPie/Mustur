@@ -1083,14 +1083,9 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
   /* Ending one. Beside the control that starts one, because that is where a
      reader looks for what can be done to a session, and behind the confirmation
      that names it (MUS-D-0147, as MUS-F-0103 amended it -- the tick is gone).
-
-     border-top undoes the bare form rule below, which was written for the
-     composer and lands on every form on the page. It is what drew a line across
-     the rail above Stop, where the tick used to sit, and went on drawing it
-     after the tick was removed (MUS-F-0107). The same rule also reaches .pick
-     and .new form, which is a leak rather than an intent, but neither is what
-     the owner reported and both would change a layout nobody has looked at. */
-  .endform { display: inline-flex; flex: 0 0 auto; border-top: 0; }
+     No border: the line that sat above Stop came from the composer's rule when
+     it was a bare form selector (MUS-F-0107, MUS-F-0136). */
+  .endform { display: inline-flex; flex: 0 0 auto; }
   .endform button { font: inherit; font-size: .82em; padding: .2rem .55rem;
                     border: 1px solid var(--edge); border-radius: .45rem;
                     background: transparent; color: inherit; cursor: pointer; }
@@ -1180,9 +1175,13 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
   #foot { display: flex; align-items: center; gap: .45rem;
          padding: .4rem 1rem; background: #8881;
           font-size: .82em; opacity: .75; }
-  form { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
+  /* The composer, by its id. This was a bare form selector once, and a bare
+     element selector reaches every form on the page: it drew a line above Stop
+     (MUS-F-0107), stacked the picker, and ruled and inset the start form, none
+     of which asked for it (MUS-F-0136). Every other form states its own shape. */
+  #say { display: flex; flex-direction: column; gap: .4rem; padding: .7rem 1rem;
          border-top: 1.4px solid var(--edge); }
-  form .row { display: flex; gap: .5rem; align-items: flex-end; }
+  #say .row { display: flex; gap: .5rem; align-items: flex-end; }
   /* Destination above the box, not inside it. Thought first, destination
      second: the line says where this is going and is changeable without the
      draft being at risk. */
@@ -1330,14 +1329,12 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
      control it needs and nothing else. */
   .rail { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem;
           border-bottom: 1.4px solid var(--edge); min-width: 0; }
-  /* flex-direction and padding are set here because they have to be undone,
-     not because a row needs declaring. The bare form rule above was written
-     for the composer (column, gap, its own padding) and a bare element
-     selector reshapes every form added afterwards. This one came out stacked
-     and centred inside 69px of nothing, which is exactly the giant button
-     under the dropdown the owner reported. */
-  .pick { display: flex; flex-direction: row; align-items: center; gap: .3rem;
-          padding: 0; flex: 1; min-width: 0; }
+  /* A row. It once had to undo the composer's column and padding, which a bare
+     form selector handed to every form: this one came out stacked and centred
+     inside 69px of nothing, the giant button under the dropdown the owner
+     reported. The composer's rule is scoped to it now (MUS-F-0136). */
+  .pick { display: flex; align-items: center; gap: .3rem;
+          flex: 1; min-width: 0; }
   .pick select { flex: 1; min-width: 0; font: inherit; font-size: .85em; }
   /* Nothing sets display on the noscript, and that is deliberate.
 

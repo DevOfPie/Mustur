@@ -1132,23 +1132,23 @@ func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
 		}
 	}
 
-	// The picker form has to undo the bare form rule written for the composer.
+	// The picker form is a row.
 	//
-	// That rule is a bare element selector — form { display: flex;
-	// flex-direction: column } with its own padding — so it reshapes every form
-	// added after it. This one inherited column and came out stacked and
-	// centred inside 69px of nothing, which is precisely the giant button under
-	// the dropdown that was reported. Overriding display alone is not enough,
-	// because .pick never mentioned direction or padding at all.
+	// The composer's rule was once a bare element selector — form { display:
+	// flex; flex-direction: column } with its own padding — and this form
+	// inherited column and came out stacked and centred inside 69px of
+	// nothing, which is precisely the giant button under the dropdown that was
+	// reported. It was patched here by undoing direction and padding; the rule
+	// is scoped to the composer now (MUS-F-0136), and
+	// TestNoRuleInTheSessionStylesheetReachesEveryForm keeps it that way, so
+	// what is left to hold is that the row is a flex row.
 	at := strings.Index(body, ".pick { display: flex;")
 	if at < 0 {
 		t.Fatal("no .pick rule")
 	}
 	rule := body[at : at+strings.Index(body[at:], "}")]
-	for _, want := range []string{"flex-direction: row", "padding: 0"} {
-		if !strings.Contains(rule, want) {
-			t.Errorf("the picker row does not reset %q, so the composer's form rule reshapes it:\n%s", want, rule)
-		}
+	if strings.Contains(rule, "column") {
+		t.Errorf("the picker row is stacked:\n%s", rule)
 	}
 	// What actually puts the button beside the select is the row being a flex
 	// row, asserted above. An earlier version of this test demanded
@@ -2711,8 +2711,10 @@ func TestTheSessionScriptDeclaresNoNameTwice(t *testing.T) {
 //
 // The tick that used to sit there was removed (MUS-F-0103) and the rule that
 // drew the line under it was not: a bare form selector written for the composer
-// reaches every form on the page, and .endform declares no border of its own to
-// beat it. The owner reported the leftover line (MUS-F-0107).
+// reached every form on the page. The owner reported the leftover line
+// (MUS-F-0107); it was undone here with border-top: 0 until the selector was
+// scoped to the composer (MUS-F-0136), which leaves .endform no border to
+// declare or to undo.
 func TestNothingDrawsALineAboveStop(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	body := getFrom(t, srv, "/sessions/Mustur")
@@ -2721,8 +2723,44 @@ func TestNothingDrawsALineAboveStop(t *testing.T) {
 		t.Fatal("no .endform rule on the session page")
 	}
 	block := body[i : i+strings.Index(body[i:], "}")]
-	if !strings.Contains(block, "border-top: 0") {
-		t.Errorf(".endform does not undo the bare form rule's border: %s", block)
+	if strings.Contains(block, "border") {
+		t.Errorf(".endform declares a border, or undoes one it should never have been handed: %s", block)
+	}
+}
+
+// No rule in the session stylesheet reaches every form on the page.
+//
+// The composer's rule was a bare form selector, and it drew a line above Stop
+// (MUS-F-0107), stacked the picker, and ruled and inset the start form
+// (MUS-F-0136). Each of those was patched by undoing the rule on the form it
+// landed on, which fixes the one that was reported and none that are added
+// later. The cause is the selector, so the selector is what this refuses: a
+// selector that starts at the form element, as `form {` or `form .row {` did.
+func TestNoRuleInTheSessionStylesheetReachesEveryForm(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+	start, end := strings.Index(body, "<style>"), strings.Index(body, "</style>")
+	if start < 0 || end < start {
+		t.Fatal("no stylesheet on the session page")
+	}
+	css := regexp.MustCompile(`(?s)/\*.*?\*/`).ReplaceAllString(body[start:end], "")
+	bare := regexp.MustCompile(`^form(?:$|[\s.:#\[>+~])`)
+	for _, m := range regexp.MustCompile(`([^{}]+)\{`).FindAllStringSubmatch(css, -1) {
+		for _, sel := range strings.Split(m[1], ",") {
+			if sel = strings.TrimSpace(sel); bare.MatchString(sel) {
+				t.Errorf("%q starts at the form element, so it reaches every form on the page", sel)
+			}
+		}
+	}
+	i := strings.Index(css, "#say {")
+	if i < 0 {
+		t.Fatal("the composer has no rule of its own")
+	}
+	rule := css[i : i+strings.Index(css[i:], "}")]
+	for _, decl := range []string{"padding: .7rem 1rem", "border-top: 1.4px solid var(--edge)"} {
+		if !strings.Contains(rule, decl) {
+			t.Errorf("the composer no longer declares %q: %s", decl, rule)
+		}
 	}
 }
 
