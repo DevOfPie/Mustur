@@ -413,13 +413,23 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 		// capture-pane per session per render that MUS-Q-0102 was about.
 		if s.Hub != nil {
 			pane := s.Hub.Doing(sn.Project)
+			prompting := s.Hub.Prompting(sn.Project)
 			running := 0
-			// Read only where it can change the word: the hook log is a file
-			// per session, and a working pane says working whatever it holds.
-			if pane != session.AgentWorking && pane != session.AgentStarting {
+			// Read only where it can change the word: a working pane says
+			// working whatever the hook log holds, and a pane with a dialog on
+			// it says waiting whatever it holds. Everywhere else this is one
+			// hook log per session per render. That is a local file, not the
+			// tmux call MUS-Q-0102 took out of this loop, and the read is
+			// incremental: session.Subagents keeps each log's fold between
+			// calls and reads only the bytes appended since the last one, so a
+			// log that has not moved costs an open, a stat and a re-read of its
+			// first line (the check that it is still the same file). Nothing
+			// bounds the log's size, so the first read after Mustur restarts
+			// folds the whole file once.
+			if !prompting && pane != session.AgentWorking && pane != session.AgentStarting {
 				_, running, _ = s.subagents(sn.Project)
 			}
-			row.Doing = pickerDoing(pane, running)
+			row.Doing = pickerDoing(pane, prompting, running)
 		}
 		rows = append(rows, row)
 	}
@@ -433,7 +443,14 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 // sub-agents. subagentsRunning is the drawer's running count, so a quiet row
 // (MUS-D-0191) does not hold the word at working. Empty is a pane nothing has
 // read, which says nothing rather than guessing.
-func pickerDoing(pane session.Agent, subagentsRunning int) string {
+//
+// prompting is a dialog on the pane, and it outranks the sub-agents: a
+// permission or selection prompt is the session waiting on the owner, which
+// is the one thing "working" must never hide. A background sub-agent can be
+// at work while its parent asks, and the first version of this said working
+// over exactly that (review on PR 116).
+func pickerDoing(pane session.Agent, prompting bool, subagentsRunning int) string {
+	lift := subagentsRunning > 0 && !prompting
 	switch pane {
 	case session.AgentWorking:
 		return "working"
@@ -442,14 +459,14 @@ func pickerDoing(pane session.Agent, subagentsRunning int) string {
 	case session.AgentStarting:
 		return "starting"
 	case session.AgentWaiting:
-		if subagentsRunning > 0 {
+		if lift {
 			return "working"
 		}
 		return "waiting"
 	}
 	// An unread pane still says nothing about the main agent, but a sub-agent
 	// the hook says is at work is a fact rather than a guess.
-	if subagentsRunning > 0 {
+	if lift {
 		return "working"
 	}
 	return ""

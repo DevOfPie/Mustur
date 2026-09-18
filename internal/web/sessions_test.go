@@ -3102,24 +3102,132 @@ func TestThePlusIsNotDrawnDisabled(t *testing.T) {
 // wait for the sub-agents.
 func TestSubagentsAtWorkMakeTheSessionWorkingInThePicker(t *testing.T) {
 	for _, c := range []struct {
-		pane    session.Agent
-		running int
-		want    string
+		pane      session.Agent
+		prompting bool
+		running   int
+		want      string
 	}{
-		{session.AgentWaiting, 0, "waiting"},
-		{session.AgentWaiting, 1, "working"},
-		{session.AgentWaiting, 3, "working"},
-		{session.AgentWorking, 0, "working"},
-		{session.AgentStarting, 0, "starting"},
+		{session.AgentWaiting, false, 0, "waiting"},
+		{session.AgentWaiting, false, 1, "working"},
+		{session.AgentWaiting, false, 3, "working"},
+		{session.AgentWorking, false, 0, "working"},
+		{session.AgentStarting, false, 0, "starting"},
 		// An unread pane says nothing about the main agent, and still nothing
 		// once the last sub-agent stops.
-		{"", 0, ""},
-		{"", 2, "working"},
+		{"", false, 0, ""},
+		{"", false, 2, "working"},
+		// A dialog on the pane is the session waiting on the owner, and no
+		// number of sub-agents at work turns that into working (review on PR
+		// 116).
+		{session.AgentWaiting, true, 0, "waiting"},
+		{session.AgentWaiting, true, 2, "waiting"},
+		{"", true, 2, ""},
+		// A pane that says working still says so under a dialog, as before.
+		{session.AgentWorking, true, 2, "working"},
 	} {
-		if got := pickerDoing(c.pane, c.running); got != c.want {
-			t.Errorf("pane %q with %d sub-agents running: picker says %q, want %q",
-				c.pane, c.running, got, c.want)
+		if got := pickerDoing(c.pane, c.prompting, c.running); got != c.want {
+			t.Errorf("pane %q, dialog %v, %d sub-agents running: picker says %q, want %q",
+				c.pane, c.prompting, c.running, got, c.want)
 		}
+	}
+}
+
+// The case the review on PR 116 found, on the screen it was found on: a
+// permission dialog reads as waiting to DoingIn, because the caret is on the
+// screen and "esc to interrupt" is not, while the status line counts a
+// sub-agent. The dialog wins.
+func TestADialogIsWaitingWhateverTheSubagentsAreDoing(t *testing.T) {
+	b, err := os.ReadFile("../session/testdata/prompt-below-numbered-prose.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	screen := string(b)
+	pane := session.DoingIn(screen)
+	if pane != session.AgentWaiting {
+		t.Fatalf("the fixture reads %q, not waiting, so this measures nothing", pane)
+	}
+	if session.ReadPrompt(screen) == nil {
+		t.Fatal("no dialog read off the fixture, so this measures nothing")
+	}
+	if got := pickerDoing(pane, true, 1); got != "waiting" {
+		t.Errorf("a dialog with a sub-agent running says %q in the picker, want waiting", got)
+	}
+}
+
+// screenRunner is fakeRunner with a pane: capture-pane answers with a fixture,
+// so the hub's poller reads a real CLI screen without tmux.
+type screenRunner struct{ listing, screen string }
+
+func (f screenRunner) Run(_ context.Context, _ string, args ...string) (string, error) {
+	if len(args) > 0 {
+		switch args[0] {
+		case "list-sessions":
+			return f.listing, nil
+		case "capture-pane":
+			return f.screen, nil
+		}
+	}
+	return "", nil
+}
+
+// The wiring, not only the word: rows() has to ask the hub about the dialog
+// and the hook log about the sub-agents, and hand both to pickerDoing. This
+// renders the picker from a polled fixture and a hook log with a running row,
+// so reverting rows() to read the pane alone fails here.
+func TestThePickerReadsSubagentsAndTheDialogFromTheirSources(t *testing.T) {
+	for _, c := range []struct {
+		fixture, want string
+	}{
+		// At its prompt with nothing on it but a suggestion: the sub-agent lifts.
+		{"prompt-ghost-suggestion.txt", "working"},
+		// A dialog on the pane: the sub-agent does not.
+		{"prompt-below-numbered-prose.txt", "waiting"},
+	} {
+		t.Run(c.fixture, func(t *testing.T) {
+			b, err := os.ReadFile(filepath.Join("..", "session", "testdata", c.fixture))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := session.DoingIn(string(b)); got != session.AgentWaiting {
+				t.Fatalf("%s reads %q, not waiting, so this measures nothing", c.fixture, got)
+			}
+			dir := t.TempDir()
+			a := &session.Adapter{Run: screenRunner{listing: owned("mustur/Mustur"), screen: string(b)}}
+			hub := &session.Hub{Adapter: a}
+			t.Cleanup(hub.Shutdown)
+			now := time.Date(2026, 9, 18, 12, 0, 0, 0, time.UTC)
+			s := &Sessions{
+				Hub: hub, Adapter: a, Actor: "pie", HookDir: dir,
+				Now: func() time.Time { return now.Add(time.Minute) },
+			}
+			mux := http.NewServeMux()
+			s.Routes(mux)
+			srv := httptest.NewServer(mux)
+			t.Cleanup(srv.Close)
+
+			// The poller's first frame is what the picker reads.
+			sub, _, err := hub.Watch(context.Background(), "Mustur")
+			if err != nil {
+				t.Fatal(err)
+			}
+			sub.Close()
+
+			// Waiting with no sub-agent first, so the lift below is the hook
+			// log's doing and not the fixture's.
+			if page := getFrom(t, srv, "/sessions/Mustur"); !strings.Contains(page, "Mustur &middot; waiting</option>") {
+				t.Fatalf("%s with no sub-agents is not waiting in the picker", c.fixture)
+			}
+
+			ev, _ := json.Marshal(map[string]any{
+				"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose",
+			})
+			session.RecordHookEvent(dir, "Mustur", ev, now)
+
+			page := getFrom(t, srv, "/sessions/Mustur")
+			if want := "Mustur &middot; " + c.want + "</option>"; !strings.Contains(page, want) {
+				t.Errorf("%s with a sub-agent running: the picker lacks %q", c.fixture, want)
+			}
+		})
 	}
 }
 
@@ -3136,9 +3244,15 @@ func TestSubagentsAtWorkMakeThePillSayRunning(t *testing.T) {
 	for _, want := range []string{
 		// The drawer's count is the one the pill reads.
 		"agentsRunning = running;",
+		// Sub-agents lift the pill only with no dialog up: a pane prompt or a
+		// held tool call is the owner's, and outranks them (review on PR 116).
+		`var lift = agentsRunning > 0 && !panePrompt && !held;`,
 		// A pane at its prompt with sub-agents running is running, ring on,
 		// with a title saying why.
-		`if (agentsRunning > 0) setState("running", true, subagentsWhy("at its prompt"));`,
+		`if (lift) setState("running", true, subagentsWhy("at its prompt"));`,
+		`if (idle && lift) {`,
+		// A held call arriving or clearing decides the pill again.
+		"refreshDialog();\n        // A call arriving or clearing decides whether the sub-agents may lift\n        // the pill, so the pill is decided again rather than at the next tick.\n        refreshState();",
 		// And idle again once the count is zero.
 		`else setState("idle", false);`,
 		// The silence fallback does the same.

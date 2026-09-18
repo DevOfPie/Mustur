@@ -381,6 +381,22 @@ func (h *Hub) Doing(project string) Agent {
 	return p.last.Agent
 }
 
+// Prompting is whether the poller's last frame carried a dialog: a selection
+// the CLI is waiting on the owner to answer. The same ReadPrompt reading the
+// session view's pop-up is drawn from, so the picker and the pop-up cannot
+// disagree about whether one is up. False when nothing has polled the session.
+func (h *Hub) Prompting(project string) bool {
+	h.mu.Lock()
+	p := h.panes[project]
+	h.mu.Unlock()
+	if p == nil {
+		return false
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.last.Prompt != nil
+}
+
 // Quiet is how long this session's screen has been unchanged, and whether that
 // is known at all. Read from the poller, which has been maintaining it since
 // the session was adopted.

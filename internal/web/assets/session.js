@@ -104,9 +104,10 @@
     // and the silence timer below reads that blank screen as a session that
     // has been quiet since it started — so the surface said "idle" over an
     // empty terminal with nothing to say anything was coming (MUS-F-0115).
-    // No ring: the ring means a turn is in flight (MUS-D-0130), and no turn
-    // can be in flight on a CLI that has not drawn its prompt yet. The plain
-    // pill is the one "connecting" wears, which is the same kind of wait.
+    // No ring: the ring means something is at work -- a turn in flight
+    // (MUS-D-0130), or a sub-agent the hook says is running (MUS-F-0171) --
+    // and neither can be true of a CLI that has not drawn its prompt yet. The
+    // plain pill is the one "connecting" wears, which is the same kind of wait.
     if (doing === "starting") {
       setState("starting", false);
       startingNote();
@@ -122,15 +123,22 @@
     // wait. The count is the drawer's own, so the pill and the drawer's ring
     // turn together and a quiet row (MUS-D-0191) turns neither. When the last
     // one stops, what the pane says is the answer again.
+    //
+    // Except under a dialog. A permission or selection prompt on the pane, or
+    // a tool call the hook is holding, is the session waiting on the owner,
+    // and that outranks any sub-agent: a background one can be at work while
+    // its parent asks, and the first version of this said running over
+    // exactly that (review on PR 116).
+    var lift = agentsRunning > 0 && !panePrompt && !held;
     if (doing === "waiting") {
-      if (agentsRunning > 0) setState("running", true, subagentsWhy("at its prompt"));
+      if (lift) setState("running", true, subagentsWhy("at its prompt"));
       else setState("idle", false);
       return;
     }
     // Nothing here could read the pane, so fall back to counting silence.
     var quietFor = Math.floor((Date.now() - lastOutput) / 1000);
     var idle = quietFor >= IDLE_AFTER;
-    if (idle && agentsRunning > 0) {
+    if (idle && lift) {
       setState("running", true, subagentsWhy("quiet"));
       return;
     }
@@ -808,6 +816,9 @@
         // the tool and its input, and told the server.
         held = f.ask || null;
         refreshDialog();
+        // A call arriving or clearing decides whether the sub-agents may lift
+        // the pill, so the pill is decided again rather than at the next tick.
+        refreshState();
       } else if (f.t === "agents") {
         agents = f.agents || [];
         drawAgents();
