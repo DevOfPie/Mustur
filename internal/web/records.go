@@ -1178,7 +1178,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 {{if .Attention}}<section class="attn" aria-label="Needs attention">
 <h2>Needs attention · {{len .Attention}}</h2>
 <ol class="rows">
-{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="id">{{.ID}}</span><span class="t">{{.Title}}</span>{{range .Names}}<span class="pill">names {{.Title}}{{if .Place}} — move?{{end}}</span>{{end}}</a></li>
+{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="dot" title="Needs attention" aria-label="Needs attention"></span><span class="id">{{.ID}}</span><span class="t">{{.Title}}</span>{{range .Names}}<span class="pill">names {{.Title}}{{if .Place}} — move?{{end}}</span>{{end}}</a></li>
 {{end}}</ol>
 </section>{{end}}
 <form class="narrow" method="get" action="/records" role="search">

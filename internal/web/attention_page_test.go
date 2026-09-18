@@ -81,6 +81,10 @@ func TestThePinnedSectionIgnoresTheFilters(t *testing.T) {
 	if !strings.Contains(body, `<span class="dot" title="Needs attention" aria-label="Needs attention"></span><span class="id">`+id) {
 		t.Error("the row in the ordinary list carries no dot")
 	}
+	// And its pinned row, as the plan draws it: one dot in each place.
+	if n := strings.Count(body, `class="dot"`); n != 2 {
+		t.Errorf("%d dots, want the pinned row's and the list row's", n)
+	}
 
 	if _, err := intake.Keep(context.Background(), st, id, "owner", time.Now()); err != nil {
 		t.Fatal(err)
