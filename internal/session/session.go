@@ -518,11 +518,41 @@ func defaultTmuxSocket() string {
 	return resolveTmuxSocket("", "", os.Getuid())
 }
 
-// resolveTmuxSocket resolves a socket the way tmux 3.x does with no -L or -S:
-// the path at the front of $TMUX when a client runs inside a pane, else
-// <TMUX_TMPDIR, or /tmp>/tmux-<uid>/default. tmux takes the realpath of the
-// directory, so /tmp/ and a symlink to /tmp are one socket to it and have to be
-// one name here.
+// resolveTmuxSocket resolves the socket a tmux client picks with no -L or -S,
+// mirrored from tmux 3.6 (github.com/tmux/tmux, tag 3.6):
+//
+//	tmux.h:87   #define TMUX_SOCK "$TMUX_TMPDIR:" _PATH_TMP
+//	tmux.c:519  s = getenv("TMUX");
+//	tmux.c:520  if (s != NULL && *s != '\0' && *s != ',') {
+//	tmux.c:522      path[strcspn(path, ",")] = '\0';
+//	tmux.c:199  expand_paths(TMUX_SOCK, &paths, &n, 0);
+//	tmux.c:153  while ((next = strsep(&tmp, ":")) != NULL) {
+//	tmux.c:154      expanded = expand_path(next, home);
+//	tmux.c:155      if (expanded == NULL) {   /* TMUX_TMPDIR unset */
+//	tmux.c:134  xasprintf(&expanded, "%s%s", value->value, end);
+//	tmux.c:162      if (realpath(expanded, resolved) == NULL) {
+//	tmux.c:166          continue;
+//	tmux.c:204  path = paths[0]; /* can only have one socket! */
+//	tmux.c:209  xasprintf(&base, "%s/tmux-%ld", path, (long)uid);
+//	tmux.c:229  xasprintf(&path, "%s/%s", base, label);
+//
+// So: the path at the front of $TMUX when a client runs inside a pane. Else
+// the realpath of $TMUX_TMPDIR if it has one, else the realpath of /tmp, then
+// tmux-<uid>/default. The colon split is of the template, not of the value:
+// expand_path substitutes $TMUX_TMPDIR after strsep has run, so a value
+// holding a colon is one path, which realpath refuses unless a directory by
+// that exact name exists, and tmux falls through to /tmp. Measured with strace
+// on 3.6: /nonexistent/x, /nonexistent/x:<dir> and <dir>:<dir2> all connect to
+// /tmp/tmux-<uid>/default. realpath is also what makes a relative TMUX_TMPDIR
+// absolute against the working directory and a symlink the directory it names.
+//
+// One case is not mirrored, because there is nothing to name. When
+// <dir>/tmux-<uid> cannot be created, is not a directory, is not owned by this
+// uid or is open to others (tmux.c:211-228), tmux does not fall back: it
+// prints the cause and exits 1, and no server starts. Nor when neither
+// candidate survives realpath (tmux.c:201, "no suitable socket path"). This
+// returns the path tmux would have used or /tmp's, and whatever scope it names
+// is collected empty.
 func resolveTmuxSocket(tmux, tmpdir string, uid int) string {
 	if tmux != "" && tmux[0] != ',' {
 		if i := strings.IndexByte(tmux, ','); i >= 0 {
@@ -530,13 +560,36 @@ func resolveTmuxSocket(tmux, tmpdir string, uid int) string {
 		}
 		return tmux
 	}
-	if tmpdir == "" {
-		tmpdir = "/tmp"
+	dir := "/tmp"
+	for _, c := range []string{tmpdir, "/tmp"} {
+		if r, ok := realpath(c); ok {
+			dir = r
+			break
+		}
 	}
-	if real, err := filepath.EvalSymlinks(tmpdir); err == nil {
-		tmpdir = real
+	return filepath.Join(dir, fmt.Sprintf("tmux-%d", uid), "default")
+}
+
+// realpath is realpath(3): absolute, every symlink resolved, and false when
+// any component does not exist. The empty path fails, as realpath("") does
+// with ENOENT, which is how an empty TMUX_TMPDIR falls through to /tmp. The
+// second EvalSymlinks is for the working directory, which Getwd may report
+// through a symlink from $PWD.
+func realpath(p string) (string, bool) {
+	if p == "" {
+		return "", false
 	}
-	return filepath.Join(filepath.Clean(tmpdir), fmt.Sprintf("tmux-%d", uid), "default")
+	r, err := filepath.EvalSymlinks(p)
+	if err != nil {
+		return "", false
+	}
+	if r, err = filepath.Abs(r); err != nil {
+		return "", false
+	}
+	if r, err = filepath.EvalSymlinks(r); err != nil {
+		return "", false
+	}
+	return r, true
 }
 
 // serverUp reports whether a tmux server is running at all — not whether it
