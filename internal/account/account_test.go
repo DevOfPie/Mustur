@@ -527,6 +527,43 @@ func redeemed(t *testing.T, s *Store, ctx context.Context, email, project string
 	return acct
 }
 
+// A store written before grant_removed existed gains it on opening, so the
+// first removal on the live store is recorded rather than failing (MUS-D-0188,
+// the review on PR 102). Modelled on PR 103's test for held_jot.
+func TestAnOlderStoreGainsTheRemovalTable(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "old.db")
+	st, err := store.Open(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.DB().ExecContext(ctx, `DROP TABLE grant_removed`); err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	_ = st.DB().QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM sqlite_master WHERE name = 'grant_removed'`).Scan(&n)
+	st.Close()
+	if n != 0 {
+		t.Fatal("the table was not dropped, so this tests nothing")
+	}
+
+	st, err = store.Open(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	s := New(st.DB())
+	redeemed(t, s, ctx, "owner@example.com", "MUS", Owner)
+	reader := redeemed(t, s, ctx, "reader@example.com", "MUS", Reader)
+	if err := s.Ungrant(ctx, reader.ID, "MUS", "owner@example.com"); err != nil {
+		t.Fatalf("an older store could not record a removal after opening: %v", err)
+	}
+	if err := s.DB().QueryRowContext(ctx, `SELECT COUNT(*) FROM grant_removed`).Scan(&n); err != nil || n != 1 {
+		t.Errorf("grant_removed holds %d rows after one removal: %v", n, err)
+	}
+}
+
 // An invitation never leaves a project with no owner (MUS-D-0188, the review on
 // PR 102): one that would demote the only owner is refused when it is issued,
 // and again when it is accepted, for an owner who became the only one after it
