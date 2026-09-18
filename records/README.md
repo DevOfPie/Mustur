@@ -10,10 +10,10 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | --- | --- | --- |
 | phase | 4 | [phases.md](phases.md) |
 | milestone | 107 | [milestones.md](milestones.md) |
-| question | 164 | [questions.md](questions.md) |
-| decision | 1157 | [decisions.md](decisions.md) |
-| finding | 580 | [findings.md](findings.md) |
-| repository, machine, project | 8 | [routing.md](routing.md) |
+| question | 201 | [questions.md](questions.md) |
+| decision | 1180 | [decisions.md](decisions.md) |
+| finding | 592 | [findings.md](findings.md) |
+| repository, machine, project | 10 | [routing.md](routing.md) |
 | work-unit | 102 | [work-units/index.md](work-units/index.md) |
 | investigation | 5 | [investigations/index.md](investigations/index.md) |
 
@@ -45,6 +45,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-Q-0021](questions.md#hrd-q-0021) | question | After sharing a Valheim world, the owner's characters and other worlds in that folder stop being backed up. Keep them backed up? |
 | [HRD-Q-0022](questions.md#hrd-q-0022) | question | Two older Hoard bugs showed up in testing: fix them in the fork, report them upstream, or leave them? |
 | [HRD-Q-0023](questions.md#hrd-q-0023) | question | The newest fix commits across the sharing PRs were never code-reviewed. Review them before you review the stack? |
+| [HRD-Q-0024](questions.md#hrd-q-0024) | question | Group sharing is merged into main. How should it ship: a test release first, a full release, or wait? |
 | [HRD-D-0001](decisions.md#hrd-d-0001) | decision | Shared saves store their blobs in a group namespace, and the group's owner pays for them |
 | [HRD-D-0002](decisions.md#hrd-d-0002) | decision | An unanswered claim prompt auto-hosts when the game has exactly one shared world whose lease is free |
 | [HRD-D-0003](decisions.md#hrd-d-0003) | decision | A lease renews every 30 seconds and expires after five minutes |
@@ -66,6 +67,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-D-0019](decisions.md#hrd-d-0019) | decision | A shared folder stays fully backed up for its owner; members read and push only the shared world |
 | [HRD-D-0020](decisions.md#hrd-d-0020) | decision | HRD-D-0019 design: the lease guards only the shared world, and the server fills in the owner's other files on member pushes |
 | [HRD-D-0021](decisions.md#hrd-d-0021) | decision | The two pre-existing upstream bugs stay as they are |
+| [HRD-D-0022](decisions.md#hrd-d-0022) | decision | Group sharing ships as a test release first |
 | [HRD-F-0001](findings.md#hrd-f-0001) | finding | Valheim's catalog root is the whole IronGate folder, and Steam Cloud is on by default |
 | [HRD-F-0002](findings.md#hrd-f-0002) | finding | Valheim most likely does not hold the world file open, which makes file evidence a late backstop |
 | [HRD-F-0003](findings.md#hrd-f-0003) | finding | The fork's Actions state cannot be read with the current PAT, and no workflow is listed |
@@ -89,12 +91,9 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [HRD-F-0021](findings.md#hrd-f-0021) | finding | Fourth end-to-end run: the owner whole-folder design works end to end; the owner's restore depends on a local account cache that a service-less login clears |
 | [HRD-F-0022](findings.md#hrd-f-0022) | finding | Review of the never-reviewed commits: two high and eight medium findings across the stack, no privacy leak |
 | [HRD-F-0023](findings.md#hrd-f-0023) | finding | I believe this project would benefit by separating save backups by world/character where… |
+| [HRD-F-0024](findings.md#hrd-f-0024) | finding | CI: every sharing PR but #1 fails cargo deny on a new rustls advisory; main carries the same lockfile |
+| [HRD-F-0025](findings.md#hrd-f-0025) | finding | The test release is tagged v1.2.0-1, not v1.2.0-rc.1: the Windows MSI rejects a non-numeric pre-release |
 | [HRD-I-0001](investigations/HRD-I-0001.md#hrd-i-0001) | investigation | Group save sharing is worth building, and worth building inside Hoard rather than alone |
-| [IDW-F-0001](findings.md#idw-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
-| [IDW-F-0002](findings.md#idw-f-0002) | finding | Test image, dicard after verfication |
-| [IDW-F-0003](findings.md#idw-f-0003) | finding | Testing image on mobile |
-| [IDW-F-0004](findings.md#idw-f-0004) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
-| [IDW-F-0005](findings.md#idw-f-0005) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
 | [LNK-S-0001](phases.md#lnk-s-0001) | phase | Phase 1 — the milestones added after the review |
 | [LNK-S-0002](phases.md#lnk-s-0002) | phase | Phase 2 — the milestones |
 | [LNK-S-0003](phases.md#lnk-s-0003) | phase | Phase 3 — the milestones |
@@ -277,6 +276,7 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [LNK-Q-0004](questions.md#lnk-q-0004) | question | Should LinkCtrl get an 'All Workspaces' view on the dashboard and links pages, and if so, when? |
 | [LNK-Q-0005](questions.md#lnk-q-0005) | question | LinkCtrl's phase summaries were deleted by W48 and never imported. Where do they live? |
 | [LNK-Q-0006](questions.md#lnk-q-0006) | question | PR 14's three review-fix commits were pushed without subject lines — rewrite them with a force push, or leave them? |
+| [LNK-Q-0007](questions.md#lnk-q-0007) | question | 51 open LNK findings are unreviewed, so none is approved work. How do they reach approval? |
 | [LNK-D-0001](decisions.md#lnk-d-0001) | decision | Mailer |
 | [LNK-D-0002](decisions.md#lnk-d-0002) | decision | Cookie / returning-visitor conditions |
 | [LNK-D-0003](decisions.md#lnk-d-0003) | decision | Custom-domain TLS |
@@ -1782,6 +1782,41 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-Q-0133](questions.md#mus-q-0133) | question | The live service writes its export into the Mustur checkout on every filing. Where should it write, if anywhere? |
 | [MUS-Q-0134](questions.md#mus-q-0134) | question | The old service left 89 export files changed in the main Mustur checkout. Discard them? |
 | [MUS-Q-0135](questions.md#mus-q-0135) | question | Everything for LinkCtrl's move is merged, including the export fix you were waiting on. Do you accept milestone 7? |
+| [MUS-Q-0136](questions.md#mus-q-0136) | question | How should the Records tab narrow what it shows? |
+| [MUS-Q-0137](questions.md#mus-q-0137) | question | How should an owner give an existing person access to another project? |
+| [MUS-Q-0138](questions.md#mus-q-0138) | question | Should a reader's jot reach intake through an approval queue? |
+| [MUS-Q-0139](questions.md#mus-q-0139) | question | Should mustur_route's index be scoped to the repository named? |
+| [MUS-Q-0140](questions.md#mus-q-0140) | question | Is the Records plan right to build? |
+| [MUS-Q-0141](questions.md#mus-q-0141) | question | What should an open session tab do by itself when its session ends or comes back? |
+| [MUS-Q-0142](questions.md#mus-q-0142) | question | Which People screen, and where may an owner grant? |
+| [MUS-Q-0143](questions.md#mus-q-0143) | question | Is the held-jot plan right to build? |
+| [MUS-Q-0144](questions.md#mus-q-0144) | question | Does MUS-D-0142 cover offering the session survey's digit keys as buttons? |
+| [MUS-Q-0145](questions.md#mus-q-0145) | question | Should the access log name a signed-in account by email? |
+| [MUS-Q-0146](questions.md#mus-q-0146) | question | What should end a sub-agent row whose stop never arrives? |
+| [MUS-Q-0147](questions.md#mus-q-0147) | question | What should mustur_route return for a repository name Mustur does not hold? |
+| [MUS-Q-0148](questions.md#mus-q-0148) | question | Is the quiet sub-agent drawer plan right to build? |
+| [MUS-Q-0149](questions.md#mus-q-0149) | question | Should repository rows on the new Records index still say whether their checkout is there? |
+| [MUS-Q-0150](questions.md#mus-q-0150) | question | Who may open the People screen? |
+| [MUS-Q-0151](questions.md#mus-q-0151) | question | Do the held-jot build's unplanned readings stand? |
+| [MUS-Q-0152](questions.md#mus-q-0152) | question | A quiet pill with a date does not fit the default drawer width. What gives? |
+| [MUS-Q-0153](questions.md#mus-q-0153) | question | The intake box becomes _IB. What happens to the six jots already filed as IDW-F-0001 to 0006? |
+| [MUS-Q-0154](questions.md#mus-q-0154) | question | A jot that names Idea Warehouse falls through to _IB. What confirms moving it there? |
+| [MUS-Q-0155](questions.md#mus-q-0155) | question | Idea Warehouse brings 12 ideas, a decision log and an inbox. Does it move in as an ordinary project or as a milestone? |
+| [MUS-Q-0156](questions.md#mus-q-0156) | question | Mustur has no idea kind. Where does an Idea Warehouse idea, with its kill/merge/graduate verdict, live? |
+| [MUS-Q-0157](questions.md#mus-q-0157) | question | Is the needs-attention plan right to build? |
+| [MUS-Q-0158](questions.md#mus-q-0158) | question | A finding's status says whether work remains. What shape does it take? |
+| [MUS-Q-0159](questions.md#mus-q-0159) | question | After the rename, MUS-D-0192 and MUS-Q-0153 still cite IDW-F-0001 to 0007. How are those citations handled? |
+| [MUS-Q-0160](questions.md#mus-q-0160) | question | Should an identifier on the Decisions queue open its record in a new tab? |
+| [MUS-Q-0161](questions.md#mus-q-0161) | question | Does the Session list surface carry session.js? |
+| [MUS-Q-0162](questions.md#mus-q-0162) | question | Is the State and Status mapping for all 590 findings right to write? |
+| [MUS-Q-0163](questions.md#mus-q-0163) | question | Which of the fields found in the prose become real fields? |
+| [MUS-Q-0164](questions.md#mus-q-0164) | question | When the session survey is on screen, what happens to an answer being delivered into that session? |
+| [MUS-Q-0165](questions.md#mus-q-0165) | question | What does a resumed sub-agent's row show from its previous run? |
+| [MUS-Q-0166](questions.md#mus-q-0166) | question | A record's title is smaller than its own body text. How should body headings be sized? |
+| [MUS-Q-0167](questions.md#mus-q-0167) | question | When a PR conflicts with main during the merge run, may I rebase it and force-push its branch? |
+| [MUS-Q-0168](questions.md#mus-q-0168) | question | May I force-push #108's rebase onto #107's final head? #109 is built on it |
+| [MUS-Q-0169](questions.md#mus-q-0169) | question | Deploy today's merges to mustur.devofpie.com now? |
+| [MUS-Q-0170](questions.md#mus-q-0170) | question | May I stop mustur.devofpie.com for about a minute to run the IDW → _IB rename? |
 | [MUS-D-0001](decisions.md#mus-d-0001) | decision | Why this is not a local file |
 | [MUS-D-0002](decisions.md#mus-d-0002) | decision | Inject, never offer |
 | [MUS-D-0003](decisions.md#mus-d-0003) | decision | Link-out is conditional |
@@ -1967,6 +2002,28 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-D-0183](decisions.md#mus-d-0183) | decision | Mustur acts only on its own store; the committed records export is a backup and a conformance surface |
 | [MUS-D-0184](decisions.md#mus-d-0184) | decision | The live service does not export; main's export comes only from a records refresh |
 | [MUS-D-0185](decisions.md#mus-d-0185) | decision | Milestone 7 is accepted: LinkCtrl has moved in |
+| [MUS-D-0186](decisions.md#mus-d-0186) | decision | The records index narrows by project, kind and search, and a record stays a page |
+| [MUS-D-0187](decisions.md#mus-d-0187) | decision | mustur_route's index is the named repository's project; an identifier or a kind reaches every project |
+| [MUS-D-0188](decisions.md#mus-d-0188) | decision | People lists a role per project on each person, and an owner grants only where they own |
+| [MUS-D-0189](decisions.md#mus-d-0189) | decision | A reader's jot is held outside the record store until an owner of its destination approves or discards it |
+| [MUS-D-0190](decisions.md#mus-d-0190) | decision | A row of the CLI's own 'key: label' cells is a legend, so the session survey's digits are offered |
+| [MUS-D-0191](decisions.md#mus-d-0191) | decision | A sub-agent row with no event for 15 minutes says when it was last heard from, and leaves the running count |
+| [MUS-D-0192](decisions.md#mus-d-0192) | decision | The intake box's six IDW jots are renamed to _IB in place: the one exception to identifier permanence, taken to move a system list out of the project namespace |
+| [MUS-D-0193](decisions.md#mus-d-0193) | decision | A jot naming a confirm-only project waits in _IB with a Move button, and Records carries a live badge counting what needs attention |
+| [MUS-D-0194](decisions.md#mus-d-0194) | decision | Idea Warehouse moves in as an ordinary project under IDW, its small corpus notwithstanding |
+| [MUS-D-0195](decisions.md#mus-d-0195) | decision | Ideas are findings with a status, and every project's findings get a status that says whether work remains |
+| [MUS-D-0196](decisions.md#mus-d-0196) | decision | A finding carries a fixed State (open, done or dropped) and a per-project Status word mapped to it. Today's status prose moves to a Note |
+| [MUS-D-0197](decisions.md#mus-d-0197) | decision | Identifiers MUS-D-0192 retired are declared on it, accepted by the citation check, and shown as plain text in the records describing the rename |
+| [MUS-D-0198](decisions.md#mus-d-0198) | decision | An identifier on the Decisions queue expands in place, as a citation does on Records |
+| [MUS-D-0199](decisions.md#mus-d-0199) | decision | The session list carries session.js, so eight surfaces ship script |
+| [MUS-D-0200](decisions.md#mus-d-0200) | decision | Findings gain eighteen structured fields: the core citations, and every date, code and classification field the sweep found |
+| [MUS-D-0201](decisions.md#mus-d-0201) | decision | The finding status mapping is written, with in-review for unmerged work and every uncertain row left open as unverified for its project to close |
+| [MUS-D-0202](decisions.md#mus-d-0202) | decision | Delivering an answer dismisses the session survey first |
+| [MUS-D-0203](decisions.md#mus-d-0203) | decision | A resumed sub-agent's earlier report is shown labelled as from the previous run |
+| [MUS-D-0204](decisions.md#mus-d-0204) | decision | A record's title is raised to about 1.1rem so body headings fit under it |
+| [MUS-D-0205](decisions.md#mus-d-0205) | decision | kind no longer narrows mustur_route's reply: it reaches every project the scoped index leaves out |
+| [MUS-D-0206](decisions.md#mus-d-0206) | decision | The server keeps a request log since 2026-09-18, so a page being read can be shown |
+| [MUS-D-0207](decisions.md#mus-d-0207) | decision | A reader's one write is a hold on the intake box |
 | [MUS-F-0001](findings.md#mus-f-0001) | finding | queue.md's own shape will fail the findings-queue checks it declares |
 | [MUS-F-0002](findings.md#mus-f-0002) | finding | Pull request #1 promises three open design questions and the file marks two |
 | [MUS-F-0003](findings.md#mus-f-0003) | finding | A paused metering change would decide the adapter's exposure |
@@ -2137,14 +2194,31 @@ Mustur's own records, exported from its store. The store is the record; this tre
 | [MUS-F-0168](findings.md#mus-f-0168) | finding | None of the references in Decisions link out to their records, I believe this was included in… |
 | [MUS-F-0169](findings.md#mus-f-0169) | finding | make records-refresh nests its worktree inside whatever checkout it runs from, so removing that checkout deletes the refresh |
 | [MUS-F-0170](findings.md#mus-f-0170) | finding | Viewers should be able to submit items to intake, with them going through an approval queue… |
+| [MUS-F-0171](findings.md#mus-f-0171) | finding | Sessions with running sub-agents but idle main agents are marked as waiting |
+| [MUS-F-0172](findings.md#mus-f-0172) | finding | A resumed sub-agent reads as finished while it runs again |
+| [MUS-F-0173](findings.md#mus-f-0173) | finding | A record with many citations lists every one below its body, 202 rows on LNK-S-0002 |
+| [MUS-F-0174](findings.md#mus-f-0174) | finding | Record titles are not markdown, so LNK-D-0010's title shows literal backticks |
+| [MUS-F-0175](findings.md#mus-f-0175) | finding | The plus button on Sessions looks disabled, and it still starts a session |
+| [MUS-F-0176](findings.md#mus-f-0176) | finding | Every Mustur tmux server asks systemd for the same scope name, so a second instance runs unscoped or takes the live one's |
+| [MUS-F-0177](findings.md#mus-f-0177) | finding | The where dropdown on intake is getting too long, we should remove the Repositories listing… |
+| [MUS-F-0178](findings.md#mus-f-0178) | finding | Redesign the Records tab, taking queues from project management tools like Jira and it's… |
+| [MUS-F-0179](findings.md#mus-f-0179) | finding | On a phone the sub-agent drawer opens over the tab bar, so the bar is not visible while it is open |
 | [MUS-I-0001](investigations/MUS-I-0001.md#mus-i-0001) | investigation | A mandated tool call is honoured |
 | [MUS-I-0002](investigations/MUS-I-0002.md#mus-i-0002) | investigation | Sub-agents can be seen, and the pane survives |
 | [MUS-I-0003](investigations/MUS-I-0003.md#mus-i-0003) | investigation | A dialog can be answered without the screen, and the terminal survives it |
 | [MUS-R-0001](routing.md#mus-r-0001) | repository | DevOfPie/Mustur |
 | [MUS-R-0002](routing.md#mus-r-0002) | repository | DevOfPie/hoard |
 | [MUS-R-0003](routing.md#mus-r-0003) | repository | DevOfPie/LinkCtrl |
+| [MUS-R-0004](routing.md#mus-r-0004) | repository | DevOfPie/IdeaWarehouse |
 | [MUS-H-0001](routing.md#mus-h-0001) | machine | whippy-vm |
 | [MUS-P-0001](routing.md#mus-p-0001) | project | Mustur |
-| [MUS-P-0002](routing.md#mus-p-0002) | project | Idea inbox |
+| [MUS-P-0002](routing.md#mus-p-0002) | project | Intake box |
 | [MUS-P-0003](routing.md#mus-p-0003) | project | Hoard |
 | [MUS-P-0004](routing.md#mus-p-0004) | project | LinkCtrl |
+| [MUS-P-0005](routing.md#mus-p-0005) | project | Idea Warehouse |
+| [_IB-F-0001](findings.md#_ib-f-0001) | finding | Deploy check for the IDW prefix: this jot names no project and should land in the idea inbox… |
+| [_IB-F-0002](findings.md#_ib-f-0002) | finding | Test image, dicard after verfication |
+| [_IB-F-0003](findings.md#_ib-f-0003) | finding | Testing image on mobile |
+| [_IB-F-0004](findings.md#_ib-f-0004) | finding | The sub-agent drawer can be dragged wider on a desktop screen |
+| [_IB-F-0005](findings.md#_ib-f-0005) | finding | The Decision screen should allow additional text on an option selection, often I want to choose… |
+| [_IB-F-0006](findings.md#_ib-f-0006) | finding | For Idea Warehouse: |

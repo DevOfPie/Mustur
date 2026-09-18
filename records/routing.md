@@ -4,7 +4,7 @@
 
 Where work goes and which machine holds it.
 
-8 record(s), by identifier.
+10 record(s), by identifier.
 
 ---
 
@@ -66,6 +66,26 @@ LinkCtrl's checkout, registered to start MUS-M-0009: it brings a corpus of exist
 
 ---
 
+## MUS-R-0004
+
+**DevOfPie/IdeaWarehouse**
+
+repository · 2026-09-18
+
+project: [MUS-P-0005](#mus-p-0005)
+
+Idea Warehouse's checkout. It moved in as an ordinary project on MUS-D-0194. Route it for me never sends a jot here: a jot that names Idea Warehouse waits in the intake box until an owner moves it (MUS-D-0193). Registering it routes it; nothing in its tree has been edited from Mustur.
+
+| Field | Value |
+| --- | --- |
+| Remote | https://github.com/DevOfPie/IdeaWarehouse |
+| Checkout on MUS-H-0001 | ~/repos/DevOfPie/IdeaWarehouse |
+| Machine | MUS-H-0001 |
+| Contract | CLAUDE.md and workflow.md |
+| Route it for me | never |
+
+---
+
 ## MUS-H-0001
 
 **whippy-vm**
@@ -77,7 +97,7 @@ The machine holding the checkout and, later, the adapter that supervises session
 | Field | Value |
 | --- | --- |
 | Role | checkout host |
-| Repositories | MUS-R-0001, MUS-R-0002, MUS-R-0003 |
+| Repositories | MUS-R-0001, MUS-R-0002, MUS-R-0003, MUS-R-0004 |
 
 ---
 
@@ -94,24 +114,40 @@ The project this store belongs to. Its identifier prefix is MUS, and every recor
 | Prefix | MUS |
 | Repositories | MUS-R-0001 |
 | Machines | MUS-H-0001 |
+| Status word | unreviewed = open :: filed through intake, nobody has triaged it |
+| Status word | open = open :: triaged; work remains (includes a partial fix whose residue has no record of its own) |
+| Status word | blocked = open :: work waits on a named question or on the owner; carries blocked by |
+| Status word | parked = open :: set aside on purpose: not now, parked against a milestone, or scheduled into a milestone not yet started |
+| Status word | in-review = open :: fixed or built on a pull request that has not merged |
+| Status word | unverified = open :: the sweep could not tell whether work remains; the sweep's reason is in the Note, for the project to verify and close |
+| Status word | fixed = done :: a defect repaired (old: fixed, resolved, gated, worked around, recorded) |
+| Status word | built = done :: a requested change delivered (old: built, answered-and-built) |
+| Status word | noted = done :: recorded with no work of its own: an observation, a measurement, a verified test jot, or settled by an owner answer |
+| Status word | superseded = dropped :: overtaken by later work, corrected by another finding, or a copy of another record |
+| Status word | declined = dropped :: the owner chose not to act |
 
 ---
 
 ## MUS-P-0002
 
-**Idea inbox**
+**Intake box**
 
 project · 2026-08-22
 
 Held by: [MUS-P-0001](#mus-p-0001)
 
-Where a jot goes when no destination is obvious. A routing target inside Mustur, not a write into IdeaWarehouse: no file in another project is touched before that project is deliberately onboarded, and a capture surface that edited one would break that on its first use. Jots routed here are filed under IDW rather than MUS, so a record's identifier says which project it belongs to rather than which store holds it.
+Where a jot goes when no destination is obvious, or when the only one it names takes a jot on a confirmed move alone. It is Mustur's fallback list, not a project, so it has the reserved prefix _IB, which no project can ever take (MUS-D-0192). Until the rename on 2026-09-18 it was the idea inbox and filed under IDW, which is now Idea Warehouse's. A jot here that names a project waits for an owner to move or keep it (MUS-D-0193). Nothing here writes into another project's files.
 
 | Field | Value |
 | --- | --- |
 | Intake | default |
-| Prefix | IDW |
+| Prefix | _IB |
 | Aliases | inbox, ideas |
+| Status word | unreviewed = open :: a jot nobody has routed or shaped |
+| Status word | unverified = open :: the sweep could not tell whether work remains; the sweep's reason is in the Note, for the project to verify and close |
+| Status word | routed = done :: filed onward as an idea or another project's record |
+| Status word | noted = done :: a test or deploy-check jot that did its job |
+| Status word | superseded = dropped :: rerouted: a record elsewhere replaces it; carries superseded by |
 
 ---
 
@@ -129,6 +165,14 @@ Co-op group save sharing built into Hoard: any member of a group can host a shar
 | Aliases | hoard, save sharing |
 | Repositories | MUS-R-0002 |
 | Machines | MUS-H-0001 |
+| Status word | unreviewed = open :: reported, not triaged |
+| Status word | open = open :: triaged; work remains |
+| Status word | blocked = open :: waits on the owner or a question |
+| Status word | unverified = open :: the sweep could not tell whether work remains; the sweep's reason is in the Note, for the project to verify and close |
+| Status word | fixed = done :: defects repaired; review and e2e reports whose findings were fixed |
+| Status word | noted = done :: design fact or constraint taken into the plan; nothing of its own to do |
+| Status word | declined = dropped :: the owner chose to leave it |
+| Status word | superseded = dropped :: rerouted, and replaced by a record elsewhere |
 
 ---
 
@@ -148,3 +192,43 @@ The second project with a corpus of its own, imported on 2026-09-13 from LinkCtr
 | Machines | MUS-H-0001 |
 | Prefix | LNK |
 | Aliases | linkctrl, link ctrl |
+| Status word | unreviewed = open :: filed, not triaged |
+| Status word | scheduled = open :: reviewed and placed into a milestone or reopening |
+| Status word | parked = open :: reviewed and deliberately carried or deferred by the owner |
+| Status word | unverified = open :: the sweep could not tell whether work remains; the sweep's reason is in the Note, for the project to verify and close |
+| Status word | fixed = done :: closed by work; closed by names the milestone |
+| Status word | merged = dropped :: folded into another finding; carries merged into |
+| Status word | declined = dropped :: approved and declined, or recorded and declined: LinkCtrl's third disposition |
+| Status word | refuted = dropped :: premise measured false |
+| Status word | superseded = dropped :: rerouted, and replaced by a record elsewhere |
+
+---
+
+## MUS-P-0005
+
+**Idea Warehouse**
+
+project · 2026-09-18
+
+repository: [MUS-R-0004](#mus-r-0004)
+
+decision: [MUS-D-0194](decisions.md#mus-d-0194)
+
+Ideas, shaped until they are killed, merged or graduated into a repository of their own. Records file under IDW. It moved in as an ordinary project on MUS-D-0194. Its ideas are findings with a status (MUS-D-0195), and verdicts are the owner's. Route it for me never sends a jot here: one that names Idea Warehouse waits in the intake box with a Move button (MUS-D-0193).
+
+| Field | Value |
+| --- | --- |
+| Prefix | IDW |
+| Aliases | IdeaWarehouse, idea warehouse |
+| Repositories | MUS-R-0004 |
+| Machines | MUS-H-0001 |
+| Route it for me | never |
+| Status word | unreviewed = open :: filed or moved in, not yet triaged |
+| Status word | distinct = open :: confirmed not a duplicate; slug and one paragraph |
+| Status word | shaping = open :: accruing argument, evidence and scope |
+| Status word | planned = open :: checklist passed, plan seed filled, ready for a repo; open because the repo is not yet made |
+| Status word | unverified = open :: could not be told whether work remains; the reason is in the Note, for the project to verify and close |
+| Status word | graduated = done :: became a repo; carries repo |
+| Status word | killed = dropped :: rejected; carries killed reason and killed on; resurrectable to shaping |
+| Status word | merged = dropped :: folded into another idea; carries merged into |
+| Status word | superseded = dropped :: rerouted, and replaced by a record elsewhere |
