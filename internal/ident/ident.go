@@ -9,7 +9,7 @@
 // **A prefix can also be reserved: an underscore and two upper-case letters,
 // `_IB-F-0001`.** That form is for lists Mustur keeps for itself rather than for
 // a project — the intake box, where a jot lands when nothing else will take it,
-// is `_IB` (MUS-D-0192). A real project's prefix is three letters, so no
+// takes `_IB` under MUS-D-0192. A real project's prefix is three letters, so no
 // project onboarded later can ever take a reserved one, and a record in
 // Mustur's own list can never be mistaken for, or collide with, a record about
 // a project. The
@@ -23,9 +23,9 @@
 // record about Mustur itself. `MUS-F-0025` is the last one filed that way and
 // keeps its identifier, because the permanence rule below is what makes
 // citations safe. The box's jots were then filed under IDW, which is Idea
-// Warehouse's prefix; the six filed that way were renamed to `_IB-F-0001`
-// through `_IB-F-0006` in place, the one exception the permanence rule has
-// (MUS-D-0192).
+// Warehouse's prefix. MUS-D-0192 renames the six filed that way, IDW-F-0001
+// through IDW-F-0006, to `_IB-F-0001` through `_IB-F-0006` in place: the one
+// exception the permanence rule has.
 //
 // Identifiers are permanent. The store is insert-only and records cite each
 // other by identifier, so a scheme that allows renaming is a scheme that

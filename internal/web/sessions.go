@@ -1463,7 +1463,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      is the server's. display:none, so it has no layout box. */
   .say { display: none; }
 
-  /* Drag the drawer wider, on a wide screen only (_IB-F-0004).
+  /* Drag the drawer wider, on a wide screen only (IDW-F-0004,
+     _IB-F-0004 after MUS-D-0192).
 
      The grip is a real control rather than a decorated edge: focusable, with
      a separator role, and it moves on the arrow keys as well as the pointer.

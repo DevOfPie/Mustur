@@ -382,8 +382,8 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}
 	}
 	// Where it routes decides what it is called. A jot in the intake box is not
-	// a Mustur record and no longer says it is (MUS-Q-0030, MUS-Q-0031); it is
-	// filed under the reserved _IB (MUS-D-0192).
+	// a Mustur record and no longer says it is (MUS-Q-0030, MUS-Q-0031); under
+	// MUS-D-0192 its prefix is the reserved _IB.
 	under := project
 	if to.Prefix != "" {
 		under = to.Prefix

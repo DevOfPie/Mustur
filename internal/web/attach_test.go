@@ -221,8 +221,8 @@ func TestAnImageIsServedAsAnImageAndNothingElse(t *testing.T) {
 
 // A scratch filing costs no identifier, which is the whole reason it exists.
 //
-// The owner tested the picture upload twice and it left _IB-F-0002 and
-// _IB-F-0003 in the intake box forever, both saying "test" in their own
+// The owner tested the picture upload twice and it left IDW-F-0002 and
+// IDW-F-0003 (_IB-F-0002 and _IB-F-0003 after MUS-D-0192) in the intake box forever, both saying "test" in their own
 // titles. An identifier here is permanent and the log only ever grows, so a
 // test filing must not advance the counter.
 func TestAScratchFilingIsNotARecord(t *testing.T) {
