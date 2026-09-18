@@ -324,7 +324,7 @@ func (c *Compose) deliver(ctx context.Context, to, text, actor string) (string, 
 				_ = export.Write(c.ExportTo, all)
 			}
 		}
-		return fmt.Sprintf("filed %s to %s", r.ID, dest.Name), nil
+		return fmt.Sprintf("filed %s to %s", r.ID, titleText(dest.Name)), nil
 	}
 	if c.Adapter == nil {
 		return "", errors.New("no adapter, so no session can be typed into")

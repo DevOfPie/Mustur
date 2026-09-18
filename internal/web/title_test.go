@@ -1,10 +1,16 @@
 package web
 
 import (
+	"context"
+	"net/http"
+	"net/url"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/DevOfPie/Mustur/internal/account"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/store"
 )
 
 // MUS-F-0174: a title is inline markdown, never a block, and never raw HTML.
@@ -90,4 +96,173 @@ func TestAQuestionTitleWithCodeReadsAsCode(t *testing.T) {
 	if !strings.Contains(body, "code.t-code") {
 		t.Error("the queue does not style a title's code")
 	}
+}
+
+// retitle gives a record already in the store a title with a code span,
+// keeping everything else it carries.
+func retitle(t *testing.T, st *store.Store, id, to string) {
+	t.Helper()
+	ctx := context.Background()
+	r, err := st.Get(ctx, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Title = to
+	if err := st.Append(ctx, r, "amend", "test"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// follow reads the page a redirect points at.
+func follow(t *testing.T, base string, res *http.Response) string {
+	t.Helper()
+	loc := res.Header.Get("Location")
+	if loc == "" {
+		t.Fatalf("no redirect: %d", res.StatusCode)
+	}
+	return get(t, base+loc)
+}
+
+// Where markup cannot go, a title is its plain text: the intake and queue
+// pickers, the start picker and the composer's intake-box target each show
+// the words a title's code span holds and none of its backticks. One render
+// per surface, each checked for what it must carry.
+func TestATitleWithCodeIsPlainWhereMarkupCannotGo(t *testing.T) {
+	type surface struct {
+		name, body string
+		want       []string
+	}
+	var surfaces []surface
+
+	{ // The intake box's destination picker.
+		srv, st := serve(t)
+		retitle(t, st, "MUS-P-0002", "Idea `inbox`")
+		surfaces = append(surfaces, surface{"intake picker", get(t, srv.URL+"/intake"),
+			[]string{`<option value="MUS-P-0002">Idea inbox</option>`}})
+	}
+	{ // The queue's held-jot picker, and its Route it for me guess.
+		h := queueRig(t)
+		retitle(t, h.st, "MUS-P-0001", "`Mustur` core")
+		reader, _ := h.as(t, "friend@example.com", map[string]account.Role{"MUS": account.Reader})
+		owner, _ := h.as(t, "owner@example.com", map[string]account.Role{"MUS": account.Owner})
+		holdOne(t, h, reader, "")
+		surfaces = append(surfaces, surface{"queue picker", bodyOf(t, owner, h.srv.URL+"/questions"),
+			[]string{`<option value="" selected>Route it for me (Mustur core)</option>`,
+				`<option value="MUS-P-0001">Mustur core</option>`}})
+	}
+	{ // The start picker.
+		srv, st, ctx := restoreServer(t, fakeRunner{})
+		repo := record.Record{ID: "MUS-R-0001", Kind: "repository", Title: "The `mustur` tree", At: "2026-08-20",
+			Data: []record.Field{{Key: "Checkout on MUS-H-0001", Value: "/checkout"}}}
+		if err := st.Append(ctx, repo, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+		surfaces = append(surfaces, surface{"start picker", getFrom(t, srv, "/sessions?new=1"),
+			[]string{`<option value="MUS-R-0001">The mustur tree &mdash; /checkout</option>`}})
+	}
+	{ // The composer's intake-box target.
+		now := time.Date(2026, 8, 24, 12, 0, 0, 0, time.UTC)
+		srv, st := serveCompose(t, active("mustur/Mustur", now), true)
+		retitle(t, st, "MUS-P-0002", "Idea `inbox`")
+		surfaces = append(surfaces, surface{"compose target", getFrom(t, srv, "/compose"),
+			[]string{"Idea inbox"}})
+	}
+
+	for _, s := range surfaces {
+		for _, w := range s.want {
+			if !strings.Contains(s.body, w) {
+				t.Errorf("the %s does not carry %q", s.name, w)
+			}
+		}
+		for _, raw := range []string{"`inbox`", "`Mustur`", "`mustur`"} {
+			if strings.Contains(s.body, raw) {
+				t.Errorf("the %s shows %s with its backticks", s.name, raw)
+			}
+		}
+	}
+}
+
+// What was just filed says where it went, and the destination's title reads
+// as it does everywhere else: intake's done line, its reason and its recent
+// row, the queue after approving, and the composer's "filed ... to ...".
+func TestWhereAJotWentReadsItsTitlesCode(t *testing.T) {
+	const inbox = `Idea <code class="t-code">inbox</code>`
+	noClient := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}}
+
+	t.Run("intake", func(t *testing.T) {
+		srv, st := serve(t)
+		retitle(t, st, "MUS-P-0002", "Idea `inbox`")
+		// Named through an alias, so the reason quotes the title.
+		r, err := st.Get(context.Background(), "MUS-R-0001")
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.Title = "The `mustur` tree"
+		r.Data = append(r.Data, record.Field{Key: "Aliases", Value: "mustur tree"})
+		if err := st.Append(context.Background(), r, "amend", "test"); err != nil {
+			t.Fatal(err)
+		}
+		res, err := noClient.PostForm(srv.URL+"/intake", url.Values{"jot": {"a thought with no home"}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		done := follow(t, srv.URL, res)
+		if !strings.Contains(done, "→ "+inbox) {
+			t.Error("the done line does not render the destination's code span")
+		}
+		if !strings.Contains(done, `<span class="to">`+inbox+` (MUS-P-0002)</span>`) {
+			t.Error("the recent row does not render the destination's code span")
+		}
+		res, err = noClient.PostForm(srv.URL+"/intake", url.Values{"jot": {"the mustur tree should log slow queries"}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		named := follow(t, srv.URL, res)
+		if !strings.Contains(named, `<span class="why">the jot names The <code class="t-code">mustur</code> tree</span>`) {
+			t.Error("the reason does not render the named title's code span")
+		}
+		for where, body := range map[string]string{"done": done, "named": named} {
+			if strings.Contains(body, "`inbox`") || strings.Contains(body, "`mustur`") {
+				t.Errorf("the %s page shows a title's backticks", where)
+			}
+		}
+	})
+
+	t.Run("queue", func(t *testing.T) {
+		h := queueRig(t)
+		retitle(t, h.st, "MUS-P-0002", "Idea `inbox`")
+		reader, _ := h.as(t, "friend@example.com", map[string]account.Role{"MUS": account.Reader})
+		owner, _ := h.as(t, "owner@example.com", map[string]account.Role{"MUS": account.Owner, "IDW": account.Owner})
+		held := holdOne(t, h, reader, "MUS-P-0001")
+		res := approveAs(t, h, owner, held.ID, "MUS-P-0002")
+		if res.StatusCode != http.StatusSeeOther {
+			t.Fatalf("approve: %d", res.StatusCode)
+		}
+		page := bodyOf(t, owner, h.srv.URL+res.Header.Get("Location"))
+		if !strings.Contains(page, "→ "+inbox+".") {
+			t.Error("the queue's filed line does not render the destination's code span")
+		}
+		if strings.Contains(page, "`inbox`") {
+			t.Error("the queue's filed line shows the title's backticks")
+		}
+	})
+
+	t.Run("compose", func(t *testing.T) {
+		now := time.Date(2026, 8, 24, 12, 0, 0, 0, time.UTC)
+		srv, st := serveCompose(t, active("mustur/Mustur", now), true)
+		retitle(t, st, "MUS-P-0002", "Idea `inbox`")
+		res := post(t, srv, url.Values{"text": {"a thought"}, "to": {"MUS-P-0002"}})
+		res.Body.Close()
+		page := follow(t, srv.URL, res)
+		if !strings.Contains(page, "to Idea inbox</p>") {
+			t.Error("the composer does not say where the jot was filed, in plain words")
+		}
+		if strings.Contains(page, "`inbox`") {
+			t.Error("the composer's filed line shows the title's backticks")
+		}
+	})
 }

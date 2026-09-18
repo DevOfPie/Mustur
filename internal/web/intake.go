@@ -696,8 +696,8 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{if .Attention}}<p class="waiting att"><a href="/records">{{.Attention}} record{{if ne .Attention 1}}s need{{else}} needs{{end}} attention</a></p>{{end}}
 {{if .Error}}<p class="said">Not {{if .Reader}}sent{{else}}filed{{end}}: {{.Error}}</p>{{end}}
 {{if .Sent}}<p class="said">Sent for approval. An owner files it or discards it.</p>{{end}}
-{{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
-<span class="why">{{.Why}}</span></p>{{end}}
+{{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{title .Routed}}{{end}}<br>
+<span class="why">{{title .Why}}</span></p>{{end}}
 {{if .Warn}}<p class="said">{{.Warn}}</p>{{end}}
 <form method="post" action="/intake" enctype="multipart/form-data">
   <textarea id="jot" name="jot"{{if .Done}} data-filed{{end}} autofocus spellcheck="true" autocapitalize="sentences" autocorrect="on"
@@ -727,7 +727,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 {{range .Scratch}}<li><span class="tmp">scratch</span> {{.Text}}<span class="to">goes on restart</span></li>{{end}}
 </ul>{{end}}
 {{if .Recent}}<ul>
-{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{title .Title}}<span class="to">{{.Routed}}</span></li>{{end}}
+{{range .Recent}}<li><a class="rec" href="/records/{{.ID}}"><code>{{.ID}}</code></a> {{title .Title}}<span class="to">{{title .Routed}}</span></li>{{end}}
 </ul>{{else}}<p class="none">Nothing filed in {{.Cutoff}}.</p>{{end}}
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}

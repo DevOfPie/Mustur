@@ -739,7 +739,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(titleFuncs).Funcs(
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
 {{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
-{{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .FiledTo}} → {{.FiledTo}}{{end}}.</p>{{end}}
+{{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .FiledTo}} → {{title .FiledTo}}{{end}}.</p>{{end}}
 {{if .Discarded}}<p class="said">Discarded. Nothing was kept.</p>{{end}}
 {{if .Held}}<section aria-labelledby="held-h">
 <h2 class="sect" id="held-h">Jots waiting for approval</h2>
@@ -748,7 +748,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(titleFuncs).Funcs(
   <span class="txt">{{.Text}}</span>
   <label>File to
     <select name="to">
-      <option value=""{{if not .To}} selected{{end}}>Route it for me{{if .Guess}} ({{.Guess}}){{end}}</option>
+      <option value=""{{if not .To}} selected{{end}}>Route it for me{{if .Guess}} ({{titleText .Guess}}){{end}}</option>
       {{$to := .To}}{{range $.HeldGroups}}<optgroup label="{{.Label}}">
         {{range .Items}}<option value="{{.ID}}"{{if eq .ID $to}} selected{{end}}>{{titleText .Name}}</option>{{end}}
       </optgroup>{{end}}
