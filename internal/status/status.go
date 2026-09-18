@@ -202,6 +202,88 @@ func Declared(rs []record.Record) bool {
 	return false
 }
 
+// Declared reports whether any project in the index has a list. An index with
+// none is a store that predates MUS-D-0196, where nothing is checked.
+func (p Projects) Declared() bool {
+	for _, ws := range p {
+		if len(ws) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// A Refusal is why one finding cannot be written as it stands. Problem says
+// what is wrong; Words is the list the finding's project declares, so the
+// caller can say what to pass instead in its own terms.
+type Refusal struct {
+	ID      string // the finding, or its prefix when it has no identifier yet
+	Prefix  string
+	Problem string
+	Words   Words
+}
+
+func (r *Refusal) Error() string {
+	return fmt.Sprintf("%s: %s. Status is one of: %s", r.ID, r.Problem, r.Words.List())
+}
+
+// List is the words as "word (state)", in the order the project declares them.
+func (ws Words) List() string {
+	if len(ws) == 0 {
+		return "(none declared)"
+	}
+	parts := make([]string, len(ws))
+	for i, w := range ws {
+		parts[i] = w.Word + " (" + w.State + ")"
+	}
+	return strings.Join(parts, ", ")
+}
+
+// Finding checks one finding about to be written under prefix, the way Check
+// checks the store: a Status word the project declares, a State that is one,
+// and the two agreeing. It returns nil for any other kind, and when no project
+// declares a list at all.
+func Finding(prefix string, r record.Record, p Projects) *Refusal {
+	if r.Kind != "finding" || !p.Declared() {
+		return nil
+	}
+	id := r.ID
+	if id == "" {
+		id = "a new " + prefix + " finding"
+	}
+	ws, ok := p[prefix]
+	refuse := func(problem string) *Refusal {
+		return &Refusal{ID: id, Prefix: prefix, Problem: problem, Words: ws}
+	}
+	if !ok || len(ws) == 0 {
+		return refuse("no project record declares a Status word for the prefix " + prefix)
+	}
+	word, state := WordOf(r), StateOf(r)
+	mapped, declared := ws.State(word)
+	switch {
+	case word == "":
+		return refuse("it has no Status word")
+	case !declared:
+		return refuse(fmt.Sprintf("Status %q is not a word %s declares", clip(word), prefix))
+	case state == "":
+		return refuse(fmt.Sprintf("it has no State; %s means %s", word, mapped))
+	case !ValidState(state):
+		return refuse(fmt.Sprintf("State %q is not open, done or dropped; %s means %s", clip(state), word, mapped))
+	case state != mapped:
+		return refuse(fmt.Sprintf("Status %s means %s, and State says %s", word, mapped, state))
+	}
+	return nil
+}
+
+// clip keeps a quoted value to one readable line: what gets refused is most
+// often a paragraph put where a word goes.
+func clip(s string) string {
+	if r := []rune(s); len(r) > 60 {
+		return string(r[:60]) + "…"
+	}
+	return s
+}
+
 // Check reports every finding among rs whose State or Status is not what its
 // project declares: no State, a State outside the three, no Status word, a word
 // its project's list does not declare, a word mapping to a State other than

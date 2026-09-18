@@ -118,6 +118,43 @@ func TestDeclaredIsWhetherAnyProjectHasAList(t *testing.T) {
 	}
 }
 
+func TestFindingRefusesOneFindingTheWayCheckReportsIt(t *testing.T) {
+	p, _ := Index([]record.Record{
+		project("MUS-P-0001", "MUS", "open = open :: work remains", "fixed = done :: repaired"),
+		project("MUS-P-0003", "HRD"),
+	})
+	long := strings.Repeat("prose ", 20)
+	for _, c := range []struct {
+		prefix string
+		r      record.Record
+		want   string
+	}{
+		{"MUS", finding("MUS-F-0001", StatusField, "open", StateField, Open), ""},
+		{"MUS", finding("", StatusField, "fixed", StateField, Done), ""},
+		{"MUS", record.Record{Kind: "decision"}, ""},
+		{"MUS", finding("", StateField, Open), "a new MUS finding: it has no Status word"},
+		{"MUS", finding("MUS-F-0002", StatusField, long, StateField, Open), `Status "` + long[:60] + `…" is not a word MUS declares`},
+		{"MUS", finding("MUS-F-0003", StatusField, "fixed"), "it has no State; fixed means done"},
+		{"MUS", finding("MUS-F-0004", StatusField, "fixed", StateField, "closed"), `State "closed" is not open, done or dropped`},
+		{"MUS", finding("MUS-F-0005", StatusField, "fixed", StateField, Open), "Status fixed means done, and State says open"},
+		{"HRD", finding("HRD-F-0001", StatusField, "open", StateField, Open), "no project record declares a Status word for the prefix HRD"},
+		{"LNK", finding("LNK-F-0001", StatusField, "open", StateField, Open), "no project record declares a Status word for the prefix LNK"},
+	} {
+		no := Finding(c.prefix, c.r, p)
+		switch {
+		case c.want == "" && no != nil:
+			t.Errorf("%s refused: %v", c.r.ID, no)
+		case c.want != "" && (no == nil || !strings.Contains(no.Error(), c.want)):
+			t.Errorf("%s: got %v, want %q", c.r.ID, no, c.want)
+		}
+	}
+	// No list anywhere: nothing is checked.
+	bare, _ := Index([]record.Record{project("MUS-P-0001", "MUS")})
+	if no := Finding("MUS", finding("MUS-F-0001", StatusField, long), bare); no != nil {
+		t.Errorf("a store with no list refused: %v", no)
+	}
+}
+
 func TestSetReplacesInPlaceOrAppends(t *testing.T) {
 	r := finding("MUS-F-0001", "Evidence", "", StatusField, "unreviewed")
 	Set(&r, Dropped, Superseded)

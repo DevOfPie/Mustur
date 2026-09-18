@@ -129,6 +129,70 @@ func TestARerouteGivesAStatelessJotTheStateItsWordMeans(t *testing.T) {
 	}
 }
 
+// Every finding intake writes passes the check `mustur add` and `amend` refuse
+// on (MUS-D-0196): a filed jot, a kept jot, a moved jot and its stub. The web
+// intake box, Move and Keep call these same functions, so this is their check
+// too.
+func TestEveryFindingIntakeWritesIsOneItsProjectDeclares(t *testing.T) {
+	words := []string{
+		"unreviewed = open :: not triaged",
+		"superseded = dropped :: rerouted",
+	}
+	rs := withOptOut()
+	for i := range rs {
+		if rs[i].Kind != "project" {
+			continue
+		}
+		if rs[i].ID == "MUS-P-0001" {
+			rs[i].Data = append(rs[i].Data, record.Field{Key: PrefixField, Value: "MUS"})
+		}
+		for _, w := range words {
+			rs[i].Data = append(rs[i].Data, record.Field{Key: status.WordField, Value: w})
+		}
+	}
+	s, ctx := openWith(t, rs)
+	check := func(what string, id string) {
+		t.Helper()
+		r, err := s.Get(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		projects, err := s.List(ctx, "project")
+		if err != nil {
+			t.Fatal(err)
+		}
+		index, _ := status.Index(projects)
+		if !index.Declared() {
+			t.Fatal("the fixture declares no list, so nothing was checked")
+		}
+		prefix := strings.SplitN(id, "-", 2)[0]
+		if no := status.Finding(prefix, r, index); no != nil {
+			t.Errorf("%s: %v", what, no)
+		}
+	}
+
+	filed, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the old intake notes", Actor: "pie", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	check("filed", filed.ID)
+	if _, err := Keep(ctx, s, filed.ID, "owner@example.com", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	check("kept", filed.ID)
+
+	other, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the older intake notes", Actor: "pie", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	moved, err := Reroute(ctx, s, RerouteRequest{Project: "MUS", ID: other.ID, To: "MUS-P-0003", Actor: "owner", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	check("moved", moved.Fresh.ID)
+	check("stub", other.ID)
+}
+
 // A stub written with only the lowercase citation is still a stub.
 func TestAStubCitingItsReplacementIsNotReroutedAgain(t *testing.T) {
 	s, ctx := openWith(t, withOptOut())

@@ -370,6 +370,19 @@ func cmdWrite(args []string, op string) error {
 			return fmt.Errorf("%q is not a record kind: %s", positional, strings.Join(kindNames(), ", "))
 		}
 		r.Kind = positional
+		if r.Kind == "finding" {
+			// A finding nobody has triaged, as intake files one (MUS-D-0196).
+			_, hasWord := r.Get(status.StatusField)
+			_, hasState := r.Get(status.StateField)
+			if !hasWord && !hasState {
+				r.Data = append(r.Data,
+					record.Field{Key: status.StatusField, Value: status.Unreviewed},
+					record.Field{Key: status.StateField, Value: status.Open})
+			}
+		}
+		if err := refuseFinding(ctx, s, *project, r); err != nil {
+			return err
+		}
 		// Allocation and insertion in one act. Two calls let two writers claim
 		// the same serial, and the loser's record was told it was filed.
 		written, err := s.Create(ctx, r, *project, role, *actor)
@@ -389,6 +402,13 @@ func cmdWrite(args []string, op string) error {
 			r.ID, r.Kind = existing.ID, existing.Kind
 		} else if r.At == "" {
 			r.At = time.Now().Format("2006-01-02")
+		}
+		// The record as it will stand, not the flags: an amend that leaves a
+		// bad Status alone is refused as surely as one that writes it.
+		if id, err := ident.Parse(r.ID); err == nil {
+			if err := refuseFinding(ctx, s, id.Project, r); err != nil {
+				return err
+			}
 		}
 	}
 	if err := s.Append(ctx, r, op, *actor); err != nil {
@@ -620,6 +640,31 @@ func newServer(addr string, handler http.Handler, log io.Writer) *http.Server {
 		Handler:           web.LogRequests(log, handler),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+}
+
+// refuseFinding stops add and amend writing a finding whose Status is not a
+// word its project declares, or whose State is missing, not one, or not the
+// State the word means (MUS-D-0196). Sessions kept amending prose back into
+// Status after the mapping was written — MUS-F-0172 among them — and the gate
+// over the store only noticed afterwards. Nothing is written when it refuses,
+// and it says what to pass instead. A store where no project declares a list
+// is not checked.
+func refuseFinding(ctx context.Context, s *store.Store, prefix string, r record.Record) error {
+	if r.Kind != "finding" {
+		return nil
+	}
+	projects, err := s.List(ctx, "project")
+	if err != nil {
+		return err
+	}
+	index, _ := status.Index(projects)
+	if no := status.Finding(prefix, r, index); no != nil {
+		return fmt.Errorf("refused, nothing written. %s: %s.\n"+
+			"  Pass --data Status=WORD --data State=STATE, where STATE is the one the word means; "+
+			"put any prose about it in --data Note=….\n"+
+			"  Status is one of: %s", no.ID, no.Problem, no.Words.List())
+	}
+	return nil
 }
 
 // verifyFindings is the gate over the store's findings (MUS-D-0196): every one
