@@ -215,6 +215,11 @@ expands in place, one line up front and the paragraph behind it only when asked;
 and answering is one tap above the bar. The expansion is a `<details>` element,
 so none of it costs script.
 
+An identifier in a question's text links to its record when the store holds
+one, except in an option's label and line, which stay text because the whole
+row is the control (MUS-F-0168); whether those links open a new tab is open on
+MUS-Q-0160.
+
 **Six things differed from the drawing, and five still do** — the project pill
 has been rendered since MUS-F-0150. An earlier version of this paragraph
 said two, and a review counted the rest — so they are listed rather than
