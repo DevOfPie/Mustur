@@ -1079,7 +1079,10 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
      widens the page and takes the fixed bar with it (MUS-F-0033). */
   .narrow { display: flex; flex-wrap: wrap; gap: .5rem; padding: .6rem 1rem;
             border-bottom: 1.4px solid var(--edge); }
-  .narrow .pick { display: flex; gap: .5rem; flex: 1 1 22rem; min-width: 0; }
+  /* Three pickers wrap rather than share a phone's width three ways, which cut
+     "All projects" and the State's count short at 390px. */
+  .narrow .pick { display: flex; flex-wrap: wrap; gap: .5rem; flex: 1 1 30rem; min-width: 0; }
+  .narrow .pick select { flex: 1 1 9rem; }
   .narrow .find { display: flex; gap: .5rem; flex: 1 1 16rem; min-width: 0; }
   .narrow select, .narrow input { flex: 1; min-width: 0; }
   .narrow select, .narrow input, .narrow button {
@@ -1107,8 +1110,13 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
             font-size: .93em; }
   /* A finding's Status word, in the tone of its State (MUS-D-0196): open in
      the warn tone the attention marks wear, done in the accent, dropped
-     muted. The word is the text, so the tone is never the only signal. */
-  .row .st { flex: none; font-size: .72em; line-height: 1.5; padding: 0 .45rem;
+     muted. The word is the text, so the tone is never the only signal.
+     Capped and cut with an ellipsis, on a phone too: a word is short, but a
+     Status amended back to a sentence is not, and uncapped one widened the
+     page by 1,099px at 390 and took the bar with it (MUS-F-0033's failure). */
+  .row .st { flex: 0 1 auto; max-width: 9rem; min-width: 0; overflow: hidden;
+             text-overflow: ellipsis; white-space: nowrap;
+             font-size: .72em; line-height: 1.5; padding: 0 .45rem;
              border: 1px solid var(--edge); border-radius: 999px; opacity: .6; }
   .row .st.open { border-color: var(--warn); background: var(--warn-soft); opacity: 1; }
   .row .st.done { border-color: var(--accent); background: var(--accent-soft); opacity: 1; }

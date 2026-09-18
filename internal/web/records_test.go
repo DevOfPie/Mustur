@@ -507,6 +507,24 @@ func TestARefFieldMayNameSeveralRecords(t *testing.T) {
 // and took the fixed tab bar off the bottom of the screen with it. Measured in
 // a headless browser at 390px: 625px of document before, 390 after, and the bar
 // back on the first screen (MUS-F-0131).
+// A Status is a word, but one amended back to a sentence is not, and an
+// uncapped pill of one widened the page by 1,099px at 390 — measured on a copy
+// of the live store, MUS-F-0172, 2026-09-18.
+func TestAStatusPillIsCapped(t *testing.T) {
+	srv := serveRecords(t, "", decision("MUS-D-0001", "A decision", "Decided."))
+	css, _ := fetch(t, srv, "/records")
+	i := strings.Index(css, ".row .st {")
+	if i < 0 {
+		t.Fatal("no .row .st rule on the records page")
+	}
+	block := css[i : i+strings.Index(css[i:], "}")]
+	for _, want := range []string{"max-width", "min-width: 0", "overflow: hidden", "text-overflow: ellipsis"} {
+		if !strings.Contains(block, want) {
+			t.Errorf("the pill has no %q: %s", want, block)
+		}
+	}
+}
+
 func TestRecordTextCanBreakWhereverItHasTo(t *testing.T) {
 	srv := serveRecords(t, "", decision("MUS-D-0001", "A decision", "Decided."))
 	css, code := fetch(t, srv, "/records")
