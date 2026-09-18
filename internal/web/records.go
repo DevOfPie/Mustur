@@ -844,8 +844,10 @@ func moved(w http.ResponseWriter, r *http.Request, from, to string) {
 	http.Redirect(w, r, "/records/"+to+"?moved="+url.QueryEscape(from), http.StatusSeeOther)
 }
 
-// move performs the move a record proposes: exactly `mustur reroute <ID> --to
-// <what it names>`, through the same function, with the owner as actor.
+// move performs the move a record proposes, through intake.Reroute — the
+// function `mustur reroute` calls — with the owner as actor. It is narrower
+// than the command: it goes only to a place the record names, and it writes
+// its own reason rather than taking one.
 func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
 	rec, ok := rr.attending(w, r)
 	if !ok {

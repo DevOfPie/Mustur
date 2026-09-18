@@ -8,6 +8,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/DevOfPie/Mustur/internal/intake"
@@ -23,6 +24,11 @@ func cmdReroute(args []string) error {
 	id, err := parseWithPositional(fs, args, "reroute needs one identifier")
 	if err != nil {
 		return err
+	}
+	// Refused before the store is opened, as it was before the extraction:
+	// a mistyped command should not touch the database to say so.
+	if strings.TrimSpace(*to) == "" {
+		return fmt.Errorf("reroute needs --to: a correction that does not say where is not a correction")
 	}
 
 	s, ctx, err := openStore(*db)

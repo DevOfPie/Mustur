@@ -240,7 +240,8 @@ section above the filters, whatever they say, each row naming where it would go,
 and absent at nought; a matching row in the list below carries a warn dot. A
 record needing attention carries a banner above its title saying what it names;
 an owner is also offered **Move to …**, which posts to `/records/{id}/move` and
-is exactly `mustur reroute --to` through the same function, and **Keep in intake
+reroutes through the function `mustur reroute --to` calls, narrowed to a place
+the jot names and with its own reason written, and **Keep in intake
 box**, which posts to `/records/{id}/keep` and writes who and when as `Kept`.
 Both are plain form posts that work with script blocked, refuse a non-owner and
 a cross-site post with 403, and stack full width on a phone; a reader sees the

@@ -153,8 +153,8 @@ since
 count it was rendered with, and the owner missed a question being raised because
 of it. `bar.js` polls `/questions/count` and `/records/attention/count` and
 writes both badges (Decisions, and Records counting records that need attention
-on MUS-D-0193), and it is the only code that writes one — the session view having its own copy is how the first fix
-ended up living on a single surface
+on MUS-D-0193), and it is the only code that writes one — the session view
+having its own copy is how the first fix ended up living on a single surface
 ([MUS-F-0086](records/findings.md#mus-f-0086)). Every page still renders its own
 count server-side and works with script blocked; what stops is the number
 changing.
