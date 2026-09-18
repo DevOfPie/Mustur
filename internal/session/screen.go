@@ -102,6 +102,10 @@ type Hub struct {
 
 	mu    sync.Mutex
 	panes map[string]*pane
+	// listFailed is the last listing failure adopt logged, so a tmux that
+	// stays unreachable is said once rather than every SuperviseEvery, and
+	// its recovery is said too.
+	listFailed string
 }
 
 // Sub is one viewer's attachment.
@@ -319,9 +323,22 @@ func (h *Hub) adopt(ctx context.Context) {
 	if err != nil {
 		// tmux could not be asked. Nothing is adopted and nothing is dropped:
 		// a listing that failed is not a machine with no sessions on it
-		// (MUS-D-0062).
+		// (MUS-D-0062). Said in the log, because until MUS-F-0160 this path
+		// was silent and a flake that emptied every list left no trace.
+		h.mu.Lock()
+		if msg := err.Error(); msg != h.listFailed {
+			log.Printf("session: listing failed, keeping every pane: %v", err)
+			h.listFailed = msg
+		}
+		h.mu.Unlock()
 		return
 	}
+	h.mu.Lock()
+	if h.listFailed != "" {
+		log.Printf("session: listing answered again after: %s", h.listFailed)
+		h.listFailed = ""
+	}
+	h.mu.Unlock()
 	running := make(map[string]bool, len(live))
 	for _, sn := range live {
 		running[sn.Project] = true

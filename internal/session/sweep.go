@@ -128,6 +128,7 @@ func (s *Sweeper) Sweep(ctx context.Context) {
 	if err != nil {
 		// With tmux unanswering nothing is restarted, which is the same answer
 		// every other path gives to the same silence (MUS-D-0062).
+		s.log().Warn("update sweep: listing failed, nothing restarted", "err", err)
 		return
 	}
 	for _, sn := range live {

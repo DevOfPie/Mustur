@@ -196,6 +196,59 @@ func (refusing) Run(context.Context, string, ...string) (string, error) {
 	return "", errors.New("tmux: permission denied")
 }
 
+// unreachable is a failure in the words tmux 3.6 actually prints for one,
+// through the same "error connecting to" format as its honest no-socket answer.
+// Until MUS-F-0160 that phrase alone read as no sessions, so every remembered
+// session was offered back as lost while it was still running.
+type unreachable struct{}
+
+func (unreachable) Run(context.Context, string, ...string) (string, error) {
+	return "error connecting to /tmp/tmux-1000/default (Permission denied)\n", errors.New("exit status 1")
+}
+
+func TestNothingIsOfferedBackWhenTmuxRefusesTheConnection(t *testing.T) {
+	srv, st, ctx := restoreServer(t, unreachable{})
+	if err := st.RememberSession(ctx, "lost", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"/sessions?new=1", "/sessions/lost"} {
+		if body := getFrom(t, srv, path); strings.Contains(body, "/restore") {
+			t.Errorf("%s: a running session was offered back on a refused connection", path)
+		}
+	}
+}
+
+// The page a failed listing lands on says so, rather than saying nothing is
+// there (MUS-D-0062). Until the review of MUS-F-0160's fix, rows returned the
+// empty lists and no error, so a running session's own page said Mustur had
+// not started it and /sessions said "No sessions." -- the same absence the
+// adapter had just been fixed to stop reporting, one layer up.
+func TestAFailedListingIsSaidAndNeverReadAsAbsence(t *testing.T) {
+	srv, st, ctx := restoreServer(t, unreachable{})
+	// Remembered and, as far as anybody knows, still running: the page cannot
+	// tell, which is the point.
+	if err := st.RememberSession(ctx, "alive", "/checkout", "claude"); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"/sessions/alive", "/sessions", "/sessions?new=1"} {
+		body := getFrom(t, srv, path)
+		for _, want := range []string{"tmux could not be asked", "Permission denied", `class="said err"`} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s: the page does not say %q", path, want)
+			}
+		}
+		for _, absent := range []string{
+			"did not start a session", "No sessions.", // absence claimed
+			"/restore", "Not running", // something offered back
+			"/assets/session.js", // a terminal for a session nobody found
+		} {
+			if strings.Contains(body, absent) {
+				t.Errorf("%s: a failed listing still renders %q", path, absent)
+			}
+		}
+	}
+}
+
 func postRestore(t *testing.T, srv *httptest.Server, path, origin string) *http.Response {
 	t.Helper()
 	req, err := http.NewRequest(http.MethodPost, srv.URL+path, strings.NewReader(""))

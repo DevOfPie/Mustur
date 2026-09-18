@@ -1,7 +1,9 @@
 package web
 
 import (
+	"bytes"
 	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -396,5 +398,28 @@ func TestMultiLineFromTheComposeSurfaceReachesTheSession(t *testing.T) {
 	}
 	if !strings.Contains(received, "surface\nsecond") && !strings.Contains(received, "surface\r\nsecond") {
 		t.Errorf("the newline between lines did not survive: %q", received)
+	}
+}
+
+// A failed listing shrinks the destinations to the inbox, and until MUS-F-0160
+// it did so without a word anywhere: the composer looked exactly like a machine
+// with nothing running. The log line is the only place the difference is kept,
+// so it is what is tested.
+func TestComposeLogsAFailedListingAndOffersNoSession(t *testing.T) {
+	var buf bytes.Buffer
+	prev, flags := log.Writer(), log.Flags()
+	log.SetOutput(&buf)
+	log.SetFlags(0)
+	t.Cleanup(func() { log.SetOutput(prev); log.SetFlags(flags) })
+
+	c := &Compose{Adapter: &session.Adapter{Run: unreachable{}}, Project: "MUS", Actor: "pie"}
+	if got := c.targets(context.Background(), ""); len(got) != 0 {
+		t.Errorf("a failed listing offered %v", got)
+	}
+	logged := buf.String()
+	for _, want := range []string{"compose: listing failed", "Permission denied"} {
+		if !strings.Contains(logged, want) {
+			t.Errorf("the log does not say %q; it said %q", want, logged)
+		}
 	}
 }

@@ -28,6 +28,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -209,6 +210,13 @@ type sessionPage struct {
 	// session as chosen and choosing it again fires no change (MUS-F-0143).
 	Unchosen bool
 	Error    string
+	// Unreachable is why tmux could not be asked what is running, and empty
+	// when it answered. A listing that failed is not a machine with no
+	// sessions on it (MUS-D-0062): with this set the page says it could not
+	// ask, claims nothing is missing, and offers nothing back, because every
+	// remembered session would look lost while it may still be running
+	// (MUS-F-0160).
+	Unreachable string
 }
 
 // A subagentRow is one sub-agent as the page says it, with every value already
@@ -323,13 +331,16 @@ func since(d time.Duration) string {
 // (MUS-D-0150).
 //
 // The live query is made once here and its answer handed to lost, which needs
-// it to subtract. With tmux unanswering both lists are empty: nothing is
-// running that this can say, and nothing can be offered back either, because
-// every remembered session would look missing.
-func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostRow, bool) {
+// it to subtract. With tmux unanswering both lists are empty and the error is
+// returned: nothing is running that this can say, and nothing can be offered
+// back either, because every remembered session would look missing. The
+// caller says so on the page rather than reading the empty lists as absence
+// (MUS-D-0062, MUS-F-0160).
+func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostRow, bool, error) {
 	live, err := s.Adapter.List(ctx)
 	if err != nil {
-		return nil, nil, false
+		log.Printf("sessions: listing failed, showing nothing running or lost: %v", err)
+		return nil, nil, false, err
 	}
 	// Most recently active first, which is the owner's answer to MUS-Q-0123:
 	// list redirects into rows[0], so this order is which session /sessions
@@ -363,7 +374,7 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 		}
 		rows = append(rows, row)
 	}
-	return rows, s.lost(ctx, running, here), found
+	return rows, s.lost(ctx, running, here), found, nil
 }
 
 func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
@@ -381,7 +392,7 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 	// running, /sessions goes straight to it, and starting a second one would
 	// otherwise be reachable only by having none.
 	starting := r.URL.Query().Get("new") != "" || r.URL.Query().Get("error") != ""
-	rows, gone, _ := s.rows(r.Context(), "")
+	rows, gone, _, err := s.rows(r.Context(), "")
 	// Only a *running* session is redirected into. With everything lost this
 	// page is where the whole list is offered back, and jumping into the first
 	// of them would hide the rest behind a dropdown.
@@ -389,20 +400,31 @@ func (s *Sessions) list(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/sessions/"+url.PathEscape(rows[0].Project), http.StatusSeeOther)
 		return
 	}
-	s.render(w, r, sessionPage{
+	p := sessionPage{
 		Project: "", Rows: rows, Lost: gone, Missing: len(rows) == 0,
 		Start: true, Error: r.URL.Query().Get("error"),
-	})
+	}
+	if err != nil {
+		p.Missing, p.Unreachable = false, err.Error()
+	}
+	s.render(w, r, p)
 }
 
 func (s *Sessions) show(w http.ResponseWriter, r *http.Request) {
 	project := r.PathValue("project")
-	rows, gone, found := s.rows(r.Context(), project)
+	rows, gone, found, err := s.rows(r.Context(), project)
 	agents, running := s.subagents(project)
 	p := sessionPage{
 		Project: project, Rows: rows, Lost: gone, Missing: !found,
 		Subagents: agents, Running: running, Finished: len(agents) - running,
 		Error: r.URL.Query().Get("error"),
+	}
+	if err != nil {
+		// Not found because nobody could look, which is not the same as not
+		// there: no "did not start a session" and no Recover (MUS-F-0160).
+		p.Missing, p.Unreachable = false, err.Error()
+		s.render(w, r, p)
+		return
 	}
 	// A session that is not running but is remembered gets its own page rather
 	// than "there is nothing to show": that page is where the picker lands
@@ -1462,6 +1484,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
     class="badge" id="badge"{{if not .Subagents}} hidden{{end}}>{{if .Running}}{{.Running}}{{else}}{{len .Subagents}}{{end}}</span></button></span>{{end}}
 </div>{{end}}
 {{if .Error}}<p class="said err">{{.Error}}</p>{{end}}
+<!-- tmux did not answer, so this page does not know what is running and
+     says that instead of saying there is nothing (MUS-D-0062, MUS-F-0160). -->
+{{if .Unreachable}}<p class="said err">tmux could not be asked what is running, so this page cannot say {{if .Project}}whether {{.Project}} is running{{else}}what is running{{end}}, and offers nothing back until it can.<br>
+<small>{{.Unreachable}}</small></p>{{end}}
 {{if .Start}}
 <!-- Starting a session (MUS-D-0146).
 
@@ -1515,6 +1541,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   {{else}}<p class="none">No repository in the routing records has a checkout on this machine, so there is nowhere to start one.</p>{{end}}
   <p><small><a href="/compose">Compose</a> still works: with nothing running it files to the idea inbox.</small></p>
 </div>
+{{else if .Unreachable}}
+<p class="none"><small><a href="/compose">Compose</a> still works: it files to the idea inbox.</small></p>
 {{else if .Recover}}
 <!-- A session Mustur started that is not running, on its own page.
 
@@ -1632,7 +1660,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 <script src="/assets/bar.js"></script>
-{{if not .Missing}}<script src="/assets/session.js"></script>{{end}}
+{{if not (or .Missing .Unreachable)}}<script src="/assets/session.js"></script>{{end}}
 </body>
 </html>
 {{/* One sub-agent row, drawn above the fold while it runs and inside it once
