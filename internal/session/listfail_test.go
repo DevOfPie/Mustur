@@ -145,7 +145,7 @@ func TestRealTmuxAbsenceAndFailureAreToldApart(t *testing.T) {
 	}
 	serve := func(t *testing.T) (dir string, pid int) {
 		t.Helper()
-		dir = t.TempDir()
+		dir = socketDir(t)
 		if out, err := tmux(dir, "new-session", "-d", "-s", "probe", "sleep 600"); err != nil {
 			t.Skipf("could not start a throwaway server: %v: %s", err, out)
 		}
@@ -173,7 +173,7 @@ func TestRealTmuxAbsenceAndFailureAreToldApart(t *testing.T) {
 	}
 
 	t.Run("no server ever started", func(t *testing.T) {
-		t.Setenv("TMUX_TMPDIR", t.TempDir())
+		t.Setenv("TMUX_TMPDIR", socketDir(t))
 		if got, err := a.List(ctx); err != nil || len(got) != 0 {
 			t.Errorf("got %v, %v; want no sessions and no error", got, err)
 		}
@@ -222,6 +222,21 @@ func TestRealTmuxAbsenceAndFailureAreToldApart(t *testing.T) {
 			t.Fatal("the listing never returned")
 		}
 	})
+}
+
+// socketDir is a TMUX_TMPDIR short enough for tmux to put a socket in. The
+// socket is <dir>/tmux-<uid>/default and a unix socket path is capped near 108
+// bytes; t.TempDir() nests the test's name under $TMPDIR, so a long TMPDIR or
+// a long subtest name would fail every call here for a reason that has nothing
+// to do with what is being measured.
+func socketDir(t *testing.T) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("/tmp", "mustur-lf-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+	return dir
 }
 
 func kill(t *testing.T, pid int, sig string) {
