@@ -180,6 +180,11 @@ change on every option a keyboard arrows past. The list on the start form stays,
 because with nothing running that is where the owner arrives and it is the only
 place all of them are visible at once.
 
+**It carries `session.js`**, which binds the picker, whenever there is a running
+or lost session to list; with nothing to pick it carries only `bar.js`. That
+makes it one of the eight surfaces shipping script, counted on MUS-Q-0161
+(MUS-D-0199). With script blocked the noscript Go button submits the picker.
+
 ### 3. Records
 
 **Serves** `/records`, `/records/{id}`
@@ -392,13 +397,16 @@ this page carries script
 ([MUS-Q-0047](../records/questions.md#mus-q-0047)). Everything else on it works
 without.
 
-**The count is seven**, not the four an earlier version of this line claimed:
+**The count is eight**, not the four an earlier version of this line claimed:
 surfaces 9 and 10 are one template and 11 and 12 are another, and each loads its
 script for both. Nobody drew that consequence, which is why the number is
-written out per surface — 1, 5, 8, 9, 10, 11, 12 — rather than asserted. Script
+written out per surface — 1, 2, 5, 8, 9, 10, 11, 12 — rather than asserted. Script
 tags are the right thing to count, answered on
 [MUS-Q-0053](../records/questions.md#mus-q-0053) with a seventh a new decision
-again; intake's draft is that seventh, taken on MUS-Q-0120.
+again; intake's draft is that seventh, taken on MUS-Q-0120. Surface 2 is the
+eighth, taken on MUS-Q-0161 (MUS-D-0199) after it had already shipped
+`session.js` for its picker uncounted; with script blocked the picker still
+submits through its Go button.
 
 Must answer: what the surface refuses, and when you find out. The last passkey
 cannot be removed and the only owner cannot stand down. The banner that

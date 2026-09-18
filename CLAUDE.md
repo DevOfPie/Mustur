@@ -158,16 +158,19 @@ ended up living on a single surface
 count server-side and works with script blocked; what stops is the number
 changing.
 
-On top of that, seven pages carry a second script for something only script can
-do: the session view, the composer, intake, and the four authentication
-surfaces — sign in, accept an invitation, account, and people. Each was a
-decision the owner took, never a precedent set by building it: the composer on
-[MUS-Q-0034](records/questions.md#mus-q-0034), the account page on
-[MUS-Q-0047](records/questions.md#mus-q-0047), intake's draft on MUS-Q-0120.
+On top of that, eight pages carry a second script for something only script can
+do: the session view, the session list, the composer, intake, and the four
+authentication surfaces — sign in, accept an invitation, account, and people.
+Each was a decision the owner took, never a precedent set by building it: the
+composer on [MUS-Q-0034](records/questions.md#mus-q-0034), the account page on
+[MUS-Q-0047](records/questions.md#mus-q-0047), intake's draft on MUS-Q-0120, the
+session list on MUS-Q-0161 (MUS-D-0199) — it loaded `session.js` for its picker
+before anybody counted it.
 
 **What the rule counts is answered** on
 [MUS-Q-0053](records/questions.md#mus-q-0053), 2026-08-25: script tags, and "a
-seventh is a new decision again" — which is how intake's was taken. This file
+seventh is a new decision again" — which is how intake's was taken, and the
+session list's eighth on MUS-Q-0161 (MUS-D-0199). This file
 called it still open until MUS-F-0153. MUS-Q-0078 moved the numbers rather than
 settling it: the count of pages shipping a `<script>` tag is now every page
 that draws the bar, and the count that matters — pages that stop working
@@ -178,7 +181,9 @@ server-rendered at all: it is a live terminal, and neither can the passkey
 ceremony, which is a browser API. The composer can be, and is — its form posts
 and works with the script blocked; what the script adds is the draft, which
 cannot survive a backgrounded phone any other way. Intake is the same, for the
-owner leaving the box to look something up (MUS-F-0152). The account and people
+owner leaving the box to look something up (MUS-F-0152). The session list is
+the same: its picker is bound by `session.js`, and with script blocked the
+noscript Go button submits it (MUS-D-0199). The account and people
 screens are the same: every action is a form, and the script adds a copy button
 and a save-on-change.
 
