@@ -237,6 +237,9 @@ type subagentRow struct {
 	Started int64  `json:"started"`
 	Ended   int64  `json:"ended,omitempty"`
 	Said    string `json:"said,omitempty"`
+	// Earlier is a resumed sub-agent's report from the run before this one,
+	// shown labelled while it runs again (MUS-D-0203).
+	Earlier string `json:"earlier,omitempty"`
 }
 
 // held is the call this session is holding in front of the owner, if any.
@@ -282,6 +285,7 @@ func (s *Sessions) subagents(project string) ([]subagentRow, int) {
 		r := subagentRow{
 			ID:    a.ID,
 			Title: a.Task, Type: a.Type, For: since(a.For(now)), Said: a.Said,
+			Earlier: a.Earlier,
 			Started: a.Started.Unix(),
 		}
 		if a.Running() {
@@ -1381,6 +1385,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
            overscroll-behavior: contain; padding: .9rem 1rem;
            white-space: pre-wrap; word-break: break-word; }
   .dread.quiet { opacity: .6; }
+  .dread .prev { display: block; opacity: .6; font-size: .85em;
+                 margin-bottom: .5rem; }
   .agent { display: flex; align-items: baseline; gap: .5rem; padding: .5rem 0;
            white-space: nowrap; width: 100%; text-align: left; cursor: pointer;
            background: none; border: 0; border-bottom: 1px solid var(--edge);
@@ -1678,7 +1684,7 @@ it has finished (MUS-D-0181). Its message sits beside it for the reading pane. *
 {{define "agentrow"}}<button type="button" class="agent" data-id="{{.ID}}">
       {{if .Title}}<span class="what">{{.Title}}</span>{{else}}<span class="what untitled">{{.Type}}</span>{{end}}
       <span class="pill{{if .Done}} done{{end}}">{{.State}}</span><span class="age">{{.For}}</span><span class="more">&rsaquo;</span>
-    </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{end}}{{end}}`))
+    </button>{{if .Said}}<div class="say" data-for="{{.ID}}">{{.Said}}</div>{{else if .Earlier}}<div class="say" data-for="{{.ID}}" data-earlier>{{.Earlier}}</div>{{end}}{{end}}`))
 
 // answerReason is what the agent is told when a call is refused.
 //

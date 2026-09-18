@@ -616,6 +616,12 @@ func TestAResumedSubagentReadsRunningUntilItStopsAgain(t *testing.T) {
 	if r.Task != "Trace the lease" {
 		t.Errorf("task %q, want the original launch's", r.Task)
 	}
+	// Said is its final message once it has ended, and a running row has not
+	// ended; the first run's report is carried as Earlier, for the drawer to
+	// label as the previous run's (MUS-D-0203).
+	if r.Said != "" || r.Earlier != "first" {
+		t.Errorf("said %q, earlier %q; want no said while running and the first run's report as earlier", r.Said, r.Earlier)
+	}
 
 	record(t, dir, "P", resumed.Add(3*time.Minute), map[string]any{
 		"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "second",
@@ -623,6 +629,9 @@ func TestAResumedSubagentReadsRunningUntilItStopsAgain(t *testing.T) {
 	rows, _ = Subagents(dir, "P")
 	if r := rows[0]; r.Running() || r.Said != "second" || r.For(resumed.Add(time.Hour)) != 3*time.Minute {
 		t.Errorf("row %+v, want it finished by the second stop, saying so, after three minutes", r)
+	}
+	if r := rows[0]; r.Earlier != "" {
+		t.Errorf("earlier %q, want it dropped once the resumed run reported its own", r.Earlier)
 	}
 }
 

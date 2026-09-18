@@ -82,6 +82,10 @@ type Subagent struct {
 	Ended   time.Time // zero while it is still running
 	Doing   string    // the tool it last reached for, while running
 	Said    string    // its final message, once it has ended
+	// Earlier is the final message of a run before this one, kept while a
+	// resumed sub-agent runs again and dropped when that run stops with its
+	// own (MUS-F-0172, MUS-D-0203). Never set on a row that has ended.
+	Earlier string
 }
 
 // Running reports whether this sub-agent has yet to stop.
@@ -425,10 +429,16 @@ func (st *logFold) apply(e event) {
 		// day of Hoard_Work were resumed at least once (MUS-F-0172). The row
 		// is reopened rather than replaced, so it keeps the task its original
 		// launch gave it — a resume has no launching call of its own, and
-		// pairing one would hand it somebody else's — and its last report,
-		// which the next stop overwrites. How long it has run counts from the
-		// start that made it run again.
+		// pairing one would hand it somebody else's. Its last report moves to
+		// Earlier, so Said keeps meaning the final message of a run that has
+		// ended, and the drawer shows it labelled as from the previous run
+		// until the next stop replaces it (MUS-D-0203). A start for a row that
+		// never stopped has no report to move and leaves Earlier as it was.
+		// How long it has run counts from the start that made it run again.
 		if r, seen := rows[e.ID]; seen {
+			if r.Said != "" {
+				r.Earlier, r.Said = r.Said, ""
+			}
 			r.Started, r.Ended, r.Doing = e.At, time.Time{}, ""
 			return
 		}
@@ -480,7 +490,7 @@ func (st *logFold) apply(e event) {
 		// start, carrying text that was never in the session; a fold that
 		// made a row from a stop would have shown those as sub-agents.
 		if r := rows[e.ID]; r != nil {
-			r.Ended, r.Said, r.Doing = e.At, e.Said, ""
+			r.Ended, r.Said, r.Earlier, r.Doing = e.At, e.Said, "", ""
 		}
 	}
 }

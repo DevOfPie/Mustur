@@ -338,6 +338,9 @@ say when one starts, which tool it is in, and when it stops, each tagged with an
 identifier the CLI supplies. Rows above the output are therefore attributed
 rather than inferred, and the pane is untouched. What they do not carry is a
 sub-agent's prose while it runs; that arrives when it finishes.
+A resumed sub-agent that is running again shows its last run's report in the
+reading pane under the label "From the previous run", while its clock counts
+the current run, until its own stop replaces it (MUS-Q-0165, MUS-D-0203).
 
 **The connection is the first one that carries keystrokes in**, not only records
 out. A flaw here is not a wrong page; it is somebody else typing into an agent

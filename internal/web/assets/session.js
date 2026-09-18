@@ -355,9 +355,12 @@
       box.appendChild(row);
       // Out of view, not out of the page: the reading pane reads from here, so
       // it shows the same text whether or not a frame has arrived yet.
-      if (a.said) {
-        var say = el("div", "say", a.said);
+      // A resumed sub-agent that is running again carries its previous run's
+      // report as earlier, and the pane labels it so (MUS-D-0203).
+      if (a.said || a.earlier) {
+        var say = el("div", "say", a.said || a.earlier);
         say.setAttribute("data-for", a.id);
+        if (!a.said) say.setAttribute("data-earlier", "");
         box.appendChild(say);
       }
     }
@@ -450,6 +453,12 @@
     if (say) {
       read.textContent = say.textContent;
       read.className = "dread";
+      // Resumed and running again: what it said is the previous run's, and
+      // says so above the text rather than passing as this run's
+      // (MUS-D-0203). The clock in the meta line already counts this run.
+      if (!done && say.hasAttribute("data-earlier")) {
+        read.insertBefore(el("span", "prev", "From the previous run"), read.firstChild);
+      }
     } else {
       // Nothing said yet. What it is doing and no more (MUS-Q-0056): a
       // sub-agent is a call inside the CLI's own process, so there is no

@@ -561,6 +561,54 @@ func TestASessionWithoutTheHookShowsNoRows(t *testing.T) {
 // nothing leaves the drawer, the running ones stay listed, and what finished
 // is one line away. Shut on arrival and with script blocked, which is what a
 // <details> is without anyone's help.
+// A resumed sub-agent running again carries its previous run's report as
+// earlier, never as said, so the reading pane can label it (MUS-F-0172,
+// MUS-D-0203). Once the resumed run stops, its own report is the row's.
+func TestAResumedSubagentCarriesItsPreviousReportAsEarlier(t *testing.T) {
+	dir := t.TempDir()
+	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
+	now := time.Date(2026, 9, 18, 12, 0, 0, 0, time.UTC)
+	s := &Sessions{
+		Hub: &session.Hub{Adapter: a}, Adapter: a, Actor: "pie",
+		HookDir: dir, Now: func() time.Time { return now.Add(10 * time.Minute) },
+	}
+	mux := http.NewServeMux()
+	s.Routes(mux)
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+	rec := func(payload map[string]any, at time.Time) {
+		b, err := json.Marshal(payload)
+		if err != nil {
+			t.Fatal(err)
+		}
+		session.RecordHookEvent(dir, "Mustur", b, at)
+	}
+	rec(map[string]any{"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose"}, now)
+	rec(map[string]any{"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "First verdict."}, now.Add(time.Minute))
+	rec(map[string]any{"hook_event_name": "SubagentStart", "agent_id": "a1", "agent_type": "general-purpose"}, now.Add(2*time.Minute))
+
+	rows, running := s.subagents("Mustur")
+	if len(rows) != 1 || running != 1 {
+		t.Fatalf("rows %+v, running %d; want the one row running again", rows, running)
+	}
+	if r := rows[0]; r.Said != "" || r.Earlier != "First verdict." {
+		t.Errorf("said %q, earlier %q; want the first run's report as earlier only", r.Said, r.Earlier)
+	}
+	body := getFrom(t, srv, "/sessions/Mustur")
+	if !strings.Contains(body, `<div class="say" data-for="a1" data-earlier>First verdict.</div>`) {
+		t.Error("the first paint does not mark the running row's report as the previous run's")
+	}
+
+	rec(map[string]any{"hook_event_name": "SubagentStop", "agent_id": "a1", "last_assistant_message": "Second verdict."}, now.Add(5*time.Minute))
+	rows, _ = s.subagents("Mustur")
+	if r := rows[0]; r.Said != "Second verdict." || r.Earlier != "" {
+		t.Errorf("said %q, earlier %q; want the resumed run's own report and nothing earlier", r.Said, r.Earlier)
+	}
+	if body := getFrom(t, srv, "/sessions/Mustur"); strings.Contains(body, "data-earlier") {
+		t.Error("a finished row is still marked as carrying a previous run's report")
+	}
+}
+
 func TestFinishedSubagentsFoldUnderACount(t *testing.T) {
 	dir := t.TempDir()
 	a := &session.Adapter{Run: fakeRunner{listing: owned("mustur/Mustur")}}
