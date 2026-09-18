@@ -15,6 +15,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/question"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -416,8 +417,9 @@ func TestTheNoteTravelsWithTheAnswerIntoTheSession(t *testing.T) {
 // A sender that keeps what it was handed.
 type recordingSender struct{ sent string }
 
-func (recordingSender) Alive(context.Context, string) (bool, error)    { return true, nil }
-func (recordingSender) Dialog(context.Context, string) (string, error) { return "", nil }
+func (recordingSender) Alive(context.Context, string) (bool, error)             { return true, nil }
+func (recordingSender) Dialog(context.Context, string) (*session.Prompt, error) { return nil, nil }
+func (recordingSender) SendChoice(context.Context, string, string) error        { return nil }
 func (r *recordingSender) Send(_ context.Context, _, text string) error {
 	r.sent = text
 	return nil
@@ -524,7 +526,8 @@ func (s *slowSender) Send(ctx context.Context, _, _ string) error {
 	return ctx.Err()
 }
 
-func (*slowSender) Dialog(context.Context, string) (string, error) { return "", nil }
+func (*slowSender) Dialog(context.Context, string) (*session.Prompt, error) { return nil, nil }
+func (*slowSender) SendChoice(context.Context, string, string) error        { return nil }
 
 // The answer is the owner's the moment it reaches the server. A phone that
 // drops the connection while tmux is being shelled out to must not unmake it —
@@ -693,9 +696,10 @@ func TestADeliveredAnswerSaysWhereItWentToo(t *testing.T) {
 // A sender whose session is alive and takes what it is given.
 type liveSender struct{}
 
-func (liveSender) Alive(context.Context, string) (bool, error)    { return true, nil }
-func (liveSender) Send(context.Context, string, string) error     { return nil }
-func (liveSender) Dialog(context.Context, string) (string, error) { return "", nil }
+func (liveSender) Alive(context.Context, string) (bool, error)             { return true, nil }
+func (liveSender) Send(context.Context, string, string) error              { return nil }
+func (liveSender) Dialog(context.Context, string) (*session.Prompt, error) { return nil, nil }
+func (liveSender) SendChoice(context.Context, string, string) error        { return nil }
 
 // The answer box cannot submit on Enter.
 //

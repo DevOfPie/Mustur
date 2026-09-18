@@ -24,7 +24,15 @@ type Prompt struct {
 	Body    string   `json:"body,omitempty"`
 	Options []Choice `json:"options,omitempty"` // Numbered rows, in order.
 	Keys    []Choice `json:"keys,omitempty"`    // The legend, in the CLI's words.
+	// Kind says which shape was read: empty for a dialog anchored on a legend,
+	// PromptSurvey for the session survey. Delivery has to tell them apart,
+	// because it may dismiss the one and never presses anything on the other
+	// (MUS-D-0202). Omitted when empty, so a dialog's JSON is what it was.
+	Kind string `json:"kind,omitempty"`
 }
+
+// PromptSurvey is the Kind readSurvey gives the session survey.
+const PromptSurvey = "survey"
 
 // A Choice is one thing the pane says can be pressed, and what pressing it does.
 //
@@ -501,7 +509,7 @@ func readSurvey(screen string) *Prompt {
 			rest = append(rest, t)
 		}
 	}
-	return &Prompt{Title: title, Body: strings.Join(rest, " "), Options: surveyRow(lines[row])}
+	return &Prompt{Title: title, Body: strings.Join(rest, " "), Options: surveyRow(lines[row]), Kind: PromptSurvey}
 }
 
 // plainForTest exposes the same stripping ReadPrompt does, so a test can assert
