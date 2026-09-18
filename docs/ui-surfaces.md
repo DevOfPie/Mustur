@@ -319,14 +319,24 @@ What it settled:
 
 | Settled | How it is built |
 | --- | --- |
-| Held jots are reviewed at the top of Decisions and counted in the badge | A "Jots waiting for approval" section above the questions. `/questions/count` adds the held jots the viewer may approve, per viewer, and the rendered badge counts the same |
+| Held jots are reviewed at the top of Decisions and counted in the badge | A "Jots waiting for approval" section above the questions. `/questions/count` adds the held jots the viewer may approve, per viewer, and every server-rendered badge counts the same |
 | Approving files the jot through the one filing path | `POST /intake/held/{id}/approve` calls `intake.File` with the reader as `Filed by` and adds `Approved by` naming the owner. The row is claimed first, so a second press files nothing |
 | The owner can change where it goes | A "File to" select on each card, starting on the reader's choice or on "Route it for me" with the guess named |
-| Only an owner of the destination may approve | Checked against the destination the press names, resolved the way `intake.File` resolves it; anyone else gets 403 and the jot stays waiting. A jot is shown and counted only to those who may approve it |
+| Only an owner of the destination may approve | Checked against both where the jot points now and the destination the press names, each resolved the way `intake.File` resolves it; anyone else gets 403 and the jot stays waiting. A jot is shown and counted only to those who own where it points now |
 | Discard leaves nothing | `POST /intake/held/{id}/discard` deletes the held row. It was never a record, so the log is untouched |
 
-Discarding is held to the same owner rule as approving. The plan named the rule
-for approving; applying it to discarding is the build's reading, not the owner's.
+The plan named the owner rule for approving and nothing more. Two readings
+filled the rest, and the owner kept both as built on
+[MUS-Q-0151](../records/questions.md#mus-q-0151) ("Keep them as built"):
+
+- **Discard is held to the same owner rule**, checked against where the reader
+  pointed it: the person who may let a jot into a project is the person who may
+  keep it out. Approving is held to that too, as well as to the destination the
+  press names, so an owner of one project cannot take a jot sent to another by
+  re-pointing it at their own.
+- **A held jot is visible by its current destination**: shown and counted only
+  to an owner of the project it points at now, which is the destination the
+  reader chose, or where "Route it for me" lands today.
 
 ### 5. Intake
 
@@ -364,9 +374,20 @@ the owner's box and pressing File it answered a bare 403. What it settled:
 | What was sent does not vanish | A "Waiting for an owner" list of the reader's own held jots, each with when it was sent, in Pacific, and where it was pointed |
 | No pictures from readers in this cut | No picture field is rendered for a reader, and the handler refuses a picture with the words kept |
 
-Scratch is not offered to a reader and is refused if posted. The plan did not draw
-it; a reader's send waits for an owner and a scratch filing is one nobody reviews,
-so the two do not combine. That is the build's reading, not the owner's.
+Two more readings filled what the plan did not draw, and the owner kept both as
+built on [MUS-Q-0151](../records/questions.md#mus-q-0151) ("Keep them as
+built"):
+
+- **No Scratch for readers.** It is not offered, and it is refused if posted: a
+  reader's send waits for an owner and a scratch filing is one nobody reviews,
+  so the two do not combine.
+- **One hold per identical text per minute.** The same line from the same
+  account inside a minute is a retry, as `intake.Window` has it for filing, and
+  holds one row. A retry naming a different Where moves that row there rather
+  than being dropped, since a held row, unlike a filed record, can still change.
+
+A refused send, for a picture or for Scratch, renders the whole page with the
+words kept: the destinations, the reader's held list and the badge.
 
 ### 6. Routing
 
