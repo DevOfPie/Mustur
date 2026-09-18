@@ -159,22 +159,31 @@ type queuePage struct {
 	// ShowSessions renders the Sessions tab. See the note on intake's page.
 	ShowSessions bool
 	ShowAccount  bool
+	// Known is every identifier the store holds. Only those are linked
+	// (MUS-F-0168); one it does not hold stays text, as a dangling citation
+	// does on Records.
+	Known map[string]bool
 }
 
-func (q *Questions) open(ctx context.Context) ([]queued, error) {
+func (q *Questions) open(ctx context.Context) ([]queued, map[string]bool, error) {
 	records, err := q.Store.List(ctx, "")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// The project records are already in this listing, so naming every card's
 	// project costs no query beyond the one above, rather than one per question.
+	// Which identifiers resolve is read from it the same way.
 	names := projectNamesIn(records)
+	known := make(map[string]bool, len(records))
+	for _, r := range records {
+		known[r.ID] = true
+	}
 	var out []queued
 	for _, r := range question.Open(records) {
 		item := queued{
 			ID:       r.ID,
 			Title:    r.Title,
-			Body:     queueMarkdown(strings.TrimSpace(r.Body)),
+			Body:     queueMarkdown(strings.TrimSpace(r.Body), known),
 			Asked:    r.At,
 			Needed:   question.Needed(r),
 			Surfaced: question.Surfaced(r),
@@ -190,17 +199,17 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		}
 		for _, o := range question.Options(r) {
 			item.Options = append(item.Options, queuedOption{
-				Label: o.Label, Line: o.Says(), Detail: queueMarkdown(o.Detail),
+				Label: o.Label, Line: o.Says(), Detail: queueMarkdown(o.Detail, known),
 				Recommended: o.IsRecommended(),
 			})
 		}
 		out = append(out, item)
 	}
-	return out, nil
+	return out, known, nil
 }
 
 func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
-	openQs, err := q.open(r.Context())
+	openQs, known, err := q.open(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -214,6 +223,7 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		Answered:     r.URL.Query().Get("answered"),
 		Delivered:    r.URL.Query().Get("sent"),
 		Error:        r.URL.Query().Get("error"),
+		Known:        known,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := queueTmpl.Execute(w, page); err != nil {
@@ -491,7 +501,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"
 <header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
-{{if .Answered}}<p class="said">Answered <code>{{ids .Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
+{{if .Answered}}<p class="said">Answered <code>{{ids .Known .Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
 {{if .Open}}
 {{range $i, $q := .Open}}
 {{if $i}}<hr>{{end}}
@@ -499,19 +509,19 @@ var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"
   <input type="hidden" name="id" value="{{$q.ID}}">
   <div class="pills">
     {{if $q.Project}}<span class="pill">{{$q.Project}}</span>{{end}}
-    {{if $q.Blocks}}<span class="pill accent">blocks {{ids $q.Blocks}}</span>{{end}}
+    {{if $q.Blocks}}<span class="pill accent">blocks {{ids $.Known $q.Blocks}}</span>{{end}}
     {{if $q.Needed}}<span class="pill">answer needed to proceed</span>{{end}}
     {{if not $q.Surfaced}}<span class="pill">never surfaced</span>{{end}}
   </div>
-  <h2>{{ids $q.Title}}</h2>
+  <h2>{{ids $.Known $q.Title}}</h2>
   <small class="asked">Asked {{$q.Asked}}</small>
   {{if $q.Body}}<div class="ctx md">{{$q.Body}}</div>{{end}}
   {{range $q.Options}}
   <div class="opt">
     <label class="pick">
       <input type="radio" name="option" value="{{.Label}}">
-      <span class="lbl"><strong>{{ids .Label}}</strong>{{if .Recommended}} <span class="rec" title="Recommended" aria-label="Recommended">&#9733;</span>{{end}}
-        {{if .Line}}<span class="line">{{ids .Line}}</span>{{end}}</span>
+      <span class="lbl"><strong>{{.Label}}</strong>{{if .Recommended}} <span class="rec" title="Recommended" aria-label="Recommended">&#9733;</span>{{end}}
+        {{if .Line}}<span class="line">{{.Line}}</span>{{end}}</span>
     </label>
     {{if .Detail}}<details><summary>more</summary><div class="md">{{.Detail}}</div></details>{{end}}
   </div>
@@ -521,7 +531,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"
             placeholder="{{if $q.Options}}A note on your choice, or something else entirely{{else}}Your answer{{end}}"></textarea>
   <button class="primary" type="submit">Answer</button>
   <div class="drop">
-    <span class="id">{{ids $q.ID}}</span>
+    <span class="id">{{ids $.Known $q.ID}}</span>
     <label class="sure"><input type="checkbox" name="sure" value="1">close it with no answer</label>
     <button type="submit" name="withdraw" value="1">Withdraw</button>
   </div>

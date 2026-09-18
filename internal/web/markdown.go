@@ -70,18 +70,18 @@ func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context)
 	})
 }
 
-// The decision queue renders the same markdown, and every identifier in it is a
-// link to that record (MUS-F-0168). The owner met "MUS-F-0164" and "MUS-F-0027"
-// in a question and its options and had no way to them but typing the address.
+// The decision queue renders the same markdown, and an identifier in a
+// question's text is a link to that record (MUS-F-0168). The owner met
+// "MUS-F-0164" and "MUS-F-0027" in a question and its options and had no way to
+// them but typing the address.
 //
 // Only here, not on Records: that surface expands an identifier in place, below
 // the body, which is MUS-D-0040's answer for it, and a link in the prose beside
 // the expansion would be a second way to do the same thing.
 //
-// Every link the queue renders opens a new tab, which is the constraint every
-// surface inherits (docs/ui-surfaces.md, "Link-out is conditional"), and here it
-// is also what keeps a half-written note: the answer box has no draft, so
-// following a link in the same tab would lose what the owner had typed.
+// Only an identifier the store holds is linked. One it does not hold stays
+// text, which is how Records treats a dangling citation: a link to a page that
+// says "no such record" reads as if the citation resolved.
 var mdQueue = goldmark.New(
 	goldmark.WithExtensions(extension.Table),
 	goldmark.WithParserOptions(parser.WithASTTransformers(
@@ -90,12 +90,30 @@ var mdQueue = goldmark.New(
 	)),
 )
 
-// queueLinks links bare identifiers, then points every link at a new tab. Both
-// steps are in one transformer so their order does not rest on how priorities
-// sort.
+// queueLinkAttrs is what every link inside a question's text carries -- the
+// body, an option's detail, the title, what it blocks, the card's identifier,
+// and the banner naming the question just answered. Those, and only those, open
+// a new tab; the page's own furniture, the header's Account link and the tab
+// bar, opens in the same one. It is here once, for the markdown and for the
+// plain text alike, because whether it should be a new tab at all is with the
+// owner on MUS-Q-0160, and the answer should be one edit.
+//
+// The case for it: the answer box keeps no draft, so following a link in the
+// same tab loses a half-written note.
+var queueLinkAttrs = [][2]string{{"target", "_blank"}, {"rel", "noopener"}}
+
+// knownIDs is the parser context key for the set of identifiers the store
+// holds. The set is built from the listing the queue already reads, once per
+// render, rather than looked up per identifier.
+var knownIDs = parser.NewContextKey()
+
+// queueLinks links bare identifiers the store holds, then gives every link the
+// queue's attributes. Both steps are in one transformer so their order does not
+// rest on how priorities sort.
 type queueLinks struct{}
 
-func (queueLinks) Transform(doc *ast.Document, reader text.Reader, _ parser.Context) {
+func (queueLinks) Transform(doc *ast.Document, reader text.Reader, pc parser.Context) {
+	known, _ := pc.Get(knownIDs).(map[string]bool)
 	src := reader.Source()
 	// Collected first and split after, because inserting siblings while
 	// walking them is how a walk visits a node twice or skips one.
@@ -114,32 +132,32 @@ func (queueLinks) Transform(doc *ast.Document, reader text.Reader, _ parser.Cont
 		return ast.WalkContinue, nil
 	})
 	for _, t := range texts {
-		linkBare(t, src)
+		linkBare(t, src, known)
 	}
 	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if l, ok := n.(*ast.Link); ok && entering {
-			l.SetAttributeString("target", "_blank")
-			l.SetAttributeString("rel", "noopener")
+			for _, a := range queueLinkAttrs {
+				l.SetAttributeString(a[0], a[1])
+			}
 		}
 		return ast.WalkContinue, nil
 	})
 }
 
-// linkBare splits one text node around the identifiers in it. The node itself
-// keeps the tail, so a line break that ends it still ends it.
-func linkBare(t *ast.Text, src []byte) {
+// linkBare splits one text node around the known identifiers in it. The node
+// itself keeps the tail, so a line break that ends it still ends it.
+func linkBare(t *ast.Text, src []byte, known map[string]bool) {
 	seg := t.Segment
 	if t.IsRaw() || seg.Padding != 0 {
 		return
 	}
 	value := seg.Value(src)
-	found := idInProse.FindAllIndex(value, -1)
-	if found == nil {
-		return
-	}
 	parent := t.Parent()
 	pos := 0
-	for _, m := range found {
+	for _, m := range idInProse.FindAllIndex(value, -1) {
+		if !known[string(value[m[0]:m[1]])] {
+			continue
+		}
 		if m[0] > pos {
 			parent.InsertBefore(parent, t, ast.NewTextSegment(text.NewSegment(seg.Start+pos, seg.Start+m[0])))
 		}
@@ -149,15 +167,29 @@ func linkBare(t *ast.Text, src []byte) {
 		parent.InsertBefore(parent, t, l)
 		pos = m[1]
 	}
-	t.Segment = text.NewSegment(seg.Start+pos, seg.Stop)
+	if pos > 0 {
+		t.Segment = text.NewSegment(seg.Start+pos, seg.Stop)
+	}
 }
 
 // linkIDs is the same for text that is not markdown -- a title, what a question
-// blocks, an option's label and line. Escaped first, and the pattern is capitals,
+// blocks, the card's identifier. Escaped first, and the pattern is capitals,
 // digits and hyphens, so nothing escaping writes can be mistaken for one.
-func linkIDs(s string) template.HTML {
-	return template.HTML(idInProse.ReplaceAllString(template.HTMLEscapeString(s),
-		`<a href="/records/$0" target="_blank" rel="noopener">$0</a>`))
+//
+// Not an option's label or line: those sit inside the option's <label>, where a
+// link would take the tap meant to choose the option (docs/ui-surfaces.md,
+// surface 4, "the whole row is the control").
+func linkIDs(known map[string]bool, s string) template.HTML {
+	var attrs strings.Builder
+	for _, a := range queueLinkAttrs {
+		attrs.WriteString(" " + a[0] + `="` + template.HTMLEscapeString(a[1]) + `"`)
+	}
+	return template.HTML(idInProse.ReplaceAllStringFunc(template.HTMLEscapeString(s), func(id string) string {
+		if !known[id] {
+			return id
+		}
+		return `<a href="/records/` + id + `"` + attrs.String() + `>` + id + `</a>`
+	}))
 }
 
 // markdown renders src for a page.
@@ -172,14 +204,17 @@ func markdown(src string) template.HTML {
 	return renderMarkdown(md, src)
 }
 
-// queueMarkdown renders src for the decision queue, identifiers linked.
-func queueMarkdown(src string) template.HTML {
-	return renderMarkdown(mdQueue, src)
+// queueMarkdown renders src for the decision queue, the identifiers in known
+// linked.
+func queueMarkdown(src string, known map[string]bool) template.HTML {
+	pc := parser.NewContext()
+	pc.Set(knownIDs, known)
+	return renderMarkdown(mdQueue, src, parser.WithContext(pc))
 }
 
-func renderMarkdown(m goldmark.Markdown, src string) template.HTML {
+func renderMarkdown(m goldmark.Markdown, src string, opts ...parser.ParseOption) template.HTML {
 	var b bytes.Buffer
-	if err := m.Convert([]byte(src), &b); err != nil {
+	if err := m.Convert([]byte(src), &b, opts...); err != nil {
 		// Convert fails only on a writer error, and a bytes.Buffer has none.
 		// Escaped text is still better than nothing if that ever changes.
 		return template.HTML(template.HTMLEscapeString(src))
