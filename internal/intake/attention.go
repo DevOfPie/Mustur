@@ -146,7 +146,7 @@ func keep(ctx context.Context, s *store.Store, id, actor string, now time.Time) 
 		return record.Record{}, err
 	}
 	if !NeedsAttention(r, DefaultIn(routing)) {
-		return record.Record{}, fmt.Errorf("%s proposes no move, so there is nothing to keep it from", r.ID)
+		return record.Record{}, refuse("%s proposes no move, so there is nothing to keep it from", r.ID)
 	}
 	r.Data = append(r.Data, record.Field{Key: KeptField, Value: actor + " " + now.In(pacific).Format("2006-01-02 15:04 MST")})
 	if err := s.AmendIf(ctx, r, version, actor); err != nil {

@@ -68,6 +68,15 @@ type Rerouted struct {
 	Moved int
 }
 
+// Refusal is a request intake declines — the caller asked for something that
+// cannot be done — as against the store failing. A web caller answers one
+// with a 4xx and anything else with a 500.
+type Refusal struct{ msg string }
+
+func (e *Refusal) Error() string { return e.msg }
+
+func refuse(format string, args ...any) error { return &Refusal{fmt.Sprintf(format, args...)} }
+
 // AlreadyCorrected is the refusal for a jot that has been rerouted already. By
 // is the record that carries it now, so a caller that pressed twice can be
 // sent where the first press went.
@@ -104,7 +113,7 @@ func CorrectedBy(r record.Record) string {
 // already corrected and by what.
 func Reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted, error) {
 	if strings.TrimSpace(req.To) == "" {
-		return Rerouted{}, fmt.Errorf("reroute needs --to: a correction that does not say where is not a correction")
+		return Rerouted{}, refuse("reroute needs --to: a correction that does not say where is not a correction")
 	}
 	// Somebody writing the jot between the read and the write means go round:
 	// the read says what they did, which is usually that they already
@@ -132,7 +141,7 @@ func reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 		return Rerouted{}, &AlreadyCorrected{ID: old.ID, By: by}
 	}
 	if strings.TrimSpace(old.Body) == "" {
-		return Rerouted{}, fmt.Errorf("%s has no body to re-file; amend it rather than rerouting it", old.ID)
+		return Rerouted{}, refuse("%s has no body to re-file; amend it rather than rerouting it", old.ID)
 	}
 	// This corrects a jot, and a jot is a record intake filed: "Routed to" is
 	// written by File and by nothing else, so its presence is exactly the
@@ -144,7 +153,7 @@ func reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 	// it. Nothing in the command's purpose covered that, and nothing in the
 	// command stopped it (MUS-F-0058).
 	if _, routed := old.Get("Routed to"); !routed {
-		return Rerouted{}, fmt.Errorf("%s was not filed through the intake box, so it has no routing to correct. "+
+		return Rerouted{}, refuse("%s was not filed through the intake box, so it has no routing to correct. "+
 			"reroute is for a jot that \"Route it for me\" put in the wrong place", old.ID)
 	}
 

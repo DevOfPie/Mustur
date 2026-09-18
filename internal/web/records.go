@@ -182,7 +182,9 @@ type recordView struct {
 	// needs attention (MUS-D-0193). CanMove says whether this viewer is shown
 	// the buttons; a reader sees the banner without them.
 	Attention []namedView
-	CanMove   bool
+	// AttentionLine is the banner's sentence, from attentionLine.
+	AttentionLine string
+	CanMove       bool
 	// MovedFrom and MovedTo are the success line after a move, shown on the
 	// record the move filed.
 	MovedFrom string
@@ -192,9 +194,45 @@ type recordView struct {
 }
 
 // A namedView is a destination a record names, by identifier and title.
+// Place says it resolves to a routing record — somewhere a jot can actually
+// be moved — which is when a Move button is offered for it.
 type namedView struct {
 	ID    string
 	Title string
+	Place bool
+}
+
+// attentionLine is the banner's sentence: what the jot names, which of those
+// take a jot only on a confirmed move, and which are not places at all.
+func attentionLine(names []namedView) string {
+	var places, others, all []string
+	for _, n := range names {
+		all = append(all, n.Title)
+		if n.Place {
+			places = append(places, n.Title)
+		} else {
+			others = append(others, n.Title)
+		}
+	}
+	and := func(ts []string) string { return strings.Join(ts, " and ") }
+	takes := func(ts []string) string {
+		if len(ts) == 1 {
+			return "takes"
+		}
+		return "take"
+	}
+	if len(others) == 0 {
+		return "This jot names " + and(all) + ", which " + takes(places) + " a jot only when a move is confirmed."
+	}
+	is := "is"
+	if len(others) > 1 {
+		is = "are"
+	}
+	line := "This jot names " + and(all) + "."
+	if len(places) > 0 {
+		line += " " + and(places) + " " + takes(places) + " a jot only when a move is confirmed."
+	}
+	return line + " " + and(others) + " " + is + " not a place a jot can go."
 }
 
 // An attentionRow is one line of the pinned section on the index.
@@ -220,10 +258,11 @@ func named(r record.Record, by map[string]record.Record) []namedView {
 	var out []namedView
 	for _, id := range intake.Named(r) {
 		title := id
-		if d, ok := by[id]; ok && d.Title != "" {
+		d, ok := by[id]
+		if ok && d.Title != "" {
 			title = d.Title
 		}
-		out = append(out, namedView{ID: id, Title: title})
+		out = append(out, namedView{ID: id, Title: title, Place: ok && intake.IsDestination(d)})
 	}
 	return out
 }
@@ -685,6 +724,7 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 	v.State, v.Stale = rr.verify(rec)
 	if intake.NeedsAttention(rec, boxIn(by)) {
 		v.Attention = named(rec, by)
+		v.AttentionLine = attentionLine(v.Attention)
 		v.CanMove = CanWrite(r)
 	}
 	// The line after a move, said only by the record the move filed: one that
@@ -782,6 +822,21 @@ func (rr *Records) refuseUnlessAttending(w http.ResponseWriter, r *http.Request,
 	return false
 }
 
+// pressStatus is the status for a failed Move or Keep: 400 for a destination
+// that is not one, 409 for a request intake declines, and 500 for anything
+// else — the store failing is not the owner's fault and must not read as if
+// it were.
+func pressStatus(err error) int {
+	var refused *intake.Refusal
+	switch {
+	case errors.Is(err, intake.ErrUnknownDestination):
+		return http.StatusBadRequest
+	case errors.As(err, &refused):
+		return http.StatusConflict
+	}
+	return http.StatusInternalServerError
+}
+
 // moved sends the browser to the record a move filed, with the success line.
 // The same answer for the press that moved it and for a second press that
 // arrived after: both asked for the move, and the move happened.
@@ -822,9 +877,21 @@ func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, rec.ID+" does not name "+to+"; it names "+strings.Join(names, ", "), http.StatusBadRequest)
 		return
 	}
+	// Named, and a place. A Names entry that no longer resolves to a routing
+	// record is shown in the banner without a button; a post for it anyway is
+	// the caller's mistake.
+	d, err := rr.Store.Get(r.Context(), to)
+	if errors.Is(err, store.ErrNotFound) || (err == nil && !intake.IsDestination(d)) {
+		http.Error(w, to+" is not a place a jot can go", http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	who := rr.actor(r)
 	title := to
-	if d, err := rr.Store.Get(r.Context(), to); err == nil && d.Title != "" {
+	if d.Title != "" {
 		title = d.Title + " (" + to + ")"
 	}
 	done, err := intake.Reroute(r.Context(), rr.Store, intake.RerouteRequest{
@@ -838,7 +905,7 @@ func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusConflict)
+		http.Error(w, err.Error(), pressStatus(err))
 		return
 	}
 	rr.counts.forget()
@@ -868,7 +935,7 @@ func (rr *Records) keep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusConflict)
+		http.Error(w, err.Error(), pressStatus(err))
 		return
 	}
 	rr.counts.forget()
@@ -1111,7 +1178,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 {{if .Attention}}<section class="attn" aria-label="Needs attention">
 <h2>Needs attention · {{len .Attention}}</h2>
 <ol class="rows">
-{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="id">{{.ID}}</span><span class="t">{{.Title}}</span>{{range .Names}}<span class="pill">names {{.Title}} — move?</span>{{end}}</a></li>
+{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="id">{{.ID}}</span><span class="t">{{.Title}}</span>{{range .Names}}<span class="pill">names {{.Title}}{{if .Place}} — move?{{end}}</span>{{end}}</a></li>
 {{end}}</ol>
 </section>{{end}}
 <form class="narrow" method="get" action="/records" role="search">
@@ -1160,10 +1227,10 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   {{if .MovedFrom}}<p class="done" role="status">Moved to {{.MovedTo}}. {{.MovedFrom}} is kept and points here.</p>{{end}}
   {{if .Kept}}<p class="done" role="status">Kept in the intake box.</p>{{end}}
   {{if .Attention}}<div class="banner" role="note">
-    <p><strong>Needs attention.</strong> This jot names {{range $i, $n := .Attention}}{{if $i}} and {{end}}{{$n.Title}}{{end}}, which {{if eq (len .Attention) 1}}takes{{else}}take{{end}} a jot only when a move is confirmed.</p>
+    <p><strong>Needs attention.</strong> {{.AttentionLine}}</p>
     {{if .CanMove}}<div class="acts">
-      {{range .Attention}}<form method="post" action="/records/{{$.ID}}/move"><input type="hidden" name="to" value="{{.ID}}"><button class="primary" type="submit">Move to {{.Title}}</button></form>
-      {{end}}<form method="post" action="/records/{{.ID}}/keep"><button type="submit">Keep in intake box</button></form>
+      {{range .Attention}}{{if .Place}}<form method="post" action="/records/{{$.ID}}/move"><input type="hidden" name="to" value="{{.ID}}"><button class="primary" type="submit">Move to {{.Title}}</button></form>
+      {{end}}{{end}}<form method="post" action="/records/{{.ID}}/keep"><button type="submit">Keep in intake box</button></form>
     </div>{{end}}
   </div>{{end}}
   <div class="line">
