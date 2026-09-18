@@ -53,6 +53,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -281,6 +282,10 @@ type rowView struct {
 	At      string
 	// Attention marks a row that also sits in the pinned section.
 	Attention bool
+	// Status is a finding's Status word, shown as a pill in the tone of its
+	// State (MUS-D-0196). Empty for any other kind.
+	Status string
+	State  string
 }
 
 // A pick is one option in a picker, carrying how many records choosing it
@@ -299,7 +304,10 @@ type recordsIndex struct {
 
 	Projects []pick
 	Kinds    []pick
-	Q        string
+	// States narrows findings by State (MUS-D-0196). Any other kind has none,
+	// so choosing one lists findings only.
+	States []pick
+	Q      string
 	// Chosen is whether anything narrows the list, which is when Clear is
 	// offered.
 	Chosen  bool
@@ -523,8 +531,12 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 	if !known {
 		kind = ""
 	}
+	state := strings.TrimSpace(query.Get("state"))
+	if !status.ValidState(state) {
+		state = ""
+	}
 
-	idx := &recordsIndex{Q: q, Chosen: project != "" || kind != "" || q != ""}
+	idx := &recordsIndex{Q: q, Chosen: project != "" || kind != "" || state != "" || q != ""}
 
 	// Before any filter is applied, so the section is the same on every page
 	// of every narrowing. Newest first, like the list below it.
@@ -577,12 +589,31 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	// The three States, each with how many findings within the chosen project
+	// carry it. All three are always offered: the list is fixed, and a nought
+	// says something true about the project.
+	perState := map[string]int{}
+	for _, rec := range all {
+		if rec.Kind == "finding" && (project == "" || prefixOf(rec.ID) == project) {
+			perState[status.StateOf(rec)]++
+		}
+	}
+	for _, s := range status.States {
+		idx.States = append(idx.States, pick{
+			Value: s, Selected: s == state,
+			Label: s + " · " + thousands(perState[s]),
+		})
+	}
+
 	var matched []record.Record
 	for _, rec := range all {
 		if project != "" && prefixOf(rec.ID) != project {
 			continue
 		}
 		if kind != "" && rec.Kind != kind {
+			continue
+		}
+		if state != "" && (rec.Kind != "finding" || status.StateOf(rec) != state) {
 			continue
 		}
 		if q != "" && !searchMatches(rec, q) {
@@ -607,18 +638,27 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 	from := (idx.Page - 1) * recordsPerPage
 	if from < len(matched) {
 		for _, rec := range matched[from:min(from+recordsPerPage, len(matched))] {
-			idx.Rows = append(idx.Rows, rowView{
+			row := rowView{
 				ID: rec.ID, Kind: kindLabel(rec.Kind), Title: rec.Title, At: rec.At,
 				Project:   names.title(prefixOf(rec.ID)),
 				Attention: intake.NeedsAttention(rec, box),
-			})
+			}
+			if rec.Kind == "finding" {
+				row.Status, row.State = status.WordOf(rec), status.StateOf(rec)
+				if !status.ValidState(row.State) {
+					// A tone only for a State that is one; the gate over the
+					// store names the rest.
+					row.State = ""
+				}
+			}
+			idx.Rows = append(idx.Rows, row)
 		}
 	} else {
 		idx.Beyond = idx.Page > 1
 	}
 	link := func(page int) string {
 		v := url.Values{}
-		for key, val := range map[string]string{"project": project, "kind": kind, "q": q} {
+		for key, val := range map[string]string{"project": project, "kind": kind, "state": state, "q": q} {
 			if val != "" {
 				v.Set(key, val)
 			}
@@ -657,6 +697,9 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 	}
 	if kind != "" {
 		summary += " · " + kindLabel(kind)
+	}
+	if state != "" {
+		summary += " · " + state
 	}
 	if !idx.Chosen {
 		summary += " · newest first"
@@ -1062,6 +1105,13 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .row .proj { width: 6rem; overflow: hidden; text-overflow: ellipsis; }
   .row .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
             font-size: .93em; }
+  /* A finding's Status word, in the tone of its State (MUS-D-0196): open in
+     the warn tone the attention marks wear, done in the accent, dropped
+     muted. The word is the text, so the tone is never the only signal. */
+  .row .st { flex: none; font-size: .72em; line-height: 1.5; padding: 0 .45rem;
+             border: 1px solid var(--edge); border-radius: 999px; opacity: .6; }
+  .row .st.open { border-color: var(--warn); background: var(--warn-soft); opacity: 1; }
+  .row .st.done { border-color: var(--accent); background: var(--accent-soft); opacity: 1; }
   /* On a phone a row takes two lines so the title is never cut short, as the
      plan draws it. */
   @media (max-width: 40rem) {
@@ -1193,6 +1243,10 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
       <option value="">All kinds</option>
       {{range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
     </select>
+    <select name="state" aria-label="State">
+      <option value="">Any state</option>
+      {{range .States}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
+    </select>
   </div>
   <div class="find">
     <input type="search" name="q" value="{{.Q}}" placeholder="Identifier or words" aria-label="Identifier or words" autocapitalize="characters" autocomplete="off" spellcheck="false">
@@ -1201,7 +1255,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 </form>
 <p class="tally"><span>{{.Summary}}</span>{{if .Chosen}}<a href="/records">Clear</a>{{end}}</p>
 {{if .Rows}}<ol class="rows">
-{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span><span class="at">{{.At}}</span></a></li>
+{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span>{{if .Status}}<span class="st{{if .State}} {{.State}}{{end}}"{{if .State}} title="{{.State}}"{{end}}>{{.Status}}</span>{{end}}<span class="at">{{.At}}</span></a></li>
 {{end}}</ol>
 {{else if .Beyond}}<p class="none">Nothing on page {{.Page}}. The list ends at page {{.Pages}}.</p>
 {{else}}<p class="none">No records match.</p>

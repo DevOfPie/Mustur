@@ -162,6 +162,83 @@ func TestProjectAndKindNarrowTheIndex(t *testing.T) {
 	}
 }
 
+// State narrows findings, and a finding's row carries its Status word in the
+// tone of its State (MUS-D-0196). Any other kind has no State, so it is listed
+// only while the picker says "Any state".
+func TestStateNarrowsFindingsAndARowShowsItsStatus(t *testing.T) {
+	f := func(id, word, state string) record.Record {
+		return record.Record{ID: id, Kind: "finding", Title: "Finding " + id, At: "2026-09-18",
+			Data: []record.Field{{Key: "Status", Value: word}, {Key: "State", Value: state}}}
+	}
+	srv := serveRecords(t, "",
+		f("MUS-F-0001", "unreviewed", "open"),
+		f("MUS-F-0002", "in-review", "open"),
+		f("MUS-F-0003", "fixed", "done"),
+		f("LNK-F-0001", "merged", "dropped"),
+		decision("MUS-D-0001", "A decision", ""),
+	)
+
+	body, _ := fetch(t, srv, "/records")
+	if rows(body) != 5 {
+		t.Errorf("any state: %d rows, want every record", rows(body))
+	}
+	for _, want := range []string{
+		`<select name="state" aria-label="State">`,
+		`<option value="">Any state</option>`,
+		`<option value="open">open · 2</option>`,
+		`<option value="done">done · 1</option>`,
+		`<option value="dropped">dropped · 1</option>`,
+		`<span class="st open" title="open">unreviewed</span>`,
+		`<span class="st done" title="done">fixed</span>`,
+		`<span class="st dropped" title="dropped">merged</span>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the index does not show %q", want)
+		}
+	}
+	// A decision has no Status, so no pill.
+	if n := strings.Count(body, `class="st `); n != 4 {
+		t.Errorf("%d pills, want one per finding", n)
+	}
+
+	body, _ = fetch(t, srv, "/records?state=open")
+	if rows(body) != 2 || !strings.Contains(body, "MUS-F-0001") || !strings.Contains(body, "MUS-F-0002") {
+		t.Errorf("open: %d rows, want the two open findings", rows(body))
+	}
+	if strings.Contains(body, "MUS-D-0001") || strings.Contains(body, "MUS-F-0003") {
+		t.Error("open lists a record that is not an open finding")
+	}
+	for _, want := range []string{`<option value="open" selected>open · 2</option>`, "2 records · open", `<a href="/records">Clear</a>`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("state=open does not show %q", want)
+		}
+	}
+
+	// Counts follow the project, as the kinds do.
+	body, _ = fetch(t, srv, "/records?project=LNK&state=dropped")
+	if rows(body) != 1 || !strings.Contains(body, `<option value="open">open · 0</option>`) {
+		t.Errorf("LinkCtrl dropped: %d rows, or the counts ignore the project", rows(body))
+	}
+
+	// The pager keeps the State, or page two would forget what page one showed.
+	many := []record.Record{}
+	for i := 1; i <= recordsPerPage+1; i++ {
+		many = append(many, f(fmt.Sprintf("MUS-F-%04d", i), "open", "open"))
+	}
+	many = append(many, decision("MUS-D-0001", "A decision", ""))
+	srv = serveRecords(t, "", many...)
+	body, _ = fetch(t, srv, "/records?state=open")
+	if !strings.Contains(body, `href="/records?page=2&amp;state=open"`) {
+		t.Error("Older does not carry the State")
+	}
+
+	// A State that is not one is ignored, like any stale value.
+	body, _ = fetch(t, srv, "/records?state=closed")
+	if rows(body) != recordsPerPage || strings.Contains(body, "Clear") {
+		t.Errorf("state=closed was not ignored: %d rows", rows(body))
+	}
+}
+
 // A whole identifier the store holds opens it. One it does not hold is a search
 // like any other rather than a trip to a missing page.
 func TestAWholeIdentifierOpensItsRecord(t *testing.T) {

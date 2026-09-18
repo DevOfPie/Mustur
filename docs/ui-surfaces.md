@@ -250,6 +250,15 @@ every surface, from `/records/attention/count`, which `bar.js` polls beside the
 decisions count, and the intake box says "N records need attention" beside its
 decisions line.
 
+**Amended 2026-09-18: a finding's State** (MUS-D-0196). A third picker beside
+the kind picker takes `state` — "Any state", open, done or dropped — each with
+how many findings within the chosen project carry it. Only a finding has a
+State, so choosing one lists findings only; any other kind is listed while it
+says "Any state". A finding's row carries its Status word as a small pill after
+the title, in the warn tone for open, the accent for done and muted for dropped;
+the word is the text, so the tone is never the only signal. Same GET form, no
+script.
+
 ### 4. Decision queue
 
 **Serves** `/questions`
