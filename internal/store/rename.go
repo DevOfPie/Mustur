@@ -85,6 +85,10 @@ type RenameOptions struct {
 	IsRouting func(kind string) bool
 	// Actor is who the Repoint amend events are written as.
 	Actor string
+
+	// failAfterLift is a test's way to fail the transaction after the guard
+	// is dropped and the log rewritten, to prove the rollback restores both.
+	failAfterLift func() error
 }
 
 // Repoint is one routing record's field set to a value by a rename: in
@@ -504,6 +508,11 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 		if _, err := tx.ExecContext(ctx,
 			`UPDATE record_event SET record_id = ?, payload = ? WHERE seq = ?`, e.newID, e.newPayload, e.seq); err != nil {
 			return report, fmt.Errorf("rewrite event %d: %w", e.seq, err)
+		}
+	}
+	if opts.failAfterLift != nil {
+		if err := opts.failAfterLift(); err != nil {
+			return report, err
 		}
 	}
 	if _, err := tx.ExecContext(ctx, guard); err != nil {
