@@ -150,7 +150,10 @@ func Reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 			kept = append(kept, f)
 		}
 	}
-	fresh.Data = kept
+	// Arriving where it named is the move that field was proposing, so the
+	// proposal does not travel with it: a record carried into the place it
+	// named and still saying it names it would ask for the same move again.
+	fresh.Data = confirmed(kept, dest.ID)
 	for _, f := range old.Refs {
 		if !routingField(f.Key) {
 			fresh.Refs = append(fresh.Refs, f)
@@ -178,6 +181,40 @@ func Reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 		return Rerouted{}, err
 	}
 	return Rerouted{Fresh: fresh, Old: old, Dest: dest, Moved: moved}, nil
+}
+
+// confirmed takes a destination out of a record's Names, because the record
+// has just been moved there. Kept goes with the last of them: it declined a
+// move nobody is proposing any more.
+func confirmed(data []record.Field, dest string) []record.Field {
+	var names []string
+	found := false
+	for _, f := range data {
+		if strings.EqualFold(f.Key, NamesField) {
+			found = true
+			for _, id := range splitNames(f.Value) {
+				if id != dest {
+					names = append(names, id)
+				}
+			}
+		}
+	}
+	if !found {
+		return data
+	}
+	out := data[:0:0]
+	for _, f := range data {
+		switch {
+		case strings.EqualFold(f.Key, NamesField):
+			if len(names) > 0 {
+				out = append(out, record.Field{Key: NamesField, Value: strings.Join(names, ", ")})
+			}
+		case strings.EqualFold(f.Key, KeptField) && len(names) == 0:
+		default:
+			out = append(out, f)
+		}
+	}
+	return out
 }
 
 // setStatus replaces the Status field in place, or appends it.
