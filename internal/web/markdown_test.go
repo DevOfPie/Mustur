@@ -244,6 +244,19 @@ func TestABodysHeadingLevelsAreDistinctAndBetweenTextAndTitle(t *testing.T) {
 	}
 }
 
+// A citation in italics is still a citation: the page reads identifiers the
+// way the export check does, and a \b pattern read `_MUS-D-0001_` as nothing.
+func TestACitationInItalicsIsStillACitation(t *testing.T) {
+	srv := serveRecords(t, "",
+		decision("MUS-D-0001", "The cited one", "First."),
+		decision("MUS-D-0009", "Cites", "As _MUS-D-0001_ said."),
+	)
+	body, _ := fetch(t, srv, "/records/MUS-D-0009")
+	if !strings.Contains(body, `<summary class="badge">MUS-D-0001</summary>`) {
+		t.Error("a citation in italics has no badge")
+	}
+}
+
 // A reserved prefix is an identifier like any other on the page: its export
 // anchor and file are pointed at its record, and naming it bare is a citation.
 func TestAReservedIdentifierInABodyResolves(t *testing.T) {

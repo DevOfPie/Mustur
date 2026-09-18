@@ -37,7 +37,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 // Role is the single letter in the middle of an identifier.
@@ -182,15 +181,15 @@ func roleOrder(r Role) int {
 	return len(Roles)
 }
 
-// Cited pulls every identifier mentioned in a body of text. Used to check that
-// a record's citations point at records that exist.
+// Cited pulls every identifier mentioned in a body of text, in order and
+// once each. Used to check that a record's citations point at records that
+// exist.
 func Cited(text string) []string {
 	var out []string
 	seen := map[string]bool{}
-	for _, field := range strings.FieldsFunc(text, func(r rune) bool {
-		return !(r >= 'A' && r <= 'Z') && !(r >= '0' && r <= '9') && r != '-' && r != '_'
-	}) {
-		if id := citedIn(field); id != "" && !seen[id] {
+	for _, span := range Spans(text) {
+		id := text[span[0]:span[1]]
+		if !seen[id] {
 			seen[id] = true
 			out = append(out, id)
 		}
@@ -198,24 +197,46 @@ func Cited(text string) []string {
 	return out
 }
 
-// citedIn finds the identifier a run of identifier characters spells, if any.
-// The underscore has to be one of those characters or a reserved identifier
-// could not be read, and that glues a three-letter one to whatever precedes it:
-// `FOO_MUS-D-0001` is one run. So the run is tried whole, then from its last
-// underscore (a reserved identifier), then after it (a project one) — which
-// finds in such a run exactly what was found before the reserved form existed.
-func citedIn(field string) string {
-	if Valid(field) {
-		return field
-	}
-	i := strings.LastIndex(field, "_")
-	if i < 0 {
-		return ""
-	}
-	for _, c := range []string{field[i:], field[i+1:]} {
-		if Valid(c) {
-			return c
+// Spans finds every identifier in text as byte offsets [start, end).
+//
+// An identifier is found where it stands whole: the character before it and
+// the character after it are neither an upper-case letter, a digit nor a
+// hyphen. That is the rule this function kept from the one it replaced, which
+// split text on everything else and kept the pieces that parsed — so
+// `XMUS-D-0001` and `MUS-D-0001-2` are not citations, and `xMUS-D-0001` is.
+//
+// The underscore is the difference. The reserved form begins with one, so it
+// cannot separate; and it cannot be part of an identifier's surroundings
+// either, or `_MUS-D-0001_` in italics, `MUS-D-0001_MUS-D-0002` and
+// `FOO_MUS-D-0001` would stop being citations, which they always were. So an
+// underscore on either side is a boundary, and a reserved identifier is read
+// starting at its own underscore: `__IB-F-0001_` is `_IB-F-0001` in italics.
+// Every identifier is ten characters, which is what makes a scan at every
+// offset cheap.
+func Spans(text string) [][2]int {
+	const width = 10
+	var out [][2]int
+	for i := 0; i+width <= len(text); i++ {
+		c := text[i]
+		if c != '_' && (c < 'A' || c > 'Z') {
+			continue
+		}
+		if i > 0 && inIdentifier(text[i-1]) {
+			continue
+		}
+		end := i + width
+		if end < len(text) && inIdentifier(text[end]) {
+			continue
+		}
+		if Valid(text[i:end]) {
+			out = append(out, [2]int{i, end})
 		}
 	}
-	return ""
+	return out
+}
+
+// inIdentifier reports whether c could continue an identifier, so an
+// identifier touching it is part of something longer.
+func inIdentifier(c byte) bool {
+	return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-'
 }

@@ -42,7 +42,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -213,10 +212,11 @@ type imageView struct {
 	Size string
 }
 
-// idInProse finds identifiers written in a record's text, reserved prefixes
-// ("_IB-F-0001") included. The leading \b still holds before a reserved one,
-// because the underscore is a word character.
-var idInProse = regexp.MustCompile(`\b` + ident.ProjectPattern + `-[A-Z]-[0-9]{4}\b`)
+// idInProse finds identifiers written in a record's text. It is ident.Cited,
+// so the page offers exactly the citations the export check counts: a
+// regular expression's \b read `_MUS-D-0001_` in italics as no citation at
+// all, because the underscore is a word character.
+func idInProse(text string) []string { return ident.Cited(text) }
 
 func (rr *Records) load(ctx context.Context) (map[string]record.Record, []record.Record, error) {
 	all, err := rr.Store.List(ctx, "")
@@ -248,7 +248,7 @@ func (rr *Records) view(r record.Record, by map[string]record.Record) recordView
 	// the sort of thing that reads as a finding about the tree until somebody
 	// looks.
 	for _, ref := range r.Refs {
-		found := idInProse.FindAllString(ref.Value, -1)
+		found := idInProse(ref.Value)
 		if len(found) == 0 {
 			// Not an identifier at all: some refs name a file or a person.
 			v.Refs = append(v.Refs, citation{Key: ref.Key, ID: ref.Value, Plain: true})
@@ -273,7 +273,7 @@ func (rr *Records) view(r record.Record, by map[string]record.Record) recordView
 	for _, f := range r.Data {
 		text += " " + f.Value
 	}
-	for _, found := range idInProse.FindAllString(text, -1) {
+	for _, found := range idInProse(text) {
 		if seen[found] || plain[found] {
 			continue
 		}

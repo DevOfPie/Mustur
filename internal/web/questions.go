@@ -236,7 +236,7 @@ func queueCites(r record.Record, blocks string, by map[string]record.Record, pla
 	}
 	seen := map[string]bool{r.ID: true}
 	var out []citation
-	for _, id := range idInProse.FindAllString(text, -1) {
+	for _, id := range idInProse(text) {
 		if seen[id] || plain[id] {
 			continue
 		}
