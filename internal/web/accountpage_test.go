@@ -713,6 +713,44 @@ func TestThePeopleScreenCarriesTheBar(t *testing.T) {
 	}
 }
 
+// An open invitation to somebody who already has an account is on their card,
+// a line per project the viewer owns, with its expiry — what commit 91a4654
+// said and did not do, because every account was skipped (the review on PR
+// 102).
+func TestAPendingInvitationShowsOnAnExistingPersonsCard(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, me := personWith(t, accounts, "owner@example.com", "MUS", account.Owner, "k")
+	grant(t, accounts, me, "LNK", account.Owner)
+	personWith(t, accounts, "friend@example.com", "MUS", account.Reader, "k2")
+	// HRD is somebody else's project, which the viewer does not own.
+	personWith(t, accounts, "hrd@example.com", "HRD", account.Owner, "k3")
+	for _, c := range []struct {
+		project string
+		role    account.Role
+	}{{"LNK", account.Reader}, {"LNK", account.Reader}, {"HRD", account.Owner}} {
+		if _, err := accounts.Invite(ctx, "friend@example.com", c.project, c.role, "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	page := body(t, owner, srv.URL+"/account/people")
+	if n := strings.Count(page, "friend@example.com"); n != 1 {
+		t.Errorf("the friend appears %d times", n)
+	}
+	card := page[strings.Index(page, "friend@example.com"):]
+	card = card[:strings.Index(card, "</li>")]
+	if n := strings.Count(card, "reader in LNK · not yet accepted, expires "); n != 1 {
+		t.Errorf("the LinkCtrl invitation is on the card %d times, want once:\n%s", n, card)
+	}
+	if strings.Contains(card, "in HRD") {
+		t.Errorf("an invitation to a project the viewer does not own is on the card:\n%s", card)
+	}
+	if !strings.Contains(card, "/account/role") {
+		t.Errorf("the pending invitation replaced the person's controls:\n%s", card)
+	}
+}
+
 // Inviting a project's only owner to it as a reader is refused from the screen,
 // and says why, rather than issuing a link that would leave the project with no
 // owner once accepted (MUS-D-0188, the review on PR 102).

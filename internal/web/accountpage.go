@@ -436,7 +436,7 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 						})
 					}
 				}
-				seen[person.Email] = -1
+				seen[person.Email] = len(p.People)
 				p.People = append(p.People, row)
 			}
 		}
@@ -462,10 +462,11 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 				if !owned[inv.Project] {
 					continue
 				}
+				// Somebody who already has an account gets the line on their
+				// own card: an invitation to a second project is still open,
+				// and commit 91a4654 said pending invitations are shown. This
+				// used to skip every account, so only strangers had one.
 				at, known := seen[inv.Email]
-				if at < 0 {
-					continue
-				}
 				key := inv.Email + "\x00" + inv.Project
 				if reissued[key] {
 					continue
@@ -840,6 +841,7 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
     <noscript><button type="submit">Save</button></noscript>
   </form>{{end}}
 {{end}}
+{{if not .Invited}}{{range .Invites}}<small><span class="tag">invited</span> {{.}}</small>{{end}}{{end}}
 </li>{{end}}</ul>
 
 {{else}}
