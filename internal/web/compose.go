@@ -66,6 +66,9 @@ type Compose struct {
 	// destination does not name its own.
 	Project string
 	Actor   string
+	// Roles decides which held jots the badge counts (MUS-D-0189). Nil
+	// without accounts, where nothing is held.
+	Roles Roles
 	// ExportTo is the tree the store is rendered into after a jot is filed, for
 	// the reason the intake box has one: whoever composes from a phone cannot
 	// run `make export`.
@@ -356,7 +359,7 @@ func (c *Compose) render(w http.ResponseWriter, r *http.Request, p composePage) 
 	w.Header().Set("Cache-Control", "no-store")
 	p.ShowAccount = c.ShowAccount
 	if c.Store != nil {
-		p.OpenQuestions = OpenCount(r.Context(), c.Store)
+		p.OpenQuestions = badgeCount(r.Context(), r, c.Store, c.Roles, c.Project)
 		p.Attention = intake.AttentionCount(r.Context(), c.Store)
 	}
 	if err := composeTmpl.Execute(w, p); err != nil {

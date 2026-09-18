@@ -84,6 +84,11 @@ type Questions struct {
 
 	// DeliverTimeout bounds one delivery. Zero means session.DeliverTimeout.
 	DeliverTimeout time.Duration
+
+	// Roles answers whether the viewer owns a held jot's destination project,
+	// which decides whether they see it, count it, and may approve it
+	// (MUS-D-0189). Nil without accounts, where nobody holds anything.
+	Roles Roles
 }
 
 func (q *Questions) deliverTimeout() time.Duration {
@@ -98,6 +103,160 @@ func (q *Questions) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /questions", q.show)
 	mux.HandleFunc("POST /questions", q.answer)
 	mux.HandleFunc("GET /questions/count", q.count)
+	// A reader's held jots, approved or discarded from this surface (MUS-D-0189).
+	// Under /intake because that is where they came from; served here because
+	// Decisions is where an owner meets what is waiting on them (MUS-Q-0143).
+	mux.HandleFunc("POST /intake/held/{id}/approve", q.approveHeld)
+	mux.HandleFunc("POST /intake/held/{id}/discard", q.discardHeld)
+}
+
+// A heldCard is one reader's jot as an owner reviews it.
+type heldCard struct {
+	ID   string
+	By   string
+	When string
+	Text string
+	// To is the reader's chosen destination, and empty for "Route it for me",
+	// which is what the select starts on.
+	To string
+	// ToName says where the reader pointed it, in words.
+	ToName string
+	// Guess is where "Route it for me" lands today, so the owner can see it
+	// before pressing Approve rather than after.
+	Guess string
+}
+
+// held builds the cards this viewer may act on, and the destinations each
+// card's select offers.
+func (q *Questions) held(r *http.Request) ([]heldCard, []destGroup) {
+	jots, dests := approvable(r.Context(), r, q.Store, q.Roles, q.Project)
+	if len(jots) == 0 {
+		return nil, nil
+	}
+	routing, err := intake.Destinations(r.Context(), q.Store)
+	if err != nil {
+		return nil, nil
+	}
+	all := make([]destination, 0, len(routing))
+	names := map[string]string{}
+	for _, rr := range routing {
+		all = append(all, destination{ID: rr.ID, Name: rr.Title, Kind: rr.Kind})
+		names[rr.ID] = rr.Title
+	}
+	cards := make([]heldCard, 0, len(jots))
+	for i, h := range jots {
+		c := heldCard{ID: h.ID, By: h.Email, When: pacific(h.Created), Text: h.Text, To: h.To,
+			ToName: "Route it for me"}
+		if c.By == "" {
+			c.By = "an account that no longer exists"
+		}
+		if h.To != "" {
+			c.ToName = names[h.To]
+			if c.ToName == "" {
+				c.ToName = h.To + ", which no longer exists"
+			}
+		} else {
+			c.Guess = dests[i].Name
+		}
+		cards = append(cards, c)
+	}
+	return cards, grouped(all)
+}
+
+// approveHeld files a held jot through the one filing path, with the reader as
+// filer and the owner who pressed Approve recorded beside them (MUS-D-0189).
+//
+// Only an owner of both ends may do it: the project the jot points at now,
+// which is Discard's rule, and the project it is filed under. The second is
+// checked against the destination this press names — the owner may have
+// changed the select — resolved the way File will resolve it, so the check and
+// the filing cannot disagree about where the jot is going.
+func (q *Questions) approveHeld(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		q.redirect(w, r, "", "that did not arrive as a form")
+		return
+	}
+	// Detached for the reason an answer is: a phone that drops the connection
+	// after the press must not leave the jot claimed and unfiled.
+	ctx := context.WithoutCancel(r.Context())
+	id := r.PathValue("id")
+	to := strings.TrimSpace(r.PostFormValue("to"))
+	h, err := q.Store.HeldJot(ctx, id)
+	if err != nil {
+		q.redirect(w, r, "", err.Error())
+		return
+	}
+	if to == scratchTo {
+		q.redirect(w, r, "", "scratch files nothing; Discard is how a held jot is let go")
+		return
+	}
+	// Where the jot points now is checked first, as Discard checks it: a jot
+	// is only on this viewer's card if they own that, so without it an owner
+	// of X could take a jot the reader sent to Y by posting to=X, which the
+	// page would never have offered them (MUS-Q-0151).
+	if _, project := heldProject(ctx, q.Store, h.Text, h.To, q.Project); !mayApprove(ctx, r, q.Roles, project, q.Project) {
+		http.Error(w, "only an owner of "+project+" may approve a jot sent there", http.StatusForbidden)
+		return
+	}
+	if _, project := heldProject(ctx, q.Store, h.Text, to, q.Project); !mayApprove(ctx, r, q.Roles, project, q.Project) {
+		http.Error(w, "only an owner of "+project+" may approve a jot filed there", http.StatusForbidden)
+		return
+	}
+	filer := h.Email
+	if filer == "" {
+		filer = h.AccountID
+	}
+	approver := q.actor(r)
+	if viewer, ok := Viewer(r); ok {
+		approver = viewer.Email
+	}
+	var rec record.Record
+	var dest intake.Destination
+	err = q.Store.Approve(ctx, id, func(got store.Held) error {
+		var ferr error
+		rec, dest, ferr = intake.File(ctx, q.Store, intake.Request{
+			Project: q.Project, Text: got.Text, Actor: filer, To: to,
+			Now: q.now(), Approved: approver,
+			// The select starts on the reader's choice; a different value is
+			// the owner's.
+			ApproverChose: to != got.To,
+		})
+		return ferr
+	})
+	if err != nil {
+		q.redirect(w, r, "", err.Error())
+		return
+	}
+	q.export(ctx)
+	u := "/questions?filed=" + template.URLQueryEscaper(rec.ID)
+	if dest.Name != "" {
+		u += "&filedto=" + template.URLQueryEscaper(dest.Name)
+	}
+	http.Redirect(w, r, u, http.StatusSeeOther)
+}
+
+// discardHeld removes a held jot and leaves nothing (MUS-Q-0143).
+//
+// The same owner rule as approving, checked against where the reader pointed
+// it: the person who may let a jot into a project is the person who may keep
+// it out.
+func (q *Questions) discardHeld(w http.ResponseWriter, r *http.Request) {
+	ctx := context.WithoutCancel(r.Context())
+	id := r.PathValue("id")
+	h, err := q.Store.HeldJot(ctx, id)
+	if err != nil {
+		q.redirect(w, r, "", err.Error())
+		return
+	}
+	if _, project := heldProject(ctx, q.Store, h.Text, h.To, q.Project); !mayApprove(ctx, r, q.Roles, project, q.Project) {
+		http.Error(w, "only an owner of "+project+" may discard a jot sent there", http.StatusForbidden)
+		return
+	}
+	if err := q.Store.Discard(ctx, id); err != nil {
+		q.redirect(w, r, "", err.Error())
+		return
+	}
+	http.Redirect(w, r, "/questions?discarded=1", http.StatusSeeOther)
 }
 
 func (q *Questions) now() time.Time {
@@ -169,6 +328,18 @@ type queuePage struct {
 	// ShowSessions renders the Sessions tab. See the note on intake's page.
 	ShowSessions bool
 	ShowAccount  bool
+
+	// Held is readers' jots this viewer may approve, above the questions
+	// (MUS-Q-0143), and HeldGroups the destinations each card's select offers.
+	Held       []heldCard
+	HeldGroups []destGroup
+	// Waiting is the badge: open questions and held jots together.
+	Waiting int
+	// Filed and FiledTo say a held jot was just approved; Discarded that one
+	// was let go.
+	Filed     string
+	FiledTo   string
+	Discarded bool
 }
 
 func (q *Questions) open(ctx context.Context) ([]queued, error) {
@@ -267,7 +438,12 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		Answered:     r.URL.Query().Get("answered"),
 		Delivered:    r.URL.Query().Get("sent"),
 		Error:        r.URL.Query().Get("error"),
+		Filed:        r.URL.Query().Get("filed"),
+		FiledTo:      r.URL.Query().Get("filedto"),
+		Discarded:    r.URL.Query().Get("discarded") == "1",
 	}
+	page.Held, page.HeldGroups = q.held(r)
+	page.Waiting = page.OpenN + len(page.Held)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := queueTmpl.Execute(w, page); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -524,7 +700,7 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
      always been there and stays. Withdraw is deliberately untouched: closing a
      question with no answer is the one thing that must work when nothing is
      chosen. */
-  form:not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown)))
+  form:not(.held):not(:has(input[type=radio]:checked)):not(:has(textarea:not(:placeholder-shown)))
     button.primary { opacity: .45; pointer-events: none; }
   .drop { display: flex; align-items: center; gap: .6rem; margin-top: .6rem;
           flex-wrap: wrap; }
@@ -538,6 +714,23 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
   form > .cites { margin: 0 0 1rem; }
+  /* Readers' jots waiting for approval, above the questions (MUS-Q-0143).
+     Each is its own card and its own form, stacked rather than laid in a row,
+     so the reader, the time and the destination never share a line with a
+     control that could overlap them at phone width. The text keeps its line
+     breaks and wraps anywhere, so a pasted link cannot push the page sideways. */
+  h2.sect { font-size: .95rem; font-weight: 600; opacity: .75; margin: 0 0 .7rem; }
+  .held { border: 1px solid var(--edge); border-radius: .5rem; padding: .7rem .8rem;
+          margin-bottom: .8rem; display: flex; flex-direction: column; gap: .5rem; }
+  .held .meta { opacity: .65; font-size: .82em; overflow-wrap: anywhere; }
+  .held .txt { white-space: pre-line; overflow-wrap: anywhere; }
+  .held label { display: flex; flex-direction: column; gap: .25rem; font-size: .85em; }
+  .held select { font: inherit; font-size: 1rem; padding: .45rem; width: 100%;
+                 max-width: 100%; border: 1px solid var(--edge); border-radius: .5rem;
+                 background: transparent; color: inherit; }
+  .held .acts { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .held .acts button { flex: 1 1 auto; }
+  .held .acts button.primary { width: auto; margin-top: 0; }
 ` + markdownCSS + citesCSS + shellCSS + `
 </style>
 </head>
@@ -546,6 +739,29 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
 {{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
+{{if .Filed}}<p class="said">Filed <code>{{.Filed}}</code>{{if .FiledTo}} → {{.FiledTo}}{{end}}.</p>{{end}}
+{{if .Discarded}}<p class="said">Discarded. Nothing was kept.</p>{{end}}
+{{if .Held}}<section aria-labelledby="held-h">
+<h2 class="sect" id="held-h">Jots waiting for approval</h2>
+{{range .Held}}<form class="held" method="post" action="/intake/held/{{.ID}}/approve">
+  <span class="meta">{{.By}} · {{.When}} · {{.ToName}}</span>
+  <span class="txt">{{.Text}}</span>
+  <label>File to
+    <select name="to">
+      <option value=""{{if not .To}} selected{{end}}>Route it for me{{if .Guess}} ({{.Guess}}){{end}}</option>
+      {{$to := .To}}{{range $.HeldGroups}}<optgroup label="{{.Label}}">
+        {{range .Items}}<option value="{{.ID}}"{{if eq .ID $to}} selected{{end}}>{{.Name}}</option>{{end}}
+      </optgroup>{{end}}
+    </select>
+  </label>
+  <div class="acts">
+    <button class="primary" type="submit">Approve and file</button>
+    <button type="submit" formaction="/intake/held/{{.ID}}/discard">Discard</button>
+  </div>
+</form>
+{{end}}</section>
+{{if .Open}}<hr><h2 class="sect">Questions</h2>{{end}}
+{{end}}
 {{if .Open}}
 {{range $i, $q := .Open}}
 {{if $i}}<hr>{{end}}
@@ -582,13 +798,13 @@ var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
   </div>
 </form>
 {{end}}
-{{else}}
+{{else if not .Held}}
 <p class="none">Nothing waiting on you.</p>
 {{end}}
 </main>
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
-  <a href="/questions" class="here" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenN}}<em class="cnt">{{.OpenN}}</em>{{end}}</a>
+  <a href="/questions" class="here" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .Waiting}}<em class="cnt">{{.Waiting}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
   <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
@@ -649,6 +865,10 @@ func (q *Questions) count(w http.ResponseWriter, r *http.Request) {
 	n := 0
 	if q.Store != nil {
 		n = q.counts.get(r.Context(), q.Store, q.now, OpenCount)
+		// Held jots are counted per viewer, outside the shared cache: which
+		// ones a person may approve depends on who is asking (MUS-Q-0143).
+		// An empty held table costs one indexed read and nothing more.
+		n += len(heldWaiting(r.Context(), r, q.Store, q.Roles, q.Project))
 	}
 	writeCount(w, n)
 }

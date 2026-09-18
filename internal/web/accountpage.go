@@ -370,7 +370,7 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 	p.ShowSessions = a.ShowSessions && CanWrite(r)
 	ctx := r.Context()
 	if a.Records != nil {
-		p.OpenQuestions = OpenCount(ctx, a.Records)
+		p.OpenQuestions = badgeCount(ctx, r, a.Records, a.Store, a.Project)
 		p.Attention = intake.AttentionCount(ctx, a.Records)
 	}
 	p.Email = acct.Email

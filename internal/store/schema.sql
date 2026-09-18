@@ -258,6 +258,36 @@ CREATE TABLE IF NOT EXISTS scratch (
   created_by TEXT NOT NULL
 );
 
+-- A reader's jot, waiting for an owner (MUS-D-0189).
+--
+-- Not a record, for the reason `scratch` is not and more so: the record log is
+-- append-only, exported and public, and an unreviewed line from a reader must
+-- reach none of that. A record with a hidden status would have every export,
+-- audit and route path remember to skip it; a row in its own table is skipped
+-- by all of them without any of them knowing it exists. Approval is the only
+-- way out of here into the log, and it goes through intake.File like any other
+-- filing. Discard deletes the row and leaves nothing, because nothing was ever
+-- filed (MUS-Q-0143).
+--
+-- `destination` is the routing identifier the reader chose, and empty when
+-- they left it to Mustur. It is a suggestion the approving owner can change.
+-- `account_id` is not a foreign key, so a test of this table needs no account;
+-- the listing joins for the email and survives an account that has gone.
+--
+-- Created by the schema itself on a store that predates it, like every table
+-- added after the first: `CREATE TABLE IF NOT EXISTS` is a migration for a
+-- whole new table, and addMissingColumns is only for a column added to an old
+-- one.
+CREATE TABLE IF NOT EXISTS held_jot (
+  id          TEXT PRIMARY KEY,
+  text        TEXT NOT NULL,
+  destination TEXT NOT NULL DEFAULT '',
+  account_id  TEXT NOT NULL,
+  created     TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS held_jot_by_account ON held_jot (account_id, created);
+
 -- What Mustur last started, so a session the machine took can be offered back.
 --
 -- tmux is still the source of truth for what is *running* (MUS-D-0062) and

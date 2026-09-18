@@ -321,6 +321,34 @@ type Request struct {
 	// first minute after filing. That is the minute in which somebody notices
 	// the routing was wrong (MUS-F-0056).
 	Deliberate bool
+	// Approved names the owner who approved a reader's held jot, and is empty
+	// for everything else. Actor is still the reader: they wrote it, and the
+	// record says so, and says separately who let it in (MUS-D-0189).
+	Approved string
+	// ApproverChose says the approving owner, not the filer, named To: they
+	// changed the destination the reader left on the jot. Routing then says so,
+	// in the words the filer's own choice uses, rather than crediting the
+	// reader with a destination they never picked.
+	ApproverChose bool
+}
+
+// Resolve says where a jot would go: the chosen routing record when one is
+// named, and the guess when it is not. It is File's own routing, exported so an
+// owner approving a held jot is checked against the destination File will
+// actually use rather than a second opinion of it.
+func Resolve(ctx context.Context, s *store.Store, text, to string) (Destination, error) {
+	routing, err := routingRecords(ctx, s)
+	if err != nil {
+		return Destination{}, err
+	}
+	d, err := chosen(routing, to)
+	if err != nil {
+		return Destination{}, err
+	}
+	if d.ID == "" {
+		d = Route(strings.TrimSpace(text), routing)
+	}
+	return d, nil
 }
 
 // File writes a jot into the store as a finding and returns the record.
@@ -367,16 +395,14 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 // write.
 func draft(ctx context.Context, s *store.Store, req Request, trimmed string) (record.Record, Destination, string, error) {
 	project, actor, now := req.Project, req.Actor, req.Now
-	routing, err := routingRecords(ctx, s)
+	to, err := Resolve(ctx, s, trimmed, req.To)
 	if err != nil {
 		return record.Record{}, Destination{}, "", err
 	}
-	to, err := chosen(routing, req.To)
-	if err != nil {
-		return record.Record{}, Destination{}, "", err
-	}
-	if to.ID == "" {
-		to = Route(trimmed, routing)
+	// Only a named destination was chosen by anyone. "Route it for me" keeps
+	// the guess's own reason whoever pressed it.
+	if req.ApproverChose && strings.TrimSpace(req.To) != "" {
+		to.Why = "chosen by the approver"
 	}
 
 	r := record.Record{
@@ -399,6 +425,9 @@ func draft(ctx context.Context, s *store.Store, req Request, trimmed string) (re
 		// The destination the jot named and was kept from, so moving it there
 		// later is a confirmation of something the record already says.
 		r.Data = append(r.Data, record.Field{Key: NamesField, Value: strings.Join(to.Names, ", ")})
+	}
+	if req.Approved != "" {
+		r.Data = append(r.Data, record.Field{Key: "Approved by", Value: req.Approved})
 	}
 	if to.ID != "" {
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}

@@ -136,11 +136,32 @@ func TestAReaderReadsAndCannotReachAnAgent(t *testing.T) {
 			t.Errorf("a reader got %d on %s; that surface types into an agent", code, path)
 		}
 	}
-	// And nothing that changes anything.
-	for _, path := range []string{"/intake", "/questions"} {
+	// And nothing that changes anything, except the one write that is a hold.
+	for _, path := range []string{"/questions", "/compose", "/sessions",
+		"/intake/held/held-1/approve", "/intake/held/held-1/discard", "/intake/other"} {
 		if code := postTo(t, reader, srv.URL+path); code != http.StatusForbidden {
 			t.Errorf("a reader posted to %s and got %d", path, code)
 		}
+	}
+}
+
+// MUS-D-0189: a reader's POST to the box passes the guard, carrying the role
+// that tells the handler to hold it rather than file it. The handler here is a
+// stand-in; intake's own tests assert what it does with the role.
+func TestAReadersJotPassesTheGuardAsAHold(t *testing.T) {
+	srv, accounts := guarded(t)
+	reader := signedInAs(t, srv, accounts, "reader@example.com", "MUS", account.Reader)
+	if code := postTo(t, reader, srv.URL+"/intake"); code != http.StatusOK {
+		t.Errorf("a reader's POST /intake got %d; it is the one write a reader makes", code)
+	}
+	req, _ := http.NewRequest(http.MethodPut, srv.URL+"/intake", strings.NewReader(""))
+	res, err := reader.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	if res.StatusCode != http.StatusForbidden {
+		t.Errorf("the exception is POST, and a PUT got %d", res.StatusCode)
 	}
 }
 

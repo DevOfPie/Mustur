@@ -295,12 +295,13 @@ func TestARenameFindsAnIdentifierAtTheStartOfALine(t *testing.T) {
 	}
 }
 
-// held_jot is a table some binaries create and this schema does not. Where it
-// exists, a held jot's destination and text follow the rename; so does a
-// scratch filing's text.
+// A held jot's destination and text follow the rename; so does a scratch
+// filing's text. The schema creates held_jot now (MUS-D-0189), so the
+// statement below is a no-op on this fixture; it is kept, made idempotent, as
+// the statement of which columns the rename relies on.
 func TestARenameReachesHeldJotsAndScratchWhereTheyExist(t *testing.T) {
 	s, ctx := renameFixture(t)
-	if _, err := s.db.Exec(`CREATE TABLE held_jot (id TEXT PRIMARY KEY, text TEXT NOT NULL,
+	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS held_jot (id TEXT PRIMARY KEY, text TEXT NOT NULL,
 		destination TEXT NOT NULL DEFAULT '', account_id TEXT NOT NULL, created TEXT NOT NULL)`); err != nil {
 		t.Fatal(err)
 	}
