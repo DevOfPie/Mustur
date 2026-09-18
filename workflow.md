@@ -221,6 +221,23 @@ links into
 The export is committed on main only
 ([MUS-D-0182](records/decisions.md#mus-d-0182)).
 
+### A finding changes state
+
+```
+always   → Status is one word from its project's "Status word" list;
+           State is the state that word means: open, done or dropped
+prose    → --data Note=…, never in Status
+refused  → mustur add finding / amend write nothing and print the list
+```
+
+```
+mustur amend MUS-F-0172 --data Status=in-review --data State=open \
+  --data "Note=fixed on PR 99, not merged"
+```
+
+A new finding with neither is filed unreviewed and open. `make check` fails on
+any finding in the store that breaks this (MUS-D-0196).
+
 ### A claim is about to be written
 
 ```
