@@ -435,7 +435,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
      The cost, and it is real: a body that is deliberate ASCII art wraps mid
      frame and reads as broken. A scroll container of its own is what would keep
      it, and that is a design decision rather than this fix. */
-  article h3 { font-size: .98rem; font-weight: 600; margin: .15rem 0 .3rem;
+  article h3 { font-size: 1.1rem; font-weight: 600; margin: .15rem 0 .3rem;
                overflow-wrap: anywhere; }
   article p { margin: .3rem 0; font-size: .93em; overflow-wrap: anywhere; }
   .fields { font-size: .86em; margin: .4rem 0 0; }
