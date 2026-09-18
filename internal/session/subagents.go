@@ -91,8 +91,10 @@ type Subagent struct {
 	// it, its stop. A row runs until its stop arrives, and a stop can fail to arrive —
 	// an interrupt's only hook carries no agent id (MUS-F-0157) — so what the
 	// surface can honestly say about a row that has gone silent is when it was
-	// last heard from. Nothing here decides that it is quiet: that is a display
-	// rule in the client (MUS-D-0191), and this is only the fact it reads.
+	// last heard from. This package does not decide that a row is quiet; this
+	// is only the fact that rule reads (MUS-D-0191). The web server applies it
+	// on the first paint (SubagentQuietAfter in internal/web/sessions.go), and
+	// the script re-evaluates it every second after that.
 	Heard time.Time
 }
 

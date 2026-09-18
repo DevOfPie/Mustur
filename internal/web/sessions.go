@@ -1438,9 +1438,10 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      border borrows the failing-check chip's colour rather than adding one; the
      words say what happened, the colour only says to look. */
   .agent .pill.quiet { border-color: #c0392b; }
-  /* A time from before today carries its date, and at the wide screen's
-     default 17rem drawer that is about 20px more than the row has once the
-     title has given up all it can. Wrapped inside the pill rather than cut:
+  /* A time from before today carries its date. At the wide screen's default
+     17rem drawer a row has 240px, and 'no word since Sep 14, 12:59 PM PDT'
+     measured 237px (MUS-Q-0152), which leaves the title almost nothing. Wrapped
+     inside the pill rather than cut:
      the zone is the part that would be cut, and a time without it is the
      thing the pill must not show. Only wraps where it does not fit. */
   .agent .pill.quiet { min-width: 0; white-space: normal; border-radius: .7rem; }
