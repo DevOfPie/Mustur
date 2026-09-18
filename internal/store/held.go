@@ -57,9 +57,17 @@ func (s *Store) Hold(ctx context.Context, text, to, accountID string) (Held, err
 	if accountID == "" {
 		return Held{}, errors.New("a held jot needs the account that sent it")
 	}
+	to = strings.TrimSpace(to)
 	now := s.now().UTC()
 	// A retry of the same send, not a second jot. Compared in the query rather
 	// than by listing, and on the stored text, which is already trimmed.
+	//
+	// The destination is not part of what makes it the same send, which is
+	// intake.Window's rule: same text, same filer, inside the minute. What
+	// differs is that a filed record cannot be changed and a held row can, so
+	// a resend with a different Where moves the row there rather than being
+	// dropped in favour of the first. The last thing the reader chose is where
+	// they meant it to go, and one line stays one row (MUS-Q-0151).
 	var existing Held
 	var created string
 	err := s.db.QueryRowContext(ctx,
@@ -71,6 +79,15 @@ func (s *Store) Hold(ctx context.Context, text, to, accountID string) (Held, err
 	switch {
 	case err == nil:
 		existing.Created, _ = time.Parse(time.RFC3339, created)
+		if existing.To != to {
+			// Keyed on the id, so a row approved or discarded since the read
+			// above is simply not there to move.
+			if _, err := s.db.ExecContext(ctx,
+				`UPDATE held_jot SET destination = ? WHERE id = ?`, to, existing.ID); err != nil {
+				return Held{}, err
+			}
+			existing.To = to
+		}
 		return existing, nil
 	case !errors.Is(err, sql.ErrNoRows):
 		return Held{}, err
@@ -84,7 +101,7 @@ func (s *Store) Hold(ctx context.Context, text, to, accountID string) (Held, err
 		// should be able to cite a jot nobody has approved.
 		ID:        "held-" + hex.EncodeToString(raw),
 		Text:      text,
-		To:        strings.TrimSpace(to),
+		To:        to,
 		AccountID: accountID,
 		Created:   now,
 	}

@@ -89,6 +89,35 @@ func TestTheSameSendTwiceIsHeldOnce(t *testing.T) {
 	}
 }
 
+// The same line resent inside the window with a different Where is still one
+// send, as intake.Window has it, but it goes where it was last pointed rather
+// than silently keeping the first choice (PR 103's review, finding 7).
+func TestAResendWithAnotherDestinationMovesTheOneRow(t *testing.T) {
+	s, ctx := heldStore(t)
+	a, _ := s.Hold(ctx, "a line", "MUS-P-0001", "acct-1")
+	b, err := s.Hold(ctx, "a line", " MUS-P-0002 ", "acct-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.ID != b.ID || b.To != "MUS-P-0002" {
+		t.Errorf("the resend returned %+v, want row %s pointed at MUS-P-0002", b, a.ID)
+	}
+	held, err := s.HeldJots(ctx, "acct-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(held) != 1 || held[0].To != "MUS-P-0002" {
+		t.Fatalf("held after the resend: %+v, want one row pointed at MUS-P-0002", held)
+	}
+	if !held[0].Created.Equal(a.Created.Truncate(time.Second)) {
+		t.Errorf("moving the row restamped it: %v, was %v", held[0].Created, a.Created)
+	}
+	// Back to "Route it for me" is a destination too.
+	if c, _ := s.Hold(ctx, "a line", "", "acct-1"); c.ID != a.ID || c.To != "" {
+		t.Errorf("a resend to Route it for me returned %+v", c)
+	}
+}
+
 func TestApproveHandsTheJotOverOnce(t *testing.T) {
 	s, ctx := heldStore(t)
 	h, _ := s.Hold(ctx, "a line", "MUS-P-0001", "acct-1")
