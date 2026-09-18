@@ -213,8 +213,10 @@ type imageView struct {
 	Size string
 }
 
-// idInProse finds identifiers written in a record's text.
-var idInProse = regexp.MustCompile(`\b[A-Z]{3}-[A-Z]-[0-9]{4}\b`)
+// idInProse finds identifiers written in a record's text, reserved prefixes
+// ("_IB-F-0001") included. The leading \b still holds before a reserved one,
+// because the underscore is a word character.
+var idInProse = regexp.MustCompile(`\b` + ident.ProjectPattern + `-[A-Z]-[0-9]{4}\b`)
 
 func (rr *Records) load(ctx context.Context) (map[string]record.Record, []record.Record, error) {
 	all, err := rr.Store.List(ctx, "")

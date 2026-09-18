@@ -6,6 +6,15 @@
 // plays; the serial is zero-padded to four digits and unique within its
 // project and role.
 //
+// **A prefix can also be reserved: an underscore and two upper-case letters,
+// `_IB-F-0001`.** That form is for lists Mustur keeps for itself rather than for
+// a project — the intake box, where a jot lands when nothing else will take it,
+// is `_IB`. A real project's prefix is three letters, so no project onboarded
+// later can ever take a reserved one, and a record in Mustur's own list can
+// never be mistaken for, or collide with, a record about a project. The
+// underscore sorts after every upper-case letter, so a reserved list comes
+// after every project in any listing ordered by Less.
+//
 // **The prefix says which project a record belongs to, not which store holds
 // it.** A jot routed to the idea inbox is filed under IDW even though the store
 // serving it is Mustur's — the routing record names the prefix and intake uses
@@ -87,7 +96,13 @@ func RoleFor(name string) (Role, bool) {
 	return "", false
 }
 
-var pattern = regexp.MustCompile(`^([A-Z]{3})-([A-Z])-([0-9]{4})$`)
+// ProjectPattern is the regular-expression fragment a project prefix matches:
+// three upper-case letters, or the reserved form of an underscore and two.
+// Anything elsewhere that finds identifiers in text builds on this rather than
+// spelling the shape out again, so the next change to the scheme is one line.
+const ProjectPattern = `(?:[A-Z]{3}|_[A-Z]{2})`
+
+var pattern = regexp.MustCompile(`^(` + ProjectPattern + `)-([A-Z])-([0-9]{4})$`)
 
 // ID is a parsed identifier.
 type ID struct {
@@ -124,7 +139,7 @@ func Parse(s string) (ID, error) {
 }
 
 // ValidProject reports whether s is a well-formed project prefix on its own:
-// exactly three upper-case letters. A routing record naming its own prefix is
+// three upper-case letters, or a reserved underscore and two. A routing record naming its own prefix is
 // checked with this before anything is filed under it, so a typo in the
 // registry produces a jot under the store's prefix rather than an identifier
 // the scheme cannot parse.
@@ -132,7 +147,7 @@ func ValidProject(s string) bool {
 	return projectPattern.MatchString(s)
 }
 
-var projectPattern = regexp.MustCompile(`^[A-Z]{3}$`)
+var projectPattern = regexp.MustCompile(`^` + ProjectPattern + `$`)
 
 // Valid reports whether s parses.
 func Valid(s string) bool {
@@ -168,12 +183,34 @@ func Cited(text string) []string {
 	var out []string
 	seen := map[string]bool{}
 	for _, field := range strings.FieldsFunc(text, func(r rune) bool {
-		return !(r >= 'A' && r <= 'Z') && !(r >= '0' && r <= '9') && r != '-'
+		return !(r >= 'A' && r <= 'Z') && !(r >= '0' && r <= '9') && r != '-' && r != '_'
 	}) {
-		if Valid(field) && !seen[field] {
-			seen[field] = true
-			out = append(out, field)
+		if id := citedIn(field); id != "" && !seen[id] {
+			seen[id] = true
+			out = append(out, id)
 		}
 	}
 	return out
+}
+
+// citedIn finds the identifier a run of identifier characters spells, if any.
+// The underscore has to be one of those characters or a reserved identifier
+// could not be read, and that glues a three-letter one to whatever precedes it:
+// `FOO_MUS-D-0001` is one run. So the run is tried whole, then from its last
+// underscore (a reserved identifier), then after it (a project one) — which
+// finds in such a run exactly what was found before the reserved form existed.
+func citedIn(field string) string {
+	if Valid(field) {
+		return field
+	}
+	i := strings.LastIndex(field, "_")
+	if i < 0 {
+		return ""
+	}
+	for _, c := range []string{field[i:], field[i+1:]} {
+		if Valid(c) {
+			return c
+		}
+	}
+	return ""
 }

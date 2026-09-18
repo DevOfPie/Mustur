@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
@@ -42,9 +43,13 @@ var md = goldmark.New(
 // resolve. Served from /records or /questions they resolve to nothing, so a
 // link that names a record is pointed at that record's own page instead.
 // Every other link is left exactly as written.
+//
+// Both are built on ident.ProjectPattern, so a reserved prefix ("_ib-f-0001")
+// is pointed at its page like any other. The anchor is the export's, which is
+// the identifier lower-cased, so the pattern is lower-cased with it.
 var (
-	anchorID = regexp.MustCompile(`#([a-z]{3}-[a-z]-[0-9]{4})$`)
-	fileID   = regexp.MustCompile(`(?:^|/)([A-Z]{3}-[A-Z]-[0-9]{4})\.md$`)
+	anchorID = regexp.MustCompile(`#(` + strings.ToLower(ident.ProjectPattern) + `-[a-z]-[0-9]{4})$`)
+	fileID   = regexp.MustCompile(`(?:^|/)(` + ident.ProjectPattern + `-[A-Z]-[0-9]{4})\.md$`)
 )
 
 type recordLinks struct{}

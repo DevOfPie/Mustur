@@ -243,3 +243,28 @@ func TestABodysHeadingLevelsAreDistinctAndBetweenTextAndTitle(t *testing.T) {
 		t.Error("the record title is not 1.1rem, so the ceiling above is not the page's")
 	}
 }
+
+// A reserved prefix is an identifier like any other on the page: its export
+// anchor and file are pointed at its record, and naming it bare is a citation.
+func TestAReservedIdentifierInABodyResolves(t *testing.T) {
+	srv := serveRecords(t, "",
+		record.Record{ID: "_IB-F-0001", Kind: "finding", Title: "In the box", At: "2026-09-18"},
+		decision("MUS-D-0009", "Cites the box",
+			"See [it](findings.md#_ib-f-0001), [its file](findings/_IB-F-0001.md), and _IB-F-0001 bare."),
+	)
+	body, _ := fetch(t, srv, "/records/MUS-D-0009")
+	for _, want := range []string{
+		`<a href="/records/_IB-F-0001">it</a>`,
+		`<a href="/records/_IB-F-0001">its file</a>`,
+		`<summary class="badge">_IB-F-0001</summary>`,
+		"In the box",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the records page does not carry %q", want)
+		}
+	}
+	res, code := fetch(t, srv, "/records/_ib-f-0001")
+	if code != 200 || !strings.Contains(res, "In the box") {
+		t.Errorf("a reserved identifier's page does not resolve: %d", code)
+	}
+}
