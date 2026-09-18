@@ -378,8 +378,9 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 	if to.ID != "" {
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}
 	}
-	// Where it routes decides what it is called. A jot in the idea inbox is not
-	// a Mustur record and no longer says it is (MUS-Q-0030, MUS-Q-0031).
+	// Where it routes decides what it is called. A jot in the intake box is not
+	// a Mustur record and no longer says it is (MUS-Q-0030, MUS-Q-0031); it is
+	// filed under the reserved _IB (MUS-D-0192).
 	under := project
 	if to.Prefix != "" {
 		under = to.Prefix
@@ -427,8 +428,8 @@ func chosen(routing []record.Record, id string) (Destination, error) {
 	for _, r := range routing {
 		if r.ID == id {
 			// The prefix comes from the destination however the destination was
-			// arrived at. A jot routed to the idea inbox by the guess was filed
-			// under IDW while the same jot sent there deliberately was filed
+			// arrived at. A jot routed to the intake box by the guess was filed
+			// under its prefix while the same jot sent there deliberately was filed
 			// under the store's prefix — the identifier depended on how the
 			// choice was made rather than on where the record went.
 			return Destination{

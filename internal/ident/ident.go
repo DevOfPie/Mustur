@@ -9,23 +9,28 @@
 // **A prefix can also be reserved: an underscore and two upper-case letters,
 // `_IB-F-0001`.** That form is for lists Mustur keeps for itself rather than for
 // a project — the intake box, where a jot lands when nothing else will take it,
-// is `_IB`. A real project's prefix is three letters, so no project onboarded
-// later can ever take a reserved one, and a record in Mustur's own list can
-// never be mistaken for, or collide with, a record about a project. The
+// is `_IB` (MUS-D-0192). A real project's prefix is three letters, so no
+// project onboarded later can ever take a reserved one, and a record in
+// Mustur's own list can never be mistaken for, or collide with, a record about
+// a project. The
 // underscore sorts after every upper-case letter, so a reserved list comes
 // after every project in any listing ordered by Less.
 //
 // **The prefix says which project a record belongs to, not which store holds
-// it.** A jot routed to the idea inbox is filed under IDW even though the store
-// serving it is Mustur's — the routing record names the prefix and intake uses
-// it (MUS-D-0093). Before that, everything filed here was called MUS, and a jot
-// in the idea inbox was indistinguishable at a glance from a record about
-// Mustur itself. `MUS-F-0025` is the last one filed that way and keeps its
-// identifier, because the permanence rule below is what makes citations safe.
+// it.** The routing record names the prefix and intake uses it (MUS-D-0093).
+// Before that, everything filed here was called MUS, and a jot in the intake
+// box — then called the idea inbox — was indistinguishable at a glance from a
+// record about Mustur itself. `MUS-F-0025` is the last one filed that way and
+// keeps its identifier, because the permanence rule below is what makes
+// citations safe. The box's jots were then filed under IDW, which is Idea
+// Warehouse's prefix; the six filed that way were renamed to `_IB-F-0001`
+// through `_IB-F-0006` in place, the one exception the permanence rule has
+// (MUS-D-0192).
 //
 // Identifiers are permanent. The store is insert-only and records cite each
 // other by identifier, so a scheme that allows renaming is a scheme that
-// allows a citation to rot.
+// allows a citation to rot. MUS-D-0192 is the one exception, and the reserved
+// form above is what keeps it from being needed again.
 package ident
 
 import (

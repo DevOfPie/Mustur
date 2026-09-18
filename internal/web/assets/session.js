@@ -596,7 +596,7 @@
     });
   }
 
-  // Dragging the drawer wider, on a wide screen (IDW-F-0004).
+  // Dragging the drawer wider, on a wide screen (_IB-F-0004).
   //
   // Only --drawer-w is set. Everything that has to move with it already reads
   // that variable: the drawer's own width, and the min() the reading column and

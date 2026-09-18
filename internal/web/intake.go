@@ -269,7 +269,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	}
 	// Scratch: filed beside the records rather than among them. It takes no
 	// identifier and never enters the log, which is the whole point — testing
-	// the box twice cost two permanent identifiers in the idea warehouse.
+	// the box twice cost two permanent identifiers in the intake box.
 	if r.PostFormValue("to") == scratchTo {
 		sc, err := in.Store.Scratched(r.Context(), text, in.actor(r))
 		if err != nil {

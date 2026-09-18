@@ -1251,7 +1251,7 @@ func claimsNoSubagents(body string) bool {
 
 // The drawer can be dragged wider, and the handle is a control.
 //
-// IDW-F-0004, from the owner: the drawer can take more space on a laptop and
+// _IB-F-0004, from the owner: the drawer can take more space on a laptop and
 // dragging it wider would be nice when wanted. The behaviour itself is measured
 // in a browser — a drag is not something markup can prove — so what this holds
 // is the part that quietly rots: that the handle stays reachable without a
