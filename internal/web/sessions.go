@@ -1078,8 +1078,13 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
                     background: transparent; color: inherit; cursor: pointer; }
   .said.err { margin: .6rem 1rem 0; border: 1px solid var(--accent);
               border-radius: .5rem; padding: .5rem .7rem; font-size: .9em; }
-  .newlink { font-size: 1em; line-height: 1; opacity: .7; text-decoration: none;
-             color: inherit; border: 1px solid var(--edge); border-radius: .45rem;
+  /* Drawn like Stop beside it: full strength, the same edge, no fill. It was
+     at .7 for no recorded reason, and on a rail that spends reduced opacity on
+     "empty" (.toggle[data-empty]) a faded control reads as a disabled one —
+     which is what the owner took it for while it worked (MUS-F-0175). */
+  .newlink { font-size: 1em; line-height: 1; text-decoration: none;
+             color: inherit; background: transparent;
+             border: 1px solid var(--edge); border-radius: .45rem;
              width: 1.9rem; height: 1.9rem; flex: 0 0 auto;
              display: inline-flex; align-items: center; justify-content: center; }
   /* The strip that used to sit here said "live" across the whole width, and

@@ -2700,3 +2700,35 @@ func TestNothingDrawsALineAboveStop(t *testing.T) {
 		t.Errorf(".endform does not undo the bare form rule's border: %s", block)
 	}
 }
+
+// The plus that starts a session is drawn like Stop beside it, not faded.
+//
+// It sat at opacity .7 with no reason recorded, on a rail that uses reduced
+// opacity to mean empty (.toggle[data-empty]), so a control that worked read
+// as a disabled one (MUS-F-0175).
+func TestThePlusIsNotDrawnDisabled(t *testing.T) {
+	srv := serveSessions(t, owned("mustur/Mustur"))
+	body := getFrom(t, srv, "/sessions/Mustur")
+	rule := func(sel string) string {
+		i := strings.Index(body, sel+" {")
+		if i < 0 {
+			t.Fatalf("no %s rule on the session page", sel)
+		}
+		return body[i : i+strings.Index(body[i:], "}")]
+	}
+	plus, stop := rule(".newlink"), rule(".endform button")
+	if strings.Contains(plus, "opacity") {
+		t.Errorf(".newlink sets an opacity, so it reads as disabled beside Stop: %s", plus)
+	}
+	for _, decl := range []string{"border: 1px solid var(--edge)", "color: inherit", "background: transparent"} {
+		if !strings.Contains(stop, decl) {
+			t.Fatalf(".endform button no longer declares %q; this test compares against it", decl)
+		}
+		if !strings.Contains(plus, decl) {
+			t.Errorf(".newlink does not declare %q as Stop does: %s", decl, plus)
+		}
+	}
+	if !strings.Contains(body, `<a class="newlink" href="/sessions?new=1"`) {
+		t.Error("the plus is no longer a plain link to the start form")
+	}
+}
