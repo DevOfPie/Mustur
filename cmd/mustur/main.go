@@ -47,6 +47,10 @@ const usage = `mustur — records and routing for one project
                   [--replace]                 state it afresh instead, dropping the rest
   mustur reroute ID --to DEST                re-file a mis-routed jot; the old one stays, superseded
   mustur rename   OLD=NEW [...] [--keep IDS] [--apply]  MUS-D-0192's one rename in place; lists unless --apply
+                  [--repoint ROUTING-ID=PREFIX]  set that routing record's prefix in the same transaction
+                  [--accept-unmatched]        apply although an old id is spelled inside something longer
+                  stop the service first: a jot filed across the commit can take the old prefix,
+                  and a running service may hold the write lock (the run then fails, nothing written)
   mustur ask      --title T [--blocks W]      raise a question the owner has to answer
                   [--option "L :: line :: detail"]  an answer they can pick, repeatable
                   [--needed]                  the work cannot proceed without the answer

@@ -27,7 +27,12 @@ package store
 //   - record_latest, re-derived from the rewritten log in the same transaction;
 //   - attachment.record_id, so a picture follows its record;
 //   - held_jot.destination and held_jot.text, and scratch.text, when those
-//     tables exist in the store being renamed.
+//     tables exist in the store being renamed;
+//   - with Repoint, one amend event per named routing record setting its
+//     prefix field, appended in the same transaction. Without it, a service
+//     filing into the intake box between the rename and a separate amend of
+//     its prefix would take the next IDW serial — IDW-F-0001, the very
+//     identifier MUS-D-0197 retires (review of #107, finding 1).
 //
 // Records named in keep are left exactly as written: they record the rename
 // itself, and a decision that says "IDW-F-0001 became _IB-F-0001" is false the
@@ -45,6 +50,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
@@ -72,6 +78,19 @@ type RenameOptions struct {
 	AcceptUnmatched bool
 	// Apply writes; without it the rename only reports.
 	Apply bool
+	// Repoint sets a field on routing records in the same transaction.
+	Repoint []Repoint
+	// IsRouting says which record kinds Repoint may amend. The store does not
+	// know the routing registry's kinds; intake does, and the caller asks it.
+	IsRouting func(kind string) bool
+	// Actor is who the Repoint amend events are written as.
+	Actor string
+}
+
+// Repoint is one routing record's field set to a value by a rename: in
+// practice the intake box's prefix, set to _IB as its jots become _IB.
+type Repoint struct {
+	ID, Field, Value string
 }
 
 // RenameReport is what a rename changed, or would change on --apply.
@@ -83,6 +102,9 @@ type RenameReport struct {
 	// Unmatched lists rows outside the kept records that still spell an old
 	// identifier after the rewrite, because it stands inside something longer.
 	Unmatched []RenameChange
+	// Repointed lists the routing records a Repoint amends, as
+	// "ID: Field old -> new".
+	Repointed []string
 	// Absent names the optional tables this store does not carry, so a
 	// report of none rewritten is not mistaken for none found.
 	Absent  []string
@@ -202,6 +224,44 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 		case attached > 0:
 			return report, fmt.Errorf("%s already has attachments, and no record: refusing to merge them", r.New)
 		}
+	}
+
+	// Each repointed record has to exist now and be a routing record. Read
+	// from the latest state inside this transaction, so what is checked is
+	// what is amended.
+	type repointRow struct {
+		rec record.Record
+		rp  Repoint
+	}
+	var repoints []repointRow
+	for _, rp := range opts.Repoint {
+		if _, renamed := olds[rp.ID]; renamed {
+			return report, fmt.Errorf("--repoint %s: that record is being renamed", rp.ID)
+		}
+		if strings.TrimSpace(rp.Field) == "" || strings.TrimSpace(rp.Value) == "" {
+			return report, fmt.Errorf("--repoint %s: no field or no value", rp.ID)
+		}
+		var p string
+		err := tx.QueryRowContext(ctx, `SELECT payload FROM record_latest WHERE record_id = ?`, rp.ID).Scan(&p)
+		if err == sql.ErrNoRows {
+			return report, fmt.Errorf("--repoint %s: no such record", rp.ID)
+		}
+		if err != nil {
+			return report, err
+		}
+		rec, err := record.UnmarshalPayload([]byte(p))
+		if err != nil {
+			return report, err
+		}
+		if opts.IsRouting == nil || !opts.IsRouting(rec.Kind) {
+			return report, fmt.Errorf("--repoint %s: a %s is not a routing record", rp.ID, rec.Kind)
+		}
+		was, _ := rec.Get(rp.Field)
+		report.Repointed = append(report.Repointed, fmt.Sprintf("%s: %s %q -> %q", rp.ID, rp.Field, was, rp.Value))
+		repoints = append(repoints, repointRow{rec: rec, rp: rp})
+	}
+	if len(repoints) > 0 && strings.TrimSpace(opts.Actor) == "" {
+		return report, fmt.Errorf("--repoint writes an amend event, and no actor was given")
 	}
 
 	type eventRow struct {
@@ -403,6 +463,32 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 	if _, err := tx.ExecContext(ctx, guard); err != nil {
 		return report, fmt.Errorf("restore the insert-only guard: %w", err)
 	}
+	// Appended, not rewritten: an amend is an ordinary insert, which the
+	// restored guard allows. The record is read again after the rewrite, so an
+	// old identifier it cited is already renamed in what is amended.
+	written := s.now().UTC().Format(time.RFC3339)
+	for _, rp := range repoints {
+		var p string
+		if err := tx.QueryRowContext(ctx,
+			`SELECT payload FROM record_event WHERE record_id = ? ORDER BY seq DESC LIMIT 1`, rp.rec.ID).Scan(&p); err != nil {
+			return report, fmt.Errorf("--repoint %s: %w", rp.rec.ID, err)
+		}
+		rec, err := record.UnmarshalPayload([]byte(p))
+		if err != nil {
+			return report, err
+		}
+		rec.Data = setField(rec.Data, rp.rp.Field, rp.rp.Value)
+		payload, err := rec.MarshalPayload()
+		if err != nil {
+			return report, err
+		}
+		if _, err := tx.ExecContext(ctx,
+			`INSERT INTO record_event (record_id, kind, op, at, actor, payload, written_at)
+			 VALUES (?, ?, 'amend', ?, ?, ?, ?)`,
+			rec.ID, rec.Kind, rec.At, opts.Actor, string(payload), written); err != nil {
+			return report, fmt.Errorf("--repoint %s: %w", rec.ID, err)
+		}
+	}
 	for _, a := range attachments {
 		if _, err := tx.ExecContext(ctx, `UPDATE attachment SET record_id = ? WHERE id = ?`, a.value, a.key); err != nil {
 			return report, fmt.Errorf("move attachment %s: %w", a.key, err)
@@ -447,6 +533,28 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 	}
 	report.Applied = true
 	return report, nil
+}
+
+// setField sets the first field named key to value and drops any later ones
+// of that name, or appends it when there is none. Every other field keeps its
+// place.
+func setField(fs []record.Field, key, value string) []record.Field {
+	var out []record.Field
+	set := false
+	for _, f := range fs {
+		if f.Key != key {
+			out = append(out, f)
+			continue
+		}
+		if !set {
+			out = append(out, record.Field{Key: key, Value: value})
+			set = true
+		}
+	}
+	if !set {
+		out = append(out, record.Field{Key: key, Value: value})
+	}
+	return out
 }
 
 // checkRenames refuses a map that is malformed or collides with itself, and

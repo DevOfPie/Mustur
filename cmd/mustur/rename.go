@@ -12,12 +12,25 @@ package main
 // It counts by default and writes only with --apply, the way `import linkctrl`
 // does: what it would change is read before anything lands. The work is
 // store.Rename, which says what it touches and why.
+//
+// --repoint ROUTING-ID=PREFIX sets that routing record's Prefix in the same
+// transaction, so no jot can be filed between the rename and the repoint
+// under a prefix the rename has just emptied.
+//
+// Stop the service for the run. Nothing in it caches the routing records —
+// intake reads them on every filing, and the intake and compose pages on every
+// request — but intake reads them before it opens the transaction that
+// allocates a serial, so a jot in flight across the rename's commit could
+// still be filed under the old prefix. A service left running may also hold
+// the write lock, and the run then fails with nothing written.
 
 import (
 	"flag"
 	"fmt"
 	"strings"
 
+	"github.com/DevOfPie/Mustur/internal/ident"
+	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -27,6 +40,9 @@ func cmdRename(args []string) error {
 	keep := fs.String("keep", "", "records whose text is left as written, comma-separated: the ones recording the rename")
 	apply := fs.Bool("apply", false, "write the rename; without it, only list what would change")
 	acceptUnmatched := fs.Bool("accept-unmatched", false, "apply although rows spell an old identifier inside something longer; read the dry run first")
+	actor := fs.String("actor", defaultActor(), "who the --repoint amend is written as")
+	var repoint repeated
+	fs.Var(&repoint, "repoint", "ROUTING-ID=PREFIX: set that routing record's prefix in the same transaction, repeatable")
 	var pairs []string
 	rest := args
 	for len(rest) > 0 {
@@ -51,6 +67,16 @@ func cmdRename(args []string) error {
 		renames = append(renames, store.Renaming{Old: strings.TrimSpace(old), New: strings.TrimSpace(new)})
 	}
 
+	var repoints []store.Repoint
+	for _, rp := range repoint {
+		id, prefix, ok := strings.Cut(rp, "=")
+		id, prefix = strings.TrimSpace(id), strings.TrimSpace(prefix)
+		if !ok || !ident.Valid(id) || !ident.ValidProject(prefix) {
+			return fmt.Errorf("--repoint %q is not ROUTING-ID=PREFIX", rp)
+		}
+		repoints = append(repoints, store.Repoint{ID: id, Field: intake.PrefixField, Value: prefix})
+	}
+
 	s, ctx, err := openStore(*db)
 	if err != nil {
 		return err
@@ -59,6 +85,7 @@ func cmdRename(args []string) error {
 
 	report, err := s.Rename(ctx, renames, store.RenameOptions{
 		Keep: strings.Split(*keep, ","), Apply: *apply, AcceptUnmatched: *acceptUnmatched,
+		Repoint: repoints, IsRouting: intake.IsRoutingKind, Actor: *actor,
 	})
 	if err != nil && len(report.Unmatched) > 0 {
 		printUnmatched(report)
@@ -92,6 +119,10 @@ func cmdRename(args []string) error {
 		}
 	}
 	printUnmatched(report)
+	fmt.Printf("repoint: %d routing record(s)\n", len(report.Repointed))
+	for _, rp := range report.Repointed {
+		fmt.Printf("  %s\n", rp)
+	}
 	fmt.Printf("kept as written: %d event(s)\n", len(report.Kept))
 	for _, c := range report.Kept {
 		printChange(c)
@@ -123,4 +154,14 @@ func printChange(c store.RenameChange) {
 		who = "-"
 	}
 	fmt.Printf("  %-8s %-12s %s\n", c.Row, who, strings.Join(c.Where, ", "))
+}
+
+// repeated is a flag given as often as needed, each value kept as written.
+type repeated []string
+
+func (r *repeated) String() string { return strings.Join(*r, ",") }
+
+func (r *repeated) Set(v string) error {
+	*r = append(*r, v)
+	return nil
 }

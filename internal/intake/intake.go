@@ -76,6 +76,9 @@ const NamesField = "Names"
 // routingKinds are the record kinds a jot can be routed to.
 var routingKinds = map[string]bool{"repository": true, "machine": true, "project": true}
 
+// IsRoutingKind reports whether a record of this kind is a destination.
+func IsRoutingKind(kind string) bool { return routingKinds[kind] }
+
 // Route decides where a jot goes. It returns the destination and never an
 // error: a jot that cannot be routed still gets filed, because refusing to file
 // something because its destination is unclear is the failure this whole
