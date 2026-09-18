@@ -101,6 +101,9 @@ func TestDoingReadsThePane(t *testing.T) {
 		// restored session reads its conversation off disk (MUS-F-0115).
 		{"an empty pane", "", AgentStarting},
 		{"a pane of only blanks", "   \n\n  \n", AgentStarting},
+		// One printed character is a CLI that has started drawing, so from here
+		// on the marks decide, and this pane carries none of them.
+		{"a blank pane with one character on it", "   \n\n  x\n", AgentUnknown},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			a := &Adapter{Run: paneRunner{out: c.pane}}

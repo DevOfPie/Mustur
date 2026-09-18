@@ -411,8 +411,12 @@ func (s *Sessions) rows(ctx context.Context, here string) ([]sessionRow, []lostR
 		// capture-pane per session per render that MUS-Q-0102 was about.
 		if s.Hub != nil {
 			switch s.Hub.Doing(sn.Project) {
-			case session.AgentWorking, session.AgentStarting:
+			case session.AgentWorking:
 				row.Doing = "working"
+			// Not "working": a blank pane has no turn in it, and the session
+			// view's pill says starting about the same frame (MUS-F-0115).
+			case session.AgentStarting:
+				row.Doing = "starting"
 			case session.AgentWaiting:
 				row.Doing = "waiting"
 			}

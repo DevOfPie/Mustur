@@ -2342,6 +2342,50 @@ func TestASessionThatHasPrintedNothingReadsAsStarting(t *testing.T) {
 	if strings.TrimSpace(f.Screen) != "" {
 		t.Errorf("the pane was not blank, so this measured nothing: %q", f.Screen)
 	}
+
+	// The picker reads the same frame, so it says the same word rather than
+	// calling a pane with no turn in it working.
+	res, err := http.Get(srv.URL + "/sessions/" + project)
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	if !strings.Contains(string(page), project+" &middot; starting</option>") {
+		t.Error("the session picker does not say a blank session is starting")
+	}
+}
+
+// The pill says starting without the ring. The ring means a turn is in flight
+// (MUS-D-0130), and a CLI that has not drawn its prompt has no turn in it; the
+// first version turned it anyway, so the pill over a blank terminal looked
+// exactly like one mid-turn (MUS-F-0115).
+func TestStartingIsAPlainPill(t *testing.T) {
+	js, err := os.ReadFile("assets/session.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(js)
+	if !strings.Contains(src, `setState("starting", false)`) {
+		t.Error("the starting pill wears the ring that means a turn is in flight")
+	}
+	if strings.Contains(src, `setState("starting", true)`) {
+		t.Error("somewhere the starting pill still turns the ring on")
+	}
+	// The server omits an unknown reading, so an absent field has to clear the
+	// last one. Keeping it is how a pane that went from blank to something
+	// unrecognised said starting for ever, measured in a browser.
+	if strings.Count(src, `doing = f.agent || "";`) != 2 {
+		t.Error("a frame with no reading keeps the last one, so starting outlives the blank pane")
+	}
+	if strings.Contains(src, `if (typeof f.agent === "string") doing = f.agent;`) {
+		t.Error("somewhere a frame with no reading still keeps the last one")
+	}
+	// The note goes into the empty terminal and only there; the first frame
+	// that carries anything replaces it.
+	if !strings.Contains(src, "if (!out || out.firstChild) return;") {
+		t.Error("the starting note is written over a screen that already has something on it")
+	}
 }
 
 // Milestone 8, end to end through the surface: a tool call the CLI is holding

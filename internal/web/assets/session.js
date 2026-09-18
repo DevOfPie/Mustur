@@ -100,9 +100,11 @@
     // and the silence timer below reads that blank screen as a session that
     // has been quiet since it started — so the surface said "idle" over an
     // empty terminal with nothing to say anything was coming (MUS-F-0115).
-    // The ring turns, because something is in fact happening.
+    // No ring: the ring means a turn is in flight (MUS-D-0130), and no turn
+    // can be in flight on a CLI that has not drawn its prompt yet. The plain
+    // pill is the one "connecting" wears, which is the same kind of wait.
     if (doing === "starting") {
-      setState("starting", true);
+      setState("starting", false);
       startingNote();
       return;
     }
@@ -734,13 +736,17 @@
         // The server says how long the screen has already been unchanged, so
         // the counter continues rather than restarting on every page load.
         if (typeof f.quiet === "number") lastOutput = Date.now() - f.quiet * 1000;
-        if (typeof f.agent === "string") doing = f.agent;
+        // Every hello and every screen frame carries the pane's reading, and
+        // unknown is the empty string the server omits — so an absent field is
+        // unknown, not "as before". Keeping the old value is how a pane that
+        // went from blank to something unrecognised said starting for ever.
+        doing = f.agent || "";
         drawChips(f.status);
         // Now that the real silence is known, the pill can be honest about it.
         refreshState();
       } else if (f.t === "screen") {
         var moved = paint(f.screen || "");
-        if (typeof f.agent === "string") doing = f.agent;
+        doing = f.agent || "";
         drawChips(f.status);
         // The arrival of a frame is not the activity, which is what this used
         // to say. The server hashes the pane before it strips the CLI's own
