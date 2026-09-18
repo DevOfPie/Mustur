@@ -19,6 +19,7 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -385,7 +386,10 @@ func draft(ctx context.Context, s *store.Store, req Request, trimmed string) (re
 		Body:  trimmed,
 		Data: []record.Field{
 			{Key: "Evidence", Value: ""},
-			{Key: "Status", Value: "unreviewed"},
+			// Nobody has triaged it, which every project's list calls
+			// unreviewed and maps to open (MUS-D-0196).
+			{Key: status.StatusField, Value: status.Unreviewed},
+			{Key: status.StateField, Value: status.Open},
 			{Key: "Routed to", Value: routedTo(to)},
 			{Key: "Routing", Value: to.Why},
 			{Key: "Filed by", Value: actor},

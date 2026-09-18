@@ -9,6 +9,7 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/seed"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -188,6 +189,11 @@ func TestFileWritesAFindingCarryingItsRouting(t *testing.T) {
 	// while a filled one would say the opposite.
 	if evidence, ok := r.Get("Evidence"); !ok || evidence != "" {
 		t.Errorf("evidence = %q, present %v", evidence, ok)
+	}
+	// Filed untriaged: the word every project declares for that, and the
+	// State it maps to (MUS-D-0196).
+	if w, st := status.WordOf(r), status.StateOf(r); w != status.Unreviewed || st != status.Open {
+		t.Errorf("Status %q, State %q; want unreviewed and open", w, st)
 	}
 	back, err := s.Get(ctx, r.ID)
 	if err != nil || back.Title != r.Title {
