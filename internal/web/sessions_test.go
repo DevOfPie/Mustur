@@ -1316,8 +1316,9 @@ func TestTheDrawerHasAResizeHandleThatIsNotPointerOnly(t *testing.T) {
 // and panel over the bar, so the bar could be neither seen nor tapped while the
 // drawer was open. Whether they overlap is measured in a browser; what this
 // holds is the rule that decides it: the phone drawer's bottom edge is the
-// room the bar takes, and that room is nothing beside the rail, so the wide
-// screen's column is still full height.
+// room the bar takes, and the wide screen's own rule still makes it a
+// full-height column. That the bar is exactly that room is
+// TestTheBarIsAsTallAsTheRoomKeptForIt's to hold.
 func TestTheDrawerStopsAboveTheTabBar(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	body := getFrom(t, srv, "/sessions/Mustur")
@@ -1333,12 +1334,8 @@ func TestTheDrawerStopsAboveTheTabBar(t *testing.T) {
 	if !strings.Contains(body[wide:], ".drawer { inset: 0 0 0 auto;") {
 		t.Error("the wide screen's drawer is no longer a full-height column")
 	}
-	// The offset is the bar's height below the breakpoint and nothing beside
-	// the rail, which is what makes one rule right on both.
-	for _, want := range []string{"--shell-dock-offset: var(--shell-bar);", "body { --shell-dock-offset: 0px; }"} {
-		if !strings.Contains(body, want) {
-			t.Errorf("the shell no longer sets the offset the drawer stops at: %q missing", want)
-		}
+	if !strings.Contains(body, "--shell-dock-offset: var(--shell-bar);") {
+		t.Error("the shell no longer sets the offset the drawer stops at to the bar's room")
 	}
 }
 

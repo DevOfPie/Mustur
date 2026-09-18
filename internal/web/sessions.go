@@ -1417,13 +1417,14 @@ var sessionTmpl = template.Must(template.New("sessions").Funcs(assetFuncs).Parse
      reason for a drawer rather than a sheet — the terminal and the list at
      once.
 
-     Either way it stops above the tab bar, which is always visible with
-     content scrolling behind it (MUS-Q-0142). inset: 0 laid the phone's
-     drawer over the bar from x=55 across, so the bar could be neither seen
-     nor tapped while it was open (MUS-F-0179). --shell-dock-offset is the
-     room the bar takes below the breakpoint and 0 beside the rail, the same
-     metric the dock sits on, so the veil and the panel end where the bar
-     begins and the wide screen is untouched. */
+     On a phone it stops above the tab bar, which is always visible with
+     content scrolling behind it (MUS-Q-0142). inset: 0 laid the drawer over
+     the bar from x=55 across, so the bar could be neither seen nor tapped
+     while it was open (MUS-F-0179). --shell-dock-offset is the room the bar
+     takes, the same metric the dock sits on, and the bar is set to that
+     height, so the veil and the panel end where the bar begins. A wide screen
+     has no bar: its drawer is the full-height column the 60rem rule below
+     gives it, whatever this offset says. */
   .drawer[hidden] { display: none; }
   .drawer { position: fixed; inset: 0 0 var(--shell-dock-offset, 0px) 0;
             z-index: 20; }
