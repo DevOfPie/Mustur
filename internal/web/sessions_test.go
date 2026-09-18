@@ -1139,16 +1139,19 @@ func TestThePickerButtonIsOnlyThereWithoutScript(t *testing.T) {
 	// inherited column and came out stacked and centred inside 69px of
 	// nothing, which is precisely the giant button under the dropdown that was
 	// reported. It was patched here by undoing direction and padding; the rule
-	// is scoped to the composer now (MUS-F-0136), and
-	// TestNoRuleInTheSessionStylesheetReachesEveryForm keeps it that way, so
-	// what is left to hold is that the row is a flex row.
-	at := strings.Index(body, ".pick { display: flex;")
-	if at < 0 {
-		t.Fatal("no .pick rule")
+	// is scoped to the composer now (MUS-F-0136), and what this holds is that
+	// no rule that can land on the picker form stacks it — form, .rail form,
+	// main form and :is(form) as much as .pick itself. Reading .pick alone is
+	// how an earlier version passed with form { flex-direction: column }
+	// restored beside it.
+	if !strings.Contains(body, ".pick { display: flex;") {
+		t.Fatal("no .pick rule making the row a flex row")
 	}
-	rule := body[at : at+strings.Index(body[at:], "}")]
-	if strings.Contains(rule, "column") {
-		t.Errorf("the picker row is stacked:\n%s", rule)
+	column := regexp.MustCompile(`flex-direction:\s*column`)
+	for _, r := range railFormRules(t, body, ".pick") {
+		if column.MatchString(r.decls) {
+			t.Errorf("%q reaches the picker form and stacks it: %s", r.sel, r.decls)
+		}
 	}
 	// What actually puts the button beside the select is the row being a flex
 	// row, asserted above. An earlier version of this test demanded
@@ -2713,20 +2716,30 @@ func TestTheSessionScriptDeclaresNoNameTwice(t *testing.T) {
 // drew the line under it was not: a bare form selector written for the composer
 // reached every form on the page. The owner reported the leftover line
 // (MUS-F-0107); it was undone here with border-top: 0 until the selector was
-// scoped to the composer (MUS-F-0136), which leaves .endform no border to
+// scoped to the composer (MUS-F-0136), which leaves Stop's form no border to
 // declare or to undo.
+//
+// So this asks of every rule that can land on that form — form, .rail form,
+// main form, :is(form), .endform, #endform — rather than of the one rule
+// named .endform. Reading only .endform is how an earlier version passed with
+// form { border-top: … } restored beside it.
 func TestNothingDrawsALineAboveStop(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	body := getFrom(t, srv, "/sessions/Mustur")
-	i := strings.Index(body, ".endform {")
-	if i < 0 {
-		t.Fatal("no .endform rule on the session page")
+	rules := railFormRules(t, body, ".endform", "#endform")
+	named := false
+	for _, r := range rules {
+		named = named || r.sel == ".endform"
+		if cssBorder.MatchString(r.decls) {
+			t.Errorf("%q reaches Stop's form and declares a border: %s", r.sel, r.decls)
+		}
 	}
-	block := body[i : i+strings.Index(body[i:], "}")]
-	if strings.Contains(block, "border") {
-		t.Errorf(".endform declares a border, or undoes one it should never have been handed: %s", block)
+	if !named {
+		t.Fatal("no .endform rule on the session page, so this has read nothing")
 	}
 }
+
+var cssBorder = regexp.MustCompile(`border(?:-top)?(?:-width|-style|-color)?\s*:`)
 
 // No rule in the session stylesheet reaches every form on the page.
 //
@@ -2734,34 +2747,218 @@ func TestNothingDrawsALineAboveStop(t *testing.T) {
 // (MUS-F-0107), stacked the picker, and ruled and inset the start form
 // (MUS-F-0136). Each of those was patched by undoing the rule on the form it
 // landed on, which fixes the one that was reported and none that are added
-// later. The cause is the selector, so the selector is what this refuses: a
-// selector that starts at the form element, as `form {` or `form .row {` did.
+// later. The cause is the selector, so the selector is what this refuses.
+//
+// A selector reaches every form when any of its compounds is the form element
+// with no class or id of its own and nothing before it names a class or id —
+// form, form .row, main form, body form, :is(form), :where(form) .row.
+// .pushed does not count as naming one: the script puts it on body, which
+// holds every form. A class or id before the form scopes it to a container,
+// and the page has two on purpose, each setting its own display, direction and
+// gap: .new form and .lost form.
+//
+// That leaves a scoped selector whose container happens to hold a form it was
+// not written for — .rail form, where Stop and the picker live. This test
+// cannot tell that from .lost form, which is legitimate and declares a border
+// of its own. TestNothingDrawsALineAboveStop and the picker check in
+// TestThePickerButtonIsOnlyThereWithoutScript ask the other way round, from the
+// form, which is the question that can be answered: every rule that can land
+// on .endform or .pick, scoped or not, is read for the defect it would carry.
 func TestNoRuleInTheSessionStylesheetReachesEveryForm(t *testing.T) {
 	srv := serveSessions(t, owned("mustur/Mustur"))
 	body := getFrom(t, srv, "/sessions/Mustur")
-	start, end := strings.Index(body, "<style>"), strings.Index(body, "</style>")
-	if start < 0 || end < start {
-		t.Fatal("no stylesheet on the session page")
-	}
-	css := regexp.MustCompile(`(?s)/\*.*?\*/`).ReplaceAllString(body[start:end], "")
-	bare := regexp.MustCompile(`^form(?:$|[\s.:#\[>+~])`)
-	for _, m := range regexp.MustCompile(`([^{}]+)\{`).FindAllStringSubmatch(css, -1) {
-		for _, sel := range strings.Split(m[1], ",") {
-			if sel = strings.TrimSpace(sel); bare.MatchString(sel) {
-				t.Errorf("%q starts at the form element, so it reaches every form on the page", sel)
+	everywhere := []string{".pushed"}
+	for _, r := range styleRules(t, body) {
+		for _, sel := range cssExpand(r.sel) {
+			cs := cssCompounds(sel)
+			for i, c := range cs {
+				if c.tag != "form" || !c.canBe("form", nil) {
+					continue
+				}
+				scoped := false
+				for _, a := range cs[:i] {
+					scoped = scoped || !a.canBe("", everywhere)
+				}
+				if !scoped {
+					t.Errorf("%q reaches every form on the page (as %q)", r.sel, sel)
+				}
 			}
 		}
 	}
-	i := strings.Index(css, "#say {")
-	if i < 0 {
-		t.Fatal("the composer has no rule of its own")
-	}
-	rule := css[i : i+strings.Index(css[i:], "}")]
-	for _, decl := range []string{"padding: .7rem 1rem", "border-top: 1.4px solid var(--edge)"} {
-		if !strings.Contains(rule, decl) {
-			t.Errorf("the composer no longer declares %q: %s", decl, rule)
+	var say string
+	for _, r := range styleRules(t, body) {
+		if r.sel == "#say" {
+			say = r.decls
 		}
 	}
+	if say == "" {
+		t.Fatal("the composer has no rule of its own")
+	}
+	for _, decl := range []string{"padding: .7rem 1rem", "border-top: 1.4px solid var(--edge)"} {
+		if !strings.Contains(say, decl) {
+			t.Errorf("the composer no longer declares %q: %s", decl, say)
+		}
+	}
+}
+
+// cssRule is one rule of a page's stylesheets: its selector list as written
+// and its declarations. Rules inside @media come out as rules; the at-rule
+// wrapping them does not.
+type cssRule struct{ sel, decls string }
+
+func styleRules(t *testing.T, body string) []cssRule {
+	t.Helper()
+	var out []cssRule
+	blocks := regexp.MustCompile(`(?s)<style>(.*?)</style>`).FindAllStringSubmatch(body, -1)
+	if len(blocks) == 0 {
+		t.Fatal("no stylesheet on the page")
+	}
+	comment := regexp.MustCompile(`(?s)/\*.*?\*/`)
+	rule := regexp.MustCompile(`([^{}]+)\{([^{}]*)\}`)
+	for _, b := range blocks {
+		for _, m := range rule.FindAllStringSubmatch(comment.ReplaceAllString(b[1], ""), -1) {
+			for _, sel := range cssSplitTop(m[1], ',') {
+				if sel = strings.TrimSpace(sel); sel != "" {
+					out = append(out, cssRule{sel, m[2]})
+				}
+			}
+		}
+	}
+	return out
+}
+
+// railFormRules returns every rule that can land on a form in the session
+// rail carrying the given class or id: its subject names the form element or
+// one of those, asks for no class or id the form lacks, and every compound
+// before it asks only for what the rail and body carry. Tags before the
+// subject are not checked, so main .rail form counts; that errs toward reading
+// a rule that cannot land rather than skipping one that can.
+func railFormRules(t *testing.T, body string, own ...string) []cssRule {
+	t.Helper()
+	rail := strings.Index(body, `<div class="rail" id="rail">`)
+	if rail < 0 {
+		t.Fatal("no rail on the session page")
+	}
+	inside := body[rail : rail+strings.Index(body[rail:], "\n</div>")]
+	for _, o := range own {
+		if o[0] == '.' && !strings.Contains(inside, `<form class="`+o[1:]+`"`) {
+			t.Fatalf("the rail holds no form %s, so the ancestry this reads by is wrong", o)
+		}
+	}
+	ancestors := []string{".rail", "#rail", ".pushed"}
+	var out []cssRule
+	for _, r := range styleRules(t, body) {
+		for _, sel := range cssExpand(r.sel) {
+			cs := cssCompounds(sel)
+			last := cs[len(cs)-1]
+			if last.tag != "form" && len(last.toks) == 0 || !last.canBe("form", own) {
+				continue
+			}
+			lands := true
+			for _, a := range cs[:len(cs)-1] {
+				lands = lands && a.canBe("", ancestors)
+			}
+			if lands {
+				out = append(out, r)
+				break
+			}
+		}
+	}
+	return out
+}
+
+// cssCompound is one compound selector reduced to what decides which element
+// it can match here: a tag and its classes and ids. Pseudo-classes and
+// attribute selectors are dropped, so a compound matches at least what it
+// really does.
+type cssCompound struct {
+	tag  string
+	toks []string
+}
+
+// canBe says whether c can match an element with this tag ("" for any) that
+// carries exactly the classes and ids in has.
+func (c cssCompound) canBe(tag string, has []string) bool {
+	if c.tag != "" && c.tag != "*" && tag != "" && c.tag != tag {
+		return false
+	}
+	for _, k := range c.toks {
+		found := false
+		for _, h := range has {
+			found = found || h == k
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+var (
+	cssPseudo = regexp.MustCompile(`::?[\w-]+(?:\([^()]*\))?|\[[^\]]*\]`)
+	cssTag    = regexp.MustCompile(`^[A-Za-z*][\w-]*`)
+	cssTok    = regexp.MustCompile(`[.#][\w-]+`)
+)
+
+func cssCompounds(sel string) []cssCompound {
+	var out []cssCompound
+	for _, part := range strings.FieldsFunc(sel, func(r rune) bool {
+		return r == ' ' || r == '\n' || r == '\t' || r == '>' || r == '+' || r == '~'
+	}) {
+		part = cssPseudo.ReplaceAllString(part, "")
+		out = append(out, cssCompound{cssTag.FindString(part), cssTok.FindAllString(part, -1)})
+	}
+	if len(out) == 0 {
+		out = append(out, cssCompound{})
+	}
+	return out
+}
+
+// cssExpand writes :is() and :where() out as the selectors they stand for, so
+// :is(form) .row is read as form .row.
+func cssExpand(sel string) []string {
+	i := strings.Index(sel, ":is(")
+	n := len(":is(")
+	if j := strings.Index(sel, ":where("); j >= 0 && (i < 0 || j < i) {
+		i, n = j, len(":where(")
+	}
+	if i < 0 {
+		return []string{sel}
+	}
+	depth, end := 1, i+n
+	for ; end < len(sel) && depth > 0; end++ {
+		switch sel[end] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		}
+	}
+	var out []string
+	for _, arg := range cssSplitTop(sel[i+n:end-1], ',') {
+		out = append(out, cssExpand(sel[:i]+strings.TrimSpace(arg)+sel[end:])...)
+	}
+	return out
+}
+
+// cssSplitTop splits s on sep where it is not inside parentheses.
+func cssSplitTop(s string, sep byte) []string {
+	var out []string
+	depth, from := 0, 0
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case sep:
+			if depth == 0 {
+				out = append(out, s[from:i])
+				from = i + 1
+			}
+		}
+	}
+	return append(out, s[from:])
 }
 
 // The plus that starts a session is drawn like Stop beside it, not faded.
