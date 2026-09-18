@@ -276,8 +276,6 @@ func TestTheHookSurvivesTheShell(t *testing.T) {
 	}
 }
 
-// A log longer than the tail still folds, and does not invent a row from the
-// half-line it starts on.
 // A sub-agent that started early in a long log still has a row.
 //
 // The fold used to read the last 256KB, and one day of Hoard_Work put 213 of
