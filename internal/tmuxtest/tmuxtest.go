@@ -23,11 +23,13 @@ import (
 // TMUX is unset as well as TMUX_TMPDIR being set: a tmux client started inside
 // a tmux pane follows the socket named in $TMUX, whatever TMUX_TMPDIR says.
 //
-// systemd-run is shadowed by a shim that fails. Start puts a fresh server in
-// the user unit mustur-tmux, whose name is shared with the live service: a
-// test's private server holding it would cost the live service its scope for
-// as long as the tests ran. Start's fallback when systemd-run fails is to run
-// tmux directly, which is the path the tests then take.
+// systemd-run is shadowed by a shim that fails. Start puts a fresh server in a
+// user scope, and a test's server should leave nothing on the user manager.
+// The private socket already gives it a scope name of its own rather than the
+// live service's mustur-tmux (MUS-F-0176), which is what this shim once had to
+// prevent (MUS-F-0161); it stays so a test run creates no unit at all. Start's
+// fallback when systemd-run fails is to run tmux directly, which is the path
+// the tests then take.
 func Main(m *testing.M) {
 	code, err := run(m)
 	if err != nil {

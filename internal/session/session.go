@@ -45,9 +45,12 @@ package session
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -472,14 +475,69 @@ func (a *Adapter) settle(ctx context.Context, project, name, cmd string) error {
 }
 
 // TmuxScope is the transient unit the tmux server is put in when Mustur has to
-// spawn one.
+// spawn one on this machine's default tmux socket — the one mustur.service
+// talks to, since its unit sets no TMUX_TMPDIR.
 //
 // Named rather than random so a person can find it: `systemctl --user status
 // mustur-tmux.scope` says whether the sessions are outside the service or in
 // it. tmux uses a uuid for the scopes it makes per pane child, which is right
 // for something there are many of and wrong for the one there is only ever one
-// of.
+// of — per socket. A Mustur on any other socket is named by TmuxScopeFor.
 const TmuxScope = "mustur-tmux"
+
+// TmuxScopeFor names the scope for the tmux server on socket.
+//
+// One unit name serves one tmux server, so the name follows the server and not
+// the program (MUS-F-0176). With one fixed name, a second Mustur on this
+// machine — a development server, a throwaway built to check a pull request —
+// was refused the name while the live service held it and ran its server
+// unscoped; with the live service down, the second instance would take the name
+// and the live service would be the one left unscoped on its next Start.
+//
+// The default socket keeps the plain name, so the live deployment's scope is
+// the one it always had and a deploy needs no step to move it. Any other socket
+// gets that name plus a short hash of its path: two sockets never share a unit,
+// and the same socket always gets the same one, which is what lets a person
+// find it again. The hash is hex, so the name is a valid unit name whatever
+// characters the path holds.
+func TmuxScopeFor(socket string) string {
+	if socket == "" || socket == defaultTmuxSocket() {
+		return TmuxScope
+	}
+	sum := sha256.Sum256([]byte(socket))
+	return TmuxScope + "-" + hex.EncodeToString(sum[:])[:12]
+}
+
+// tmuxSocket is the socket a plain `tmux` from this process talks to. The
+// Adapter never passes -L or -S, so this is the server Start spawns.
+func tmuxSocket() string {
+	return resolveTmuxSocket(os.Getenv("TMUX"), os.Getenv("TMUX_TMPDIR"), os.Getuid())
+}
+
+func defaultTmuxSocket() string {
+	return resolveTmuxSocket("", "", os.Getuid())
+}
+
+// resolveTmuxSocket resolves a socket the way tmux 3.x does with no -L or -S:
+// the path at the front of $TMUX when a client runs inside a pane, else
+// <TMUX_TMPDIR, or /tmp>/tmux-<uid>/default. tmux takes the realpath of the
+// directory, so /tmp/ and a symlink to /tmp are one socket to it and have to be
+// one name here.
+func resolveTmuxSocket(tmux, tmpdir string, uid int) string {
+	if tmux != "" && tmux[0] != ',' {
+		if i := strings.IndexByte(tmux, ','); i >= 0 {
+			tmux = tmux[:i]
+		}
+		return tmux
+	}
+	if tmpdir == "" {
+		tmpdir = "/tmp"
+	}
+	if real, err := filepath.EvalSymlinks(tmpdir); err == nil {
+		tmpdir = real
+	}
+	return filepath.Join(filepath.Clean(tmpdir), fmt.Sprintf("tmux-%d", uid), "default")
+}
 
 // serverUp reports whether a tmux server is running at all — not whether it
 // holds any session of ours.
@@ -518,6 +576,10 @@ func (a *Adapter) serverUp(ctx context.Context) bool {
 // server back inside the unit. Turning exit-empty off would have worked and
 // changes a server-wide option on a socket that may not only be ours.
 //
+// The unit is named for the socket and not for Mustur (MUS-F-0176): an
+// instance on another socket asks for a name of its own rather than the live
+// service's.
+//
 // **Only the server escapes.** Everything else Mustur spawns is still in the
 // unit's cgroup and still dies with it, which is what the stop path relies on.
 func (a *Adapter) scopePrefix(ctx context.Context) []string {
@@ -525,7 +587,7 @@ func (a *Adapter) scopePrefix(ctx context.Context) []string {
 		return nil
 	}
 	return []string{"systemd-run", "--user", "--scope", "--quiet", "--collect",
-		"--unit", TmuxScope}
+		"--unit", TmuxScopeFor(tmuxSocket())}
 }
 
 // List returns every session Mustur started on this machine, and nothing else.

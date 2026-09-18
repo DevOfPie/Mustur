@@ -393,7 +393,7 @@ func TestTheFirstSessionSpawnsTheServerInItsOwnScope(t *testing.T) {
 	if scoped == nil {
 		t.Fatal("the server was spawned inside the unit's cgroup, so a deploy will end it")
 	}
-	for _, want := range []string{"--user", "--scope", "--unit", TmuxScope, "tmux", "new-session"} {
+	for _, want := range []string{"--user", "--scope", "--unit", TmuxScopeFor(tmuxSocket()), "tmux", "new-session"} {
 		if !slices.Contains(scoped, want) {
 			t.Errorf("the scope call is missing %q: %v", want, scoped)
 		}
