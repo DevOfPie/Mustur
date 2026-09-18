@@ -43,7 +43,11 @@ func renameFixture(t *testing.T) (*Store, context.Context) {
 	mustAppend(cites, "amend")
 
 	mustAppend(record.Record{ID: "MUS-D-0192", Kind: "decision", Title: "IDW-F-0001 becomes _IB-F-0001", At: "2026-09-18",
-		Body: "IDW-F-0001 and IDW-F-0004 are renamed."}, "create")
+		Body: "IDW-F-0001 and IDW-F-0004 are renamed.",
+		Data: []record.Field{
+			{Key: record.RenamedField, Value: "IDW-F-0001 = _IB-F-0001"},
+			{Key: record.RenamedField, Value: "IDW-F-0004 = _IB-F-0004"},
+		}}, "create")
 
 	if _, err := s.Attach(ctx, "IDW-F-0004", pngBytes(t), "test"); err != nil {
 		t.Fatal(err)

@@ -65,6 +65,23 @@ func TestRenameRepointsTheIntakeBoxInTheSameTransaction(t *testing.T) {
 	}
 }
 
+// --keep given twice keeps both lists rather than the last one (review of
+// #107, nit 11).
+func TestRenameKeepAccumulates(t *testing.T) {
+	path, id := jotted(t)
+	to := "_IB-F-" + id[len(id)-4:]
+	// An unknown record is refused by name, so each order shows whether both
+	// lists arrived.
+	err := cmdRename([]string{"--db", path, id + "=" + to, "--keep", "MUS-P-0001", "--keep", "MUS-D-0999"})
+	if err == nil || !strings.Contains(err.Error(), "MUS-D-0999") {
+		t.Errorf("the second --keep was dropped: %v", err)
+	}
+	err = cmdRename([]string{"--db", path, id + "=" + to, "--keep", "MUS-D-0999", "--keep", "MUS-P-0001"})
+	if err == nil || !strings.Contains(err.Error(), "MUS-D-0999") {
+		t.Errorf("the first --keep was dropped: %v", err)
+	}
+}
+
 func TestRenameRefusesARepointThatIsNotARoutingRecord(t *testing.T) {
 	path, id := jotted(t)
 	to := "_IB-F-" + id[len(id)-4:]

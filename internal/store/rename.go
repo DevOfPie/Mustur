@@ -102,6 +102,14 @@ type RenameReport struct {
 	// Unmatched lists rows outside the kept records that still spell an old
 	// identifier after the rewrite, because it stands inside something longer.
 	Unmatched []RenameChange
+	// Unscoped lists kept records that cite an old identifier which no
+	// declaring record shows as plain text in them, as "ID: OLD, OLD". Once the
+	// spelling is issued again those citations would link to the new record
+	// (MUS-D-0197), so --apply refuses while any is listed.
+	Unscoped []string
+	// Idle lists kept records that cite no old identifier at all: probably a
+	// typo in --keep, and harmless, so only reported.
+	Idle []string
 	// Repointed lists the routing records a Repoint amends, as
 	// "ID: Field old -> new".
 	Repointed []string
@@ -194,7 +202,8 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 	if err := latest.Err(); err != nil {
 		return report, err
 	}
-	retired := record.Retire(all).IDs
+	retirements := record.Retire(all)
+	retired := retirements.IDs
 	for _, r := range renames {
 		if retired[r.New] {
 			return report, fmt.Errorf("%s is declared retired (a Renamed or Retired field names it): a rename never issues a retired identifier", r.New)
@@ -288,6 +297,7 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 		return report, err
 	}
 
+	keptCites := map[string]map[string]bool{} // kept record -> old ids it cites
 	var changed []eventRow
 	for _, e := range events {
 		newID := e.id
@@ -306,6 +316,12 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 			if len(where) > 0 {
 				report.Kept = append(report.Kept, RenameChange{
 					Table: "record_event", Row: fmt.Sprint(e.seq), Record: e.id, Where: where})
+				for _, old := range citedOld(before, olds) {
+					if keptCites[e.id] == nil {
+						keptCites[e.id] = map[string]bool{}
+					}
+					keptCites[e.id][old] = true
+				}
 			}
 			continue
 		}
@@ -339,6 +355,32 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 		changed = append(changed, e)
 		report.Changes = append(report.Changes, RenameChange{
 			Table: "record_event", Row: fmt.Sprint(e.seq), Record: e.id, Where: where})
+	}
+
+	// A kept record keeps its old identifiers, so each has to be one its
+	// declaring record shows as plain text there, or it links to whatever is
+	// issued under that spelling next (review of #107, finding 5).
+	var keptIDs []string
+	for k := range kept {
+		keptIDs = append(keptIDs, k)
+	}
+	sort.Strings(keptIDs)
+	for _, k := range keptIDs {
+		if len(keptCites[k]) == 0 {
+			report.Idle = append(report.Idle, k)
+			continue
+		}
+		plain := retirements.PlainIn(k)
+		var outside []string
+		for old := range keptCites[k] {
+			if !plain[old] {
+				outside = append(outside, old)
+			}
+		}
+		if len(outside) > 0 {
+			sort.Strings(outside)
+			report.Unscoped = append(report.Unscoped, k+": "+strings.Join(outside, ", "))
+		}
 	}
 
 	type textRow struct{ key, record, col, value string }
@@ -434,6 +476,10 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 		n, err := count(`SELECT count(DISTINCT record_id) FROM record_event`)
 		report.Latest = n
 		return report, err
+	}
+	if len(report.Unscoped) > 0 {
+		return report, fmt.Errorf("%d kept record(s) cite an old identifier no Renamed or Retired field shows as plain text there: %s; "+
+			"have the declaring record cite them", len(report.Unscoped), strings.Join(report.Unscoped, "; "))
 	}
 	if len(report.Unmatched) > 0 && !opts.AcceptUnmatched {
 		return report, fmt.Errorf("%d row(s) spell an old identifier inside something longer, which the rename leaves as written; "+
@@ -533,6 +579,22 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, opts RenameOptio
 	}
 	report.Applied = true
 	return report, nil
+}
+
+// citedOld returns the old identifiers a record cites, in either spelling.
+func citedOld(r record.Record, olds map[string]string) []string {
+	text := r.Title + "\n" + r.Body
+	for _, f := range append(append([]record.Field{}, r.Refs...), r.Data...) {
+		text += "\n" + f.Key + " " + f.Value
+	}
+	var out []string
+	for old := range olds {
+		if replaceWhole(text, old, "\x00") != text || replaceWhole(text, strings.ToLower(old), "\x00") != text {
+			out = append(out, old)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
 
 // setField sets the first field named key to value and drops any later ones

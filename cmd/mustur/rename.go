@@ -37,7 +37,8 @@ import (
 func cmdRename(args []string) error {
 	fs := flag.NewFlagSet("rename", flag.ContinueOnError)
 	db := dbFlag(fs)
-	keep := fs.String("keep", "", "records whose text is left as written, comma-separated: the ones recording the rename")
+	var keep repeated
+	fs.Var(&keep, "keep", "records whose text is left as written, comma-separated and repeatable: the ones recording the rename")
 	apply := fs.Bool("apply", false, "write the rename; without it, only list what would change")
 	acceptUnmatched := fs.Bool("accept-unmatched", false, "apply although rows spell an old identifier inside something longer; read the dry run first")
 	actor := fs.String("actor", defaultActor(), "who the --repoint amend is written as")
@@ -84,11 +85,14 @@ func cmdRename(args []string) error {
 	defer s.Close()
 
 	report, err := s.Rename(ctx, renames, store.RenameOptions{
-		Keep: strings.Split(*keep, ","), Apply: *apply, AcceptUnmatched: *acceptUnmatched,
+		Keep: strings.Split(strings.Join(keep, ","), ","), Apply: *apply, AcceptUnmatched: *acceptUnmatched,
 		Repoint: repoints, IsRouting: intake.IsRoutingKind, Actor: *actor,
 	})
 	if err != nil && len(report.Unmatched) > 0 {
 		printUnmatched(report)
+	}
+	for _, k := range report.Idle {
+		fmt.Printf("warning: --keep %s cites no old identifier; nothing in it would have been rewritten\n", k)
 	}
 	if err != nil {
 		return err
