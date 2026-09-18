@@ -231,6 +231,24 @@ blocked. The index filters what `Store.List` returns and never renders a body or
 resolves a citation; `/records/{id}` is unchanged, and is where the document
 reading, the in-place expansion and the routing verification now live.
 
+**Amended 2026-09-18: records that need attention** (MUS-D-0193, answering
+MUS-Q-0154, built with its recommended answers). A jot that names a destination
+taking jots only on a confirmed move waits where it fell, and needs attention
+until somebody moves it there or keeps it where it is; `intake.NeedsAttention`
+is the one definition. The index pins a warn-bordered "Needs attention · N"
+section above the filters, whatever they say, each row naming where it would go,
+and absent at nought; a matching row in the list below carries a warn dot. A
+record needing attention carries a banner above its title saying what it names;
+an owner is also offered **Move to …**, which posts to `/records/{id}/move` and
+is exactly `mustur reroute --to` through the same function, and **Keep in intake
+box**, which posts to `/records/{id}/keep` and writes who and when as `Kept`.
+Both are plain form posts that work with script blocked, refuse a non-owner and
+a cross-site post with 403, and stack full width on a phone; a reader sees the
+banner without them. The Records tab carries the count as a warn-toned badge on
+every surface, from `/records/attention/count`, which `bar.js` polls beside the
+decisions count, and the intake box says "N records need attention" beside its
+decisions line.
+
 ### 4. Decision queue
 
 **Serves** `/questions`

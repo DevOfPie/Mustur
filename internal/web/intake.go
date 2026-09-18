@@ -529,6 +529,9 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .waiting { margin: 0 0 .75rem; padding: .55rem .8rem; border: 1px solid var(--edge);
              border-radius: .5rem; font-size: .95em; }
   .waiting a { color: inherit; }
+  /* Beside it, records needing attention (MUS-D-0193), in the warn tone the
+     Records badge wears. */
+  .waiting.att { border-color: var(--warn); }
   .said code { font-size: .95em; }
   .why { opacity: .7; font-size: .9em; }
   ul { list-style: none; padding: 0; margin: 1.5rem 0 0; }
@@ -588,6 +591,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <body>
 <h1>Mustur — {{.Project}}{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</h1>
 {{if .OpenQuestions}}<p class="waiting"><a href="/questions">{{.OpenQuestions}} decision{{if ne .OpenQuestions 1}}s{{end}} waiting on you</a></p>{{end}}
+{{if .Attention}}<p class="waiting att"><a href="/records">{{.Attention}} record{{if ne .Attention 1}}s need{{else}} needs{{end}} attention</a></p>{{end}}
 {{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
 {{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}

@@ -774,6 +774,9 @@ func cmdServe(args []string) error {
 	records := &web.Records{
 		Store: s, Project: *project,
 		ShowSessions: *withSessions, ShowAccount: showAccount,
+		// Move and Keep write to the store (MUS-D-0193), so this surface is
+		// told who is writing and where the export goes, as intake is.
+		Actor: defaultActor(), ExportTo: *exportTo,
 	}
 	records.Routes(mux)
 
@@ -792,6 +795,9 @@ func cmdServe(args []string) error {
 			Records: s,
 		}
 		auth.Routes(mux)
+		// So a Move or a Keep names the signed-in owner rather than the
+		// machine's configured actor.
+		records.Auth = auth
 		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project, Records: s,
 			ShowSessions: *withSessions}
 		manage.Routes(mux)

@@ -38,6 +38,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -47,6 +48,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/record"
@@ -71,6 +73,15 @@ type Records struct {
 	// served only when an origin is configured. Off means the link is absent
 	// rather than dead (MUS-Q-0052).
 	ShowAccount bool
+
+	// Auth names who pressed Move or Keep, when accounts are served. Nil
+	// falls back to what Cloudflare Access says, then to Actor.
+	Auth  *Auth
+	Actor string
+	// ExportTo is the tree the store is rendered into after a move or a keep,
+	// for the reason the intake box has one: whoever pressed it from a phone
+	// cannot run `make export`. Empty means no export.
+	ExportTo string
 }
 
 func (rr *Records) now() time.Time {
@@ -90,6 +101,10 @@ func (rr *Records) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /records/image/{id}", rr.image)
 	// The Records badge's poll (MUS-D-0193), beside the Decisions one.
 	mux.HandleFunc("GET /records/attention/count", rr.count)
+	// The two ways out of needing attention (MUS-D-0193). Plain form posts,
+	// so they work with script blocked, and an owner's alone.
+	mux.HandleFunc("POST /records/{id}/move", rr.move)
+	mux.HandleFunc("POST /records/{id}/keep", rr.keep)
 }
 
 // count answers the Records badge's poll: how many records need attention,
@@ -161,6 +176,45 @@ type recordView struct {
 	// else: a decision cannot be stale in this sense.
 	State string
 	Stale bool
+
+	// Attention is what the record names and was kept from, set only while it
+	// needs attention (MUS-D-0193). CanMove says whether this viewer is shown
+	// the buttons; a reader sees the banner without them.
+	Attention []namedView
+	CanMove   bool
+	// MovedFrom and MovedTo are the success line after a move, shown on the
+	// record the move filed.
+	MovedFrom string
+	MovedTo   string
+	// Kept is the line after Keep.
+	Kept bool
+}
+
+// A namedView is a destination a record names, by identifier and title.
+type namedView struct {
+	ID    string
+	Title string
+}
+
+// An attentionRow is one line of the pinned section on the index.
+type attentionRow struct {
+	ID    string
+	Title string
+	Names []namedView
+}
+
+// named resolves a record's Names to titles. An identifier the store does not
+// hold is shown as itself rather than dropped.
+func named(r record.Record, by map[string]record.Record) []namedView {
+	var out []namedView
+	for _, id := range intake.Named(r) {
+		title := id
+		if d, ok := by[id]; ok && d.Title != "" {
+			title = d.Title
+		}
+		out = append(out, namedView{ID: id, Title: title})
+	}
+	return out
 }
 
 // recordsPerPage is the owner's answer on MUS-Q-0140: fifty. At that size the
@@ -175,6 +229,8 @@ type rowView struct {
 	Project string
 	Title   string
 	At      string
+	// Attention marks a row that also sits in the pinned section.
+	Attention bool
 }
 
 // A pick is one option in a picker, carrying how many records choosing it
@@ -186,6 +242,11 @@ type pick struct {
 }
 
 type recordsIndex struct {
+	// Attention is the pinned section above the filters: every record needing
+	// attention, whatever the filters say, so narrowing the list can never
+	// hide one (MUS-D-0193).
+	Attention []attentionRow
+
 	Projects []pick
 	Kinds    []pick
 	Q        string
@@ -415,6 +476,25 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 
 	idx := &recordsIndex{Q: q, Chosen: project != "" || kind != "" || q != ""}
 
+	// Before any filter is applied, so the section is the same on every page
+	// of every narrowing. Newest first, like the list below it.
+	by := make(map[string]record.Record, len(all))
+	for _, rec := range all {
+		by[rec.ID] = rec
+	}
+	for _, rec := range all {
+		if intake.NeedsAttention(rec) {
+			idx.Attention = append(idx.Attention, attentionRow{ID: rec.ID, Title: rec.Title, Names: named(rec, by)})
+		}
+	}
+	sort.SliceStable(idx.Attention, func(i, j int) bool {
+		a, b := by[idx.Attention[i].ID], by[idx.Attention[j].ID]
+		if a.At != b.At {
+			return a.At > b.At
+		}
+		return less(b.ID, a.ID)
+	})
+
 	prefixes := make([]string, 0, len(perProject))
 	for p := range perProject {
 		prefixes = append(prefixes, p)
@@ -478,7 +558,8 @@ func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
 		for _, rec := range matched[from:min(from+recordsPerPage, len(matched))] {
 			idx.Rows = append(idx.Rows, rowView{
 				ID: rec.ID, Kind: kindLabel(rec.Kind), Title: rec.Title, At: rec.At,
-				Project: names.title(prefixOf(rec.ID)),
+				Project:   names.title(prefixOf(rec.ID)),
+				Attention: intake.NeedsAttention(rec),
 			})
 		}
 	} else {
@@ -590,6 +671,31 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 	}
 	v := rr.view(rec, by)
 	v.State, v.Stale = rr.verify(rec)
+	if intake.NeedsAttention(rec) {
+		v.Attention = named(rec, by)
+		v.CanMove = CanWrite(r)
+	}
+	// The line after a move, said only by the record the move filed: one that
+	// does not correct the identifier in the address says nothing, so a link
+	// cannot make any record claim a move it was not part of.
+	if from := strings.ToUpper(r.URL.Query().Get("moved")); from != "" {
+		for _, ref := range rec.Refs {
+			if ref.Key == "Corrects" && ref.Value == from {
+				v.MovedFrom = from
+				v.MovedTo, _ = rec.Get("Routed to")
+				for _, dest := range rec.Refs {
+					if dest.Key == "Routed to" {
+						if d, ok := by[dest.Value]; ok {
+							v.MovedTo = d.Title
+						}
+					}
+				}
+			}
+		}
+	}
+	if _, kept := rec.Get(intake.KeptField); kept && r.URL.Query().Get("kept") == "1" {
+		v.Kept = true
+	}
 	// Only on a record's own page. The index lists hundreds and would fetch
 	// every picture at once for a reader who asked for none of them.
 	if shots, err := rr.Store.Attachments(r.Context(), id); err == nil {
@@ -601,6 +707,130 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	rr.render(w, r, recordsPage{Project: rr.Project, One: &v, Checked: rr.now().Format("15:04")})
+}
+
+// actor is who pressed Move or Keep: the signed-in account when accounts are
+// served, else what Cloudflare Access says at the edge, else the configured
+// actor — the order the rest of this package already trusts.
+func (rr *Records) actor(r *http.Request) string {
+	if rr.Auth != nil {
+		if acct, ok := rr.Auth.Whoever(r.Context(), r); ok && acct.Email != "" {
+			return acct.Email
+		}
+	}
+	if who := r.Header.Get("Cf-Access-Authenticated-User-Email"); who != "" {
+		return who
+	}
+	if rr.Actor != "" {
+		return rr.Actor
+	}
+	return "owner"
+}
+
+// attending is the shared front half of move and keep: an owner, from this
+// site, about a record that needs attention. It writes the refusal itself and
+// reports whether to go on.
+//
+// The guard already refuses a reader's POST; this refuses it again so the
+// rule holds on a server run without the guard's role in front of it, and
+// says which rule it was.
+func (rr *Records) attending(w http.ResponseWriter, r *http.Request) (record.Record, bool) {
+	if !CanWrite(r) {
+		http.Error(w, "only an owner can move or keep a record", http.StatusForbidden)
+		return record.Record{}, false
+	}
+	// The same check the composer and the account screens make: a browser
+	// sends Origin on a form post, and one from another site is refused.
+	if !sameOrigin(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return record.Record{}, false
+	}
+	id := strings.ToUpper(strings.TrimSpace(r.PathValue("id")))
+	rec, err := rr.Store.Get(r.Context(), id)
+	if err != nil {
+		http.Error(w, "no record called "+id, http.StatusNotFound)
+		return record.Record{}, false
+	}
+	if !intake.NeedsAttention(rec) {
+		http.Error(w, rec.ID+" proposes no move, so there is nothing to move or keep", http.StatusConflict)
+		return record.Record{}, false
+	}
+	return rec, true
+}
+
+// move performs the move a record proposes: exactly `mustur reroute <ID> --to
+// <what it names>`, through the same function, with the owner as actor.
+func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
+	rec, ok := rr.attending(w, r)
+	if !ok {
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "that form did not arrive intact", http.StatusBadRequest)
+		return
+	}
+	names := intake.Named(rec)
+	to := strings.TrimSpace(r.FormValue("to"))
+	if to == "" && len(names) == 1 {
+		to = names[0]
+	}
+	// Only somewhere the record names. Anywhere else is a correction, which
+	// the command makes and this button does not.
+	proposed := false
+	for _, id := range names {
+		proposed = proposed || id == to
+	}
+	if !proposed {
+		http.Error(w, rec.ID+" does not name "+to+"; it names "+strings.Join(names, ", "), http.StatusBadRequest)
+		return
+	}
+	who := rr.actor(r)
+	title := to
+	if d, err := rr.Store.Get(r.Context(), to); err == nil && d.Title != "" {
+		title = d.Title + " (" + to + ")"
+	}
+	done, err := intake.Reroute(r.Context(), rr.Store, intake.RerouteRequest{
+		Project: rr.Project, ID: rec.ID, To: to, Actor: who, Now: rr.now(),
+		Why: "it named " + title + ", which takes jots only when a move is confirmed, and " + who + " confirmed it",
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	rr.export(r.Context())
+	http.Redirect(w, r, "/records/"+done.Fresh.ID+"?moved="+url.QueryEscape(rec.ID), http.StatusSeeOther)
+}
+
+// keep declines the move and leaves the record where it is, saying who and
+// when.
+func (rr *Records) keep(w http.ResponseWriter, r *http.Request) {
+	rec, ok := rr.attending(w, r)
+	if !ok {
+		return
+	}
+	if _, err := intake.Keep(r.Context(), rr.Store, rec.ID, rr.actor(r), rr.now()); err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	rr.export(r.Context())
+	http.Redirect(w, r, "/records/"+rec.ID+"?kept=1", http.StatusSeeOther)
+}
+
+// export renders the store into the configured tree. The change is already in
+// the store, so a failed export has lost nothing and the press still
+// succeeded; it is logged rather than swallowed, because an exported tree
+// quietly behind the store is the drift nothing else here would notice.
+func (rr *Records) export(ctx context.Context) {
+	if rr.ExportTo == "" {
+		return
+	}
+	all, err := rr.Store.List(ctx, "")
+	if err == nil {
+		err = export.Write(rr.ExportTo, all)
+	}
+	if err != nil {
+		log.Printf("records: exporting to %s after a move or keep failed: %v", rr.ExportTo, err)
+	}
 }
 
 // less orders identifiers by role then serial, which is how every listing here
@@ -756,7 +986,38 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .shots img { max-width: 100%; height: auto; display: block;
                border: 1px solid var(--edge); border-radius: .4rem; }
   .shots figcaption { font-size: .78em; opacity: .6; margin-top: .2rem; }
-  .badge.stale { border-color: #c2703a; opacity: 1; }
+  .badge.stale { border-color: var(--warn); opacity: 1; }
+  /* Needs attention (MUS-D-0193), in the warn tone the Records badge wears.
+     The pinned section sits above the filters and ignores them, so narrowing
+     the list can never hide a record waiting on somebody. */
+  .attn { margin: .6rem 1rem 0; border: 1.4px solid var(--warn);
+          border-radius: .5rem; overflow: hidden; }
+  .attn h2 { margin: 0; padding: .45rem .8rem; font-size: .9rem;
+             background: var(--warn-soft); }
+  .attn .rows { border-top: 1px solid var(--warn); }
+  .attn .row:last-child { border-bottom: 0; }
+  .pill { flex: none; font-size: .75em; border: 1px solid var(--warn);
+          border-radius: 999px; padding: 0 .45rem; white-space: nowrap; }
+  .row .dot { flex: none; width: .5rem; height: .5rem; border-radius: 50%;
+              background: var(--warn); align-self: center; }
+  .banner { border: 1.4px solid var(--warn); background: var(--warn-soft);
+            border-radius: .5rem; padding: .6rem .8rem; margin: 0 0 .6rem; }
+  .banner p { margin: 0; }
+  .banner .acts { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
+  .banner form { margin: 0; }
+  .banner button { font: inherit; font-size: .92em; padding: .4rem .8rem;
+                   color: inherit; background: Canvas; cursor: pointer;
+                   border: 1px solid var(--edge); border-radius: .4rem; }
+  .banner button.primary { border-color: var(--accent); background: var(--accent-soft);
+                           font-weight: 600; }
+  /* On a phone the two buttons stack full width, so neither is a small
+     target beside the other. */
+  @media (max-width: 40rem) {
+    .banner .acts { flex-direction: column; }
+    .banner form, .banner button { width: 100%; }
+  }
+  .done { border: 1px solid var(--edge); border-radius: .5rem;
+          padding: .5rem .8rem; margin: 0 0 .6rem; font-size: .93em; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
 ` + markdownCSS + citesCSS + shellCSS + `
 </style>
@@ -772,6 +1033,12 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 {{else if .One}}
 {{template "record" .One}}
 {{else if .Index}}{{with .Index}}
+{{if .Attention}}<section class="attn" aria-label="Needs attention">
+<h2>Needs attention · {{len .Attention}}</h2>
+<ol class="rows">
+{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="id">{{.ID}}</span><span class="t">{{.Title}}</span>{{range .Names}}<span class="pill">names {{.Title}} — move?</span>{{end}}</a></li>
+{{end}}</ol>
+</section>{{end}}
 <form class="narrow" method="get" action="/records" role="search">
   <div class="pick">
     <select name="project" aria-label="Project">
@@ -790,7 +1057,7 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 </form>
 <p class="tally"><span>{{.Summary}}</span>{{if .Chosen}}<a href="/records">Clear</a>{{end}}</p>
 {{if .Rows}}<ol class="rows">
-{{range .Rows}}<li><a class="row" href="/records/{{.ID}}"><span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span><span class="at">{{.At}}</span></a></li>
+{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span><span class="at">{{.At}}</span></a></li>
 {{end}}</ol>
 {{else if .Beyond}}<p class="none">Nothing on page {{.Page}}. The list ends at page {{.Pages}}.</p>
 {{else}}<p class="none">No records match.</p>
@@ -815,6 +1082,15 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 
 {{define "record"}}
 <article id="{{.ID}}">
+  {{if .MovedFrom}}<p class="done" role="status">Moved to {{.MovedTo}}. {{.MovedFrom}} is kept and points here.</p>{{end}}
+  {{if .Kept}}<p class="done" role="status">Kept in the intake box.</p>{{end}}
+  {{if .Attention}}<div class="banner" role="note">
+    <p><strong>Needs attention.</strong> This jot names {{range $i, $n := .Attention}}{{if $i}} and {{end}}{{$n.Title}}{{end}}, which {{if eq (len .Attention) 1}}takes{{else}}take{{end}} a jot only when a move is confirmed.</p>
+    {{if .CanMove}}<div class="acts">
+      {{range .Attention}}<form method="post" action="/records/{{$.ID}}/move"><input type="hidden" name="to" value="{{.ID}}"><button class="primary" type="submit">Move to {{.Title}}</button></form>
+      {{end}}<form method="post" action="/records/{{.ID}}/keep"><button type="submit">Keep in intake box</button></form>
+    </div>{{end}}
+  </div>{{end}}
   <div class="line">
     <a href="/records/{{.ID}}">{{.ID}}</a>
     <span>{{.Kind}}</span>
