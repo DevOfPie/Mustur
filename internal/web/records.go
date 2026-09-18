@@ -461,12 +461,9 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .shots img { max-width: 100%; height: auto; display: block;
                border: 1px solid var(--edge); border-radius: .4rem; }
   .shots figcaption { font-size: .78em; opacity: .6; margin-top: .2rem; }
-  .cites { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .4rem; }
-  .badge { font-size: .78em; border: 1px solid var(--edge); border-radius: 999px;
-           padding: .05rem .5rem; opacity: .75; }
   .badge.stale { border-color: #c2703a; opacity: 1; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
-` + markdownCSS + shellCSS + `
+` + markdownCSS + citesCSS + shellCSS + `
 </style>
 </head>
 <body>
@@ -523,12 +520,32 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
     <summary>{{if .Key}}{{.Key}}: {{end}}{{.ID}}{{if .Known}} · {{.Kind}}{{end}}</summary>
     <div class="inner">{{if .Known}}<strong>{{.Title}}</strong><br><small>{{.At}} · <a href="/records/{{.ID}}">open on its own</a></small>{{else}}Nothing in the store has this identifier.{{end}}</div>
   </details>{{end}}{{end}}
-  {{if .Cites}}<div class="cites">
-    {{range .Cites}}<details>
+  {{template "cites" .Cites}}
+</article>
+{{end}}
+` + citesTmpl))
+
+// citesTmpl is a row of citations, each a <details> that expands in place to
+// the cited record's title, kind and date, with a link to open it on its own
+// page. Records draws one under every record (MUS-D-0040), and the decision
+// queue draws one under every question (MUS-D-0198, extending MUS-D-0040 on the
+// owner's answer to MUS-Q-0160), so the two cannot drift apart.
+const citesTmpl = `{{define "cites"}}{{if .}}<div class="cites">
+    {{range .}}<details>
       <summary class="badge">{{.ID}}</summary>
       <div class="inner">{{if .Known}}<strong>{{.Title}}</strong><br><small>{{.Kind}} · {{.At}} · <a href="/records/{{.ID}}">open on its own</a></small>{{else}}Nothing in the store has this identifier.{{end}}</div>
     </details>{{end}}
-  </div>{{end}}
-</article>
-{{end}}
-`))
+  </div>{{end}}{{end}}`
+
+// citesCSS styles citesTmpl. Scoped to .cites, because the queue has
+// <details> of its own -- an option's "more" -- that must not take these rules.
+// Records' global details and summary rules say the same for its own refs.
+const citesCSS = `
+  .cites { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .4rem; }
+  .cites details { margin: .25rem 0; font-size: .88em; min-width: 0; }
+  .cites summary { cursor: pointer; opacity: .8; overflow-wrap: anywhere; }
+  .cites details .inner { margin: .3rem 0 .5rem 1rem; padding-left: .6rem;
+                          border-left: 2px solid var(--edge); overflow-wrap: anywhere; }
+  .badge { font-size: .78em; border: 1px solid var(--edge); border-radius: 999px;
+           padding: .05rem .5rem; opacity: .75; }
+`

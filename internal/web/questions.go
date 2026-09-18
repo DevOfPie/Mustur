@@ -45,6 +45,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/question"
+	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
@@ -141,6 +142,12 @@ type queued struct {
 	Needed   bool
 	Surfaced bool
 	Options  []queuedOption
+	// Cites are the records the question's text names, each expanding in
+	// place the way a citation does on Records (MUS-D-0198, which extends
+	// MUS-D-0040 to this surface on the owner's answer to MUS-Q-0160). The
+	// owner met MUS-F-0164 and MUS-F-0027 in a question and its options and
+	// had no way to them but typing the address (MUS-F-0168).
+	Cites []citation
 }
 
 type queuePage struct {
@@ -159,31 +166,27 @@ type queuePage struct {
 	// ShowSessions renders the Sessions tab. See the note on intake's page.
 	ShowSessions bool
 	ShowAccount  bool
-	// Known is every identifier the store holds. Only those are linked
-	// (MUS-F-0168); one it does not hold stays text, as a dangling citation
-	// does on Records.
-	Known map[string]bool
 }
 
-func (q *Questions) open(ctx context.Context) ([]queued, map[string]bool, error) {
+func (q *Questions) open(ctx context.Context) ([]queued, error) {
 	records, err := q.Store.List(ctx, "")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// The project records are already in this listing, so naming every card's
 	// project costs no query beyond the one above, rather than one per question.
-	// Which identifiers resolve is read from it the same way.
 	names := projectNamesIn(records)
-	known := make(map[string]bool, len(records))
+	// Which identifiers resolve is read from the same listing.
+	by := make(map[string]record.Record, len(records))
 	for _, r := range records {
-		known[r.ID] = true
+		by[r.ID] = r
 	}
 	var out []queued
 	for _, r := range question.Open(records) {
 		item := queued{
 			ID:       r.ID,
 			Title:    r.Title,
-			Body:     queueMarkdown(strings.TrimSpace(r.Body), known),
+			Body:     markdown(strings.TrimSpace(r.Body)),
 			Asked:    r.At,
 			Needed:   question.Needed(r),
 			Surfaced: question.Surfaced(r),
@@ -199,17 +202,51 @@ func (q *Questions) open(ctx context.Context) ([]queued, map[string]bool, error)
 		}
 		for _, o := range question.Options(r) {
 			item.Options = append(item.Options, queuedOption{
-				Label: o.Label, Line: o.Says(), Detail: queueMarkdown(o.Detail, known),
+				Label: o.Label, Line: o.Says(), Detail: markdown(o.Detail),
 				Recommended: o.IsRecommended(),
 			})
 		}
+		item.Cites = queueCites(r, item.Blocks, by)
 		out = append(out, item)
 	}
-	return out, known, nil
+	return out, nil
+}
+
+// queueCites gathers the records a question names, in the order it names them:
+// title, what it blocks, the body, then every option's label, line and detail.
+// Deduplicated and never the question itself, as on Records.
+//
+// Every identifier on the card is gathered, the option's label and line
+// included, but the row sits outside every option: a <details> inside an
+// option's <label> would take the tap meant to choose it, and the whole row is
+// the control (docs/ui-surfaces.md, surface 4). The text itself stays text
+// everywhere, because a <details> is not allowed inside a paragraph and the
+// browser ends the paragraph where one starts.
+//
+// Only what the store holds is listed. An identifier it does not hold stays
+// text in the question and gets no entry, rather than an entry saying there is
+// nothing behind it.
+func queueCites(r record.Record, blocks string, by map[string]record.Record) []citation {
+	text := r.Title + " " + blocks + " " + r.Body
+	for _, o := range question.Options(r) {
+		text += " " + o.Label + " " + o.Says() + " " + o.Detail
+	}
+	seen := map[string]bool{r.ID: true}
+	var out []citation
+	for _, id := range idInProse.FindAllString(text, -1) {
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		if _, ok := by[id]; ok {
+			out = append(out, resolve("", id, by))
+		}
+	}
+	return out
 }
 
 func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
-	openQs, known, err := q.open(r.Context())
+	openQs, err := q.open(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -223,7 +260,6 @@ func (q *Questions) show(w http.ResponseWriter, r *http.Request) {
 		Answered:     r.URL.Query().Get("answered"),
 		Delivered:    r.URL.Query().Get("sent"),
 		Error:        r.URL.Query().Get("error"),
-		Known:        known,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := queueTmpl.Execute(w, page); err != nil {
@@ -386,7 +422,7 @@ func OpenCount(ctx context.Context, s *store.Store) int {
 // The count is spelled out rather than shown as a badge: a badge holding one
 // character reads as an unexplained dot at this size. That is the drawing's own
 // note, and it applies to the two-tab version exactly as much.
-var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"ids": linkIDs}).Parse(`<!doctype html>
+var queueTmpl = template.Must(template.New("questions").Parse(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -494,14 +530,15 @@ var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"
           font-size: .8em; opacity: .75; }
   .none { opacity: .6; padding: 2rem 0; text-align: center; }
   hr { border: 0; border-top: 1.4px solid var(--edge); margin: 1.6rem 0; }
-` + markdownCSS + shellCSS + `
+  form > .cites { margin: 0 0 1rem; }
+` + markdownCSS + citesCSS + shellCSS + `
 </style>
 </head>
 <body>
 <header><strong>Decisions</strong><span class="n">{{if .OpenN}}{{.OpenN}} open{{else}}nothing open{{end}}</span>{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</header>
 <main>
 {{if .Error}}<p class="said">{{.Error}}</p>{{end}}
-{{if .Answered}}<p class="said">Answered <code>{{ids .Known .Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
+{{if .Answered}}<p class="said">Answered <code>{{.Answered}}</code>.{{if .Delivered}} {{.Delivered}}.{{end}}</p>{{end}}
 {{if .Open}}
 {{range $i, $q := .Open}}
 {{if $i}}<hr>{{end}}
@@ -509,13 +546,14 @@ var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"
   <input type="hidden" name="id" value="{{$q.ID}}">
   <div class="pills">
     {{if $q.Project}}<span class="pill">{{$q.Project}}</span>{{end}}
-    {{if $q.Blocks}}<span class="pill accent">blocks {{ids $.Known $q.Blocks}}</span>{{end}}
+    {{if $q.Blocks}}<span class="pill accent">blocks {{$q.Blocks}}</span>{{end}}
     {{if $q.Needed}}<span class="pill">answer needed to proceed</span>{{end}}
     {{if not $q.Surfaced}}<span class="pill">never surfaced</span>{{end}}
   </div>
-  <h2>{{ids $.Known $q.Title}}</h2>
+  <h2>{{$q.Title}}</h2>
   <small class="asked">Asked {{$q.Asked}}</small>
   {{if $q.Body}}<div class="ctx md">{{$q.Body}}</div>{{end}}
+  {{template "cites" $q.Cites}}
   {{range $q.Options}}
   <div class="opt">
     <label class="pick">
@@ -531,7 +569,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"
             placeholder="{{if $q.Options}}A note on your choice, or something else entirely{{else}}Your answer{{end}}"></textarea>
   <button class="primary" type="submit">Answer</button>
   <div class="drop">
-    <span class="id">{{ids $.Known $q.ID}}</span>
+    <span class="id">{{$q.ID}}</span>
     <label class="sure"><input type="checkbox" name="sure" value="1">close it with no answer</label>
     <button type="submit" name="withdraw" value="1">Withdraw</button>
   </div>
@@ -551,7 +589,7 @@ var queueTmpl = template.Must(template.New("questions").Funcs(template.FuncMap{"
 <script src="/assets/bar.js"></script>
 </body>
 </html>
-`))
+` + citesTmpl))
 
 // countCache holds the answer for a moment so a handful of open tabs polling
 // the badge cost one count between them rather than one each.
