@@ -33,7 +33,7 @@ type Args struct {
 	// The kind list here is a struct tag and cannot be built at run time, so
 	// TestSchemaListsEveryKind asserts it against ident.KindNames rather than
 	// leaving it to go stale the next time a role letter is added.
-	Kind string `json:"kind,omitempty" jsonschema:"limit the index to one kind: phase, milestone, work-unit, question, decision, finding, investigation, repository, machine, project"`
+	Kind string `json:"kind,omitempty" jsonschema:"list one kind across every project instead of this repository's index: phase, milestone, work-unit, question, decision, finding, investigation, repository, machine, project"`
 }
 
 // Server answers tool calls out of a store.
@@ -48,8 +48,9 @@ func New(s *store.Store) *mcp.Server {
 	mcp.AddTool(server, &mcp.Tool{
 		Name: "mustur_route",
 		Description: "Where this repository's records and routing live, and what they say. " +
-			"Call with no identifier for the routing and an index of every record; call with an " +
-			"identifier for that record in full.",
+			"Call with no identifier for the routing and an index of the records of the project " +
+			"holding this repository; with a kind for every record of that kind in any project; " +
+			"with an identifier for that record in full, whichever project holds it.",
 	}, srv.route)
 	return server
 }
@@ -89,7 +90,7 @@ func (s *Server) one(ctx context.Context, args Args) (string, error) {
 	if err != nil {
 		// A missing record is an answer, not a failure: an empty result reads
 		// as "nothing to say about it", which is a different claim.
-		return fmt.Sprintf("Mustur holds no record %s. Call again without an identifier for the index of what it does hold.\n", args.ID), nil
+		return fmt.Sprintf("Mustur holds no record %s. Call again without an identifier for this repository's index, or with a kind for that kind in every project.\n", args.ID), nil
 	}
 	return export.One(r), nil
 }
@@ -124,9 +125,32 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 			return fmt.Sprintf("Mustur has no record kind %q. The kinds are: %s.\n", args.Kind, strings.Join(kinds, ", ")), nil
 		}
 		kinds = []string{args.Kind}
+		// A kind reaches every project: the owner's answer on MUS-Q-0139 names
+		// an identifier or a kind as the way to another project's records.
+		b.WriteString("## Records\n\n")
+	} else {
+		// No kind: the index is the named repository's project, and nothing
+		// else (MUS-F-0149, MUS-D-0187). A name that resolves to no project,
+		// or a bare name matching two repositories, returns the routing and
+		// the registered repositories and no index, on the owner's answer to
+		// MUS-Q-0147 — never the whole store, which is the flood this exists
+		// to stop.
+		project, why := projectFor(all, args.Repository)
+		if project.ID == "" {
+			b.WriteString("## Records\n\n")
+			b.WriteString(why)
+			b.WriteString("\n\nCall mustur_route again with `id` set to an identifier for that record in full, " +
+				"or with `kind` for every record of that kind in any project.\n")
+			return b.String(), nil
+		}
+		prefix, _ := project.Get("Prefix")
+		prefix = strings.TrimSpace(prefix)
+		all = ofPrefix(all, prefix)
+		fmt.Fprintf(&b, "## Records of %s (%s)\n\n", strings.TrimSpace(project.Title), prefix)
+		b.WriteString("Only this project's records are listed. Another project's are reached with `id`, " +
+			"or with `kind`, which lists that kind across every project.\n\n")
 	}
 
-	b.WriteString("## Records\n\n")
 	total := 0
 	for _, kind := range kinds {
 		rs := filter(all, kind)
@@ -140,11 +164,142 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 		}
 		b.WriteString("\n")
 	}
-	if total == 0 {
-		b.WriteString("Mustur holds no records of that kind.\n\n")
+	// With nothing listed there is no identifier above to call again with.
+	switch {
+	case total > 0:
+		b.WriteString("Call mustur_route again with `id` set to any identifier above for that record in full.\n")
+	case args.Kind != "":
+		b.WriteString("Mustur holds no records of that kind.\n")
+	default:
+		b.WriteString("This project holds no records yet.\n")
 	}
-	b.WriteString("Call mustur_route again with `id` set to any identifier above for that record in full.\n")
 	return b.String(), nil
+}
+
+// projectFor finds the project holding the repository a session named, or says
+// why there is none.
+//
+// Sessions pass what they understood from the checkout, which has been seen as
+// "Mustur", "DevOfPie/Mustur", "Hoard" for a record titled "DevOfPie/hoard",
+// a checkout path, an agent worktree inside one, and a remote URL in either
+// the https or the scp form. So the match ignores case and a trailing ".git"
+// or slash, splits on "/", "\" and ":", and walks the segments from the end:
+// at each one it tries the owner/name pair ending there, then the segment as
+// a bare name, and stops at the first that answers to a registered
+// repository. That reaches the checkout from anywhere below it without
+// knowing what the directory holding worktrees is called.
+//
+// A bare name answering to two repositories is not guessed between, and is
+// answered the way a name answering to none is: the registered repositories
+// and no index (MUS-D-0187, on the owner's answer to MUS-Q-0147).
+func projectFor(all []record.Record, named string) (record.Record, string) {
+	var repos []record.Record
+	for _, r := range all {
+		if r.Kind == "repository" {
+			repos = append(repos, r)
+		}
+	}
+	sort.SliceStable(repos, func(i, j int) bool { return repos[i].ID < repos[j].ID })
+	var names []string
+	for _, r := range repos {
+		names = append(names, strings.TrimSpace(r.Title))
+	}
+	registered := "none"
+	if len(names) > 0 {
+		registered = strings.Join(names, ", ")
+	}
+
+	matched := matchRepo(repos, named)
+	switch len(matched) {
+	case 0:
+		return record.Record{}, fmt.Sprintf("Mustur holds no repository named %q, so no project's index is listed. "+
+			"The registered repositories are: %s.", named, registered)
+	case 1:
+	default:
+		var ids []string
+		for _, r := range matched {
+			ids = append(ids, fmt.Sprintf("%s (%s)", strings.TrimSpace(r.Title), r.ID))
+		}
+		return record.Record{}, fmt.Sprintf("%q names more than one repository (%s), so no project's index is listed. "+
+			"The registered repositories are: %s. Call again with the owner/name.",
+			named, strings.Join(ids, ", "), registered)
+	}
+	repo := matched[0]
+	for _, r := range all {
+		if r.Kind != "project" {
+			continue
+		}
+		held, _ := r.Get("Repositories")
+		prefix, _ := r.Get("Prefix")
+		if strings.TrimSpace(prefix) == "" {
+			continue
+		}
+		for _, id := range ident.Cited(held) {
+			if id == repo.ID {
+				return r, ""
+			}
+		}
+	}
+	return record.Record{}, fmt.Sprintf("Repository %s (%s) is registered, but no project with a prefix lists it, "+
+		"so no project's index is listed.", strings.TrimSpace(repo.Title), repo.ID)
+}
+
+// matchRepo returns the repositories the name answers to: one, none, or more
+// than one when the first thing that matched was a bare name several share.
+func matchRepo(repos []record.Record, named string) []record.Record {
+	segs := repoSegments(named)
+	for i := len(segs) - 1; i >= 0; i-- {
+		if i > 0 {
+			pair := segs[i-1] + "/" + segs[i]
+			for _, r := range repos {
+				if strings.Join(lastTwo(repoSegments(r.Title)), "/") == pair {
+					return []record.Record{r}
+				}
+			}
+		}
+		var bare []record.Record
+		for _, r := range repos {
+			if t := repoSegments(r.Title); len(t) > 0 && t[len(t)-1] == segs[i] {
+				bare = append(bare, r)
+			}
+		}
+		if len(bare) > 0 {
+			return bare
+		}
+	}
+	return nil
+}
+
+// repoSegments lowers the name and splits it into its non-empty segments,
+// with a trailing ".git" off the last. ":" separates as "/" does, which is
+// what makes git@github.com:owner/name.git read as a path.
+func repoSegments(s string) []string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	f := strings.FieldsFunc(s, func(c rune) bool { return c == '/' || c == '\\' || c == ':' })
+	if n := len(f); n > 0 {
+		f[n-1] = strings.TrimSuffix(f[n-1], ".git")
+		if f[n-1] == "" {
+			f = f[:n-1]
+		}
+	}
+	return f
+}
+
+func lastTwo(s []string) []string {
+	if len(s) > 2 {
+		return s[len(s)-2:]
+	}
+	return s
+}
+
+func ofPrefix(rs []record.Record, prefix string) []record.Record {
+	var out []record.Record
+	for _, r := range rs {
+		if strings.HasPrefix(r.ID, prefix+"-") {
+			out = append(out, r)
+		}
+	}
+	return out
 }
 
 func filter(rs []record.Record, kinds ...string) []record.Record {
