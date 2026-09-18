@@ -236,11 +236,49 @@ func TestAStubCitingItsReplacementIsNotReroutedAgain(t *testing.T) {
 		t.Fatal(err)
 	}
 	r.Refs = append(r.Refs, record.Field{Key: SupersededByRef, Value: "ARC-F-0009"})
+	status.Set(&r, status.Dropped, status.Superseded)
 	if err := s.Append(ctx, r, "amend", "test"); err != nil {
 		t.Fatal(err)
 	}
 	_, err = Reroute(ctx, s, RerouteRequest{Project: "MUS", ID: r.ID, To: "MUS-P-0003", Actor: "owner", Now: time.Now()})
 	if err == nil || !strings.Contains(err.Error(), "already corrected, by ARC-F-0009") {
 		t.Errorf("err = %v", err)
+	}
+}
+
+// MUS-F-0113's shape: open and unverified, citing a later finding under
+// "superseded by" and "corrected by" because the status sweep found it
+// overtaken. That is not a reroute stub, and moving it is not refused.
+func TestASupersededByCitationOnAnOpenFindingIsNotAStub(t *testing.T) {
+	sweep := record.Record{ID: "MUS-F-0113", Kind: "finding", Title: "t", At: "2026-09-08", Body: "b",
+		Refs: []record.Field{{Key: "corrected by", Value: "MUS-F-0120"}, {Key: SupersededByRef, Value: "MUS-F-0120"}},
+		Data: []record.Field{{Key: status.StateField, Value: status.Open}, {Key: status.StatusField, Value: "unverified"},
+			{Key: "Note", Value: "sweep: no Status; ref corrected by MUS-F-0120"}}}
+	if by := CorrectedBy(sweep); by != "" {
+		t.Errorf("MUS-F-0113's shape reads as corrected by %s", by)
+	}
+	stub := sweep
+	stub.Data = []record.Field{{Key: status.StateField, Value: status.Dropped}, {Key: status.StatusField, Value: status.Superseded}}
+	if by := CorrectedBy(stub); by != "MUS-F-0120" {
+		t.Errorf("a dropped record citing its replacement: %q", by)
+	}
+	written := sweep
+	written.Data = append(append([]record.Field(nil), sweep.Data...), record.Field{Key: SupersededBy, Value: "MUS-F-0120 — why"})
+	if by := CorrectedBy(written); by != "MUS-F-0120" {
+		t.Errorf("the data field Reroute writes: %q", by)
+	}
+
+	// And through Reroute: a filed jot carrying the sweep's citation moves.
+	s, ctx := openWith(t, withOptOut())
+	r, _, err := File(ctx, s, Request{Project: "MUS", Text: "archive the old intake notes", Actor: "pie", Now: time.Now()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Refs = append(r.Refs, record.Field{Key: SupersededByRef, Value: "MUS-F-0120"})
+	if err := s.Append(ctx, r, "amend", "test"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Reroute(ctx, s, RerouteRequest{Project: "MUS", ID: r.ID, To: "MUS-P-0003", Actor: "owner", Now: time.Now()}); err != nil {
+		t.Errorf("an open jot citing a later record was refused: %v", err)
 	}
 }

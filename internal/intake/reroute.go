@@ -96,16 +96,28 @@ func (e *AlreadyCorrected) Error() string {
 	return fmt.Sprintf("%s was already corrected, by %s. Reroute that one instead", e.ID, e.By)
 }
 
-// CorrectedBy is the record a superseded jot points at, or "".
+// CorrectedBy is the record a reroute stub points at, or "" for a record that
+// is not one.
+//
+// A record is a stub when it carries the "Superseded by" data field, which
+// only Reroute writes, or when it carries a "superseded by" citation and is
+// dropped. The citation alone is not enough: the status sweep (MUS-D-0200)
+// wrote it onto findings that were overtaken by later work and are still
+// open — MUS-F-0113 cites MUS-F-0120 that way — and reading every such
+// finding as already rerouted refused to move it, from the command line and
+// from Move alike (review of #109, m3).
 func CorrectedBy(r record.Record) string {
+	if v, ok := r.Get(SupersededBy); ok && strings.TrimSpace(v) != "" {
+		id, _, _ := strings.Cut(strings.TrimSpace(v), " ")
+		return id
+	}
+	if status.StateOf(r) != status.Dropped {
+		return ""
+	}
 	for _, ref := range r.Refs {
 		if strings.EqualFold(ref.Key, SupersededByRef) && strings.TrimSpace(ref.Value) != "" {
 			return strings.TrimSpace(ref.Value)
 		}
-	}
-	if v, ok := r.Get(SupersededBy); ok && strings.TrimSpace(v) != "" {
-		id, _, _ := strings.Cut(strings.TrimSpace(v), " ")
-		return id
 	}
 	return ""
 }
