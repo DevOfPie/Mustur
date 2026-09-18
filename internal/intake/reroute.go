@@ -31,10 +31,12 @@ package intake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
@@ -66,20 +68,68 @@ type Rerouted struct {
 	Moved int
 }
 
+// AlreadyCorrected is the refusal for a jot that has been rerouted already. By
+// is the record that carries it now, so a caller that pressed twice can be
+// sent where the first press went.
+type AlreadyCorrected struct {
+	ID string
+	By string
+}
+
+func (e *AlreadyCorrected) Error() string {
+	return fmt.Sprintf("%s was already corrected, by %s. Reroute that one instead", e.ID, e.By)
+}
+
+// CorrectedBy is the record a superseded jot points at, or "".
+func CorrectedBy(r record.Record) string {
+	for _, ref := range r.Refs {
+		if ref.Key == SupersededBy && strings.TrimSpace(ref.Value) != "" {
+			return strings.TrimSpace(ref.Value)
+		}
+	}
+	if v, ok := r.Get(SupersededBy); ok && strings.TrimSpace(v) != "" {
+		id, _, _ := strings.Cut(strings.TrimSpace(v), " ")
+		return id
+	}
+	return ""
+}
+
 // Reroute files a jot afresh at req.To and retires the original in place,
 // superseded and still resolving.
+//
+// The new record, the retirement and the pictures are written in one
+// transaction that first checks the jot is still the version this read. Two
+// corrections of one jot at once — a double press — file one record between
+// them: the loser finds the jot changed, reads it again, and is told it was
+// already corrected and by what.
 func Reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted, error) {
 	if strings.TrimSpace(req.To) == "" {
 		return Rerouted{}, fmt.Errorf("reroute needs --to: a correction that does not say where is not a correction")
 	}
-	old, err := s.Get(ctx, req.ID)
+	// Somebody writing the jot between the read and the write means go round:
+	// the read says what they did, which is usually that they already
+	// corrected it. Bounded, so a record under constant rewriting is an error
+	// rather than a spin.
+	var err error
+	for range 5 {
+		var done Rerouted
+		done, err = reroute(ctx, s, req)
+		if !errors.Is(err, store.ErrChanged) {
+			return done, err
+		}
+	}
+	return Rerouted{}, err
+}
+
+func reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted, error) {
+	old, version, err := s.GetVersioned(ctx, req.ID)
 	if err != nil {
 		return Rerouted{}, err
 	}
 	// Correcting a correction would leave two stubs pointing at each other and
 	// no way to tell which one anybody meant.
-	if v, ok := old.Get(SupersededBy); ok && strings.TrimSpace(v) != "" {
-		return Rerouted{}, fmt.Errorf("%s was already corrected, by %s. Reroute that one instead", old.ID, strings.TrimSpace(v))
+	if by := CorrectedBy(old); by != "" {
+		return Rerouted{}, &AlreadyCorrected{ID: old.ID, By: by}
 	}
 	if strings.TrimSpace(old.Body) == "" {
 		return Rerouted{}, fmt.Errorf("%s has no body to re-file; amend it rather than rerouting it", old.ID)
@@ -98,27 +148,20 @@ func Reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 			"reroute is for a jot that \"Route it for me\" put in the wrong place", old.ID)
 	}
 
-	// Filed through File rather than written here, so the destination is
-	// resolved, the prefix is chosen and the fields are shaped by exactly the
-	// code that files everything else. A correction that took its own path
-	// would drift from the thing it is correcting.
-	fresh, dest, err := File(ctx, s, Request{
+	// Drafted by the code that files everything else, so the destination is
+	// resolved, the prefix is chosen and the fields are shaped exactly as a
+	// filing would shape them. A correction that took its own path would
+	// drift from the thing it is correcting. Drafted rather than filed: the
+	// filing happens below, in the transaction that retires the original.
+	fresh, dest, under, err := draft(ctx, s, Request{
 		Project: req.Project,
 		Text:    old.Body,
 		Actor:   req.Actor,
 		Now:     req.Now,
 		To:      req.To,
-		// A correction re-files the record's own body, so it matches its own
-		// original exactly. Without this it is handed the original back and
-		// told it is already routed there, for the first minute after filing —
-		// which is the minute somebody notices the routing was wrong.
-		Deliberate: true,
-	})
+	}, strings.TrimSpace(old.Body))
 	if err != nil {
 		return Rerouted{}, err
-	}
-	if fresh.ID == old.ID {
-		return Rerouted{}, fmt.Errorf("%s is already routed there", old.ID)
 	}
 
 	note := strings.TrimSpace(req.Why)
@@ -126,10 +169,10 @@ func Reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 		note = "routed to " + fieldOr(old, "Routed to", "nowhere") + " when it belonged to " + dest.Name
 	}
 
-	// A correction is about where the record lives, not what it says. So File
-	// keeps only the two things it alone can decide — the destination and the
-	// prefix in the identifier — and everything the record actually claimed is
-	// carried across unchanged.
+	// A correction is about where the record lives, not what it says. So the
+	// draft keeps only the two things it alone can decide — the destination
+	// and the prefix in the identifier — and everything the record actually
+	// claimed is carried across unchanged.
 	//
 	// Without this the new record's title was re-derived from the body, so a
 	// jot that had since been given a proper title got an automatic one back,
@@ -161,26 +204,25 @@ func Reroute(ctx context.Context, s *store.Store, req RerouteRequest) (Rerouted,
 	}
 	fresh.Data = append(fresh.Data, record.Field{Key: "Corrects", Value: old.ID + " — " + note})
 	fresh.Refs = append(fresh.Refs, record.Field{Key: "Corrects", Value: old.ID})
-	if err := s.Append(ctx, fresh, "amend", req.Actor); err != nil {
-		return Rerouted{}, err
-	}
 
-	// The old one stays, still resolving, and stops making a claim.
-	setStatus(&old, "superseded")
-	old.Data = append(old.Data, record.Field{Key: SupersededBy, Value: fresh.ID + " — " + note})
-	old.Refs = append(old.Refs, record.Field{Key: SupersededBy, Value: fresh.ID})
-	if err := s.Append(ctx, old, "amend", req.Actor); err != nil {
-		return Rerouted{}, err
+	// The old one stays, still resolving, and stops making a claim. The
+	// pictures go with the record, not with the stub: a jot filed from a phone
+	// carries its evidence in the attachment, and leaving it behind means the
+	// record anybody reads has none.
+	retire := func(freshID string) record.Record {
+		stub := old
+		stub.Data = append([]record.Field(nil), old.Data...)
+		stub.Refs = append([]record.Field(nil), old.Refs...)
+		setStatus(&stub, "superseded")
+		stub.Data = append(stub.Data, record.Field{Key: SupersededBy, Value: freshID + " — " + note})
+		stub.Refs = append(stub.Refs, record.Field{Key: SupersededBy, Value: freshID})
+		return stub
 	}
-
-	// The pictures go with the record, not with the stub. A jot filed from a
-	// phone carries its evidence in the attachment, and leaving it behind means
-	// the record anybody reads has none.
-	moved, err := s.MoveAttachments(ctx, old.ID, fresh.ID)
+	filed, moved, err := s.Supersede(ctx, fresh, under, ident.Finding, old.ID, version, retire, req.Actor)
 	if err != nil {
 		return Rerouted{}, err
 	}
-	return Rerouted{Fresh: fresh, Old: old, Dest: dest, Moved: moved}, nil
+	return Rerouted{Fresh: filed, Old: retire(filed.ID), Dest: dest, Moved: moved}, nil
 }
 
 // confirmed takes a destination out of a record's Names, because the record

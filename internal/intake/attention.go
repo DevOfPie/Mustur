@@ -14,6 +14,7 @@ package intake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -77,18 +78,40 @@ func AttentionCount(ctx context.Context, s *store.Store) int {
 	return n
 }
 
+// ErrAlreadyKept is Keep on a record somebody already kept. Nothing is
+// written; a second press has nothing left to do.
+var ErrAlreadyKept = errors.New("already kept")
+
 // Keep declines the move a record proposes, leaving it where it is. The record
 // says who kept it and when, and stops needing attention.
+//
+// Written only if the record is still the version read, for the reason Reroute
+// is: two presses at once would otherwise both append a Kept.
 func Keep(ctx context.Context, s *store.Store, id, actor string, now time.Time) (record.Record, error) {
-	r, err := s.Get(ctx, id)
+	var err error
+	for range 5 {
+		var r record.Record
+		r, err = keep(ctx, s, id, actor, now)
+		if !errors.Is(err, store.ErrChanged) {
+			return r, err
+		}
+	}
+	return record.Record{}, err
+}
+
+func keep(ctx context.Context, s *store.Store, id, actor string, now time.Time) (record.Record, error) {
+	r, version, err := s.GetVersioned(ctx, id)
 	if err != nil {
 		return record.Record{}, err
+	}
+	if _, kept := r.Get(KeptField); kept {
+		return r, fmt.Errorf("%s: %w", r.ID, ErrAlreadyKept)
 	}
 	if !NeedsAttention(r) {
 		return record.Record{}, fmt.Errorf("%s proposes no move, so there is nothing to keep it from", r.ID)
 	}
 	r.Data = append(r.Data, record.Field{Key: KeptField, Value: actor + " " + now.Format("2006-01-02 15:04 MST")})
-	if err := s.Append(ctx, r, "amend", actor); err != nil {
+	if err := s.AmendIf(ctx, r, version, actor); err != nil {
 		return record.Record{}, err
 	}
 	return r, nil

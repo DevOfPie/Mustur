@@ -36,6 +36,7 @@ package web
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -751,11 +752,25 @@ func (rr *Records) attending(w http.ResponseWriter, r *http.Request) (record.Rec
 		http.Error(w, "no record called "+id, http.StatusNotFound)
 		return record.Record{}, false
 	}
+	return rec, true
+}
+
+// refuseUnlessAttending is the 409 for a record that proposes nothing. Called
+// after the second-press checks, so a press that already happened is sent to
+// its result rather than told there is nothing to do.
+func refuseUnlessAttending(w http.ResponseWriter, rec record.Record) bool {
 	if !intake.NeedsAttention(rec) {
 		http.Error(w, rec.ID+" proposes no move, so there is nothing to move or keep", http.StatusConflict)
-		return record.Record{}, false
+		return true
 	}
-	return rec, true
+	return false
+}
+
+// moved sends the browser to the record a move filed, with the success line.
+// The same answer for the press that moved it and for a second press that
+// arrived after: both asked for the move, and the move happened.
+func moved(w http.ResponseWriter, r *http.Request, from, to string) {
+	http.Redirect(w, r, "/records/"+to+"?moved="+url.QueryEscape(from), http.StatusSeeOther)
 }
 
 // move performs the move a record proposes: exactly `mustur reroute <ID> --to
@@ -763,6 +778,13 @@ func (rr *Records) attending(w http.ResponseWriter, r *http.Request) (record.Rec
 func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
 	rec, ok := rr.attending(w, r)
 	if !ok {
+		return
+	}
+	if by := intake.CorrectedBy(rec); by != "" {
+		moved(w, r, rec.ID, by)
+		return
+	}
+	if refuseUnlessAttending(w, rec) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
@@ -793,13 +815,19 @@ func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
 		Project: rr.Project, ID: rec.ID, To: to, Actor: who, Now: rr.now(),
 		Why: "it named " + title + ", which takes jots only when a move is confirmed, and " + who + " confirmed it",
 	})
+	var already *intake.AlreadyCorrected
+	if errors.As(err, &already) {
+		// The other press of a double press won the race.
+		moved(w, r, rec.ID, already.By)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 	rr.counts.forget()
 	rr.export(r.Context())
-	http.Redirect(w, r, "/records/"+done.Fresh.ID+"?moved="+url.QueryEscape(rec.ID), http.StatusSeeOther)
+	moved(w, r, rec.ID, done.Fresh.ID)
 }
 
 // keep declines the move and leaves the record where it is, saying who and
@@ -809,13 +837,27 @@ func (rr *Records) keep(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if _, err := intake.Keep(r.Context(), rr.Store, rec.ID, rr.actor(r), rr.now()); err != nil {
+	back := "/records/" + rec.ID + "?kept=1"
+	// A second press on a kept record goes back to it without writing.
+	if _, kept := rec.Get(intake.KeptField); kept {
+		http.Redirect(w, r, back, http.StatusSeeOther)
+		return
+	}
+	if refuseUnlessAttending(w, rec) {
+		return
+	}
+	_, err := intake.Keep(r.Context(), rr.Store, rec.ID, rr.actor(r), rr.now())
+	if errors.Is(err, intake.ErrAlreadyKept) {
+		http.Redirect(w, r, back, http.StatusSeeOther)
+		return
+	}
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 	rr.counts.forget()
 	rr.export(r.Context())
-	http.Redirect(w, r, "/records/"+rec.ID+"?kept=1", http.StatusSeeOther)
+	http.Redirect(w, r, back, http.StatusSeeOther)
 }
 
 // export renders the store into the configured tree. The change is already in

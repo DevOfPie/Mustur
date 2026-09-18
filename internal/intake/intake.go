@@ -10,6 +10,7 @@ package intake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -327,7 +328,7 @@ type Request struct {
 // be tested and so the record's date is the caller's decision rather than this
 // package's.
 func File(ctx context.Context, s *store.Store, req Request) (record.Record, Destination, error) {
-	project, text, actor, now := req.Project, req.Text, req.Actor, req.Now
+	text, actor, now := req.Text, req.Actor, req.Now
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
 		return record.Record{}, Destination{}, fmt.Errorf("nothing to file")
@@ -348,13 +349,30 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 		return *existing, to, nil
 	}
 
-	routing, err := routingRecords(ctx, s)
+	r, to, under, err := draft(ctx, s, req, trimmed)
 	if err != nil {
 		return record.Record{}, Destination{}, err
 	}
-	to, err := chosen(routing, req.To)
+	written, err := s.Create(ctx, r, under, ident.Finding, actor)
 	if err != nil {
 		return record.Record{}, Destination{}, err
+	}
+	return written, to, nil
+}
+
+// draft is everything File decides — where the jot goes, what it is called,
+// what it carries — without writing it. Reroute files its draft in the same
+// transaction that retires the original, so it needs the decision without the
+// write.
+func draft(ctx context.Context, s *store.Store, req Request, trimmed string) (record.Record, Destination, string, error) {
+	project, actor, now := req.Project, req.Actor, req.Now
+	routing, err := routingRecords(ctx, s)
+	if err != nil {
+		return record.Record{}, Destination{}, "", err
+	}
+	to, err := chosen(routing, req.To)
+	if err != nil {
+		return record.Record{}, Destination{}, "", err
 	}
 	if to.ID == "" {
 		to = Route(trimmed, routing)
@@ -388,11 +406,7 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 	if to.Prefix != "" {
 		under = to.Prefix
 	}
-	written, err := s.Create(ctx, r, under, ident.Finding, actor)
-	if err != nil {
-		return record.Record{}, Destination{}, err
-	}
-	return written, to, nil
+	return r, to, under, nil
 }
 
 // Window is how long a repeat of the same text from the same filer is treated
@@ -424,6 +438,29 @@ func fieldOr(r record.Record, key, fallback string) string {
 // routing record is an error rather than a silent fallback to the guess: the
 // filer said something, and quietly ignoring it would file the jot somewhere
 // they did not choose while telling them it was filed.
+// ErrUnknownDestination is a destination the routing registry does not hold:
+// the caller's mistake, not the store's.
+var ErrUnknownDestination = errors.New("is not a destination this registry holds")
+
+// IsDestination reports whether a record is one a jot can be routed to.
+func IsDestination(r record.Record) bool { return routingKinds[r.Kind] }
+
+// DefaultIn returns the identifier of the routing record a jot falls back to —
+// the intake box — among rs, or "" if none declares itself the default. The
+// last one wins if several do, as it does in Route.
+func DefaultIn(rs []record.Record) string {
+	box := ""
+	for _, r := range rs {
+		if !routingKinds[r.Kind] {
+			continue
+		}
+		if v, ok := r.Get(DefaultField); ok && strings.EqualFold(strings.TrimSpace(v), DefaultValue) {
+			box = r.ID
+		}
+	}
+	return box
+}
+
 func chosen(routing []record.Record, id string) (Destination, error) {
 	if strings.TrimSpace(id) == "" {
 		return Destination{}, nil
@@ -441,7 +478,7 @@ func chosen(routing []record.Record, id string) (Destination, error) {
 			}, nil
 		}
 	}
-	return Destination{}, fmt.Errorf("%s is not a destination this registry holds", id)
+	return Destination{}, fmt.Errorf("%s %w", id, ErrUnknownDestination)
 }
 
 // Destinations returns the routing records a filer may choose between, sorted
