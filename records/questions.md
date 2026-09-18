@@ -4,7 +4,7 @@
 
 Open, and the owner's. A question is raised by whoever is blocked, surfaced as a prompt rather than as prose, and answered from any device. Unlike a decision it changes state, because the whole point is to be able to see which ones are still waiting. Some become decisions; the ones that were only instructions do not.
 
-164 record(s), by identifier.
+201 record(s), by identifier.
 
 ---
 
@@ -637,6 +637,34 @@ Every PR that changes code had at least one review, and several had two or three
 
 ---
 
+## HRD-Q-0024
+
+**Group sharing is merged into main. How should it ship: a test release first, a full release, or wait?**
+
+question · 2026-09-15
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+f: [HRD-F-0002](findings.md#hrd-f-0002)
+
+Everything is on main at 58c872a: the server's groups, shares and leases, the claim flow, the CLI, the desktop screens, the guide, and the owner's whole folder staying backed up. It passed the full workspace tests, four end-to-end runs against the test server, and CI on every PR. What has not happened is a real game: the Valheim phase 0 check (whether Valheim holds the world file open, how it writes) and a session between two real machines. The fork's installers and updater come from its GitHub releases (v1.1.7 on 2026-09-13), so members only get these builds through a tag. The self-hosted server must be updated before or with the clients: an older server refuses the owner's whole-folder backup, which clients fall back from, but has no groups at all.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Getting desktop builds with sharing to you and the group, which the Valheim phase 0 check and real use both need |
+| Option | Test release first :: Recommended: tag a pre-release (e.g. v1.2.0-rc.1) for you and the group, run the Valheim check and a real session, then tag v1.2.0 :: Real-world bugs reach a few people, not everyone updating; one extra tag and a second release when it holds. Needs the release workflow to accept a pre-release tag, which I check before tagging. |
+| Option | Full release now :: Tag v1.2.0 and let the updater deliver it to everyone on the fork's builds :: Fastest to use. Anything the tests missed, including Valheim-specific behaviour, reaches every user at once. |
+| Option | Wait :: No tag until you have run the Valheim check some other way :: No risk to users; sharing stays unused until you build it yourself or ask again. |
+| Asked by | whippy |
+| Session | claude-code session_01JbFBdkGQSbBQXgdTqMD7Ko |
+| Session project | Hoard_Work |
+| Answer | Test release first |
+| Answered | 2026-09-15 09:05 |
+| Delivered | typed into mustur/Hoard_Work |
+
+---
+
 ## LNK-Q-0001
 
 **LNK-M-0070 — Does the update checker default on or off?**
@@ -850,6 +878,36 @@ Commits 0b9b14c, 10e750e and 7f17800 on task/records-move-to-mustur went up with
 | Answer | Leave them |
 | Answered | 2026-09-14 01:18 |
 | Delivered | typed into mustur/LinkCtrl_W48_fixes |
+
+---
+
+## LNK-Q-0007
+
+**51 open LNK findings are unreviewed, so none is approved work. How do they reach approval?**
+
+question · 2026-09-15
+
+f: [LNK-F-0090](findings.md#lnk-f-0090)
+
+f: [LNK-F-0244](findings.md#lnk-f-0244)
+
+f: [LNK-F-0310](findings.md#lnk-f-0310)
+
+f: [LNK-F-0383](findings.md#lnk-f-0383)
+
+Asked to work Open Findings on 2026-09-15. Mustur holds 54 open LNK findings; 51 read Unreviewed or Not yet reviewed, and workflow.md works an out-of-spec row only after per-item owner approval. The rows were written against trees from LNK-M-0051 to LNK-M-0095 and W48 has since moved the records, so some evidence is likely stale. No phase is in flight: every defined LNK milestone is done and v0.4.0 is released.
+
+| Field | Value |
+| --- | --- |
+| Status | withdrawn |
+| Blocks | Every open LNK finding except F383 (comments only, standing documentation approval) and F090/F244/F310 (already reviewed: carried, scheduled-and-landed, decided-watch) |
+| Needed to proceed | yes |
+| Option | Verify, then ask per item :: Recommended. Check every row's evidence against main first, close refuted or already-fixed rows with the measurement, then one approval question per survivor :: Buys questions that are true when you answer them, and closes dead rows without costing you a decision. Costs the largest spend of the three: 51 evidence checks run as bounded subagents, likely several hours of agent time, and it pays to verify rows you may carry anyway. Default if you say you decide. |
+| Option | Ask per item now :: One approval question per row, raised from the records as written :: Cheapest to raise and fastest to reach you. Costs you 51 answers, some against evidence that no longer holds, which is caught only when a row is built. |
+| Option | Carry to Phase 5 planning :: Work nothing now; the rows stay open and unapproved :: Costs nothing today. The backlog keeps growing at roughly five rows per milestone, and a planning pass inherits all of it unverified. |
+| Asked by | whippy |
+| Session | claude session_01EQRC5tZJwhcZ4SPCXkhbFK, LinkCtrl task/mustur-intake-and-findings |
+| Answered | 2026-09-15 05:02 |
 
 ---
 
@@ -2156,9 +2214,9 @@ question · 2026-08-26
 | --- | --- |
 | Status | answered |
 | Blocks | MUS-F-0044 |
-| Option | A correction files a new record and retires the old :: keeps identifiers permanent; costs two records per correction :: IDW-F-0004 would be re-filed as a MUS finding, and IDW-F-0004 would stay, marked superseded and pointing at it. Nothing an identifier ever meant changes, which is the promise the whole store rests on. The cost is that every correction leaves a stub in the wrong project's list, and the idea inbox counter the scratch pad exists to protect goes up rather than down. Recommended |
+| Option | A correction files a new record and retires the old :: keeps identifiers permanent; costs two records per correction :: \_IB-F-0004 would be re-filed as a MUS finding, and \_IB-F-0004 would stay, marked superseded and pointing at it. Nothing an identifier ever meant changes, which is the promise the whole store rests on. The cost is that every correction leaves a stub in the wrong project's list, and the idea inbox counter the scratch pad exists to protect goes up rather than down. Recommended |
 | Option | Routing becomes mutable and the identifier is reissued :: reads better afterwards; breaks the one rule everything else assumes :: The record keeps its content and gets a new identifier at the correct destination, and the old identifier stops resolving. Anything that cited it — a commit message, a decision, a comment in the code — is then pointing at nothing. That is the failure the permanence rule exists to prevent, and it would be reintroduced for the convenience of a tidy list. |
-| Option | Routing becomes mutable and the identifier does not change :: no stub and no broken citation; the prefix then lies :: IDW-F-0004 stays IDW-F-0004 and is routed to Mustur. Every citation keeps working and nothing is duplicated. What breaks is that the prefix stops meaning where the record lives, so an identifier can no longer be read — and every surface that groups by prefix would have to stop trusting it. |
+| Option | Routing becomes mutable and the identifier does not change :: no stub and no broken citation; the prefix then lies :: \_IB-F-0004 stays \_IB-F-0004 and is routed to Mustur. Every citation keeps working and nothing is duplicated. What breaks is that the prefix stops meaning where the record lives, so an identifier can no longer be read — and every surface that groups by prefix would have to stop trusting it. |
 | Asked by | whippy |
 | Surfaced | 2026-08-26 22:44 |
 | Delivered | not delivered: the question names no session |
@@ -4157,3 +4215,818 @@ MUS-Q-0131 was answered by holding acceptance until the remaining PRs merged aft
 | Answer | Accept it |
 | Answered | 2026-09-15 04:34 |
 | Delivered | typed into mustur/LinkCtrl_Target |
+
+---
+
+## MUS-Q-0136
+
+**How should the Records tab narrow what it shows?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0164 |
+| Option | Plan it first :: Recommended — a visual plan before any code; one extra round :: Records is surface 3 in docs/ui-surfaces.md, and MUS-F-0027 is seven surfaces built without a plan. The plan would draw a project picker, a kind picker and an identifier search over a paged list, and you choose from the drawing. |
+| Option | Server-side filters now :: fastest; the layout is the builder's guess :: ?project=&kind=&q= behind a plain form, rendering only matches, paged. Works with script blocked. This is the build-without-a-plan route MUS-F-0027 records. |
+| Option | Only stop loading everything :: fixes the slowness, not the finding :: Counts up front, one kind rendered at a time, no search. Smallest change; 'find what I'm looking for' stays open. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:06 |
+| Answer | Plan it first |
+| Answered | 2026-09-15 05:11 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0137
+
+**How should an owner give an existing person access to another project?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0166 |
+| Option | Plan it first :: Recommended — draw both shapes below as a visual plan :: People is surface 12; its shape is a design decision, and today the invite dropdown holds exactly one project (accountpage.go) and a role change only touches the install's project. |
+| Option | A role per project on People :: one screen, more controls per row :: Each person listed once with a role for every project the owner owns; setting one grants, removing one revokes. The invite dropdown lists every project the owner owns. |
+| Option | Project switcher on People :: the screen stays one project at a time :: A selector scopes People to one project; that screen can add a person who already has an account, as well as invite a new one. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:06 |
+| Answer | Plan it first |
+| Answered | 2026-09-15 05:13 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0138
+
+**Should a reader's jot reach intake through an approval queue?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0170 |
+| Option | Held until an owner approves :: Recommended — a pending state and an owner-only review list :: A reader's jot is stored pending: not routed, not exported, not counted, until an owner approves or discards it. It changes the guard on intake's POST, which queue.md already names as its own piece of work. |
+| Option | Readers file directly :: no queue; any reader writes records :: The guard lets a reader POST intake and the jot files like any other, Filed by naming them. |
+| Option | Keep readers out :: nothing new except an honest page :: A reader opening Intake is told they cannot file, instead of the plain-text refusal the POST answers with today. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:06 |
+| Answer | Held until an owner approves |
+| Answered | 2026-09-15 05:15 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0139
+
+**Should mustur_route's index be scoped to the repository named?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0149 |
+| Option | Scope to that repository's project :: Recommended — other projects' records need an identifier or a kind :: The no-identifier call returns routing and the index of the project holding the named repository. Measured 2026-09-15 PDT: this session's call for Mustur returned 202,731 characters across 2,294 lines, the whole store, LinkCtrl included. |
+| Option | Counts only :: smallest output; every lookup is a second call :: Routing plus a count per kind; index lines only when kind is passed. |
+| Option | Leave it :: every session in every project pays the whole index :: Nothing changes; the cost grows with every record filed anywhere. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:06 |
+| Answer | Scope to that repository's project |
+| Answered | 2026-09-15 05:16 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0140
+
+**Is the Records plan right to build?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0164 |
+| Option | Build it with the recommended answers :: Recommended — one-line rows, every project newest first, titles, 50 a page :: https://plan.agent-native.com/plans/plan-014052cd97a048c4 draws /records as a filtered, paged index (project, kind, identifier or words) and leaves /records/{ID} as it is. Approving also reverses the 'no tree, no filter, no search box' clause of Records read as a document, recorded as an amending decision. |
+| Option | Answer the plan's open questions first :: nothing is built until the form in the plan is answered :: The plan ends with four questions: row contents, what shows before anything is chosen, search scope, page size. |
+| Option | Redraw it :: comment on the plan; a new version comes back before any code :: Anything in the artboards or the document that is wrong. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:15 |
+| Answer | Build it with the recommended answers |
+| Answered | 2026-09-15 05:22 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0141
+
+**What should an open session tab do by itself when its session ends or comes back?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0159 |
+| Option | Leave it :: Recommended — nothing moves without a press; a left-open tab shows stale state until touched :: PR 92 makes the picker work on every such page, so the escape is one choice or a reload. A live tab that is sent 'ended' keeps its last screen, as session.js says: output is kept until you start another. |
+| Option | A Missing page watches and reloads :: a poll from every such open tab, and a page that navigates on its own :: A page for a session that is not running polls for it and reloads when it is running again. |
+| Option | An ended tab goes to /sessions :: the last screen is lost mid-read :: On 'ended' the tab moves to the most recently active running session (MUS-D-0175), contradicting 'output is kept until you start another'. |
+| Option | Both of the above :: both costs :: Reload on return and leave on end. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:19 |
+| Answer | Leave it |
+| Answered | 2026-09-15 05:24 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0142
+
+**Which People screen, and where may an owner grant?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0166 |
+| Option | Build Shape A, owners grant only where they own :: Recommended — the plan's recommended answers :: https://plan.agent-native.com/plans/plan-90422fb59d474a70 — each person listed once with a role per project you own, 'no access' removes it (a new Ungrant, refused for a project's last owner), and every write checks you own that project. |
+| Option | Build Shape B, owners grant only where they own :: today's screen with a project picker; one project at a time :: Same store work; the header picker scopes People to one project and lists everyone else with an account at 'no access'. |
+| Option | Answer in the plan or redraw :: nothing built until then :: Comment on or answer the plan's form. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:19 |
+| Answer | Build Shape A, owners grant only where they own |
+| Answered | 2026-09-15 05:28 |
+| Note | The nav bar should always be visible with the content scrolling behind it. The plan also has a lot of overlapping text/drop-downs, I am assuming that this is a plan problem but verify that the built version does not repeat them. |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0143
+
+**Is the held-jot plan right to build?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0170 |
+| Option | Build it with the recommended answers :: Recommended — held jots at the top of Decisions and counted; Discard leaves nothing :: https://plan.agent-native.com/plans/plan-f8ce08918ff441f7 — a reader's POST /intake is held in its own table, never a record, never exported; an owner of the destination approves (filed through intake.File, Filed by the reader, Approved by the owner) or discards. Readers send no pictures in this cut. |
+| Option | Review on Intake instead :: not counted in the badge; easier to miss :: Same mechanics; owners see held jots on the Intake tab. |
+| Option | Answer in the plan or redraw :: nothing built until then :: Comment on or answer the plan's form. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:19 |
+| Answer | Build it with the recommended answers |
+| Answered | 2026-09-15 05:30 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0144
+
+**Does MUS-D-0142 cover offering the session survey's digit keys as buttons?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0167 |
+| Option | Yes, and record it :: Recommended — one decision record extending MUS-D-0142 to 'key: label' rows :: MUS-D-0142 reads what the screen says is on offer and says a pane with no legend gets no controls. The survey's '1: Bad 2: Fine 3: Good 0: Dismiss' row is the CLI's own words for its keys, so PR 95 reads it as a legend. A record makes that reading explicit instead of leaving it in a code comment. |
+| Option | Yes, no record needed :: nothing more; the reading lives in prompt.go's comment :: PR 95 as it stands. |
+| Option | No: only fix the spinner :: the survey stays unanswerable from the surface; press digits in a terminal :: PR 95 drops the survey reading and keeps the SplitActivity fix. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:19 |
+| Answer | Yes, and record it |
+| Answered | 2026-09-15 05:31 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0145
+
+**Should the access log name a signed-in account by email?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0162 |
+| Option | Email :: Recommended — readable at a glance; every logged request puts an address in the journal :: PR 96 as built: who=<email> role=<role>. The journal is this machine's own, readable by this user and root. |
+| Option | Account ID :: no address in the journal; tracing a line to a person takes mustur account list :: The same line with the account's ID in place of the email. |
+| Option | Neither, role only :: the log says what kind of caller, not which one :: who= is dropped; a request can be tied to a role and a time, not to a person. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:20 |
+| Answer | Email |
+| Answered | 2026-09-15 05:32 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0146
+
+**What should end a sub-agent row whose stop never arrives?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0157 |
+| Option | Say how long since it was heard from :: Recommended — no row is ended by guesswork; the drawer gains a 'no word since HH:MM' state, drawn first :: A running row with no event for N minutes reads 'no word since' instead of running and leaves the count. It states a fact, the time of the last event, rather than inferring an end. The one observed case (two agents, 21:08 to 01:17 PDT on 2026-09-13) was an interrupt, whose only hook carries no agent id. |
+| Option | End rows on an interrupt, paired by type and order :: an inference like MUS-D-0090; a wrong pairing ends a background agent still running :: A parent PostToolUseFailure with is_interrupt for Agent ends the running rows it pairs with inside a window. |
+| Option | End rows when the parent pane goes idle :: inference from the pane, like MUS-D-0130; background agents outlive it :: A parent reading idle means its foreground sub-agents are over. |
+| Option | Leave it :: the count and ring stay wrong until a resume or a Start; rare so far :: No change. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:21 |
+| Answer | Say how long since it was heard from |
+| Answered | 2026-09-15 05:32 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0147
+
+**What should mustur_route return for a repository name Mustur does not hold?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0149 |
+| Option | Routing and the registered repositories :: Recommended — no index; a mistyped name gets told what exists :: PR 100 as built: routing (about 4.8 KB) plus 'Mustur holds no repository named X', the list DevOfPie/Mustur, DevOfPie/hoard, DevOfPie/LinkCtrl, and how to reach records by id or kind. A bare name matching two repositories is treated the same way. |
+| Option | The whole store, as before :: every unregistered or mistyped name brings back the 208 KB reply MUS-F-0149 was about :: Falls back to the index of every record. |
+| Option | Refuse the call :: a session is told nothing, not even routing :: An error naming the registered repositories; the mandated call then fails for any unregistered checkout. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:26 |
+| Answer | Routing and the registered repositories |
+| Answered | 2026-09-15 05:33 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0148
+
+**Is the quiet sub-agent drawer plan right to build?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0157 |
+| Option | Build it with the recommended answers :: Recommended — 15 minutes, quiet rows stay where they were :: https://plan.agent-native.com/plans/plan-11f1635921db4c62 — a running row with no event for the threshold swaps its tool pill for 'no word since 9:09 PM PDT', drops its clock, and leaves the badge count and the ring; its next event makes it running again and a stop ends it. Built on a new Heard stamp, stacked on PR 99. |
+| Option | 5 minutes instead :: shows sooner; a long single command reads quiet while it still works :: Same plan, threshold 5 minutes. |
+| Option | Answer in the plan or redraw :: nothing built until then :: Comment on or answer the plan's form. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:34 |
+| Answer | Build it with the recommended answers |
+| Answered | 2026-09-15 09:06 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0149
+
+**Should repository rows on the new Records index still say whether their checkout is there?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0164 |
+| Option | Only on the record's page :: Recommended — rows stay the five fields you chose; a stale checkout is seen by opening the repository record :: PR 101 as built. The index used to badge each repository record 'there' or 'stale — nothing at <path>'; the approved row (identifier, kind, project, title, date) has no place for it, so it now shows only on /records/{ID}. |
+| Option | Badge repository rows on the index too :: about three filesystem checks a load and one extra span on three rows :: The 'there' / 'stale' badge returns on repository rows only, so a moved checkout is visible from the list. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:34 |
+| Answer | Only on the record's page |
+| Answered | 2026-09-15 09:06 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0150
+
+**Who may open the People screen?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0166 |
+| Option | An owner of the install's project, as today :: Recommended — nothing changes; an owner of only LinkCtrl manages its people from the CLI :: PR 102 keeps GET /account/people behind an owner role on Mustur's own project, and the guard refuses any account with no role there. Somebody who owns LinkCtrl but only reads Mustur may make the writes and has no screen to make them from. |
+| Option | An owner of any project :: a small handler change; such an owner sees only their projects' lines, and /account's link follows the same rule :: The screen opens to anyone who owns at least one project, cards and the invite picker limited to what they own. The guard's rule that an account needs a role on the install's project still applies. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:44 |
+| Answer | An owner of the install's project, as today |
+| Answered | 2026-09-15 09:06 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0151
+
+**Do the held-jot build's unplanned readings stand?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0170 |
+| Option | Keep them as built :: Recommended — no change to PR 103 :: Four things the plan did not settle: Scratch is not offered to a reader; Discard needs an owner of the jot's destination, like Approve; the same text from the same reader within a minute is held once; a held jot is shown to owners of its current destination only. |
+| Option | Any owner of Mustur's project may discard :: a Mustur owner can drop a jot meant for another project's owners :: Approve keeps the destination rule; Discard opens to any install owner, so spam aimed at a project with an absent owner can still be cleared. |
+| Option | Let readers pick Scratch, held as Route it for me :: silently changes what the reader chose :: A reader's scratch choice is held with no destination instead of refused. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 05:53 |
+| Answer | Keep them as built |
+| Answered | 2026-09-15 09:07 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0152
+
+**A quiet pill with a date does not fit the default drawer width. What gives?**
+
+question · 2026-09-15
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0157 |
+| Option | The pill wraps and the title shrinks :: Recommended — rows stay one line where they fit; on a wide screen a quiet row's title is cut to a few letters until the drawer is dragged wider :: PR 104 as built. At 1440 the drawer defaults to 17rem, leaving 240px for a row; 'no word since Sep 14, 12:59 PM PDT' is 237px, so the pill wraps to two lines and squeezes the title. That dated case is exactly MUS-F-0157's: a row gone quiet at 9:09 PM, read after midnight. |
+| Option | The pill on its own line under the title :: every quiet row is two lines, unlike the drawing; the title is always whole :: A quiet row puts 'no word since …' below its title at all widths. |
+| Option | Weekday instead of date :: fits with 1px spare; ambiguous for a row quiet more than a week :: 'no word since Mon 12:59 PM PDT'. |
+| Option | Widen the default drawer :: takes terminal width from every session on a wide screen :: The default --drawer-w grows so a dated pill and a title both fit. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-15 09:22 |
+| Answer | The pill wraps and the title shrinks |
+| Answered | 2026-09-18 07:02 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0153
+
+**The intake box becomes _IB. What happens to the six jots already filed as IDW-F-0001 to 0006?**
+
+question · 2026-09-18
+
+Identifiers are permanent: records cite each other by them, and code comments cite IDW-F-0004. NextID counts past every record that has a prefix, so a stub that stays IDW pushes Idea Warehouse's first finding to IDW-F-0007. IDW-F-0002 and 0003 are test jots either way.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Freeing IDW for Idea Warehouse |
+| Needed to proceed | yes |
+| Option | Reroute them to _IB :: Recommended. Six IDW stubs stay and resolve, and Idea Warehouse starts at IDW-F-0007 :: mustur reroute files each one as a new _IB record and retires the IDW one with a Superseded-by link, so no citation breaks. The cost is cosmetic: Idea Warehouse's numbering begins at 7, and six retired IDW ids will always point into the intake box. |
+| Option | Rewrite them in place :: Clean numbering, but it breaks the rule that identifiers never change :: Edit the store so the six become \_IB-F-0001 to 0006 and nothing is left under IDW. Every citation to the old ids rots, including the ones in code comments and in the exported records, and the insert-only store gets its first exception. |
+| Option | Leave them under IDW :: No work. Six intake-box jots keep Idea Warehouse's prefix forever :: Only new jots file under _IB. The six stay IDW while belonging to the intake box, which is the ambiguity this rename exists to remove, and Idea Warehouse's serials still start at 7. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:15 |
+| Answer | Rewrite them in place |
+| Answered | 2026-09-18 07:21 |
+| Note | This should bypass the rule since it is a change that better allows that rule to stay in place(Moving system tags out of the usable namespace) |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0154
+
+**A jot that names Idea Warehouse falls through to _IB. What confirms moving it there?**
+
+question · 2026-09-18
+
+Route it for me will skip any destination whose routing record says it only takes confirmed moves. Idea Warehouse is the first. The jot still lands in _IB and records which project it named.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The Route it for me exclusion, which is otherwise built as a field on the routing record |
+| Needed to proceed | yes |
+| Option | A question per jot, answer moves it :: Recommended. It shows up on the queue and the badge. New machinery: answering carries out the reroute :: Intake raises 'Move _IB-F-n to Idea Warehouse?' with Move / Keep. Answering Move runs reroute, so there is no lag and no agent has to do it by hand. Cost: one queue entry per jot that names Idea Warehouse, plus an answer that acts, which Mustur has not had before. |
+| Option | A Move button on the jot :: Nothing lands on the queue. Easy to miss, because no badge counts it :: The _IB record shows 'Names Idea Warehouse' and an owner-only Move button. It's cheap to build, but it sits outside the channel you actually watch. |
+| Option | A question, and an agent moves it :: Uses the question plumbing that exists today. Somebody has to act on the answer :: The question is raised the same way, but the reroute waits for a session to read the answer and run it. Nothing new gets built, and every move has lag. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:15 |
+| Answer | A Move button on the jot |
+| Answered | 2026-09-18 07:24 |
+| Note | Add a counter badge on Records as well which counts Records that need attention. and mark the notes with a potential move as needing attention. Make sure it is easy to navigate/notice the records needing attention |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0155
+
+**Idea Warehouse brings 12 ideas, a decision log and an inbox. Does it move in as an ordinary project or as a milestone?**
+
+question · 2026-09-18
+
+MUS-D-0162 says a project with no records moves in as an ordinary project, and one bringing a corpus is a milestone like MUS-M-0009. Idea Warehouse's corpus is small: 12 ideas/*.md, a 600-line decisions.md with 10 entries, and 3 untriaged inbox jots.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Registering Idea Warehouse under IDW. Nothing else waits on it |
+| Option | Ordinary project :: Recommended. Register it now and bring the corpus across as ordinary work :: The corpus is small enough that a milestone verdict is ceremony. This refines MUS-D-0162 so it reads 'a corpus worth a verdict', not 'any corpus'. |
+| Option | A milestone :: What MUS-D-0162 says as written. Costs a verdict cycle :: Open a milestone to move in with an acceptance bar, the way LinkCtrl's was opened. |
+| Option | Route only, corpus stays :: Register IDW for routing and leave every file where it is :: Mustur routes to the repository and holds nothing of its records. Whether they move is decided later. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:15 |
+| Answer | Ordinary project |
+| Answered | 2026-09-18 07:25 |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0156
+
+**Mustur has no idea kind. Where does an Idea Warehouse idea, with its kill/merge/graduate verdict, live?**
+
+question · 2026-09-18
+
+Under MUS-M-0009's rule, a part leaves a repository only if Mustur has a kind that holds it. Jots file as findings today, and a finding has no verdict lifecycle.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Bringing the ideas/ corpus across. Registration doesn't wait on it |
+| Option | Add an idea kind :: Recommended. A role letter with a verdict field only the owner can set :: The ideas move into the store, triage works on records, and the rule 'agents propose, owner disposes' becomes a field the gate checks. |
+| Option | Ideas stay in the repository :: Nothing to build. Mustur only routes to Idea Warehouse :: Jots confirmed into IDW get appended to its inbox.md by a session working there. Mustur holds only the pointer. |
+| Option | Findings with a status :: No new kind. The verdict becomes a status value on a finding :: Cheapest, but it blurs findings (what is true) with ideas (what might be built). |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:15 |
+| Answer | Findings with a status |
+| Answered | 2026-09-18 07:27 |
+| Note | I believe this could be beneficial for all projects so it is easier to distinguish findings that still need work vs ones that have completed. |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0157
+
+**Is the needs-attention plan right to build?**
+
+question · 2026-09-18
+
+decision: [MUS-D-0193](decisions.md#mus-d-0193)
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The Records attention badge, the pinned list, and Move / Keep on an _IB jot |
+| Needed to proceed | yes |
+| Option | Build it with the recommended answers :: Recommended. Keep button, pinned section plus a dot, warn-tone badge, and a line on Intake :: https://plan.agent-native.com/plans/plan-de137392d63d458c draws Records with a second, warn-tone badge and a pinned Needs-attention list above the filters. It also draws the _IB jot with a banner holding Move to Idea Warehouse and Keep in intake box, both owner-only form posts, on wide screens and on a phone. |
+| Option | Answer the plan's open questions first :: Nothing is built until the form in the plan is answered :: The form has four questions: whether there's a Keep button, where the list lives, the badge tone, and a line on Intake. |
+| Option | Redraw it :: Comment on the plan, and a new version comes back before any code :: Use this for anything in the artboards or the document that is wrong. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:26 |
+| Answer | Build it with the recommended answers |
+| Answered | 2026-09-18 07:28 |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0158
+
+**A finding's status says whether work remains. What shape does it take?**
+
+question · 2026-09-18
+
+decision: [MUS-D-0195](decisions.md#mus-d-0195)
+
+Today Status is free prose: 69 findings say fixed, and about 50 other values carry sentences. LinkCtrl brought 381 more findings and Hoard a few. Whatever shape is chosen, the existing ones have to be mapped, which is a one-time sweep of a few hundred records: an agent proposes the mapping and you review it as a table. Idea Warehouse's verdicts (kill, merge, resurrect, planned, graduate) are owner-only, so they stay owner-only here.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Moving Idea Warehouse's ideas in, and the status filter on Records |
+| Needed to proceed | yes |
+| Option | A fixed state plus a per-project word :: Recommended. Every finding is open, done or dropped. Each project defines its own words on top :: A State field with three values that everything filters on (the Records filter, the gate, counts). The Status word stays per project and maps to a state in the project's routing record, so Idea Warehouse has shaping/planned/graduated/killed/merged and Mustur has fixed/overtaken/superseded. The prose that is in Status today moves into a Note field, so nothing is lost. |
+| Option | One vocabulary for all projects :: Simpler to filter. Idea Warehouse's words become everybody's :: One fixed list, for example unreviewed, open, planned, fixed, graduated, killed, merged, superseded, each marked open or done. There's one list to learn, but a project whose work doesn't fit it bends its meaning. |
+| Option | An open/closed flag only :: Cheapest. Status stays prose :: Add Open: yes/no and leave the Status text alone. It separates open from done, but a verdict like killed versus graduated stays unfilterable prose. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:28 |
+| Answer | A fixed state plus a per-project word |
+| Answered | 2026-09-18 07:30 |
+| Note | Check for any other potentials fields while sweeping through fix this field in the existing findings |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0159
+
+**After the rename, MUS-D-0192 and MUS-Q-0153 still cite IDW-F-0001 to 0007. How are those citations handled?**
+
+question · 2026-09-18
+
+decision: [MUS-D-0192](decisions.md#mus-d-0192)
+
+The rename leaves those two records as written, because they record what the six jots used to be called. On a copy of the store, the export check then reports IDW-F-0001, 0002, 0004, 0006 and 0007 as cited and defined nowhere. Worse, once Idea Warehouse files its own IDW-F-0001, the old citations would link to Idea Warehouse's record instead of the renamed jot.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Running the rename on the live store: the records export's citation check fails on the first refresh after it |
+| Needed to proceed | yes |
+| Option | Declare them retired :: Recommended. MUS-D-0192 lists old to new, and those two records show the old ids as plain text :: MUS-D-0192 gains a Renamed field (IDW-F-0001 = \_IB-F-0001 and so on). The export check accepts an identifier listed there. In the two records that describe the rename, the old ids render as plain text rather than links, so they never point at Idea Warehouse's records. Idea Warehouse still starts cleanly at IDW-F-0001. Cost: a small retired-list reading in the check and in the link renderer. |
+| Option | Rewrite those two as well :: No new code. The records of the rename lose its from side :: The rename's --keep list is dropped, so MUS-Q-0153 and MUS-D-0192 name _IB ids too. The old names survive only in a sentence without identifiers, and the question you answered no longer reads as it did when you answered it. |
+| Option | Start Idea Warehouse at IDW-F-0008 :: No clash, ever. The numbering isn't clean :: The old ids are reserved and never reissued. The check still needs to accept them as retired, so option 1's check work is needed anyway, but no link can ever point at the wrong record. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:35 |
+| Answer | Declare them retired |
+| Answered | 2026-09-18 07:36 |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0160
+
+**Should an identifier on the Decisions queue open its record in a new tab?**
+
+question · 2026-09-18
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0168 |
+| Option | Same tab :: Recommended — back returns to the queue; an unsent answer in the box is kept by the browser's back cache only :: A link to /records/{ID} like any link within Mustur. 'Link-out is conditional' governs other backends, and 'Records read as a document' says no new tab. |
+| Option | New tab :: PR 98 as built; the queue and a half-written answer stay put, and each record opens another tab :: Links inside question text open /records/{ID} in a new tab. |
+| Option | Expand in place, as Records does :: no navigation at all; the queue page carries each cited record's title :: The identifier becomes a details element showing the record's title and a link, like a citation on Records. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-18 07:40 |
+| Answer | Expand in place, as Records does |
+| Answered | 2026-09-18 07:45 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0161
+
+**Does the Session list surface carry session.js?**
+
+question · 2026-09-18
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0159 |
+| Option | Yes, count surface 2 among the script pages :: Recommended — the picker works everywhere it is drawn; the script count goes from seven to eight :: session.js already loads on /sessions?new=1 when sessions run (on main), and PR 92 adds /sessions with everything lost. Both are surface 2, which docs/ui-surfaces.md and CLAUDE.md do not count. This records it and corrects both counts; with script blocked the noscript Go button still works. |
+| Option | No, surface 2 stays script-free :: its picker gets an always-visible Go button, not only under noscript :: session.js is loaded only on a session's own page; every page that is surface 2 submits its picker with a button, so a picker is never dead and never needs script. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-18 07:40 |
+| Answer | Yes, count surface 2 among the script pages |
+| Answered | 2026-09-18 07:46 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0162
+
+**Is the State and Status mapping for all 590 findings right to write?**
+
+question · 2026-09-18
+
+decision: [MUS-D-0196](decisions.md#mus-d-0196)
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Writing State, Status and Note onto every finding, and the code that filters on State |
+| Needed to proceed | yes |
+| Option | Write it, with in-review for unmerged work :: Recommended. As proposed, except the 16 built-but-unmerged MUS findings read in-review, which is open :: https://claude.ai/artifact/7gB8zJRtDgBVYUYg9JYab9 has all 590 rows, the per-project words and six calls. Every call is taken as proposed, except that a finding fixed on a PR that hasn't merged gets the MUS word in-review, mapped to open. The work left on those is your review and merge, and MUS-D-0180 keeps them off the live site until then. |
+| Option | Write it exactly as proposed :: Unmerged work counts as done :: The same mapping, with the 16 unmerged rows left as fixed or built, which is done. |
+| Option | Correct it first :: Comment on the page's rows or calls, and a revised mapping comes back :: Use this for any row, word or call on the page that is wrong. Nothing is written until the revised version is answered. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:41 |
+| Answer | Write it, with in-review for unmerged work |
+| Answered | 2026-09-18 07:55 |
+| Note | Make sure to leave anything on the fence as open so that the projects can verify and close them on their own. |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0163
+
+**Which of the fields found in the prose become real fields?**
+
+question · 2026-09-18
+
+decision: [MUS-D-0196](decisions.md#mus-d-0196)
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The extra fields written alongside State and Status. The State write itself doesn't wait on this |
+| Option | The core set :: Recommended. closed-on, closed-by, answered-by, blocked-by, raised-as, superseded-by/merged-into, pr, commit, severity and remaining :: These are the ten marked core on https://claude.ai/artifact/7gB8zJRtDgBVYUYg9JYab9. Each one answers a question you'd filter by: when was it closed, what closed it, what is it waiting on, where's the fix, how bad is it, and what's left. The rest stay prose in the Note, and nothing is lost. |
+| Option | Every field found :: All 23, including the LinkCtrl-only ones (reviewed-on, tier, carried-to, found-in) :: This is the most structure, and the most words for a reader to learn. Several of these have only 1 to 4 findings. |
+| Option | None yet :: Only State, Status and Note now :: Leave everything else in the Note, and structure it later when a filter actually needs it. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 07:41 |
+| Answer | The core set |
+| Answered | 2026-09-18 07:52 |
+| Note | Include all of Dates, Code, and Classification |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0164
+
+**When the session survey is on screen, what happens to an answer being delivered into that session?**
+
+question · 2026-09-18
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0167 |
+| Option | Dismiss the survey, then deliver :: Recommended — the answer arrives; the survey is dismissed as part of the delivery your press started :: Delivery sends the survey's own Dismiss key (0) when the survey is the live thing on the pane, confirms it is gone, then types the answer. Nothing is sent to the survey unless an answer is being delivered. |
+| Option | Hold the answer and retry :: the answer waits until the survey is gone, however long that is; nothing touches the survey :: Delivery refuses while any dialog, the survey included, is up, and retries on the next poll rather than leaving the answer queued for good. |
+| Option | Refuse, as PR 95 does :: the answer is recorded and never typed; you resend it by hand :: The survey counts as a dialog like any other, and delivery into a pane showing one is refused with no retry. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-18 07:44 |
+| Answer | Dismiss the survey, then deliver |
+| Answered | 2026-09-18 07:56 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0165
+
+**What does a resumed sub-agent's row show from its previous run?**
+
+question · 2026-09-18
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0172 |
+| Option | Its last report, labelled as from the previous run :: Recommended — the report stays readable and cannot be mistaken for the current run's :: While a resumed row runs, its drawer text is headed 'from the previous run' and its clock counts the current run. |
+| Option | Nothing until it stops again :: a running row carries no prose, as surface 8 says; the earlier report is gone from the drawer :: A second start clears Said. |
+| Option | The last report, unlabelled, as PR 99 does :: the earlier report reads as the current run's output :: No change. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-18 07:44 |
+| Answer | Its last report, labelled as from the previous run |
+| Answered | 2026-09-18 07:56 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0166
+
+**A record's title is smaller than its own body text. How should body headings be sized?**
+
+question · 2026-09-18
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | MUS-F-0163 |
+| Option | Raise the record title to about 1.1rem :: Recommended — every record title in the list and on its page grows a little; body headings then step down in size under it :: Measured on LNK-S-0001: title 15.68px (.98rem), body text 15.81px, so no heading size fits between them. At 17.6px the title leads, and h1-h6 fit between the text and the title, told apart by size and then weight. |
+| Option | Shrink record bodies to about 15.3px :: every record body gets smaller; headings get a 0.4px band and differ by weight and style only :: The title stays; body text drops below it. |
+| Option | Headings at text size, ordered by weight and style :: no size step between levels; h4 bold, h5 muted, h6 italic, all 15.81px :: Nothing else changes size. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-18 07:44 |
+| Answer | Raise the record title to about 1.1rem |
+| Answered | 2026-09-18 07:56 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0167
+
+**When a PR conflicts with main during the merge run, may I rebase it and force-push its branch?**
+
+question · 2026-09-18
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | merging PRs 90-106 |
+| Option | Rebase and force-push with --force-with-lease :: Recommended — each conflicting PR is rebased onto main and pushed over its own branch; history stays linear, as workflow.md asks :: Only these PR branches, only when one conflicts with main, only with --force-with-lease so a push I did not see is never overwritten: intake/records-render-readable (93), intake/decisions-identifiers-link (98), intake/access-log (96), intake/reader-jots-held (103), intake/missing-session-picker (92), intake/quiet-subagent-rows (104), and any other of 90-106 that conflicts. |
+| Option | Merge main into the branch instead :: no force-push; each conflicting PR gains a merge commit from main :: History is not linear. workflow.md says rebase, never merge back down, though that rule is written for stacks. |
+| Option | You resolve conflicts yourself :: I stop at each conflict and tell you which files :: Nothing is pushed over; you use GitHub's conflict editor or a checkout. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-18 07:45 |
+| Answer | Rebase and force-push with --force-with-lease |
+| Answered | 2026-09-18 07:57 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0168
+
+**May I force-push #108's rebase onto #107's final head? #109 is built on it**
+
+question · 2026-09-18
+
+precedent: [MUS-Q-0095](#mus-q-0095)
+
+#108's review fixes are pushed as 7c9f0a0, on top of #107's old head 35c29cd. The rebase onto #107's final head 94798d7 is built and passes every test, but only locally, as 21da4bb. #109 (intake/finding-state) is likewise rebased and passing locally, but it is still unpushed. Publishing each one rewrites a published branch, and #109 is built on #108. You allowed force pushes on my own stacked branches with --force-with-lease on MUS-Q-0095. The sub-agents' permission layer still refused both, so I'm asking before I carry out a refused action on their behalf. An answer covers both #108 and #109.
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | Getting #108 onto #107's final head so the stack merges without conflicts |
+| Needed to proceed | yes |
+| Option | Push it, and rebase #109 after :: Recommended. Uses --force-with-lease, then #109 is rebased onto the new #108 :: git push --force-with-lease origin 21da4bb:refs/heads/intake/records-need-attention. The branch keeps the workflow's rebase-never-merge rule, and #109's builder rebases onto it straight after. Nothing is lost: 7c9f0a0 differs from 21da4bb only in #107's earlier wording of one paragraph. |
+| Option | Leave 7c9f0a0 as is :: No force push. The stack then needs a merge from #107 into #108, or a conflict fixed at merge time :: #108 stays on #107's old head. The difference is one paragraph in internal/intake/reroute.go, plus #107's eight fix commits missing underneath. The workflow rules out merging back down, so this defers the rebase rather than avoiding it. |
+| Option | Always allowed from now on :: Push this one, and treat force-with-lease on any of my stacked Mustur branches as allowed, even with branches above it :: The same as the first option, and it widens MUS-Q-0095 to cover branches that other branches of mine are built on. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 08:31 |
+| Answer | Push it, and rebase #109 after |
+| Answered | 2026-09-18 09:27 |
+| Delivered | typed into mustur/Idea_Warehouse |
+
+---
+
+## MUS-Q-0169
+
+**Deploy today's merges to mustur.devofpie.com now?**
+
+question · 2026-09-18
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | PRs 90-109 going live |
+| Option | Deploy now :: Recommended — the service restarts for a few seconds; tmux sessions keep running and open tabs reconnect :: make deploy from a checkout of main at 59b629d: build, install to ~/.local/bin, restart mustur.service, and a line saying it came back. Then I check the surfaces answer, and correct the records the deploy makes false (MUS-W-0005, the mandate's 'narrow' line, MUS-D-0157's 'no request log', the guard's reader claim). |
+| Option | Deploy later :: nothing changes live; merged work stays unserved until you say :: I leave the service as it is and do the record corrections only when a deploy happens. |
+| Option | You deploy it :: I give you the command and do the record corrections after you say it is up :: make deploy from a checkout of main. |
+| Asked by | whippy |
+| Session project | Intake_and_Findings |
+| Surfaced | 2026-09-18 14:12 |
+| Answer | Deploy now |
+| Answered | 2026-09-18 14:35 |
+| Delivered | typed into mustur/Intake_and_Findings |
+
+---
+
+## MUS-Q-0170
+
+**May I stop mustur.devofpie.com for about a minute to run the IDW → _IB rename?**
+
+question · 2026-09-18
+
+decision: [MUS-D-0192](decisions.md#mus-d-0192)
+
+Main is merged and deployed. The rename's dry run on the live store matches the rehearsal: 39 events across 12 records, 21 kept as written, 0 unmatched, and MUS-P-0002 repointed IDW → _IB in the same transaction. The live store is backed up at ~/.local/share/mustur/backup-before-rename-20260918T0738PDT.db. PR #107's steps stop the service for the run, because a jot filed at the moment the rename commits could still be filed as a retired IDW id. The permission layer won't let me take the site down without your explicit yes. Sessions survive, because tmux runs in its own scope (MUS-D-0151).
+
+| Field | Value |
+| --- | --- |
+| Status | answered |
+| Blocks | The live rename, which the records refresh from main is waiting on |
+| Needed to proceed | yes |
+| Option | Stop it, rename, restart :: Recommended. About a minute of downtime, no chance of a retired id being issued :: systemctl --user stop mustur, then rename --apply, then systemctl --user start mustur, and check it came back. Then the follow-ups: restore \_IB-F-0001's filed body, retitle the intake box, and register Idea Warehouse. |
+| Option | Rename with it running :: No downtime. A jot filed during the commit could get \_IB-F-0001 :: The rename holds the write lock for well under a second. A jot arriving in that instant either waits and then fails safely, or was already past the routing read and gets filed under IDW. The chance is small, and a jot filed that way would need a manual rename. |
+| Option | Later :: I'll wait for a time you name, and the records refresh waits with it :: Nothing changes until then. make records-refresh keeps failing its verify step. |
+| Asked by | whippy |
+| Session project | Idea_Warehouse |
+| Surfaced | 2026-09-18 14:40 |
+| Answer | Stop it, rename, restart |
+| Answered | 2026-09-18 14:41 |
+| Delivered | typed into mustur/Idea_Warehouse |

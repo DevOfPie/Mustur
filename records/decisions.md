@@ -4,7 +4,7 @@
 
 Why choices were made. Append-only: an entry is never edited, and a later entry corrects an earlier one while the earlier text stays where it is.
 
-1157 record(s), by identifier.
+1180 record(s), by identifier.
 
 ## Index
 
@@ -33,6 +33,7 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [HRD-D-0019](#hrd-d-0019) | A shared folder stays fully backed up for its owner; members read and push only the shared world | 2026-09-14 |
 | [HRD-D-0020](#hrd-d-0020) | HRD-D-0019 design: the lease guards only the shared world, and the server fills in the owner's other files on member pushes | 2026-09-14 |
 | [HRD-D-0021](#hrd-d-0021) | The two pre-existing upstream bugs stay as they are | 2026-09-15 |
+| [HRD-D-0022](#hrd-d-0022) | Group sharing ships as a test release first | 2026-09-15 |
 | [LNK-D-0001](#lnk-d-0001) | Mailer | 2026-07-31 |
 | [LNK-D-0002](#lnk-d-0002) | Cookie / returning-visitor conditions | 2026-07-31 |
 | [LNK-D-0003](#lnk-d-0003) | Custom-domain TLS | 2026-07-31 |
@@ -1169,6 +1170,28 @@ Navigation only. Rows are appended when entries are, and never removed.
 | [MUS-D-0183](#mus-d-0183) | Mustur acts only on its own store; the committed records export is a backup and a conformance surface | 2026-09-14 |
 | [MUS-D-0184](#mus-d-0184) | The live service does not export; main's export comes only from a records refresh | 2026-09-14 |
 | [MUS-D-0185](#mus-d-0185) | Milestone 7 is accepted: LinkCtrl has moved in | 2026-09-15 |
+| [MUS-D-0186](#mus-d-0186) | The records index narrows by project, kind and search, and a record stays a page | 2026-09-15 |
+| [MUS-D-0187](#mus-d-0187) | mustur_route's index is the named repository's project; an identifier or a kind reaches every project | 2026-09-15 |
+| [MUS-D-0188](#mus-d-0188) | People lists a role per project on each person, and an owner grants only where they own | 2026-09-15 |
+| [MUS-D-0189](#mus-d-0189) | A reader's jot is held outside the record store until an owner of its destination approves or discards it | 2026-09-15 |
+| [MUS-D-0190](#mus-d-0190) | A row of the CLI's own 'key: label' cells is a legend, so the session survey's digits are offered | 2026-09-15 |
+| [MUS-D-0191](#mus-d-0191) | A sub-agent row with no event for 15 minutes says when it was last heard from, and leaves the running count | 2026-09-15 |
+| [MUS-D-0192](#mus-d-0192) | The intake box's six IDW jots are renamed to _IB in place: the one exception to identifier permanence, taken to move a system list out of the project namespace | 2026-09-18 |
+| [MUS-D-0193](#mus-d-0193) | A jot naming a confirm-only project waits in _IB with a Move button, and Records carries a live badge counting what needs attention | 2026-09-18 |
+| [MUS-D-0194](#mus-d-0194) | Idea Warehouse moves in as an ordinary project under IDW, its small corpus notwithstanding | 2026-09-18 |
+| [MUS-D-0195](#mus-d-0195) | Ideas are findings with a status, and every project's findings get a status that says whether work remains | 2026-09-18 |
+| [MUS-D-0196](#mus-d-0196) | A finding carries a fixed State (open, done or dropped) and a per-project Status word mapped to it. Today's status prose moves to a Note | 2026-09-18 |
+| [MUS-D-0197](#mus-d-0197) | Identifiers MUS-D-0192 retired are declared on it, accepted by the citation check, and shown as plain text in the records describing the rename | 2026-09-18 |
+| [MUS-D-0198](#mus-d-0198) | An identifier on the Decisions queue expands in place, as a citation does on Records | 2026-09-18 |
+| [MUS-D-0199](#mus-d-0199) | The session list carries session.js, so eight surfaces ship script | 2026-09-18 |
+| [MUS-D-0200](#mus-d-0200) | Findings gain eighteen structured fields: the core citations, and every date, code and classification field the sweep found | 2026-09-18 |
+| [MUS-D-0201](#mus-d-0201) | The finding status mapping is written, with in-review for unmerged work and every uncertain row left open as unverified for its project to close | 2026-09-18 |
+| [MUS-D-0202](#mus-d-0202) | Delivering an answer dismisses the session survey first | 2026-09-18 |
+| [MUS-D-0203](#mus-d-0203) | A resumed sub-agent's earlier report is shown labelled as from the previous run | 2026-09-18 |
+| [MUS-D-0204](#mus-d-0204) | A record's title is raised to about 1.1rem so body headings fit under it | 2026-09-18 |
+| [MUS-D-0205](#mus-d-0205) | kind no longer narrows mustur_route's reply: it reaches every project the scoped index leaves out | 2026-09-18 |
+| [MUS-D-0206](#mus-d-0206) | The server keeps a request log since 2026-09-18, so a page being read can be shown | 2026-09-18 |
+| [MUS-D-0207](#mus-d-0207) | A reader's one write is a hold on the intake box | 2026-09-18 |
 
 ---
 
@@ -1465,6 +1488,20 @@ q: [HRD-Q-0022](questions.md#hrd-q-0022)
 f: [HRD-F-0020](findings.md#hrd-f-0020)
 
 Answered by Pie on HRD-Q-0022 (2026-09-15): leave them. hoard restore --force overwriting un-backed-up local files without a conflict copy, and the log shipper's credentials debug loop on a machine with no keyring, are recorded in HRD-F-0020 and not fixed in the fork or reported upstream. Practical consequence for testing here: end-to-end runs keep hoard_agent::credentials and hoard_agent::logship at info, and restore probes go only into empty folders.
+
+---
+
+## HRD-D-0022
+
+**Group sharing ships as a test release first**
+
+decision · 2026-09-15
+
+q: [HRD-Q-0024](questions.md#hrd-q-0024)
+
+w: [HRD-W-0001](work-units/HRD-W-0001.md#hrd-w-0001)
+
+Answered by Pie on HRD-Q-0024 (2026-09-15): tag a pre-release for Pie and the group (v1.2.0-rc.1 unless the release process needs another form), run the Valheim phase 0 check and a real session between two machines on it, then tag the full release once it holds. Before tagging: the release workflows must accept and mark a pre-release tag, and the updater must not offer the pre-release to everyone on the fork's builds.
 
 ---
 
@@ -82018,13 +82055,13 @@ The owner tried to report a layout defect with a screenshot and found the intake
 
 decision · 2026-08-26
 
-asked by: [IDW-F-0002](findings.md#idw-f-0002)
+asked by: [_IB-F-0002](findings.md#_ib-f-0002)
 
-and: [IDW-F-0003](findings.md#idw-f-0003)
+and: [_IB-F-0003](findings.md#_ib-f-0003)
 
 holds: [MUS-D-0024](#mus-d-0024)
 
-The owner tested the picture upload twice and it left IDW-F-0002 and IDW-F-0003 in the idea warehouse permanently, both of which say 'test' in their own titles. An identifier here never comes back and the log only ever grows, so the cost of checking that a box works was two entries in the records forever. That is the whole complaint, and the owner put it plainly: a test filing should not advance a counter. The obvious shape was a record with an expiry and it is the wrong one. The log is insert-only and the exported tree is the surface a reader checks without running the binary (MUS-D-0024). A record that later vanishes puts an exception under both, and an exception is what the next one argues from. So a scratch filing is not a record. It takes no identifier, never enters the log, never reaches the export, is never counted and cannot be cited — its id is deliberately unlike an identifier so that nothing can try. It carries a picture like any other jot, and the sweep takes the picture with the note rather than leaving it unreachable. It goes when the serving process starts, which is the owner's own 'or until a restart', and is swept at a day old while the process runs. The sweep first lived in store.Open, which meant every `mustur list` and `mustur get` wiped the pad — the first end-to-end run lost a filing to the very command that went looking for it. A serving process starting is the event that was meant.
+The owner tested the picture upload twice and it left \_IB-F-0002 and \_IB-F-0003 in the idea warehouse permanently, both of which say 'test' in their own titles. An identifier here never comes back and the log only ever grows, so the cost of checking that a box works was two entries in the records forever. That is the whole complaint, and the owner put it plainly: a test filing should not advance a counter. The obvious shape was a record with an expiry and it is the wrong one. The log is insert-only and the exported tree is the surface a reader checks without running the binary (MUS-D-0024). A record that later vanishes puts an exception under both, and an exception is what the next one argues from. So a scratch filing is not a record. It takes no identifier, never enters the log, never reaches the export, is never counted and cannot be cited — its id is deliberately unlike an identifier so that nothing can try. It carries a picture like any other jot, and the sweep takes the picture with the note rather than leaving it unreachable. It goes when the serving process starts, which is the owner's own 'or until a restart', and is swept at a day old while the process runs. The sweep first lived in store.Open, which meant every `mustur list` and `mustur get` wiped the pad — the first end-to-end run lost a filing to the very command that went looking for it. A serving process starting is the event that was meant.
 
 ---
 
@@ -82125,7 +82162,7 @@ answers: [MUS-Q-0058](questions.md#mus-q-0058)
 
 fixes: [MUS-F-0044](findings.md#mus-f-0044)
 
-first used on: [IDW-F-0004](findings.md#idw-f-0004)
+first used on: IDW-F-0004
 
 The obvious correction — a --to flag on amend — is not available, and the reason is the whole design.
 
@@ -83694,3 +83731,418 @@ milestone: [MUS-M-0009](milestones.md#mus-m-0009)
 work-unit: [MUS-W-0024](work-units/MUS-W-0024.md#mus-w-0024)
 
 MUS-Q-0135 asked whether the owner accepts MUS-M-0009, now that every PR for LinkCtrl's move had merged, including the export-conflict fix MUS-Q-0131 held acceptance for. The owner accepted it. The done-when set in MUS-D-0170 holds. LinkCtrl's records are in the store and reconciled per source: 1,503 records, per MUS-D-0168, MUS-D-0169, MUS-D-0173 and MUS-D-0179. The files that held them are gone from LinkCtrl, with its links rewritten and its CI green (LinkCtrl PR 14). LinkCtrl sessions reached mustur_route with the machine's token. The findings left open stay open as their own work: LNK-F-0383, MUS-F-0165 and MUS-F-0149. The owner accepted knowing that no independent reviewer read LinkCtrl's four W48 fix commits after the first review.
+
+---
+
+## MUS-D-0186
+
+**The records index narrows by project, kind and search, and a record stays a page**
+
+decision · 2026-09-15
+
+amends: [MUS-D-0040](#mus-d-0040)
+
+answers: [MUS-Q-0140](questions.md#mus-q-0140)
+
+finding: [MUS-F-0164](findings.md#mus-f-0164)
+
+The owner approved plan-014052cd97a048c4 on MUS-Q-0140 with its recommended answers, after choosing on MUS-Q-0136 to plan the surface first. /records becomes a paged index of one-line rows (identifier, kind, project, title, date), every project newest first when nothing is chosen, 50 rows a page, narrowed by a project picker, a kind picker and a search box that opens a whole identifier directly, matches a bare number against identifier endings and otherwise matches titles. It is a plain GET form and adds no script. This amends MUS-D-0040 in one clause: the counts are no longer the only navigation. The rest of MUS-D-0040 stands: /records/{ID} is a page on which identifiers expand in place with no round trip. The cost MUS-D-0040 named is unchanged, and the index no longer renders bodies or resolves citations, which is what made it slow: 11,379,228 bytes on the live store on 2026-09-15.
+
+| Field | Value |
+| --- | --- |
+| Rationale | MUS-F-0164: the tab loaded everything at once and gave no way to pick a project or kind or to search by number |
+| Answered against | https://plan.agent-native.com/plans/plan-014052cd97a048c4 |
+
+---
+
+## MUS-D-0187
+
+**mustur_route's index is the named repository's project; an identifier or a kind reaches every project**
+
+decision · 2026-09-15
+
+answers: [MUS-Q-0139](questions.md#mus-q-0139)
+
+finding: [MUS-F-0149](findings.md#mus-f-0149)
+
+milestone: [MUS-M-0009](milestones.md#mus-m-0009)
+
+answers: [MUS-Q-0147](questions.md#mus-q-0147)
+
+MUS-Q-0139 asked whether mustur_route's no-identifier index should be scoped to the repository named, after MUS-F-0149 measured it returning an index line for every record in the store to every session in every project. The owner chose to scope it to that repository's project: the call returns routing and the index of the project holding the named repository, and other projects' records need an identifier or a kind. The name a session passes is matched to a repository record ignoring case, a trailing slash or .git, and anything before owner/name; the repository maps to the project whose Repositories field cites it, and the index is the records carrying that project's prefix. An identifier returns any record in any project and a kind lists that kind across every project, which is how the answer's 'an identifier or a kind' is read; no argument was added, and routing is unchanged. A name that resolves to no project, or a bare name matching two repositories, returns routing and the list of registered repositories and no index, on the owner's answer to MUS-Q-0147. Measured on a copy of the live store on 2026-09-15, no-identifier reply before and after: Mustur 208,068 to 54,475 bytes; LinkCtrl 208,070 to 150,931; Hoard 208,067 to 12,187; an unregistered name 208,066 to 4,825. Built in PR 100, not merged.
+
+---
+
+## MUS-D-0188
+
+**People lists a role per project on each person, and an owner grants only where they own**
+
+decision · 2026-09-15
+
+answers: [MUS-Q-0142](questions.md#mus-q-0142)
+
+answers: [MUS-Q-0137](questions.md#mus-q-0137)
+
+finding: [MUS-F-0166](findings.md#mus-f-0166)
+
+The owner approved Shape A of plan-90422fb59d474a70 on MUS-Q-0142, after choosing on MUS-Q-0137 to plan it first. Each person is listed once on /account/people with a line for every project the viewer owns; changing a line saves it, and no access removes the role through a new Ungrant that refuses to leave any project without an owner. Every grant, change, removal and invitation is checked against the actor owning that project, not the install's project, so owning Mustur does not confer ownership of LinkCtrl. The owner added that the tab bar is always visible with the content scrolling behind it, and that the plan's overlapping text and dropdowns are a drawing defect the built page must not repeat.
+
+| Field | Value |
+| --- | --- |
+| Answered against | https://plan.agent-native.com/plans/plan-90422fb59d474a70 |
+
+---
+
+## MUS-D-0189
+
+**A reader's jot is held outside the record store until an owner of its destination approves or discards it**
+
+decision · 2026-09-15
+
+answers: [MUS-Q-0143](questions.md#mus-q-0143)
+
+answers: [MUS-Q-0138](questions.md#mus-q-0138)
+
+finding: [MUS-F-0170](findings.md#mus-f-0170)
+
+The owner approved plan-f8ce08918ff441f7 on MUS-Q-0143 with its recommended answers, after choosing on MUS-Q-0138 that viewers' submissions go through approval. A reader's POST /intake is the one reader write the guard lets through, and it is held in its own table, never a record: not routed, not exported, not in mustur_route or any count but the owner's badge. Held jots are reviewed at the top of Decisions and counted in the badge. Approve files the jot through intake.File with the reader as filer and the approving owner recorded, and only an owner of the destination project may approve; Discard removes the held row and leaves nothing, because it was never a record. Readers send no pictures in this cut.
+
+| Field | Value |
+| --- | --- |
+| Answered against | https://plan.agent-native.com/plans/plan-f8ce08918ff441f7 |
+
+---
+
+## MUS-D-0190
+
+**A row of the CLI's own 'key: label' cells is a legend, so the session survey's digits are offered**
+
+decision · 2026-09-15
+
+extends: [MUS-D-0142](#mus-d-0142)
+
+answers: [MUS-Q-0144](questions.md#mus-q-0144)
+
+finding: [MUS-F-0167](findings.md#mus-f-0167)
+
+MUS-Q-0144 asked whether MUS-D-0142 covers offering the session survey's digit keys as buttons. MUS-D-0142 reads what the screen says is on offer and gives a pane with no legend no controls; its legend was the 'X to Y · X to Y' line. The owner answered yes, and to record it. So a row that is entirely the CLI's own 'key: label' cells, as Claude Code's session survey draws '1: Bad  2: Fine  3: Good  0: Dismiss', is a legend in MUS-D-0142's sense, offered only while it is the last thing on the pane, as MUS-F-0091 requires of any dialog. Nothing about what a key means is inferred: the label is the CLI's word, and pressing sends the digit.
+
+---
+
+## MUS-D-0191
+
+**A sub-agent row with no event for 15 minutes says when it was last heard from, and leaves the running count**
+
+decision · 2026-09-15
+
+answers: [MUS-Q-0148](questions.md#mus-q-0148)
+
+answers: [MUS-Q-0146](questions.md#mus-q-0146)
+
+finding: [MUS-F-0157](findings.md#mus-f-0157)
+
+The owner chose on MUS-Q-0146 to say how long since a sub-agent was heard from rather than end a row whose stop never arrived, and approved plan-11f1635921db4c62 on MUS-Q-0148 with its recommended answers. A running row whose last event of any kind (start, a tool call beginning or ending, stop) is more than 15 minutes old swaps its tool pill for 'no word since' and the time in the viewer's zone with its abbreviation, drops its age, and leaves the badge count and the ring. It stays where it was among the running rows. It is not ended: its next event makes it running again and a stop still finishes it. The server records when each row was last heard from and applies the same 15 minutes to its first paint, so a page does not open counting quiet rows as running; nothing about a row's end is inferred.
+
+| Field | Value |
+| --- | --- |
+| Answered against | https://plan.agent-native.com/plans/plan-11f1635921db4c62 |
+
+---
+
+## MUS-D-0192
+
+**The intake box's six IDW jots are renamed to _IB in place: the one exception to identifier permanence, taken to move a system list out of the project namespace**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0153](questions.md#mus-q-0153)
+
+project: [MUS-P-0002](routing.md#mus-p-0002)
+
+describes: [MUS-Q-0159](questions.md#mus-q-0159)
+
+describes: [MUS-D-0197](#mus-d-0197)
+
+describes: [MUS-D-0125](#mus-d-0125)
+
+describes: [MUS-F-0044](findings.md#mus-f-0044)
+
+describes: [MUS-F-0056](findings.md#mus-f-0056)
+
+describes: [MUS-F-0057](findings.md#mus-f-0057)
+
+describes: [MUS-F-0058](findings.md#mus-f-0058)
+
+describes: [_IB-F-0001](findings.md#_ib-f-0001)
+
+MUS-Q-0153 asked what happens to the six jots filed under IDW when the intake box takes the reserved prefix _IB and IDW is freed for Idea Warehouse. The owner chose to rewrite them in place rather than reroute them, reasoning that the rule is better served by moving a system list out of the namespace projects use than by leaving six IDW stubs to belong to the intake box forever. The store's log and every citation inside it are rewritten in one migration, and so are the repository's own citations. Commit messages and pull request text already published cannot be rewritten, and still name the IDW identifiers. The rename is a one-off. It is not a precedent for renaming any other record, and a reserved prefix beginning with an underscore is what keeps it from ever being needed again.
+
+| Field | Value |
+| --- | --- |
+| Applies to | IDW-F-0001 to IDW-F-0006, renamed to \_IB-F-0001 to \_IB-F-0006, and nothing else |
+| Unchanged | Identifiers are permanent. Every other record keeps its identifier |
+| Renamed | IDW-F-0001 = \_IB-F-0001 |
+| Renamed | IDW-F-0002 = \_IB-F-0002 |
+| Renamed | IDW-F-0003 = \_IB-F-0003 |
+| Renamed | IDW-F-0004 = \_IB-F-0004 |
+| Renamed | IDW-F-0005 = \_IB-F-0005 |
+| Renamed | IDW-F-0006 = \_IB-F-0006 |
+| Retired | IDW-F-0007 :: named in MUS-Q-0153 as where Idea Warehouse would have started, and never issued |
+| Retired | IDW-F-0008 :: named in MUS-Q-0159 as where Idea Warehouse might start, and never issued |
+
+---
+
+## MUS-D-0193
+
+**A jot naming a confirm-only project waits in _IB with a Move button, and Records carries a live badge counting what needs attention**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0154](questions.md#mus-q-0154)
+
+project: [MUS-P-0002](routing.md#mus-p-0002)
+
+MUS-Q-0154 asked what confirms moving a jot that names a confirm-only project, Idea Warehouse first, out of the intake box. The owner chose a Move button on the jot rather than a question per jot, and added that the Records tab carries a counter badge of records needing attention. A jot with a proposed move is marked as needing attention, and records in that state must be easy to notice and navigate to. The owner's objection to the button, that it sits outside the channel they watch, is answered by the badge: the channel comes to the button rather than the button joining the question queue.
+
+| Field | Value |
+| --- | --- |
+| Needs attention | a jot in _IB whose Names field proposes a move nobody has taken or declined |
+| Badge | on the Records tab, live on every surface, written by bar.js as the questions badge is |
+
+---
+
+## MUS-D-0194
+
+**Idea Warehouse moves in as an ordinary project under IDW, its small corpus notwithstanding**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0155](questions.md#mus-q-0155)
+
+refines: [MUS-D-0162](#mus-d-0162)
+
+MUS-Q-0155 asked whether Idea Warehouse, which brings 12 ideas, a 600-line decision log and an inbox, moves in as an ordinary project or as a milestone. By MUS-D-0162 as written, any corpus makes it a milestone. The owner chose an ordinary project, so MUS-D-0162 now reads as a corpus worth a verdict rather than any corpus at all. Where the ideas themselves live is MUS-Q-0156's to settle. Registration does not wait on it.
+
+| Field | Value |
+| --- | --- |
+| Applies to | Idea Warehouse, registered after the intake box's six jots leave IDW (MUS-D-0192) |
+| Unchanged | A corpus the size of LinkCtrl's is still a milestone's to prove |
+
+---
+
+## MUS-D-0195
+
+**Ideas are findings with a status, and every project's findings get a status that says whether work remains**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0156](questions.md#mus-q-0156)
+
+refines: [MUS-D-0194](#mus-d-0194)
+
+MUS-Q-0156 asked where an Idea Warehouse idea and its verdict live, since Mustur has no idea kind. The owner chose findings with a status, and widened it: every project benefits from telling findings that still need work apart from those that are done. Today Status is free text with over fifty distinct values across MUS alone, so the structure has to come first. Its shape is MUS-Q-0158's to settle.
+
+| Field | Value |
+| --- | --- |
+| Applies to | every project's findings, Idea Warehouse's ideas first |
+
+---
+
+## MUS-D-0196
+
+**A finding carries a fixed State (open, done or dropped) and a per-project Status word mapped to it. Today's status prose moves to a Note**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0158](questions.md#mus-q-0158)
+
+refines: [MUS-D-0195](#mus-d-0195)
+
+MUS-Q-0158 asked what shape a finding's status takes so that work remaining can be told from work done. The owner chose a fixed state plus a per-project word, and asked that the sweep through existing findings also look for other fields hiding in the prose. The mapping is proposed by an agent and reviewed by the owner before anything is written.
+
+| Field | Value |
+| --- | --- |
+| State | open \| done \| dropped, the one thing everything filters on |
+| Status | a word from the project's own list, declared on its routing record with the state each word maps to |
+| Sweep | every existing finding is mapped once. While sweeping, prose that is really another field (a date, a citation, a blocker) is proposed as that field |
+
+---
+
+## MUS-D-0197
+
+**Identifiers MUS-D-0192 retired are declared on it, accepted by the citation check, and shown as plain text in the records describing the rename**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0159](questions.md#mus-q-0159)
+
+refines: [MUS-D-0192](#mus-d-0192)
+
+MUS-Q-0159 asked how MUS-D-0192 and MUS-Q-0153, kept word for word by the rename, may keep citing IDW identifiers that no longer exist and that Idea Warehouse will later reissue. The owner chose to declare them retired. The export check accepts an identifier the renaming decision lists. In the two records describing the rename, those identifiers render as plain text, so they never link to Idea Warehouse's records. Idea Warehouse starts at IDW-F-0001.
+
+| Field | Value |
+| --- | --- |
+| Where | Renamed fields on MUS-D-0192, one per old = new pair, and a Retired field for IDW-F-0007, which was named and never issued |
+| Plain text in | MUS-D-0192 and the records it cites. Anywhere else an identifier links as usual, including to Idea Warehouse's own IDW-F-0001 once it exists |
+
+---
+
+## MUS-D-0198
+
+**An identifier on the Decisions queue expands in place, as a citation does on Records**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0160](questions.md#mus-q-0160)
+
+extends: [MUS-D-0040](#mus-d-0040)
+
+finding: [MUS-F-0168](findings.md#mus-f-0168)
+
+MUS-Q-0160 asked whether an identifier in a question on the Decisions queue should open its record in a new tab, after PR 98 made each one a link that did. The owner chose to expand it in place, as Records does: the identifier becomes the same expandable citation MUS-D-0040 gives a record, carrying the cited record's title, kind and date and a link to open it on its own, so reading what a question cites needs no navigation. An identifier the store does not hold stays text. Inside an option's label an identifier stays plain text, so the whole row remains the control (surface 4). This extends MUS-D-0040 from Records to the queue.
+
+---
+
+## MUS-D-0199
+
+**The session list carries session.js, so eight surfaces ship script**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0161](questions.md#mus-q-0161)
+
+finding: [MUS-F-0159](findings.md#mus-f-0159)
+
+follows: [MUS-Q-0053](questions.md#mus-q-0053)
+
+MUS-Q-0161 asked whether the Session list surface (surface 2) carries session.js. On main it already loaded on /sessions?new=1 while sessions ran, and PR 92 adds /sessions with every session lost, so that the picker drawn there works; neither was counted among the surfaces that ship script, which MUS-Q-0053 made a decision each time. The owner chose yes: surface 2 is counted, the count goes from seven to eight, and with script blocked its picker still submits through the noscript Go button.
+
+---
+
+## MUS-D-0200
+
+**Findings gain eighteen structured fields: the core citations, and every date, code and classification field the sweep found**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0163](questions.md#mus-q-0163)
+
+refines: [MUS-D-0196](#mus-d-0196)
+
+MUS-Q-0163 asked which of the fields the status sweep found hiding in finding prose become real fields. The owner chose the recommended core set and widened it to every field the review page listed under Dates, Code and Classification. Citations beyond the core stay prose. Nothing is written until MUS-Q-0162 approves the mapping they are written alongside.
+
+| Field | Value |
+| --- | --- |
+| Dates | closed-on, reviewed-on, checked-on, undated |
+| Citations | closed-by, answered-by, blocked-by, raised-as, superseded-by, merged-into |
+| Code | pr, commit, branch, plan |
+| Classification | severity, remaining, reporter, tier |
+| Stay prose | found-in, closed-under, scheduled-in, carried-to, corrects, accepted-on, and the review page's unlisted closed-at, merged and stacked-on-pr, all kept in the Note |
+
+---
+
+## MUS-D-0201
+
+**The finding status mapping is written, with in-review for unmerged work and every uncertain row left open as unverified for its project to close**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0162](questions.md#mus-q-0162)
+
+refines: [MUS-D-0196](#mus-d-0196)
+
+MUS-Q-0162 asked whether the proposed State and Status mapping for all 590 findings is right to write. The owner chose to write it with the recommended change: a finding fixed on a pull request that has not merged reads in-review, which is open. The owner added that anything on the fence stays open, so the projects can verify and close it themselves. Every row the sweep marked low-confidence is therefore open, under the word unverified wherever the sweep had proposed done or dropped, and the sweep's reasoning is kept in its Note for whoever verifies it.
+
+| Field | Value |
+| --- | --- |
+| in-review | open: fixed or built on a pull request that has not merged (16 MUS findings) |
+| unverified | open: the sweep could not tell whether work remains (the 51 low-confidence rows); the sweep's reason goes in the Note |
+| Source | the reviewed mapping at https://claude.ai/artifact/7gB8zJRtDgBVYUYg9JYab9 |
+
+---
+
+## MUS-D-0202
+
+**Delivering an answer dismisses the session survey first**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0164](questions.md#mus-q-0164)
+
+finding: [MUS-F-0167](findings.md#mus-f-0167)
+
+extends: [MUS-D-0190](#mus-d-0190)
+
+MUS-Q-0164 asked what happens to an answer being delivered into a session whose pane shows the session survey, after PR 95 made ReadPrompt see the survey, which made DeliverRelayed refuse the delivery and leave the answer queued with no retry. The survey appears at the end of a turn, which is when answers tend to arrive. The owner chose to dismiss the survey, then deliver: when the survey is the live thing on the pane and an answer is being delivered, delivery sends the survey's own Dismiss key, confirms the survey is gone, and types the answer. Nothing is sent to the survey unless an answer is being delivered, which the owner's press started; any other dialog still refuses delivery as before.
+
+---
+
+## MUS-D-0203
+
+**A resumed sub-agent's earlier report is shown labelled as from the previous run**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0165](questions.md#mus-q-0165)
+
+finding: [MUS-F-0172](findings.md#mus-f-0172)
+
+MUS-Q-0165 asked what a resumed sub-agent's row shows from its previous run, after PR 99 kept the previous run's final message on the reopened row and the drawer showed it as the running row's content. The owner chose to keep the report and label it: while a resumed row runs, its reading pane shows the last run's report headed as from the previous run, and its clock counts the current run. When the resumed run stops, its own report replaces it. Surface 8's rule that a running sub-agent carries no prose of its own run stands.
+
+---
+
+## MUS-D-0204
+
+**A record's title is raised to about 1.1rem so body headings fit under it**
+
+decision · 2026-09-18
+
+answers: [MUS-Q-0166](questions.md#mus-q-0166)
+
+finding: [MUS-F-0163](findings.md#mus-f-0163)
+
+MUS-Q-0166 asked how record body headings should be sized, after the pre-merge review of PR 93 found body h4 to h6 indistinguishable and the fix measured a conflict on LNK-S-0001: the record title (article h3, .98rem) rendered at 15.68px and body text at 15.81px, so no heading size fits between the text and the title. The owner chose to raise the record title to about 1.1rem (about 17.6px), on the index and on a record's page, so the title leads its body and body headings h1 to h6 fit between the text and the title, told apart by size and then weight.
+
+---
+
+## MUS-D-0205
+
+**kind no longer narrows mustur_route's reply: it reaches every project the scoped index leaves out**
+
+decision · 2026-09-18
+
+finding: [MUS-F-0149](findings.md#mus-f-0149)
+
+follows: [MUS-D-0187](#mus-d-0187)
+
+decisions.md's 'What the mandate keeps from the fixture' says the mandate's first difference from the fixture is 'id and kind, optional arguments that narrow what comes back'. Since MUS-D-0187 was deployed on 2026-09-18, a call with no identifier lists only the named repository's project, and kind lists that kind across every project, so kind now reaches records the default reply does not carry: it widens rather than narrows. id still narrows to one record, in any project. A call written against the stub still works, which is the property that paragraph was establishing, so the mandate clause and milestone 1's result are unaffected. This entry corrects that one word; decisions.md is append-only and keeps its text.
+
+---
+
+## MUS-D-0206
+
+**The server keeps a request log since 2026-09-18, so a page being read can be shown**
+
+decision · 2026-09-18
+
+corrects: [MUS-D-0157](#mus-d-0157)
+
+finding: [MUS-F-0162](findings.md#mus-f-0162)
+
+MUS-D-0157 says milestone 6's reading cannot be proven from the store because the server keeps no request log, so the verdict would be the owner's word or the reader's. PR 96 (MUS-F-0162) was deployed on 2026-09-18: the server now writes one line per request to the journal, naming the signed-in account by email and its role (MUS-Q-0145). A page read after that deploy leaves a line saying who read it and when, for as long as the journal keeps it. The store still records no reading, and nothing before the deploy is recoverable. This corrects MUS-D-0157's evidence clause from the deploy on; its verdict on milestone 6 is untouched.
+
+---
+
+## MUS-D-0207
+
+**A reader's one write is a hold on the intake box**
+
+decision · 2026-09-18
+
+corrects: [MUS-D-0146](#mus-d-0146)
+
+decision: [MUS-D-0189](#mus-d-0189)
+
+finding: [MUS-F-0170](findings.md#mus-f-0170)
+
+MUS-D-0146 says the guard already refuses any POST from a reader, since the only two roles are owner and reader and CanWrite is owner-only. Since PR 103 (MUS-D-0189) was deployed on 2026-09-18, a reader's POST to /intake passes the guard and is held for an owner's approval instead of filed. It is the one exception: every other reader write, including a POST to /sessions/start, is still refused, so what MUS-D-0146 relied on for starting a session still holds. This corrects the general sentence; decisions.md is append-only and keeps its text.
