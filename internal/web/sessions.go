@@ -148,9 +148,12 @@ func (s *Sessions) actor(r *http.Request) string {
 // sameOrigin reports whether the request came from this site.
 //
 // An absent Origin is refused rather than allowed. Browsers always send it on a
-// WebSocket handshake, so its absence means something that is not a browser —
-// and a non-browser client has no business on the one path that types into an
-// agent. That is the strict reading, and this is the place to take it.
+// WebSocket handshake, so its absence means something that is not a browser.
+// That is the strict reading, taken wherever a non-browser caller has no
+// business: the session socket, the posts that start, stop or restore a
+// session, the composer, the passkey ceremony, the account and people screens,
+// and moving or keeping a record. notCrossSite says which posts take the
+// looser one.
 func sameOrigin(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
@@ -170,10 +173,19 @@ func sameOrigin(r *http.Request) bool {
 // sandboxed frame or a redirect across sites sends, names no site and is
 // refused as foreign.
 //
-// This is the looser of the two readings and only for the plain form posts.
-// Anything that types into an agent, starts a process, runs the passkey
-// ceremony or changes an account keeps sameOrigin, which refuses the absent
-// header too.
+// This is the looser of the two readings, and only four posts take it: filing a
+// jot, answering or withdrawing a question, and approving or discarding a held
+// jot. Everything else keeps sameOrigin, which refuses the absent header too:
+// the session socket and the composer, because they type into an agent; start,
+// stop and restore, because they start or end a process; the passkey ceremony
+// and the account and people screens, because they change who may do any of
+// this; and moving or keeping a record.
+//
+// An answer is the exception worth naming. When the question named a session
+// it is typed back into that session, which by the rule above would keep
+// sameOrigin. It takes this check anyway, deliberately: MUS-Q-0173 names the
+// answer among the form posts, so a POST to /questions with no Origin — curl,
+// or a proxy that strips the header — is taken and delivered.
 func notCrossSite(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
