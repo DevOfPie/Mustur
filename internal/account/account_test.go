@@ -526,3 +526,62 @@ func redeemed(t *testing.T, s *Store, ctx context.Context, email, project string
 	}
 	return acct
 }
+
+// Disabling the only enabled owner of any project is refused, and names the
+// project: a disabled owner cannot sign in, so it is the same lockout as
+// removing their role (MUS-D-0188, the review on PR 102).
+func TestDisablingTheOnlyOwnerOfAnyProjectIsRefused(t *testing.T) {
+	s, ctx := open(t)
+	mus := redeemed(t, s, ctx, "mus@example.com", "MUS", Owner)
+	lnk := redeemed(t, s, ctx, "lnk@example.com", "LNK", Owner)
+	disabled := func(a Account) bool {
+		var off string
+		_ = s.DB().QueryRowContext(ctx,
+			`SELECT COALESCE(disabled, '') FROM account WHERE id = ?`, a.ID).Scan(&off)
+		return off != ""
+	}
+
+	// Somebody else's only project: an owner of MUS disabling LNK's only owner.
+	err := s.Disable(ctx, lnk.ID, false)
+	var last *LastOwnerError
+	if !errors.As(err, &last) || last.Project != "LNK" || !errors.Is(err, ErrLastOwner) {
+		t.Errorf("disabling LNK's only owner: err = %v, want a LastOwnerError naming LNK", err)
+	}
+	if disabled(lnk) {
+		t.Error("LNK's only owner was disabled")
+	}
+
+	// Yourself, as the only owner of a project that is not the first you own.
+	if err := s.Grant(ctx, lnk.ID, "MUS", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Grant(ctx, mus.ID, "HRD", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	err = s.Disable(ctx, mus.ID, false)
+	if !errors.As(err, &last) || last.Project != "HRD" {
+		t.Errorf("disabling HRD's only owner: err = %v, want a LastOwnerError naming HRD", err)
+	}
+	if disabled(mus) {
+		t.Error("HRD's only owner was disabled")
+	}
+
+	// With another enabled owner of every project it owns, it goes.
+	if err := s.Grant(ctx, lnk.ID, "HRD", Owner, "test"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Disable(ctx, mus.ID, false); err != nil {
+		t.Errorf("with a second owner of MUS and HRD, disabling was refused: %v", err)
+	}
+	if !disabled(mus) {
+		t.Error("the disable reported success and did nothing")
+	}
+	// And lnk is now every project's only enabled owner, so it stays.
+	if err := s.Disable(ctx, lnk.ID, false); !errors.Is(err, ErrLastOwner) {
+		t.Errorf("the one owner left of everything was disabled: err = %v", err)
+	}
+	// Enabling is never refused.
+	if err := s.Disable(ctx, mus.ID, true); err != nil || disabled(mus) {
+		t.Errorf("enabling again: err = %v", err)
+	}
+}

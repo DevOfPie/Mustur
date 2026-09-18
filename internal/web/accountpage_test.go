@@ -712,3 +712,59 @@ func TestThePeopleScreenCarriesTheBar(t *testing.T) {
 		}
 	}
 }
+
+// Disabling the only owner of any project is refused through the screen and
+// by a crafted post, yourself included, and the refusal names the project.
+// The screen used to guard the install's project for yourself only, so an
+// owner of Mustur could disable LinkCtrl's only owner (the review on PR 102).
+func TestDisablingTheOnlyOwnerOfAnyProjectIsRefusedFromTheScreen(t *testing.T) {
+	srv, accounts := managed(t)
+	ctx := context.Background()
+	owner, me := personWith(t, accounts, "mus@example.com", "MUS", account.Owner, "k")
+	_, lnkOwner := personWith(t, accounts, "lnk@example.com", "LNK", account.Owner, "k2")
+	isOff := func(id string) bool {
+		people, err := accounts.Accounts(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, p := range people {
+			if p.ID == id {
+				return p.Disabled
+			}
+		}
+		t.Fatalf("no account %s", id)
+		return false
+	}
+
+	res := form(t, owner, srv, "/account/disable", url.Values{"id": {lnkOwner.ID}})
+	res.Body.Close()
+	if isOff(lnkOwner.ID) {
+		t.Error("an owner of Mustur disabled LinkCtrl's only owner")
+	}
+	if said := body(t, owner, srv.URL+res.Header.Get("Location")); !strings.Contains(said, "that account is the only owner left of LNK") {
+		t.Error("the refusal does not say why, or which project")
+	}
+
+	// Yourself, by a crafted post: MUS gains a second owner, LNK passes to you
+	// alone.
+	grant(t, accounts, me, "LNK", account.Owner)
+	grant(t, accounts, lnkOwner, "MUS", account.Owner)
+	if err := accounts.Ungrant(ctx, lnkOwner.ID, "LNK", "test"); err != nil {
+		t.Fatal(err)
+	}
+	res = form(t, owner, srv, "/account/disable", url.Values{"id": {me.ID}})
+	res.Body.Close()
+	if isOff(me.ID) {
+		t.Error("the only owner of LinkCtrl disabled themselves")
+	}
+	if said := body(t, owner, srv.URL+res.Header.Get("Location")); !strings.Contains(said, "you are the only owner left of LNK") {
+		t.Error("the refusal to disable yourself does not say why, or which project")
+	}
+
+	// A disable that leaves another enabled owner everywhere goes through.
+	res = form(t, owner, srv, "/account/disable", url.Values{"id": {lnkOwner.ID}})
+	res.Body.Close()
+	if !isOff(lnkOwner.ID) {
+		t.Error("disabling a second owner of Mustur was refused")
+	}
+}

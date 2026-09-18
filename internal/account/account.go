@@ -481,12 +481,42 @@ func (s *Store) RemoveCredential(ctx context.Context, accountID string, credID [
 // Not a delete. What the account did stays attributed to it, and a person who
 // left and came back is the same person rather than a second one — which is the
 // same reason a reissued invitation reuses an account.
+//
+// Turning off the only enabled owner of any project is refused with a
+// *LastOwnerError naming it. A disabled owner cannot sign in, so disabling one
+// leaves the project as ownerless as removing their role would, and Ungrant
+// already refuses that (MUS-D-0188). The screen used to check only the
+// install's project, and only when you disabled yourself: an owner of Mustur
+// could disable LinkCtrl's only owner, and a crafted post could disable
+// yourself as the only owner of anything else (MUS-F-0166, the review on PR
+// 102). Checked here, so the screen, a crafted post and anything later meet it.
 func (s *Store) Disable(ctx context.Context, accountID string, undo bool) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 	var when any
 	if !undo {
 		when = s.now().UTC().Format(stamp)
+		var off string
+		err := tx.QueryRowContext(ctx,
+			`SELECT COALESCE(disabled, '') FROM account WHERE id = ?`, accountID).Scan(&off)
+		if errors.Is(err, sql.ErrNoRows) {
+			return errors.New("no such account")
+		}
+		if err != nil {
+			return err
+		}
+		// Already off, it is nobody's enabled owner, so disabling it again
+		// takes nothing away from any project.
+		if off == "" {
+			if err := refuseLastOwner(ctx, tx, accountID); err != nil {
+				return err
+			}
+		}
 	}
-	res, err := s.db.ExecContext(ctx, `UPDATE account SET disabled = ? WHERE id = ?`, when, accountID)
+	res, err := tx.ExecContext(ctx, `UPDATE account SET disabled = ? WHERE id = ?`, when, accountID)
 	if err != nil {
 		return err
 	}
@@ -496,7 +526,43 @@ func (s *Store) Disable(ctx context.Context, accountID string, undo bool) error 
 	if !undo {
 		// Sessions end with the account rather than lingering until they
 		// expire: disabling somebody who is signed in should sign them out.
-		_, _ = s.db.ExecContext(ctx, `DELETE FROM auth_session WHERE account_id = ?`, accountID)
+		if _, err := tx.ExecContext(ctx, `DELETE FROM auth_session WHERE account_id = ?`, accountID); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// refuseLastOwner returns a *LastOwnerError for the first project, by prefix,
+// of which accountID is the only enabled owner, and nil when there is none.
+func refuseLastOwner(ctx context.Context, tx *sql.Tx, accountID string) error {
+	rows, err := tx.QueryContext(ctx,
+		`SELECT project FROM grant_role WHERE account_id = ? AND role = 'owner' ORDER BY project`,
+		accountID)
+	if err != nil {
+		return err
+	}
+	var projects []string
+	for rows.Next() {
+		var p string
+		if err := rows.Scan(&p); err != nil {
+			rows.Close()
+			return err
+		}
+		projects = append(projects, p)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for _, p := range projects {
+		sole, err := soleOwner(ctx, tx, accountID, p)
+		if err != nil {
+			return err
+		}
+		if sole {
+			return &LastOwnerError{Project: p}
+		}
 	}
 	return nil
 }
@@ -550,6 +616,15 @@ func (s *Store) RoleFor(ctx context.Context, accountID, project string) (Role, b
 // and once it can change a role in LinkCtrl or Hoard, a check that only knows
 // Mustur is a check the other projects do not have (MUS-D-0188).
 var ErrLastOwner = errors.New("that is the only owner this project has left")
+
+// LastOwnerError is ErrLastOwner with the project named, for a refusal that
+// could be about any of several projects — disabling an account — where "this
+// project" does not say which. errors.Is still matches ErrLastOwner.
+type LastOwnerError struct{ Project string }
+
+func (e *LastOwnerError) Error() string { return ErrLastOwner.Error() + ": " + e.Project }
+
+func (e *LastOwnerError) Unwrap() error { return ErrLastOwner }
 
 // soleOwner reports whether accountID is an owner of project and no other
 // enabled account is. A disabled owner cannot sign in to administer anything,

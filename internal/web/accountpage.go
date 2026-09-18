@@ -653,11 +653,22 @@ func (a *Accounts) disable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	target := r.FormValue("id")
-	if target == acct.ID && a.lastOwner(ctx, acct) {
-		a.back(w, r, "", "you are the only owner left; that would leave nobody able to administer this", "")
+	// The store refuses disabling the only enabled owner of any project, and
+	// names it. This used to check here, for the install's project and only
+	// for yourself, which let an owner of Mustur disable LinkCtrl's only owner
+	// (MUS-D-0188, the review on PR 102).
+	err := a.Store.Disable(ctx, target, r.FormValue("undo") == "1")
+	var last *account.LastOwnerError
+	if errors.As(err, &last) {
+		who := "that account is"
+		if target == acct.ID {
+			who = "you are"
+		}
+		a.back(w, r, "", who+" the only owner left of "+projectName(ctx, a.Records, last.Project)+
+			"; make somebody else an owner first", "")
 		return
 	}
-	if err := a.Store.Disable(ctx, target, r.FormValue("undo") == "1"); err != nil {
+	if err != nil {
 		a.back(w, r, "", err.Error(), "")
 		return
 	}
