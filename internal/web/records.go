@@ -235,7 +235,11 @@ func (rr *Records) load(ctx context.Context) (map[string]record.Record, []record
 func (rr *Records) view(r record.Record, by map[string]record.Record) recordView {
 	// The body is rendered; the citations below are still read from the text
 	// as written, so markdown cannot hide an identifier from them.
-	v := recordView{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Body: markdown(r.Body), Data: r.Data}
+	// A retired identifier this record describes is text, never a link or a
+	// citation to expand (MUS-D-0197): the store may later issue one of the
+	// same spelling, and it would be somebody else's record.
+	plain := retiredIn(r.ID, by)
+	v := recordView{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Body: markdownPlain(r.Body, plain), Data: r.Data}
 
 	// A ref field may name several records — "Decided by: MUS-D-0002,
 	// MUS-D-0008, MUS-D-0027" is one field and three citations. Looking the
@@ -251,6 +255,10 @@ func (rr *Records) view(r record.Record, by map[string]record.Record) recordView
 			continue
 		}
 		for _, id := range found {
+			if plain[id] {
+				v.Refs = append(v.Refs, citation{Key: ref.Key, ID: id, Plain: true})
+				continue
+			}
 			v.Refs = append(v.Refs, resolve(ref.Key, id, by))
 		}
 	}
@@ -266,13 +274,23 @@ func (rr *Records) view(r record.Record, by map[string]record.Record) recordView
 		text += " " + f.Value
 	}
 	for _, found := range idInProse.FindAllString(text, -1) {
-		if seen[found] {
+		if seen[found] || plain[found] {
 			continue
 		}
 		seen[found] = true
 		v.Cites = append(v.Cites, resolve("", found, by))
 	}
 	return v
+}
+
+// retiredIn is the set of retired identifiers the record with this
+// identifier shows as plain text.
+func retiredIn(id string, by map[string]record.Record) map[string]bool {
+	all := make([]record.Record, 0, len(by))
+	for _, r := range by {
+		all = append(all, r)
+	}
+	return record.Retire(all).PlainIn(id)
 }
 
 func resolve(key, id string, by map[string]record.Record) citation {

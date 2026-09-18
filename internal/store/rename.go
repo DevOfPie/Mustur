@@ -125,6 +125,38 @@ func (s *Store) Rename(ctx context.Context, renames []Renaming, keep []string, a
 			return report, fmt.Errorf("--keep %s: no such record", k)
 		}
 	}
+	// A retired identifier is never issued again by a rename (MUS-D-0197): the
+	// records describing its retirement show it as plain text precisely so
+	// nothing ever answers to it by accident, and a rename would be on purpose.
+	latest, err := tx.QueryContext(ctx, `SELECT payload FROM record_latest`)
+	if err != nil {
+		return report, err
+	}
+	var all []record.Record
+	for latest.Next() {
+		var p string
+		if err := latest.Scan(&p); err != nil {
+			latest.Close()
+			return report, err
+		}
+		r, err := record.UnmarshalPayload([]byte(p))
+		if err != nil {
+			latest.Close()
+			return report, err
+		}
+		all = append(all, r)
+	}
+	latest.Close()
+	if err := latest.Err(); err != nil {
+		return report, err
+	}
+	retired := record.Retire(all).IDs
+	for _, r := range renames {
+		if retired[r.New] {
+			return report, fmt.Errorf("%s is declared retired (a Renamed or Retired field names it): a rename never issues a retired identifier", r.New)
+		}
+	}
+
 	for _, r := range renames {
 		had, err := count(`SELECT count(*) FROM record_event WHERE record_id = ?`, r.Old)
 		if err != nil {

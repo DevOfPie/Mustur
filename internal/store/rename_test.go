@@ -243,6 +243,36 @@ func TestARenameRefuses(t *testing.T) {
 	}
 }
 
+// A retired identifier is never issued again by a rename, whether it was
+// retired as the old side of a Renamed field or by a Retired field.
+func TestARenameRefusesToIssueARetiredIdentifier(t *testing.T) {
+	s, ctx := renameFixture(t)
+	carrier, err := s.Get(ctx, "MUS-D-0192")
+	if err != nil {
+		t.Fatal(err)
+	}
+	carrier.Data = append(carrier.Data,
+		record.Field{Key: record.RenamedField, Value: "IDW-F-0003 = _IB-F-0003"},
+		record.Field{Key: record.RetiredField, Value: "IDW-F-0007 :: named and never issued"})
+	if err := s.Append(ctx, carrier, "amend", "test"); err != nil {
+		t.Fatal(err)
+	}
+	before := dump(t, s)
+	for _, to := range []string{"IDW-F-0007", "IDW-F-0003"} {
+		_, err := s.Rename(ctx, []Renaming{{"IDW-F-0005", to}}, nil, true)
+		if err == nil || !strings.Contains(err.Error(), "declared retired") {
+			t.Errorf("renaming onto %s gave %v", to, err)
+		}
+	}
+	if dump(t, s) != before {
+		t.Error("a refused rename wrote")
+	}
+	// Issuing something that is not retired still works.
+	if _, err := s.Rename(ctx, []Renaming{{"IDW-F-0005", "_IB-F-0005"}}, []string{"MUS-D-0192"}, true); err != nil {
+		t.Errorf("an ordinary rename was refused: %v", err)
+	}
+}
+
 // A body line that starts with the identifier sits after an escaped newline in
 // the stored JSON, and has to be found anyway.
 func TestARenameFindsAnIdentifierAtTheStartOfALine(t *testing.T) {

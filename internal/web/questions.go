@@ -181,12 +181,14 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 	for _, r := range records {
 		by[r.ID] = r
 	}
+	retired := record.Retire(records)
 	var out []queued
 	for _, r := range question.Open(records) {
+		plain := retired.PlainIn(r.ID)
 		item := queued{
 			ID:       r.ID,
 			Title:    r.Title,
-			Body:     markdown(strings.TrimSpace(r.Body)),
+			Body:     markdownPlain(strings.TrimSpace(r.Body), plain),
 			Asked:    r.At,
 			Needed:   question.Needed(r),
 			Surfaced: question.Surfaced(r),
@@ -202,11 +204,11 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 		}
 		for _, o := range question.Options(r) {
 			item.Options = append(item.Options, queuedOption{
-				Label: o.Label, Line: o.Says(), Detail: markdown(o.Detail),
+				Label: o.Label, Line: o.Says(), Detail: markdownPlain(o.Detail, plain),
 				Recommended: o.IsRecommended(),
 			})
 		}
-		item.Cites = queueCites(r, item.Blocks, by)
+		item.Cites = queueCites(r, item.Blocks, by, plain)
 		out = append(out, item)
 	}
 	return out, nil
@@ -225,8 +227,9 @@ func (q *Questions) open(ctx context.Context) ([]queued, error) {
 //
 // Only what the store holds is listed. An identifier it does not hold stays
 // text in the question and gets no entry, rather than an entry saying there is
-// nothing behind it.
-func queueCites(r record.Record, blocks string, by map[string]record.Record) []citation {
+// nothing behind it. Nor does one retired where this question stands
+// (MUS-D-0197): it is plain text here, as it is on the Records page.
+func queueCites(r record.Record, blocks string, by map[string]record.Record, plain map[string]bool) []citation {
 	text := r.Title + " " + blocks + " " + r.Body
 	for _, o := range question.Options(r) {
 		text += " " + o.Label + " " + o.Says() + " " + o.Detail
@@ -234,7 +237,7 @@ func queueCites(r record.Record, blocks string, by map[string]record.Record) []c
 	seen := map[string]bool{r.ID: true}
 	var out []citation
 	for _, id := range idInProse.FindAllString(text, -1) {
-		if seen[id] {
+		if seen[id] || plain[id] {
 			continue
 		}
 		seen[id] = true

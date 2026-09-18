@@ -29,6 +29,7 @@ func Tree(dir string) ([]string, int, error) {
 	}
 	defined := map[string]string{} // identifier -> file that defines it
 	cited := map[string][]string{} // identifier -> files citing it
+	retired := map[string]bool{}   // identifiers a record declares retired
 	var problems []string
 
 	for _, path := range files {
@@ -49,6 +50,11 @@ func Tree(dir string) ([]string, int, error) {
 			for _, id := range ident.Cited(line) {
 				cited[id] = append(cited[id], rel)
 			}
+			if id, problem := retiredRow(line); problem != "" {
+				problems = append(problems, rel+": "+problem)
+			} else if id != "" {
+				retired[id] = true
+			}
 		}
 	}
 
@@ -61,12 +67,46 @@ func Tree(dir string) ([]string, int, error) {
 		if _, ok := defined[id]; ok {
 			continue
 		}
+		if retired[id] {
+			// Declared retired (MUS-D-0197): known, resolving to nothing, and
+			// that is the point.
+			continue
+		}
 		where := cited[id]
 		sort.Strings(where)
 		problems = append(problems, fmt.Sprintf("%s is cited in %s and defined nowhere", id, strings.Join(dedup(where), ", ")))
 	}
 	sort.Strings(problems)
 	return problems, len(defined), nil
+}
+
+// retiredRow reads one field row of the export as a retirement, the way
+// record.RetiredBy reads the field: "| Renamed | OLD = NEW |" retires OLD, and
+// "| Retired | ID :: why |" retires ID. It returns the retired identifier, or
+// a problem for a row with that key whose value does not parse — a
+// declaration that silently declared nothing would let the check pass on a
+// typo. Every other line returns nothing.
+func retiredRow(line string) (string, string) {
+	for _, key := range []string{record.RenamedField, record.RetiredField} {
+		prefix := "| " + key + " | "
+		if !strings.HasPrefix(line, prefix) || !strings.HasSuffix(line, " |") {
+			continue
+		}
+		value := strings.TrimSuffix(strings.TrimPrefix(line, prefix), " |")
+		value = strings.ReplaceAll(value, `\|`, "|")
+		var id string
+		var err error
+		if key == record.RenamedField {
+			id, _, err = record.ParseRenamed(value)
+		} else {
+			id, _, err = record.ParseRetired(value)
+		}
+		if err != nil {
+			return "", err.Error()
+		}
+		return id, ""
+	}
+	return "", ""
 }
 
 // AgainstStore renders the records again and reports every file where the tree

@@ -54,7 +54,13 @@ var (
 
 type recordLinks struct{}
 
-func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context) {
+// plainKey carries, into one conversion, the retired identifiers the record
+// being rendered shows as plain text (MUS-D-0197).
+var plainKey = parser.NewContextKey()
+
+func (recordLinks) Transform(doc *ast.Document, _ text.Reader, pc parser.Context) {
+	plain, _ := pc.Get(plainKey).(map[string]bool)
+	var unlink []*ast.Link
 	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		l, ok := n.(*ast.Link)
 		if !entering || !ok {
@@ -66,13 +72,34 @@ func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context)
 		if strings.Contains(dest, "://") || strings.HasPrefix(dest, "//") {
 			return ast.WalkContinue, nil
 		}
+		id := ""
 		if m := anchorID.FindStringSubmatch(dest); m != nil {
-			l.Destination = []byte("/records/" + strings.ToUpper(m[1]))
+			id = strings.ToUpper(m[1])
 		} else if m := fileID.FindStringSubmatch(dest); m != nil {
-			l.Destination = []byte("/records/" + m[1])
+			id = m[1]
+		}
+		switch {
+		case id == "":
+		case plain[id]:
+			// Retired here: its text stays and the link goes, so it can never
+			// point at a record issued later under the same spelling.
+			unlink = append(unlink, l)
+		default:
+			l.Destination = []byte("/records/" + id)
 		}
 		return ast.WalkContinue, nil
 	})
+	// Replaced after the walk, not during it: moving a node's children while
+	// walking them loses the walk's place.
+	for _, l := range unlink {
+		parent := l.Parent()
+		for c := l.FirstChild(); c != nil; {
+			next := c.NextSibling()
+			parent.InsertBefore(parent, l, c)
+			c = next
+		}
+		parent.RemoveChild(parent, l)
+	}
 }
 
 // markdown renders src for a page.
@@ -83,9 +110,17 @@ func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context)
 // (MUS-F-0033, MUS-F-0131). The string replace is sound because raw HTML is
 // dropped and text is escaped, so a literal <table> in the output can only be
 // the renderer's.
-func markdown(src string) template.HTML {
+func markdown(src string) template.HTML { return markdownPlain(src, nil) }
+
+// markdownPlain renders src with the retired identifiers in plain shown as
+// text rather than links.
+func markdownPlain(src string, plain map[string]bool) template.HTML {
 	var b bytes.Buffer
-	if err := md.Convert([]byte(src), &b); err != nil {
+	pc := parser.NewContext()
+	if len(plain) > 0 {
+		pc.Set(plainKey, plain)
+	}
+	if err := md.Convert([]byte(src), &b, parser.WithContext(pc)); err != nil {
 		// Convert fails only on a writer error, and a bytes.Buffer has none.
 		// Escaped text is still better than nothing if that ever changes.
 		return template.HTML(template.HTMLEscapeString(src))
