@@ -96,6 +96,13 @@ func TestAccessLogWritesNoSecret(t *testing.T) {
 	for _, path := range []string{
 		"/invite/" + secret,
 		"/invite/" + secret + "/begin",
+		// The review's three probes on PR 96, which the first version wrote
+		// out, and two more spellings.
+		"//invite/" + secret,
+		"/invite/./" + secret,
+		"/Invite/" + secret,
+		"/invite/" + secret + "/extra",
+		"/invite/" + secret[:6] + "%2F" + secret[6:],
 		"/account/people?invited=https%3A%2F%2Fx%2Finvite%2F" + secret + "&said=bob%40example.com",
 		"/sessions?p=Mustur&error=" + secret,
 	} {
@@ -110,9 +117,14 @@ func TestAccessLogWritesNoSecret(t *testing.T) {
 	}
 	waitFor(t, log, "/sessions?")
 	waitFor(t, log, "/invite/[secret]/begin")
+	waitFor(t, log, "GET /Invite/[secret] ")
+	waitFor(t, log, "GET /invite/[secret]/[secret] ")
 	got := log.String()
-	if strings.Contains(got, secret) || strings.Contains(got, "example.com") {
-		t.Fatalf("a secret reached the log:\n%s", got)
+	// The halves too, because the encoded slash splits the secret in two.
+	for _, leak := range []string{secret, secret[:6], secret[6:], "example.com"} {
+		if strings.Contains(got, leak) {
+			t.Fatalf("%q reached the log:\n%s", leak, got)
+		}
 	}
 	for _, want := range []string{
 		"GET /invite/[secret] ",
@@ -121,6 +133,33 @@ func TestAccessLogWritesNoSecret(t *testing.T) {
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("log lacks %q:\n%s", want, got)
+		}
+	}
+}
+
+// The rule itself, spelling by spelling: whatever follows an `invite` segment
+// is gone, and only a route's own verb survives in last place.
+func TestRedactInvite(t *testing.T) {
+	for in, want := range map[string]string{
+		"/invite/S":         "/invite/[secret]",
+		"/invite/S/begin":   "/invite/[secret]/begin",
+		"/invite/S/finish":  "/invite/[secret]/finish",
+		"//invite/S":        "//invite/[secret]",
+		"/invite//S":        "/invite//[secret]",
+		"/invite/./S":       "/invite/[secret]/[secret]",
+		"/invite/../S":      "/invite/[secret]/[secret]",
+		"/Invite/S":         "/Invite/[secret]",
+		"/INVITE/S/":        "/INVITE/[secret]/",
+		"/invite/S/extra":   "/invite/[secret]/[secret]",
+		"/invite/begin":     "/invite/[secret]",
+		"/invite/S/begin/x": "/invite/[secret]/[secret]/[secret]",
+		"/x/invite/S":       "/x/invite/[secret]",
+		"/records":          "/records",
+		"/invitees/S":       "/invitees/S",
+		"/invite":           "/invite",
+	} {
+		if got := redactInvite(in); got != want {
+			t.Errorf("redactInvite(%q) = %q, want %q", in, got, want)
 		}
 	}
 }

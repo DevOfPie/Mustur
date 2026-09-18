@@ -12,8 +12,9 @@ package web
 // the people page carries a whole invitation link, secret included, and
 // `?said=` and `?error=` carry sentences that can name an email; only the keys
 // are written, except for the few named in queryValues, which carry a session
-// or destination name and are the thing a diagnosis wants. The segment after
-// `/invite/`, which is the invitation secret itself. No header at all, so no
+// or destination name and are the thing a diagnosis wants. Anything after an
+// `invite` segment, however the path spells it, because that is where the
+// invitation secret itself travels. No header at all, so no
 // Authorization and no cookie. No body, so no form.
 //
 // **Streams.** A socket or a server-sent stream lasts as long as the tab does,
@@ -129,14 +130,7 @@ func line(at time.Time, verb string, r *http.Request, status int, bytes int64, d
 // safePath is the path with the invitation secret taken out, and the query
 // reduced to its keys.
 func safePath(u *url.URL) string {
-	p := u.Path
-	if rest, ok := strings.CutPrefix(p, "/invite/"); ok {
-		tail := ""
-		if i := strings.IndexByte(rest, '/'); i >= 0 {
-			tail = rest[i:]
-		}
-		p = "/invite/[secret]" + tail
-	}
+	p := redactInvite(u.Path)
 	if u.RawQuery == "" {
 		return quote(p)
 	}
@@ -158,6 +152,42 @@ func safePath(u *url.URL) string {
 		}
 	}
 	return quote(p) + "?" + strings.Join(parts, "&")
+}
+
+// inviteVerbs are the segments the invitation routes put after the secret
+// (auth.go: /invite/{token}/begin and /finish). They are the only thing after
+// an `invite` segment that is ever written as itself.
+var inviteVerbs = map[string]bool{"begin": true, "finish": true}
+
+// redactInvite replaces every segment after any segment spelled `invite`, in
+// any case, with [secret] — except an empty one, and a route's own verb in last
+// place straight after a redacted segment.
+//
+// It deliberately does not match on a prefix of the path. The first version
+// did, and wrote the secret for `//invite/S`, `/invite/./S` and `/Invite/S`
+// (the review on PR 96): the mux redirects the first two only after the line
+// is written, and the third is a 404 whose path still holds the secret.
+// Cleaning the path first would fix those three and leave the rule depending
+// on the cleaner agreeing with the mux. Looking at every segment does not: a
+// doubled slash or a dot is one more segment, an encoded slash has already
+// been decoded into two by the time u.Path is read, and whatever follows the
+// word is taken out, however many segments that is.
+func redactInvite(p string) string {
+	segs := strings.Split(p, "/")
+	after := false
+	for i, s := range segs {
+		if after {
+			// An empty segment, from a doubled or trailing slash, holds
+			// nothing to hide.
+			verb := i == len(segs)-1 && segs[i-1] == "[secret]" && inviteVerbs[s]
+			if s != "" && !verb {
+				segs[i] = "[secret]"
+			}
+			continue
+		}
+		after = strings.EqualFold(s, "invite")
+	}
+	return strings.Join(segs, "/")
 }
 
 // quote keeps one request on one line whatever its path holds.
