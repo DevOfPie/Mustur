@@ -16,6 +16,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -160,7 +161,14 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 		total += len(rs)
 		fmt.Fprintf(&b, "### %s (%d)\n\n", kind, len(rs))
 		for _, r := range rs {
-			fmt.Fprintf(&b, "- %s — %s\n", r.ID, strings.TrimSpace(r.Title))
+			fmt.Fprintf(&b, "- %s — %s", r.ID, strings.TrimSpace(r.Title))
+			// A finding says whether work remains without a second call
+			// (MUS-D-0196): its Status word, which its project's list maps to
+			// a State.
+			if w := status.WordOf(r); r.Kind == "finding" && w != "" {
+				fmt.Fprintf(&b, " · %s", w)
+			}
+			b.WriteString("\n")
 		}
 		b.WriteString("\n")
 	}
