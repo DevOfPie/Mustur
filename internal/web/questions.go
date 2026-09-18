@@ -624,6 +624,12 @@ func (c *countCache) forget() {
 	c.have = false
 }
 
+// get answers from the cache or counts. The lock is held across the count on
+// purpose: a forget called while a count is in flight waits for it to be
+// stored and then drops it, so a count taken before a write is never what a
+// poll after the write is answered with. Counting outside the lock would need a
+// generation number to keep that true; holding it costs one count's wait for
+// a poll that arrives during another, which the two-second window makes rare.
 func (c *countCache) get(ctx context.Context, s *store.Store, now func() time.Time, count func(context.Context, *store.Store) int) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
