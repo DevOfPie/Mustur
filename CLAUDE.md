@@ -151,9 +151,10 @@ nothing at all. The badge in the tab bar is live on every surface that has one,
 since
 [MUS-Q-0078](records/questions.md#mus-q-0078): a page left open used to show the
 count it was rendered with, and the owner missed a question being raised because
-of it. `bar.js` polls `/questions/count` and writes the badge, and it is the only
-code that writes one — the session view having its own copy is how the first fix
-ended up living on a single surface
+of it. `bar.js` polls `/questions/count` and `/records/attention/count` and
+writes both badges (Decisions, and Records counting records that need attention
+on MUS-D-0193), and it is the only code that writes one — the session view
+having its own copy is how the first fix ended up living on a single surface
 ([MUS-F-0086](records/findings.md#mus-f-0086)). Every page still renders its own
 count server-side and works with script blocked; what stops is the number
 changing.
@@ -282,6 +283,11 @@ Three rules bind every session in this repository:
   `--at` used to restamp with the date of the correction. Removing a field or a
   citation is `--drop KEY`, and `--replace` states a record afresh for the rare
   time that is wanted ([MUS-D-0134](records/decisions.md#mus-d-0134)).
+
+  A finding's Status is a word from its project's list and its State the one
+  that word means; prose goes in `Note`. A binary built from this tree refuses
+  anything else on `add` and `amend`, and `make check` catches what an older
+  one wrote — [workflow.md](workflow.md#a-finding-changes-state) says how.
 
   A jot that `Route it for me` put in the wrong place is corrected with
   `mustur reroute <ID> --to <DEST>`: it files a new record at the right

@@ -180,6 +180,10 @@ type page struct {
 	// it had something to say, and unreachable when it did not. The owner found
 	// that by loading the site and seeing only the intake box.
 	OpenQuestions int
+	// Attention is the Records badge: how many records need attention
+	// (MUS-D-0193). bar.js keeps it true after this render, as it does the
+	// count above.
+	Attention int
 }
 
 type recentJot struct {
@@ -226,6 +230,7 @@ func (in *Intake) show(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	p.OpenQuestions = OpenCount(r.Context(), in.Store)
+	p.Attention = intake.AttentionCount(r.Context(), in.Store)
 	render(w, p)
 }
 
@@ -269,7 +274,7 @@ func (in *Intake) file(w http.ResponseWriter, r *http.Request) {
 	}
 	// Scratch: filed beside the records rather than among them. It takes no
 	// identifier and never enters the log, which is the whole point — testing
-	// the box twice cost two permanent identifiers in the idea warehouse.
+	// the box twice cost two permanent identifiers in the intake box.
 	if r.PostFormValue("to") == scratchTo {
 		sc, err := in.Store.Scratched(r.Context(), text, in.actor(r))
 		if err != nil {
@@ -524,6 +529,9 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   .waiting { margin: 0 0 .75rem; padding: .55rem .8rem; border: 1px solid var(--edge);
              border-radius: .5rem; font-size: .95em; }
   .waiting a { color: inherit; }
+  /* Beside it, records needing attention (MUS-D-0193), in the warn tone the
+     Records badge wears. */
+  .waiting.att { border-color: var(--warn); }
   .said code { font-size: .95em; }
   .why { opacity: .7; font-size: .9em; }
   ul { list-style: none; padding: 0; margin: 1.5rem 0 0; }
@@ -583,6 +591,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
 <body>
 <h1>Mustur — {{.Project}}{{if .ShowAccount}}<a class="acct" href="/account">Account</a>{{end}}</h1>
 {{if .OpenQuestions}}<p class="waiting"><a href="/questions">{{.OpenQuestions}} decision{{if ne .OpenQuestions 1}}s{{end}} waiting on you</a></p>{{end}}
+{{if .Attention}}<p class="waiting att"><a href="/records">{{.Attention}} record{{if ne .Attention 1}}s need{{else}} needs{{end}} attention</a></p>{{end}}
 {{if .Error}}<p class="said">Not filed: {{.Error}}</p>{{end}}
 {{if .Filed}}<p class="said">Filed <a class="rec" href="/records/{{.Filed}}"><code>{{.Filed}}</code></a>{{if .Routed}} → {{.Routed}}{{end}}<br>
 <span class="why">{{.Why}}</span></p>{{end}}
@@ -617,7 +626,7 @@ var tmpl = template.Must(template.New("intake").Funcs(template.FuncMap{
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
   <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" class="here" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
-  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 <script src="/assets/intake.js"></script>

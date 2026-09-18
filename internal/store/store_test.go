@@ -73,6 +73,25 @@ func TestAnImportedSerialIsKeptAndNotReused(t *testing.T) {
 	}
 }
 
+// The reserved prefix's underscore is a LIKE wildcard. A project whose prefix
+// ends in the same two letters must not lend the intake box its serials.
+func TestAReservedPrefixCountsOnlyItsOwnSerials(t *testing.T) {
+	s, ctx, _ := open(t)
+	for _, id := range []string{"XIB-F-0040", "_IB-F-0002"} {
+		r := record.Record{ID: id, Kind: "finding", Title: "filed", At: "2026-09-18"}
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	next, err := s.NextID(ctx, "_IB", "F")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if next != "_IB-F-0003" {
+		t.Fatalf("next in the intake box is %s, want _IB-F-0003", next)
+	}
+}
+
 func TestAmendUnknownIsRefused(t *testing.T) {
 	s, ctx, _ := open(t)
 	err := s.Append(ctx, decision("MUS-D-0001", "first"), "amend", "test")

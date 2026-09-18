@@ -32,7 +32,7 @@ agent, which has no browser and so no passkey, carries a token instead: one
 path, one project, revoked the moment you say so.
 
 Every surface that draws the tab bar carries `bar.js`, which is what keeps the
-decision badge live rather than fixed at whatever it said when the page was
+Decisions and Records badges live rather than fixed at whatever they said when the page was
 rendered. Eight carry a client layer of their own: the session view, the session
 list, the composer, intake, and the four authentication surfaces. Only two of those stop working without it — the session
 view, because a live terminal cannot be server-rendered, and the passkey

@@ -27,6 +27,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/seed"
 	"github.com/DevOfPie/Mustur/internal/session"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/DevOfPie/Mustur/internal/verify"
 	"github.com/DevOfPie/Mustur/internal/web"
@@ -37,6 +38,7 @@ const usage = `mustur — records and routing for one project
   mustur seed     [--db PATH]                 put what already exists into an empty store
   mustur export   [--db PATH] [--out DIR]     render the store as markdown
   mustur verify   [--db PATH] [--records DIR] check the exported tree against itself, and against the store
+  mustur verify   --findings --db PATH [--project P]  every finding (of P) has a State and a Status word its project declares
   mustur serve    [--db PATH] [--addr HOST]   serve the one tool call over MCP
   mustur list     [--db PATH] [--kind KIND]   every record, by identifier
   mustur get ID   [--db PATH]                 one record in full (either order)
@@ -46,6 +48,11 @@ const usage = `mustur — records and routing for one project
                   [--drop KEY]                remove a field by name, or a citation by name or ID
                   [--replace]                 state it afresh instead, dropping the rest
   mustur reroute ID --to DEST                re-file a mis-routed jot; the old one stays, superseded
+  mustur rename   OLD=NEW [...] [--keep IDS] [--apply]  MUS-D-0192's one rename in place; lists unless --apply
+                  [--repoint ROUTING-ID=PREFIX]  set that routing record's prefix in the same transaction
+                  [--accept-unmatched]        apply although an old id is spelled inside something longer
+                  stop the service first: a jot filed across the commit can take the old prefix,
+                  and a running service may hold the write lock (the run then fails, nothing written)
   mustur ask      --title T [--blocks W]      raise a question the owner has to answer
                   [--option "L :: line :: detail"]  an answer they can pick, repeatable
                   [--needed]                  the work cannot proceed without the answer
@@ -110,6 +117,8 @@ func run(argv []string) error {
 		return cmdWrite(args, "amend")
 	case "anchors":
 		return cmdAnchors(args)
+	case "rename":
+		return cmdRename(args)
 	case "reroute":
 		return cmdReroute(args)
 	case "ask":
@@ -361,6 +370,15 @@ func cmdWrite(args []string, op string) error {
 			return fmt.Errorf("%q is not a record kind: %s", positional, strings.Join(kindNames(), ", "))
 		}
 		r.Kind = positional
+		if r.Kind == "finding" && !given(data, status.StatusField) && !given(data, status.StateField) {
+			// A finding nobody has triaged, as intake files one (MUS-D-0196).
+			r.Data = append(r.Data,
+				record.Field{Key: status.StatusField, Value: status.Unreviewed},
+				record.Field{Key: status.StateField, Value: status.Open})
+		}
+		if err := refuseFinding(ctx, s, *project, &r, data); err != nil {
+			return err
+		}
 		// Allocation and insertion in one act. Two calls let two writers claim
 		// the same serial, and the loser's record was told it was filed.
 		written, err := s.Create(ctx, r, *project, role, *actor)
@@ -380,6 +398,13 @@ func cmdWrite(args []string, op string) error {
 			r.ID, r.Kind = existing.ID, existing.Kind
 		} else if r.At == "" {
 			r.At = time.Now().Format("2006-01-02")
+		}
+		// The record as it will stand, not the flags: an amend that leaves a
+		// bad Status alone is refused as surely as one that writes it.
+		if id, err := ident.Parse(r.ID); err == nil {
+			if err := refuseFinding(ctx, s, id.Project, &r, data); err != nil {
+				return err
+			}
 		}
 	}
 	if err := s.Append(ctx, r, op, *actor); err != nil {
@@ -562,8 +587,13 @@ func cmdVerify(args []string) error {
 	fs := flag.NewFlagSet("verify", flag.ContinueOnError)
 	db := fs.String("db", "", "compare the tree against this store as well (optional)")
 	dir := fs.String("records", "records", "the exported tree to check")
+	findings := fs.Bool("findings", false, "check only the store's findings, not the tree: a State, and a Status word their project declares (MUS-D-0196). Needs --db")
+	only := fs.String("project", "", "with --findings: only this identifier prefix's findings and list; empty checks every project")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *findings {
+		return verifyFindings(*db, strings.ToUpper(strings.TrimSpace(*only)))
 	}
 	problems, checked, err := verify.Tree(*dir)
 	if err != nil {
@@ -607,6 +637,111 @@ func newServer(addr string, handler http.Handler, log io.Writer) *http.Server {
 		Handler:           web.LogRequests(log, handler),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+}
+
+// refuseFinding stops add and amend writing a finding whose Status is not a
+// word its project declares, or whose State is missing, not one, or not the
+// State the word means (MUS-D-0196). Sessions kept amending prose back into
+// Status after the mapping was written — MUS-F-0172 among them — and the gate
+// over the store only noticed afterwards. Nothing is written when it refuses,
+// and it says what to pass instead. A store where no project declares a list
+// is not checked.
+//
+// Before checking it tidies what was passed: both values are trimmed, and a
+// Status word passed without a State brings the State it means, replacing
+// whatever the record had — so `--data Status=fixed` alone is a complete
+// triage, and only a word and a State that disagree are refused.
+//
+// Where the finding's project declares no list, a Status is kept as written
+// and a note on stderr names the record to give the list to.
+func refuseFinding(ctx context.Context, s *store.Store, prefix string, r *record.Record, passed fields) error {
+	if r.Kind != "finding" {
+		return nil
+	}
+	projects, err := s.List(ctx, "project")
+	if err != nil {
+		return err
+	}
+	index, _ := status.Index(projects)
+	status.Trim(r)
+	if given(passed, status.StatusField) && !given(passed, status.StateField) {
+		if mapped, ok := index[prefix].State(status.WordOf(*r)); ok {
+			status.Set(r, mapped, status.WordOf(*r))
+		}
+	}
+	status.Fill(prefix, r, index)
+	if no := status.Finding(prefix, *r, index); no != nil {
+		return fmt.Errorf("refused, nothing written. %s: %s.\n"+
+			"  Pass --data Status=WORD, which brings the State it means, or both --data Status=WORD --data State=STATE; "+
+			"put any prose about it in --data Note=….\n"+
+			"  Status is one of: %s", no.ID, no.Problem, no.Words.List())
+	}
+	if note := status.Unlisted(prefix, *r, projects); note != "" {
+		fmt.Fprintf(os.Stderr, "mustur: note: %s\n", note)
+	}
+	return nil
+}
+
+// given reports whether a key was passed, in any case: a lower-case one is
+// still somebody saying Status, and Finding is what refuses its spelling.
+func given(passed fields, key string) bool {
+	for _, f := range passed {
+		if strings.EqualFold(strings.TrimSpace(f.Key), key) {
+			return true
+		}
+	}
+	return false
+}
+
+// verifyFindings is the gate over the store's findings (MUS-D-0196): every one
+// carries a State, and a Status word its project's list declares and maps to
+// that State. It reads the store and never the export, for the question gate's
+// reason (MUS-D-0183): on a branch the export is main's.
+func verifyFindings(db, only string) error {
+	if db == "" {
+		return fmt.Errorf("verify --findings reads a store: give --db")
+	}
+	// Looked at before it is opened: opening a missing store creates an empty
+	// one, and a check that leaves a file behind where there was none has
+	// changed what it was asked to look at.
+	if _, err := os.Stat(db); err != nil {
+		return fmt.Errorf("verify --findings: no store at %s", db)
+	}
+	s, ctx, err := openStore(db)
+	if err != nil {
+		return err
+	}
+	defer s.Close()
+	records, err := s.List(ctx, "")
+	if err != nil {
+		return err
+	}
+	if !status.Declared(records) {
+		// Said out loud rather than passed: a store that predates the lists
+		// has nothing to check against, and reporting every finding in it
+		// would fail a fresh seed for being fresh.
+		fmt.Printf("  skip  finding state gate did not run: no project in %s declares a Status word (MUS-D-0196)\n", db)
+		return nil
+	}
+	problems := status.Check(records, only)
+	for _, p := range problems {
+		fmt.Printf("  FAIL  %s\n", p)
+	}
+	if len(problems) > 0 {
+		return fmt.Errorf("%d finding state problem(s) in %s", len(problems), db)
+	}
+	n := 0
+	for _, r := range records {
+		if id, err := ident.Parse(r.ID); r.Kind == "finding" && (only == "" || (err == nil && id.Project == only)) {
+			n++
+		}
+	}
+	scope := "finding(s)"
+	if only != "" {
+		scope = only + " finding(s)"
+	}
+	fmt.Printf("  ok    %d %s in %s carry a State and a Status word their project declares\n", n, scope, db)
+	return nil
 }
 
 func cmdServe(args []string) error {
@@ -767,6 +902,9 @@ func cmdServe(args []string) error {
 	records := &web.Records{
 		Store: s, Project: *project,
 		ShowSessions: *withSessions, ShowAccount: showAccount,
+		// Move and Keep write to the store (MUS-D-0193), so this surface is
+		// told who is writing and where the export goes, as intake is.
+		Actor: defaultActor(), ExportTo: *exportTo,
 	}
 	records.Routes(mux)
 
@@ -785,6 +923,9 @@ func cmdServe(args []string) error {
 			Records: s,
 		}
 		auth.Routes(mux)
+		// So a Move or a Keep names the signed-in owner rather than the
+		// machine's configured actor.
+		records.Auth = auth
 		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project, Records: s,
 			ShowSessions: *withSessions}
 		manage.Routes(mux)

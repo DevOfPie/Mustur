@@ -50,7 +50,11 @@ var notAPage = []struct {
 	// A number, for the badge every surface carries (MUS-Q-0078). Matched
 	// exactly rather than by prefix: this is one endpoint behind one control,
 	// and a rule that covered /questions/* would let a page through.
-	{"a count is not a page", func(p string) bool { return p == "/questions/count" }},
+	// The Records badge's count joined it on MUS-D-0193, matched exactly for
+	// the same reason.
+	{"a count is not a page", func(p string) bool {
+		return p == "/questions/count" || p == "/records/attention/count"
+	}},
 }
 
 // served reads the routes the package actually registers.

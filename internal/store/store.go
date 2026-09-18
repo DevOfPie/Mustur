@@ -371,6 +371,13 @@ func nextID(ctx context.Context, q querier, project string, role ident.Role) (st
 		if err != nil {
 			continue // Not ours to interpret; NextID only counts what it understands.
 		}
+		// LIKE reads an underscore as any one character, so the reserved
+		// prefix `_IB-F-%` also matches every `?IB-F-` project's records.
+		// Counting those would hand the intake box a serial from somebody
+		// else's sequence; the pattern narrows, this decides.
+		if parsed.Project != project || parsed.Role != role {
+			continue
+		}
 		if parsed.Serial > highest {
 			highest = parsed.Serial
 		}

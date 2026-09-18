@@ -16,6 +16,7 @@ import (
 	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -160,7 +161,16 @@ func (s *Server) index(ctx context.Context, args Args) (string, error) {
 		total += len(rs)
 		fmt.Fprintf(&b, "### %s (%d)\n\n", kind, len(rs))
 		for _, r := range rs {
-			fmt.Fprintf(&b, "- %s — %s\n", r.ID, strings.TrimSpace(r.Title))
+			fmt.Fprintf(&b, "- %s — %s", r.ID, strings.TrimSpace(r.Title))
+			// A finding says whether work remains without a second call
+			// (MUS-D-0196): its State and its Status word, as state/word.
+			// The word alone left unverified or merged to be looked up.
+			if r.Kind == "finding" {
+				if w, st := status.WordOf(r), status.StateOf(r); w != "" || st != "" {
+					fmt.Fprintf(&b, " · %s/%s", st, w)
+				}
+			}
+			b.WriteString("\n")
 		}
 		b.WriteString("\n")
 	}

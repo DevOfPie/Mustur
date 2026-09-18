@@ -202,6 +202,67 @@ the citation structure is never the primary object. Identifiers here are dense
 and cross-referential, so the graph reading was real; what it cost is in
 [decisions.md](../decisions.md#records-read-as-a-document).
 
+**Amended 2026-09-15: a record is a document, the index is a list**
+(MUS-D-0186, amending MUS-D-0040). The index had been the document too — every
+record rendered in full with every citation resolved, and the kind counts the
+only navigation. Against a copy of the live store on 2026-09-15 that was
+11,413,213 bytes for 2,144 records and about half a second per load — the
+measurement taken for PR 101; the 11,379,228 bytes in MUS-F-0164's evidence is
+the earlier one, taken by the MUS-F-0163 check — and there was no way to pick a project or a kind or to search
+by number (MUS-F-0164). What replaced it is drawn in
+[plan-014052cd97a048c4](https://plan.agent-native.com/plans/plan-014052cd97a048c4)
+and was approved with its recommended answers on MUS-Q-0140:
+
+| Question | Settled |
+| --- | --- |
+| What a row shows | One line: identifier, kind, project, title, date. Two lines on a phone, so the title is never cut, and the phone row drops the date, as the approved plan's phone artboard draws it; the date shows on wide screens |
+| `/records` with nothing chosen | Every project, newest first by date, then identifier descending |
+| What the search box matches | A whole identifier the store holds answers 303 to its page; a bare number matches identifier endings in every project and kind; anything else is a case-insensitive substring of the title. Never bodies |
+| Rows per page | 50, with Newer and Older links; a page past the end is shown empty with a Newer link |
+
+`GET /records` takes `project` (the identifier prefix), `kind`, `q` and `page`,
+and ignores a value it does not know rather than refusing it, so a stale
+bookmark still shows something. The project picker lists the prefixes present,
+named through the project records, and the kind picker the kinds within the
+chosen project — phases included — each with its count. A line above the list
+names the total and what is chosen, with Clear. It is a plain GET form: it adds
+no script, so `bar.js` stays the only one on the page, and it works with script
+blocked. The index filters what `Store.List` returns and never renders a body or
+resolves a citation; `/records/{id}` is unchanged, and is where the document
+reading, the in-place expansion and the routing verification now live.
+
+**Amended 2026-09-18: records that need attention** (MUS-D-0193, answering
+MUS-Q-0154, built with its recommended answers). A jot that names a destination
+taking jots only on a confirmed move waits in the intake box, and needs attention
+until somebody moves it there or keeps it where it is; `intake.NeedsAttention`
+is the one definition. The index pins a warn-bordered "Needs attention · N"
+section above the filters, whatever they say, each row naming where it would go,
+and absent at nought; a matching row in the list below carries a warn dot. A
+record needing attention carries a banner above its title saying what it names;
+an owner is also offered **Move to …**, which posts to `/records/{id}/move` and
+reroutes through the function `mustur reroute --to` calls, narrowed to a place
+the jot names and with its own reason written, and **Keep in intake
+box**, which posts to `/records/{id}/keep` and writes who and when as `Kept`.
+Both are plain form posts that work with script blocked, refuse a non-owner and
+a cross-site post with 403, and stack full width on a phone; a reader sees the
+banner without them. The Records tab carries the count as a warn-toned badge on
+every surface, from `/records/attention/count`, which `bar.js` polls beside the
+decisions count, and the intake box says "N records need attention" beside its
+decisions line.
+
+**Amended 2026-09-18: a finding's State** (MUS-D-0196). A third picker beside
+the kind picker takes `state` — "Any state", open, done or dropped — each with
+how many findings within the chosen project and matching the search carry it.
+Only a finding has a State, so choosing one lists findings only; any other kind
+is listed while it says "Any state", and with another kind chosen the picker is
+switched off, reading "Findings only" with "Only findings have a State" as its
+title. A finding's row carries
+its Status word as a small pill after the title, in the warn tone for open, the
+accent for done and muted for dropped, with the word and State in its title; a
+finding with no State, or one that is not a State, wears a dashed pill of its
+own. The word is the text, so the tone is never the only signal. On a phone the
+project picker takes a row to itself. Same GET form, no script.
+
 ### 4. Decision queue
 
 **Serves** `/questions`
@@ -278,7 +339,9 @@ hand, mostly read by agents.
 
 Must answer: is this checkout actually where the registry says it is? The
 dispatcher contract this implements verifies before entering rather than trusting
-a row, so the surface has to show a stale row as stale.
+a row, so the surface has to show a stale checkout as stale. It does so on the
+repository's own page, `/records/{ID}`, and not on index rows, which carry the
+five approved fields and no badge (MUS-Q-0149).
 
 ### 7. Audit
 

@@ -3,7 +3,8 @@ package store
 // Scratch: a place to file something that was never meant to be kept.
 //
 // The owner tested the picture upload twice and it cost two identifiers in the
-// idea warehouse — `IDW-F-0002` and `IDW-F-0003`, both of which say "test" in
+// intake box — IDW-F-0002 and IDW-F-0003, `_IB-F-0002` and `_IB-F-0003` after
+// MUS-D-0192's rename, both of which say "test" in
 // their own titles and now sit in the records forever, because an identifier
 // here is permanent and the log only ever grows. That is the whole complaint:
 // **a test filing should not advance a counter.**
@@ -33,7 +34,7 @@ import (
 //
 // Long enough to file something on a phone and read it back at a desk; short
 // enough that nobody starts relying on it. Anything worth keeping is worth an
-// identifier, and that is what the idea inbox is for.
+// identifier, and that is what the intake box is for.
 const ScratchLife = 24 * time.Hour
 
 // A Scratch is a filing that was never meant to last.

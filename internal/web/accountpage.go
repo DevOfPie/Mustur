@@ -85,6 +85,16 @@ func projectNamesIn(records []record.Record) projectNames {
 
 // name is projectName's rule applied to a listing already in hand.
 func (projects projectNames) name(prefix string) string {
+	if t := projects.title(prefix); t != prefix {
+		return t + " (" + prefix + ")"
+	}
+	return prefix
+}
+
+// title is the project's name without the tag, for a place the tag is already
+// on screen — a records row carries it in the identifier beside it. The bare
+// prefix where the store cannot say.
+func (projects projectNames) title(prefix string) string {
 	if prefix == "" {
 		return prefix
 	}
@@ -92,7 +102,7 @@ func (projects projectNames) name(prefix string) string {
 	// stated rather than inferred.
 	for _, p := range projects {
 		if v, ok := p.Get(intake.PrefixField); ok && strings.EqualFold(strings.TrimSpace(v), prefix) {
-			return p.Title + " (" + prefix + ")"
+			return p.Title
 		}
 	}
 	// Otherwise the project written under this prefix and claiming no other.
@@ -101,7 +111,7 @@ func (projects projectNames) name(prefix string) string {
 			continue
 		}
 		if id, err := ident.Parse(p.ID); err == nil && id.Project == prefix {
-			return p.Title + " (" + prefix + ")"
+			return p.Title
 		}
 	}
 	return prefix
@@ -180,6 +190,10 @@ type personRow struct {
 type accountPage struct {
 	// OpenQuestions is the bar's count; bar.js keeps it true after this render.
 	OpenQuestions int
+	// Attention is the Records badge: how many records need attention
+	// (MUS-D-0193). bar.js keeps it true after this render, as it does the
+	// count above.
+	Attention int
 
 	Email    string
 	Roles    []roleRow
@@ -296,6 +310,7 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 	ctx := r.Context()
 	if a.Records != nil {
 		p.OpenQuestions = OpenCount(ctx, a.Records)
+		p.Attention = intake.AttentionCount(ctx, a.Records)
 	}
 	p.Email = acct.Email
 	p.Project = a.Project
@@ -689,7 +704,7 @@ var accountTmpl = template.Must(template.New("account").Parse(`<!doctype html>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
   <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
-  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   <a class="me here" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>
 </nav>
 <script src="/assets/auth.js"></script>

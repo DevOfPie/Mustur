@@ -1251,7 +1251,7 @@ func claimsNoSubagents(body string) bool {
 
 // The drawer can be dragged wider, and the handle is a control.
 //
-// IDW-F-0004, from the owner: the drawer can take more space on a laptop and
+// IDW-F-0004 (_IB-F-0004 after MUS-D-0192), from the owner: the drawer can take more space on a laptop and
 // dragging it wider would be nice when wanted. The behaviour itself is measured
 // in a browser — a drag is not something markup can prove — so what this holds
 // is the part that quietly rots: that the handle stays reachable without a
@@ -1462,8 +1462,21 @@ func TestTheDecisionCountRidesTheSocket(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(bar), `nav a[href="/questions"]`) {
-		t.Fatal("the shared writer never finds the Decisions tab")
+	// Both badges, each from its own count (MUS-D-0193). The tab is found by
+	// its href, built from these.
+	for _, want := range []string{
+		`nav a[href="`,
+		`tab: "/questions", count: "/questions/count"`,
+		`tab: "/records", count: "/records/attention/count"`,
+	} {
+		if !strings.Contains(string(bar), want) {
+			t.Fatalf("the shared writer lacks %s", want)
+		}
+	}
+	// musturBadge still takes one number and writes the Decisions badge, which
+	// is what the socket above hands it.
+	if !strings.Contains(string(bar), "window.musturBadge = function (n) {\n    write(BADGES[0], n);") {
+		t.Error("musturBadge no longer writes the Decisions badge from one number")
 	}
 	// Absent, not empty: that is how the server renders nothing waiting.
 	if !strings.Contains(string(bar), "removeChild(cnt)") {

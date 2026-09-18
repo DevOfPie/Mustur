@@ -116,6 +116,10 @@ type composeTarget struct {
 type composePage struct {
 	// OpenQuestions is the bar's count; bar.js keeps it true after this render.
 	OpenQuestions int
+	// Attention is the Records badge: how many records need attention
+	// (MUS-D-0193). bar.js keeps it true after this render, as it does the
+	// count above.
+	Attention int
 
 	Targets []composeTarget
 	// ShowAccount renders the header link to the account surface, which is
@@ -353,6 +357,7 @@ func (c *Compose) render(w http.ResponseWriter, r *http.Request, p composePage) 
 	p.ShowAccount = c.ShowAccount
 	if c.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), c.Store)
+		p.Attention = intake.AttentionCount(r.Context(), c.Store)
 	}
 	if err := composeTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -447,7 +452,7 @@ var composeTmpl = template.Must(template.New("compose").Parse(`<!doctype html>
   <a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>
   <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
-  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 {{if not .None}}<script src="/assets/compose.js"></script>{{end}}

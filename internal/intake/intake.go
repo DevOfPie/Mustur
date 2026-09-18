@@ -10,6 +10,7 @@ package intake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -18,6 +19,7 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -35,6 +37,9 @@ type Destination struct {
 	// that says where a record belongs is the difference between a store you
 	// can scan and one you have to open (MUS-Q-0030).
 	Prefix string
+	// Names holds the identifiers of destinations the jot named and was not
+	// routed to because they opted out of name-matching. Empty for most jots.
+	Names []string
 }
 
 // PrefixField names the identifier prefix a routing record's jots are filed
@@ -51,8 +56,30 @@ const DefaultField = "Intake"
 // DefaultValue is the value that field carries on the fallback destination.
 const DefaultValue = "default"
 
+// OptOutField takes a destination out of name-matching. A jot that names it is
+// not routed to it; it falls through as if the name had not been there, and the
+// routing says which destination was named and passed over. Choosing it
+// explicitly still files there: the opt-out is against the guess, not against
+// the destination.
+//
+// It exists for a destination whose name turns up in jots that are not meant
+// for it — somewhere a jot should arrive only because somebody confirmed a move
+// there, never because its name happened to be written down.
+const OptOutField = "Route it for me"
+
+// OptOutValue is the value that field carries on a destination that has opted
+// out.
+const OptOutValue = "never"
+
+// NamesField is the data field on a filed jot that records a destination it
+// named and was not routed to because that destination opted out.
+const NamesField = "Names"
+
 // routingKinds are the record kinds a jot can be routed to.
 var routingKinds = map[string]bool{"repository": true, "machine": true, "project": true}
+
+// IsRoutingKind reports whether a record of this kind is a destination.
+func IsRoutingKind(kind string) bool { return routingKinds[kind] }
 
 // Route decides where a jot goes. It returns the destination and never an
 // error: a jot that cannot be routed still gets filed, because refusing to file
@@ -61,6 +88,7 @@ var routingKinds = map[string]bool{"repository": true, "machine": true, "project
 func Route(text string, routing []record.Record) Destination {
 	var fallback *record.Record
 	matches := map[string]record.Record{}
+	skipped := map[string]record.Record{}
 
 	for _, r := range routing {
 		if !routingKinds[r.Kind] {
@@ -72,11 +100,60 @@ func Route(text string, routing []record.Record) Destination {
 		}
 		for _, name := range namesOf(r) {
 			if mentions(text, name) {
-				matches[r.ID] = r
+				// An opted-out destination is taken out before narrowing, so
+				// what remains is decided exactly as if it had never matched.
+				if optedOut(r) {
+					skipped[r.ID] = r
+				} else {
+					matches[r.ID] = r
+				}
 			}
 		}
 	}
 
+	d := route(matches, fallback)
+	if len(skipped) == 0 {
+		return d
+	}
+	ids := make([]string, 0, len(skipped))
+	for id := range skipped {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	titles := make([]string, 0, len(ids))
+	for _, id := range ids {
+		titles = append(titles, skipped[id].Title)
+	}
+	d.Names = ids
+	passed := strings.Join(titles, ", ")
+	which := "which takes jots only when a move is confirmed"
+	if len(titles) > 1 {
+		which = "which take jots only when a move is confirmed"
+	}
+	if len(matches) == 0 {
+		// The opted-out destination was the only name in the jot, so the
+		// fallback's own reason ("no destination is obvious") would hide the
+		// one thing a reader of the routing needs to know.
+		d.Why = fmt.Sprintf("the jot names %s, %s", passed, which)
+		if d.ID == "" {
+			d.Why += ", and the routing registry declares no default"
+		}
+		return d
+	}
+	d.Why = fmt.Sprintf("%s; it also names %s, %s", d.Why, passed, which)
+	return d
+}
+
+// optedOut reports whether a routing record has taken itself out of
+// name-matching with OptOutField.
+func optedOut(r record.Record) bool {
+	v, ok := r.Get(OptOutField)
+	return ok && strings.EqualFold(strings.TrimSpace(v), OptOutValue)
+}
+
+// route decides between what the jot's names matched, falling back when none
+// or several of them are obvious.
+func route(matches map[string]record.Record, fallback *record.Record) Destination {
 	narrowed := narrow(matches)
 
 	switch len(narrowed) {
@@ -252,7 +329,7 @@ type Request struct {
 // be tested and so the record's date is the caller's decision rather than this
 // package's.
 func File(ctx context.Context, s *store.Store, req Request) (record.Record, Destination, error) {
-	project, text, actor, now := req.Project, req.Text, req.Actor, req.Now
+	text, actor, now := req.Text, req.Actor, req.Now
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
 		return record.Record{}, Destination{}, fmt.Errorf("nothing to file")
@@ -273,13 +350,30 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 		return *existing, to, nil
 	}
 
-	routing, err := routingRecords(ctx, s)
+	r, to, under, err := draft(ctx, s, req, trimmed)
 	if err != nil {
 		return record.Record{}, Destination{}, err
 	}
-	to, err := chosen(routing, req.To)
+	written, err := s.Create(ctx, r, under, ident.Finding, actor)
 	if err != nil {
 		return record.Record{}, Destination{}, err
+	}
+	return written, to, nil
+}
+
+// draft is everything File decides — where the jot goes, what it is called,
+// what it carries — without writing it. Reroute files its draft in the same
+// transaction that retires the original, so it needs the decision without the
+// write.
+func draft(ctx context.Context, s *store.Store, req Request, trimmed string) (record.Record, Destination, string, error) {
+	project, actor, now := req.Project, req.Actor, req.Now
+	routing, err := routingRecords(ctx, s)
+	if err != nil {
+		return record.Record{}, Destination{}, "", err
+	}
+	to, err := chosen(routing, req.To)
+	if err != nil {
+		return record.Record{}, Destination{}, "", err
 	}
 	if to.ID == "" {
 		to = Route(trimmed, routing)
@@ -292,26 +386,31 @@ func File(ctx context.Context, s *store.Store, req Request) (record.Record, Dest
 		Body:  trimmed,
 		Data: []record.Field{
 			{Key: "Evidence", Value: ""},
-			{Key: "Status", Value: "unreviewed"},
+			// Nobody has triaged it, which every project's list calls
+			// unreviewed and maps to open (MUS-D-0196).
+			{Key: status.StatusField, Value: status.Unreviewed},
+			{Key: status.StateField, Value: status.Open},
 			{Key: "Routed to", Value: routedTo(to)},
 			{Key: "Routing", Value: to.Why},
 			{Key: "Filed by", Value: actor},
 		},
 	}
+	if len(to.Names) > 0 {
+		// The destination the jot named and was kept from, so moving it there
+		// later is a confirmation of something the record already says.
+		r.Data = append(r.Data, record.Field{Key: NamesField, Value: strings.Join(to.Names, ", ")})
+	}
 	if to.ID != "" {
 		r.Refs = []record.Field{{Key: "Routed to", Value: to.ID}}
 	}
-	// Where it routes decides what it is called. A jot in the idea inbox is not
-	// a Mustur record and no longer says it is (MUS-Q-0030, MUS-Q-0031).
+	// Where it routes decides what it is called. A jot in the intake box is not
+	// a Mustur record and no longer says it is (MUS-Q-0030, MUS-Q-0031); under
+	// MUS-D-0192 its prefix is the reserved _IB.
 	under := project
 	if to.Prefix != "" {
 		under = to.Prefix
 	}
-	written, err := s.Create(ctx, r, under, ident.Finding, actor)
-	if err != nil {
-		return record.Record{}, Destination{}, err
-	}
-	return written, to, nil
+	return r, to, under, nil
 }
 
 // Window is how long a repeat of the same text from the same filer is treated
@@ -343,6 +442,29 @@ func fieldOr(r record.Record, key, fallback string) string {
 // routing record is an error rather than a silent fallback to the guess: the
 // filer said something, and quietly ignoring it would file the jot somewhere
 // they did not choose while telling them it was filed.
+// ErrUnknownDestination is a destination the routing registry does not hold:
+// the caller's mistake, not the store's.
+var ErrUnknownDestination = errors.New("is not a destination this registry holds")
+
+// IsDestination reports whether a record is one a jot can be routed to.
+func IsDestination(r record.Record) bool { return routingKinds[r.Kind] }
+
+// DefaultIn returns the identifier of the routing record a jot falls back to —
+// the intake box — among rs, or "" if none declares itself the default. The
+// last one wins if several do, as it does in Route.
+func DefaultIn(rs []record.Record) string {
+	box := ""
+	for _, r := range rs {
+		if !routingKinds[r.Kind] {
+			continue
+		}
+		if v, ok := r.Get(DefaultField); ok && strings.EqualFold(strings.TrimSpace(v), DefaultValue) {
+			box = r.ID
+		}
+	}
+	return box
+}
+
 func chosen(routing []record.Record, id string) (Destination, error) {
 	if strings.TrimSpace(id) == "" {
 		return Destination{}, nil
@@ -350,8 +472,8 @@ func chosen(routing []record.Record, id string) (Destination, error) {
 	for _, r := range routing {
 		if r.ID == id {
 			// The prefix comes from the destination however the destination was
-			// arrived at. A jot routed to the idea inbox by the guess was filed
-			// under IDW while the same jot sent there deliberately was filed
+			// arrived at. A jot routed to the intake box by the guess was filed
+			// under its prefix while the same jot sent there deliberately was filed
 			// under the store's prefix — the identifier depended on how the
 			// choice was made rather than on where the record went.
 			return Destination{
@@ -360,7 +482,7 @@ func chosen(routing []record.Record, id string) (Destination, error) {
 			}, nil
 		}
 	}
-	return Destination{}, fmt.Errorf("%s is not a destination this registry holds", id)
+	return Destination{}, fmt.Errorf("%s %w", id, ErrUnknownDestination)
 }
 
 // Destinations returns the routing records a filer may choose between, sorted

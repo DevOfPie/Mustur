@@ -19,6 +19,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/DevOfPie/Mustur/internal/ident"
@@ -195,15 +196,16 @@ func Render(records []record.Record) (map[string][]byte, error) {
 		index[r.ID] = file
 	}
 
+	retired := record.Retire(sorted)
 	out := map[string][]byte{}
 	for _, f := range flatFiles {
-		out[f.name] = renderFlat(f.title, f.of, f.name, kindsOf(sorted, f.kinds...), index)
+		out[f.name] = renderFlat(f.title, f.of, f.name, kindsOf(sorted, f.kinds...), index, retired)
 	}
 	for _, kind := range []string{"work-unit", "investigation"} {
 		dir := dirFor[kind]
 		records := byKind(sorted, kind)
 		for _, r := range records {
-			out[dir+"/"+r.ID+".md"] = renderUnit(r, index)
+			out[dir+"/"+r.ID+".md"] = renderUnit(r, index, retired)
 		}
 		out[dir+"/index.md"] = renderRecordIndex(kind, records)
 		out[dir+"/_template.md"] = []byte(templateFor[kind])
@@ -265,11 +267,11 @@ func relative(from, target string) string {
 }
 
 func cell(s string) string {
-	s = strings.ReplaceAll(s, "|", `\|`)
+	s = escapeReserved(strings.ReplaceAll(s, "|", `\|`))
 	return strings.Join(strings.Fields(s), " ")
 }
 
-func renderFlat(title, of, self string, rs []record.Record, index map[string]string) []byte {
+func renderFlat(title, of, self string, rs []record.Record, index map[string]string, retired record.Retirements) []byte {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "# %s\n\n%s\n\n%s\n\n", title, generatedNotice, of)
 	if len(rs) == 0 {
@@ -283,7 +285,7 @@ func renderFlat(title, of, self string, rs []record.Record, index map[string]str
 	for _, r := range rs {
 		b.WriteString("\n---\n\n")
 		fmt.Fprintf(&b, "## %s\n\n", r.ID)
-		writeRecord(&b, r, self, index)
+		writeRecord(&b, r, self, index, retired.PlainIn(r.ID))
 	}
 	return b.Bytes()
 }
@@ -291,13 +293,17 @@ func renderFlat(title, of, self string, rs []record.Record, index map[string]str
 // writeRecord renders one record's title, provenance, citations, prose and
 // fields. Every surface that shows a record goes through it, so a record reads
 // the same in a session as it does in the exported tree.
-func writeRecord(b *bytes.Buffer, r record.Record, self string, index map[string]string) {
-	fmt.Fprintf(b, "**%s**\n\n", strings.TrimSpace(r.Title))
+//
+// plain holds the retired identifiers this record shows as plain text
+// (MUS-D-0197): never linked, even once an identifier of that spelling is
+// issued again.
+func writeRecord(b *bytes.Buffer, r record.Record, self string, index map[string]string, plain map[string]bool) {
+	fmt.Fprintf(b, "**%s**\n\n", escapeReserved(strings.TrimSpace(r.Title)))
 	fmt.Fprintf(b, "%s · %s\n", r.Kind, r.At)
 	for _, ref := range r.Refs {
-		fmt.Fprintf(b, "\n%s: %s\n", ref.Key, linkList(ref.Value, self, index))
+		fmt.Fprintf(b, "\n%s: %s\n", ref.Key, linkList(ref.Value, self, index, plain))
 	}
-	if body := strings.TrimSpace(r.Body); body != "" {
+	if body := strings.TrimSpace(escapeReserved(unlinkRetired(r.Body, plain))); body != "" {
 		fmt.Fprintf(b, "\n%s\n", body)
 	}
 	if len(r.Data) > 0 {
@@ -321,20 +327,23 @@ func OneUnder(r record.Record, depth int) string {
 	}
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "%s %s\n\n", strings.Repeat("#", depth), r.ID)
-	writeRecord(&b, r, "", nil)
+	writeRecord(&b, r, "", nil, nil)
 	return b.String()
 }
 
 // linkList turns a comma-separated list of identifiers into links, leaving
 // anything that is not an identifier as it was written.
-func linkList(value, self string, index map[string]string) string {
+func linkList(value, self string, index map[string]string, plain map[string]bool) string {
 	parts := strings.Split(value, ",")
 	for i, p := range parts {
 		t := strings.TrimSpace(p)
-		if ident.Valid(t) {
+		if ident.Valid(t) && !plain[t] {
 			parts[i] = link(t, self, index)
+			if !strings.HasPrefix(parts[i], "[") {
+				parts[i] = escapeReserved(parts[i])
+			}
 		} else {
-			parts[i] = t
+			parts[i] = escapeReserved(t)
 		}
 	}
 	return strings.Join(parts, ", ")
@@ -344,18 +353,19 @@ func linkList(value, self string, index map[string]string) string {
 // the prose is the context, and every field becomes a section. That is the
 // shape the directory-role modules ask for, and it is why a record kind that
 // wants those checks is exported this way rather than as a row.
-func renderUnit(r record.Record, index map[string]string) []byte {
+func renderUnit(r record.Record, index map[string]string, retired record.Retirements) []byte {
 	self := dirFor[r.Kind] + "/" + r.ID + ".md"
+	plain := retired.PlainIn(r.ID)
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "# %s\n\n%s\n\n", r.ID, generatedNotice)
-	writeRecord(&b, record.Record{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Refs: r.Refs}, self, index)
-	if body := strings.TrimSpace(r.Body); body != "" {
+	writeRecord(&b, record.Record{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Refs: r.Refs}, self, index, plain)
+	if body := strings.TrimSpace(escapeReserved(unlinkRetired(r.Body, plain))); body != "" {
 		// Under a heading, not loose: the investigations module asks every
 		// record for a context or question section, and the prose is it.
 		fmt.Fprintf(&b, "\n## Context\n\n%s\n", body)
 	}
 	for _, f := range r.Data {
-		fmt.Fprintf(&b, "\n## %s\n\n%s\n", f.Key, strings.TrimSpace(f.Value))
+		fmt.Fprintf(&b, "\n## %s\n\n%s\n", f.Key, escapeReserved(strings.TrimSpace(f.Value)))
 	}
 	return b.Bytes()
 }
@@ -439,4 +449,120 @@ func renderIndex(rs []record.Record, index map[string]string) []byte {
 		fmt.Fprintf(&b, "| %s | %s | %s |\n", link(r.ID, "README.md", index), r.Kind, cell(r.Title))
 	}
 	return b.Bytes()
+}
+
+// bodyLink is a markdown inline link, the only kind a body carries: text that
+// may hold one level of nested brackets, then a destination, optionally in
+// angle brackets and optionally followed by a title in any of the three
+// quotings (review of #107, nit 9).
+var bodyLink = regexp.MustCompile(`\[((?:[^\[\]]|\[[^\[\]]*\])*)\]\(\s*<?([^)\s>]+)>?(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*\)`)
+
+// unlinkRetired leaves a link in a body as its text alone when it points at a
+// retired identifier this record shows as plain text — by its anchor
+// ("findings.md#idw-f-0004") or its file ("work-units/IDW-W-0001.md"). The
+// export writes a body as it was written except for this, because a link that
+// resolves today to nothing resolves tomorrow to whatever is issued under the
+// same spelling (MUS-D-0197).
+func unlinkRetired(body string, plain map[string]bool) string {
+	if len(plain) == 0 {
+		return body
+	}
+	return bodyLink.ReplaceAllStringFunc(body, func(m string) string {
+		sub := bodyLink.FindStringSubmatch(m)
+		target := sub[2]
+		if strings.Contains(target, "://") {
+			return m
+		}
+		for id := range plain {
+			if strings.HasSuffix(target, "#"+strings.ToLower(id)) || path.Base(target) == id+".md" {
+				return sub[1]
+			}
+		}
+		return m
+	})
+}
+
+// escapeReserved puts a backslash before the underscore that opens a reserved
+// identifier, so a markdown renderer cannot take it as emphasis: GitHub, like
+// goldmark, renders "a _IB-F-0001_ b" as "a <em>IB-F-0001</em> b" (review of
+// #107, nit 8). Code is left alone — fenced blocks and inline spans — because
+// a backslash there is shown rather than read. The export's headings and link
+// texts are written without it: an identifier alone in either has nothing to
+// pair its underscore with.
+func escapeReserved(md string) string {
+	if !strings.Contains(md, "_") {
+		return md
+	}
+	lines := strings.Split(md, "\n")
+	fenced := false
+	for n, line := range lines {
+		t := strings.TrimLeft(line, " ")
+		if strings.HasPrefix(t, "```") || strings.HasPrefix(t, "~~~") {
+			fenced = !fenced
+			continue
+		}
+		if fenced {
+			continue
+		}
+		var b strings.Builder
+		for i := 0; i < len(line); {
+			if line[i] == '`' {
+				run := 1
+				for i+run < len(line) && line[i+run] == '`' {
+					run++
+				}
+				if end := closingTicks(line, i+run, run); end >= 0 {
+					b.WriteString(line[i:end])
+					i = end
+					continue
+				}
+				b.WriteString(line[i : i+run])
+				i += run
+				continue
+			}
+			j := i
+			for j < len(line) && line[j] != '`' {
+				j++
+			}
+			b.WriteString(escapeSpans(line[i:j]))
+			i = j
+		}
+		lines[n] = b.String()
+	}
+	return strings.Join(lines, "\n")
+}
+
+// closingTicks finds the end of the backtick run of exactly this length that
+// closes an inline code span opened before from, or -1.
+func closingTicks(line string, from, run int) int {
+	for i := from; i < len(line); {
+		if line[i] != '`' {
+			i++
+			continue
+		}
+		n := 0
+		for i+n < len(line) && line[i+n] == '`' {
+			n++
+		}
+		if n == run {
+			return i + n
+		}
+		i += n
+	}
+	return -1
+}
+
+func escapeSpans(text string) string {
+	var b strings.Builder
+	last := 0
+	for _, sp := range ident.Spans(text) {
+		if text[sp[0]] != '_' || (sp[0] > 0 && text[sp[0]-1] == '\\') {
+			continue
+		}
+		b.WriteString(text[last:sp[0]])
+		b.WriteString(`\`)
+		last = sp[0]
+	}
+	b.WriteString(text[last:])
+	return b.String()
 }

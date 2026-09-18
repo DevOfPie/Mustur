@@ -16,10 +16,14 @@ Keep them liftable.
 
 **Every rule below is executable by hand today.** That was free while nothing
 was built; since milestone 2 it is a constraint, and `make check` is where it is
-kept — every gate runs offline against the working tree, except two. The
+kept — every gate runs offline against the working tree, except three. The
 question gate reads Mustur's own store and never the committed export, and says
 out loud that it did not run where there is no store or the store holds no
-records ([MUS-D-0183](records/decisions.md#mus-d-0183)). The export-scope gate
+records ([MUS-D-0183](records/decisions.md#mus-d-0183)). The finding state
+gate reads the same store the same way, scoped to MUS findings as that one is,
+and fails on one whose State or Status word its project does not declare; it
+says it did not run where no project declares a word (MUS-D-0196).
+`make findings-all` is the same over every project, and is not a gate. The export-scope gate
 needs origin: it fetches `main` when the checkout has none to compare with, and
 says out loud that it did not run when the fetch fails
 ([MUS-D-0182](records/decisions.md#mus-d-0182)).
@@ -217,6 +221,31 @@ links into
 
 The export is committed on main only
 ([MUS-D-0182](records/decisions.md#mus-d-0182)).
+
+### A finding changes state
+
+```
+always   → Status is one word from its project's "Status word" list;
+           State is the state that word means: open, done or dropped
+a word   → brings its State; pass State too only to be refused on a mismatch
+prose    → --data Note=…, never in Status
+no list  → the project's record has no "Status word": Status is kept as
+           written, and a note names the record to give a list to
+```
+
+```
+mustur amend <PREFIX>-F-NNNN --data Status=in-review \
+  --data "Note=fixed on PR 99, not merged"
+```
+
+A new finding with neither is filed unreviewed and open.
+
+The refusal lives in the binary. `mustur add finding` and `mustur amend` built
+from this tree write nothing that breaks the rule and print the project's list
+instead; the one installed on a machine does that from the deploy that carries
+it, and not before. What catches a finding written by an older binary — or
+by anything else — is `make check`, which fails on any MUS finding in the store
+that breaks the rule (MUS-D-0196). `make findings-all` checks every project.
 
 ### A claim is about to be written
 

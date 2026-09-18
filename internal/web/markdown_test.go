@@ -243,3 +243,59 @@ func TestABodysHeadingLevelsAreDistinctAndBetweenTextAndTitle(t *testing.T) {
 		t.Error("the record title is not 1.1rem, so the ceiling above is not the page's")
 	}
 }
+
+// A reserved identifier's underscore is not an emphasis delimiter; an
+// underscore elsewhere still is (review of #107, nit 8). One run into it is
+// given up as text rather than split the identifier.
+func TestAReservedIdentifierIsNotTakenForEmphasis(t *testing.T) {
+	for in, want := range map[string]string{
+		"a _IB-F-0001_ b":           "<p>a _IB-F-0001_ b</p>",
+		"_IB-F-0001 and _IB-F-0002": "<p>_IB-F-0001 and _IB-F-0002</p>",
+		"__IB-F-0001_":              "<p>__IB-F-0001_</p>",
+		"`_IB-F-0001`":              "<p><code>_IB-F-0001</code></p>",
+		"_plain emphasis_":          "<p><em>plain emphasis</em></p>",
+		"X_IB-F-0001_":              "<p>X_IB-F-0001_</p>",
+	} {
+		if got := strings.TrimSpace(string(markdown(in))); got != want {
+			t.Errorf("markdown(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+// A citation in italics is still a citation: the page reads identifiers the
+// way the export check does, and a \b pattern read `_MUS-D-0001_` as nothing.
+func TestACitationInItalicsIsStillACitation(t *testing.T) {
+	srv := serveRecords(t, "",
+		decision("MUS-D-0001", "The cited one", "First."),
+		decision("MUS-D-0009", "Cites", "As _MUS-D-0001_ said."),
+	)
+	body, _ := fetch(t, srv, "/records/MUS-D-0009")
+	if !strings.Contains(body, `<summary class="badge">MUS-D-0001</summary>`) {
+		t.Error("a citation in italics has no badge")
+	}
+}
+
+// A reserved prefix is an identifier like any other on the page: its export
+// anchor and file are pointed at its record, and naming it bare is a citation.
+func TestAReservedIdentifierInABodyResolves(t *testing.T) {
+	srv := serveRecords(t, "",
+		record.Record{ID: "_IB-F-0001", Kind: "finding", Title: "In the box", At: "2026-09-18"},
+		decision("MUS-D-0009", "Cites the box",
+			"See [it](findings.md#_ib-f-0001), [its file](findings/_IB-F-0001.md), and _IB-F-0001 bare."),
+	)
+	body, _ := fetch(t, srv, "/records/MUS-D-0009")
+	for _, want := range []string{
+		`<a href="/records/_IB-F-0001">it</a>`,
+		`<a href="/records/_IB-F-0001">its file</a>`,
+		`<summary class="badge">_IB-F-0001</summary>`,
+		"In the box",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the records page does not carry %q", want)
+		}
+	}
+	res, code := fetch(t, srv, "/records/_ib-f-0001")
+	if code != 200 || !strings.Contains(res, "In the box") {
+		t.Errorf("a reserved identifier's page does not resolve: %d", code)
+	}
+}

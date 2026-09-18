@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/DevOfPie/Mustur/internal/ident"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
@@ -32,24 +33,77 @@ import (
 // this project wrote.
 var md = goldmark.New(
 	goldmark.WithExtensions(extension.Table),
-	goldmark.WithParserOptions(parser.WithASTTransformers(
-		util.Prioritized(recordLinks{}, 100),
-	)),
+	goldmark.WithParserOptions(
+		parser.WithASTTransformers(util.Prioritized(recordLinks{}, 100)),
+		// Ahead of emphasis, which goldmark registers at 500.
+		parser.WithInlineParsers(util.Prioritized(reservedID{}, 450)),
+	),
 )
+
+// reservedID reads a reserved identifier as text before emphasis can take its
+// underscore as a delimiter: left to goldmark, "a _IB-F-0001_ b" renders as
+// "a <em>IB-F-0001</em> b" (review of #107, nit 8). It fires only where
+// ident.Spans would read an identifier, so an underscore anywhere else is
+// still emphasis, and "__IB-F-0001_" is still _IB-F-0001 in italics.
+type reservedID struct{}
+
+func (reservedID) Trigger() []byte { return []byte{'_'} }
+
+func (reservedID) Parse(_ ast.Node, block text.Reader, _ parser.Context) ast.Node {
+	line, seg := block.PeekLine()
+	const width = 10
+	// A run of underscores before one: goldmark would take the whole run as
+	// one delimiter, and "__IB-F-0001_" came out as "_<em>IB-F-0001</em>". The
+	// underscores before the identifier's own are given up as text instead, so
+	// the identifier is never split; the italics are lost with them.
+	run := 0
+	for run < len(line) && line[run] == '_' {
+		run++
+	}
+	if run > 1 && len(line) >= run-1+width && ident.Valid(string(line[run-1:run-1+width])) {
+		block.Advance(run - 1)
+		return ast.NewTextSegment(text.NewSegment(seg.Start, seg.Start+run-1))
+	}
+	if len(line) < width || !ident.Valid(string(line[:width])) {
+		return nil
+	}
+	if len(line) > width && inIdentifier(line[width]) {
+		return nil
+	}
+	if prev := block.PrecendingCharacter(); prev < 128 && prev != '\n' && inIdentifier(byte(prev)) {
+		return nil
+	}
+	block.Advance(width)
+	return ast.NewTextSegment(text.NewSegment(seg.Start, seg.Start+width))
+}
+
+func inIdentifier(c byte) bool {
+	return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-'
+}
 
 // A body's citations are written as links into the exported tree --
 // "questions.md#mus-q-0034", "work-units/HRD-W-0001.md" -- which is where they
 // resolve. Served from /records or /questions they resolve to nothing, so a
 // link that names a record is pointed at that record's own page instead.
 // Every other link is left exactly as written.
+//
+// Both are built on ident.ProjectPattern, so a reserved prefix ("_ib-f-0001")
+// is pointed at its page like any other. The anchor is the export's, which is
+// the identifier lower-cased, so the pattern is lower-cased with it.
 var (
-	anchorID = regexp.MustCompile(`#([a-z]{3}-[a-z]-[0-9]{4})$`)
-	fileID   = regexp.MustCompile(`(?:^|/)([A-Z]{3}-[A-Z]-[0-9]{4})\.md$`)
+	anchorID = regexp.MustCompile(`#(` + strings.ToLower(ident.ProjectPattern) + `-[a-z]-[0-9]{4})$`)
+	fileID   = regexp.MustCompile(`(?:^|/)(` + ident.ProjectPattern + `-[A-Z]-[0-9]{4})\.md$`)
 )
 
 type recordLinks struct{}
 
-func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context) {
+// plainKey carries, into one conversion, the retired identifiers the record
+// being rendered shows as plain text (MUS-D-0197).
+var plainKey = parser.NewContextKey()
+
+func (recordLinks) Transform(doc *ast.Document, _ text.Reader, pc parser.Context) {
+	plain, _ := pc.Get(plainKey).(map[string]bool)
+	var unlink []*ast.Link
 	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		l, ok := n.(*ast.Link)
 		if !entering || !ok {
@@ -61,13 +115,34 @@ func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context)
 		if strings.Contains(dest, "://") || strings.HasPrefix(dest, "//") {
 			return ast.WalkContinue, nil
 		}
+		id := ""
 		if m := anchorID.FindStringSubmatch(dest); m != nil {
-			l.Destination = []byte("/records/" + strings.ToUpper(m[1]))
+			id = strings.ToUpper(m[1])
 		} else if m := fileID.FindStringSubmatch(dest); m != nil {
-			l.Destination = []byte("/records/" + m[1])
+			id = m[1]
+		}
+		switch {
+		case id == "":
+		case plain[id]:
+			// Retired here: its text stays and the link goes, so it can never
+			// point at a record issued later under the same spelling.
+			unlink = append(unlink, l)
+		default:
+			l.Destination = []byte("/records/" + id)
 		}
 		return ast.WalkContinue, nil
 	})
+	// Replaced after the walk, not during it: moving a node's children while
+	// walking them loses the walk's place.
+	for _, l := range unlink {
+		parent := l.Parent()
+		for c := l.FirstChild(); c != nil; {
+			next := c.NextSibling()
+			parent.InsertBefore(parent, l, c)
+			c = next
+		}
+		parent.RemoveChild(parent, l)
+	}
 }
 
 // markdown renders src for a page.
@@ -78,9 +153,17 @@ func (recordLinks) Transform(doc *ast.Document, _ text.Reader, _ parser.Context)
 // (MUS-F-0033, MUS-F-0131). The string replace is sound because raw HTML is
 // dropped and text is escaped, so a literal <table> in the output can only be
 // the renderer's.
-func markdown(src string) template.HTML {
+func markdown(src string) template.HTML { return markdownPlain(src, nil) }
+
+// markdownPlain renders src with the retired identifiers in plain shown as
+// text rather than links.
+func markdownPlain(src string, plain map[string]bool) template.HTML {
 	var b bytes.Buffer
-	if err := md.Convert([]byte(src), &b); err != nil {
+	pc := parser.NewContext()
+	if len(plain) > 0 {
+		pc.Set(plainKey, plain)
+	}
+	if err := md.Convert([]byte(src), &b, parser.WithContext(pc)); err != nil {
 		// Convert fails only on a writer error, and a bytes.Buffer has none.
 		// Escaped text is still better than nothing if that ever changes.
 		return template.HTML(template.HTMLEscapeString(src))

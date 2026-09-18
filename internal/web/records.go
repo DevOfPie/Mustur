@@ -5,7 +5,18 @@ package web
 // **A document, not a graph** (MUS-D-0040). Identifiers here are dense and
 // cross-referential and the graph reading was real; what the owner chose is a
 // thing to read, where a citation expands in place with no round trip and no
-// new tab. The counts at the top are the only navigation.
+// new tab.
+//
+// **A record is a document; the index is a list** (MUS-D-0186, amending
+// MUS-D-0040). The index used to be the document too — every record in the
+// store rendered in full with every citation resolved, and the kind counts
+// were the only navigation (MUS-F-0164). Measured for PR 101 on a copy of the
+// live store on 2026-09-15, that was 11,413,213 bytes for 2,144 records; the
+// 11,379,228 bytes in MUS-F-0164's evidence is the earlier measurement, taken
+// against the live store by the MUS-F-0163 check. It is now
+// one line a record, narrowed by project, kind and a search box and paged fifty
+// at a time, and it never renders a body or resolves a citation. What reads as
+// a document is `/records/{id}`, which is unchanged.
 //
 // Expansion is a `<details>` element, which is why this page carries no script:
 // the browser already knows how to open and close a thing, and the decision
@@ -15,30 +26,41 @@ package web
 // record kinds like any other and a separate page would be a second surface to
 // keep true. What makes routing different is that its rows are claims about
 // this machine — so the surface **verifies rather than repeats**: a checkout
-// that moved, or a contract file that is gone, reads as stale on the row
-// itself. That is the whole reason it is a surface and not a printed table, and
-// it is the same posture the dispatcher contract takes, which verifies before
-// entering rather than trusting a row.
+// that moved, or a contract file that is gone, reads as stale on the
+// repository's own page, `/records/{ID}`. Index rows do not carry the badge:
+// the approved row is five fields with no place for it, and the owner kept it
+// to the record's page on MUS-Q-0149. That verification is the whole reason it
+// is a surface and not a printed table, and it is the same posture the
+// dispatcher contract takes, which verifies before entering rather than
+// trusting a row.
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/export"
 	"github.com/DevOfPie/Mustur/internal/ident"
+	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/record"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
 // Records serves the records document.
 type Records struct {
+	counts countCache
+
 	Store   *store.Store
 	Project string
 	// Home expands a leading ~ in a checkout path. Empty means the running
@@ -53,6 +75,15 @@ type Records struct {
 	// served only when an origin is configured. Off means the link is absent
 	// rather than dead (MUS-Q-0052).
 	ShowAccount bool
+
+	// Auth names who pressed Move or Keep, when accounts are served. Nil
+	// falls back to what Cloudflare Access says, then to Actor.
+	Auth  *Auth
+	Actor string
+	// ExportTo is the tree the store is rendered into after a move or a keep,
+	// for the reason the intake box has one: whoever pressed it from a phone
+	// cannot run `make export`. Empty means no export.
+	ExportTo string
 }
 
 func (rr *Records) now() time.Time {
@@ -70,6 +101,23 @@ func (rr *Records) Routes(mux *http.ServeMux) {
 	// behind the same guard as the record the image belongs to, and it is the
 	// one place the picture is shown at all.
 	mux.HandleFunc("GET /records/image/{id}", rr.image)
+	// The Records badge's poll (MUS-D-0193), beside the Decisions one.
+	mux.HandleFunc("GET /records/attention/count", rr.count)
+	// The two ways out of needing attention (MUS-D-0193). Plain form posts,
+	// so they work with script blocked, and an owner's alone.
+	mux.HandleFunc("POST /records/{id}/move", rr.move)
+	mux.HandleFunc("POST /records/{id}/keep", rr.keep)
+}
+
+// count answers the Records badge's poll: how many records need attention,
+// cached exactly as the decisions count is. A number and never which records,
+// for the same reason that one is.
+func (rr *Records) count(w http.ResponseWriter, r *http.Request) {
+	n := 0
+	if rr.Store != nil {
+		n = rr.counts.get(r.Context(), rr.Store, rr.now, intake.AttentionCount)
+	}
+	writeCount(w, n)
 }
 
 // kinds is the order the document presents, which is the order the export
@@ -130,29 +178,171 @@ type recordView struct {
 	// else: a decision cannot be stale in this sense.
 	State string
 	Stale bool
+
+	// Attention is what the record names and was kept from, set only while it
+	// needs attention (MUS-D-0193). CanMove says whether this viewer is shown
+	// the buttons; a reader sees the banner without them.
+	Attention []namedView
+	// AttentionLine is the banner's sentence, from attentionLine.
+	AttentionLine string
+	CanMove       bool
+	// MovedFrom and MovedTo are the success line after a move, shown on the
+	// record the move filed.
+	MovedFrom string
+	MovedTo   string
+	// Kept is the line after Keep.
+	Kept bool
 }
 
-type kindView struct {
-	Kind string
-	// Label is what the count says — singular when there is one of a thing.
-	Label string
-	// Heading is always the plural, because a section heading names a kind
-	// rather than counting it.
-	Heading string
-	Count   int
-	Records []recordView
+// A namedView is a destination a record names, by identifier and title.
+// Place says it resolves to a routing record — somewhere a jot can actually
+// be moved — which is when a Move button is offered for it.
+type namedView struct {
+	ID    string
+	Title string
+	Place bool
+}
+
+// attentionLine is the banner's sentence: what the jot names, which of those
+// take a jot only on a confirmed move, and which are not places at all.
+func attentionLine(names []namedView) string {
+	var places, others, all []string
+	for _, n := range names {
+		all = append(all, n.Title)
+		if n.Place {
+			places = append(places, n.Title)
+		} else {
+			others = append(others, n.Title)
+		}
+	}
+	and := func(ts []string) string { return strings.Join(ts, " and ") }
+	takes := func(ts []string) string {
+		if len(ts) == 1 {
+			return "takes"
+		}
+		return "take"
+	}
+	if len(others) == 0 {
+		return "This jot names " + and(all) + ", which " + takes(places) + " a jot only when a move is confirmed."
+	}
+	is := "is"
+	if len(others) > 1 {
+		is = "are"
+	}
+	line := "This jot names " + and(all) + "."
+	if len(places) > 0 {
+		line += " " + and(places) + " " + takes(places) + " a jot only when a move is confirmed."
+	}
+	return line + " " + and(others) + " " + is + " not a place a jot can go."
+}
+
+// An attentionRow is one line of the pinned section on the index.
+type attentionRow struct {
+	ID    string
+	Title string
+	Names []namedView
+}
+
+// boxIn is the intake box among the records a page already holds.
+func boxIn(by map[string]record.Record) string {
+	all := make([]record.Record, 0, len(by))
+	for _, r := range by {
+		all = append(all, r)
+	}
+	record.Sort(all)
+	return intake.DefaultIn(all)
+}
+
+// named resolves a record's Names to titles. An identifier the store does not
+// hold is shown as itself rather than dropped.
+func named(r record.Record, by map[string]record.Record) []namedView {
+	var out []namedView
+	for _, id := range intake.Named(r) {
+		title := id
+		d, ok := by[id]
+		if ok && d.Title != "" {
+			title = d.Title
+		}
+		out = append(out, namedView{ID: id, Title: title, Place: ok && intake.IsDestination(d)})
+	}
+	return out
+}
+
+// recordsPerPage is the owner's answer on MUS-Q-0140: fifty. At that size the
+// 2,144 records of the 2026-09-15 measurement above are 43 pages.
+const recordsPerPage = 50
+
+// A rowView is one line of the index. Nothing in it needs the body or another
+// record, which is the whole reason the index is cheap.
+type rowView struct {
+	ID      string
+	Kind    string
+	Project string
+	Title   string
+	At      string
+	// Attention marks a row that also sits in the pinned section.
+	Attention bool
+	// Finding marks a row that carries a Status pill. Status is its word, and
+	// State its State when that is one of the three — the pill's tone. A
+	// finding with no State, or one that is not a State, is drawn in its own
+	// dashed tone rather than the dropped one's (review of #109, m6).
+	Finding bool
+	Status  string
+	State   string
+}
+
+// A pick is one option in a picker, carrying how many records choosing it
+// holds.
+type pick struct {
+	Value    string
+	Label    string
+	Selected bool
+}
+
+type recordsIndex struct {
+	// Attention is the pinned section above the filters: every record needing
+	// attention, whatever the filters say, so narrowing the list can never
+	// hide one (MUS-D-0193).
+	Attention []attentionRow
+
+	Projects []pick
+	Kinds    []pick
+	// States narrows findings by State (MUS-D-0196). Any other kind has none,
+	// so choosing one lists findings only.
+	States []pick
+	// Stateless is a kind other than finding being chosen, which switches the
+	// State picker off.
+	Stateless bool
+	Q         string
+	// Chosen is whether anything narrows the list, which is when Clear is
+	// offered.
+	Chosen  bool
+	Summary string
+	Rows    []rowView
+	Page    int
+	Pages   int
+	// Beyond is a page past the last, which is shown empty rather than
+	// refused: a bookmark outlives the records it was paging through.
+	Beyond bool
+	Pager  bool
+	Newer  string
+	Older  string
 }
 
 type recordsPage struct {
 	// OpenQuestions is the bar's count. Every surface carries it, and bar.js
 	// keeps it true after this render (MUS-F-0086).
 	OpenQuestions int
+	// Attention is the Records badge: how many records need attention
+	// (MUS-D-0193). bar.js keeps it true after this render, as it does the
+	// count above.
+	Attention int
 
 	Project      string
 	ShowSessions bool
 	ShowAccount  bool
-	Kinds        []kindView
-	Total        int
+	// Index is set on /records.
+	Index *recordsIndex
 	// One is set when a single record was asked for by identifier.
 	One     *recordView
 	Missing string
@@ -167,8 +357,11 @@ type imageView struct {
 	Size string
 }
 
-// idInProse finds identifiers written in a record's text.
-var idInProse = regexp.MustCompile(`\b[A-Z]{3}-[A-Z]-[0-9]{4}\b`)
+// idInProse finds identifiers written in a record's text. It is ident.Cited,
+// so the page offers exactly the citations the export check counts: a
+// regular expression's \b read `_MUS-D-0001_` in italics as no citation at
+// all, because the underscore is a word character.
+func idInProse(text string) []string { return ident.Cited(text) }
 
 func (rr *Records) load(ctx context.Context) (map[string]record.Record, []record.Record, error) {
 	all, err := rr.Store.List(ctx, "")
@@ -187,7 +380,11 @@ func (rr *Records) load(ctx context.Context) (map[string]record.Record, []record
 func (rr *Records) view(r record.Record, by map[string]record.Record) recordView {
 	// The body is rendered; the citations below are still read from the text
 	// as written, so markdown cannot hide an identifier from them.
-	v := recordView{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Body: markdown(r.Body), Data: r.Data}
+	// A retired identifier this record describes is text, never a link or a
+	// citation to expand (MUS-D-0197): the store may later issue one of the
+	// same spelling, and it would be somebody else's record.
+	plain := retiredIn(r.ID, by)
+	v := recordView{ID: r.ID, Kind: r.Kind, Title: r.Title, At: r.At, Body: markdownPlain(r.Body, plain), Data: r.Data}
 
 	// A ref field may name several records — "Decided by: MUS-D-0002,
 	// MUS-D-0008, MUS-D-0027" is one field and three citations. Looking the
@@ -196,13 +393,17 @@ func (rr *Records) view(r record.Record, by map[string]record.Record) recordView
 	// the sort of thing that reads as a finding about the tree until somebody
 	// looks.
 	for _, ref := range r.Refs {
-		found := idInProse.FindAllString(ref.Value, -1)
+		found := idInProse(ref.Value)
 		if len(found) == 0 {
 			// Not an identifier at all: some refs name a file or a person.
 			v.Refs = append(v.Refs, citation{Key: ref.Key, ID: ref.Value, Plain: true})
 			continue
 		}
 		for _, id := range found {
+			if plain[id] {
+				v.Refs = append(v.Refs, citation{Key: ref.Key, ID: id, Plain: true})
+				continue
+			}
 			v.Refs = append(v.Refs, resolve(ref.Key, id, by))
 		}
 	}
@@ -217,14 +418,24 @@ func (rr *Records) view(r record.Record, by map[string]record.Record) recordView
 	for _, f := range r.Data {
 		text += " " + f.Value
 	}
-	for _, found := range idInProse.FindAllString(text, -1) {
-		if seen[found] {
+	for _, found := range idInProse(text) {
+		if seen[found] || plain[found] {
 			continue
 		}
 		seen[found] = true
 		v.Cites = append(v.Cites, resolve("", found, by))
 	}
 	return v
+}
+
+// retiredIn is the set of retired identifiers the record with this
+// identifier shows as plain text.
+func retiredIn(id string, by map[string]record.Record) map[string]bool {
+	all := make([]record.Record, 0, len(by))
+	for _, r := range by {
+		all = append(all, r)
+	}
+	return record.Retire(all).PlainIn(id)
 }
 
 func resolve(key, id string, by map[string]record.Record) citation {
@@ -280,37 +491,276 @@ func (rr *Records) expand(path string) string {
 	return filepath.Join(home, strings.TrimPrefix(path, "~"))
 }
 
+// index is the list of records, narrowed and paged (MUS-D-0186, the plan
+// approved on MUS-Q-0140).
+//
+// It filters what Store.List already returns rather than asking the store a
+// narrower question, because the cost MUS-F-0164 measured was never the query:
+// it was view(), which renders every body and resolves every citation of every
+// record. The index calls neither.
+//
+// Unknown values are ignored rather than refused, so a stale bookmark still
+// shows something.
 func (rr *Records) index(w http.ResponseWriter, r *http.Request) {
-	by, all, err := rr.load(r.Context())
+	all, err := rr.Store.List(r.Context(), "")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	page := recordsPage{Project: rr.Project, Total: len(all), Checked: rr.now().Format("15:04")}
+	query := r.URL.Query()
+	q := strings.TrimSpace(query.Get("q"))
 
-	grouped := map[string][]record.Record{}
+	// A whole identifier is a request for that record, not a search for it.
+	if id := strings.ToUpper(q); id != "" {
+		for _, rec := range all {
+			if rec.ID == id {
+				http.Redirect(w, r, "/records/"+id, http.StatusSeeOther)
+				return
+			}
+		}
+	}
+
+	names := projectNamesIn(all)
+	perProject := map[string]int{}
 	for _, rec := range all {
-		grouped[rec.Kind] = append(grouped[rec.Kind], rec)
+		perProject[prefixOf(rec.ID)]++
+	}
+	project := strings.ToUpper(strings.TrimSpace(query.Get("project")))
+	if perProject[project] == 0 {
+		project = ""
+	}
+	kind := strings.TrimSpace(query.Get("kind"))
+	known := false
+	for _, k := range kinds {
+		known = known || k.Kind == kind
+	}
+	if !known {
+		kind = ""
+	}
+	state := strings.TrimSpace(query.Get("state"))
+	// Only a finding has a State, so with another kind chosen the State picker
+	// is switched off and a State in the address is ignored, rather than
+	// narrowing the list to nothing under a count that says otherwise.
+	stateless := kind != "" && kind != "finding"
+	if !status.ValidState(state) || stateless {
+		state = ""
+	}
+
+	idx := &recordsIndex{Q: q, Chosen: project != "" || kind != "" || state != "" || q != "", Stateless: stateless}
+
+	// Before any filter is applied, so the section is the same on every page
+	// of every narrowing. Newest first, like the list below it.
+	by := make(map[string]record.Record, len(all))
+	for _, rec := range all {
+		by[rec.ID] = rec
+	}
+	box := intake.DefaultIn(all)
+	for _, rec := range all {
+		if intake.NeedsAttention(rec, box) {
+			idx.Attention = append(idx.Attention, attentionRow{ID: rec.ID, Title: rec.Title, Names: named(rec, by)})
+		}
+	}
+	sort.SliceStable(idx.Attention, func(i, j int) bool {
+		a, b := by[idx.Attention[i].ID], by[idx.Attention[j].ID]
+		if a.At != b.At {
+			return a.At > b.At
+		}
+		return less(b.ID, a.ID)
+	})
+
+	prefixes := make([]string, 0, len(perProject))
+	for p := range perProject {
+		prefixes = append(prefixes, p)
+	}
+	sort.Strings(prefixes)
+	for _, p := range prefixes {
+		idx.Projects = append(idx.Projects, pick{
+			Value: p, Selected: p == project,
+			Label: names.name(p) + " · " + thousands(perProject[p]),
+		})
+	}
+
+	// The kinds within the chosen project, so a picker never offers a choice
+	// that holds nothing. The one chosen is kept even at nought, or the form
+	// would quietly say something other than what the list is showing.
+	perKind := map[string]int{}
+	for _, rec := range all {
+		if project == "" || prefixOf(rec.ID) == project {
+			perKind[rec.Kind]++
+		}
 	}
 	for _, k := range kinds {
-		recs := grouped[k.Kind]
-		if len(recs) == 0 {
+		if perKind[k.Kind] == 0 && k.Kind != kind {
 			continue
 		}
-		sort.Slice(recs, func(i, j int) bool { return less(recs[i].ID, recs[j].ID) })
-		label := k.Many
-		if len(recs) == 1 {
-			label = k.One
-		}
-		kv := kindView{Kind: k.Kind, Label: label, Heading: k.Many, Count: len(recs)}
-		for _, rec := range recs {
-			v := rr.view(rec, by)
-			v.State, v.Stale = rr.verify(rec)
-			kv.Records = append(kv.Records, v)
-		}
-		page.Kinds = append(page.Kinds, kv)
+		idx.Kinds = append(idx.Kinds, pick{
+			Value: k.Kind, Selected: k.Kind == kind,
+			Label: k.One + " · " + thousands(perKind[k.Kind]),
+		})
 	}
-	rr.render(w, r, page)
+
+	// The three States, each with how many records choosing it would list:
+	// findings within the chosen project and matching the search. All three
+	// are always offered: the list is fixed, and a nought says something true.
+	// Counted after the kind and the search rather than before, because a
+	// count the list below then contradicts is worse than none (review of
+	// #109, m7).
+	perState := map[string]int{}
+	for _, rec := range all {
+		if rec.Kind == "finding" && (project == "" || prefixOf(rec.ID) == project) &&
+			(q == "" || searchMatches(rec, q)) {
+			perState[status.StateOf(rec)]++
+		}
+	}
+	for _, s := range status.States {
+		idx.States = append(idx.States, pick{
+			Value: s, Selected: s == state,
+			Label: s + " · " + thousands(perState[s]),
+		})
+	}
+
+	var matched []record.Record
+	for _, rec := range all {
+		if project != "" && prefixOf(rec.ID) != project {
+			continue
+		}
+		if kind != "" && rec.Kind != kind {
+			continue
+		}
+		if state != "" && (rec.Kind != "finding" || status.StateOf(rec) != state) {
+			continue
+		}
+		if q != "" && !searchMatches(rec, q) {
+			continue
+		}
+		matched = append(matched, rec)
+	}
+	// Newest first, so what was filed today is at the top whatever project it
+	// belongs to.
+	sort.Slice(matched, func(i, j int) bool {
+		if matched[i].At != matched[j].At {
+			return matched[i].At > matched[j].At
+		}
+		return less(matched[j].ID, matched[i].ID)
+	})
+
+	idx.Pages = max(1, (len(matched)+recordsPerPage-1)/recordsPerPage)
+	idx.Page = 1
+	if n, err := strconv.Atoi(query.Get("page")); err == nil && n > 1 {
+		idx.Page = n
+	}
+	from := (idx.Page - 1) * recordsPerPage
+	if from < len(matched) {
+		for _, rec := range matched[from:min(from+recordsPerPage, len(matched))] {
+			row := rowView{
+				ID: rec.ID, Kind: kindLabel(rec.Kind), Title: rec.Title, At: rec.At,
+				Project:   names.title(prefixOf(rec.ID)),
+				Attention: intake.NeedsAttention(rec, box),
+			}
+			if rec.Kind == "finding" {
+				row.Finding = true
+				row.Status, row.State = status.WordOf(rec), status.StateOf(rec)
+				if !status.ValidState(row.State) {
+					// A tone only for a State that is one; the gate over the
+					// store names the rest.
+					row.State = ""
+				}
+			}
+			idx.Rows = append(idx.Rows, row)
+		}
+	} else {
+		idx.Beyond = idx.Page > 1
+	}
+	link := func(page int) string {
+		v := url.Values{}
+		for key, val := range map[string]string{"project": project, "kind": kind, "state": state, "q": q} {
+			if val != "" {
+				v.Set(key, val)
+			}
+		}
+		if page > 1 {
+			v.Set("page", strconv.Itoa(page))
+		}
+		if len(v) == 0 {
+			return "/records"
+		}
+		return "/records?" + v.Encode()
+	}
+	if idx.Page > 1 {
+		// Past the end, Newer is the last page that has anything on it rather
+		// than the one before a page that never existed.
+		idx.Newer = link(min(idx.Page-1, idx.Pages))
+	}
+	if idx.Page < idx.Pages {
+		idx.Older = link(idx.Page + 1)
+	}
+	idx.Pager = idx.Pages > 1 || idx.Beyond
+
+	summary := thousands(len(matched)) + " records"
+	if len(matched) == 1 {
+		summary = "1 record"
+	}
+	if q != "" {
+		if len(matched) == 1 {
+			summary += " matches " + q
+		} else {
+			summary += " match " + q
+		}
+	}
+	if project != "" {
+		summary += " · " + names.title(project)
+	}
+	if kind != "" {
+		summary += " · " + kindLabel(kind)
+	}
+	if state != "" {
+		summary += " · " + state
+	}
+	if !idx.Chosen {
+		summary += " · newest first"
+	}
+	if len(matched) > recordsPerPage && len(idx.Rows) > 0 {
+		summary += " · " + thousands(from+1) + "–" + thousands(from+len(idx.Rows))
+	}
+	idx.Summary = summary
+
+	rr.render(w, r, recordsPage{Project: rr.Project, Index: idx, Checked: rr.now().Format("15:04")})
+}
+
+// prefixOf is the project an identifier belongs to, which is its prefix
+// (MUS-D-0093).
+func prefixOf(id string) string {
+	p, _, _ := strings.Cut(id, "-")
+	return p
+}
+
+func kindLabel(kind string) string {
+	for _, k := range kinds {
+		if k.Kind == kind {
+			return k.One
+		}
+	}
+	return kind
+}
+
+// searchMatches is the search box's rule, on MUS-Q-0140: a bare number matches
+// the end of an identifier, in every project and kind, and anything else is
+// words in the title. Never the body — a common word matches hundreds of
+// LinkCtrl's decisions, and the owner chose titles.
+func searchMatches(rec record.Record, q string) bool {
+	if strings.Trim(q, "0123456789") == "" {
+		return strings.HasSuffix(rec.ID, q)
+	}
+	return strings.Contains(strings.ToLower(rec.Title), strings.ToLower(q))
+}
+
+// thousands writes a count the way the page reads it: 2,133.
+func thousands(n int) string {
+	s := strconv.Itoa(n)
+	for i := len(s) - 3; i > 0; i -= 3 {
+		s = s[:i] + "," + s[i:]
+	}
+	return s
 }
 
 // one is the canonical URL for a single record, which is what "every record
@@ -330,6 +780,32 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 	}
 	v := rr.view(rec, by)
 	v.State, v.Stale = rr.verify(rec)
+	if intake.NeedsAttention(rec, boxIn(by)) {
+		v.Attention = named(rec, by)
+		v.AttentionLine = attentionLine(v.Attention)
+		v.CanMove = CanWrite(r)
+	}
+	// The line after a move, said only by the record the move filed: one that
+	// does not correct the identifier in the address says nothing, so a link
+	// cannot make any record claim a move it was not part of.
+	if from := strings.ToUpper(r.URL.Query().Get("moved")); from != "" {
+		for _, ref := range rec.Refs {
+			if ref.Key == "Corrects" && ref.Value == from {
+				v.MovedFrom = from
+				v.MovedTo, _ = rec.Get("Routed to")
+				for _, dest := range rec.Refs {
+					if dest.Key == "Routed to" {
+						if d, ok := by[dest.Value]; ok {
+							v.MovedTo = d.Title
+						}
+					}
+				}
+			}
+		}
+	}
+	if _, kept := rec.Get(intake.KeptField); kept && r.URL.Query().Get("kept") == "1" {
+		v.Kept = true
+	}
 	// Only on a record's own page. The index lists hundreds and would fetch
 	// every picture at once for a reader who asked for none of them.
 	if shots, err := rr.Store.Attachments(r.Context(), id); err == nil {
@@ -341,6 +817,207 @@ func (rr *Records) one(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	rr.render(w, r, recordsPage{Project: rr.Project, One: &v, Checked: rr.now().Format("15:04")})
+}
+
+// actor is who pressed Move or Keep: the signed-in account when accounts are
+// served, else what Cloudflare Access says at the edge, else the configured
+// actor — the order the rest of this package already trusts.
+func (rr *Records) actor(r *http.Request) string {
+	if rr.Auth != nil {
+		if acct, ok := rr.Auth.Whoever(r.Context(), r); ok && acct.Email != "" {
+			return acct.Email
+		}
+	}
+	if who := r.Header.Get("Cf-Access-Authenticated-User-Email"); who != "" {
+		return who
+	}
+	if rr.Actor != "" {
+		return rr.Actor
+	}
+	return "owner"
+}
+
+// attending is the shared front half of move and keep: an owner, from this
+// site, about a record that needs attention. It writes the refusal itself and
+// reports whether to go on.
+//
+// The guard already refuses a reader's POST; this refuses it again so the
+// rule holds on a server run without the guard's role in front of it, and
+// says which rule it was.
+func (rr *Records) attending(w http.ResponseWriter, r *http.Request) (record.Record, bool) {
+	if !CanWrite(r) {
+		http.Error(w, "only an owner can move or keep a record", http.StatusForbidden)
+		return record.Record{}, false
+	}
+	// The same check the composer and the account screens make: a browser
+	// sends Origin on a form post, and one from another site is refused.
+	if !sameOrigin(r) {
+		http.Error(w, "cross-origin post refused", http.StatusForbidden)
+		return record.Record{}, false
+	}
+	id := strings.ToUpper(strings.TrimSpace(r.PathValue("id")))
+	rec, err := rr.Store.Get(r.Context(), id)
+	if err != nil {
+		http.Error(w, "no record called "+id, http.StatusNotFound)
+		return record.Record{}, false
+	}
+	return rec, true
+}
+
+// refuseUnlessAttending is the 409 for a record that proposes nothing. Called
+// after the second-press checks, so a press that already happened is sent to
+// its result rather than told there is nothing to do.
+func (rr *Records) refuseUnlessAttending(w http.ResponseWriter, r *http.Request, rec record.Record) bool {
+	routing, err := intake.Destinations(r.Context(), rr.Store)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return true
+	}
+	if !intake.NeedsAttention(rec, intake.DefaultIn(routing)) {
+		http.Error(w, rec.ID+" proposes no move, so there is nothing to move or keep", http.StatusConflict)
+		return true
+	}
+	return false
+}
+
+// pressStatus is the status for a failed Move or Keep: 400 for a destination
+// that is not one, 409 for a request intake declines, and 500 for anything
+// else — the store failing is not the owner's fault and must not read as if
+// it were.
+func pressStatus(err error) int {
+	var refused *intake.Refusal
+	switch {
+	case errors.Is(err, intake.ErrUnknownDestination):
+		return http.StatusBadRequest
+	case errors.As(err, &refused):
+		return http.StatusConflict
+	}
+	return http.StatusInternalServerError
+}
+
+// moved sends the browser to the record a move filed, with the success line.
+// The same answer for the press that moved it and for a second press that
+// arrived after: both asked for the move, and the move happened.
+func moved(w http.ResponseWriter, r *http.Request, from, to string) {
+	http.Redirect(w, r, "/records/"+to+"?moved="+url.QueryEscape(from), http.StatusSeeOther)
+}
+
+// move performs the move a record proposes, through intake.Reroute — the
+// function `mustur reroute` calls — with the owner as actor. It is narrower
+// than the command: it goes only to a place the record names, and it writes
+// its own reason rather than taking one.
+func (rr *Records) move(w http.ResponseWriter, r *http.Request) {
+	rec, ok := rr.attending(w, r)
+	if !ok {
+		return
+	}
+	if by := intake.CorrectedBy(rec); by != "" {
+		moved(w, r, rec.ID, by)
+		return
+	}
+	if rr.refuseUnlessAttending(w, r, rec) {
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "that form did not arrive intact", http.StatusBadRequest)
+		return
+	}
+	names := intake.Named(rec)
+	to := strings.TrimSpace(r.FormValue("to"))
+	if to == "" && len(names) == 1 {
+		to = names[0]
+	}
+	// Only somewhere the record names. Anywhere else is a correction, which
+	// the command makes and this button does not.
+	proposed := false
+	for _, id := range names {
+		proposed = proposed || id == to
+	}
+	if !proposed {
+		http.Error(w, rec.ID+" does not name "+to+"; it names "+strings.Join(names, ", "), http.StatusBadRequest)
+		return
+	}
+	// Named, and a place. A Names entry that no longer resolves to a routing
+	// record is shown in the banner without a button; a post for it anyway is
+	// the caller's mistake.
+	d, err := rr.Store.Get(r.Context(), to)
+	if errors.Is(err, store.ErrNotFound) || (err == nil && !intake.IsDestination(d)) {
+		http.Error(w, to+" is not a place a jot can go", http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	who := rr.actor(r)
+	title := to
+	if d.Title != "" {
+		title = d.Title + " (" + to + ")"
+	}
+	done, err := intake.Reroute(r.Context(), rr.Store, intake.RerouteRequest{
+		Project: rr.Project, ID: rec.ID, To: to, Actor: who, Now: rr.now(),
+		Why: "it named " + title + ", which takes jots only when a move is confirmed, and " + who + " confirmed it",
+	})
+	var already *intake.AlreadyCorrected
+	if errors.As(err, &already) {
+		// The other press of a double press won the race.
+		moved(w, r, rec.ID, already.By)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), pressStatus(err))
+		return
+	}
+	rr.counts.forget()
+	rr.export(r.Context())
+	moved(w, r, rec.ID, done.Fresh.ID)
+}
+
+// keep declines the move and leaves the record where it is, saying who and
+// when.
+func (rr *Records) keep(w http.ResponseWriter, r *http.Request) {
+	rec, ok := rr.attending(w, r)
+	if !ok {
+		return
+	}
+	back := "/records/" + rec.ID + "?kept=1"
+	// A second press on a kept record goes back to it without writing.
+	if _, kept := rec.Get(intake.KeptField); kept {
+		http.Redirect(w, r, back, http.StatusSeeOther)
+		return
+	}
+	if rr.refuseUnlessAttending(w, r, rec) {
+		return
+	}
+	_, err := intake.Keep(r.Context(), rr.Store, rec.ID, rr.actor(r), rr.now())
+	if errors.Is(err, intake.ErrAlreadyKept) {
+		http.Redirect(w, r, back, http.StatusSeeOther)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), pressStatus(err))
+		return
+	}
+	rr.counts.forget()
+	rr.export(r.Context())
+	http.Redirect(w, r, back, http.StatusSeeOther)
+}
+
+// export renders the store into the configured tree. The change is already in
+// the store, so a failed export has lost nothing and the press still
+// succeeded; it is logged rather than swallowed, because an exported tree
+// quietly behind the store is the drift nothing else here would notice.
+func (rr *Records) export(ctx context.Context) {
+	if rr.ExportTo == "" {
+		return
+	}
+	all, err := rr.Store.List(ctx, "")
+	if err == nil {
+		err = export.Write(rr.ExportTo, all)
+	}
+	if err != nil {
+		log.Printf("records: exporting to %s after a move or keep failed: %v", rr.ExportTo, err)
+	}
 }
 
 // less orders identifiers by role then serial, which is how every listing here
@@ -383,6 +1060,7 @@ func (rr *Records) render(w http.ResponseWriter, r *http.Request, p recordsPage)
 	p.ShowAccount = rr.ShowAccount
 	if rr.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), rr.Store)
+		p.Attention = intake.AttentionCount(r.Context(), rr.Store)
 	}
 	if err := recordsTmpl.Execute(w, p); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -410,16 +1088,74 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .acct { font-size: .82em; opacity: .6; text-decoration: none;
           color: inherit; margin-left: .6rem; }
   header .who { margin-left: auto; opacity: .6; font-size: .82em; }
-  /* The counts are the only navigation, which is the decision this page rests
-     on: no tree, no filter, no search box. */
-  .counts { display: flex; gap: .4rem; flex-wrap: wrap; padding: .6rem 1rem;
-            border-bottom: 1.4px solid var(--edge); font-size: .82em; }
-  .counts a { border: 1px solid var(--edge); border-radius: 999px;
-              padding: .15rem .6rem; text-decoration: none; color: inherit;
-              opacity: .7; }
-  .counts a:hover { opacity: 1; border-color: var(--accent); }
-  h2 { font-size: .85rem; font-weight: 600; text-transform: uppercase;
-       letter-spacing: .04em; opacity: .55; margin: 1.6rem 1rem .3rem; }
+  /* The index narrows (MUS-D-0186, amending MUS-D-0040). A plain GET form, so
+     the address is the filter and it works with script blocked. Every child
+     may be narrower than its content, or a long project name in a picker
+     widens the page and takes the fixed bar with it (MUS-F-0033). */
+  .narrow { display: flex; flex-wrap: wrap; gap: .5rem; padding: .6rem 1rem;
+            border-bottom: 1.4px solid var(--edge); }
+  /* Three pickers wrap rather than share a phone's width three ways, which cut
+     "All projects" and the State's count short at 390px. */
+  .narrow .pick { display: flex; flex-wrap: wrap; gap: .5rem; flex: 1 1 30rem; min-width: 0; }
+  .narrow .pick select { flex: 1 1 9rem; }
+  .narrow select:disabled { opacity: .55; }
+  /* On a phone the project picker takes its own row: its label is a name and
+     a count, and sharing 358px cut "Mustur (MUS) · 597" to "· 59" (review of
+     #109, m6). Kind and State share the row below it. */
+  @media (max-width: 40rem) {
+    .narrow .pick select[name=project] { flex-basis: 100%; }
+  }
+  .narrow .find { display: flex; gap: .5rem; flex: 1 1 16rem; min-width: 0; }
+  .narrow select, .narrow input { flex: 1; min-width: 0; }
+  .narrow select, .narrow input, .narrow button {
+    font: inherit; font-size: .9em; padding: .35rem .5rem; color: inherit;
+    background: Canvas; border: 1px solid var(--edge); border-radius: .4rem; }
+  .narrow button { flex: none; border-color: var(--accent);
+                   background: var(--accent-soft); }
+  .tally { margin: 0; padding: .5rem 1rem; font-size: .82em; }
+  .tally span { opacity: .7; }
+  .tally a { color: inherit; margin-left: .5rem; }
+  /* One line a record on a wide screen, the title taking what is left and
+     cut short with an ellipsis rather than wrapping. */
+  .rows { list-style: none; margin: 0; padding: 0;
+          border-top: 1px solid var(--edge); }
+  .row { display: flex; align-items: baseline; gap: .7rem; padding: .45rem 1rem;
+         border-bottom: 1px solid var(--edge); text-decoration: none;
+         color: inherit; white-space: nowrap; }
+  .row:hover { background: var(--accent-soft); }
+  .row .id { flex: none; width: 6.5rem; font-size: .8em;
+             font-variant-numeric: tabular-nums; }
+  .row .kind, .row .proj, .row .at { flex: none; font-size: .78em; opacity: .65; }
+  .row .kind { width: 6.5rem; }
+  .row .proj { width: 6rem; overflow: hidden; text-overflow: ellipsis; }
+  .row .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+            font-size: .93em; }
+  /* A finding's Status word, in the tone of its State (MUS-D-0196): open in
+     the warn tone the attention marks wear, done in the accent, dropped
+     muted. The word is the text, so the tone is never the only signal.
+     Capped and cut with an ellipsis, on a phone too: a word is short, but a
+     Status amended back to a sentence is not, and uncapped one widened the
+     page by 1,099px at 390 and took the bar with it (MUS-F-0033's failure). */
+  .row .st { flex: 0 1 auto; max-width: 9rem; min-width: 0; overflow: hidden;
+             text-overflow: ellipsis; white-space: nowrap;
+             font-size: .72em; line-height: 1.5; padding: 0 .45rem;
+             border: 1px solid var(--edge); border-radius: 999px; opacity: .6; }
+  .row .st.open { border-color: var(--warn); background: var(--warn-soft); opacity: 1; }
+  .row .st.done { border-color: var(--accent); background: var(--accent-soft); opacity: 1; }
+  /* No State, or one that is not a State: not dropped, and not drawn as it. */
+  .row .st.nostate { border-style: dashed; border-color: currentColor; opacity: .8; }
+  /* On a phone a row takes two lines so the title is never cut short, as the
+     plan draws it. */
+  @media (max-width: 40rem) {
+    .row { flex-wrap: wrap; row-gap: .1rem; white-space: normal; }
+    .row .id, .row .kind, .row .proj { width: auto; }
+    .row .t { flex-basis: 100%; order: 1; overflow-wrap: anywhere; }
+    .row .at { display: none; }
+  }
+  .pager { display: flex; align-items: baseline; justify-content: space-between;
+           gap: .5rem; padding: .7rem 1rem; font-size: .9em; }
+  .pager span { opacity: .4; }
+  .pager small { opacity: .65; }
   article { padding: .7rem 1rem; border-bottom: 1px solid var(--edge); }
   article .line { display: flex; align-items: baseline; gap: .5rem;
                   flex-wrap: wrap; font-size: .8em; opacity: .65; }
@@ -461,7 +1197,53 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
   .shots img { max-width: 100%; height: auto; display: block;
                border: 1px solid var(--edge); border-radius: .4rem; }
   .shots figcaption { font-size: .78em; opacity: .6; margin-top: .2rem; }
-  .badge.stale { border-color: #c2703a; opacity: 1; }
+  .badge.stale { border-color: var(--warn); opacity: 1; }
+  /* Needs attention (MUS-D-0193), in the warn tone the Records badge wears.
+     The pinned section sits above the filters and ignores them, so narrowing
+     the list can never hide a record waiting on somebody. */
+  .attn { margin: .6rem 1rem 0; border: 1.4px solid var(--warn);
+          border-radius: .5rem; overflow: hidden; }
+  .attn h2 { margin: 0; padding: .45rem .8rem; font-size: .9rem;
+             background: var(--warn-soft); }
+  .attn .rows { border-top: 1px solid var(--warn); }
+  .attn .row:last-child { border-bottom: 0; }
+  .pill { flex: none; font-size: .75em; border: 1px solid var(--warn);
+          border-radius: 999px; padding: 0 .45rem; white-space: nowrap; }
+  /* In the row's own left padding, so a marked row's identifier stays in the
+     column every other row's is in. */
+  .rows .row { position: relative; }
+  .row .dot { position: absolute; left: .3rem; top: calc(.45rem + .45em);
+              width: .45rem; height: .45rem; border-radius: 50%;
+              background: var(--warn); }
+  .banner { border: 1.4px solid var(--warn); background: var(--warn-soft);
+            border-radius: .5rem; padding: .6rem .8rem; margin: 0 0 .6rem; }
+  .banner p { margin: 0; }
+  .banner .acts { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
+  .banner form { margin: 0; }
+  .banner button { font: inherit; font-size: .92em; padding: .4rem .8rem;
+                   color: inherit; background: Canvas; cursor: pointer;
+                   border: 1px solid var(--edge); border-radius: .4rem; }
+  /* Solid, as the plan draws it. The soft fill was 12% alpha over the
+     banner's own warn tint and read as a grey button with a blue edge. The
+     text takes the page ground, so it inverts with the theme. */
+  .banner button.primary { border-color: var(--accent); background: var(--accent);
+                           color: var(--paper); font-weight: 600; }
+  .banner button.primary:hover { filter: brightness(1.08); }
+  /* White on the accent measured 3.2:1 in a browser, short of 4.5 for text
+     this size; the accent darkened a fifth, only in the light theme, is the
+     same hue at 4.8:1. Dark text on the accent in the dark theme is 5.8:1. */
+  @media (prefers-color-scheme: light) {
+    .banner button.primary { background: color-mix(in srgb, var(--accent) 80%, #000);
+                             border-color: color-mix(in srgb, var(--accent) 80%, #000); }
+  }
+  /* On a phone the two buttons stack full width, so neither is a small
+     target beside the other. */
+  @media (max-width: 40rem) {
+    .banner .acts { flex-direction: column; }
+    .banner form, .banner button { width: 100%; }
+  }
+  .done { border: 1px solid var(--edge); border-radius: .5rem;
+          padding: .5rem .8rem; margin: 0 0 .6rem; font-size: .93em; }
   .none { opacity: .6; padding: 2rem 1rem; text-align: center; }
 ` + markdownCSS + citesCSS + shellCSS + `
 </style>
@@ -476,21 +1258,54 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 <small>An identifier that is not here is either a typo or a citation to something never written.</small></p>
 {{else if .One}}
 {{template "record" .One}}
-{{else}}
-<div class="counts">
-  {{range .Kinds}}<a href="#{{.Kind}}">{{.Count}} {{.Label}}</a>{{end}}
-</div>
-{{range .Kinds}}
-<h2 id="{{.Kind}}">{{.Heading}}</h2>
-{{range .Records}}{{template "record" .}}{{end}}
+{{else if .Index}}{{with .Index}}
+{{if .Attention}}<section class="attn" aria-label="Needs attention">
+<h2>Needs attention · {{len .Attention}}</h2>
+<ol class="rows">
+{{range .Attention}}<li><a class="row" href="/records/{{.ID}}"><span class="dot" title="Needs attention" aria-label="Needs attention"></span><span class="id">{{.ID}}</span><span class="t">{{.Title}}</span>{{range .Names}}<span class="pill">names {{.Title}}{{if .Place}} — move?{{end}}</span>{{end}}</a></li>
+{{end}}</ol>
+</section>{{end}}
+<form class="narrow" method="get" action="/records" role="search">
+  <div class="pick">
+    <select name="project" aria-label="Project">
+      <option value="">All projects</option>
+      {{range .Projects}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
+    </select>
+    <select name="kind" aria-label="Kind">
+      <option value="">All kinds</option>
+      {{range .Kinds}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
+    </select>
+    {{if .Stateless}}<select name="state" aria-label="State" disabled title="Only findings have a State">
+      <option value="" selected>Findings only</option>
+    </select>{{else}}<select name="state" aria-label="State">
+      <option value="">Any state</option>
+      {{range .States}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}
+    </select>{{end}}
+  </div>
+  <div class="find">
+    <input type="search" name="q" value="{{.Q}}" placeholder="Identifier or words" aria-label="Identifier or words" autocapitalize="characters" autocomplete="off" spellcheck="false">
+    <button type="submit">Show</button>
+  </div>
+</form>
+<p class="tally"><span>{{.Summary}}</span>{{if .Chosen}}<a href="/records">Clear</a>{{end}}</p>
+{{if .Rows}}<ol class="rows">
+{{range .Rows}}<li><a class="row" href="/records/{{.ID}}">{{if .Attention}}<span class="dot" title="Needs attention" aria-label="Needs attention"></span>{{end}}<span class="id">{{.ID}}</span><span class="kind">{{.Kind}}</span><span class="proj">{{.Project}}</span><span class="t">{{.Title}}</span>{{if .Finding}}{{if .State}}<span class="st {{.State}}" title="{{.Status}} · {{.State}}">{{.Status}}</span>{{else}}<span class="st nostate" title="{{if .Status}}{{.Status}} · {{end}}no State">{{if .Status}}{{.Status}}{{else}}no State{{end}}</span>{{end}}{{end}}<span class="at">{{.At}}</span></a></li>
+{{end}}</ol>
+{{else if .Beyond}}<p class="none">Nothing on page {{.Page}}. The list ends at page {{.Pages}}.</p>
+{{else}}<p class="none">No records match.</p>
 {{end}}
-{{end}}
+{{if .Pager}}<div class="pager">
+  {{if .Newer}}<a rel="prev" href="{{.Newer}}">Newer</a>{{else}}<span>Newer</span>{{end}}
+  <small>{{if not .Beyond}}Page {{.Page}} of {{.Pages}}{{end}}</small>
+  {{if .Older}}<a rel="next" href="{{.Older}}">Older</a>{{else}}<span>Older</span>{{end}}
+</div>{{end}}
+{{end}}{{end}}
 
 <nav>
   {{if .ShowSessions}}<a href="/sessions" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>{{end}}
   <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
-  <a href="/records" class="here" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a href="/records" class="here" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 <script src="/assets/bar.js"></script>
@@ -499,6 +1314,15 @@ var recordsTmpl = template.Must(template.New("records").Parse(`<!doctype html>
 
 {{define "record"}}
 <article id="{{.ID}}">
+  {{if .MovedFrom}}<p class="done" role="status">Moved to {{.MovedTo}}. {{.MovedFrom}} is kept and points here.</p>{{end}}
+  {{if .Kept}}<p class="done" role="status">Kept in the intake box.</p>{{end}}
+  {{if .Attention}}<div class="banner" role="note">
+    <p><strong>Needs attention.</strong> {{.AttentionLine}}</p>
+    {{if .CanMove}}<div class="acts">
+      {{range .Attention}}{{if .Place}}<form method="post" action="/records/{{$.ID}}/move"><input type="hidden" name="to" value="{{.ID}}"><button class="primary" type="submit">Move to {{.Title}}</button></form>
+      {{end}}{{end}}<form method="post" action="/records/{{.ID}}/keep"><button type="submit">Keep in intake box</button></form>
+    </div>{{end}}
+  </div>{{end}}
   <div class="line">
     <a href="/records/{{.ID}}">{{.ID}}</a>
     <span>{{.Kind}}</span>

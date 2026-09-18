@@ -143,8 +143,11 @@ since been fixed. Every record in the store then carried the `MUS-` prefix,
 which was the store's rather than the destination's; the owner's point was that
 this makes a store you have to open rather than one you can scan. A routing
 record now names its own prefix and intake files under it, so the next jot with
-no obvious home is `IDW-F-0001` and not a Mustur record at all
-([MUS-D-0093](../records/decisions.md#mus-d-0093)).
+no obvious home was `IDW-F-0001` and not a Mustur record at all
+([MUS-D-0093](../records/decisions.md#mus-d-0093)). IDW is Idea Warehouse's,
+so [MUS-D-0192](../records/decisions.md#mus-d-0192) renames that jot
+`_IB-F-0001` in place, with the intake box's other five IDW jots, under the
+reserved `_IB` prefix: the one exception to identifier permanence.
 
 `MUS-F-0025` keeps its identifier. It is the last jot filed under the old
 scheme, and renaming it would put an exception into the rule that makes every

@@ -286,6 +286,32 @@ func TestIndexCarriesEveryKindIncludingQuestions(t *testing.T) {
 	}
 }
 
+// A finding's line ends with its State and Status word (MUS-D-0196); no other kind's
+// does, a question's Status included.
+func TestAFindingLineCarriesItsStatusWord(t *testing.T) {
+	recs := append(fixtures(),
+		record.Record{ID: "MUS-F-0001", Kind: "finding", Title: "The drawer is too wide", At: "2026-08-21",
+			Data: []record.Field{{Key: "Status", Value: "in-review"}, {Key: "State", Value: "open"}}},
+		record.Record{ID: "MUS-F-0002", Kind: "finding", Title: "No status yet", At: "2026-08-21"},
+		record.Record{ID: "MUS-Q-0001", Kind: "question", Title: "Own the session?", At: "2026-08-21",
+			Data: []record.Field{{Key: "Status", Value: "open"}}},
+	)
+	s, ctx := serverWith(t, recs...)
+	got, err := s.answer(ctx, Args{Repository: "Mustur"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"- MUS-F-0001 — The drawer is too wide · open/in-review\n",
+		"- MUS-F-0002 — No status yet\n",
+		"- MUS-Q-0001 — Own the session?\n",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("the index is missing %q:\n%s", want, got)
+		}
+	}
+}
+
 func TestSchemaListsEveryKind(t *testing.T) {
 	field, ok := reflect.TypeOf(Args{}).FieldByName("Kind")
 	if !ok {

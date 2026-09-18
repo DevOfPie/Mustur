@@ -35,6 +35,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/DevOfPie/Mustur/internal/intake"
 	"github.com/DevOfPie/Mustur/internal/session"
 	"github.com/DevOfPie/Mustur/internal/store"
 	"github.com/coder/websocket"
@@ -185,7 +186,11 @@ type sessionPage struct {
 	Finished      int // the rows folded under one line (MUS-D-0181)
 	Quiet         int // unfinished rows unheard for SubagentQuietAfter (MUS-D-0191)
 	OpenQuestions int
-	Missing       bool
+	// Attention is the Records badge: how many records need attention
+	// (MUS-D-0193). bar.js keeps it true after this render, as it does the
+	// count above.
+	Attention int
+	Missing   bool
 	// Starting is the form's data: where a session may be started and what it
 	// may be told to run. Empty when the store holds no checkout, which is a
 	// page that says so rather than a form that cannot be submitted.
@@ -491,6 +496,7 @@ func (s *Sessions) render(w http.ResponseWriter, r *http.Request, p sessionPage)
 	}
 	if s.Store != nil {
 		p.OpenQuestions = OpenCount(r.Context(), s.Store)
+		p.Attention = intake.AttentionCount(r.Context(), s.Store)
 	}
 	// Set here rather than at the call sites: a page built without it renders
 	// a header missing its only route to the account surface.
@@ -1463,7 +1469,8 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
      is the server's. display:none, so it has no layout box. */
   .say { display: none; }
 
-  /* Drag the drawer wider, on a wide screen only (IDW-F-0004).
+  /* Drag the drawer wider, on a wide screen only (IDW-F-0004,
+     _IB-F-0004 after MUS-D-0192).
 
      The grip is a real control rather than a decorated edge: focusable, with
      a separator role, and it moves on the arrow keys as well as the pointer.
@@ -1714,7 +1721,7 @@ var sessionTmpl = template.Must(template.New("sessions").Parse(`<!doctype html>
   <a href="/sessions" class="here" aria-label="Sessions"><i class="ic ic-sess"></i><span>Sessions</span></a>
   <a href="/questions" aria-label="Decisions"><i class="ic ic-dec">?</i><span>Decisions</span>{{if .OpenQuestions}}<em class="cnt">{{.OpenQuestions}}</em>{{end}}</a>
   <a href="/intake" aria-label="Intake"><i class="ic ic-in"><b></b></i><span>Intake</span></a>
-  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span></a>
+  <a href="/records" aria-label="Records"><i class="ic ic-rec"></i><span>Records</span>{{if .Attention}}<em class="cnt att">{{.Attention}}</em>{{end}}</a>
   {{if .ShowAccount}}<a class="me" href="/account" title="Account" aria-label="Account"><i class="ic ic-acc"></i></a>{{end}}
 </nav>
 <script src="/assets/bar.js"></script>

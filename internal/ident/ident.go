@@ -6,24 +6,37 @@
 // plays; the serial is zero-padded to four digits and unique within its
 // project and role.
 //
+// **A prefix can also be reserved: an underscore and two upper-case letters,
+// `_IB-F-0001`.** That form is for lists Mustur keeps for itself rather than for
+// a project — the intake box, where a jot lands when nothing else will take it,
+// takes `_IB` under MUS-D-0192. A real project's prefix is three letters, so no
+// project onboarded later can ever take a reserved one, and a record in
+// Mustur's own list can never be mistaken for, or collide with, a record about
+// a project. The
+// underscore sorts after every upper-case letter, so a reserved list comes
+// after every project in any listing ordered by Less.
+//
 // **The prefix says which project a record belongs to, not which store holds
-// it.** A jot routed to the idea inbox is filed under IDW even though the store
-// serving it is Mustur's — the routing record names the prefix and intake uses
-// it (MUS-D-0093). Before that, everything filed here was called MUS, and a jot
-// in the idea inbox was indistinguishable at a glance from a record about
-// Mustur itself. `MUS-F-0025` is the last one filed that way and keeps its
-// identifier, because the permanence rule below is what makes citations safe.
+// it.** The routing record names the prefix and intake uses it (MUS-D-0093).
+// Before that, everything filed here was called MUS, and a jot in the intake
+// box — then called the idea inbox — was indistinguishable at a glance from a
+// record about Mustur itself. `MUS-F-0025` is the last one filed that way and
+// keeps its identifier, because the permanence rule below is what makes
+// citations safe. The box's jots were then filed under IDW, which is Idea
+// Warehouse's prefix. MUS-D-0192 renames the six filed that way, IDW-F-0001
+// through IDW-F-0006, to `_IB-F-0001` through `_IB-F-0006` in place: the one
+// exception the permanence rule has.
 //
 // Identifiers are permanent. The store is insert-only and records cite each
 // other by identifier, so a scheme that allows renaming is a scheme that
-// allows a citation to rot.
+// allows a citation to rot. MUS-D-0192 is the one exception, and the reserved
+// form above is what keeps it from being needed again.
 package ident
 
 import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 // Role is the single letter in the middle of an identifier.
@@ -87,7 +100,13 @@ func RoleFor(name string) (Role, bool) {
 	return "", false
 }
 
-var pattern = regexp.MustCompile(`^([A-Z]{3})-([A-Z])-([0-9]{4})$`)
+// ProjectPattern is the regular-expression fragment a project prefix matches:
+// three upper-case letters, or the reserved form of an underscore and two.
+// Anything elsewhere that finds identifiers in text builds on this rather than
+// spelling the shape out again, so the next change to the scheme is one line.
+const ProjectPattern = `(?:[A-Z]{3}|_[A-Z]{2})`
+
+var pattern = regexp.MustCompile(`^(` + ProjectPattern + `)-([A-Z])-([0-9]{4})$`)
 
 // ID is a parsed identifier.
 type ID struct {
@@ -124,7 +143,7 @@ func Parse(s string) (ID, error) {
 }
 
 // ValidProject reports whether s is a well-formed project prefix on its own:
-// exactly three upper-case letters. A routing record naming its own prefix is
+// three upper-case letters, or a reserved underscore and two. A routing record naming its own prefix is
 // checked with this before anything is filed under it, so a typo in the
 // registry produces a jot under the store's prefix rather than an identifier
 // the scheme cannot parse.
@@ -132,7 +151,7 @@ func ValidProject(s string) bool {
 	return projectPattern.MatchString(s)
 }
 
-var projectPattern = regexp.MustCompile(`^[A-Z]{3}$`)
+var projectPattern = regexp.MustCompile(`^` + ProjectPattern + `$`)
 
 // Valid reports whether s parses.
 func Valid(s string) bool {
@@ -162,18 +181,62 @@ func roleOrder(r Role) int {
 	return len(Roles)
 }
 
-// Cited pulls every identifier mentioned in a body of text. Used to check that
-// a record's citations point at records that exist.
+// Cited pulls every identifier mentioned in a body of text, in order and
+// once each. Used to check that a record's citations point at records that
+// exist.
 func Cited(text string) []string {
 	var out []string
 	seen := map[string]bool{}
-	for _, field := range strings.FieldsFunc(text, func(r rune) bool {
-		return !(r >= 'A' && r <= 'Z') && !(r >= '0' && r <= '9') && r != '-'
-	}) {
-		if Valid(field) && !seen[field] {
-			seen[field] = true
-			out = append(out, field)
+	for _, span := range Spans(text) {
+		id := text[span[0]:span[1]]
+		if !seen[id] {
+			seen[id] = true
+			out = append(out, id)
 		}
 	}
 	return out
+}
+
+// Spans finds every identifier in text as byte offsets [start, end).
+//
+// An identifier is found where it stands whole: the character before it and
+// the character after it are neither an upper-case letter, a digit nor a
+// hyphen. That is the rule this function kept from the one it replaced, which
+// split text on everything else and kept the pieces that parsed — so
+// `XMUS-D-0001` and `MUS-D-0001-2` are not citations, and `xMUS-D-0001` is.
+//
+// The underscore is the difference. The reserved form begins with one, so it
+// cannot separate; and it cannot be part of an identifier's surroundings
+// either, or `_MUS-D-0001_` in italics, `MUS-D-0001_MUS-D-0002` and
+// `FOO_MUS-D-0001` would stop being citations, which they always were. So an
+// underscore on either side is a boundary, and a reserved identifier is read
+// starting at its own underscore: `__IB-F-0001_` is `_IB-F-0001` in italics.
+// Every identifier is ten characters, which is what makes a scan at every
+// offset cheap.
+func Spans(text string) [][2]int {
+	const width = 10
+	var out [][2]int
+	for i := 0; i+width <= len(text); i++ {
+		c := text[i]
+		if c != '_' && (c < 'A' || c > 'Z') {
+			continue
+		}
+		if i > 0 && inIdentifier(text[i-1]) {
+			continue
+		}
+		end := i + width
+		if end < len(text) && inIdentifier(text[end]) {
+			continue
+		}
+		if Valid(text[i:end]) {
+			out = append(out, [2]int{i, end})
+		}
+	}
+	return out
+}
+
+// inIdentifier reports whether c could continue an identifier, so an
+// identifier touching it is part of something longer.
+func inIdentifier(c byte) bool {
+	return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-'
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/DevOfPie/Mustur/internal/record"
 	"github.com/DevOfPie/Mustur/internal/seed"
+	"github.com/DevOfPie/Mustur/internal/status"
 	"github.com/DevOfPie/Mustur/internal/store"
 )
 
@@ -188,6 +189,11 @@ func TestFileWritesAFindingCarryingItsRouting(t *testing.T) {
 	// while a filled one would say the opposite.
 	if evidence, ok := r.Get("Evidence"); !ok || evidence != "" {
 		t.Errorf("evidence = %q, present %v", evidence, ok)
+	}
+	// Filed untriaged: the word every project declares for that, and the
+	// State it maps to (MUS-D-0196).
+	if w, st := status.WordOf(r), status.StateOf(r); w != status.Unreviewed || st != status.Open {
+		t.Errorf("Status %q, State %q; want unreviewed and open", w, st)
 	}
 	back, err := s.Get(ctx, r.ID)
 	if err != nil || back.Title != r.Title {
@@ -470,5 +476,190 @@ func TestADeliberateFilingIsNotTakenForADuplicate(t *testing.T) {
 	}
 	if meant.ID == first.ID {
 		t.Errorf("a deliberate filing was handed back the original, %s", meant.ID)
+	}
+}
+
+// withOptOut is the registry with one more destination, which has taken itself
+// out of name-matching. Its name is an ordinary word, which is the case the
+// field exists for: jots say "archive" without meaning the place.
+func withOptOut() []record.Record {
+	return append(routing(), record.Record{
+		ID: "MUS-P-0003", Kind: "project", Title: "Archive", At: "2026-09-18",
+		Data: []record.Field{
+			{Key: OptOutField, Value: OptOutValue},
+			{Key: PrefixField, Value: "ARC"},
+		},
+	})
+}
+
+const confirmedOnly = "which takes jots only when a move is confirmed"
+
+// Named alone, an opted-out destination is not a hint: the jot falls back, and
+// the reason says what was named and why it was passed over.
+func TestAnOptedOutDestinationNamedAloneFallsBack(t *testing.T) {
+	got := Route("archive the old intake notes", withOptOut())
+	if got.ID != "MUS-P-0002" {
+		t.Fatalf("routed to %s (%s)", got.ID, got.Why)
+	}
+	if want := "the jot names Archive, " + confirmedOnly; got.Why != want {
+		t.Errorf("reason %q, want %q", got.Why, want)
+	}
+	if len(got.Names) != 1 || got.Names[0] != "MUS-P-0003" {
+		t.Errorf("names %v, want [MUS-P-0003]", got.Names)
+	}
+	if got.Prefix != "IDW" {
+		t.Errorf("prefix %q: the fallback's own was not used", got.Prefix)
+	}
+}
+
+// Beside one other destination it is as if it had not matched: the other one
+// is obvious and wins, and the reason still mentions it.
+func TestAnOptedOutDestinationDoesNotMakeAHintAmbiguous(t *testing.T) {
+	got := Route("archive the logs on whippy-vm", withOptOut())
+	if got.ID != "MUS-H-0001" {
+		t.Fatalf("routed to %s (%s)", got.ID, got.Why)
+	}
+	if want := "the jot names whippy-vm; it also names Archive, " + confirmedOnly; got.Why != want {
+		t.Errorf("reason %q, want %q", got.Why, want)
+	}
+	if len(got.Names) != 1 || got.Names[0] != "MUS-P-0003" {
+		t.Errorf("names %v, want [MUS-P-0003]", got.Names)
+	}
+}
+
+// Beside two that are ambiguous between themselves, the ambiguity is theirs
+// and is reported as it would have been, with the opted-out one added.
+func TestAnOptedOutDestinationBesideAnAmbiguityIsStillMentioned(t *testing.T) {
+	got := Route("archive mustur off whippy-vm", withOptOut())
+	if got.ID != "MUS-P-0002" {
+		t.Fatalf("routed to %s (%s)", got.ID, got.Why)
+	}
+	const ambiguous = "the jot names more than one destination: DevOfPie/Mustur, whippy-vm; "
+	if want := ambiguous + "it also names Archive, " + confirmedOnly; got.Why != want {
+		t.Errorf("reason %q, want %q", got.Why, want)
+	}
+}
+
+// Without a default there is nowhere to fall back to, and the reason says so
+// as it does when nothing is named.
+func TestAnOptedOutDestinationWithNoDefaultSaysSo(t *testing.T) {
+	var noDefault []record.Record
+	for _, r := range withOptOut() {
+		if r.ID != "MUS-P-0002" {
+			noDefault = append(noDefault, r)
+		}
+	}
+	got := Route("archive the old intake notes", noDefault)
+	if got.ID != "" {
+		t.Fatalf("routed to %s (%s)", got.ID, got.Why)
+	}
+	if want := "the jot names Archive, " + confirmedOnly + ", and the routing registry declares no default"; got.Why != want {
+		t.Errorf("reason %q, want %q", got.Why, want)
+	}
+}
+
+// The value is read the way the default's is: case and surrounding space do not
+// matter, and any other value leaves the destination reachable.
+func TestTheOptOutIsReadLikeTheDefault(t *testing.T) {
+	with := func(v string) []record.Record {
+		rs := withOptOut()
+		rs[len(rs)-1].Data[0].Value = v
+		return rs
+	}
+	if got := Route("archive the old intake notes", with("  Never ")); got.ID != "MUS-P-0002" {
+		t.Errorf("\"  Never \" did not opt out: routed to %s", got.ID)
+	}
+	if got := Route("archive the old intake notes", with("sometimes")); got.ID != "MUS-P-0003" || len(got.Names) != 0 {
+		t.Errorf("\"sometimes\" opted out: routed to %s, names %v", got.ID, got.Names)
+	}
+}
+
+func openWith(t *testing.T, rs []record.Record) (*store.Store, context.Context) {
+	t.Helper()
+	ctx := context.Background()
+	s, err := store.Open(ctx, filepath.Join(t.TempDir(), "test.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { s.Close() })
+	for _, r := range rs {
+		if r.Kind == "decision" {
+			continue
+		}
+		if err := s.Append(ctx, r, "create", "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return s, ctx
+}
+
+// The filed record carries the destination it named and was kept from, so a
+// later move there confirms something the record already says.
+func TestAFiledJotRecordsTheDestinationItNamed(t *testing.T) {
+	s, ctx := openWith(t, withOptOut())
+	r, to, err := File(ctx, s, Request{
+		Project: "MUS", Text: "archive the old intake notes", Actor: "pie", Now: time.Now(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if to.ID != "MUS-P-0002" || !strings.HasPrefix(r.ID, "IDW-F-") {
+		t.Fatalf("filed %s, routed to %s (%s)", r.ID, to.ID, to.Why)
+	}
+	if names, ok := r.Get(NamesField); !ok || names != "MUS-P-0003" {
+		t.Errorf("%s = %q, present %v", NamesField, names, ok)
+	}
+	if why, _ := r.Get("Routing"); !strings.Contains(why, confirmedOnly) {
+		t.Errorf("the record does not say why it was passed over: %q", why)
+	}
+
+	// A jot that names nothing opted-out carries no such field.
+	plain, _, err := File(ctx, s, Request{
+		Project: "MUS", Text: "whippy-vm needs more disk", Actor: "pie", Now: time.Now(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v, ok := plain.Get(NamesField); ok {
+		t.Errorf("a jot naming nothing opted-out carries %s = %q", NamesField, v)
+	}
+}
+
+// Choosing an opted-out destination is not name-matching. A filer who picks it
+// has confirmed the move, and the jot files there under its prefix.
+func TestAnOptedOutDestinationCanStillBeChosen(t *testing.T) {
+	s, ctx := openWith(t, withOptOut())
+	r, to, err := File(ctx, s, Request{
+		Project: "MUS", Text: "archive the old intake notes", Actor: "pie",
+		To: "MUS-P-0003", Now: time.Now(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if to.ID != "MUS-P-0003" || r.ID != "ARC-F-0001" {
+		t.Fatalf("filed %s, routed to %s (%s)", r.ID, to.ID, to.Why)
+	}
+	if why, _ := r.Get("Routing"); why != "chosen by the filer" {
+		t.Errorf("reason %q", why)
+	}
+	if v, ok := r.Get(NamesField); ok {
+		t.Errorf("a chosen destination carries %s = %q", NamesField, v)
+	}
+}
+
+// A destination may name a reserved prefix, which is what the intake box is
+// filed under, and a jot routed there is called by it.
+func TestAReservedPrefixIsFiledUnder(t *testing.T) {
+	rs := routing()
+	rs[3].Data[1].Value = "_ib"
+	s, ctx := openWith(t, rs)
+	r, _, err := File(ctx, s, Request{
+		Project: "MUS", Text: "something with no home yet", Actor: "pie", Now: time.Now(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.ID != "_IB-F-0001" {
+		t.Fatalf("filed %s, want _IB-F-0001", r.ID)
 	}
 }
