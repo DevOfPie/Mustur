@@ -681,3 +681,36 @@ func TestDisablingTheOnlyOwnerOfAnyProjectIsRefused(t *testing.T) {
 		t.Errorf("enabling again: err = %v", err)
 	}
 }
+
+// A project nobody owns goes to the install's owners; one somebody owns stays
+// theirs, and adopting again changes nothing.
+func TestAdoptGivesOnlyUnownedProjects(t *testing.T) {
+	s, ctx := open(t)
+	a := redeemed(t, s, ctx, "a@example.com", "MUS", Owner)
+	b := redeemed(t, s, ctx, "b@example.com", "LNK", Owner)
+	if err := s.Grant(ctx, a.ID, "HRD", Reader, "test"); err != nil {
+		t.Fatal(err)
+	}
+
+	gave, err := s.Adopt(ctx, "MUS", []string{"MUS", "LNK", "HRD", "IDW"}, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(gave, ",") != "HRD,IDW" {
+		t.Errorf("adopted %v, want HRD and IDW", gave)
+	}
+	for _, p := range []string{"HRD", "IDW"} {
+		if role, _ := s.RoleFor(ctx, a.ID, p); role != Owner {
+			t.Errorf("the install's owner is %q on %s", role, p)
+		}
+	}
+	if _, ok := s.RoleFor(ctx, a.ID, "LNK"); ok {
+		t.Error("a project with an owner was adopted")
+	}
+	if role, _ := s.RoleFor(ctx, b.ID, "LNK"); role != Owner {
+		t.Errorf("LinkCtrl's owner is now %q", role)
+	}
+	if again, err := s.Adopt(ctx, "MUS", []string{"HRD", "IDW"}, "test"); err != nil || len(again) != 0 {
+		t.Errorf("adopting again gave %v, %v", again, err)
+	}
+}

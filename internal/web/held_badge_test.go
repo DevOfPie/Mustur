@@ -25,6 +25,9 @@ func TestEverySurfacesRenderedBadgeCountsHeldJots(t *testing.T) {
 	(&Accounts{Store: h.accounts, Auth: auth, Project: "MUS", Records: h.st}).Routes(h.mux)
 	reader, _ := h.as(t, "friend@example.com", map[string]account.Role{"MUS": account.Reader})
 	owner, ownerAcct := h.as(t, "owner@example.com", map[string]account.Role{"MUS": account.Owner})
+	// The idea inbox has an owner of its own, or rendering /account would
+	// hand it to the install's owner as a project nobody owns.
+	h.as(t, "idw@example.com", map[string]account.Role{"IDW": account.Owner})
 	// Owns MUS only, so a jot sent to the idea inbox is not theirs to count.
 	holdOne(t, h, reader, "")
 	holdIDW(t, h, reader)

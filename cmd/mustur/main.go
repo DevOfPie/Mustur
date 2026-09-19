@@ -939,6 +939,7 @@ func cmdServe(args []string) error {
 		manage := &web.Accounts{Store: accounts, Auth: auth, Project: *project, Records: s,
 			ShowSessions: *withSessions}
 		manage.Routes(mux)
+		manage.Adopt(ctx)
 		if *withAccounts {
 			guard := &web.Guard{Auth: auth, Project: *project}
 			handler = guard.Wrap(mux)

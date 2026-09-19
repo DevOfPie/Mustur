@@ -91,6 +91,22 @@ func (projects projectNames) name(prefix string) string {
 	return prefix
 }
 
+// prefixes lists every prefix a project record declares, once each.
+func (projects projectNames) prefixes() []string {
+	var out []string
+	seen := map[string]bool{}
+	for _, p := range projects {
+		v, ok := p.Get(intake.PrefixField)
+		v = strings.TrimSpace(v)
+		if !ok || v == "" || seen[v] {
+			continue
+		}
+		seen[v] = true
+		out = append(out, v)
+	}
+	return out
+}
+
 // title is the project's name without the tag, for a place the tag is already
 // on screen — a records row carries it in the identifier beside it. The bare
 // prefix where the store cannot say.
@@ -286,6 +302,23 @@ func (a *Accounts) ownedProjects(ctx context.Context, acct account.Account) []st
 	return out
 }
 
+// Adopt gives every project nobody owns to this install's owners, so a
+// project registered since they were granted is on their People screen rather
+// than on nobody's. It runs when the server starts and on every render of the
+// account surface, because a project is written by the command line as often
+// as by the server, and a project that has an owner is left alone.
+func (a *Accounts) Adopt(ctx context.Context) {
+	if a.Store == nil {
+		return
+	}
+	prefixes := a.names(ctx).prefixes()
+	if len(prefixes) == 0 {
+		return
+	}
+	// Best effort: a page that cannot adopt still renders what is granted.
+	_, _ = a.Store.Adopt(ctx, a.Project, prefixes, "adopted: nobody owned it")
+}
+
 // names lists the project records once for a page that names several
 // projects, rather than once per line.
 func (a *Accounts) names(ctx context.Context) projectNames {
@@ -369,6 +402,7 @@ func (a *Accounts) render(w http.ResponseWriter, r *http.Request, acct account.A
 		p.OpenQuestions = badgeCount(ctx, r, a.Records, a.Store, a.Project)
 		p.Attention = intake.AttentionCount(ctx, a.Records)
 	}
+	a.Adopt(ctx)
 	p.Email = acct.Email
 	p.Project = a.Project
 	p.ProjectName = projectName(ctx, a.Records, a.Project)

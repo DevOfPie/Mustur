@@ -733,6 +733,73 @@ func (s *Store) Grant(ctx context.Context, accountID, project string, role Role,
 	return tx.Commit()
 }
 
+// Adopt gives every project in projects that has no enabled owner to the
+// enabled owners of from, and returns the projects it gave.
+//
+// A project registered after the install's owner was granted had nobody who
+// owned it, so it was on nobody's People screen and nobody could grant a role
+// in it (MUS-F-0166's other half). Only a project with no owner is touched:
+// one that has an owner is that owner's business, which is MUS-D-0188's rule
+// and still holds. Adopting again finds nothing, so every caller may run it.
+func (s *Store) Adopt(ctx context.Context, from string, projects []string, by string) ([]string, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	rows, err := tx.QueryContext(ctx,
+		`SELECT g.account_id FROM grant_role g JOIN account a ON a.id = g.account_id
+		 WHERE g.project = ? AND g.role = 'owner' AND COALESCE(a.disabled, '') = ''`, from)
+	if err != nil {
+		return nil, err
+	}
+	var owners []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		owners = append(owners, id)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(owners) == 0 {
+		return nil, nil
+	}
+	at := s.now().UTC().Format(stamp)
+	var gave []string
+	for _, project := range projects {
+		if project == "" || project == from {
+			continue
+		}
+		var n int
+		if err := tx.QueryRowContext(ctx,
+			`SELECT COUNT(*) FROM grant_role g JOIN account a ON a.id = g.account_id
+			 WHERE g.project = ? AND g.role = 'owner' AND COALESCE(a.disabled, '') = ''`,
+			project).Scan(&n); err != nil {
+			return nil, err
+		}
+		if n > 0 {
+			continue
+		}
+		for _, id := range owners {
+			if _, err := tx.ExecContext(ctx,
+				`INSERT INTO grant_role (account_id, project, role, granted, granted_by)
+				 VALUES (?, ?, 'owner', ?, ?)
+				 ON CONFLICT (account_id, project) DO UPDATE SET
+				   role = excluded.role, granted = excluded.granted, granted_by = excluded.granted_by`,
+				id, project, at, by); err != nil {
+				return nil, err
+			}
+		}
+		gave = append(gave, project)
+	}
+	return gave, tx.Commit()
+}
+
 // Ungrant takes an account's role in one project away.
 //
 // Until this existed nothing removed a role once granted — not the screen and
